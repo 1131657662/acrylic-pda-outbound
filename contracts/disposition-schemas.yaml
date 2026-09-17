@@ -1,0 +1,48 @@
+Proof:
+  type: object
+  required: [captureId, baleId, barcode, expectedDispatchCycle, action, approvedEvidenceId]
+  properties:
+    captureId: {type: string, format: uuid}
+    baleId: {type: string, format: uuid}
+    barcode: {type: string, pattern: '^[0-9A-Z]{11}$'}
+    expectedDispatchCycle: {$ref: './submission-schemas.yaml#/Positive'}
+    action: {enum: [RELEASE, QUARANTINE]}
+    approvedEvidenceId: {type: string, format: uuid}
+Proofs:
+  type: array
+  description: 累计已批准减少行，顺序及内容与激活签名完全一致；原scans仍完整保留。旧全量保留正文可省略此字段。
+  items: {$ref: '#/Proof'}
+Approve:
+  type: object
+  required: [expectedVersion, payloadSha256, dispositions]
+  properties:
+    expectedVersion: {$ref: './submission-schemas.yaml#/Positive'}
+    payloadSha256: {$ref: './continuation-schemas.yaml#/Hash'}
+    dispositions:
+      type: array
+      minItems: 1
+      items:
+        type: object
+        required: [captureId, expectedDispatchCycle, action, physicalEvidence]
+        properties:
+          captureId: {type: string, format: uuid}
+          expectedDispatchCycle: {$ref: './submission-schemas.yaml#/Positive'}
+          action: {enum: [RELEASE, QUARANTINE]}
+          physicalEvidence: {type: string, minLength: 1, maxLength: 1000}
+Evidence:
+  type: object
+  required: [approvedEvidenceId, captureId, baleId, expectedDispatchCycle, action, physicalEvidence, recoveryPackageId]
+  properties:
+    approvedEvidenceId: {type: string, format: uuid}
+    captureId: {type: string, format: uuid}
+    baleId: {type: string, format: uuid}
+    expectedDispatchCycle: {$ref: './submission-schemas.yaml#/Positive'}
+    action: {enum: [RELEASE, QUARANTINE]}
+    physicalEvidence: {type: string}
+    recoveryPackageId: {type: string, format: uuid}
+Response:
+  type: object
+  required: [stockReleased, evidence]
+  properties:
+    stockReleased: {const: false, description: 批准只固定实物证据，不释放包占用；待替换批次完整接收时原子执行}
+    evidence: {type: array, items: {$ref: '#/Evidence'}}

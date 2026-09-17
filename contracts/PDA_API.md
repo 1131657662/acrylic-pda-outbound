@@ -1,14 +1,18 @@
 # 设备身份、资料准备与正式订单首轮提交
 
-版本0.7.0，2026-09-17。以下接口已实现；完整字段见[OpenAPI](openapi.yaml)。当前完成服务端设备登记、人员/设备认证、订单领取和不可变资料准备包，正式Android App已接下载校验、Room原子激活、下载确认和B模式本地扫码。已接正式订单首轮冻结、上传、短装审批、出库记账和回执验签。召回续作、临时单、更正、授权续期、增量同步和完整上线验收仍待完成。
+契约版本0.10.0，2026-09-17。以下接口已实现；完整字段见[OpenAPI](openapi.yaml)。当前完成服务端设备登记、人员/设备认证、订单领取和不可变资料准备包，正式Android App已接下载校验、Room原子激活、下载确认和B模式本地扫码。已接正式订单首轮冻结、上传、短装审批、出库记账、回执验签、受控召回及原人原机全量保留续作。主管批准的卸货释放/隔离减包续作已接入；换机、临时单、更正、通用授权续期、增量同步和完整上线验收仍待完成。
 
 ## 设备登记与身份
+
+Web `/devices` 已接以下接口，侧栏入口要求`device:manage`。页面按当前仓库分页，登记前核对PDA公钥；启停前核对设备并填写原因。设备ID可在“查看身份”复制。完整操作见[设备管理说明](../docs/WEB_DEVICE_GUIDE.md)。
 
 管理员通过Web会话、CSRF、`device:manage`和相应仓库权限调用`POST /api/v1/devices?warehouseId=...`。写操作要求`Idempotency-Key`和`X-Server-Recovery-Epoch`。正文为`deviceCode`、`name`、`publicKey`；公钥是P-256的X509 SubjectPublicKeyInfo DER标准Base64。代码和公钥摘要全局唯一，设备身份与仓库绑定，当前不提供换密钥或迁仓入口。重装或密钥丢失需登记新身份，不能继承旧机占用。
 
 设备私钥由正式App的Android Keystore生成及保存；服务器只登记公钥。人员登录令牌使用独立Keystore AES-GCM密钥加密保存，禁用备份和设备转移；不通过接口、日志或备份导出私钥。
 
 `GET /devices`按仓库分页；`POST /devices/{id}/status`正文为`expectedVersion`、`status`（ACTIVE/DISABLED）、`reason`。成功增加设备版本，撤销已有登录会话；重新启用也不会恢复旧令牌。重复请求用原键、原正文取回原操作回执。设备停用不改订单占用、历史离线凭据或本地记录；离线设备不会即时得知后台停用。
+
+Web设备写请求在发送前按人员/仓库保存到当前标签页sessionStorage，包含原正文、键和恢复代次；刷新后由用户恢复，不自动发送，不存登录令牌或私钥。重试始终携带原恢复代次，不能用最新GET或CSRF响应的代次替换。校验操作回执的状态、版本及启停目标设备后才清除原请求；响应未知、恢复请求失败或回执不匹配继续保留。首次明确4xx失败可返回修改输入，旧版本冲突须关闭窗口并刷新设备列表后重新核对。关闭整个标签页的恢复不作保证。
 
 ## PDA登录与刷新
 
@@ -120,7 +124,7 @@ planSha256对数据库保存的发布snapshot_json文本UTF-8字节取SHA-256；
 
 ## 正式订单首轮冻结与提交
 
-当前仅支持`FORMAL`来源、`workRound="1"`、`continuationId=null`。冻结前核对所有输入终态及汇总；0包、未决输入、未确认失败不能冻结，任一产品短装必须填原因。Room V3新增提交表，单事务保存FROZEN审计、固定正文及摘要，再冻结本地订单。重复操作返回原批次，不能修改正文、继续扫码或撤销。
+首轮使用`FORMAL`来源、`workRound="1"`、`continuationId=null`；主管批准后的新轮次见下文“受控续作与第二轮提交”。冻结前核对所有输入终态及汇总；0包、未决输入、未确认失败不能冻结，任一产品短装必须填原因。Room V3新增提交表，单事务保存FROZEN审计、固定正文及摘要，再冻结本地订单。重复操作返回原批次，不能修改正文、继续扫码或撤销。
 
 离线授权到期后允许冻结及上传原已保存事实，服务端逐条验证保存发生在原48小时内；上传仍须当前有效的原人员/原设备在线身份和`pda:submit`权限。凭据撤销、版本变化、恢复代次冲突和库存冲突不能借过期上传绕过。原占用持续保留。
 
@@ -149,4 +153,54 @@ PDA写接口要求`X-Server-Recovery-Epoch`，提交ID本身是幂等身份，�
 
 主要新增错误：`SUBMISSION_USE_CHUNKS`（413，保留正文改分块）、`SUBMISSION_NOT_FOUND`（404，原身份查询）、`SUBMISSION_ABORTED/SUBMISSION_REJECTED`（409，不复活批次）、`SUBMISSION_STILL_CONFLICTED`（409，审批不能覆盖冲突）、`IDEMPOTENCY_CONTENT_MISMATCH`（409，恢复原正文）。任何失败都不能自动生成第二批次、释放占用或删除本地证据。
 
-当前完整保存本单审计，但不推进全设备连续审计确认、不触发清理。续作、换机、临时单、更正净结果、独立审计同步、灾后恢复UUID代次控制及文件生成仍需后续实现。
+当前完整保存本单审计，但不推进全设备连续审计确认、不触发清理。原人原机全量保留续作见下节；换机、临时单、更正净结果、独立审计同步、灾后恢复UUID代次控制及文件生成仍需后续实现。
+
+
+## 受控召回与原机停止（0.4.0）
+
+Web订单详情可申请原机召回，须 `order:recall`、仓库权限、当前 `expectedVersion`、原因及原 `Idempotency-Key`。申请将订单/原授权置为 `RECALL_PENDING`。与首轮提交串行：提交先完成不能召回；召回先到的旧提交最多待复核，审批不能出库。PDA进入作业或首页联网刷新时查询召回；断网不能即时收到新指令。
+
+| 接口 | 身份与用途 |
+| --- | --- |
+| `GET/POST /orders/{order}/change-requests?warehouseId=...` | Web查询/申请；写入要求CSRF、恢复代次、幂等键 |
+| `GET /pda/assignments/{id}/change-request` | 原人员原设备，`pda:recover`，返回 `{request:null或召回}` |
+| `POST /pda/recovery-packages` | 原人员原设备上传固定恢复正文，32MiB上限；恢复代次必填 |
+| `GET /recovery-packages/{id}` | Web仓库内查看本单摘要、有效/VOID明细与输入统计 |
+| `POST /pda/change-requests/{id}/stop-ack` | 原人员原设备，绑定已接收包ID/SHA、高水位和审计覆盖终点 |
+| `POST /change-requests/{id}/resolve?warehouseId=...` | Web主管 `order:recall` + `order:cancel`，只支持 `CANCEL_EMPTY` |
+
+PDA收到召回后先暂停接收，再在Room持久停扫。操作员查看未保存和失败列表、明确核对后，未保存输入转带原因的 `BUSINESS_REJECTED`，失败确认另记审计；原ID、原扫码序号、原人原机和确认意图保留。已保存/VOID行不改。待落盘队列归零，冻结恢复包与 `RECALL_STOPPED` 同事务保存；重启、上传失败、登录过期均不重新扫码。
+
+恢复正文采用独立 `recoveryPackageId`、规范UTF-8/SHA256及 `schemaVersion=2`，允许有效包为0，不能用作出库提交。原 `captures/scans/events` 与全部本设备连续 `auditEvents` 一同提交；`auditCoverage` 当前仅原设备一项，`afterSeq:"0"`，`throughSeq` 等于停止事件序号。末事件 `RECALL_STOPPED` 的 `detail` 绑定本恢复包ID。服务端验证原授权保存窗口、快照、汇总、连续性和已提交/已恢复审计；此前已提交的输入/扫描/事件不得遗漏或改写。详见 [recall-schemas.yaml](recall-schemas.yaml)。本轮不推进通用审计清理游标，也不清理本机记录。
+
+恢复上传仅接收证据并保留安全包的 `RECOVERY_RESERVED`；不会覆盖其他单占用或直接出库。恢复证据固定后，不再接收该授权新旧提交正文。停止确认必须再引用原 `recoveryPackageId/payloadSha256/captureHighWatermark/auditThroughSeq`；单事务撤销原离线资格、保存签名停止证明和审计/outbox，订单保持 `RECALL_PENDING`。旧离线资格到期/撤销不阻止原证据接收，但有效在线人员/设备身份仍必需；停用设备不能绕过认证。
+
+停止/作废证明固定RS256、`aud=acrylic-pda-recall`，声明 `receipt` 绑定除 `signedReceipt` 外的完整响应，含原订单/授权/恢复包/摘要/高水位。PDA只有验签及绑定核对通过才置 `RECALLED`；丢失响应重试同一原包及原停止确认，返回首次证明。`mayResumeScanning=false`、`stockReleased=false` 始终不变，停止证明不是放行或续作凭据。
+
+主管零包作废需原机STOPPED、完整原包摘要、当前版本、有效包0且订单无尚待交接或出库包占用，填写 `physicalEvidence`（1–1000字）并二次确认。持久保存核验人/时间/说明；未成功且未终结提交原子置ABORTED并签名，原槽和证据保留。有包、缺证据或已出库均拒绝。主要错误：`RECALL_HAS_LOADED_BALES`、`RECALL_STOP_REQUIRED`、`RECOVERY_ALREADY_FIXED`、`RECALL_STATE_CONFLICT`（409）；异文重试 `IDEMPOTENCY_CONTENT_MISMATCH`，证据错误 `INVALID_SUBMISSION`（400）。所有错误都不自动放锁、改派或续扫。
+
+召回停止证明本身不提供续作资格，须另走下节主管批准及原机激活流程。独立凭据减包续作见0.6.0节；当前不提供换机、故障原机替代证明、临时单、更正净结果、恢复UUID代次及文件生成。尚未准备完成或原本机作业/审计损坏时保留待召回，不能伪造零包证明。
+
+
+## 受控续作与第二轮提交（0.5.0）
+
+1. 原 S1 为 REJECTED/ABORTED；原机完整恢复并取得 STOPPED 证明后，Web POST `/orders/{order}/change-requests`，`type=REOPEN_WORK`。必填旧批次、`expectedWorkRound` 字符串、`expectedRevision` 整数、恢复包、原设备、原因和完整 RETAIN 条码/周期集合。
+2. Web POST `/change-requests/{continuationId}/resolve`，`action=REOPEN_WORK`，提交当前订单版本、`retainedManifestSha256` 及实物核验凭据。另需 `order:resume`。锁定来源/订单及库存后，旧 current 清空并记录 superseded 关系；轮次加一，原占用直接变为 CONTINUATION_RESERVED。
+3. 原人原机 POST `/pda/continuations/{id}/activate`，提交原恢复正文摘要、保留集合摘要、完整输入高水位加1及计划摘要。保留集合摘要为恢复包 `scans` 中 ACTIVE 行保持原顺序的规范 JSON 数组 SHA-256。返回 RS256、`aud=acrylic-pda-continuation` 的签名票据和固定48小时新资格；到期/停用/版本撤销不放锁，激活和重试不延长期限。
+4. PDA 验签和核验本机全部原 captures/scans/events、统计及高水位后，在同一 Room 事务归档旧 current、保存新资格、恢复 SCANNING。原 PreparedOrder 和各轮提交/恢复正文只读保留。稳定本地容器 ID 不替代事实来源：新记录的 wire assignmentId 使用新授权，历史来源不变。
+5. S2 使用新 submissionId、workRound、continuationId、顶层新 assignmentId。首轮可缺/空的 continuationId 在后续轮次必填，分块控制头也必须携带。正文前缀必须逐条包含原恢复包 captures/scans/events，所有原行完全一致；新增记录使用新授权，输入序号继续递增。保留包不允许普通 VOID。
+6. 分块控制头只固定当前轮次唯一在途身份；完整正文通过后才选择唯一 current 并把保留包原子转为 S2 的 REVIEW_RESERVED。任何保留集合、周期、库存或资格冲突回滚；旧批准/旧上传迟到不复活 S1。短装仍需批准，只有验签成功的 SUCCEEDED 回执可放行。
+
+查询旧授权的 change-request 可取得 `previousSubmission` 与 `continuation` 状态。第二轮及以后再次召回仍需当前原授权的完整恢复证据。当前服务恢复代次继续沿用数字字符串，UUID恢复代次与灾后对账另行实现。
+
+主要409：`WORK_ROUND_CONFLICT`、`CURRENT_SUBMISSION_EXISTS`、`SUBMISSION_SUPERSEDED`、`RETAINED_SET_MISMATCH`、`CONTINUATION_NOT_APPROVED`、`CONTINUATION_NOT_ACTIVATED`、`CONTINUATION_RECONCILIATION_REQUIRED`、`DISPATCH_CYCLE_CONFLICT`。遇到这些错误保留原正文、原键和实物，查询原票据或主管核对，不删记录或盲换ID。
+
+## 卸货释放与隔离后续作（0.6.0 / 契约0.10.0）
+
+主管先POST `/recovery-packages/{id}/disposition-evidence?warehouseId=...`，需order:recall及order:dispose、原恢复代次、Idempotency-Key和CSRF。正文为expectedVersion、payloadSha256和减少行dispositions，每行captureId、expectedDispatchCycle、RELEASE/QUARANTINE、physicalEvidence。返回不可改写的approvedEvidenceId；GET同路径查询。批准不释放库存。
+
+REOPEN_WORK清单覆盖恢复包全部当前有效装载行；减少行必须引用已批准凭据，已批准减少的行不能RETAIN。激活签名携带累计dispositions，绑定captureId、baleId、barcode、expectedDispatchCycle、action、approvedEvidenceId。retainedManifestSha256为原scans中ACTIVE且不在累计处置中的行按原顺序规范化后的SHA256。旧全量保留协议可不带dispositions；新的减少票据不能由旧App误接。
+
+新提交和再次恢复完整继承captures/scans/events及累计dispositions。expectedCount、expectedWeightGrams、captureSummary.saved只计算未被处置排除的ACTIVE行。完整替换正文接收事务同时选择新current、释放RELEASE、建立QUARANTINED占用、转移保留包并核验新增包；任意冲突整笔回滚。独立凭据审批及激活均不释放；shortShipment与0包规则不变。stockReleased=false继续表示不提供通用解锁授权，不能据此推断已批准逐包处置未执行。
+
+新增409：DISPOSITION_EVIDENCE_MISMATCH、DISPOSITION_EVIDENCE_REQUIRED、DISPOSITION_ALREADY_APPROVED、DISPOSITION_STOCK_CONFLICT。隔离占用不能由库存导入、恢复或新订单覆盖；解除隔离另行处理。零包作废只检查本车待装/出库占用，已完成交接的隔离仍永久保留；尚待替换批次的减少包继续阻止作废。

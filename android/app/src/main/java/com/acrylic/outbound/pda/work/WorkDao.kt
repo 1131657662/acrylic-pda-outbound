@@ -18,7 +18,11 @@ interface WorkDao {
     fun totals(id: String, count: Long, grams: Long, started: String?): Int
     @Query("UPDATE work_line SET actualCount=:count,weightGrams=:grams WHERE assignmentId=:id AND deliveryCode=:code")
     fun lineTotals(id: String, code: String, count: Long, grams: Long): Int
+    @Query("UPDATE work_order SET state='SCANNING' WHERE assignmentId=:id AND state='RECALLED'") fun continueWork(id: String): Int
     @Insert fun insertEvent(row: WorkEvent)
     @Query("UPDATE work_order SET state='FROZEN' WHERE assignmentId=:id AND state='SCANNING'") fun freeze(id: String): Int
     @Query("SELECT * FROM work_event WHERE assignmentId=:id ORDER BY localSeq") fun events(id: String): List<WorkEvent>
+    @Query("SELECT * FROM work_event WHERE originDeviceId=:device ORDER BY localSeq") fun deviceEvents(device: String): List<WorkEvent>
+    @Query("UPDATE work_order SET state='RECALL_PENDING' WHERE assignmentId=:id AND state IN ('SCANNING','FROZEN')") fun recall(id: String): Int
+    @Query("UPDATE work_order SET state='RECALLED' WHERE assignmentId=:id AND state='RECALL_PENDING'") fun recalled(id: String): Int
 }

@@ -27,20 +27,20 @@ function saved(): void { editing.value = false; void load(); }
 watch(() => session.warehouseId, () => { current.value = null; history.value = []; next.value = null; void load(); }, { immediate: true });
 </script>
 <template>
-  <WorkspaceLayout title="出库政策" :busy="editing || busy">
-    <div class="page-title"><div><p class="eyebrow">WAREHOUSE / POLICY</p><h1>出库政策</h1><p class="muted">订单发布时固定政策版本，后续调整保留历史。</p></div>
-      <el-button v-if="canManage" type="primary" :disabled="busy || !!error" @click="editing = true">设置政策</el-button></div>
+  <WorkspaceLayout title="出库规则" :busy="editing || busy">
+    <div class="page-title"><div><p class="eyebrow">WAREHOUSE / POLICY</p><h1>出库规则</h1><p class="muted">订单发布时固定规则版本，后续调整保留历史。</p></div>
+      <el-button v-if="canManage" type="primary" :disabled="busy || !!error" @click="editing = true">设置规则</el-button></div>
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
     <section v-loading="busy" class="panel">
-      <template v-if="current"><h2>当前政策 V{{ current.version }}</h2><p>自动扣库存：<strong>{{ current.autoDeductInventory ? '开启' : '关闭' }}</strong></p></template>
+      <template v-if="current"><h2>当前规则 V{{ current.version }}</h2><p>自动扣库存：<strong>{{ current.autoDeductInventory ? '开启' : '关闭' }}</strong></p></template>
       <el-alert v-else title="尚未设置：请管理员明确选择自动扣库存方式，才能发布订单。" type="warning" :closable="false" />
       <p class="muted">离线授权 48 小时 · 现场分堆作业 · 短装须主管批准 · 扫码自动保存，手输校验后人工确认</p>
     </section>
-    <section class="panel"><h2>政策历史</h2><el-table :data="history"><el-table-column prop="version" label="版本" width="90" />
+    <section class="panel"><h2>规则历史</h2><el-table :data="history"><el-table-column prop="version" label="版本" width="90" />
       <el-table-column label="自动扣库存" width="140"><template #default="{ row }">{{ row.autoDeductInventory ? '开启' : '关闭' }}</template></el-table-column>
       <el-table-column prop="reason" label="原因" min-width="220" /><el-table-column prop="publishedBy" label="操作人" width="140" />
       <el-table-column label="时间" width="190"><template #default="{ row }">{{ localTime(row.publishedAt) }}</template></el-table-column></el-table>
-      <el-button v-if="next" :loading="busy" @click="load(next ?? '')">更多政策版本</el-button>
+      <el-button v-if="next" :loading="busy" @click="load(next ?? '')">更多规则版本</el-button>
     </section>
     <PolicyEditor v-if="editing" :warehouse-id="session.warehouseId" :current="current" @saved="saved" @cancel="editing = false" />
   </WorkspaceLayout>

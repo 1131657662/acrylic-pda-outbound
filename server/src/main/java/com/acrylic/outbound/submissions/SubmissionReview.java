@@ -25,6 +25,7 @@ public class SubmissionReview {
             var body=parse(files.read(hash));result.put("shortShipmentReason",body.path("shortShipmentReason").asText(""));
             result.put("expectedCount",text(body,"expectedCount")).put("expectedWeightGrams",text(body,"expectedWeightGrams"));
             result.set("scans",array(body,"scans"));result.set("captureSummary",body.path("captureSummary"));
+            result.set("dispositions",com.acrylic.outbound.continuation.DispositionProofs.rows(body));
         }
         return result;
     }

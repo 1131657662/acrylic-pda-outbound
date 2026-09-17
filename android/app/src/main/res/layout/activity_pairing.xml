@@ -1,0 +1,17 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:fillViewport="true" android:background="#F3F5F4">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="PDA 短码登记" android:textColor="#19372E" android:textStyle="bold" android:textSize="22sp" />
+        <TextView android:id="@+id/environment" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:paddingTop="8dp" />
+        <TextView android:id="@+id/pairingStatus" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:paddingTop="12dp" android:accessibilityLiveRegion="polite" />
+        <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="4dp" android:indeterminate="true" android:visibility="gone" />
+        <TextView android:id="@+id/pairingCode" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:textSize="36sp" android:textStyle="bold" android:fontFamily="monospace" android:paddingTop="8dp" />
+        <TextView android:id="@+id/expiry" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:textSize="14sp" />
+        <TextView android:id="@+id/proposedIdentity" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:paddingTop="12dp" />
+        <Button android:id="@+id/startPairing" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:layout_marginTop="8dp" android:text="开始登记" />
+        <Button android:id="@+id/confirmPairing" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:layout_marginTop="8dp" android:text="信息无误，确认绑定" android:visibility="gone" />
+        <Button android:id="@+id/retryPairing" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="刷新／恢复原请求" android:visibility="gone" />
+        <Button android:id="@+id/cancelPairing" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="取消此次登记" android:visibility="gone" />
+        <Button android:id="@+id/backToLogin" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回" />
+    </LinearLayout>
+</ScrollView>

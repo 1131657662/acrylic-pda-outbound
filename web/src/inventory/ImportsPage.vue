@@ -61,7 +61,7 @@ watch(() => session.warehouseId, () => {
 
 <template>
   <WorkspaceLayout title="库存导入" :busy="uploading">
-        <div class="page-title"><div><p class="eyebrow">INVENTORY / IMPORT</p><h1>库存文件导入</h1><p class="muted">上传上游最新 sku.txt，核对条码、产品及净重。</p></div><span class="step-label">上传 → 核对差异 → 确认发布</span></div>
+        <div class="page-title"><div><p class="eyebrow">INVENTORY / IMPORT</p><h1>库存导入</h1><p class="muted">上传上游最新 sku.txt，核对条码、产品及净重。</p></div><span class="step-label">上传 → 核对差异 → 确认发布</span></div>
         <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
         <el-empty v-if="!session.warehouseId" description="暂无可访问的仓库，请联系管理员。" />
         <template v-else>

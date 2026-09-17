@@ -1,13 +1,31 @@
 openapi: 3.1.0
 info:
   title: 腈纶包出库系统 — 已实现接口
-  version: 0.7.0
-  description: Web会话、库存/映射、订单及政策、设备登记、PDA双身份认证、独占领取、签名资料准备、正式单冻结提交、短装审批、全局防重和可选自动记账。完整同步、续作、更正及文件生成仍待接入。
+  version: 0.12.0
+  description: 新增PDA短码配对登记、管理员及原机双确认与凭据恢复。Web会话、库存/映射、订单及政策、设备登记、PDA双身份认证、独占领取、签名资料准备、正式单冻结提交、短装审批、全局防重和可选自动记账。新增受控召回、恢复包、原机停止证明与主管零包作废；新增原人原机保留或凭据卸货/隔离续作及新轮次提交；完整同步、换机、更正及文件生成仍待接入。
 servers:
   - url: /api/v1
 security:
   - webSession: []
 paths:
+  /pda/pairing/challenges:
+    $ref: './pairing-paths.yaml#/Challenge'
+  /pda/pairing/applications:
+    $ref: './pairing-paths.yaml#/Create'
+  /pda/pairing/status:
+    $ref: './pairing-paths.yaml#/Status'
+  /pda/pairing/confirm:
+    $ref: './pairing-paths.yaml#/Confirm'
+  /pda/pairing/cancel:
+    $ref: './pairing-paths.yaml#/Cancel'
+  /device-pairings:
+    $ref: './pairing-paths.yaml#/Lookup'
+  /device-pairings/{id}:
+    $ref: './pairing-paths.yaml#/Current'
+  /device-pairings/{id}/approval:
+    $ref: './pairing-paths.yaml#/Approval'
+  /recovery-packages/{id}/disposition-evidence:
+    $ref: './disposition-paths.yaml#/Evidence'
   /auth/csrf:
     get:
       security: []
@@ -624,6 +642,8 @@ paths:
       summary: 按仓库分页查订单，order:read
       parameters:
         - $ref: '#/components/parameters/Limit'
+        - {name: page, in: query, description: 传入时使用页码分页；超出末页时返回实际末页。省略时保持原游标契约, schema: {type: integer, minimum: 1, maximum: 1000000}}
+        - {name: pageSize, in: query, description: 页码模式每页条数；不能同时传非空cursor, schema: {type: integer, enum: [20, 50, 100], default: 20}}
         - {name: status, in: query, schema: {type: string}}
         - {name: search, in: query, description: 完整订单号或完整车号，最多40字符, schema: {type: string, maxLength: 40}}
         - {name: cursor, in: query, description: 服务器返回的创建时间和ID复合游标，修改筛选时重置, schema: {type: string}}
@@ -636,7 +656,10 @@ paths:
                 allOf:
                   - $ref: ./schemas.yaml#/Envelope
                   - properties:
-                      data: {$ref: './order-schemas.yaml#/OrderPage'}
+                      data:
+                        oneOf:
+                          - $ref: './order-schemas.yaml#/OrderPage'
+                          - $ref: './order-schemas.yaml#/NumberedOrderPage'
         default: {$ref: '#/components/responses/Error'}
     post:
       summary: 创建正式订单草稿，order:write；不下发PDA
@@ -915,6 +938,20 @@ paths:
     $ref: './submission-paths.yaml#/OrderQuery'
   /submissions/{id}/review:
     $ref: './submission-paths.yaml#/Review'
+  /orders/{order}/change-requests:
+    $ref: './recall-paths.yaml#/OrderChanges'
+  /pda/assignments/{id}/change-request:
+    $ref: './recall-paths.yaml#/PdaQuery'
+  /pda/recovery-packages:
+    $ref: './recall-paths.yaml#/Upload'
+  /recovery-packages/{id}:
+    $ref: './recall-paths.yaml#/Detail'
+  /pda/change-requests/{id}/stop-ack:
+    $ref: './recall-paths.yaml#/Stop'
+  /change-requests/{id}/resolve:
+    $ref: './recall-paths.yaml#/Resolve'
+  /pda/continuations/{id}/activate:
+    $ref: './continuation-paths.yaml#/Activate'
 components:
   securitySchemes:
     pdaBearer:

@@ -26,7 +26,7 @@ onMounted(() => { void load(); });
 <template>
   <section class="panel"><h2>发布记录</h2><el-alert v-if="error" :title="error" type="error" :closable="false" />
     <el-table v-loading="busy" :data="rows" empty-text="尚未发布"><el-table-column prop="revision" label="计划版本" width="100" />
-      <el-table-column prop="policyVersion" label="政策版本" width="100" /><el-table-column label="自动扣库存" width="120"><template #default="{ row }">{{ row.autoDeductInventory ? '开启' : '关闭' }}</template></el-table-column>
+      <el-table-column prop="policyVersion" label="规则版本" width="100" /><el-table-column label="自动扣库存" width="120"><template #default="{ row }">{{ row.autoDeductInventory ? '开启' : '关闭' }}</template></el-table-column>
       <el-table-column label="计划单任务" width="130"><template #default="{ row }">{{ taskLabel(row.documentStatus) }}</template></el-table-column>
       <el-table-column prop="reason" label="发布原因" min-width="150" /><el-table-column prop="publishedBy" label="操作人" width="120" />
       <el-table-column label="发布时间" width="190"><template #default="{ row }">{{ localTime(row.publishedAt) }}</template></el-table-column>

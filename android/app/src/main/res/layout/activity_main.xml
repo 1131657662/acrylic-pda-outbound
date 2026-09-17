@@ -13,13 +13,17 @@
         <LinearLayout android:id="@+id/setup" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="首次登记设备" android:textSize="20sp" />
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:text="将公钥交给管理员登记，再填写返回的设备编号。登记后绑定本机，换机需办理交接。" android:paddingTop="8dp" />
+                android:text="开始登记后，将8位登记码告知管理员，再在本机核对仓库及设备名称。" android:paddingTop="8dp" />
+            <Button android:id="@+id/pairing" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:text="短码配对登记" />
+            <Button android:id="@+id/advancedSetup" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="高级身份维护" />
+            <LinearLayout android:id="@+id/maintenance" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
             <Button android:id="@+id/copyKey" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="复制本机登记公钥" />
             <EditText android:id="@+id/server" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
                 android:hint="服务器地址 https://…/api/v1/" android:inputType="textUri" android:autofillHints="" />
             <EditText android:id="@+id/device" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
-                android:hint="管理员提供的设备编号" android:inputType="textVisiblePassword" android:autofillHints="" />
+                android:hint="高级维护：管理员提供的设备 UUID" android:inputType="textVisiblePassword" android:autofillHints="" />
             <Button android:id="@+id/bind" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="保存设备绑定" />
+            </LinearLayout>
         </LinearLayout>
         <LinearLayout android:id="@+id/loginPanel" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="人员登录" android:textSize="20sp" android:paddingTop="16dp" />

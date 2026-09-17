@@ -1,0 +1,36 @@
+Evidence:
+  parameters:
+    - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+    - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+  get:
+    summary: 查询原恢复包的独立实物核验凭据（order:read）
+    responses:
+      '200': {$ref: '#/Success'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+  post:
+    summary: 主管逐包批准卸货释放或隔离凭据（order:recall及order:dispose），不立即释放占用
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './disposition-schemas.yaml#/Approve'}
+    responses:
+      '200': {$ref: '#/Success'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Success:
+  description: POST原键原文重试返回原批批准凭据；GET返回本恢复包全部凭据。凭据不可改写。
+  content:
+    application/json:
+      schema:
+        allOf:
+          - {$ref: './schemas.yaml#/Envelope'}
+          - properties:
+              data: {$ref: './disposition-schemas.yaml#/Response'}

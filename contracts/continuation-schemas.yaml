@@ -1,0 +1,96 @@
+Create:
+  type: object
+  required: [type, previousSubmissionId, expectedWorkRound, expectedRevision, recoveryPackageId, requestedDeviceId, reason, dispositions]
+  properties:
+    type: {const: REOPEN_WORK}
+    previousSubmissionId: {type: string, format: uuid}
+    expectedWorkRound: {$ref: './submission-schemas.yaml#/Positive'}
+    expectedRevision: {type: integer, minimum: 1}
+    recoveryPackageId: {type: string, format: uuid}
+    requestedDeviceId: {type: string, format: uuid, description: 当前仅允许原设备及原人员}
+    reason: {type: string, minLength: 1, maxLength: 500}
+    dispositions:
+      type: array
+      description: 必须覆盖恢复包全部有效装载包；RELEASE及QUARANTINE必须引用已批准实物凭据，已批准减少的包不可再选RETAIN
+      items:
+        type: object
+        required: [barcode, action, expectedDispatchCycle]
+        properties:
+          barcode: {type: string}
+          action: {enum: [RETAIN, RELEASE, QUARANTINE]}
+          approvedEvidenceId: {type: string, format: uuid, description: RELEASE或QUARANTINE必填，RETAIN不得填写}
+          expectedDispatchCycle: {$ref: './submission-schemas.yaml#/Positive'}
+Resolve:
+  type: object
+  required: [action, expectedVersion, retainedManifestSha256, physicalEvidence]
+  properties:
+    action: {const: REOPEN_WORK}
+    expectedVersion: {$ref: './submission-schemas.yaml#/Positive'}
+    retainedManifestSha256: {$ref: '#/Hash'}
+    physicalEvidence: {type: string, minLength: 1, maxLength: 1000}
+Request:
+  type: object
+  required: [continuationId, changeRequestId, type, orderId, previousSubmissionId, status, workRound, revision, requestedDeviceId, nextOrderScanSeq, retainedManifestSha256, recoveryPackageId]
+  properties:
+    continuationId: {type: string, format: uuid}
+    changeRequestId: {type: string, format: uuid, description: 续作审批使用此ID，区别于原召回ID}
+    type: {const: REOPEN_WORK}
+    orderId: {type: string, format: uuid}
+    previousSubmissionId: {type: string, format: uuid}
+    status: {enum: [REQUESTED, APPROVED, ACTIVATED, COMPLETED]}
+    workRound: {$ref: './submission-schemas.yaml#/Positive'}
+    revision: {type: integer, minimum: 1}
+    requestedDeviceId: {type: string, format: uuid}
+    nextOrderScanSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    retainedManifestSha256: {$ref: '#/Hash'}
+    recoveryPackageId: {type: string, format: uuid}
+    approval: {$ref: '#/Approval'}
+    dispositions: {$ref: './disposition-schemas.yaml#/Proofs'}
+Approval:
+  type: object
+  required: [continuationId, status, previousSubmissionId, assignmentId, assignmentEpoch, revision, workRound, nextOrderScanSeq, retainedManifestSha256, recoveryPackageId, issuedRecoveryEpoch, expiresAt, mayResumeScanning, stockReleased, signedReceipt]
+  properties:
+    continuationId: {type: string, format: uuid}
+    status: {const: APPROVED}
+    previousSubmissionId: {type: string, format: uuid}
+    assignmentId: {type: string, format: uuid}
+    assignmentEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    revision: {type: integer, minimum: 1}
+    workRound: {$ref: './submission-schemas.yaml#/Positive'}
+    nextOrderScanSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    retainedManifestSha256: {$ref: '#/Hash'}
+    recoveryPackageId: {type: string, format: uuid}
+    issuedRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    expiresAt: {type: string, format: date-time, description: 从本次批准签发起固定48小时，激活和重试不延长}
+    mayResumeScanning: {const: false, description: 必须原机联网核对票据并完成本地原子激活}
+    stockReleased: {const: false}
+    signedReceipt: {$ref: '#/Signature'}
+Activate:
+  type: object
+  required: [payloadSha256, retainedManifestSha256, nextOrderScanSeq, planSha256]
+  properties:
+    payloadSha256: {$ref: '#/Hash'}
+    retainedManifestSha256: {$ref: '#/Hash'}
+    nextOrderScanSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    planSha256: {$ref: '#/Hash'}
+Activation:
+  type: object
+  required: [continuationId, orderId, previousAssignmentId, previousSubmissionId, status, workRound, recoveryPackageId, payloadSha256, retainedManifestSha256, nextOrderScanSeq, issuedRecoveryEpoch, stockReleased, assignment, signedReceipt]
+  properties:
+    continuationId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    previousAssignmentId: {type: string, format: uuid}
+    previousSubmissionId: {type: string, format: uuid}
+    status: {const: ACTIVATED}
+    workRound: {$ref: './submission-schemas.yaml#/Positive'}
+    recoveryPackageId: {type: string, format: uuid}
+    payloadSha256: {$ref: '#/Hash'}
+    retainedManifestSha256: {$ref: '#/Hash'}
+    nextOrderScanSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    issuedRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    stockReleased: {const: false}
+    assignment: {$ref: './assignment-schemas.yaml#/View'}
+    dispositions: {$ref: './disposition-schemas.yaml#/Proofs'}
+    signedReceipt: {$ref: '#/Signature'}
+Hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+Signature: {type: string, description: 'RS256 JWT，aud=acrylic-pda-continuation；receipt绑定除signedReceipt外全部响应字段。'}

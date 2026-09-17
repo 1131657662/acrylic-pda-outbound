@@ -19,15 +19,15 @@ async function save(): Promise<void> {
     await request(`/policies?warehouseId=${props.warehouseId}`, policySchema, { method: 'POST', body,
       headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key } });
     uncertain.value = false; emit('saved');
-  } catch (cause) { uncertain.value = !(cause instanceof ApiError) || cause.status >= 500; error.value = errorText(cause); }
+  } catch (cause) { uncertain.value = !(cause instanceof ApiError) || cause.status >= 500 || cause.status === 401; error.value = errorText(cause); }
   finally { busy.value = false; }
 }
 </script>
 <template>
-  <el-dialog :model-value="true" title="设置出库政策" width="620" :close-on-click-modal="false" :show-close="!busy && !uncertain"
+  <el-dialog :model-value="true" title="设置出库规则" width="620" :close-on-click-modal="false" :show-close="!busy && !uncertain"
     :close-on-press-escape="!busy && !uncertain" @close="emit('cancel')">
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
-    <el-alert v-if="uncertain" title="结果未确认，请重试原政策请求。" type="warning" :closable="false" />
+    <el-alert v-if="uncertain" title="结果未确认，请重试原规则请求。" type="warning" :closable="false" />
     <el-form label-position="top" :disabled="busy || uncertain">
       <el-form-item label="确认出库后，是否由本系统自动扣库存？">
         <el-radio-group v-model="choice" aria-label="自动扣库存选择">
@@ -35,10 +35,10 @@ async function save(): Promise<void> {
         </el-radio-group>
       </el-form-item>
       <p class="muted">关闭后仍记录出库、阻止同包重复出库，但不自动写入扣账流水。本系统不会修改上游的 sku 文件。</p>
-      <el-form-item label="设置原因"><el-input v-model="reason" aria-label="政策设置原因" maxlength="500" type="textarea" /></el-form-item>
-      <p class="muted">本次设置适用于此后发布或重新发布的订单。已经发布的版本保持原政策。</p>
+      <el-form-item label="设置原因"><el-input v-model="reason" aria-label="规则设置原因" maxlength="500" type="textarea" /></el-form-item>
+      <p class="muted">本次设置适用于此后发布或重新发布的订单。已经发布的版本保持原规则。</p>
     </el-form>
     <template #footer><el-button :disabled="busy || uncertain" @click="emit('cancel')">取消</el-button>
-      <el-button type="primary" :loading="busy" :disabled="!choice || !reason.trim()" @click="save">{{ uncertain ? '重试原政策请求' : '保存政策' }}</el-button></template>
+      <el-button type="primary" :loading="busy" :disabled="!choice || !reason.trim()" @click="save">{{ uncertain ? '重试原规则请求' : '保存规则' }}</el-button></template>
   </el-dialog>
 </template>

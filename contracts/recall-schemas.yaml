@@ -1,0 +1,121 @@
+Request:
+  type: object
+  required: [changeRequestId, orderId, assignmentId, revision, serverRecoveryEpoch, status, reason, rowVersion, recovery]
+  properties:
+    changeRequestId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    assignmentId: {type: string, format: uuid}
+    revision: {type: integer, minimum: 1}
+    serverRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    status: {enum: [REQUESTED, STOPPED, CANCELLED]}
+    reason: {type: string, maxLength: 500}
+    rowVersion: {$ref: './submission-schemas.yaml#/Positive'}
+    recovery: {oneOf: [{$ref: '#/Package'}, {type: 'null'}]}
+    stopProof: {$ref: '#/Proof'}
+    resolutionProof: {$ref: '#/Proof'}
+    deviceId: {type: string, format: uuid}
+    continuation: {$ref: './continuation-schemas.yaml#/Request'}
+    previousSubmission:
+      type: object
+      required: [id, status, workRound]
+      properties:
+        id: {type: string, format: uuid}
+        status: {type: string}
+        workRound: {$ref: './submission-schemas.yaml#/Positive'}
+Package:
+  type: object
+  required: [recoveryPackageId, payloadSha256, actualCount, actualWeightGrams, captureHighWatermark, auditThroughSeq, issues]
+  properties:
+    recoveryPackageId: {type: string, format: uuid}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    actualCount: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    actualWeightGrams: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    captureHighWatermark: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    auditThroughSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    issues: {type: array, items: {type: object, required: [code, barcode], properties: {code: {type: string}, barcode: {type: string}}}}
+Proof:
+  type: object
+  required: [changeRequestId, orderId, assignmentId, recoveryPackageId, payloadSha256, status, issuedRecoveryEpoch, actualCount, actualWeightGrams, captureHighWatermark, auditThroughSeq, mayResumeScanning, stockReleased, confirmedAt, signedReceipt]
+  properties:
+    changeRequestId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    assignmentId: {type: string, format: uuid}
+    recoveryPackageId: {type: string, format: uuid}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    status: {enum: [STOPPED, CANCELLED]}
+    issuedRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    actualCount: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    actualWeightGrams: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    captureHighWatermark: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    auditThroughSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    mayResumeScanning: {type: boolean, const: false}
+    stockReleased: {type: boolean, const: false}
+    confirmedAt: {type: string, format: date-time}
+    signedReceipt: {type: string, description: 'RS256; aud=acrylic-pda-recall; receipt绑定除signedReceipt外完整响应。永久证明，不颁发继续作业权限。'}
+Create:
+  type: object
+  required: [type, expectedVersion, reason]
+  properties:
+    type: {const: RECALL}
+    expectedVersion: {$ref: './submission-schemas.yaml#/Positive'}
+    reason: {type: string, minLength: 1, maxLength: 500}
+StopAck:
+  type: object
+  required: [recoveryPackageId, payloadSha256, captureHighWatermark, auditThroughSeq]
+  properties:
+    recoveryPackageId: {type: string, format: uuid}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    captureHighWatermark: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    auditThroughSeq: {$ref: './submission-schemas.yaml#/Positive'}
+Resolve:
+  type: object
+  required: [action, expectedVersion, recoveryPackageId, payloadSha256, physicalEvidence]
+  properties:
+    action: {const: CANCEL_EMPTY}
+    expectedVersion: {$ref: './submission-schemas.yaml#/Positive'}
+    recoveryPackageId: {type: string, format: uuid}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    physicalEvidence: {type: string, minLength: 1, maxLength: 1000}
+Body:
+  type: object
+  required: [schemaVersion, recoveryPackageId, changeRequestId, assignmentId, orderId, assignmentEpoch, orderRevision, inventorySnapshotId, sourceRecoveryEpoch, freezeDeviceId, continuationId, closedAt, expectedCount, expectedWeightGrams, captureHighWatermark, captureSummary, unresolvedCount, captures, scans, events, auditEvents, auditCoverage]
+  properties:
+    schemaVersion: {const: 2}
+    recoveryPackageId: {type: string, format: uuid}
+    changeRequestId: {type: string, format: uuid}
+    assignmentId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    assignmentEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    orderRevision: {type: integer, minimum: 1}
+    inventorySnapshotId: {type: string, format: uuid}
+    sourceRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    freezeDeviceId: {type: string, format: uuid}
+    continuationId: {type: [string, 'null'], format: uuid}
+    workRound: {$ref: './submission-schemas.yaml#/Positive'}
+    startedAt: {type: [string, 'null'], format: date-time}
+    closedAt: {type: string, format: date-time}
+    shortShipmentReason: {type: [string, 'null'], maxLength: 500}
+    expectedCount: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    expectedWeightGrams: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    captureHighWatermark: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    unresolvedCount: {const: '0'}
+    captureSummary:
+      type: object
+      required: [received, saved, voided, invalid, discarded, businessRejected, pending]
+      additionalProperties: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    captures: {type: array, items: {$ref: './submission-evidence.yaml#/Capture'}}
+    scans: {type: array, items: {$ref: './submission-evidence.yaml#/Scan'}}
+    dispositions: {$ref: './disposition-schemas.yaml#/Proofs'}
+    events: {type: array, items: {$ref: './submission-evidence.yaml#/Event'}, description: 本单完整审计，末项必须RECALL_STOPPED且detail为恢复包ID}
+    auditEvents: {type: array, minItems: 1, items: {$ref: './submission-evidence.yaml#/Event'}, description: 本设备自localSeq1至停止事件的全部连续原审计，含其他原授权；不推进清理游标}
+    auditCoverage:
+      type: array
+      minItems: 1
+      maxItems: 1
+      items:
+        type: object
+        required: [originDeviceId, afterSeq, throughSeq]
+        properties:
+          originDeviceId: {type: string, format: uuid}
+          afterSeq: {const: '0'}
+          throughSeq: {$ref: './submission-schemas.yaml#/Positive'}

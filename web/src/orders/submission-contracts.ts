@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { dispositionSchema } from './disposition-contracts';
 
 export const submissionSchema = z.object({
   submissionId: z.string().uuid(), orderId: z.string().uuid(), status: z.enum(['REGISTERED', 'RECEIVING', 'REVIEW_REQUIRED', 'REJECTED', 'ABORTED', 'SUCCEEDED']),
@@ -7,6 +8,7 @@ export const submissionSchema = z.object({
   issues: z.array(z.object({ code: z.string(), barcode: z.string().optional(), reason: z.string().optional() })).optional(),
 });
 export const submissionDetailSchema = z.object({
+  dispositions: z.array(dispositionSchema).default([]),
   submission: submissionSchema.nullable(), shortShipmentReason: z.string().optional(), expectedCount: z.string().optional(), expectedWeightGrams: z.string().optional(),
   scans: z.array(z.object({ captureId: z.string(), orderScanSeq: z.string(), barcode: z.string(), deliveryCode: z.string(),
     weightGrams: z.string(), status: z.enum(['ACTIVE', 'VOID']) })).optional(),
@@ -17,6 +19,6 @@ export function kilograms(grams: string): string {
   return `${value / 1000n}${fraction ? `.${fraction}` : ''}`;
 }
 export const submissionLabel: Record<z.infer<typeof submissionSchema>['status'], string> = {
-  REGISTERED: '提交已登记', RECEIVING: '接收中', REVIEW_REQUIRED: '待主管复核', REJECTED: '已退回，保留占用',
-  ABORTED: '传输已取消，保留占用', SUCCEEDED: '云端已确认出库',
+  REGISTERED: '提交已登记，资料待接收', RECEIVING: '正在接收本单资料', REVIEW_REQUIRED: '后台已接收，待主管处理', REJECTED: '已退回，保留占用',
+  ABORTED: '传输已取消，保留占用', SUCCEEDED: '后台已确认出库',
 };

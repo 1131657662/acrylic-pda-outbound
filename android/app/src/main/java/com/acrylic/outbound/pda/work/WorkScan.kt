@@ -21,4 +21,5 @@ data class WorkGuard(@PrimaryKey val barcode: String, val captureId: String, val
         ForeignKey(entity = WorkCapture::class, parentColumns = ["id"], childColumns = ["captureId"])])
 data class WorkEvent(@PrimaryKey val id: String, val assignmentId: String, val captureId: String?,
     val originDeviceId: String, val operatorId: String, val localSeq: Long, val type: String,
-    val detail: String, val wallMs: Long, val elapsedMs: Long, val boot: Int)
+    val detail: String, val wallMs: Long, val elapsedMs: Long, val boot: Int,
+    @ColumnInfo(defaultValue = "''") val originAssignmentId: String = "")

@@ -6,13 +6,18 @@ import org.json.JSONObject
 import java.util.UUID
 
 class WorkStore(val db: PdaDatabase, val access: WorkAccess) {
-    fun prepared(id: String): PreparedOrder = checkNotNull(db.preparations().order(id)) { "订单资料尚未激活" }
+    fun prepared(id: String): PreparedOrder {
+        val original = checkNotNull(db.preparations().order(id)) { "订单资料尚未激活" }
+        val continuation = db.continuations().current(id) ?: return original
+        return original.copy(assignmentJson = continuation.authorizationJson)
+    }
 
     fun open(id: String) {
         db.runInTransaction {
             val prepared = prepared(id); access.identity(prepared)
             check(db.captures().unresolvedOther(id) == null) { "另一订单仍有未处理输入，请先恢复原订单" }
             if (db.work().order(id) != null) { verifyTotals(id); return@runInTransaction }
+            check(db.recalls().header(id) == null) { "本单已收到召回；缺少原作业记录，请保留资料联系主管" }
             access.authorize(prepared)
             check(db.preparations().count(id) == prepared.rowCount) { "本机资料不完整" }
             val assignment = JSONObject(prepared.assignmentJson)
@@ -45,7 +50,7 @@ class WorkStore(val db: PdaDatabase, val access: WorkAccess) {
         val order = prepared(assignment); val device = checkNotNull(db.work().device(order.deviceId)); val time = access.sample()
         val sequence = device.nextEventSeq
         db.work().insertEvent(WorkEvent(UUID.randomUUID().toString(), assignment, capture, order.deviceId, order.operatorId,
-            sequence, type, detail, time.wall, time.elapsed, time.boot))
+            sequence, type, detail, time.wall, time.elapsed, time.boot, JSONObject(order.assignmentJson).getString("id")))
         db.work().updateDevice(device.copy(nextEventSeq = Math.addExact(sequence, 1)))
         return sequence
     }

@@ -7,7 +7,7 @@ import org.json.JSONObject
 class PdaSession(private val context: Context, val settings: ConnectionSettings,
     private val keys: DeviceKeys, private val vault: SessionVault) {
     fun saved(): JSONObject? = vault.read()
-    fun publicKey(): String = keys.publicKey().also { settings.verifyKey(it) }
+    fun publicKey(): String = keys.publicKey(settings.device.isBlank()).also { settings.verifyKey(it) }
     fun network() = PdaNetwork(settings.server)
 
     fun login(username: String, password: String) {

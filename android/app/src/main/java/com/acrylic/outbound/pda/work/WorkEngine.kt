@@ -8,7 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 data class WorkUi(val order: WorkOrder? = null, val lines: List<WorkLine> = emptyList(),
     val candidate: WorkCapture? = null, val recent: List<WorkScan> = emptyList(), val pending: Int = 0,
-    val queued: Int = 0, val blocked: String = "", val message: String = "正在恢复作业资料", val ready: Boolean = false)
+    val queued: Int = 0, val blocked: String = "", val message: String = "正在恢复作业资料", val ready: Boolean = false,
+    val dispositions: Map<String, String> = emptyMap())
 
 /** Application-owned single writer. Pausing the page stops automatic processing, not durable evidence. */
 class WorkEngine(private val store: WorkStore, private val sound: (String) -> Unit) {
@@ -22,6 +23,7 @@ class WorkEngine(private val store: WorkStore, private val sound: (String) -> Un
     @Volatile private var fault = ""
     @Volatile private var assignment = ""
     @Volatile private var requested = ""
+    private val recalls = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     private val processor = WorkProcessor(store) { type, _ ->
         if (foreground) sound(type)
         mutable.update { it.copy(message = if (type == "SAVED") "已保存到本机，尚未上传" else "本包未保存，请确认处理结果") }
@@ -43,7 +45,9 @@ class WorkEngine(private val store: WorkStore, private val sound: (String) -> Un
             if (fault.isEmpty()) processor.drain(id) { active(id) }
         }
     }
-    fun pause() { foreground = false }
+    fun pause() { foreground = false; mutable.update { it.copy(ready = false) } }
+    fun pauseForRecall(id: String) { recalls.add(id); if (requested == id) { foreground = false; mutable.update { it.copy(ready = false) } } }
+    fun resumedContinuation(id: String) { recalls.remove(id); if (requested == id) fault = "" }
     fun receive(raw: String, source: String): Boolean {
         if (!foreground || assignment.isEmpty() || assignment != requested || fault.isNotEmpty() || !mutable.value.ready) {
             sound("ERROR"); return false
@@ -77,7 +81,7 @@ class WorkEngine(private val store: WorkStore, private val sound: (String) -> Un
         mutable.update { it.copy(blocked = fault, ready = false) }; sound("ERROR")
     }
     fun close() { foreground = false; scope.cancel(); dispatcher.close() }
-    private fun active(id: String) = foreground && requested == id && fault.isEmpty()
+    private fun active(id: String) = foreground && requested == id && fault.isEmpty() && !recalls.contains(id)
 
     private fun enqueue(action: () -> Unit): Boolean {
         queued.incrementAndGet()
@@ -102,7 +106,8 @@ class WorkEngine(private val store: WorkStore, private val sound: (String) -> Un
         val failure = store.db.captures().failure(assignment)
         mutable.update { it.copy(order = store.db.work().order(assignment), lines = store.db.work().lines(assignment),
             candidate = failure ?: store.db.captures().pending(assignment), recent = store.db.scans().recent(assignment),
+            dispositions = store.db.dispositions().all(assignment).associate { row -> row.captureId to row.action },
             pending = store.db.captures().pendingCount(assignment), queued = queued.get(), blocked = fault.ifEmpty { authError },
-            ready = assignment == requested && fault.isEmpty() && authError.isEmpty() && store.db.work().order(assignment)?.state == "SCANNING") }
+            ready = active(assignment) && authError.isEmpty() && store.db.work().order(assignment)?.state == "SCANNING") }
     }
 }

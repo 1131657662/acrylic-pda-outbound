@@ -27,8 +27,8 @@ function saved(): void { editor.value = false; historyKey.value++; void load(); 
 watch(() => session.warehouseId, () => { rows.value = []; next.value = null; editor.value = false; historyCode.value = ''; void load(); }, { immediate: true });
 </script>
 <template>
-  <WorkspaceLayout title="发货代码映射" :busy="editor">
-    <div class="page-title"><div><p class="eyebrow">INVENTORY / MAPPINGS</p><h1>发货代码映射</h1><p class="muted">维护代码与产品的对应关系，每次变更保留版本和原因。</p></div>
+  <WorkspaceLayout title="发货代码与产品" :busy="editor">
+    <div class="page-title"><div><p class="eyebrow">INVENTORY / MAPPINGS</p><h1>发货代码与产品</h1><p class="muted">维护代码与产品的对应关系，每次变更保留版本和原因。</p></div>
       <el-button v-if="canEdit && session.warehouseId" type="primary" @click="edit(null)">新增映射</el-button></div>
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
     <section class="panel"><el-table v-loading="busy" :data="rows" empty-text="暂无映射，可在库存发布时确认建立">

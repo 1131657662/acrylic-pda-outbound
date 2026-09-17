@@ -11,6 +11,7 @@ public final class OrderViews {
     public record Revision(String id, int revision, String inventorySnapshotId, String mappingRevision,
         String vehicleNo, String containerNo, String notes, String plannedTotal, String reason, String createdBy, String createdAt) { }
     public record Detail(Summary order, Revision plan, List<Line> lines) { }
+    public record NumberedPage(List<Summary> items,long total,int page,int pageSize) { }
     public record Receipt(String id, String orderId, int revision, String rowVersion, String status) { }
     public record Event(String id, String type, String actor, String details, String serverTime) { }
 }

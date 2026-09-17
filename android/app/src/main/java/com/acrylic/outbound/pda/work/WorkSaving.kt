@@ -5,6 +5,7 @@ class WorkSaving(private val store: WorkStore) {
         store.db.runInTransaction {
             val c = store.db.captures().get(id) ?: return@runInTransaction
             val assignment = c.context.assignmentId
+            check(store.db.work().order(assignment)?.state == "SCANNING") { "本单已停止，请核对召回" }
             if (store.db.captures().failure(assignment) != null || store.db.captures().pending(assignment)?.id != id) return@runInTransaction
             if (c.state != "WAITING_CONFIRM" || c.context.confirmationPolicy != "MANUAL") return@runInTransaction
             val time = store.access.authorize(store.prepared(assignment)).toString()
@@ -20,6 +21,7 @@ class WorkSaving(private val store: WorkStore) {
             val c = checkNotNull(store.db.captures().get(id))
             check(c.state == "CONFIRM_REQUESTED" && c.confirmedAt != null)
             val assignment = c.context.assignmentId
+            check(store.db.work().order(assignment)?.state == "SCANNING") { "本单已停止，请核对召回" }
             check(store.db.captures().failure(assignment) == null && store.db.captures().pending(assignment)?.id == id)
             val validation = WorkValidation(store).validate(c)
             result = if (validation.error == null) commit(validation) else reject(c, validation.error)

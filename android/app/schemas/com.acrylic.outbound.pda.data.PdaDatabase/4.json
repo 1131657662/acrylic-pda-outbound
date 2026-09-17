@@ -1,0 +1,1167 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "511c6c75c601f5d6df33ddfa6569a09f",
+    "entities": [
+      {
+        "tableName": "prepared_order",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`assignmentId` TEXT NOT NULL, `orderId` TEXT NOT NULL, `operatorId` TEXT NOT NULL, `deviceId` TEXT NOT NULL, `bundleId` TEXT NOT NULL, `manifestSha256` TEXT NOT NULL, `assignmentJson` TEXT NOT NULL, `manifestJson` TEXT NOT NULL, `planJson` TEXT NOT NULL, `signingKeyJson` TEXT NOT NULL, `signedManifest` TEXT NOT NULL, `activatedAt` TEXT NOT NULL, `rowCount` INTEGER NOT NULL, `ackAt` TEXT, PRIMARY KEY(`assignmentId`))",
+        "fields": [
+          {
+            "fieldPath": "assignmentId",
+            "columnName": "assignmentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orderId",
+            "columnName": "orderId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operatorId",
+            "columnName": "operatorId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceId",
+            "columnName": "deviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bundleId",
+            "columnName": "bundleId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "manifestSha256",
+            "columnName": "manifestSha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assignmentJson",
+            "columnName": "assignmentJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "manifestJson",
+            "columnName": "manifestJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "planJson",
+            "columnName": "planJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "signingKeyJson",
+            "columnName": "signingKeyJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "signedManifest",
+            "columnName": "signedManifest",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "activatedAt",
+            "columnName": "activatedAt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rowCount",
+            "columnName": "rowCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ackAt",
+            "columnName": "ackAt",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "assignmentId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_prepared_order_orderId",
+            "unique": true,
+            "columnNames": [
+              "orderId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_prepared_order_orderId` ON `${TABLE_NAME}` (`orderId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "prepared_bale",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`assignmentId` TEXT NOT NULL, `barcode` TEXT NOT NULL, `baleId` TEXT NOT NULL, `deliveryCode` TEXT NOT NULL, `model` TEXT NOT NULL, `name` TEXT NOT NULL, `rawWeight` TEXT NOT NULL, `weightGrams` INTEGER NOT NULL, `dispatchCycle` INTEGER NOT NULL, `available` INTEGER NOT NULL, PRIMARY KEY(`assignmentId`, `barcode`), FOREIGN KEY(`assignmentId`) REFERENCES `prepared_order`(`assignmentId`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "assignmentId",
+            "columnName": "assignmentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "barcode",
+            "columnName": "barcode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "baleId",
+            "columnName": "baleId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deliveryCode",
+            "columnName": "deliveryCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "model",
+            "columnName": "model",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rawWeight",
+            "columnName": "rawWeight",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weightGrams",
+            "columnName": "weightGrams",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dispatchCycle",
+            "columnName": "dispatchCycle",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "available",
+            "columnName": "available",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "assignmentId",
+            "barcode"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_prepared_bale_assignmentId_baleId",
+            "unique": true,
+            "columnNames": [
+              "assignmentId",
+              "baleId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_prepared_bale_assignmentId_baleId` ON `${TABLE_NAME}` (`assignmentId`, `baleId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "prepared_order",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assignmentId"
+            ],
+            "referencedColumns": [
+              "assignmentId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "claim_intent",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`orderId` TEXT NOT NULL, `userId` TEXT NOT NULL, `deviceId` TEXT NOT NULL, `key` TEXT NOT NULL, `body` TEXT NOT NULL, `recoveryEpoch` TEXT NOT NULL, PRIMARY KEY(`orderId`))",
+        "fields": [
+          {
+            "fieldPath": "orderId",
+            "columnName": "orderId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceId",
+            "columnName": "deviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "key",
+            "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "body",
+            "columnName": "body",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recoveryEpoch",
+            "columnName": "recoveryEpoch",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "orderId"
+          ]
+        }
+      },
+      {
+        "tableName": "work_order",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`assignmentId` TEXT NOT NULL, `orderId` TEXT NOT NULL, `vehicleNo` TEXT NOT NULL, `plannedTotal` INTEGER NOT NULL, `nextOrderScanSeq` INTEGER NOT NULL, `actualCount` INTEGER NOT NULL, `weightGrams` INTEGER NOT NULL, `startedAt` TEXT, `state` TEXT NOT NULL, PRIMARY KEY(`assignmentId`), FOREIGN KEY(`assignmentId`) REFERENCES `prepared_order`(`assignmentId`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "assignmentId",
+            "columnName": "assignmentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orderId",
+            "columnName": "orderId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vehicleNo",
+            "columnName": "vehicleNo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plannedTotal",
+            "columnName": "plannedTotal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextOrderScanSeq",
+            "columnName": "nextOrderScanSeq",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actualCount",
+            "columnName": "actualCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weightGrams",
+            "columnName": "weightGrams",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startedAt",
+            "columnName": "startedAt",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "assignmentId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_work_order_orderId",
+            "unique": true,
+            "columnNames": [
+              "orderId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_work_order_orderId` ON `${TABLE_NAME}` (`orderId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "prepared_order",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assignmentId"
+            ],
+            "referencedColumns": [
+              "assignmentId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "work_line",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`assignmentId` TEXT NOT NULL, `deliveryCode` TEXT NOT NULL, `model` TEXT NOT NULL, `name` TEXT NOT NULL, `plannedCount` INTEGER NOT NULL, `actualCount` INTEGER NOT NULL, `weightGrams` INTEGER NOT NULL, PRIMARY KEY(`assignmentId`, `deliveryCode`), FOREIGN KEY(`assignmentId`) REFERENCES `work_order`(`assignmentId`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "assignmentId",
+            "columnName": "assignmentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deliveryCode",
+            "columnName": "deliveryCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "model",
+            "columnName": "model",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plannedCount",
+            "columnName": "plannedCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actualCount",
+            "columnName": "actualCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weightGrams",
+            "columnName": "weightGrams",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "assignmentId",
+            "deliveryCode"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "work_order",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assignmentId"
+            ],
+            "referencedColumns": [
+              "assignmentId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "work_device",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`deviceId` TEXT NOT NULL, `nextCaptureSeq` INTEGER NOT NULL, `nextEventSeq` INTEGER NOT NULL, PRIMARY KEY(`deviceId`))",
+        "fields": [
+          {
+            "fieldPath": "deviceId",
+            "columnName": "deviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextCaptureSeq",
+            "columnName": "nextCaptureSeq",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextEventSeq",
+            "columnName": "nextEventSeq",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "deviceId"
+          ]
+        }
+      },
+      {
+        "tableName": "work_capture",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `state` TEXT NOT NULL, `error` TEXT NOT NULL, `confirmedAt` TEXT, `failureAckAt` TEXT, `assignmentId` TEXT NOT NULL, `orderId` TEXT NOT NULL, `originDeviceId` TEXT NOT NULL, `operatorId` TEXT NOT NULL, `warehouseId` TEXT NOT NULL, `orderScanSeq` INTEGER NOT NULL, `deviceCaptureSeq` INTEGER NOT NULL, `rawInput` TEXT NOT NULL, `barcode` TEXT NOT NULL, `inputSource` TEXT NOT NULL, `confirmationPolicy` TEXT NOT NULL, `receivedWallMs` INTEGER NOT NULL, `receivedElapsedMs` INTEGER NOT NULL, `receivedBoot` INTEGER NOT NULL, `snapshotId` TEXT NOT NULL, `expectedDispatchCycle` INTEGER, `sourceRecoveryEpoch` TEXT NOT NULL, `authorizationId` TEXT NOT NULL, `assignmentEpoch` TEXT NOT NULL, `orderRevision` INTEGER NOT NULL, `inputRevision` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`assignmentId`) REFERENCES `work_order`(`assignmentId`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "error",
+            "columnName": "error",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "confirmedAt",
+            "columnName": "confirmedAt",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "failureAckAt",
+            "columnName": "failureAckAt",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "context.assignmentId",
+            "columnName": "assignmentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.orderId",
+            "columnName": "orderId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.originDeviceId",
+            "columnName": "originDeviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.operatorId",
+            "columnName": "operatorId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.warehouseId",
+            "columnName": "warehouseId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.orderScanSeq",
+            "columnName": "orderScanSeq",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.deviceCaptureSeq",
+            "columnName": "deviceCaptureSeq",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.rawInput",
+            "columnName": "rawInput",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.barcode",
+            "columnName": "barcode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.inputSource",
+            "columnName": "inputSource",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.confirmationPolicy",
+            "columnName": "confirmationPolicy",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.receivedWallMs",
+            "columnName": "receivedWallMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.receivedElapsedMs",
+            "columnName": "receivedElapsedMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.receivedBoot",
+            "columnName": "receivedBoot",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.snapshotId",
+            "columnName": "snapshotId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.expectedDispatchCycle",
+            "columnName": "expectedDispatchCycle",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "context.sourceRecoveryEpoch",
+            "columnName": "sourceRecoveryEpoch",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.authorizationId",
+            "columnName": "authorizationId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.assignmentEpoch",
+            "columnName": "assignmentEpoch",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.orderRevision",
+            "columnName": "orderRevision",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "context.inputRevision",
+            "columnName": "inputRevision",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_work_capture_originDeviceId_deviceCaptureSeq",
+            "unique": true,
+            "columnNames": [
+              "originDeviceId",
+              "deviceCaptureSeq"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_work_capture_originDeviceId_deviceCaptureSeq` ON `${TABLE_NAME}` (`originDeviceId`, `deviceCaptureSeq`)"
+          },
+          {
+            "name": "index_work_capture_orderId_orderScanSeq",
+            "unique": true,
+            "columnNames": [
+              "orderId",
+              "orderScanSeq"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_work_capture_orderId_orderScanSeq` ON `${TABLE_NAME}` (`orderId`, `orderScanSeq`)"
+          },
+          {
+            "name": "index_work_capture_assignmentId_orderScanSeq",
+            "unique": false,
+            "columnNames": [
+              "assignmentId",
+              "orderScanSeq"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_capture_assignmentId_orderScanSeq` ON `${TABLE_NAME}` (`assignmentId`, `orderScanSeq`)"
+          },
+          {
+            "name": "index_work_capture_assignmentId_state_orderScanSeq",
+            "unique": false,
+            "columnNames": [
+              "assignmentId",
+              "state",
+              "orderScanSeq"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_capture_assignmentId_state_orderScanSeq` ON `${TABLE_NAME}` (`assignmentId`, `state`, `orderScanSeq`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "work_order",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assignmentId"
+            ],
+            "referencedColumns": [
+              "assignmentId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "work_scan",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`captureId` TEXT NOT NULL, `assignmentId` TEXT NOT NULL, `orderScanSeq` INTEGER NOT NULL, `barcode` TEXT NOT NULL, `baleId` TEXT NOT NULL, `deliveryCode` TEXT NOT NULL, `model` TEXT NOT NULL, `name` TEXT NOT NULL, `rawWeight` TEXT NOT NULL, `weightGrams` INTEGER NOT NULL, `expectedDispatchCycle` INTEGER NOT NULL, `savedAt` TEXT NOT NULL, `localSeq` INTEGER NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`captureId`), FOREIGN KEY(`captureId`) REFERENCES `work_capture`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`assignmentId`) REFERENCES `work_order`(`assignmentId`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "captureId",
+            "columnName": "captureId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assignmentId",
+            "columnName": "assignmentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orderScanSeq",
+            "columnName": "orderScanSeq",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "barcode",
+            "columnName": "barcode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "baleId",
+            "columnName": "baleId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deliveryCode",
+            "columnName": "deliveryCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "model",
+            "columnName": "model",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rawWeight",
+            "columnName": "rawWeight",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weightGrams",
+            "columnName": "weightGrams",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expectedDispatchCycle",
+            "columnName": "expectedDispatchCycle",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "savedAt",
+            "columnName": "savedAt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localSeq",
+            "columnName": "localSeq",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "captureId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_work_scan_assignmentId_orderScanSeq",
+            "unique": true,
+            "columnNames": [
+              "assignmentId",
+              "orderScanSeq"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_work_scan_assignmentId_orderScanSeq` ON `${TABLE_NAME}` (`assignmentId`, `orderScanSeq`)"
+          },
+          {
+            "name": "index_work_scan_assignmentId_status_orderScanSeq",
+            "unique": false,
+            "columnNames": [
+              "assignmentId",
+              "status",
+              "orderScanSeq"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_scan_assignmentId_status_orderScanSeq` ON `${TABLE_NAME}` (`assignmentId`, `status`, `orderScanSeq`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "work_capture",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "captureId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "work_order",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assignmentId"
+            ],
+            "referencedColumns": [
+              "assignmentId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "work_guard",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`barcode` TEXT NOT NULL, `captureId` TEXT NOT NULL, `assignmentId` TEXT NOT NULL, `dispatchCycle` INTEGER NOT NULL, PRIMARY KEY(`barcode`), FOREIGN KEY(`captureId`) REFERENCES `work_scan`(`captureId`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "barcode",
+            "columnName": "barcode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "captureId",
+            "columnName": "captureId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assignmentId",
+            "columnName": "assignmentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dispatchCycle",
+            "columnName": "dispatchCycle",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "barcode"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_work_guard_captureId",
+            "unique": true,
+            "columnNames": [
+              "captureId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_work_guard_captureId` ON `${TABLE_NAME}` (`captureId`)"
+          },
+          {
+            "name": "index_work_guard_assignmentId",
+            "unique": false,
+            "columnNames": [
+              "assignmentId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_guard_assignmentId` ON `${TABLE_NAME}` (`assignmentId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "work_scan",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "captureId"
+            ],
+            "referencedColumns": [
+              "captureId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "work_event",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `assignmentId` TEXT NOT NULL, `captureId` TEXT, `originDeviceId` TEXT NOT NULL, `operatorId` TEXT NOT NULL, `localSeq` INTEGER NOT NULL, `type` TEXT NOT NULL, `detail` TEXT NOT NULL, `wallMs` INTEGER NOT NULL, `elapsedMs` INTEGER NOT NULL, `boot` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`assignmentId`) REFERENCES `work_order`(`assignmentId`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`captureId`) REFERENCES `work_capture`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assignmentId",
+            "columnName": "assignmentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "captureId",
+            "columnName": "captureId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "originDeviceId",
+            "columnName": "originDeviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operatorId",
+            "columnName": "operatorId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localSeq",
+            "columnName": "localSeq",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "detail",
+            "columnName": "detail",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "wallMs",
+            "columnName": "wallMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "elapsedMs",
+            "columnName": "elapsedMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "boot",
+            "columnName": "boot",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_work_event_originDeviceId_localSeq",
+            "unique": true,
+            "columnNames": [
+              "originDeviceId",
+              "localSeq"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_work_event_originDeviceId_localSeq` ON `${TABLE_NAME}` (`originDeviceId`, `localSeq`)"
+          },
+          {
+            "name": "index_work_event_assignmentId_localSeq",
+            "unique": false,
+            "columnNames": [
+              "assignmentId",
+              "localSeq"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_event_assignmentId_localSeq` ON `${TABLE_NAME}` (`assignmentId`, `localSeq`)"
+          },
+          {
+            "name": "index_work_event_captureId",
+            "unique": false,
+            "columnNames": [
+              "captureId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_event_captureId` ON `${TABLE_NAME}` (`captureId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "work_order",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assignmentId"
+            ],
+            "referencedColumns": [
+              "assignmentId"
+            ]
+          },
+          {
+            "table": "work_capture",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "captureId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "local_submission",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `assignmentId` TEXT NOT NULL, `payload` TEXT NOT NULL, `sha256` TEXT NOT NULL, `state` TEXT NOT NULL, `receipt` TEXT, `error` TEXT NOT NULL, `autoRetry` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`assignmentId`) REFERENCES `work_order`(`assignmentId`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assignmentId",
+            "columnName": "assignmentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sha256",
+            "columnName": "sha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receipt",
+            "columnName": "receipt",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "error",
+            "columnName": "error",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "autoRetry",
+            "columnName": "autoRetry",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_local_submission_assignmentId",
+            "unique": true,
+            "columnNames": [
+              "assignmentId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_local_submission_assignmentId` ON `${TABLE_NAME}` (`assignmentId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "work_order",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assignmentId"
+            ],
+            "referencedColumns": [
+              "assignmentId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "local_recall",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `assignmentId` TEXT NOT NULL, `requestJson` TEXT NOT NULL, `packageId` TEXT, `payload` TEXT, `sha256` TEXT, `state` TEXT NOT NULL, `proof` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assignmentId",
+            "columnName": "assignmentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "requestJson",
+            "columnName": "requestJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "packageId",
+            "columnName": "packageId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sha256",
+            "columnName": "sha256",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "proof",
+            "columnName": "proof",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_local_recall_assignmentId",
+            "unique": true,
+            "columnNames": [
+              "assignmentId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_local_recall_assignmentId` ON `${TABLE_NAME}` (`assignmentId`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '511c6c75c601f5d6df33ddfa6569a09f')"
+    ]
+  }
+}

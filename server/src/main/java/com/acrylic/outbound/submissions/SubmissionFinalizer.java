@@ -23,6 +23,7 @@ public class SubmissionFinalizer {
         equal(text(body,"policyVersion"),publication.policyVersion(),"原出库政策版本不符");
         require(body.path("autoDeductInventory").isBoolean() && body.path("autoDeductInventory").booleanValue()==publication.autoDeduct(),"固定扣账政策不符");
         issues.addAll(stock.reserve(head,value));
+        if(head.control().continuation()!=null && !issues.isEmpty())throw new BusinessException(409,"CONTINUATION_RECONCILIATION_REQUIRED","续作库存或授权存在冲突，保留占用并先对账");
         if(approval.approved() && !issues.isEmpty()) throw new BusinessException(409,"SUBMISSION_STILL_CONFLICTED","原周期、库存或身份冲突尚未解决，不能批准出库");
         if(value.shortShipment() && !approval.approved()) issues.add(object().put("code","SHORT_SHIPMENT_APPROVAL_REQUIRED").put("reason",text(body,"shortShipmentReason")));
         if(issues.isEmpty()) return accounting.commit(head,body,value,approval.actor());
@@ -39,7 +40,7 @@ public class SubmissionFinalizer {
         if(!Boolean.TRUE.equals(status) || !assignment.status().equals("ACTIVE")) issues.add(object().put("code","OFFLINE_AUTH_REAUTHORIZATION_REQUIRED"));
         if(!assignment.serverRecoveryEpoch().equals(head.control().epoch())) issues.add(object().put("code","ORDER_RECOVERY_REQUIRED"));
         if(assignment.downloadAckAt()==null) issues.add(object().put("code","DOWNLOAD_ACK_REQUIRED"));
-        int valid=jdbc.queryForObject("SELECT COUNT(*) FROM outbound_order WHERE id=? AND current_revision=? AND status IN ('ASSIGNED','REVIEW_REQUIRED')",
+        int valid=jdbc.queryForObject("SELECT COUNT(*) FROM outbound_order WHERE id=? AND current_revision=? AND status IN ('ASSIGNED','REVIEW_REQUIRED','CONTINUING')",
             Integer.class,Ids.bytes(head.control().order()),assignment.revision());
         if(valid!=1) issues.add(object().put("code","ORDER_STATE_CONFLICT"));
         return issues;

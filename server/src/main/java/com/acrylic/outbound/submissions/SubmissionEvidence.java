@@ -9,28 +9,39 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 
 @Component
 public class SubmissionEvidence {
+    private final com.acrylic.outbound.continuation.ContinuationEvidence continuations;
+    public SubmissionEvidence(com.acrylic.outbound.continuation.ContinuationEvidence continuations) { this.continuations=continuations; }
     public void validate(SubmissionStore.Head head,AssignmentStore.View a,JsonNode body) {
-        equal(body.path("schemaVersion").intValue(),2,"提交协议版本无效");equal(uuid(body,"submissionId"),head.control().id(),"提交ID不一致");
+        validate(new Context(head.control().id(),head.control().assignment(),head.control().device(),head.actor(),head.warehouse()),a,body,false);
+    }
+    public void validateRecovery(AssignmentStore.View a,UUID warehouse,JsonNode body) {
+        validate(new Context(uuid(body,"recoveryPackageId"),UUID.fromString(a.id()),UUID.fromString(a.deviceId()),UUID.fromString(a.operatorId()),warehouse),a,body,true);
+    }
+    private record Context(UUID id,UUID assignment,UUID device,UUID actor,UUID warehouse) {}
+    private void validate(Context context,AssignmentStore.View a,JsonNode body,boolean recovery) {
+        equal(body.path("schemaVersion").intValue(),2,"证据协议版本无效");equal(uuid(body,recovery?"recoveryPackageId":"submissionId"),context.id(),"证据ID不一致");
         equal(body.path("orderRevision").intValue(),a.revision(),"原计划版本不一致");equal(text(body,"assignmentEpoch"),a.epoch(),"授权代次不一致");
         equal(text(body,"inventorySnapshotId"),a.inventorySnapshotId(),"固定库存版本不一致");
-        require(body.path("continuationId").isNull(),"续作必须使用专用票据");
+        var origins=continuations.origins(a,body);
         Instant closed=time(text(body,"closedAt"));require(!closed.isAfter(Instant.now().plusSeconds(300)),"结单时间超前");
-        var captures=captures(head,a,body);var events=events(head,body,captures);
+        var captures=captures(context,a,body,origins);var events=events(context,body,captures,recovery,origins);
+        var excluded=com.acrylic.outbound.continuation.DispositionProofs.excluded(body);
         var scanIds=new HashSet<UUID>();var activeCodes=new HashSet<String>();long saved=0,voided=0,last=0;
         for(var scan:array(body,"scans")) {
             UUID id=uuid(scan,"captureId");require(scanIds.add(id),"重复保存记录");JsonNode capture=captures.get(id);
             require(capture!=null && text(capture,"state").equals("COMMITTED"),"保存记录缺少有效原输入");
             long seq=number(scan,"orderScanSeq");require(seq>last,"明细必须保持原扫码顺序");last=seq;
-            scan(a,scan,capture,events);require(!time(text(scan,"savedAt")).isAfter(closed),"保存时间晚于结单");
-            if(text(scan,"status").equals("ACTIVE")) { saved++;require(activeCodes.add(text(scan,"barcode")),"有效明细重复条码"); }
+            scan(origins.get(text(capture,"assignmentId")),scan,capture,events);require(!time(text(scan,"savedAt")).isAfter(closed),"保存时间晚于结单");
+            if(text(scan,"status").equals("ACTIVE")) { if(!excluded.contains(id.toString())) { saved++;require(activeCodes.add(text(scan,"barcode")),"有效明细重复条码"); } }
             else { equal(text(scan,"status"),"VOID","明细状态无效");voided++;require(has(events,id,"VOID"),"撤销缺少实物核对审计"); }
         }
         for(var entry:captures.entrySet()) require(text(entry.getValue(),"state").equals("COMMITTED")==scanIds.contains(entry.getKey()),"输入与保存明细不完整");
-        summary(body,captures.values(),saved,voided);require(saved>0,"整单0包不能确认出库");
+        summary(body,captures.values(),saved,voided);require(recovery || saved>0,"整单0包不能确认出库");
     }
-    private Map<UUID,JsonNode> captures(SubmissionStore.Head h,AssignmentStore.View a,JsonNode body) {
-        var result=new LinkedHashMap<UUID,JsonNode>();var deviceSeqs=new HashSet<Long>();long seq=Long.parseLong(a.startOrderScanSeq()),previousDevice=0;
+    private Map<UUID,JsonNode> captures(Context h,AssignmentStore.View current,JsonNode body,Map<String,AssignmentStore.View> origins) {
+        var result=new LinkedHashMap<UUID,JsonNode>();var deviceSeqs=new HashSet<Long>();long seq=1,previousDevice=0;
         for(var c:array(body,"captures")) {
+            var a=origins.get(text(c,"assignmentId"));require(a!=null,"输入原授权不在核验来源中");
             UUID id=uuid(c,"id");require(result.put(id,c)==null,"原输入ID重复");
             equal(number(c,"orderScanSeq"),seq++,"输入序号有缺口或乱序");long d=number(c,"deviceCaptureSeq");require(d>previousDevice && deviceSeqs.add(d),"设备输入序号重复或乱序");previousDevice=d;
             equal(text(c,"assignmentId"),a.id(),"输入原授权错误");equal(text(c,"orderId"),a.orderId(),"输入原订单错误");
@@ -49,11 +60,11 @@ public class SubmissionEvidence {
         equal(number(body,"captureHighWatermark"),seq-1,"输入高水位错误");return result;
     }
     private record EventIndex(Map<UUID,Set<String>> types,Map<Long,JsonNode> sequences) {}
-    private EventIndex events(SubmissionStore.Head h,JsonNode body,Map<UUID,JsonNode> captures) {
+    private EventIndex events(Context h,JsonNode body,Map<UUID,JsonNode> captures,boolean recovery,Map<String,AssignmentStore.View> origins) {
         var result=new EventIndex(new HashMap<>(),new HashMap<>());var ids=new HashSet<UUID>();long previous=0;JsonNode last=null;
         for(var e:array(body,"events")) {
             require(ids.add(uuid(e,"id")),"审计ID重复");long seq=number(e,"localSeq");require(seq>previous,"本单审计顺序错误");previous=seq;
-            equal(text(e,"assignmentId"),h.control().assignment().toString(),"审计订单来源错误");equal(text(e,"originDeviceId"),h.control().device().toString(),"审计设备错误");
+            require(origins.containsKey(text(e,"assignmentId")),"审计订单来源错误");equal(text(e,"originDeviceId"),h.device().toString(),"审计设备错误");
             equal(text(e,"operatorId"),h.actor().toString(),"审计人员错误");number(e,"wallMs");number(e,"elapsedMs");
             require(e.path("boot").isIntegralNumber() && text(e,"detail").length()<=500,"审计字段错误");
             if(!e.path("captureId").isNull()) {
@@ -62,9 +73,10 @@ public class SubmissionEvidence {
             }
             result.sequences().put(seq,e);last=e;
         }
-        require(last!=null && text(last,"type").equals("FROZEN"),"缺少冻结审计");
+        require(last!=null && text(last,"type").equals(recovery?"RECALL_STOPPED":"FROZEN"),"缺少停止/冻结审计");
+        equal(text(last,"assignmentId"),h.assignment().toString(),"最后审计须使用当前授权");
         require(last.path("captureId").isNull(),"冻结审计不可关联单条输入");
-        equal(text(last,"detail"),h.control().id().toString(),"冻结审计批次错误");
+        equal(text(last,"detail"),h.id().toString(),"冻结审计批次错误");
         for(var entry:captures.entrySet()) {
             UUID id=entry.getKey();String state=text(entry.getValue(),"state");require(has(result,id,"RECEIVED"),"缺少接收审计");
             require(has(result,id,state.equals("COMMITTED")?"SAVED":state),"缺少输入终态审计");

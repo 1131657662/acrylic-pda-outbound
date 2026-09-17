@@ -2,9 +2,11 @@
 
 完整系统以 [V2.3 设计](docs/系统设计方案与开发计划-V2.3.md) 为准。**2026-09-16 Demo已按Q17约定范围验收完成：按键映射、B模式现场复验、真实断电恢复全部通过。**实际操作及取下电池重启后均为12包、3610kg、待处理0，明细、输入、审计与按键配置完整保留，见[现场验收记录](docs/M71_ACCEPTANCE_REPORT.md)和[按键记录](docs/M71_KEY_WIZARD_REPORT.md)。继续已获授权的正式开发，不追加Demo测试。
 
-正式工程当前可运行流程：**Web登录 → 仓库权限 → sku.txt上传预检 → 库存发布 → 多产品订单草稿 → 配置出库政策 → 发布为待领取 → 正式PDA设备/人员登录 → 独占领取 → 下载验签 → Room原子激活 → 下载确认 → 本地扫码保存 → 结单冻结/上传 → 短装审批 → 云端出库/按政策扣账 → PDA验签回执**，并支持未领取订单修订重发/作废、库存和映射管理、历史追溯。各产品独立填写计划包数，订单合计不设116包上限。已接固定48小时离线签名及丢失响应恢复；登录/授权过期、设备停用和下载失败不自动放锁。正式订单首轮提交已接入；召回续作、临时单、更正、增量同步和文件生成仍在开发计划内，完整系统尚未验收上线。见[正式开发进度](docs/DEVELOPMENT_PROGRESS.md)、[本机运行说明](server/README.md)及[PDA协议](contracts/PDA_API.md)。
+正式工程当前可运行流程：**Web登录 → 仓库权限 → sku.txt上传预检 → 库存发布 → 多产品订单草稿 → 配置出库政策 → 发布为待领取 → 正式PDA设备/人员登录 → 独占领取 → 下载验签 → Room原子激活 → 下载确认 → 本地扫码保存 → 结单冻结/上传 → 短装审批 → 云端出库/按政策扣账 → PDA验签回执**，并支持未领取订单修订重发/作废、库存和映射管理、历史追溯。各产品独立填写计划包数，订单合计不设116包上限。已接固定48小时离线签名及丢失响应恢复；登录/授权过期、设备停用和下载失败不自动放锁。正式订单提交、受控召回/原机停止/零包作废及原人原机受控续作及主管凭据支持的卸货释放/隔离减包已接入；换机、临时单、更正、增量同步和文件生成仍在开发计划内，完整系统尚未验收上线。见[正式开发进度](docs/DEVELOPMENT_PROGRESS.md)、[本机运行说明](server/README.md)及[PDA协议](contracts/PDA_API.md)。
 
-正式PDA首轮提交版APK：[`outputs/pda/Acrylic-PDA-0.3.0-debug.apk`](outputs/pda/Acrylic-PDA-0.3.0-debug.apk)，构建及首次设备登记见[Android说明](android/README.md)。这是独立正式工程的开发验证包，已通过主机测试及真实后端模拟器联调，尚未在M71上验收。已包含结单/上传与成功回执验签；待上传、待复核或验签失败均不可放行。
+正式PDA短码配对版APK：[`outputs/pda/Acrylic-PDA-0.7.0-debug.apk`](outputs/pda/Acrylic-PDA-0.7.0-debug.apk)，构建及首次设备登记见[Android说明](android/README.md)。这是独立正式工程的开发验证包，已通过主机测试、真实后端模拟器配对及0.6.0覆盖升级验证，尚未在M71上验收。本包配置本机18083回环地址，需要USB转发；正式HTTPS地址及异地网络尚未验证。已包含结单/上传与成功回执验签、召回恢复包、停止证明及续作新资格验签；待上传、待复核或验签失败均不可放行。
+
+Web“PDA 设备管理”已支持8位短码登记：PDA自动提交本机公钥，管理员核对并指定仓库及名称，原PDA再次确认后自动绑定，普通操作无需复制公钥或填写UUID。原请求可恢复，高级公钥登记保留作维护入口；启停不释放订单，也不延长离线资格。见[设备管理操作说明](docs/WEB_DEVICE_GUIDE.md)及[配对交付记录](docs/PDA_PAIRING_REGISTRATION_GUIDE.md)。本轮生成0.7.0本地验证APK，未发布或部署生产。
 
 ## 先看这里
 
@@ -37,7 +39,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/install_demo.ps1
 | --- | --- |
 | `web/` | Vue 3、TypeScript、Vite、Element Plus正式后台；库存与映射、订单草稿/发布、短装审批、云端实绩、政策及历史 |
 | `server/` | Java 21、Spring Boot 3.5.16、JDBC、Flyway、MySQL正式后端 |
-| `android/` | 独立正式PDA工程；Keystore、双身份登录、领取、资料验签、Room激活、B模式本地作业与首轮提交 |
+| `android/` | 独立正式PDA工程；Keystore、双身份登录、领取、资料验签、Room激活、B模式本地作业、召回与受控续作提交 |
 | `outputs/pda/` | 正式PDA开发验证APK、SHA256与构建信息 |
 | `contracts/` | 已实现接口的OpenAPI、字段、错误码与重试约定 |
 | `demo/` | Kotlin、XML ViewBinding、Hilt、Room、SoundPool 验证程序及测试 |

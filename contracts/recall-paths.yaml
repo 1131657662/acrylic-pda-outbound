@@ -1,0 +1,178 @@
+OrderChanges:
+  post:
+    summary: 申请原机召回或REOPEN_WORK受控续作；续作另需order:resume，减少行引用独立实物批准凭据
+    parameters:
+      - {$ref: '#/Order'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {oneOf: [{$ref: './recall-schemas.yaml#/Create'}, {$ref: './continuation-schemas.yaml#/Create'}]}
+    responses:
+      '200':
+        description: 操作完成；停止与作废证明重试返回原签名，均不开放扫码或释放货物
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {oneOf: [{$ref: './recall-schemas.yaml#/Request'}, {$ref: './continuation-schemas.yaml#/Request'}]}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+  get:
+    summary: 查询最新召回（order:read）
+    parameters:
+      - {$ref: '#/Order'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+    responses:
+      '200':
+        description: 查询已保存状态
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: '#/QueryResult'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+
+PdaQuery:
+  get:
+    summary: 原人员在原设备查询召回（pda:recover）
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+    responses:
+      '200':
+        description: 查询已保存状态
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: '#/QueryResult'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+
+Upload:
+  post:
+    summary: 接收32MiB以内规范完整恢复包（pda:recover），保留安全包占用
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './recall-schemas.yaml#/Body'}
+    responses:
+      '200':
+        description: 操作完成；停止与作废证明重试返回原签名，均不开放扫码或释放货物
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './recall-schemas.yaml#/Package'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+
+Detail:
+  get:
+    summary: 查看恢复摘要与本单保存明细（order:read），不暴露全设备其他单审计
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+    responses:
+      '200':
+        description: 查询已保存状态
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: '#/DetailResult'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+
+Stop:
+  post:
+    summary: 绑定耐久恢复包确认原机停止（pda:recover），撤销原离线资格但保留订单
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './recall-schemas.yaml#/StopAck'}
+    responses:
+      '200':
+        description: 操作完成；停止与作废证明重试返回原签名，均不开放扫码或释放货物
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './recall-schemas.yaml#/Proof'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+
+Resolve:
+  post:
+    summary: 主管核验零包作废或REOPEN_WORK续作；续作须order:resume及实物核验凭据
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {oneOf: [{$ref: './recall-schemas.yaml#/Resolve'}, {$ref: './continuation-schemas.yaml#/Resolve'}]}
+    responses:
+      '200':
+        description: 操作完成；停止与作废证明重试返回原签名，均不开放扫码或释放货物
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {oneOf: [{$ref: './recall-schemas.yaml#/Proof'}, {$ref: './continuation-schemas.yaml#/Approval'}]}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+
+Order: {name: order, in: path, required: true, schema: {type: string, format: uuid}}
+QueryResult:
+  type: object
+  required: [request]
+  properties:
+    request: {oneOf: [{$ref: './recall-schemas.yaml#/Request'}, {type: 'null'}]}
+DetailResult:
+  type: object
+  required: [recovery, scans, captureSummary]
+  properties:
+    recovery: {$ref: './recall-schemas.yaml#/Package'}
+    scans: {type: array, items: {$ref: './submission-evidence.yaml#/Scan'}}
+    dispositions: {$ref: './disposition-schemas.yaml#/Proofs'}
+    captureSummary: {$ref: './recall-schemas.yaml#/Body/properties/captureSummary'}

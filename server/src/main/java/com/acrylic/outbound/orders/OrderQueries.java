@@ -9,12 +9,14 @@ import org.springframework.stereotype.Repository;
 public class OrderQueries {
     private final JdbcTemplate jdbc;
     public OrderQueries(JdbcTemplate jdbc) { this.jdbc=jdbc; }
-    private static final String HEAD="""
-        SELECT BIN_TO_UUID(o.id),o.order_no,o.source,o.status,o.current_revision,o.row_version,
-          r.vehicle_no,r.container_no,r.planned_total,u.display_name,o.created_at,o.updated_at
+    private static final String SOURCE="""
         FROM outbound_order o INNER JOIN order_revision r ON r.order_id=o.id AND r.revision=o.current_revision
         INNER JOIN app_user u ON u.id=o.created_by WHERE o.warehouse_id=?
         """;
+    private static final String HEAD="""
+        SELECT BIN_TO_UUID(o.id),o.order_no,o.source,o.status,o.current_revision,o.row_version,
+          r.vehicle_no,r.container_no,r.planned_total,u.display_name,o.created_at,o.updated_at
+        """+SOURCE;
     private static final String REVISION="""
         SELECT BIN_TO_UUID(r.id),r.revision,BIN_TO_UUID(r.inventory_snapshot_id),r.mapping_revision,
           r.vehicle_no,r.container_no,r.notes,r.planned_total,r.reason,u.display_name,r.created_at
@@ -27,17 +29,8 @@ public class OrderQueries {
     }
     public Page<OrderViews.Summary> list(UUID warehouse,Filter filter) {
         int limit=Page.checkedLimit(filter.limit());
-        if(filter.search().length()>40 || !Set.of("","DRAFT","READY","ASSIGNED","RECALL_PENDING","REVIEW_REQUIRED",
-            "COMPLETED","CANCELLED","CONTINUING","LINKED").contains(filter.status()))
-            throw new BusinessException(400,"INVALID_REQUEST","订单筛选条件无效");
-        var sql=new StringBuilder(HEAD); var params=new ArrayList<Object>(); params.add(Ids.bytes(warehouse));
-        if(!filter.status().isEmpty()) { sql.append(" AND o.status=?"); params.add(filter.status()); }
-        if(!filter.search().isBlank()) {
-            String search=filter.search().strip();
-            sql.append(" AND (o.order_no=? OR r.vehicle_no=?)");
-            // Order numbers are ASCII; never bind a Chinese plate against an ASCII column.
-            params.add(search.chars().allMatch(c->c<128)?search:"");params.add(search);
-        }
+        var condition=condition(warehouse,filter);var sql=new StringBuilder(HEAD).append(condition.sql());
+        var params=condition.params();
         if(!filter.cursor().isEmpty()) {
             var cursor=OrderCursor.parse(filter.cursor());
             sql.append(" AND (o.created_at<? OR (o.created_at=? AND o.id<?))");
@@ -46,6 +39,31 @@ public class OrderQueries {
         sql.append(" ORDER BY o.created_at DESC,o.id DESC LIMIT ?");params.add(limit+1);
         return Page.from(jdbc.query(sql.toString(),this::summary,params.toArray()),limit,OrderCursor::encode);
     }
+    public OrderViews.NumberedPage numbered(UUID warehouse,Filter filter,int requestedPage) {
+        if(requestedPage<1 || requestedPage>1_000_000 || !Set.of(20,50,100).contains(filter.limit()) || !filter.cursor().isEmpty())
+            throw new BusinessException(400,"INVALID_REQUEST","页码须为1至1000000，每页20、50或100条，不能同时使用游标");
+        var condition=condition(warehouse,filter);var params=condition.params();
+        long total=jdbc.queryForObject("SELECT COUNT(*) "+SOURCE+condition.sql(),Long.class,params.toArray());
+        int page=(int)Math.min(requestedPage,Math.max(1,(total+filter.limit()-1)/filter.limit()));
+        params.add(filter.limit());params.add((long)(page-1)*filter.limit());
+        var rows=jdbc.query(HEAD+condition.sql()+" ORDER BY o.created_at DESC,o.id DESC LIMIT ? OFFSET ?",this::summary,params.toArray());
+        return new OrderViews.NumberedPage(rows,total,page,filter.limit());
+    }
+    private Condition condition(UUID warehouse,Filter filter) {
+        if(filter.search().length()>40 || !Set.of("","DRAFT","READY","ASSIGNED","RECALL_PENDING","REVIEW_REQUIRED",
+            "COMPLETED","CANCELLED","CONTINUING","LINKED").contains(filter.status()))
+            throw new BusinessException(400,"INVALID_REQUEST","订单筛选条件无效");
+        var sql=new StringBuilder(); var params=new ArrayList<Object>(); params.add(Ids.bytes(warehouse));
+        if(!filter.status().isEmpty()) { sql.append(" AND o.status=?"); params.add(filter.status()); }
+        if(!filter.search().isBlank()) {
+            String search=filter.search().strip();
+            sql.append(" AND (o.order_no=? OR r.vehicle_no=?)");
+            // Order numbers are ASCII; never bind a Chinese plate against an ASCII column.
+            params.add(search.chars().allMatch(c->c<128)?search:"");params.add(search);
+        }
+        return new Condition(sql.toString(),params);
+    }
+    private record Condition(String sql,ArrayList<Object> params) { }
     public OrderViews.Detail detail(UUID warehouse,UUID order,Integer revision) {
         var header=head(warehouse,order);
         var rows=jdbc.query(REVISION+" AND r.revision=?",this::revision,Ids.bytes(order),revision==null?header.revision():revision);

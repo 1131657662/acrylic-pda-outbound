@@ -21,12 +21,13 @@ abstract class SubmissionDao {
         return head.copy(payload = bytes.toByteArray().toString(Charsets.UTF_8))
     }
     @Transaction open fun forOrder(id: String): LocalSubmission? = submissionId(id)?.let(::get)
-    @Query("SELECT id,assignmentId,'' AS payload,sha256,state,receipt,error,autoRetry FROM local_submission WHERE id=:id")
+    @Query("SELECT id,assignmentId,'' AS payload,sha256,state,receipt,error,autoRetry,currentMarker FROM local_submission WHERE id=:id")
     protected abstract fun header(id: String): LocalSubmission?
-    @Query("SELECT id FROM local_submission WHERE assignmentId=:id") protected abstract fun submissionId(id: String): String?
+    @Query("SELECT id FROM local_submission WHERE assignmentId=:id AND currentMarker=1") protected abstract fun submissionId(id: String): String?
     @Query("SELECT length(CAST(payload AS BLOB)) FROM local_submission WHERE id=:id") protected abstract fun payloadLength(id: String): Int
     @Query("SELECT substr(CAST(payload AS BLOB),:offset,131072) FROM local_submission WHERE id=:id")
     protected abstract fun payloadPart(id: String, offset: Int): ByteArray
+    @Query("UPDATE local_submission SET currentMarker=NULL,autoRetry=0 WHERE assignmentId=:id") abstract fun supersede(id: String)
     @Insert abstract fun insert(row: LocalSubmission)
     @Query("UPDATE local_submission SET state=:state,receipt=:receipt,error=:error,autoRetry=:retry WHERE id=:id")
     abstract fun progress(id: String, state: String, receipt: String?, error: String, retry: Boolean)

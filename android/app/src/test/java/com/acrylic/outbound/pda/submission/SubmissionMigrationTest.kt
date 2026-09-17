@@ -39,7 +39,9 @@ class SubmissionMigrationTest {
         val entities = schema().getJSONArray("entities")
         return (0 until entities.length()).associate { index ->
             val table = entities.getJSONObject(index).getString("tableName")
-            table to f.db.openHelper.readableDatabase.query("SELECT * FROM $table ORDER BY rowid").use { cursor ->
+            val fields = entities.getJSONObject(index).getJSONArray("fields")
+            val columns = (0 until fields.length()).joinToString(",") { fields.getJSONObject(it).getString("columnName") }
+            table to f.db.openHelper.readableDatabase.query("SELECT $columns FROM $table ORDER BY rowid").use { cursor ->
                 buildList { while (cursor.moveToNext()) add(ContentValues().also { DatabaseUtils.cursorRowToContentValues(cursor, it) }) }
             }
         }

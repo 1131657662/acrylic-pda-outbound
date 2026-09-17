@@ -19,7 +19,10 @@ public class PdaBearerFilter extends OncePerRequestFilter {
     @Override protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain chain) throws ServletException,IOException {
         try {
             String path=request.getRequestURI().substring(request.getContextPath().length());
-            if(path.startsWith("/api/v1/pda/auth/") && !path.endsWith("/logout")) {
+            if(List.of("/api/v1/pda/pairing/challenges","/api/v1/pda/pairing/applications","/api/v1/pda/pairing/status",
+                "/api/v1/pda/pairing/confirm","/api/v1/pda/pairing/cancel").contains(path)) {
+                // Pairing controllers enforce their own request limits and per-operation private-key proof.
+            } else if(path.startsWith("/api/v1/pda/auth/") && !path.endsWith("/logout")) {
                 if(attempts.get(request.getRemoteAddr(),key->new AtomicInteger()).incrementAndGet()>300) {
                     response.setHeader("Retry-After","900");throw new BusinessException(429,"LOGIN_RATE_LIMIT","设备认证过于频繁，请稍后再试");
                 }

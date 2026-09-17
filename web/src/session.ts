@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { z } from 'zod';
 import { request } from './api';
+import { clearListPositions } from './orders/list-context';
 
 export const identitySchema = z.object({
   id: z.string().uuid(), username: z.string(), displayName: z.string(), permissions: z.array(z.string()),
@@ -17,6 +18,7 @@ export const useSessionStore = defineStore('session', () => {
       warehouseId.value = identity.value.warehouses[0]?.id ?? '';
   }
   async function login(username: string, password: string): Promise<void> {
+    if (identity.value && identity.value.username !== username) clearListPositions();
     await request('/auth/web/login', z.object({ authenticated: z.boolean() }), {
       method: 'POST', body: new URLSearchParams({ username, password }),
     });
@@ -26,6 +28,7 @@ export const useSessionStore = defineStore('session', () => {
     await request('/auth/web/logout', z.object({ authenticated: z.boolean() }), { method: 'POST' });
     identity.value = null;
     warehouseId.value = '';
+    clearListPositions();
   }
   return { identity, warehouseId, load, login, logout };
 });

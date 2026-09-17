@@ -1,18 +1,13 @@
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { z } from 'zod';
+import { orderLogin } from './order-fixture';
 
-const credentials = z.object({ adminUsername: z.string(), adminPassword: z.string() })
-  .parse(JSON.parse(readFileSync(resolve('../.local/development.json'), 'utf8')));
 async function login(page: Page): Promise<void> {
-  await page.goto('/login');
-  await page.getByLabel('账号', { exact: true }).fill(credentials.adminUsername);
-  await page.getByLabel('密码', { exact: true }).fill(credentials.adminPassword);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '库存文件导入', exact: true })).toBeVisible();
+  await orderLogin(page);
+  await page.goto('/inventory/imports');
 }
+
 function row(barcode: string, weight: string): string {
   return `${'WEB TEST'.padEnd(20)}${'FIBER'.padEnd(14)}${barcode.padEnd(13)}${weight.padEnd(10)}\r\n`;
 }
@@ -53,7 +48,7 @@ test('publish survives lost response, inventory query, mapping history and secon
   await page.getByRole('button', { name: '确认发布库存版本' }).click();
   expect(z.object({ data: z.object({ id: z.string() }) }).parse(await (await retry).json()).data.id).toBe(receipt);
   await expect(page.locator('.detail-panel')).toContainText('此文件已发布');
-  await page.getByRole('link', { name: '库存查询与版本' }).click();
+  await page.getByRole('link', { name: '库存查询' }).click();
   await page.getByLabel('查询条码', { exact: true }).fill(first);
   await page.getByRole('button', { name: '查询', exact: true }).click();
   await expect(page.locator('.el-table__body tr').filter({ hasText: first })).toContainText('300.5');
@@ -61,7 +56,7 @@ test('publish survives lost response, inventory query, mapping history and secon
   await expect(page.locator('.el-loading-mask:visible')).toHaveCount(0);
   await expect(page.locator('.el-table').first().locator('.el-table__body tr')).toHaveCount(1);
   await page.screenshot({ path: '../.local/web-stock.png', fullPage: true, animations: 'disabled' });
-  await page.getByRole('link', { name: '发货代码映射' }).click();
+  await page.getByRole('link', { name: '发货代码' }).click();
   const mappingRow = page.locator('.el-table__body tr').filter({ hasText: '997' });
   await mappingRow.getByRole('button', { name: '修订' }).click();
   await page.getByLabel('产品型号', { exact: true }).fill('WEB VERIFIED');
@@ -75,7 +70,7 @@ test('publish survives lost response, inventory query, mapping history and secon
   await mappingRow.getByRole('button', { name: '历史', exact: true }).click();
   await expect(page.getByRole('heading', { name: '997 · 映射历史' })).toBeVisible();
   await expect(page.getByText(reason, { exact: true })).toBeVisible();
-  await page.getByRole('link', { name: '库存文件导入' }).click();
+  await page.getByRole('link', { name: '库存导入' }).click();
   await upload(page, row(first, '301.25'));
   await expect(page.getByRole('checkbox', { name: '确认本次全量文件缺少 1 包' })).toBeChecked();
   await page.getByText('候选映射', { exact: true }).click();
@@ -84,7 +79,7 @@ test('publish survives lost response, inventory query, mapping history and secon
   await page.screenshot({ path: '../.local/web-publication.png', fullPage: true, animations: 'disabled' });
   await page.getByRole('button', { name: '确认发布库存版本' }).click();
   await expect(page.locator('.detail-panel')).toContainText('此文件已发布');
-  await page.getByRole('link', { name: '库存查询与版本' }).click();
+  await page.getByRole('link', { name: '库存查询' }).click();
   await page.getByLabel('查询条码', { exact: true }).fill(second);
   await page.getByRole('button', { name: '查询', exact: true }).click();
   await expect(page.locator('.el-table__body tr').filter({ hasText: second })).toContainText('未列出');

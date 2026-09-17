@@ -1,3 +1,11 @@
+NumberedOrderPage:
+  type: object
+  required: [items, total, page, pageSize]
+  properties:
+    items: {type: array, items: {$ref: '#/Summary'}}
+    total: {type: integer, format: int64, minimum: 0, description: 当前仓库与筛选条件下的真实总数}
+    page: {type: integer, minimum: 1, description: 实际返回的页码，空结果为1}
+    pageSize: {type: integer, enum: [20, 50, 100]}
 PlanLine:
   type: object
   required: [deliveryCode, plannedCount]

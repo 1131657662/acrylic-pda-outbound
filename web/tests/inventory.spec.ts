@@ -1,18 +1,11 @@
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { z } from 'zod';
-
-const credentials = z.object({ adminUsername: z.string(), adminPassword: z.string() })
-  .parse(JSON.parse(readFileSync(resolve('../.local/development.json'), 'utf8')));
+import { orderLogin } from './order-fixture';
 
 async function login(page: Page): Promise<void> {
-  await page.goto('/login');
-  await page.getByLabel('账号', { exact: true }).fill(credentials.adminUsername);
-  await page.getByLabel('密码', { exact: true }).fill(credentials.adminPassword);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '库存文件导入', exact: true })).toBeVisible();
+  await orderLogin(page);
+  await page.goto('/inventory/imports');
 }
 
 test('real login, sample upload, paged rows and logout', async ({ page }) => {
@@ -29,7 +22,8 @@ test('real login, sample upload, paged rows and logout', async ({ page }) => {
   await expect(firstLine).toHaveText('1');
   await expect(page.locator('.detail-panel .el-loading-mask:visible')).toHaveCount(0);
   await page.screenshot({ path: '../.local/web-inventory.png', fullPage: true, animations: 'disabled' });
-  await page.getByRole('button', { name: '退出', exact: true }).click();
+  await page.getByRole('button', { name: '账户菜单', exact: true }).click();
+  await page.getByRole('menuitem', { name: '退出登录', exact: true }).click();
   await expect(page).toHaveURL(/\/login$/);
 });
 

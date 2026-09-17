@@ -23,16 +23,15 @@ object ReceiptVerifier {
         check(response.getString("payloadSha256") == local.sha256 && response.getString("actualCount") == body.getString("expectedCount") &&
             response.getString("actualWeightGrams") == body.getString("expectedWeightGrams") && response.getString("captureHighWatermark") == body.getString("captureHighWatermark")) { "云端汇总与冻结记录不一致" }
         products(body, response)
-        val scans = body.getJSONArray("scans"); val active = (0 until scans.length()).map { scans.getJSONObject(it) }.filter { it.getString("status") == "ACTIVE" }
+        val active = com.acrylic.outbound.pda.continuation.DispositionRecords.effective(body)
         check(response.getString("firstOrderScanSeq") == active.first().getString("orderScanSeq") && response.getString("lastOrderScanSeq") == active.last().getString("orderScanSeq") &&
             response.getBoolean("inventoryDeducted") == body.getBoolean("autoDeductInventory")) { "回执序号或扣账模式不一致" }
         check(response.getString("orderStatus") == "COMPLETED" && response.getString("resultVersion") == "1") { "云端尚未确认出库" }
         return "SYNCED"
     }
     private fun products(body: JSONObject, response: JSONObject) {
-        val expected = sortedMapOf<String, Pair<Long, Long>>(); val scans = body.getJSONArray("scans")
-        for (i in 0 until scans.length()) {
-            val scan = scans.getJSONObject(i); if (scan.getString("status") != "ACTIVE") continue
+        val expected = sortedMapOf<String, Pair<Long, Long>>()
+        for (scan in com.acrylic.outbound.pda.continuation.DispositionRecords.effective(body)) {
             val code = scan.getString("deliveryCode"); val value = expected[code] ?: (0L to 0L)
             expected[code] = value.first + 1 to Math.addExact(value.second, scan.getString("weightGrams").toLong())
         }

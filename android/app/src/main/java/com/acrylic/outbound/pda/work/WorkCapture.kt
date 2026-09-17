@@ -7,7 +7,7 @@ data class CaptureContext(val assignmentId: String, val orderId: String, val ori
     val rawInput: String, val barcode: String, val inputSource: String, val confirmationPolicy: String,
     val receivedWallMs: Long, val receivedElapsedMs: Long, val receivedBoot: Int,
     val snapshotId: String, val expectedDispatchCycle: Long?, val sourceRecoveryEpoch: String,
-    val authorizationId: String, val assignmentEpoch: String, val orderRevision: Int, val inputRevision: Int = 1)
+    val authorizationId: String, val assignmentEpoch: String, val orderRevision: Int, val inputRevision: Int = 1, @ColumnInfo(defaultValue = "''") val originAssignmentId: String = "")
 
 @Entity(tableName = "work_capture", indices = [
     Index(value = ["originDeviceId", "deviceCaptureSeq"], unique = true),

@@ -29,7 +29,7 @@ class WorkReception(private val store: WorkStore) {
             claims.getString("warehouseId"), work.nextOrderScanSeq, device.nextCaptureSeq, input.raw, barcode, input.source,
             if (input.source == "BROADCAST") "AUTO_AFTER_VALIDATION" else "MANUAL", input.time.wall, input.time.elapsed, input.time.boot,
             assignment.getString("inventorySnapshotId"), store.db.preparations().bale(input.assignmentId, barcode)?.dispatchCycle,
-            assignment.getString("serverRecoveryEpoch"), assignment.getString("offlineAuthorizationId"), assignment.getString("epoch"), assignment.getInt("revision"))
+            assignment.getString("serverRecoveryEpoch"), assignment.getString("offlineAuthorizationId"), assignment.getString("epoch"), assignment.getInt("revision"), originAssignmentId = assignment.getString("id"))
         val capture = WorkCapture(input.id, context); store.db.captures().insert(capture)
         check(store.db.work().advanceOrder(input.assignmentId, work.nextOrderScanSeq) == 1)
         store.db.work().updateDevice(device.copy(nextCaptureSeq = Math.addExact(device.nextCaptureSeq, 1)))
@@ -41,6 +41,7 @@ class WorkReception(private val store: WorkStore) {
         lateinit var result: WorkCapture
         store.db.runInTransaction {
             val c = checkNotNull(store.db.captures().get(id))
+            check(store.db.work().order(c.context.assignmentId)?.state == "SCANNING") { "本单已停止，请核对召回" }
             if (c.state != "RECEIVED") { result = c; return@runInTransaction }
             val validation = WorkValidation(store).validate(c)
             val automatic = c.context.confirmationPolicy == "AUTO_AFTER_VALIDATION"

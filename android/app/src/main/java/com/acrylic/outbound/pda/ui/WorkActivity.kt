@@ -17,6 +17,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.acrylic.outbound.pda.PdaApplication
 import com.acrylic.outbound.pda.databinding.ActivityWorkBinding
 import com.acrylic.outbound.pda.device.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class WorkActivity : ComponentActivity() {
@@ -28,6 +29,7 @@ class WorkActivity : ComponentActivity() {
     private lateinit var renderer: WorkRenderer
     private var assignment = ""
     private var dialogOpen = false
+    private var recallOpening = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +52,9 @@ class WorkActivity : ComponentActivity() {
 
     private fun bindActions() {
         binding.back.setOnClickListener { leave() }
+        binding.recall.setOnClickListener {
+            startActivity(android.content.Intent(this, RecallActivity::class.java).putExtra("assignmentId", assignment))
+        }
         binding.closeOrder.setOnClickListener {
             startActivity(android.content.Intent(this, SubmissionActivity::class.java).putExtra("assignmentId", assignment))
         }
@@ -87,7 +92,7 @@ class WorkActivity : ComponentActivity() {
         reasonDialog("放弃手输 ${c.context.barcode}", "原输入与序号保留，请填写原因") { engine.discard(c.id, it) }
     }
     private fun voidLast() {
-        val scan = renderer.displayed.recent.firstOrNull { it.status == "ACTIVE" } ?: return
+        val scan = renderer.displayed.recent.firstOrNull { it.status == "ACTIVE" && it.captureId !in renderer.displayed.dispositions } ?: return
         reasonDialog("撤销末包 ${scan.barcode}", "请先核实实物已卸下或未装车；撤销会保留原明细与审计") { engine.voidLast(scan.captureId, it) }
     }
     private fun reasonDialog(title: String, message: String, action: (String) -> Unit) {
@@ -122,7 +127,17 @@ class WorkActivity : ComponentActivity() {
     }
     override fun onResume() {
         super.onResume()
-        if (::scanner.isInitialized && !dialogOpen) { engine.resume(assignment); scanner.register() }
+        if (::scanner.isInitialized && !dialogOpen) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                val recall = runCatching { app.recalls.check(assignment) }.getOrElse { app.database.recalls().header(assignment) }
+                if (recall != null && !recallOpening) {
+                    recallOpening = true
+                    runOnUiThread { if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) startActivity(android.content.Intent(this@WorkActivity, RecallActivity::class.java).putExtra("assignmentId", assignment)) }
+                } else if (recall == null) {
+                    runOnUiThread { if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) { engine.resume(assignment); scanner.register() } }
+                }
+            }
+        }
     }
     override fun onPause() {
         if (::scanner.isInitialized) { scanner.unregister(); engine.pause(); keys.reset() }

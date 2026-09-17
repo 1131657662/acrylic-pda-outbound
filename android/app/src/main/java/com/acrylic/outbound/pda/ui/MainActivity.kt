@@ -36,8 +36,12 @@ class MainActivity : ComponentActivity() {
         }
         binding.refresh.setOnClickListener { model.refresh() }; binding.logout.setOnClickListener { model.logout() }
         binding.copyKey.setOnClickListener { copyKey() }
+        binding.pairing.setOnClickListener { startActivity(android.content.Intent(this, PairingActivity::class.java)) }
+        binding.advancedSetup.setOnClickListener { binding.maintenance.visibility = if (binding.maintenance.visibility == View.GONE) View.VISIBLE else View.GONE }
         lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { model.state.collect { render(it) } } }
     }
+
+    override fun onResume() { super.onResume(); model.reloadLocal() }
 
     private fun render(state: PreparationUi) {
         binding.status.text = state.message
@@ -45,7 +49,7 @@ class MainActivity : ComponentActivity() {
         binding.setup.visibility = if (state.bound) View.GONE else View.VISIBLE
         binding.actions.visibility = if (state.username.isNotBlank()) View.VISIBLE else View.GONE
         binding.loginPanel.visibility = if (state.bound && state.username.isBlank()) View.VISIBLE else View.GONE
-        binding.identity.text = if (state.username.isBlank()) "未登录 · 原订单资料保留" else "当前人员：${state.username}"
+        binding.identity.text = (if (state.username.isBlank()) "未登录 · 原订单资料保留" else "当前人员：${state.username}") + state.deviceLabel
         listOf(binding.login, binding.bind, binding.copyKey, binding.refresh, binding.logout).forEach { it.isEnabled = !state.busy }
         cards.render(state)
     }

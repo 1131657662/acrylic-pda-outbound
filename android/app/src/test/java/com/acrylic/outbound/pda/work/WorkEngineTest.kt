@@ -17,6 +17,17 @@ import java.util.concurrent.atomic.AtomicBoolean
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class WorkEngineTest {
     @get:Rule val folder = TemporaryFolder()
+    @Test fun leavingPageImmediatelyDisablesActionsUntilWorkHasResumed() = runBlocking<Unit>(Dispatchers.IO) {
+        WorkFixture(folder.root).use { f ->
+            val engine = WorkEngine(f.store) {}
+            try {
+                engine.resume(f.assignment); await { engine.state.value.ready }
+                engine.pause(); assertFalse(engine.state.value.ready); assertFalse(engine.receive(f.barcodes[0], "MANUAL"))
+                engine.resume(f.assignment); await { engine.state.value.ready }
+                assertEquals(0, f.db.captures().page(f.assignment, 0, 10).size)
+            } finally { engine.close() }
+        }
+    }
     @Test fun fullIngressQueueStopsSavingAndReportsTheUnacceptedInputWithoutDroppingAcceptedInputs() = runBlocking<Unit>(Dispatchers.IO) {
         WorkFixture(folder.root).use { f ->
             val entered = CountDownLatch(1); val release = CountDownLatch(1); val hold = AtomicBoolean(false)

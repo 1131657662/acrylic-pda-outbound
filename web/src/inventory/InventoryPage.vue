@@ -34,8 +34,8 @@ async function baseline(): Promise<void> {
 watch(() => session.warehouseId, () => { rows.value = []; next.value = null; active.value = null; mappingRevision.value = '0'; void load(); void baseline(); }, { immediate: true });
 </script>
 <template>
-  <WorkspaceLayout title="库存查询与版本">
-    <div class="page-title"><div><p class="eyebrow">INVENTORY / STOCK</p><h1>库存查询与版本</h1><p class="muted">分别查看上游库存声明、系统扣账与冻结状态。映射修订号 {{ mappingRevision }}。</p></div></div>
+  <WorkspaceLayout title="库存查询">
+    <div class="page-title"><div><p class="eyebrow">INVENTORY / STOCK</p><h1>库存查询</h1><p class="muted">分别查看上游库存声明、系统扣账与冻结状态。映射修订号 {{ mappingRevision }}。</p></div></div>
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
     <section class="panel"><form class="stock-filter" @submit.prevent="load()">
       <el-input v-model="filter.barcode" aria-label="查询条码" placeholder="完整条码" maxlength="11" clearable />

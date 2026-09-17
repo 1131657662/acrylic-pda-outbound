@@ -20,8 +20,10 @@ public class OrderController {
     @GetMapping
     public ApiEnvelope<?> list(@RequestParam UUID warehouseId,@RequestParam(defaultValue="") String status,
         @RequestParam(defaultValue="") String search,@RequestParam(defaultValue="") String cursor,
-        @RequestParam(defaultValue="50") int limit,HttpServletRequest request) {
+        @RequestParam(defaultValue="50") int limit,@RequestParam(required=false) Integer page,
+        @RequestParam(defaultValue="20") int pageSize,HttpServletRequest request) {
         access.require("order:read",warehouseId);
+        if(page!=null) return responses.ok(queries.numbered(warehouseId,new OrderQueries.Filter(status,search,cursor,pageSize),page),request);
         return responses.ok(queries.list(warehouseId,new OrderQueries.Filter(status,search,cursor,limit)),request);
     }
     @GetMapping("/products")

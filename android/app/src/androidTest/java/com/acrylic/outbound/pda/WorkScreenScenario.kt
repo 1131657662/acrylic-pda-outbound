@@ -26,8 +26,8 @@ object WorkScreenScenario {
             screen.onActivity { it.findViewById<EditText>(R.id.manual).setText(codes[1]) }
             click(screen, R.id.validate); waitUntil { app.work.state.value.candidate?.state == "WAITING_CONFIRM" }
             assertEquals(1, app.database.scans().total(assignment).count)
-            screen.recreate(); waitUntil { app.work.state.value.ready && app.work.state.value.candidate?.state == "WAITING_CONFIRM" }
-            click(screen, R.id.confirm); waitUntil { app.work.state.value.order?.actualCount == 2L }
+            screen.recreate(); waitUntil(diagnostic = { app.work.state.value.toString() }) { app.work.state.value.ready && app.work.state.value.candidate?.state == "WAITING_CONFIRM" }
+            click(screen, R.id.confirm); waitUntil(diagnostic = { app.work.state.value.toString() }) { app.work.state.value.order?.actualCount == 2L }
             assertEquals(601500, app.database.scans().total(assignment).grams)
             assertEquals(listOf(2L, 4L), app.database.scans().page(assignment, 0, 10).map { it.orderScanSeq })
             screen.moveToState(Lifecycle.State.CREATED); broadcast(app, codes[0])
@@ -45,9 +45,9 @@ object WorkScreenScenario {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         screen.onActivity { assertTrue(it.findViewById<Button>(id).performClick()) }
     }
-    private fun waitUntil(condition: () -> Boolean) {
+    private fun waitUntil(diagnostic: () -> String = { "" }, condition: () -> Boolean) {
         val deadline = android.os.SystemClock.elapsedRealtime() + 10000
         while (!condition() && android.os.SystemClock.elapsedRealtime() < deadline) Thread.sleep(25)
-        assertTrue("Expected work state did not arrive", condition())
+        assertTrue("Expected work state did not arrive: ${diagnostic()}", condition())
     }
 }

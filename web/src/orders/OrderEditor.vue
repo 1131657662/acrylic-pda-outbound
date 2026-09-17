@@ -37,7 +37,7 @@ function prepare(): boolean {
     error.value = '请填写车号，添加产品，并为每个产品填写正整数计划包数。'; return false;
   }
   if (props.detail && !form.reason.trim()) { error.value = '请填写修订原因。'; return false; }
-  if (republishing && !policy.value) { error.value = '重新发布需要已配置的出库政策。'; return false; }
+  if (republishing && !policy.value) { error.value = '重新发布需要已配置的出库规则。'; return false; }
   if (!baseline.value?.activeSnapshotId) { error.value = '当前仓库还没有已发布库存，请先发布库存版本。'; return false; }
   const plan = { vehicleNo: form.vehicleNo, containerNo: form.containerNo, notes: form.notes, lines: lines.value,
     expectedActiveSnapshot: baseline.value.activeSnapshotId, expectedMappingRevision: baseline.value.mappingRevision };
@@ -56,7 +56,7 @@ async function save(): Promise<void> {
       headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key } });
     uncertain.value = false; emit('saved', result.orderId);
   } catch (cause) {
-    uncertain.value = !(cause instanceof ApiError) || cause.status >= 500;
+    uncertain.value = !(cause instanceof ApiError) || cause.status >= 500 || cause.status === 401;
     error.value = errorText(cause);
   } finally { busy.value = false; }
 }
@@ -79,7 +79,7 @@ async function save(): Promise<void> {
       <p class="order-total">计划合计 <strong>{{ total }}</strong> 包</p>
       <el-form-item label="装车备注"><el-input v-model="form.notes" aria-label="装车备注" type="textarea" maxlength="1000" show-word-limit /></el-form-item>
       <el-form-item v-if="detail" label="修订原因"><el-input v-model="form.reason" aria-label="修订原因" maxlength="500" /></el-form-item>
-      <p v-if="republishing && policy" class="muted">将重新发布并固定政策 V{{ policy.version }}，自动扣库存{{ policy.autoDeductInventory ? '开启' : '关闭' }}；保留原发布记录。</p>
+      <p v-if="republishing && policy" class="muted">将重新发布并固定规则 V{{ policy.version }}，自动扣库存{{ policy.autoDeductInventory ? '开启' : '关闭' }}；保留原发布记录。</p>
       <p class="muted">{{ republishing ? '保存后仍为待领取。' : '保存为草稿。' }}各产品分别校验计划包数；修订按当前库存和映射固定新版本，保留历史。</p>
     </el-form>
     <template #footer><el-button :disabled="busy || uncertain" @click="emit('cancel')">取消</el-button>

@@ -5,13 +5,14 @@ import { resolve } from 'node:path';
 import { z } from 'zod';
 
 export async function orderLogin(page: Page): Promise<void> {
-  const credentials = z.object({ adminUsername: z.string(), adminPassword: z.string() })
-    .parse(JSON.parse(readFileSync(resolve('../.local/development.json'), 'utf8')));
+  const credentials = process.env.OUTBOUND_UI_FIXTURE
+    ? (() => { const f = z.object({ businessUsername: z.string(), password: z.string() }).parse(JSON.parse(readFileSync(resolve('../server/build/order-ui-browser-fixture.json'), 'utf8'))); return { adminUsername: f.businessUsername, adminPassword: f.password }; })()
+    : z.object({ adminUsername: z.string(), adminPassword: z.string() }).parse(JSON.parse(readFileSync(resolve('../.local/development.json'), 'utf8')));
   await page.goto('/login');
   await page.getByLabel('账号', { exact: true }).fill(credentials.adminUsername);
   await page.getByLabel('密码', { exact: true }).fill(credentials.adminPassword);
   await page.getByRole('button', { name: '登录', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '库存文件导入', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '装车订单', exact: true })).toBeVisible();
 }
 export async function orderStock(page: Page): Promise<void> {
   const identity = z.object({ data: z.object({ warehouses: z.array(z.object({ id: z.string() })) }) })

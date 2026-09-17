@@ -1,0 +1,105 @@
+Challenge:
+  post:
+    security: []
+    summary: 未登记PDA申请120秒的一次性挑战，不能据此获得设备资格
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pairing-schemas.yaml#/ChallengeRequest'}
+    responses:
+      '200':
+        description: 返回绑定申请、公钥、动作、正文摘要及恢复代次的挑战
+        content:
+          application/json:
+            schema:
+              allOf: [{$ref: './schemas.yaml#/Envelope'}, {properties: {data: {$ref: './pairing-schemas.yaml#/Challenge'}}}]
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '429': {$ref: './openapi.yaml#/components/responses/Error'}
+Create:
+  post:
+    security: []
+    summary: 本机私钥证明后创建10分钟配对申请；同申请ID、原正文恢复相同登记码
+    requestBody: {$ref: '#/CommandBody'}
+    responses: &pdaResponses
+      '200': {$ref: '#/ViewResponse'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '429': {$ref: './openapi.yaml#/components/responses/Error'}
+Status:
+  post:
+    security: []
+    summary: 原PDA凭申请凭据及新的私钥证明查询或恢复自己的登记结果
+    requestBody: {$ref: '#/CommandBody'}
+    responses: *pdaResponses
+Confirm:
+  post:
+    security: []
+    summary: 原PDA确认已核对的批准摘要，再核验管理员权限后原子登记设备；重试返回原设备
+    requestBody: {$ref: '#/CommandBody'}
+    responses: *pdaResponses
+Cancel:
+  post:
+    security: []
+    summary: 原PDA取消未完成申请；与最终确认原子竞争，完成后取消不撤销登记
+    requestBody: {$ref: '#/CommandBody'}
+    responses: *pdaResponses
+Lookup:
+  get:
+    summary: 具备device:manage的管理员用8位短码查找申请；已指定仓库的申请再次校验仓库范围
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {name: code, in: query, required: true, schema: {type: string, pattern: '^[0-9]{8}$'}}
+    responses:
+      '200': {$ref: '#/ViewResponse'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '429': {$ref: './openapi.yaml#/components/responses/Error'}
+Current:
+  get:
+    summary: 管理员核对已查到的申请状态；完成及取消结果仍可查看
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+    responses:
+      '200': {$ref: '#/ViewResponse'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+Approval:
+  post:
+    summary: 管理员固定仓库、名称及设备编号，不产生已启用设备；原键原文返回不可变确认回执
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pairing-schemas.yaml#/ApprovalRequest'}
+    responses:
+      '200':
+        description: 原确认回执，仍需PDA核对并确认
+        content:
+          application/json:
+            schema:
+              allOf: [{$ref: './schemas.yaml#/Envelope'}, {properties: {data: {$ref: './pairing-schemas.yaml#/Receipt'}}}]
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+CommandBody:
+  required: true
+  content:
+    application/json:
+      schema: {$ref: './pairing-schemas.yaml#/Command'}
+ViewResponse:
+  description: 申请状态及经批准的待绑定信息；不包含申请秘密、私钥或登录令牌
+  content:
+    application/json:
+      schema:
+        allOf: [{$ref: './schemas.yaml#/Envelope'}, {properties: {data: {$ref: './pairing-schemas.yaml#/View'}}}]

@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useSessionStore } from './session';
+import { ApiError } from './api';
+import { firstWorkspacePath } from './navigation';
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -11,13 +13,31 @@ export const router = createRouter({
     { path: '/orders', component: () => import('./orders/OrdersPage.vue') },
     { path: '/orders/:id', component: () => import('./orders/OrderDetailPage.vue') },
     { path: '/policies', component: () => import('./policies/PoliciesPage.vue') },
-    { path: '/:pathMatch(.*)*', redirect: '/inventory/imports' },
+    { path: '/devices', component: () => import('./devices/DevicesPage.vue') },
+    { path: '/:pathMatch(.*)*', redirect: '/orders' },
   ],
 });
 
 router.beforeEach(async (to) => {
   if (to.path === '/login') return true;
   const session = useSessionStore();
-  try { await session.load(); return true; }
-  catch { return '/login'; }
+  try {
+    await session.load();
+    const warehouse = to.query.warehouse;
+    if (typeof warehouse === 'string' && session.identity?.warehouses.some(item => item.id === warehouse)) session.warehouseId = warehouse;
+    else if (warehouse) return { path: to.path, query: { ...to.query, warehouse: session.warehouseId, page: '1' }, replace: true };
+    return true;
+  } catch (cause) {
+    if (cause instanceof ApiError && cause.status === 401) return session.identity ? false : { path: '/login', query: { redirect: to.fullPath } };
+    return true;
+  }
 });
+
+export function loginDestination(value: unknown, permissions: string[]): string {
+  if (typeof value === 'string' && /^\/(orders(?:\/[^/?#]+)?|inventory\/(imports|bales|mappings)|policies|devices)(?:\?|$)/.test(value)) {
+    const route = router.resolve(value);
+    const permission = route.path.startsWith('/orders') || route.path === '/policies' ? 'order:read' : route.path === '/devices' ? 'device:manage' : 'inventory:read';
+    if (permissions.includes(permission)) return value;
+  }
+  return firstWorkspacePath(permissions);
+}

@@ -18,14 +18,15 @@ class OrderCards(private val parent: LinearLayout, private val model: Preparatio
                 if (item.order.ackAt == null) "重试下载确认" else null, !state.busy && state.username.isNotBlank()) { model.ack(item.order) }
                 .work.apply {
                     visibility = View.VISIBLE; isEnabled = !state.busy && state.username.isNotBlank()
-                    setOnClickListener { context.startActivity(android.content.Intent(context, WorkActivity::class.java)
+                    if (item.recalled) text = "召回核对 / 停止证明"
+                    setOnClickListener { context.startActivity(android.content.Intent(context, if (item.recalled) RecallActivity::class.java else WorkActivity::class.java)
                         .putExtra("assignmentId", item.order.assignmentId)) }
                 }
         }
         state.pending.forEach { intent ->
             add("领取结果待核对", "订单 ${intent.orderId}\n保留原请求，重试不会重复领取", "重试原领取", !state.busy) { model.retry(intent) }
         }
-        state.assigned.filter { assignment -> state.local.none { it.order.assignmentId == assignment.getString("id") } }.forEach { assignment ->
+        state.assigned.filter { assignment -> state.local.none { it.order.orderId == assignment.getString("orderId") } }.forEach { assignment ->
             val own = !assignment.isNull("offlineToken")
             add("本机已领取 · 待准备", "订单 ${assignment.getString("orderId")}\n操作员 ${assignment.getString("operatorName")}\n离线期限 ${assignment.getString("expiresAt")}",
                 if (own) "下载并校验资料" else "须原操作员登录", own && !state.busy) { model.prepare(assignment) }

@@ -12,8 +12,11 @@ class DeviceKeys {
     private val alias = "outbound-device-v1"
     private fun store() = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
 
-    fun publicKey(): String {
-        if (!store().containsAlias(alias)) create()
+    fun publicKey(createIfMissing: Boolean = true): String {
+        if (!store().containsAlias(alias)) {
+            check(createIfMissing) { "原设备密钥不可用，请保留资料并联系管理员" }
+            create()
+        }
         return Base64.getEncoder().encodeToString(store().getCertificate(alias).publicKey.encoded)
     }
 

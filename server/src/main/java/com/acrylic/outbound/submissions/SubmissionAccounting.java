@@ -24,6 +24,7 @@ public class SubmissionAccounting {
         jdbc.update("UPDATE outbound_order SET current_result_version=1 WHERE id=?",Ids.bytes(order));
         jdbc.update("UPDATE order_submission_slot SET phase='COMPLETED' WHERE order_id=?",Ids.bytes(order));
         jdbc.update("UPDATE order_assignment SET status='CLOSED' WHERE id=?",Ids.bytes(head.control().assignment()));
+        if(head.control().continuation()!=null)jdbc.update("UPDATE order_continuation SET status='COMPLETED' WHERE id=?",Ids.bytes(head.control().continuation()));
         store.state(head.control().id(),"SUCCEEDED",null,canonical(receipt));events.transition(head,"COMPLETED",actor);return receipt;
     }
     private void dispatch(SubmissionStore.Head head,SubmissionSnapshot.Scan scan,boolean deduct) {

@@ -22,11 +22,11 @@ public class SubmissionStock {
                 """,(rs,n)->new Position(rs.getBoolean(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getLong(5),rs.getString(6),rs.getString(7)),Ids.bytes(bale));
             var owners=jdbc.queryForList("SELECT BIN_TO_UUID(submission_id) FROM bale_commitment WHERE bale_id=? FOR UPDATE",String.class,Ids.bytes(bale));
             String conflict=cycle!=scan.cycle()?"DISPATCH_CYCLE_CONFLICT":positions.isEmpty()?"INVENTORY_UNAVAILABLE":
-                !owners.isEmpty() && !owners.getFirst().equals(head.control().id().toString())?"BALE_ALREADY_COMMITTED":
+                !owners.isEmpty() && !head.control().id().toString().equals(owners.getFirst())?"BALE_ALREADY_COMMITTED":
                 !positions.getFirst().present() || !positions.getFirst().book().equals("NOT_DEDUCTED") || positions.getFirst().blocked()!=null?"INVENTORY_UNAVAILABLE":
                 !positions.getFirst().matches(scan.bale())?"INVENTORY_BASELINE_CHANGED":null;
             if(conflict!=null) { issues.add(object().put("code",conflict).put("barcode",scan.bale().barcode()));continue; }
-            if(owners.isEmpty()) jdbc.update("INSERT INTO bale_commitment VALUES(?,?,?,?,'REVIEW_RESERVED',UTC_TIMESTAMP(3))",
+            if(owners.isEmpty()) jdbc.update("INSERT INTO bale_commitment(bale_id,order_id,submission_id,dispatch_cycle,state,created_at) VALUES(?,?,?,?,'REVIEW_RESERVED',UTC_TIMESTAMP(3))",
                 Ids.bytes(bale),Ids.bytes(head.control().order()),Ids.bytes(head.control().id()),scan.cycle());
         }
         return issues;

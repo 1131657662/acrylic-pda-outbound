@@ -25,7 +25,7 @@ async function publish(): Promise<void> {
     await request(`/orders/${props.detail.order.id}/publish?warehouseId=${props.warehouseId}`, receiptSchema,
       { method: 'POST', body, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key } });
     uncertain.value = false; emit('saved');
-  } catch (cause) { uncertain.value = !(cause instanceof ApiError) || cause.status >= 500; error.value = errorText(cause); }
+  } catch (cause) { uncertain.value = !(cause instanceof ApiError) || cause.status >= 500 || cause.status === 401; error.value = errorText(cause); }
   finally { busy.value = false; }
 }
 </script>
@@ -35,8 +35,8 @@ async function publish(): Promise<void> {
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
     <el-alert v-if="uncertain" title="发布结果未确认，请重试原发布请求。" type="warning" :closable="false" />
     <div v-loading="loading"><h3>{{ detail.plan.vehicleNo }} · V{{ detail.plan.revision }} · {{ detail.plan.plannedTotal }} 包</h3>
-      <p v-if="policy">固定政策 V{{ policy.version }}：自动扣库存<strong>{{ policy.autoDeductInventory ? '开启' : '关闭' }}</strong></p>
-      <el-alert v-else-if="!loading" title="请先在“出库政策”中完成设置。" type="warning" :closable="false" />
+      <p v-if="policy">固定规则 V{{ policy.version }}：自动扣库存<strong>{{ policy.autoDeductInventory ? '开启' : '关闭' }}</strong></p>
+      <el-alert v-else-if="!loading" title="请先在“出库规则”中完成设置。" type="warning" :closable="false" />
       <p class="muted">发布后进入待领取。计划单生成任务同时建立；库存候选不足仍需现场核对，发布不会预留具体包。</p>
       <el-input v-model="reason" aria-label="发布原因" placeholder="填写发布原因" maxlength="500" :disabled="busy || uncertain" />
     </div>

@@ -1,0 +1,23 @@
+Activate:
+  post:
+    summary: 原人原机核对恢复包并获取固定续作资格；pda:recover、pda:assign及pda:scan
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './continuation-schemas.yaml#/Activate'}
+    responses:
+      '200':
+        description: 同一续作ID重试返回原签名票据及新资格；本地核验和原子激活成功后才恢复扫码
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './continuation-schemas.yaml#/Activation'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}

@@ -10,7 +10,8 @@ Control:
         sourceOrderId: {type: string, format: uuid}
     assignmentId: {type: string, format: uuid}
     freezeDeviceId: {type: string, format: uuid}
-    workRound: {type: string, const: '1'}
+    workRound: {$ref: '#/Positive'}
+    continuationId: {type: [string, 'null'], format: uuid, description: 第2轮及以后必填对应票据，首轮为空}
     sourceRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
 Body:
   allOf:
@@ -28,7 +29,7 @@ Body:
         startedAt: {type: string, format: date-time}
         closedAt: {type: string, format: date-time}
         shortShipmentReason: {type: [string, 'null'], maxLength: 500}
-        continuationId: {type: 'null', description: 首轮正式单不接续作票据}
+        continuationId: {type: [string, 'null'], format: uuid, description: 新轮次须对应已激活票据，完整继承恢复包原事实}
         expectedCount: {$ref: '#/Positive'}
         expectedWeightGrams: {$ref: '#/Positive'}
         captureHighWatermark: {$ref: '#/Positive'}
@@ -49,7 +50,8 @@ Body:
         scans:
           type: array
           items: {$ref: './submission-evidence.yaml#/Scan'}
-          description: 包括ACTIVE及VOID原保存事实，expectedCount只计ACTIVE
+          description: 包括ACTIVE及VOID原保存事实，expectedCount和captureSummary.saved只计未被dispositions排除的ACTIVE行
+        dispositions: {$ref: './disposition-schemas.yaml#/Proofs'}
         events:
           type: array
           items: {$ref: './submission-evidence.yaml#/Event'}

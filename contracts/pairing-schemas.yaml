@@ -1,0 +1,74 @@
+Hash:
+  type: string
+  pattern: '^[0-9a-f]{64}$'
+Payload:
+  type: object
+  required: [applicationId, credential, publicKey, model, approvalSha256]
+  properties:
+    applicationId: {type: string, format: uuid, description: PDA在首次联网前持久保存的申请ID}
+    credential: {type: string, pattern: '^[A-Za-z0-9_-]{43}$', description: PDA生成32随机字节的Base64url，无填充；加密保存，服务端仅保存摘要}
+    publicKey: {type: string, maxLength: 200, description: P-256 X509 DER的标准Base64}
+    model: {type: string, minLength: 1, maxLength: 100, pattern: '^[^\r\n]+$'}
+    approvalSha256: {type: string, pattern: '^([0-9a-f]{64})?$', description: CREATE为空；CONFIRM必须是操作员已核对且预先持久保存的确认摘要}
+Command:
+  type: object
+  required: [payload, challengeId, signature]
+  properties:
+    payload: {$ref: '#/Payload'}
+    challengeId: {type: string, format: uuid}
+    signature: {type: string, maxLength: 200, description: 对挑战signedText的UTF-8使用SHA256withECDSA签名，标准Base64编码}
+ChallengeRequest:
+  type: object
+  required: [applicationId, publicKey, purpose, bindingSha256]
+  properties:
+    applicationId: {type: string, format: uuid}
+    publicKey: {type: string, maxLength: 200}
+    purpose: {enum: [CREATE, STATUS, CONFIRM, CANCEL]}
+    bindingSha256: {$ref: '#/Hash'}
+Challenge:
+  type: object
+  required: [challengeId, signedText, expiresAt]
+  properties:
+    challengeId: {type: string, format: uuid}
+    signedText: {type: string, description: 客户端核对全部绑定字段后才能签名；文本格式见PDA_API.md}
+    expiresAt: {type: string, format: date-time}
+ApprovalRequest:
+  type: object
+  required: [deviceCode, name]
+  properties:
+    deviceCode: {type: string, pattern: '^[A-Za-z0-9_-]{1,40}$'}
+    name: {type: string, minLength: 1, maxLength: 100}
+Approval:
+  type: object
+  required: [applicationId, warehouseId, warehouseName, deviceCode, name, keySha256, serverRecoveryEpoch]
+  properties:
+    applicationId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    warehouseName: {type: string}
+    deviceCode: {type: string}
+    name: {type: string}
+    keySha256: {$ref: '#/Hash'}
+    serverRecoveryEpoch: {type: string}
+View:
+  type: object
+  required: [applicationId, status, shortCode, model, createdAt, expiresAt, keySha256, serverRecoveryEpoch, approvalSha256, approval, deviceId]
+  properties:
+    applicationId: {type: string, format: uuid}
+    status: {enum: [WAITING, PENDING, COMPLETED, EXPIRED, CANCELLED]}
+    shortCode: {type: string, pattern: '^[0-9]{8}$', description: 仅用于管理员查找，不是设备认证凭据}
+    model: {type: string}
+    createdAt: {type: string, format: date-time}
+    expiresAt: {type: string, format: date-time}
+    keySha256: {$ref: '#/Hash'}
+    serverRecoveryEpoch: {type: string}
+    approvalSha256: {type: [string, 'null']}
+    approval:
+      oneOf: [{$ref: '#/Approval'}, {type: 'null'}]
+    deviceId: {type: [string, 'null'], format: uuid, description: 仅COMPLETED返回；短码过期不删除已完成回执}
+Receipt:
+  type: object
+  required: [applicationId, approvalSha256, approval]
+  properties:
+    applicationId: {type: string, format: uuid}
+    approvalSha256: {$ref: '#/Hash'}
+    approval: {$ref: '#/Approval'}

@@ -8,7 +8,8 @@ import org.json.JSONObject
 /** One instance per Application: UI and WorkManager serialize on the same monitor. */
 class SubmissionRepository(private val db: PdaDatabase, private val session: PdaSession) {
     @Synchronized fun upload(id: String): LocalSubmission {
-        val local = checkNotNull(db.submissions().get(id)); if (local.state in setOf("SYNCED", "ABORTED", "REJECTED")) return local
+        val local = checkNotNull(db.submissions().get(id)); check(local.currentMarker == 1) { "原批次已被续作取代，请保留原记录" }; if (local.state in setOf("SYNCED", "ABORTED", "REJECTED")) return local
+        check(db.recalls().header(local.assignmentId) == null) { "本单已收到召回，请进入召回页办理恢复和停止" }
         val prepared = checkNotNull(db.preparations().order(local.assignmentId)); val current = session.requireSession()
         check(current.getString("userId") == prepared.operatorId && current.getString("deviceId") == prepared.deviceId) { "须原人员在原设备上传" }
         check(JwtVerifier.sha(local.payload.toByteArray(Charsets.UTF_8)) == local.sha256) { "冻结正文摘要损坏，请停止并保留数据" }

@@ -11,8 +11,14 @@ android {
         applicationId = "com.acrylic.outbound.pda"
         minSdk = 28
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.3.0-submission"
+        versionCode = 7
+        versionName = "0.7.0-pairing"
+        val serverUrl = providers.gradleProperty("pdaServerUrl").orElse("").get()
+        val environment = providers.gradleProperty("pdaEnvironment").orElse("未配置服务环境").get()
+        require(!serverUrl.contains('"') && !serverUrl.contains('\\') && !serverUrl.contains('\n'))
+        require(!environment.contains('"') && !environment.contains('\\') && !environment.contains('\n'))
+        buildConfigField("String", "PDA_SERVER_URL", "\"$serverUrl\"")
+        buildConfigField("String", "PDA_ENVIRONMENT", "\"$environment\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { viewBinding = true; buildConfig = true }
@@ -24,9 +30,15 @@ android {
         unitTests.all {
             it.inputs.file(rootProject.file("../server/build/pda-contract-fixture.json"))
             it.inputs.file(rootProject.file("../server/build/pda-submission-fixture.json"))
+            it.inputs.file(rootProject.file("../server/build/pda-recall-fixture.json"))
+            it.inputs.file(rootProject.file("../server/build/pda-continuation-fixture.json"))
+            it.inputs.file(rootProject.file("../server/build/pda-disposition-fixture.json"))
             it.inputs.dir(file("schemas/com.acrylic.outbound.pda.data.PdaDatabase"))
             it.systemProperty("pda.contractFixture", rootProject.file("../server/build/pda-contract-fixture.json").absolutePath)
             it.systemProperty("pda.submissionFixture", rootProject.file("../server/build/pda-submission-fixture.json").absolutePath)
+            it.systemProperty("pda.recallFixture", rootProject.file("../server/build/pda-recall-fixture.json").absolutePath)
+            it.systemProperty("pda.continuationFixture", rootProject.file("../server/build/pda-continuation-fixture.json").absolutePath)
+            it.systemProperty("pda.dispositionFixture", rootProject.file("../server/build/pda-disposition-fixture.json").absolutePath)
             it.systemProperty("pda.schemas", file("schemas/com.acrylic.outbound.pda.data.PdaDatabase").absolutePath)
         }
     }

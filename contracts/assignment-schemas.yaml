@@ -20,7 +20,7 @@ View:
     inventorySnapshotId: {type: string, format: uuid}
     planSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
     inventorySha256: {type: string, pattern: '^[0-9a-f]{64}$', description: 库存内容摘要，尚非下载包摘要}
-    startOrderScanSeq: {type: string, const: '1'}
+    startOrderScanSeq: {type: string, pattern: '^[1-9][0-9]*$', description: 首轮1，续作为完整已核验输入高水位加1}
     allocationVersion: {type: string, const: '0', description: 默认现场分堆模式，不生成条码预留}
     status: {type: string, enum: [ACTIVE, RECALL_PENDING, CLOSED, REVOKED]}
     areaNote: {type: string}

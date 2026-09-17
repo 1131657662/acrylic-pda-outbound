@@ -3,12 +3,12 @@ import type { Page } from '@playwright/test';
 import { orderLogin, orderStock, chooseProduct } from './order-fixture';
 
 async function setPolicy(page: Page, choice: string, reason: string): Promise<void> {
-  await page.getByRole('link', { name: '出库政策', exact: true }).click();
-  await page.getByRole('button', { name: '设置政策', exact: true }).click();
+  await page.getByRole('link', { name: '出库规则', exact: true }).click();
+  await page.getByRole('button', { name: '设置规则', exact: true }).click();
   await page.getByRole('dialog').getByText(choice, { exact: true }).click();
   await expect(page.getByRole('radio', { name: choice, exact: true })).toBeChecked();
-  await page.getByLabel('政策设置原因', { exact: true }).fill(reason);
-  await page.getByRole('button', { name: '保存政策', exact: true }).click();
+  await page.getByLabel('规则设置原因', { exact: true }).fill(reason);
+  await page.getByRole('button', { name: '保存规则', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
   await expect(page.locator('.el-loading-mask:visible')).toHaveCount(0);
 }
@@ -38,7 +38,7 @@ async function publishWithLostResponse(page: Page): Promise<void> {
   await expect(page.getByLabel('发布原因', { exact: true })).toBeDisabled();
   await page.getByRole('button', { name: '重试原发布请求', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(page.locator('.order-detail-title')).toContainText('待领取');
+  await expect(page.locator('.page-title')).toContainText('待领取');
 }
 test('publish fixes policy; changed policy applies only on explicit republish, then cancel', async ({ page }) => {
   await orderLogin(page); await orderStock(page);
@@ -47,6 +47,7 @@ test('publish fixes policy; changed policy applies only on explicit republish, t
   await publishWithLostResponse(page);
   await setPolicy(page, '关闭自动扣库存', '浏览器测试关闭，验证新版本政策');
   await page.goto(url);
+  await page.getByRole('tab', { name: '操作记录', exact: true }).click();
   const history = page.locator('section').filter({ has: page.getByRole('heading', { name: '发布记录', exact: true }) });
   await expect(history.locator('.el-table__body tr')).toHaveCount(1);
   await expect(history.locator('.el-table__body tr')).toContainText('开启');
@@ -56,7 +57,7 @@ test('publish fixes policy; changed policy applies only on explicit republish, t
   await page.getByLabel('修订原因', { exact: true }).fill('计划改为351包并采用新政策');
   await page.getByRole('button', { name: '保存并重新发布', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(page.locator('.metrics')).toContainText('351 包');
+  await expect(page.locator('.detail-meta')).toContainText('351 包');
   await expect(history.locator('.el-table__body tr')).toHaveCount(2);
   await expect(history.locator('.el-table__body tr').first()).toContainText('关闭');
   await expect(history.locator('.el-table__body tr').last()).toContainText('已被替代');
@@ -65,6 +66,6 @@ test('publish fixes policy; changed policy applies only on explicit republish, t
   await page.getByRole('button', { name: '作废订单', exact: true }).click();
   await page.getByLabel('作废原因', { exact: true }).fill('测试结束，保留发布记录');
   await page.getByRole('button', { name: '确认作废', exact: true }).click();
-  await expect(page.locator('.order-detail-title')).toContainText('已作废');
+  await expect(page.locator('.page-title')).toContainText('已作废');
   await expect(history.getByText('已被替代', { exact: true })).toHaveCount(2);
 });
