@@ -1,0 +1,69 @@
+Challenges:
+  post:
+    security: []
+    summary: 已登记设备申请一次性签名挑战；120秒有效
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pda-auth-schemas.yaml#/ChallengeRequest'}
+    responses:
+      '200':
+        description: 原样签署signedText的UTF-8字节；格式见PDA_API.md
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './pda-auth-schemas.yaml#/Challenge'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Login:
+  post:
+    security: []
+    summary: 人员账号密码及设备P-256私钥双重认证，pda:login和设备仓库授权
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pda-auth-schemas.yaml#/Login'}
+    responses:
+      '200': {$ref: '#/TokenResponse'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Refresh:
+  post:
+    security: []
+    summary: 新REFRESH挑战及原刷新令牌换取新令牌；两个旧令牌同时失效
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pda-auth-schemas.yaml#/Refresh'}
+    responses:
+      '200': {$ref: '#/TokenResponse'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Logout:
+  post:
+    security: [{pdaBearer: []}]
+    summary: 注销当前PDA登录会话；订单占用及已签发离线凭据保留
+    responses:
+      '200':
+        description: 当前会话已注销
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties:
+                    data:
+                      type: object
+                      required: [loggedOut]
+                      properties: {loggedOut: {type: boolean, const: true}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+TokenResponse:
+  description: accessToken最长15分钟，refreshToken绝对30天；数据库仅保存令牌摘要
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: './schemas.yaml#/Envelope'
+          - properties: {data: {$ref: './pda-auth-schemas.yaml#/Tokens'}}

@@ -1,0 +1,218 @@
+Envelope:
+  type: object
+  required:
+    - code
+    - message
+    - data
+    - requestId
+    - serverTime
+    - serverRecoveryEpoch
+    - serviceMode
+  properties:
+    code:
+      type: string
+    message:
+      type: string
+    data: {}
+    requestId:
+      type: string
+    serverTime:
+      type: string
+      format: date-time
+    serverRecoveryEpoch:
+      type: string
+    serviceMode:
+      type: string
+Identity:
+  type: object
+  required:
+    - id
+    - username
+    - displayName
+    - permissions
+    - warehouses
+  properties:
+    id:
+      type: string
+      format: uuid
+    username:
+      type: string
+    displayName:
+      type: string
+    permissions:
+      type: array
+      items:
+        type: string
+    warehouses:
+      type: array
+      items:
+        type: object
+        required:
+          - id
+          - code
+          - name
+        properties:
+          id:
+            type: string
+            format: uuid
+          code:
+            type: string
+          name:
+            type: string
+Import:
+  type: object
+  required:
+    - id
+    - warehouseId
+    - originalFilename
+    - fileSha256
+    - parserVersion
+    - status
+    - totalRows
+    - validRows
+    - errorRows
+    - duplicateRows
+    - ignoredRows
+    - productCount
+    - totalWeightGrams
+    - createdAt
+    - publishedSnapshotId
+  properties:
+    id:
+      type: string
+      format: uuid
+    warehouseId:
+      type: string
+      format: uuid
+    originalFilename:
+      type: string
+    fileSha256:
+      type: string
+      pattern: ^[a-f0-9]{64}$
+    parserVersion:
+      type: string
+      const: sku-gb18030-fixed57-v1
+    status:
+      type: string
+      enum:
+        - READY_FOR_REVIEW
+        - BLOCKED
+        - NEEDS_DEDUP_CONFIRMATION
+    totalRows:
+      type: integer
+      minimum: 0
+    validRows:
+      type: integer
+      minimum: 0
+    errorRows:
+      type: integer
+      minimum: 0
+    duplicateRows:
+      type: integer
+      minimum: 0
+    ignoredRows:
+      type: integer
+      minimum: 0
+    productCount:
+      type: integer
+      minimum: 0
+    totalWeightGrams:
+      type: string
+      pattern: ^\d+$
+      examples:
+        - '3801362000'
+    createdAt:
+      type: string
+      format: date-time
+    publishedSnapshotId:
+      type:
+        - string
+        - 'null'
+      format: uuid
+ParsedBale:
+  type: object
+  required:
+    - model
+    - name
+    - barcode
+    - deliveryCode
+    - rawWeight
+    - weightGrams
+  properties:
+    model:
+      type: string
+    name:
+      type: string
+    barcode:
+      type: string
+      pattern: ^[A-Z0-9]{11}$
+    deliveryCode:
+      type: string
+      minLength: 3
+      maxLength: 3
+    rawWeight:
+      type: string
+    weightGrams:
+      type: string
+      pattern: ^\d+$
+Row:
+  type: object
+  required:
+    - lineNo
+    - rawText
+    - parsedFields
+    - errorCode
+    - errorDetail
+  properties:
+    lineNo:
+      type: integer
+      minimum: 1
+    rawText:
+      type: string
+      description: 异常超长行只预览前1024字节；完整原字节保留在原文件
+    parsedFields:
+      oneOf:
+        - $ref: '#/ParsedBale'
+        - type: 'null'
+    errorCode:
+      type:
+        - string
+        - 'null'
+    errorDetail:
+      type:
+        - string
+        - 'null'
+ImportPage:
+  type: object
+  required:
+    - items
+    - nextCursor
+    - hasMore
+  properties:
+    items:
+      type: array
+      items:
+        $ref: '#/Import'
+    nextCursor:
+      type:
+        - string
+        - 'null'
+    hasMore:
+      type: boolean
+RowPage:
+  type: object
+  required:
+    - items
+    - nextCursor
+    - hasMore
+  properties:
+    items:
+      type: array
+      items:
+        $ref: '#/Row'
+    nextCursor:
+      type:
+        - string
+        - 'null'
+    hasMore:
+      type: boolean

@@ -1,0 +1,59 @@
+Receipt:
+  type: object
+  required: [bundleId, manifest, manifestSha256, signedManifest]
+  properties:
+    bundleId: {type: string, format: uuid}
+    manifest: {type: string, description: Manifest对象的原始UTF-8 JSON文本；按原字节计算摘要，禁止重序列化再验签}
+    manifestSha256: {$ref: '#/Sha256'}
+    signedManifest: {type: string, description: RS256 JWT；iss=acrylic-outbound，aud=acrylic-pda-preparation，绑定manifestSha256与assignmentId；exp与原48小时离线授权一致}
+Manifest:
+  type: object
+  required: [schemaVersion, bundleId, assignmentId, orderId, deviceId, operatorId, assignmentEpoch, serverRecoveryEpoch, inventorySnapshotId, revision, stateCapturedAt, expiresAt, parts]
+  properties:
+    schemaVersion: {type: integer, const: 1}
+    bundleId: {type: string, format: uuid}
+    assignmentId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    deviceId: {type: string, format: uuid}
+    operatorId: {type: string, format: uuid}
+    assignmentEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
+    serverRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
+    inventorySnapshotId: {type: string, format: uuid}
+    revision: {type: integer, minimum: 1}
+    stateCapturedAt: {type: string, format: date-time, description: 可用状态冻结时刻；没有增量同步游标}
+    expiresAt: {type: string, format: date-time}
+    parts:
+      type: array
+      minItems: 3
+      maxItems: 3
+      description: plan、inventory、availability各一份；plan行数为1，另两份行数相同
+      items: {$ref: '#/Part'}
+Part:
+  type: object
+  required: [name, compressedBytes, bytes, compressedSha256, sha256, rows]
+  properties:
+    name: {type: string, enum: [plan, inventory, availability]}
+    compressedBytes: {type: integer, minimum: 1}
+    bytes: {type: integer, minimum: 1, maximum: 16777216}
+    compressedSha256: {$ref: '#/Sha256'}
+    sha256: {$ref: '#/Sha256'}
+    rows: {type: integer, minimum: 0}
+Command:
+  type: object
+  required: [bundleId, manifestSha256, assignmentEpoch, inventorySnapshotId, activatedAt]
+  properties:
+    bundleId: {type: string, format: uuid}
+    manifestSha256: {$ref: '#/Sha256'}
+    assignmentEpoch: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    inventorySnapshotId: {type: string, format: uuid}
+    activatedAt: {type: string, format: date-time, description: PDA基于服务器时间计算；不得早于授权签发或晚于服务器当前时间300秒}
+Acknowledgement:
+  type: object
+  required: [assignmentId, bundleId, downloadAckAt]
+  properties:
+    assignmentId: {type: string, format: uuid}
+    bundleId: {type: string, format: uuid}
+    downloadAckAt: {type: string, format: date-time}
+Sha256:
+  type: string
+  pattern: '^[0-9a-f]{64}$'

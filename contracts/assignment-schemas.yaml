@@ -1,0 +1,50 @@
+Command:
+  type: object
+  required: [expectedVersion, areaNote]
+  properties:
+    expectedVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$', description: 待领取列表的rowVersion，不是revision}
+    areaNote: {type: string, maxLength: 500, description: 可空的人工货堆备注，不代表条码预留}
+View:
+  type: object
+  required: [id, orderId, revision, deviceId, deviceCode, operatorId, operatorName, epoch, serverRecoveryEpoch, inventorySnapshotId, planSha256, inventorySha256, startOrderScanSeq, allocationVersion, status, areaNote, issuedAt, expiresAt, downloadAckAt, offlineToken, offlineAuthorizationId]
+  properties:
+    id: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    revision: {type: integer}
+    deviceId: {type: string, format: uuid}
+    deviceCode: {type: string}
+    operatorId: {type: string, format: uuid}
+    operatorName: {type: string}
+    epoch: {type: string, description: 本订单的授权代次，首次为1}
+    serverRecoveryEpoch: {type: string}
+    inventorySnapshotId: {type: string, format: uuid}
+    planSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    inventorySha256: {type: string, pattern: '^[0-9a-f]{64}$', description: 库存内容摘要，尚非下载包摘要}
+    startOrderScanSeq: {type: string, const: '1'}
+    allocationVersion: {type: string, const: '0', description: 默认现场分堆模式，不生成条码预留}
+    status: {type: string, enum: [ACTIVE, RECALL_PENDING, CLOSED, REVOKED]}
+    areaNote: {type: string}
+    issuedAt: {type: string, format: date-time}
+    expiresAt: {type: string, format: date-time, description: 签发起固定48小时；到期不清除活动占用}
+    downloadAckAt: {type: [string, 'null'], format: date-time, description: 收到有效本地激活确认的服务端时间；确认前为null，重复确认不更新}
+    offlineToken: {type: [string, 'null'], description: RS256 JWT；活动列表中不是当前人员的凭据返回null}
+    offlineAuthorizationId: {type: string, format: uuid}
+Page:
+  type: object
+  required: [items, nextCursor]
+  properties:
+    items: {type: array, items: {$ref: '#/View'}}
+    nextCursor: {type: [string, 'null'], format: uuid}
+Summary:
+  type: object
+  required: [id, deviceCode, operatorName, status, epoch, issuedAt, expiresAt, downloadAckAt, areaNote]
+  properties:
+    id: {type: string, format: uuid}
+    deviceCode: {type: string}
+    operatorName: {type: string}
+    status: {type: string, enum: [ACTIVE, RECALL_PENDING]}
+    epoch: {type: string}
+    issuedAt: {type: string, format: date-time}
+    expiresAt: {type: string, format: date-time}
+    downloadAckAt: {type: [string, 'null'], format: date-time}
+    areaNote: {type: string}

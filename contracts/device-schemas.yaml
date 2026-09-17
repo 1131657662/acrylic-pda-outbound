@@ -1,0 +1,42 @@
+Register:
+  type: object
+  required: [deviceCode, name, publicKey]
+  properties:
+    deviceCode: {type: string, pattern: '^[A-Za-z0-9_-]{1,40}$'}
+    name: {type: string, minLength: 1, maxLength: 100}
+    publicKey: {type: string, minLength: 1, maxLength: 200, description: P-256公钥，X509 SubjectPublicKeyInfo DER的标准Base64；不接受PEM}
+StatusCommand:
+  type: object
+  required: [expectedVersion, status, reason]
+  properties:
+    expectedVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    status: {type: string, enum: [ACTIVE, DISABLED]}
+    reason: {type: string, minLength: 1, maxLength: 500}
+Receipt:
+  type: object
+  required: [id, deviceId, rowVersion, status]
+  properties:
+    id: {type: string, format: uuid}
+    deviceId: {type: string, format: uuid}
+    rowVersion: {type: string}
+    status: {type: string, enum: [ACTIVE, DISABLED]}
+Device:
+  type: object
+  required: [id, warehouseId, deviceCode, name, publicKey, keySha256, status, rowVersion, createdAt, lastSeenAt]
+  properties:
+    id: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    deviceCode: {type: string}
+    name: {type: string}
+    publicKey: {type: string}
+    keySha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    status: {type: string, enum: [ACTIVE, DISABLED]}
+    rowVersion: {type: string}
+    createdAt: {type: string, format: date-time}
+    lastSeenAt: {type: [string, 'null'], format: date-time}
+Page:
+  type: object
+  required: [items, nextCursor]
+  properties:
+    items: {type: array, items: {$ref: '#/Device'}}
+    nextCursor: {type: [string, 'null'], format: uuid}

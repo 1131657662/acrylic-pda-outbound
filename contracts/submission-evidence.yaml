@@ -1,0 +1,62 @@
+Capture:
+  type: object
+  required: [id, assignmentId, orderId, originDeviceId, operatorId, warehouseId, orderScanSeq, deviceCaptureSeq, rawInput, barcode, inputSource, confirmationPolicy, receivedWallMs, receivedElapsedMs, receivedBoot, snapshotId, expectedDispatchCycle, sourceRecoveryEpoch, authorizationId, assignmentEpoch, orderRevision, state, error, confirmedAt, failureAckAt]
+  properties:
+    id: {type: string, format: uuid}
+    assignmentId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    originDeviceId: {type: string, format: uuid}
+    operatorId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    orderScanSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    deviceCaptureSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    rawInput: {type: string, maxLength: 128}
+    barcode: {type: string}
+    inputSource: {type: string, enum: [BROADCAST, MANUAL]}
+    confirmationPolicy: {type: string, enum: [AUTO_AFTER_VALIDATION, MANUAL]}
+    receivedWallMs: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    receivedElapsedMs: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    receivedBoot: {type: integer}
+    snapshotId: {type: string, format: uuid}
+    expectedDispatchCycle: {type: [string, 'null']}
+    sourceRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    authorizationId: {type: string, format: uuid}
+    assignmentEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    orderRevision: {type: integer, minimum: 1}
+    inputRevision: {type: integer, const: 1}
+    state: {type: string, enum: [COMMITTED, INVALID, BUSINESS_REJECTED, DISCARDED]}
+    error: {type: string, maxLength: 500}
+    confirmedAt: {type: [string, 'null'], format: date-time}
+    failureAckAt: {type: [string, 'null'], format: date-time}
+Scan:
+  type: object
+  required: [captureId, orderScanSeq, barcode, baleId, deliveryCode, model, name, rawWeight, weightGrams, expectedDispatchCycle, savedAt, localSeq, status]
+  properties:
+    captureId: {type: string, format: uuid}
+    orderScanSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    barcode: {type: string, pattern: '^[0-9A-Z]{11}$'}
+    baleId: {type: string, format: uuid}
+    deliveryCode: {type: string}
+    model: {type: string}
+    name: {type: string}
+    rawWeight: {type: string}
+    weightGrams: {$ref: './submission-schemas.yaml#/Positive'}
+    expectedDispatchCycle: {$ref: './submission-schemas.yaml#/Positive'}
+    savedAt: {type: string, format: date-time}
+    localSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    status: {type: string, enum: [ACTIVE, VOID]}
+Event:
+  type: object
+  required: [id, assignmentId, captureId, originDeviceId, operatorId, localSeq, type, detail, wallMs, elapsedMs, boot]
+  properties:
+    id: {type: string, format: uuid}
+    assignmentId: {type: string, format: uuid}
+    captureId: {type: [string, 'null'], format: uuid}
+    originDeviceId: {type: string, format: uuid}
+    operatorId: {type: string, format: uuid}
+    localSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    type: {type: string}
+    detail: {type: string, maxLength: 500}
+    wallMs: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    elapsedMs: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    boot: {type: integer}

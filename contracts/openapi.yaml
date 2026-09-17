@@ -1,0 +1,1001 @@
+openapi: 3.1.0
+info:
+  title: 腈纶包出库系统 — 已实现接口
+  version: 0.7.0
+  description: Web会话、库存/映射、订单及政策、设备登记、PDA双身份认证、独占领取、签名资料准备、正式单冻结提交、短装审批、全局防重和可选自动记账。完整同步、续作、更正及文件生成仍待接入。
+servers:
+  - url: /api/v1
+security:
+  - webSession: []
+paths:
+  /auth/csrf:
+    get:
+      security: []
+      summary: 获取当前会话的CSRF凭据（登录前也需要）
+      responses:
+        '200':
+          description: data包含headerName与token。CSRF凭据仅放内存；登录、退出后重新获取。
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        type: object
+                        required:
+                          - headerName
+                          - token
+                        properties:
+                          headerName:
+                            type: string
+                          token:
+                            type: string
+  /auth/web/login:
+    post:
+      security: []
+      summary: Web表单登录，HttpOnly会话；与PDA Bearer认证隔离
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  maxLength: 64
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: '设置OUTBOUND_SESSION；data为 {authenticated: true}'
+          content:
+            application/json:
+              schema:
+                $ref: ./schemas.yaml#/Envelope
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/Error'
+  /auth/web/logout:
+    post:
+      summary: 注销会话并清除Cookie
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '200':
+          description: 'data为 {authenticated: false}'
+          content:
+            application/json:
+              schema:
+                $ref: ./schemas.yaml#/Envelope
+        '403':
+          $ref: '#/components/responses/Error'
+  /me:
+    get:
+      summary: 当前用户、实时权限和可访问仓库
+      responses:
+        '200':
+          description: 不返回密码、密码哈希或会话令牌
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        $ref: ./schemas.yaml#/Identity
+        '401':
+          $ref: '#/components/responses/Error'
+  /inventory/imports:
+    post:
+      summary: 上传、留存原文件并完成预检；不会发布有效库存
+      description: 文件上限2MiB/40000行。同仓库、同字节摘要、同解析版本返回已有记录。所有数据行在同一事务中落库，错误版本保留；不自动发布有效子集。
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: ^[A-Za-z0-9._:-]{16,80}$
+        - name: X-Server-Recovery-Epoch
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - warehouseId
+                - file
+              properties:
+                warehouseId:
+                  type: string
+                  format: uuid
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          $ref: '#/components/responses/Import'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '413':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+    get:
+      summary: 按上传时间倒序查询本仓库导入历史
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - $ref: '#/components/parameters/Limit'
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 游标分页
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        $ref: ./schemas.yaml#/ImportPage
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+  /inventory/imports/{id}:
+    get:
+      summary: 查看所属仓库的预检汇总
+      parameters:
+        - $ref: '#/components/parameters/ImportId'
+        - $ref: '#/components/parameters/Warehouse'
+      responses:
+        '200':
+          $ref: '#/components/responses/Import'
+        '404':
+          $ref: '#/components/responses/Error'
+  /inventory/imports/{id}/rows:
+    get:
+      summary: 按原文件行号查看明细和逐行错误
+      parameters:
+        - $ref: '#/components/parameters/ImportId'
+        - $ref: '#/components/parameters/Warehouse'
+        - $ref: '#/components/parameters/Limit'
+        - name: afterLine
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: errorsOnly
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: nextCursor为下一次afterLine；错误包含需确认的相同重复行
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        $ref: ./schemas.yaml#/RowPage
+        '404':
+          $ref: '#/components/responses/Error'
+  /inventory/imports/{id}/diff:
+    get:
+      summary: 对比当前库存与待发布文件；返回用于发布的版本基线
+      parameters:
+        - $ref: '#/components/parameters/ImportId'
+        - $ref: '#/components/parameters/Warehouse'
+      responses:
+        '200':
+          description: 统一响应，data结构如下
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        $ref: ./master-schemas.yaml#/DiffSummary
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /inventory/imports/{id}/diff/{kind}:
+    get:
+      summary: 按条码或代码升序分页查看差异；基线变化返回409
+      parameters:
+        - $ref: '#/components/parameters/ImportId'
+        - $ref: '#/components/parameters/Warehouse'
+        - name: kind
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - changes
+              - mappings
+        - name: after
+          in: query
+          required: false
+          schema:
+            type: string
+            default: ''
+        - $ref: '#/components/parameters/Limit'
+        - name: expectedSnapshot
+          in: query
+          required: true
+          schema:
+            type: string
+            description: 基线snapshot UUID；无版本时传NONE
+        - name: expectedMappingRevision
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: ^[0-9]+$
+      responses:
+        '200':
+          description: changes返回ChangePage，mappings返回MappingChangePage
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        oneOf:
+                          - $ref: ./master-schemas.yaml#/ChangePage
+                          - $ref: ./master-schemas.yaml#/MappingChangePage
+        '409':
+          $ref: '#/components/responses/Error'
+        default:
+          $ref: '#/components/responses/Error'
+  /inventory/imports/{id}/publish:
+    post:
+      summary: 经显式核对后原子发布；inventory:publish，候选映射变化另需mapping:maintain
+      parameters:
+        - $ref: '#/components/parameters/ImportId'
+        - $ref: '#/components/parameters/Warehouse'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+        - $ref: '#/components/parameters/Epoch'
+      responses:
+        '200':
+          description: 统一响应，data结构如下
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        $ref: ./master-schemas.yaml#/Receipt
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./master-schemas.yaml#/PublicationDecisions
+  /delivery-mappings:
+    get:
+      summary: 当前代码映射，停用项仍显示；按代码升序分页
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - name: afterCode
+          in: query
+          required: false
+          schema:
+            type: string
+            default: ''
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: 统一响应，data结构如下
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        $ref: ./master-schemas.yaml#/MappingPage
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /delivery-mappings/{code}/history:
+    get:
+      summary: 代码映射版本历史，按版本降序
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: beforeVersion
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: ^[1-9][0-9]*$
+            default: '9223372036854775807'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: 统一响应，data结构如下
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        $ref: ./master-schemas.yaml#/MappingPage
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /delivery-mappings/revisions:
+    post:
+      summary: 建立映射修订，不覆盖历史；需mapping:maintain，首次expectedVersion为0
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+        - $ref: '#/components/parameters/Epoch'
+      responses:
+        '200':
+          description: 统一响应，data结构如下
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        $ref: ./master-schemas.yaml#/MappingReceipt
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./master-schemas.yaml#/MappingRevision
+  /inventory/current:
+    get:
+      summary: 当前库存版本指针及映射修订号
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+      responses:
+        '200':
+          description: 统一响应，data结构如下
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        $ref: ./master-schemas.yaml#/Baseline
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /inventory/snapshots:
+    get:
+      summary: 历史发布回执，按版本降序；是否当前版本以current指针为准
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - name: beforeVersion
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: ^[1-9][0-9]*$
+            default: '9223372036854775807'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: 统一响应，data结构如下
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        $ref: ./master-schemas.yaml#/ReceiptPage
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /inventory/bales:
+    get:
+      summary: 包库存查询，分别显示上游声明、扣账、冻结及周期；非可分配承诺
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - name: barcode
+          in: query
+          required: false
+          schema:
+            type: string
+            description: 完整条码精确匹配
+        - name: deliveryCode
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: presence
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - all
+              - present
+              - missing
+            default: all
+        - name: afterBarcode
+          in: query
+          required: false
+          schema:
+            type: string
+            default: ''
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: 统一响应，data结构如下
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        $ref: ./master-schemas.yaml#/BalePage
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /inventory/discrepancies:
+    get:
+      summary: 待核对差异，按UUIDv7降序；不自动更正账务
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - name: beforeId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: 统一响应，data结构如下
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data:
+                        $ref: ./master-schemas.yaml#/DiscrepancyPage
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+  /orders:
+    parameters:
+      - $ref: '#/components/parameters/Warehouse'
+    get:
+      summary: 按仓库分页查订单，order:read
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - {name: status, in: query, schema: {type: string}}
+        - {name: search, in: query, description: 完整订单号或完整车号，最多40字符, schema: {type: string, maxLength: 40}}
+        - {name: cursor, in: query, description: 服务器返回的创建时间和ID复合游标，修改筛选时重置, schema: {type: string}}
+      responses:
+        '200':
+          description: 订单列表；未上报实绩不伪造为0
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data: {$ref: './order-schemas.yaml#/OrderPage'}
+        default: {$ref: '#/components/responses/Error'}
+    post:
+      summary: 创建正式订单草稿，order:write；不下发PDA
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+        - $ref: '#/components/parameters/Epoch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: './order-schemas.yaml#/Plan'}
+      responses:
+        '200': {$ref: '#/components/responses/OrderReceipt'}
+        default: {$ref: '#/components/responses/Error'}
+  /orders/products:
+    get:
+      summary: 启用产品搜索及库存/映射基线，order:read
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - $ref: '#/components/parameters/Limit'
+        - {name: search, in: query, schema: {type: string, maxLength: 100}}
+        - {name: afterCode, in: query, schema: {type: string, pattern: '^[A-Z0-9]{0,3}$'}}
+      responses:
+        '200':
+          description: 仅启用映射；产品候选数量不等于库存预留
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data: {$ref: './order-schemas.yaml#/Options'}
+        default: {$ref: '#/components/responses/Error'}
+  /orders/{id}:
+    get:
+      summary: 订单详情或指定历史计划版本，order:read
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - $ref: '#/components/parameters/OrderId'
+        - {name: revision, in: query, schema: {type: integer, minimum: 1}}
+      responses:
+        '200':
+          description: order始终为当前头，plan及lines为指定版本；未指定则读取当前版本
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data: {$ref: './order-schemas.yaml#/Detail'}
+        default: {$ref: '#/components/responses/Error'}
+  /orders/{id}/revisions:
+    parameters:
+      - $ref: '#/components/parameters/Warehouse'
+      - $ref: '#/components/parameters/OrderId'
+    get:
+      summary: 计划版本历史，order:read
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - {name: beforeRevision, in: query, schema: {type: integer, format: int64, minimum: 1, default: 2147483648}}
+      responses:
+        '200':
+          description: 版本倒序，nextCursor作为下一页beforeRevision
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data: {$ref: './order-schemas.yaml#/RevisionPage'}
+        default: {$ref: '#/components/responses/Error'}
+    post:
+      summary: 修订DRAFT或READY，order:write；READY另需order:publish及expectedPolicyVersion，原子重新发布
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+        - $ref: '#/components/parameters/Epoch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: './order-schemas.yaml#/RevisionCommand'}
+      responses:
+        '200': {$ref: '#/components/responses/OrderReceipt'}
+        default: {$ref: '#/components/responses/Error'}
+  /orders/{id}/cancel:
+    post:
+      summary: 作废DRAFT或READY，order:cancel；保留全部版本及审计，已领取须走召回
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+        - $ref: '#/components/parameters/Epoch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: './order-schemas.yaml#/CancelCommand'}
+      responses:
+        '200': {$ref: '#/components/responses/OrderReceipt'}
+        default: {$ref: '#/components/responses/Error'}
+  /orders/{id}/preflight:
+    get:
+      summary: 下发前只读检查，order:read；不会发布、授权或预留
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          description: 状态/版本/映射阻断项和数量缺口提示；dispatchAvailable当前固定false
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data: {$ref: './order-schemas.yaml#/Preflight'}
+        default: {$ref: '#/components/responses/Error'}
+  /orders/{id}/events:
+    get:
+      summary: 订单操作时间线，order:read
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/Limit'
+        - {name: beforeId, in: query, schema: {type: string, pattern: '^[1-9][0-9]*$'}, description: 缺省9223372036854775807，下一页使用nextCursor}
+      responses:
+        '200':
+          description: 当前订单的操作记录
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data: {$ref: './order-schemas.yaml#/EventPage'}
+        default: {$ref: '#/components/responses/Error'}
+  /policies/current:
+    get:
+      summary: 当前仓库政策，order:read；尚未配置返回policy为null，不擅设扣账默认值
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+      responses:
+        '200':
+          description: 当前政策
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data: {$ref: './publication-schemas.yaml#/CurrentPolicy'}
+        default: {$ref: '#/components/responses/Error'}
+  /policies:
+    parameters:
+      - $ref: '#/components/parameters/Warehouse'
+    get:
+      summary: 不可变政策历史，order:read
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - {name: beforeVersion, in: query, schema: {type: string, pattern: '^[1-9][0-9]*$'}, description: 缺省9223372036854775807，下一页使用nextCursor}
+      responses:
+        '200':
+          description: 政策版本倒序
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data: {$ref: './publication-schemas.yaml#/PolicyPage'}
+        default: {$ref: '#/components/responses/Error'}
+    post:
+      summary: 显式设置自动扣库存，policy:manage；固定其他已确认规则，不修改已发布订单
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+        - $ref: '#/components/parameters/Epoch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: './publication-schemas.yaml#/PolicyCommand'}
+      responses:
+        '200':
+          description: 新政策；同键重试返回原政策版本
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data: {$ref: './publication-schemas.yaml#/Policy'}
+        default: {$ref: '#/components/responses/Error'}
+  /orders/{id}/publish:
+    post:
+      summary: 发布DRAFT为READY，order:publish；固定计划、政策与恢复代次，建立计划单任务和同步outbox
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/Csrf'
+        - $ref: '#/components/parameters/Idempotency'
+        - $ref: '#/components/parameters/Epoch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: './publication-schemas.yaml#/PublishCommand'}
+      responses:
+        '200': {$ref: '#/components/responses/OrderReceipt'}
+        default: {$ref: '#/components/responses/Error'}
+  /orders/{id}/publications:
+    get:
+      summary: 发布历史与计划单任务状态，order:read；当前无PDF生成或下载
+      parameters:
+        - $ref: '#/components/parameters/Warehouse'
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/Limit'
+        - {name: beforeRevision, in: query, schema: {type: integer, format: int64, minimum: 1, default: 2147483648}}
+      responses:
+        '200':
+          description: 计划版本倒序，nextCursor作为下一页beforeRevision
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: ./schemas.yaml#/Envelope
+                  - properties:
+                      data: {$ref: './publication-schemas.yaml#/PublicationPage'}
+        default: {$ref: '#/components/responses/Error'}
+  /devices:
+    $ref: './device-paths.yaml#/Devices'
+  /devices/{id}/status:
+    $ref: './device-paths.yaml#/Status'
+  /orders/{id}/assignment:
+    $ref: './device-paths.yaml#/Assignment'
+  /pda/auth/challenges:
+    $ref: './pda-auth-paths.yaml#/Challenges'
+  /pda/auth/login:
+    $ref: './pda-auth-paths.yaml#/Login'
+  /pda/auth/refresh:
+    $ref: './pda-auth-paths.yaml#/Refresh'
+  /pda/auth/logout:
+    $ref: './pda-auth-paths.yaml#/Logout'
+  /pda/devices/me:
+    $ref: './pda-paths.yaml#/Device'
+  /pda/signing-key:
+    $ref: './pda-paths.yaml#/SigningKey'
+  /pda/orders:
+    $ref: './pda-paths.yaml#/Orders'
+  /pda/orders/{id}/assignments:
+    $ref: './pda-paths.yaml#/Claim'
+  /pda/assignments:
+    $ref: './pda-paths.yaml#/Assignments'
+  /pda/assignments/{id}/preparation:
+    $ref: './preparation-paths.yaml#/Prepare'
+  /pda/assignments/{id}/content/{part}:
+    $ref: './preparation-paths.yaml#/Content'
+  /pda/assignments/{id}/download-ack:
+    $ref: './preparation-paths.yaml#/Acknowledge'
+  /pda/orders/{order}/submissions:
+    $ref: './submission-paths.yaml#/Submit'
+  /pda/submissions/{id}:
+    $ref: './submission-paths.yaml#/Query'
+  /pda/submissions/{id}/abort:
+    $ref: './submission-paths.yaml#/Abort'
+  /pda/submissions/{id}/upload:
+    $ref: './submission-paths.yaml#/Upload'
+  /pda/submissions/{id}/chunks/{index}:
+    $ref: './submission-paths.yaml#/Chunk'
+  /pda/submissions/{id}/finalize:
+    $ref: './submission-paths.yaml#/Finalize'
+  /orders/{order}/submission:
+    $ref: './submission-paths.yaml#/OrderQuery'
+  /submissions/{id}/review:
+    $ref: './submission-paths.yaml#/Review'
+components:
+  securitySchemes:
+    pdaBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: Opaque
+      description: PDA账号密码及设备私钥认证取得的短期随机令牌；不能使用离线JWT或Web Cookie
+    webSession:
+      type: apiKey
+      in: cookie
+      name: OUTBOUND_SESSION
+  parameters:
+    OrderId:
+      name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    Csrf:
+      name: X-CSRF-TOKEN
+      in: header
+      required: true
+      schema:
+        type: string
+    Warehouse:
+      name: warehouseId
+      in: query
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ImportId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    Idempotency:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        pattern: ^[A-Za-z0-9._:-]{16,80}$
+    Epoch:
+      name: X-Server-Recovery-Epoch
+      in: header
+      required: true
+      schema:
+        type: string
+  responses:
+    OrderReceipt:
+      description: 不可变操作回执；同幂等键同正文重试返回原结果，即使订单后来已修订或作废
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: ./schemas.yaml#/Envelope
+              - properties:
+                  data: {$ref: './order-schemas.yaml#/Receipt'}
+    Error:
+      description: 统一错误响应，data为null；详见IMPLEMENTED_API.md中的错误码与重试规则
+      content:
+        application/json:
+          schema:
+            $ref: ./schemas.yaml#/Envelope
+    Import:
+      description: 持久化预检结果（包括BLOCKED），200不代表库存已发布
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: ./schemas.yaml#/Envelope
+              - properties:
+                  data:
+                    $ref: ./schemas.yaml#/Import

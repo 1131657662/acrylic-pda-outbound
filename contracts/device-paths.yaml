@@ -1,0 +1,81 @@
+Devices:
+  get:
+    summary: 本仓库已登记设备，device:manage
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Warehouse'
+      - $ref: './openapi.yaml#/components/parameters/Limit'
+      - {name: beforeId, in: query, schema: {type: string, format: uuid}}
+    responses:
+      '200':
+        description: 设备ID倒序，nextCursor用于beforeId
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './device-schemas.yaml#/Page'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+  post:
+    summary: 管理员登记设备公钥及仓库，device:manage；代码及公钥全局唯一
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Warehouse'
+      - $ref: './openapi.yaml#/components/parameters/Csrf'
+      - $ref: './openapi.yaml#/components/parameters/Idempotency'
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './device-schemas.yaml#/Register'}
+    responses:
+      '200': {$ref: '#/Receipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Status:
+  post:
+    summary: 启停设备并作废已有登录会话，device:manage；不释放订单，不撤销历史离线凭据
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Warehouse'
+      - $ref: './openapi.yaml#/components/parameters/OrderId'
+      - $ref: './openapi.yaml#/components/parameters/Csrf'
+      - $ref: './openapi.yaml#/components/parameters/Idempotency'
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './device-schemas.yaml#/StatusCommand'}
+    responses:
+      '200': {$ref: '#/Receipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Assignment:
+  get:
+    summary: Web查看活动订单占用摘要，order:read；不返回签名凭据
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Warehouse'
+      - $ref: './openapi.yaml#/components/parameters/OrderId'
+    responses:
+      '200':
+        description: 没有活动占用时assignment为null
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties:
+                    data:
+                      type: object
+                      required: [assignment]
+                      properties:
+                        assignment:
+                          oneOf:
+                            - $ref: './assignment-schemas.yaml#/Summary'
+                            - {type: 'null'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Receipt:
+  description: 不可变设备操作回执，同键同正文返回原结果
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: './schemas.yaml#/Envelope'
+          - properties: {data: {$ref: './device-schemas.yaml#/Receipt'}}

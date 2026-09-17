@@ -1,0 +1,70 @@
+Policy:
+  type: object
+  required: [id, version, autoDeductInventory, schemaVersion, offlineHours, shortShipmentPolicy, concurrencyMode, scanMode, reason, publishedBy, publishedAt]
+  properties:
+    id: {type: string, format: uuid}
+    version: {type: string}
+    autoDeductInventory: {type: boolean}
+    schemaVersion: {type: integer, const: 1}
+    offlineHours: {type: integer, const: 48}
+    shortShipmentPolicy: {type: string, const: SUPERVISOR_APPROVAL}
+    concurrencyMode: {type: string, const: PHYSICAL_SEPARATION}
+    scanMode: {type: string, const: AUTO_SCAN_MANUAL_CONFIRM}
+    reason: {type: string}
+    publishedBy: {type: string}
+    publishedAt: {type: string, format: date-time}
+CurrentPolicy:
+  type: object
+  required: [policy]
+  properties:
+    policy:
+      oneOf:
+        - $ref: '#/Policy'
+        - {type: 'null'}
+PolicyCommand:
+  type: object
+  required: [expectedVersion, autoDeductInventory, reason]
+  properties:
+    expectedVersion: {type: string, pattern: '^[0-9]{1,18}$', description: 首次设置传0，以后传当前政策版本}
+    autoDeductInventory: {type: boolean, description: 必须明确选择，无隐含默认值；不会修改已发布订单}
+    reason: {type: string, minLength: 1, maxLength: 500}
+PolicyPage:
+  allOf:
+    - $ref: './order-schemas.yaml#/Pagination'
+    - type: object
+      required: [items]
+      properties:
+        items: {type: array, items: {$ref: '#/Policy'}}
+PublishCommand:
+  type: object
+  required: [expectedVersion, expectedPolicyVersion, reason]
+  properties:
+    expectedVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$', description: 订单rowVersion}
+    expectedPolicyVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    reason: {type: string, minLength: 1, maxLength: 500}
+Publication:
+  type: object
+  required: [id, revision, rowVersion, policyVersion, autoDeductInventory, serverRecoveryEpoch, reason, publishedBy, publishedAt, documentTaskId, documentStatus, templateVersion]
+  properties:
+    id: {type: string, format: uuid}
+    revision: {type: integer, minimum: 1}
+    rowVersion: {type: string}
+    policyVersion: {type: string}
+    autoDeductInventory: {type: boolean}
+    serverRecoveryEpoch: {type: string}
+    reason: {type: string}
+    publishedBy: {type: string}
+    publishedAt: {type: string, format: date-time}
+    documentTaskId: {type: string, format: uuid}
+    documentStatus:
+      type: string
+      enum: [PENDING, RUNNING, SUCCEEDED, FAILED, SUPERSEDED]
+      description: 当前仅创建PENDING任务并在修订或作废后标SUPERSEDED；PDF Worker尚未接入
+    templateVersion: {type: string}
+PublicationPage:
+  allOf:
+    - $ref: './order-schemas.yaml#/Pagination'
+    - type: object
+      required: [items]
+      properties:
+        items: {type: array, items: {$ref: '#/Publication'}}

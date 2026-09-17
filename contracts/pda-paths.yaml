@@ -1,0 +1,85 @@
+Device:
+  get:
+    security: [{pdaBearer: []}]
+    summary: 当前认证设备信息；仓库由设备登记决定
+    responses:
+      '200':
+        description: 当前设备
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './device-schemas.yaml#/Device'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+SigningKey:
+  get:
+    security: [{pdaBearer: []}]
+    summary: 取得当前服务端离线授权验签公钥
+    responses:
+      '200':
+        description: 只返回公钥；私钥不通过接口暴露
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './pda-auth-schemas.yaml#/SigningKey'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Orders:
+  get:
+    security: [{pdaBearer: []}]
+    summary: 当前设备仓库的READY订单，pda:assign；仅预览，不创建占用
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Limit'
+      - {name: cursor, in: query, schema: {type: string}}
+    responses:
+      '200':
+        description: 使用nextCursor继续分页；领取时仍重新检查状态和基线
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './order-schemas.yaml#/OrderPage'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Claim:
+  post:
+    security: [{pdaBearer: []}]
+    summary: 独占领取待领取订单，pda:assign及pda:scan；设备和仓库来自认证身份
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/OrderId'
+      - $ref: './openapi.yaml#/components/parameters/Idempotency'
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './assignment-schemas.yaml#/Command'}
+    responses:
+      '200':
+        description: 同人员、设备、键和正文重试取回同一授权及签名，不延长有效期
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './assignment-schemas.yaml#/View'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Assignments:
+  get:
+    security: [{pdaBearer: []}]
+    summary: 本机活动占用，用于领取结果未知后的恢复；包含过期但尚未释放的授权
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Limit'
+      - {name: beforeId, in: query, schema: {type: string, format: uuid}}
+    responses:
+      '200':
+        description: ID倒序；不是当前登录人员的占用保留可见，offlineToken为null，不可代用他人凭据
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './assignment-schemas.yaml#/Page'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}

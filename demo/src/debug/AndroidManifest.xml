@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- ADB run-as uses the app UID. Other apps and ordinary shell cannot invoke this. -->
+        <receiver android:name=".automation.DemoControlReceiver" android:exported="false" />
+    </application>
+</manifest>

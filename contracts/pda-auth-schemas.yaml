@@ -1,0 +1,54 @@
+ChallengeRequest:
+  type: object
+  required: [deviceId, purpose, bindingSha256]
+  properties:
+    deviceId: {type: string, format: uuid}
+    purpose: {type: string, enum: [LOGIN, REFRESH]}
+    bindingSha256: {type: string, pattern: '^[0-9a-f]{64}$', description: LOGIN为UTF-8 username的SHA-256；REFRESH为UTF-8 refreshToken的SHA-256}
+Challenge:
+  type: object
+  required: [challengeId, signedText, expiresAt]
+  properties:
+    challengeId: {type: string, format: uuid}
+    signedText: {type: string, description: 对原样UTF-8文本执行SHA256withECDSA，DER签名使用标准Base64；不得改换行或尾部补换行}
+    expiresAt: {type: string, format: date-time, description: 120秒、一次性}
+Login:
+  type: object
+  required: [username, password, deviceId, challengeId, signature]
+  properties:
+    username: {type: string, pattern: '^[A-Za-z0-9._-]{1,64}$'}
+    password: {type: string, minLength: 1, maxLength: 72, writeOnly: true}
+    deviceId: {type: string, format: uuid}
+    challengeId: {type: string, format: uuid}
+    signature: {type: string, minLength: 1, maxLength: 120}
+Refresh:
+  type: object
+  required: [deviceId, challengeId, refreshToken, signature]
+  properties:
+    deviceId: {type: string, format: uuid}
+    challengeId: {type: string, format: uuid}
+    refreshToken: {type: string, pattern: '^[A-Za-z0-9_-]{43}$', writeOnly: true}
+    signature: {type: string, minLength: 1, maxLength: 120}
+Tokens:
+  type: object
+  required: [accessToken, refreshToken, tokenType, expiresIn, sessionId, userId, deviceId, warehouseId, userAuthVersion, deviceVersion, accessExpiresAt, refreshExpiresAt]
+  properties:
+    accessToken: {type: string, pattern: '^[A-Za-z0-9_-]{43}$'}
+    refreshToken: {type: string, pattern: '^[A-Za-z0-9_-]{43}$'}
+    tokenType: {type: string, const: Bearer}
+    expiresIn: {type: integer, minimum: 0, maximum: 900}
+    sessionId: {type: string, format: uuid}
+    userId: {type: string, format: uuid}
+    deviceId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    userAuthVersion: {type: string, pattern: '^[1-9][0-9]*$', description: 当前人员权限版本，必须与离线凭据一致}
+    deviceVersion: {type: string, pattern: '^[1-9][0-9]*$', description: 当前设备版本，重新登录不更新既有离线凭据}
+    accessExpiresAt: {type: string, format: date-time}
+    refreshExpiresAt: {type: string, format: date-time, description: 首次登录起30天的绝对上限，刷新不延长}
+SigningKey:
+  type: object
+  required: [keyId, algorithm, publicKey]
+  properties:
+    keyId: {type: string}
+    algorithm: {type: string, const: RS256}
+    publicKey: {type: string, description: RSA X509 SubjectPublicKeyInfo DER标准Base64；须通过可信HTTPS连接取得并校验kid}

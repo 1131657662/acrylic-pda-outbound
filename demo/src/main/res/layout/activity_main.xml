@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="#F2F5F3" android:padding="12dp">
+    <TextView android:id="@+id/heading" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="M71 · 扫码自动保存" android:textSize="18sp" android:textStyle="bold" android:textColor="#123C39" />
+    <TextView android:id="@+id/orderTitle" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="测试数据 · 加载中" android:textSize="14sp" android:textColor="#51665F" android:maxLines="1" />
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:fillViewport="true" android:layout_marginTop="8dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:background="#FFFFFF" android:padding="12dp">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="当前条码" android:textSize="14sp" android:textColor="#51665F" />
+                <TextView android:id="@+id/barcode" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="等待扫描" android:textSize="27sp" android:textStyle="bold" android:fontFamily="monospace"
+                    android:textColor="#153E38" android:breakStrategy="simple" />
+                <TextView android:id="@+id/candidateStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="扫描校验通过后自动保存" android:textSize="16sp" android:textColor="#145B54" />
+            </LinearLayout>
+            <EditText android:id="@+id/manualInput" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:minHeight="48dp" android:hint="手输完整条码，再按 K1 / F1"
+                android:inputType="textVisiblePassword|textCapCharacters" android:maxLength="128"
+                android:singleLine="true" android:visibility="gone" android:textSize="20sp"
+                android:importantForAutofill="no" />
+            <TextView android:id="@+id/total" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:text="0 包" android:textSize="26sp" android:textStyle="bold"
+                android:textColor="#123C39" />
+            <TextView android:id="@+id/lines" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="分产品计划" android:textSize="16sp" android:textColor="#234D43" />
+            <TextView android:id="@+id/queue" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="6dp" android:text="待处理 0 · 入口 0" android:textSize="14sp" android:textColor="#51665F" />
+            <TextView android:id="@+id/message" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="6dp" android:text="只验证本地作业，不连接生产库存" android:textSize="15sp"
+                android:textColor="#705017" />
+            <TextView android:id="@+id/recent" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:text="最近保存：暂无" android:textSize="14sp"
+                android:textColor="#51665F" android:maxLines="3" />
+        </LinearLayout>
+    </ScrollView>
+    <Button android:id="@+id/confirmButton" android:layout_width="match_parent" android:layout_height="52dp"
+        android:text="确认处理错误" android:textSize="16sp" android:visibility="gone" />
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center"
+        android:text="扫码自动保存 · 手输 F1 校验后回车" android:textSize="13sp" android:textColor="#51665F" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+        <Button android:id="@+id/manualButton" android:layout_width="0dp" android:layout_weight="1"
+            android:layout_height="52dp" android:text="手输 F1" android:textSize="15sp" />
+        <Button android:id="@+id/auxButton" android:layout_width="0dp" android:layout_weight="1"
+            android:layout_height="52dp" android:text="辅助 F2" android:textSize="15sp" />
+        <Button android:id="@+id/menuButton" android:layout_width="0dp" android:layout_weight="1"
+            android:layout_height="52dp" android:text="更多" android:textSize="15sp" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:padding="12dp" android:background="#F2F5F3">
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="全部按键验证" android:textSize="22sp" android:textStyle="bold" android:textColor="#123C39" />
+    <TextView android:id="@+id/progress" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="准备开始" android:textSize="16sp" android:textColor="#51665F" android:layout_marginTop="8dp" />
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:fillViewport="true" android:layout_marginTop="12dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="12dp" android:background="#FFFFFF">
+            <TextView android:id="@+id/prompt" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="回来后点击开始" android:textSize="27sp" android:textStyle="bold" android:textColor="#123C39" />
+            <TextView android:id="@+id/instructions" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="17sp" android:textColor="#234D43" android:layout_marginTop="12dp" />
+            <TextView android:id="@+id/feedback" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="16sp" android:textColor="#705017" android:layout_marginTop="12dp" />
+            <TextView android:id="@+id/result" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textSize="14sp" android:textColor="#51665F" android:layout_marginTop="12dp" />
+        </LinearLayout>
+    </ScrollView>
+    <Button android:id="@+id/primary" android:layout_width="match_parent" android:layout_height="56dp"
+        android:text="开始验证" android:textSize="18sp" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+        <Button android:id="@+id/previous" android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+            android:text="上一个键" android:textSize="15sp" />
+        <Button android:id="@+id/retry" android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+            android:text="重测本键" android:textSize="15sp" />
+        <Button android:id="@+id/leave" android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1"
+            android:text="稍后继续" android:textSize="15sp" />
+    </LinearLayout>
+</LinearLayout>

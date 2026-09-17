@@ -1,0 +1,68 @@
+AssignmentId:
+  name: id
+  in: path
+  required: true
+  schema: {type: string, format: uuid}
+Prepare:
+  post:
+    security: [{pdaBearer: []}]
+    summary: 为原人员及原设备准备不可变下载包，需要pda:assign及pda:scan
+    description: 每授权仅一份包；重试返回原清单与原签名，不更新状态截点、离线期限或占用。无需另设幂等键。
+    parameters:
+      - $ref: '#/AssignmentId'
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+    responses:
+      '200':
+        description: 已持久化的固定准备包回执
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './preparation-schemas.yaml#/Receipt'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Content:
+  get:
+    security: [{pdaBearer: []}]
+    summary: 下载固定版本gzip文件，需要原人员、原设备及有效离线授权
+    description: 返回application/gzip原字节；无JSON包装、无HTTP Content-Encoding自动解压。每次下载重新鉴权；失败不放锁。
+    parameters:
+      - $ref: '#/AssignmentId'
+      - name: part
+        in: path
+        required: true
+        schema: {type: string, enum: [plan, inventory, availability]}
+      - name: bundleId
+        in: query
+        required: true
+        schema: {type: string, format: uuid}
+    responses:
+      '200':
+        description: Cache-Control no-store；逐文件校验压缩及解压大小和SHA-256
+        content:
+          application/gzip:
+            schema: {type: string, format: binary}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Acknowledge:
+  post:
+    security: [{pdaBearer: []}]
+    summary: PDA完成全部校验并原子激活后确认下载，需要pda:assign及pda:scan
+    description: 只记录准备完成，不是出库或扫码回执。同一bundle重复确认返回原服务端时间，审计仅一次；无另设幂等键。
+    parameters:
+      - $ref: '#/AssignmentId'
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './preparation-schemas.yaml#/Command'}
+    responses:
+      '200':
+        description: downloadAckAt为首次有效确认时间
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './preparation-schemas.yaml#/Acknowledgement'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}

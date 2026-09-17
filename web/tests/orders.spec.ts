@@ -1,0 +1,60 @@
+import { test, expect } from '@playwright/test';
+import { z } from 'zod';
+import { orderLogin, orderStock, chooseProduct } from './order-fixture';
+
+test('create 361-bale order, lost-response retry, immutable revision and cancellation', async ({ page }) => {
+  await orderLogin(page); await orderStock(page);
+  await page.getByRole('link', { name: '装车订单', exact: true }).click();
+  await page.getByRole('button', { name: '新建订单', exact: true }).click();
+  const vehicle = `苏A-${Date.now()}`;
+  await page.getByLabel('车号', { exact: true }).fill(vehicle);
+  await page.getByLabel('柜号', { exact: true }).fill('柜号009');
+  await chooseProduct(page, '993'); await chooseProduct(page, '994');
+  await page.getByRole('spinbutton', { name: '993计划包数' }).fill('180');
+  await page.getByRole('spinbutton', { name: '994计划包数' }).fill('181');
+  await expect(page.locator('.order-total')).toContainText('361');
+  let lost = false; let originalId = ''; let originalKey = '';
+  await page.route('**/api/v1/orders?warehouseId=*', async (route) => {
+    if (route.request().method() !== 'POST') { await route.continue(); return; }
+    if (lost) { expect(route.request().headers()['idempotency-key']).toBe(originalKey); await route.continue(); return; }
+    lost = true; originalKey = route.request().headers()['idempotency-key'] ?? '';
+    const response = await route.fetch(); expect(response.status()).toBe(200);
+    originalId = z.object({ data: z.object({ orderId: z.string() }) }).parse(await response.json()).data.orderId;
+    await route.abort('failed');
+  });
+  await page.getByRole('button', { name: '保存草稿', exact: true }).click();
+  await expect(page.getByText('保存结果暂未确认。请重试原请求，成功后再修改计划。')).toBeVisible();
+  await expect(page.getByLabel('车号', { exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: '重试原保存请求' }).click();
+  await expect(page).toHaveURL(new RegExp(`/orders/${originalId}$`));
+  await expect(page.locator('.metrics')).toContainText('361 包');
+  await expect(page.getByRole('heading', { name: vehicle })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '下发前检查' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '查看版本' })).toBeVisible();
+  await expect(page.locator('.el-loading-mask:visible')).toHaveCount(0);
+  await page.screenshot({ path: '../.local/web-order-detail.png', fullPage: true, animations: 'disabled' });
+  await page.getByRole('button', { name: '修订草稿' }).click();
+  await page.getByRole('spinbutton', { name: '993计划包数' }).fill('190');
+  await page.getByLabel('修订原因', { exact: true }).fill('现场确认增加10包');
+  await page.getByRole('button', { name: '保存草稿', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.locator('.metrics')).toContainText('371 包');
+  await page.getByRole('button', { name: '查看版本' }).last().click();
+  await expect(page.getByRole('dialog')).toContainText('361 包');
+  await page.getByRole('dialog').getByRole('button', { name: '关闭此对话框' }).click();
+  await page.getByRole('button', { name: '作废订单', exact: true }).click();
+  await page.getByLabel('作废原因', { exact: true }).fill('浏览器验收完成，测试车辆取消');
+  await page.getByRole('button', { name: '确认作废', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.locator('.order-detail-title')).toContainText('已作废');
+  await expect(page.getByRole('button', { name: '修订草稿' })).toHaveCount(0);
+  await page.getByRole('tab', { name: '操作时间线' }).click();
+  await expect(page.getByText('浏览器验收完成，测试车辆取消', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '← 返回订单列表' }).click();
+  await page.getByLabel('订单或车号', { exact: true }).fill(vehicle);
+  await page.getByRole('button', { name: '查询订单', exact: true }).click();
+  await expect(page.locator('.el-loading-mask:visible')).toHaveCount(0);
+  await expect(page.locator('.el-table__body tr')).toHaveCount(1);
+  await expect(page.locator('.el-table__body tr')).toContainText('371');
+  await page.screenshot({ path: '../.local/web-orders.png', fullPage: true, animations: 'disabled' });
+});

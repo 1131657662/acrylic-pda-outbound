@@ -1,0 +1,91 @@
+:root {
+  font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  color: #243a40; background: #f3f6f6; font-synthesis: none;
+  --el-color-primary: #246b68; --el-color-primary-light-3: #669895;
+  --el-color-primary-light-5: #91b5b3; --el-color-primary-light-7: #bdcfcd;
+  --el-color-primary-light-9: #edf4f3; --el-color-primary-dark-2: #195450;
+  --el-border-radius-base: 6px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+button, input { font: inherit; }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: 28px; font-weight: 650; letter-spacing: .5px; }
+h2 { font-size: 18px; font-weight: 600; }
+h3 { font-size: 16px; }
+.muted { color: #697f84; font-size: 13px; line-height: 1.8; }
+.eyebrow { font-size: 10px; letter-spacing: 2px; font-weight: 650; margin-bottom: 12px; color: #758f91; }
+.brand-mark { width: 60px; height: 60px; border: 1px solid #779b98; display: grid; place-items: center; font-size: 30px; border-radius: 14px; }
+.brand-mark.small { width: 38px; height: 38px; font-size: 22px; border-radius: 9px; flex-shrink: 0; }
+.login-layout { min-height: 100vh; display: grid; grid-template-columns: 48% 52%; }
+.login-brand { background: #163b42; color: #fff; padding: 70px 14%; display: flex; flex-direction: column; justify-content: center; }
+.login-brand .eyebrow { margin: 40px 0 20px; color: #a7c9c4; }
+.login-brand h1 { font-size: clamp(36px,4vw,58px); line-height: 1.5; margin-bottom: 28px; }
+.brand-rule { width: 55px; height: 2px; background: #a9cfc0; margin: 35px 0 20px; }
+.brand-caption { color: #a7c9c4; font-size: 13px; }
+.login-form-panel { display: grid; place-items: center; padding: 40px; background: #fbfcfb; }
+.login-form { width: min(100%,380px); }
+.login-form h2 { font-size: 26px; margin-bottom: 14px; }
+.login-form label { display: block; margin: 24px 0 10px; font-size: 14px; }
+.login-form .el-alert { margin-top: 20px; }
+.login-submit { width: 100%; margin-top: 32px; }
+.workspace { min-height: 100vh; display: flex; }
+.sidebar { width: 228px; flex-shrink: 0; background: #163b42; color: #fff; padding: 28px 18px; display: flex; flex-direction: column; }
+.sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 0 10px; font-size: 18px; font-weight: 600; }
+.sidebar-brand small { display: block; margin-top: 4px; font-size: 10px; letter-spacing: 1px; font-weight: 400; color: #a0bcbd; }
+.nav-caption { color: #8daeb0; font-size: 11px; margin: 45px 14px 14px; }
+.nav-item { display: flex; justify-content: space-between; color: #c5d8d8; padding: 14px; margin-bottom: 6px; text-decoration: none; font-size: 14px; border-radius: 7px; }
+.nav-item.router-link-active { color: #fff; background: #2c555b; }
+.sidebar-bottom { margin-top: auto; padding: 50px 8px 0; color: #9db5b5; font-size: 11px; }
+.workspace-body { min-width: 0; flex: 1; }
+.topbar { min-height: 76px; padding: 14px 32px; background: #fff; border-bottom: 1px solid #e2e9e9; display: flex; justify-content: space-between; align-items: center; gap: 16px; font-size: 13px; }
+.topbar-actions { display: flex; align-items: center; gap: 20px; }
+.page-content { padding: 36px; max-width: 1600px; margin: auto; }
+.page-title { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 28px; }
+.page-title .muted { margin-top: 10px; }
+.step-label { font-size: 12px; color: #738b8d; padding-bottom: 5px; white-space: nowrap; }
+.panel { padding: 26px; background: #fff; border: 1px solid #e1e9e8; border-radius: 10px; margin-bottom: 22px; }
+.upload-panel { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.upload-panel p { margin-top: 9px; }
+.upload-form { display: flex; gap: 16px; align-items: center; }
+.file-picker { color: #456066; font-size: 13px; display: grid; gap: 7px; }
+.file-picker input { max-width: 245px; font-size: 12px; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+.metrics { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; padding: 26px 0; margin: 12px 0 20px; border-bottom: 1px solid #e6eeee; }
+.metrics span { display: block; font-size: 12px; color: #6b8286; margin-bottom: 9px; }
+.metrics strong { font-size: 27px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.detail-panel .el-alert { margin-bottom: 24px; }
+.pagination { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.pagination .muted { margin-right: auto; }
+.text-error { color: #aa443b; }
+.raw-line { overflow-wrap: anywhere; white-space: pre-wrap; margin: 15px; font-size: 12px; }
+.file-proof { color: #74878b; font-size: 11px; margin-top: 25px; overflow-wrap: anywhere; }
+.file-proof summary { cursor: pointer; margin-bottom: 10px; }
+.file-proof p { line-height: 1.9; }
+.page-content > .el-alert { margin-bottom: 22px; }
+.publication-panel { padding: 18px; margin-bottom: 24px; border: 1px solid #dbe7e5; border-radius: 8px; }
+.publication-panel > .el-alert { margin-top: 12px; }
+.confirmation-fields { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 18px; }
+.confirmation-fields .el-checkbox { white-space: normal; height: auto; }
+.confirmation-fields .el-checkbox__label { white-space: normal; }
+.stock-filter { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 12px; margin-bottom: 24px; }
+@media (max-width: 1100px) {
+  .sidebar { width: 190px; padding-inline: 12px; }
+  .page-content { padding: 24px; }
+  .upload-panel { align-items: flex-start; flex-direction: column; }
+  .step-label { display: none; }
+  .metrics strong { font-size: 23px; }
+}
+@media (max-width: 760px) {
+  .login-layout { grid-template-columns: 1fr; }
+  .login-brand { display: none; }
+  .sidebar { width: 70px; }
+  .sidebar-brand { padding: 0; }
+  .sidebar-brand > div, .nav-caption, .nav-item, .sidebar-bottom { display: none; }
+  .topbar { padding: 14px; flex-wrap: wrap; }
+  .topbar-actions { gap: 8px; }
+  .page-content { padding: 18px; }
+  .panel { padding: 16px; }
+  .metrics { grid-template-columns: 1fr 1fr; }
+  .upload-form { flex-wrap: wrap; }
+}

@@ -1,0 +1,12 @@
+<resources>
+    <string name="work_back">返回</string>
+    <string name="work_sound">声音</string>
+    <string name="work_not_released">本地明细 · 放行须核对云端回执</string>
+    <string name="work_void">核对并撤销末包</string>
+    <string name="work_auto">扫码通过后自动保存</string>
+    <string name="work_manual">手输条码</string>
+    <string name="work_manual_hint">完整条码，不自动提交</string>
+    <string name="work_validate">F1 校验手输条码</string>
+    <string name="work_discard">清空 / 放弃手输</string>
+    <string name="work_enter">本地扫码 / 恢复作业</string>
+</resources>

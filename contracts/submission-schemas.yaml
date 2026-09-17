@@ -1,0 +1,128 @@
+Control:
+  type: object
+  required: [source, assignmentId, freezeDeviceId, workRound, sourceRecoveryEpoch]
+  properties:
+    source:
+      type: object
+      required: [kind, sourceOrderId]
+      properties:
+        kind: {type: string, const: FORMAL}
+        sourceOrderId: {type: string, format: uuid}
+    assignmentId: {type: string, format: uuid}
+    freezeDeviceId: {type: string, format: uuid}
+    workRound: {type: string, const: '1'}
+    sourceRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+Body:
+  allOf:
+    - $ref: '#/Control'
+    - type: object
+      required: [schemaVersion, submissionId, orderRevision, assignmentEpoch, inventorySnapshotId, policyVersion, autoDeductInventory, startedAt, closedAt, shortShipmentReason, continuationId, expectedCount, expectedWeightGrams, captureHighWatermark, captureSummary, captures, scans, events]
+      properties:
+        schemaVersion: {type: integer, const: 2}
+        submissionId: {type: string, format: uuid}
+        orderRevision: {type: integer, minimum: 1}
+        assignmentEpoch: {$ref: '#/Positive'}
+        inventorySnapshotId: {type: string, format: uuid}
+        policyVersion: {$ref: '#/Positive'}
+        autoDeductInventory: {type: boolean}
+        startedAt: {type: string, format: date-time}
+        closedAt: {type: string, format: date-time}
+        shortShipmentReason: {type: [string, 'null'], maxLength: 500}
+        continuationId: {type: 'null', description: 首轮正式单不接续作票据}
+        expectedCount: {$ref: '#/Positive'}
+        expectedWeightGrams: {$ref: '#/Positive'}
+        captureHighWatermark: {$ref: '#/Positive'}
+        captureSummary:
+          type: object
+          required: [received, saved, voided, invalid, discarded, businessRejected, pending]
+          properties:
+            received: {$ref: '#/Positive'}
+            saved: {$ref: '#/Positive'}
+            voided: {$ref: '#/Nonnegative'}
+            invalid: {$ref: '#/Nonnegative'}
+            discarded: {$ref: '#/Nonnegative'}
+            businessRejected: {$ref: '#/Nonnegative'}
+            pending: {type: string, const: '0'}
+        captures:
+          type: array
+          items: {$ref: './submission-evidence.yaml#/Capture'}
+        scans:
+          type: array
+          items: {$ref: './submission-evidence.yaml#/Scan'}
+          description: 包括ACTIVE及VOID原保存事实，expectedCount只计ACTIVE
+        events:
+          type: array
+          items: {$ref: './submission-evidence.yaml#/Event'}
+          description: 本单原设备审计，localSeq严格递增，末项FROZEN。不推进全设备连续确认。
+Positive: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+Nonnegative: {type: string, pattern: '^(0|[1-9][0-9]{0,17})$'}
+Result:
+  type: object
+  required: [submissionId, orderId, status, payloadSha256, source, freezeDeviceId, workRound, issuedRecoveryEpoch, mayResumeScanning, stockReleased]
+  properties:
+    submissionId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    status: {type: string, enum: [REGISTERED, RECEIVING, REVIEW_REQUIRED, SUCCEEDED, REJECTED, ABORTED]}
+    payloadSha256: {type: [string, 'null'], pattern: '^[a-f0-9]{64}$'}
+    source: {$ref: '#/Control/properties/source'}
+    freezeDeviceId: {type: string, format: uuid}
+    workRound: {$ref: '#/Positive'}
+    issuedRecoveryEpoch: {$ref: '#/Positive'}
+    mayResumeScanning: {type: boolean, const: false}
+    stockReleased: {type: boolean, const: false}
+    issues:
+      type: array
+      items:
+        type: object
+        required: [code]
+        properties:
+          code: {type: string}
+          barcode: {type: string}
+          reason: {type: string}
+    actualCount: {$ref: '#/Positive'}
+    actualWeightGrams: {$ref: '#/Positive'}
+    orderStatus: {type: string, const: COMPLETED}
+    inventoryDeducted: {type: boolean}
+    completedAt: {type: string, format: date-time}
+    resultVersion: {type: string, const: '1'}
+    receiptVersion: {type: integer, const: 1}
+    firstOrderScanSeq: {$ref: '#/Positive'}
+    lastOrderScanSeq: {$ref: '#/Positive'}
+    captureHighWatermark: {$ref: '#/Positive'}
+    orderNo: {type: string}
+    items:
+      type: array
+      items:
+        type: object
+        required: [deliveryCode, actualCount, actualWeightGrams]
+        properties:
+          deliveryCode: {type: string}
+          actualCount: {$ref: '#/Nonnegative'}
+          actualWeightGrams: {$ref: '#/Nonnegative'}
+    signedReceipt:
+      type: string
+      description: SUCCEEDED及ABORTED必有RS256 JWT，aud=acrylic-pda-receipt，receipt声明等于移除此字段后的响应。终态证明不按离线48小时过期。
+Upload:
+  allOf:
+    - $ref: '#/Control'
+    - type: object
+      required: [payloadSha256, byteCount, chunkCount]
+      properties:
+        payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+        byteCount: {$ref: '#/Positive'}
+        chunkCount: {$ref: '#/Positive'}
+      description: 规范UTF-8正文最多32MiB，按262144字节分块，chunkCount必须等于长度向上取整。
+Abort:
+  allOf:
+    - $ref: '#/Control'
+    - type: object
+      required: [reason]
+      properties:
+        reason: {type: string, minLength: 1, maxLength: 500}
+Review:
+  type: object
+  required: [payloadSha256, decision, reason]
+  properties:
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    decision: {type: string, enum: [APPROVE, REJECT]}
+    reason: {type: string, minLength: 1, maxLength: 500}

@@ -1,0 +1,127 @@
+Submit:
+  post:
+    summary: 提交已冻结的正式订单首轮正文
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: '#/Order'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './submission-schemas.yaml#/Body'}
+    responses:
+      '200': {$ref: '#/Result'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '413': {description: 正文超过1MiB，须使用固定清单分块}
+Query:
+  get:
+    summary: 原人员在原设备查询原批次及不可变终态回执
+    security: [{pdaBearer: []}]
+    parameters: [{$ref: './openapi.yaml#/components/parameters/OrderId'}]
+    responses:
+      '200': {$ref: '#/Result'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+Abort:
+  post:
+    summary: 原子取消未入账批次，保留订单和实物占用
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './submission-schemas.yaml#/Abort'}
+    responses:
+      '200': {$ref: '#/Result'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Upload:
+  post:
+    summary: 登记固定正文分块清单，重试不得更换摘要或长度
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './submission-schemas.yaml#/Upload'}
+    responses:
+      '200': {$ref: '#/Result'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Chunk:
+  post:
+    summary: 接收固定编号分块，除末块外每块262144字节
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - name: index
+        in: path
+        required: true
+        schema: {type: integer, minimum: 0, maximum: 127}
+    requestBody:
+      required: true
+      content:
+        application/octet-stream:
+          schema: {type: string, format: binary}
+    responses:
+      '200': {description: data为submissionId、chunkIndex及该块sha256}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Finalize:
+  post:
+    summary: 全部分块及整包摘要一致后调用统一整单校验入账
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    responses:
+      '200': {$ref: '#/Result'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+OrderQuery:
+  get:
+    summary: Web查看订单当前提交、原始有效及撤销明细与审批原因
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: '#/Order'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+    responses:
+      '200':
+        description: data包含submission可空、shortShipmentReason、expectedCount/expectedWeightGrams、scans及captureSummary；order:read权限
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+Review:
+  post:
+    summary: 主管审批当前短装或退回批次；批准不覆盖库存/周期冲突
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './submission-schemas.yaml#/Review'}
+    responses:
+      '200': {$ref: '#/Result'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Order:
+  name: order
+  in: path
+  required: true
+  schema: {type: string, format: uuid}
+Result:
+  description: 稳定提交结果，SUCCEEDED和ABORTED带签名终态回执；待审不表示出库成功
+  content:
+    application/json:
+      schema:
+        allOf:
+          - {$ref: './schemas.yaml#/Envelope'}
+          - properties:
+              data: {$ref: './submission-schemas.yaml#/Result'}

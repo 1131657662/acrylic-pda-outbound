@@ -1,0 +1,431 @@
+Baseline:
+  type: object
+  required:
+    - activeSnapshotId
+    - mappingRevision
+  properties:
+    activeSnapshotId:
+      type:
+        - string
+        - 'null'
+      format: uuid
+    mappingRevision:
+      type: string
+      pattern: ^[0-9]+$
+DiffSummary:
+  type: object
+  required:
+    - imported
+    - baseline
+    - added
+    - removed
+    - changed
+    - unchanged
+    - mappingChangeCount
+  properties:
+    imported:
+      $ref: ./schemas.yaml#/Import
+    baseline:
+      $ref: '#/Baseline'
+    added:
+      type: integer
+      minimum: 0
+    removed:
+      type: integer
+      minimum: 0
+    changed:
+      type: integer
+      minimum: 0
+    unchanged:
+      type: integer
+      minimum: 0
+    mappingChangeCount:
+      type: integer
+      minimum: 0
+Mapping:
+  type: object
+  required:
+    - id
+    - deliveryCode
+    - version
+    - productId
+    - model
+    - name
+    - enabled
+    - reason
+    - current
+    - createdAt
+  properties:
+    id:
+      type: string
+      format: uuid
+    deliveryCode:
+      type: string
+    version:
+      type: string
+      pattern: ^[0-9]+$
+    productId:
+      type: string
+      format: uuid
+    model:
+      type: string
+    name:
+      type: string
+    enabled:
+      type: boolean
+    reason:
+      type: string
+    current:
+      type: boolean
+    createdAt:
+      type: string
+      format: date-time
+MappingChange:
+  type: object
+  required:
+    - deliveryCode
+    - previous
+    - model
+    - name
+    - enabled
+  properties:
+    deliveryCode:
+      type: string
+    previous:
+      oneOf:
+        - $ref: '#/Mapping'
+        - type: 'null'
+    model:
+      type: string
+    name:
+      type: string
+    enabled:
+      type: boolean
+Change:
+  type: object
+  required:
+    - barcode
+    - type
+    - before
+    - after
+  properties:
+    barcode:
+      type: string
+    type:
+      type: string
+      enum:
+        - ADDED
+        - UPSTREAM_MISSING
+        - PRODUCT_CHANGED
+        - WEIGHT_OR_NAME_CHANGED
+    before:
+      oneOf:
+        - $ref: ./schemas.yaml#/ParsedBale
+        - type: 'null'
+    after:
+      oneOf:
+        - $ref: ./schemas.yaml#/ParsedBale
+        - type: 'null'
+Receipt:
+  type: object
+  required:
+    - id
+    - version
+    - importId
+    - rowCount
+    - totalWeightGrams
+    - mappingRevision
+    - manifestSha256
+    - publishedAt
+  properties:
+    id:
+      type: string
+      format: uuid
+    version:
+      type: string
+      pattern: ^[0-9]+$
+    importId:
+      type: string
+      format: uuid
+    rowCount:
+      type: integer
+      minimum: 0
+    totalWeightGrams:
+      type: string
+      pattern: ^[0-9]+$
+    mappingRevision:
+      type: string
+      pattern: ^[0-9]+$
+    manifestSha256:
+      type: string
+      pattern: ^[a-f0-9]{64}$
+    publishedAt:
+      type: string
+      format: date-time
+PublicationDecisions:
+  type: object
+  required:
+    - expectedActiveSnapshot
+    - expectedMappingRevision
+    - acceptIdenticalDuplicates
+    - acceptMappingChanges
+    - confirmedRemovedCount
+  properties:
+    expectedActiveSnapshot:
+      type:
+        - string
+        - 'null'
+      format: uuid
+    expectedMappingRevision:
+      type: string
+      pattern: ^[0-9]{1,18}$
+    acceptIdenticalDuplicates:
+      type: boolean
+    acceptMappingChanges:
+      type: boolean
+    confirmedRemovedCount:
+      type: integer
+      minimum: 0
+    reason:
+      type:
+        - string
+        - 'null'
+      maxLength: 500
+MappingRevision:
+  type: object
+  required:
+    - deliveryCode
+    - expectedVersion
+    - model
+    - name
+    - enabled
+    - reason
+  properties:
+    deliveryCode:
+      type: string
+      pattern: ^[A-Z0-9]{3}$
+    expectedVersion:
+      type: string
+      pattern: ^[0-9]{1,18}$
+    model:
+      type: string
+      minLength: 1
+      maxLength: 100
+    name:
+      type: string
+      minLength: 1
+      maxLength: 100
+    enabled:
+      type: boolean
+    reason:
+      type: string
+      minLength: 1
+      maxLength: 500
+MappingReceipt:
+  type: object
+  required:
+    - id
+  properties:
+    id:
+      type: string
+      format: uuid
+Bale:
+  type: object
+  required:
+    - barcode
+    - dispatchCycle
+    - deliveryCode
+    - model
+    - name
+    - weightGrams
+    - rawWeight
+    - upstreamPresent
+    - bookStatus
+    - blockedReason
+    - lastSeenSnapshotId
+    - evaluatedSnapshotId
+  properties:
+    barcode:
+      type: string
+    dispatchCycle:
+      type: string
+      pattern: ^[0-9]+$
+    deliveryCode:
+      type: string
+    model:
+      type: string
+    name:
+      type: string
+    weightGrams:
+      type: string
+      pattern: ^[0-9]+$
+    rawWeight:
+      type: string
+    upstreamPresent:
+      type: boolean
+    bookStatus:
+      type: string
+      enum:
+        - NOT_DEDUCTED
+        - DEDUCTED
+    blockedReason:
+      type:
+        - string
+        - 'null'
+    lastSeenSnapshotId:
+      type: string
+      format: uuid
+    evaluatedSnapshotId:
+      type: string
+      format: uuid
+Discrepancy:
+  type: object
+  required:
+    - id
+    - barcode
+    - type
+    - status
+    - oldSnapshotId
+    - newSnapshotId
+    - oldValues
+    - newValues
+    - createdAt
+  properties:
+    id:
+      type: string
+      format: uuid
+    barcode:
+      type: string
+    type:
+      type: string
+      enum:
+        - UPSTREAM_MISSING
+        - PRODUCT_CHANGED
+        - WEIGHT_OR_NAME_CHANGED
+        - UPSTREAM_BOOK_CONFLICT
+    status:
+      type: string
+      const: OPEN
+    oldSnapshotId:
+      type:
+        - string
+        - 'null'
+      format: uuid
+    newSnapshotId:
+      type: string
+      format: uuid
+    oldValues:
+      type:
+        - string
+        - 'null'
+      description: JSON文本
+    newValues:
+      type:
+        - string
+        - 'null'
+      description: JSON文本
+    createdAt:
+      type: string
+      format: date-time
+MappingPage:
+  type: object
+  required:
+    - items
+    - nextCursor
+    - hasMore
+  properties:
+    items:
+      type: array
+      items:
+        $ref: '#/Mapping'
+    nextCursor:
+      type:
+        - string
+        - 'null'
+    hasMore:
+      type: boolean
+MappingChangePage:
+  type: object
+  required:
+    - items
+    - nextCursor
+    - hasMore
+  properties:
+    items:
+      type: array
+      items:
+        $ref: '#/MappingChange'
+    nextCursor:
+      type:
+        - string
+        - 'null'
+    hasMore:
+      type: boolean
+ChangePage:
+  type: object
+  required:
+    - items
+    - nextCursor
+    - hasMore
+  properties:
+    items:
+      type: array
+      items:
+        $ref: '#/Change'
+    nextCursor:
+      type:
+        - string
+        - 'null'
+    hasMore:
+      type: boolean
+ReceiptPage:
+  type: object
+  required:
+    - items
+    - nextCursor
+    - hasMore
+  properties:
+    items:
+      type: array
+      items:
+        $ref: '#/Receipt'
+    nextCursor:
+      type:
+        - string
+        - 'null'
+    hasMore:
+      type: boolean
+BalePage:
+  type: object
+  required:
+    - items
+    - nextCursor
+    - hasMore
+  properties:
+    items:
+      type: array
+      items:
+        $ref: '#/Bale'
+    nextCursor:
+      type:
+        - string
+        - 'null'
+    hasMore:
+      type: boolean
+DiscrepancyPage:
+  type: object
+  required:
+    - items
+    - nextCursor
+    - hasMore
+  properties:
+    items:
+      type: array
+      items:
+        $ref: '#/Discrepancy'
+    nextCursor:
+      type:
+        - string
+        - 'null'
+    hasMore:
+      type: boolean

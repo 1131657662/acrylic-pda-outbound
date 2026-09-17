@@ -1,0 +1,43 @@
+server:
+  address: ${OUTBOUND_BIND:127.0.0.1}
+  port: ${OUTBOUND_PORT:8083}
+  servlet:
+    session:
+      timeout: 8h
+      cookie:
+        name: OUTBOUND_SESSION
+        http-only: true
+        secure: ${OUTBOUND_COOKIE_SECURE:true}
+        same-site: strict
+spring:
+  application:
+    name: acrylic-outbound
+  datasource:
+    url: ${OUTBOUND_DB_URL}
+    username: ${OUTBOUND_DB_USER}
+    password: ${OUTBOUND_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 8
+      minimum-idle: 1
+      connection-init-sql: SET time_zone = '+00:00'
+  flyway:
+    enabled: ${OUTBOUND_MIGRATE:false}
+    clean-disabled: true
+  session:
+    jdbc:
+      initialize-schema: never
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 3MB
+  jackson:
+    time-zone: UTC
+    deserialization:
+      accept-float-as-int: false
+outbound:
+  signing:
+    private-key: ${OUTBOUND_AUTH_SIGNING_PRIVATE_KEY:}
+    public-key: ${OUTBOUND_AUTH_SIGNING_PUBLIC_KEY:}
+  storage: ${OUTBOUND_STORAGE:./private-files}
+  bootstrap:
+    enabled: false
