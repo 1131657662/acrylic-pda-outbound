@@ -1,0 +1,44 @@
+# Local runtime, caches and generated build output
+.gradle/
+.kotlin/
+.tools/
+.local/
+**/build/
+**/dist/
+__pycache__/
+*.py[cod]
+.idea/
+node_modules/
+web/test-results/
+web/playwright-report/
+
+# Local configuration, credentials and signing material
+local.properties
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.jks
+*.keystore
+*.pem
+*.key
+*.pk8
+*.p12
+*.pfx
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# APKs, device evidence and exported files stay local or in Releases
+/demo-artifacts/
+/outputs/
+*.apk
+*.aab
+
+# Original business samples and internal server inventory stay local
+/docs/sku.txt
+/docs/out.txt
+/demo/src/main/assets/sku.txt
+/docs/服务器信息与软件资产清单-*.md
