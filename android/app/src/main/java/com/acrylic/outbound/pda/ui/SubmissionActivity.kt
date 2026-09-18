@@ -52,7 +52,7 @@ class SubmissionActivity : ComponentActivity() {
         if (busy) return
         busy = true; buttons(false); binding.error.text = ""
         lifecycleScope.launch {
-            try { withContext(Dispatchers.IO) { action() } }
+            try { withContext(Dispatchers.IO) { com.acrylic.outbound.pda.update.UpdateGate.business(action) } }
             catch (error: Exception) { binding.error.text = error.message ?: "操作未确认，原记录保留" }
             finally {
                 val data = withContext(Dispatchers.IO) { app.database.submissions().forOrder(assignment) to app.database.work().order(assignment) }

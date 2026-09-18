@@ -42,6 +42,7 @@ class MainActivity : ComponentActivity() {
         binding.loadMore.setOnClickListener { model.loadMore() }
         binding.pairing.setOnClickListener { startActivity(android.content.Intent(this, PairingActivity::class.java)) }
         binding.deviceSettings.setOnClickListener { startActivity(android.content.Intent(this, DeviceSettingsActivity::class.java)) }
+        binding.appUpdate.setOnClickListener { startActivity(android.content.Intent(this, PdaUpdateActivity::class.java)) }
         lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { model.state.collect { render(it) } } }
     }
 

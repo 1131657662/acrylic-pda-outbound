@@ -5,6 +5,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
+import com.acrylic.outbound.pda.update.UpdateGate
 
 data class WorkUi(val order: WorkOrder? = null, val lines: List<WorkLine> = emptyList(),
     val candidate: WorkCapture? = null, val recent: List<WorkScan> = emptyList(), val pending: Int = 0,
@@ -23,6 +24,8 @@ class WorkEngine(private val store: WorkStore, private val sound: (String) -> Un
     @Volatile private var fault = ""
     @Volatile private var assignment = ""
     @Volatile private var requested = ""
+    private var scanLease: AutoCloseable? = null
+    val isScanning: Boolean get() = foreground
     private val recalls = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     private val processor = WorkProcessor(store) { type, _ ->
         if (foreground) sound(type)
@@ -34,7 +37,10 @@ class WorkEngine(private val store: WorkStore, private val sound: (String) -> Un
         scope.launch { while (isActive) { delay(1000); if (foreground && queued.get() == 0) runCatching { publish() }.onFailure { stop(it.message.orEmpty()) } } }
     }
 
-    fun resume(id: String) {
+    @Synchronized fun resume(id: String) {
+        if (scanLease == null) scanLease = try { UpdateGate.enterBusiness() } catch (error: UpdateGate.Installing) {
+            mutable.update { it.copy(ready = false, message = error.message.orEmpty()) }; return
+        }
         requested = id
         if (id != assignment) mutable.value = WorkUi()
         else mutable.update { it.copy(ready = false) }
@@ -45,8 +51,15 @@ class WorkEngine(private val store: WorkStore, private val sound: (String) -> Un
             if (fault.isEmpty()) processor.drain(id) { active(id) }
         }
     }
-    fun pause() { foreground = false; mutable.update { it.copy(ready = false) } }
-    fun pauseForRecall(id: String) { recalls.add(id); if (requested == id) { foreground = false; mutable.update { it.copy(ready = false) } } }
+    @Synchronized fun pause() { foreground = false; mutable.update { it.copy(ready = false) }; scanLease?.close(); scanLease = null }
+    @Synchronized fun pauseForRecall(id: String) {
+        recalls.add(id)
+        if (requested != id) return
+        foreground = false
+        mutable.update { it.copy(ready = false) }
+        scanLease?.close()
+        scanLease = null
+    }
     fun resumedContinuation(id: String) { recalls.remove(id); if (requested == id) fault = "" }
     fun receive(raw: String, source: String): Boolean {
         if (!foreground || assignment.isEmpty() || assignment != requested || fault.isNotEmpty() || !mutable.value.ready) {
@@ -80,13 +93,17 @@ class WorkEngine(private val store: WorkStore, private val sound: (String) -> Un
         fault = message.ifBlank { "存储或输入故障，请停扫核对；未确认落盘的输入须重新核对" }
         mutable.update { it.copy(blocked = fault, ready = false) }; sound("ERROR")
     }
-    fun close() { foreground = false; scope.cancel(); dispatcher.close() }
+    fun close() { pause(); scope.cancel(); dispatcher.close() }
     private fun active(id: String) = foreground && requested == id && fault.isEmpty() && !recalls.contains(id)
 
     private fun enqueue(action: () -> Unit): Boolean {
+        val lease = try { UpdateGate.enterBusiness() } catch (error: UpdateGate.Installing) {
+            mutable.update { it.copy(ready = false, message = error.message.orEmpty()) }; return false
+        }
         queued.incrementAndGet()
         mutable.update { it.copy(queued = queued.get()) }
-        if (queue.trySend(action).isSuccess) return true
+        if (queue.trySend { try { action() } finally { lease.close() } }.isSuccess) return true
+        lease.close()
         queued.decrementAndGet(); mutable.update { it.copy(queued = queued.get()) }
         stop("入口已满，请停扫核对；本次未接收，不保证已持久化")
         return false

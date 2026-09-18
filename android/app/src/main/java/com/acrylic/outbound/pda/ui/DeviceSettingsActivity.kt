@@ -35,6 +35,7 @@ class DeviceSettingsActivity : ComponentActivity() {
         binding.sound.setOnCheckedChangeListener { _, enabled -> app.workSound.enabled = enabled }
         binding.copyKey.setOnClickListener { copyKey() }
         binding.checkConnection.setOnClickListener { checkConnection() }
+        binding.appUpdate.setOnClickListener { startActivity(android.content.Intent(this, PdaUpdateActivity::class.java)) }
         binding.logout.setOnClickListener { confirmLogout() }
         binding.advanced.setOnClickListener {
             binding.maintenance.visibility = if (binding.maintenance.visibility == View.GONE) View.VISIBLE else View.GONE
@@ -64,7 +65,7 @@ class DeviceSettingsActivity : ComponentActivity() {
 
     private fun setBusy(value: Boolean) {
         busy = value
-        listOf(binding.back, binding.copyKey, binding.checkConnection, binding.bind, binding.retryIdentity)
+        listOf(binding.back, binding.copyKey, binding.checkConnection, binding.bind, binding.retryIdentity, binding.appUpdate)
             .forEach { it.isEnabled = !value }
         binding.logout.isEnabled = signedIn && !value
     }
@@ -73,11 +74,12 @@ class DeviceSettingsActivity : ComponentActivity() {
         if (busy) return
         setBusy(true)
         lifecycleScope.launch {
-            try { action() }
+            var lease: AutoCloseable? = null
+            try { lease = com.acrylic.outbound.pda.update.UpdateGate.enterBusiness(); action() }
             catch (error: Exception) {
                 if (error is CancellationException) throw error
                 binding.status.text = error.message ?: "操作未完成，请保留资料并重试。"
-            } finally { setBusy(false) }
+            } finally { lease?.close(); setBusy(false) }
         }
     }
 

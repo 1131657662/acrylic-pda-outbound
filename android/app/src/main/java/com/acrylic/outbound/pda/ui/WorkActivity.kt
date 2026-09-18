@@ -139,7 +139,8 @@ class WorkActivity : ComponentActivity() {
         super.onResume()
         if (::scanner.isInitialized && !dialogOpen) {
             lifecycleScope.launch(Dispatchers.IO) {
-                val recall = runCatching { app.recalls.check(assignment) }.getOrElse { app.database.recalls().header(assignment) }
+                val recall = runCatching { com.acrylic.outbound.pda.update.UpdateGate.business { app.recalls.check(assignment) } }
+                    .getOrElse { app.database.recalls().header(assignment) }
                 if (recall != null && !recallOpening) {
                     recallOpening = true
                     runOnUiThread { if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) startActivity(android.content.Intent(this@WorkActivity, RecallActivity::class.java).putExtra("assignmentId", assignment)) }

@@ -100,7 +100,7 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
         mutable.update { it.copy(busy = true, message = message) }
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) { action() }
+                withContext(Dispatchers.IO) { com.acrylic.outbound.pda.update.UpdateGate.business(action) }
                 mutable.update { if (it.message == message) it.copy(message = "操作已完成；资料和本机记录已保留") else it }
             } catch (error: Exception) {
                 if (error is CancellationException) throw error

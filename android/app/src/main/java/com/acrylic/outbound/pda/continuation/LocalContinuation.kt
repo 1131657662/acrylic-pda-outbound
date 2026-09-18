@@ -31,6 +31,7 @@ abstract class ContinuationDao {
     @Query("UPDATE local_continuation SET authorizationJson=:current,authorizationHistoryJson=:history WHERE id=:id")
     abstract fun replaceAuthorization(id: String, current: String, history: String)
     @Insert abstract fun insert(row: LocalContinuation)
+    @Query("SELECT COUNT(*) FROM local_continuation WHERE ticketJson LIKE '%\"status\":\"APPROVED\"%' AND currentMarker=1") abstract fun pendingCount(): Int
 }
 
 data class ContinuationInfo(val id: String, val assignmentId: String, val authorizationJson: String,

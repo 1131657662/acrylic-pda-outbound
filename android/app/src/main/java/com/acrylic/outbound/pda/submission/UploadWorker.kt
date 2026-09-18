@@ -19,9 +19,10 @@ class UploadWorker(context: Context, params: WorkerParameters) : CoroutineWorker
             schedule(app, id, 60, inputData.getInt("attempt", 0), true); return@withContext Result.success()
         }
         try {
-            val result = app.submissions.upload(id)
+            val result = com.acrylic.outbound.pda.update.UpdateGate.business { app.submissions.upload(id) }
             if (result.autoRetry) schedule(app, id, 1800, 0, true)
         } catch (error: Exception) {
+            if (error is com.acrylic.outbound.pda.update.UpdateGate.Installing) return@withContext Result.retry()
             val attempt = inputData.getInt("attempt", 0) + 1; val saved = app.database.submissions().get(id)
             if (saved?.autoRetry == true && attempt < 8) {
                 val seconds = minOf(1800L, 30L * (1L shl (attempt - 1)) + Random.nextLong(10))

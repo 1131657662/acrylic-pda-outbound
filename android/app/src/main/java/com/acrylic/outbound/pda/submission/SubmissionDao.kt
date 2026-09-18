@@ -32,4 +32,5 @@ abstract class SubmissionDao {
     @Query("UPDATE local_submission SET state=:state,receipt=:receipt,error=:error,autoRetry=:retry WHERE id=:id")
     abstract fun progress(id: String, state: String, receipt: String?, error: String, retry: Boolean)
     @Query("UPDATE local_submission SET autoRetry=1 WHERE id=:id AND state NOT IN ('SYNCED','ABORTED','REJECTED')") abstract fun queue(id: String)
+    @Query("SELECT COUNT(*) FROM local_submission WHERE state IN ('RESULT_UNKNOWN','RECEIVING')") abstract fun unknownCount(): Int
 }

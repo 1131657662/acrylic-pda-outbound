@@ -27,4 +27,5 @@ abstract class RecallDao {
     @Query("UPDATE local_recall SET requestJson=:request WHERE id=:id") abstract fun request(id: String, request: String)
     @Insert abstract fun insert(row: LocalRecall)
     @Update abstract fun update(row: LocalRecall)
+    @Query("SELECT COUNT(*) FROM local_recall WHERE state IN ('RECALL_PENDING','RECOVERY_FROZEN') AND currentMarker=1") abstract fun activeCount(): Int
 }

@@ -9,6 +9,7 @@
                 android:src="@android:drawable/ic_menu_preferences" android:contentDescription="设备信息与设置" />
         </LinearLayout>
         <TextView android:id="@+id/environment" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" />
+        <Button android:id="@+id/appUpdate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="检查应用更新" />
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:paddingTop="12dp" android:paddingBottom="12dp" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
         <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent"

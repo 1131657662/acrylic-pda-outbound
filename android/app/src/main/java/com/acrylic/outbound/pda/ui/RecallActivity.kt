@@ -74,7 +74,7 @@ class RecallActivity : ComponentActivity() {
         busy = true; binding.error.text = ""
         listOf(binding.freeze, binding.upload, binding.refresh, binding.back, binding.continueWork).forEach { it.isEnabled = false }
         lifecycleScope.launch {
-            try { withContext(Dispatchers.IO) { action() } }
+            try { withContext(Dispatchers.IO) { com.acrylic.outbound.pda.update.UpdateGate.business(action) } }
             catch (error: Exception) {
                 if (error is CancellationException) throw error
                 binding.error.text = error.message ?: "操作未确认，原资料保留，请重试"

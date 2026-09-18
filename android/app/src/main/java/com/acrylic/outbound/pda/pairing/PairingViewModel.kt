@@ -37,7 +37,9 @@ class PairingViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             try {
                 mutable.value = withContext(Dispatchers.IO) {
-                    PairingUi(saved = action(), bound = app.session.settings.device.isNotBlank())
+                    com.acrylic.outbound.pda.update.UpdateGate.business {
+                        PairingUi(saved = action(), bound = app.session.settings.device.isNotBlank())
+                    }
                 }
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
