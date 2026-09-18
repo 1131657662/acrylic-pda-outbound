@@ -11,7 +11,7 @@ import { navigation, navigationCollapsed } from './navigation';
 import { connection } from './connection';
 import SessionRecovery from './components/SessionRecovery.vue';
 import { orderRouteQuery, parseOrderQuery } from './orders/list-context';
-const props = defineProps<{ title: string; busy?: boolean; list?: boolean }>();
+const props = defineProps<{ title: string; busy?: boolean; list?: boolean; warehouseLocked?: boolean }>();
 const session = useSessionStore(); const route = useRoute(); const router = useRouter();
 const error = ref(''); const drawer = ref(false); const collapsed = navigationCollapsed;
 const current = computed(() => navigation.flatMap(group => group.items).find(item => route.path.startsWith(item.path)));
@@ -25,7 +25,7 @@ onMounted(() => { window.addEventListener('resize', resize); window.addEventList
 onUnmounted(() => { window.removeEventListener('resize', resize); window.removeEventListener('beforeunload', beforeUnload); });
 onBeforeRouteLeave(() => { if (!props.busy) return true; error.value = '请先完成当前操作或核对原请求结果。'; return false; });
 function changeWarehouse(value: string): void {
-  if (props.busy) return;
+  if (props.busy || props.warehouseLocked) return;
   session.warehouseId = value;
   if (route.path.startsWith('/orders')) void router.push({ path: '/orders', query: { ...route.query, warehouse: value, page: '1', tab: undefined } });
 }
@@ -52,7 +52,7 @@ async function reconnect(): Promise<void> {
           <nav class="breadcrumb" aria-label="当前位置"><router-link v-if="current && route.path !== current.path" :to="parentLink">{{ current.label }}</router-link><span v-if="current && route.path !== current.path"> / </span>{{ title }}</nav>
         </div>
         <div class="topbar-actions">
-          <span class="warehouse-caption">仓库</span><el-select :model-value="session.warehouseId" aria-label="当前仓库" class="warehouse-select" :disabled="busy" @update:model-value="changeWarehouse">
+          <span class="warehouse-caption">仓库</span><el-select :model-value="session.warehouseId" aria-label="当前仓库" class="warehouse-select" :disabled="busy || warehouseLocked" @update:model-value="changeWarehouse">
             <el-option v-for="warehouse in session.identity?.warehouses" :key="warehouse.id" :value="warehouse.id" :label="warehouse.name" />
           </el-select>
           <el-tag v-if="environment" class="environment-tag" type="info">{{ environment }}</el-tag><ConnectionStatus />

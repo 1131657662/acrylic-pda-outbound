@@ -1,0 +1,80 @@
+.pc-workspace .page-content { gap: var(--space-3); }
+.pc-workspace .page-content > * { margin-block: 0; }
+.pc-workspace .page-title { margin-bottom: 0; }
+.pc-workspace .el-alert { flex-shrink: 0; }
+.pc-workspace .result-summary { flex-shrink: 0; margin: 0; }
+.pc-workspace .panel { margin-block: var(--space-4); }
+.pc-workspace .panel > .el-button { margin-top: var(--space-4); }
+.pc-success { margin: 0; color: var(--success); }
+.pc-writer-notice { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-3); background: var(--info-bg); }
+.pc-result { flex-shrink: 0; padding-bottom: var(--space-3); border-bottom: 1px solid var(--separator); }
+.pc-result p { margin-block: var(--space-2); }
+.pc-work-grid { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(260px, 1fr); flex: 1; min-height: 0; gap: var(--space-5); }
+.pc-main { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.pc-main > .el-tabs__header { flex-shrink: 0; }
+.pc-main > .el-tabs__content { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.pc-main > .el-tabs__content > .el-tab-pane { flex: 1; min-height: 0; }
+.pc-candidates, .pc-records { display: flex; flex-direction: column; height: 100%; min-height: 0; gap: var(--space-3); }
+.pc-search { display: flex; align-items: end; flex-wrap: wrap; gap: var(--space-3); flex-shrink: 0; }
+.pc-search .el-form-item { flex: 1; min-width: 180px; margin: 0; display: block; }
+.pc-search .el-form-item__label { display: block; text-align: left; }
+.pc-search > .el-input { flex: 1; min-width: 140px; }
+.pc-candidates > p { margin: 0; flex-shrink: 0; }
+.pc-match-summary { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); flex-shrink: 0; color: var(--text-secondary); }
+.pc-candidate-scroll, .pc-record-scroll { overflow: auto; flex: 1; min-height: 0; }
+.pc-candidate-group { padding-block: var(--space-2); border-bottom: 1px solid var(--separator); }
+.pc-candidate-group h3 { font-size: 16px; margin: 0; }
+.pc-candidate-group h3 span { font-size: 14px; font-weight: 400; margin-left: var(--space-2); }
+.pc-candidate-group .section-heading { margin-bottom: var(--space-2); }
+.pc-candidate-row { display: grid; grid-template-columns: minmax(145px, 1.3fr) minmax(100px, 1fr) auto auto; align-items: center; gap: var(--space-2); padding: var(--space-2); min-height: 56px; border-bottom: 1px solid var(--separator); }
+.pc-candidate-row.is-selected { background: var(--selection); }
+.pc-candidate-row .el-radio { margin: 0; white-space: normal; }
+.pc-candidate-row .el-radio__label { color: var(--text-primary); padding-left: var(--space-2); }
+.barcode { font-family: ui-monospace, Consolas, monospace; font-size: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pc-candidate-row mark { color: var(--info); background: var(--info-bg); font-weight: 700; }
+.pc-product-name { font-size: 14px; overflow-wrap: anywhere; }
+.pc-candidate-group .el-pagination { justify-content: flex-end; margin-top: var(--space-2); }
+.pc-confirm-band { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-4); border-top: 1px solid var(--separator); background: var(--subtle); }
+.pc-confirm-band p { margin: var(--space-1) 0 0; }
+.pc-summary { min-width: 0; min-height: 0; display: flex; flex-direction: column; border-left: 1px solid var(--separator); padding-left: var(--space-5); gap: var(--space-4); }
+.pc-total { display: flex; flex-direction: column; gap: var(--space-2); }
+.pc-total > strong { font-size: 28px; }
+.pc-total small { color: var(--text-secondary); font-size: 16px; font-weight: 400; }
+.pc-product-progress { flex: 1; overflow: auto; min-height: 0; }
+.pc-product-progress section { margin-bottom: var(--space-5); }
+.pc-product-progress h3 { font-size: 16px; margin: 0; }
+.pc-product-progress h3 span { display: block; font-size: 14px; font-weight: 400; color: var(--text-secondary); }
+.pc-product-progress p { margin-block: var(--space-2); display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.pc-close-action { flex-shrink: 0; border-top: 1px solid var(--separator); }
+.pc-close-action .el-button { width: 100%; }
+.pc-records > .el-pagination { flex-shrink: 0; flex-wrap: wrap; }
+@media (max-width: 1099px) {
+  .pc-workspace.is-list .page-scroll { display: block; overflow-y: auto; }
+  .pc-workspace.is-list .page-content { display: flex; min-height: 100%; }
+  .pc-work-grid { display: flex; flex-direction: column; flex: none; }
+  .pc-summary { order: -1; border-left: 0; padding-left: 0; border-bottom: 1px solid var(--separator); padding-bottom: var(--space-4); }
+  .pc-product-progress { display: flex; flex-wrap: wrap; gap: var(--space-4); overflow: visible; }
+  .pc-product-progress section { flex: 1; min-width: 150px; margin-bottom: 0; }
+  .pc-total { flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
+  .pc-total > strong { font-size: 22px; }
+  .pc-product-progress h3 { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .pc-product-progress h3 span { overflow-wrap: anywhere; }
+  .pc-summary { gap: var(--space-3); }
+  .pc-close-action { display: flex; align-items: center; gap: var(--space-3); }
+  .pc-close-action .el-button { width: auto; }
+  .pc-main > .el-tabs__content, .pc-candidate-scroll, .pc-record-scroll { overflow: visible; }
+}
+@media (max-height: 639px) {
+  .pc-workspace.is-list .page-content { display: flex; }
+  .pc-work-grid { min-height: 360px; flex: none; }
+  .pc-main > .el-tabs__content, .pc-candidate-scroll, .pc-record-scroll, .pc-product-progress { overflow: visible; }
+  .pc-close-action { margin-top: auto; }
+}
+@media (max-width: 767px) {
+  .pc-candidate-row { grid-template-columns: minmax(145px, 1fr) auto; }
+  .pc-product-name { grid-column: 1; grid-row: 2; }
+  .pc-candidate-row > .numeric { grid-column: 2; grid-row: 1; }
+  .pc-confirm-band > .el-button { width: 100%; }
+  .pc-search .el-form-item { min-width: 100%; }
+  .pc-close-action { flex-wrap: wrap; }
+}

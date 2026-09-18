@@ -1,6 +1,7 @@
 @import './styles/tokens.css';
 @import './styles/workspace.css';
 @import './styles/orders.css';
+@import './styles/pc.css';
 * { box-sizing: border-box; letter-spacing: 0; }
 body { margin: 0; }
 button, input, textarea { font: inherit; }

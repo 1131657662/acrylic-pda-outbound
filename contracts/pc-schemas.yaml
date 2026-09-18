@@ -1,0 +1,189 @@
+Version:
+  type: string
+  pattern: '^[1-9][0-9]{0,17}$'
+Start:
+  type: object
+  required: [expectedVersion, writerId, policyVersion, reason]
+  properties:
+    expectedVersion: {$ref: '#/Version'}
+    writerId: {type: string, format: uuid, description: 当前页面实例随机生成；重开页面须显式切换写入窗口}
+    policyVersion: {type: string, maxLength: 18, description: 草稿发布必须为当前政策版本；READY或切换窗口可为空}
+    reason: {type: string, maxLength: 500, description: 发布草稿时必填}
+Write:
+  type: object
+  required: [writerId, fence, expectedVersion, barcode, reason, physicalConfirmed]
+  properties:
+    writerId: {type: string, format: uuid}
+    fence: {$ref: '#/Version'}
+    expectedVersion: {$ref: '#/Version'}
+    barcode: {type: string, maxLength: 11, description: 计包为完整11位条码；撤销和结单为空，不接受客户端重量}
+    entryId: {type: [string, 'null'], format: uuid, description: 撤销时必须指定本单原录入ID}
+    reason: {type: string, maxLength: 500, description: 撤销及短装结单必须填写}
+    physicalConfirmed: {type: boolean, const: true, description: 操作员已核对具体包或本单实物}
+Review:
+  type: object
+  required: [payloadSha256, decision, reason]
+  properties:
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    decision: {enum: [APPROVE, REJECT]}
+    reason: {type: string, minLength: 1, maxLength: 500}
+Resume:
+  type: object
+  required: [expectedVersion, physicalEvidence]
+  properties:
+    expectedVersion: {$ref: '#/Version'}
+    physicalEvidence: {type: string, minLength: 1, maxLength: 1000, description: 全部原有效包仍在原车的主管核验记录；不办理换人或卸货}
+Work:
+  type: object
+  required: [id, warehouse, order, revision, publication, operator, operatorName, epoch, status, version, writerId, fence, nextSequence, round, snapshot, deduct]
+  properties:
+    id: {type: string, format: uuid}
+    warehouse: {type: string, format: uuid}
+    order: {type: string, format: uuid}
+    revision: {type: integer}
+    publication: {type: string, format: uuid}
+    operator: {type: string, format: uuid}
+    operatorName: {type: string}
+    epoch: {$ref: '#/Version'}
+    status: {enum: [ACTIVE, REVIEW_REQUIRED, REJECTED, SUCCEEDED]}
+    version: {$ref: '#/Version'}
+    writerId: {type: string, format: uuid}
+    fence: {$ref: '#/Version'}
+    nextSequence: {type: integer}
+    round: {type: integer}
+    snapshot: {type: string, format: uuid}
+    deduct: {type: boolean}
+Product:
+  type: object
+  required: [deliveryCode, model, name, plannedCount, actualCount, weightGrams]
+  properties:
+    deliveryCode: {type: string}
+    model: {type: string}
+    name: {type: string}
+    plannedCount: {type: integer}
+    actualCount: {type: integer}
+    weightGrams: {type: string, pattern: '^\d+$'}
+Submission:
+  type: object
+  required: [id, round, status, payloadSha256, actualCount, weightGrams, shortReason, issues, receipt, createdAt]
+  properties:
+    id: {type: string, format: uuid}
+    round: {type: integer}
+    status: {enum: [REVIEW_REQUIRED, REJECTED, SUCCEEDED]}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    actualCount: {type: string, pattern: '^\d+$'}
+    weightGrams: {type: string, pattern: '^\d+$'}
+    shortReason: {type: string}
+    issues:
+      type: array
+      items:
+        type: object
+        required: [code, reason]
+        properties:
+          code: {type: string}
+          reason: {type: string}
+          barcode: {type: string}
+    receipt:
+      oneOf: [{$ref: '#/DispatchReceipt'}, {type: 'null'}]
+    createdAt: {type: string, format: date-time}
+DispatchReceipt:
+  type: object
+  required: [channel, orderId, workId, submissionId, status, actualCount, weightGrams, inventoryDeducted, payloadSha256, resultVersion]
+  properties:
+    channel: {const: PC}
+    orderId: {type: string, format: uuid}
+    workId: {type: string, format: uuid}
+    submissionId: {type: string, format: uuid}
+    status: {const: SUCCEEDED}
+    actualCount: {type: string, pattern: '^\d+$'}
+    weightGrams: {type: string, pattern: '^\d+$'}
+    inventoryDeducted: {type: boolean}
+    payloadSha256: {type: string}
+    resultVersion: {const: '1'}
+View:
+  type: object
+  required: [work, products, submission]
+  properties:
+    work: {oneOf: [{$ref: '#/Work'}, {type: 'null'}]}
+    products: {type: array, items: {$ref: '#/Product'}}
+    submission: {oneOf: [{$ref: '#/Submission'}, {type: 'null'}], description: 最近一次冻结提交，包括已退回的上一轮；冻结正文不改写}
+Candidate:
+  type: object
+  required: [baleId, barcode, deliveryCode, model, name, weightGrams, availability]
+  properties:
+    baleId: {type: string, format: uuid}
+    barcode: {type: string, minLength: 11, maxLength: 11}
+    deliveryCode: {type: string}
+    model: {type: string}
+    name: {type: string}
+    weightGrams: {type: string, pattern: '^\d+$'}
+    availability: {enum: [AVAILABLE, RECORDED, DISPATCHED, QUARANTINED, RESERVED, UNAVAILABLE, CHANGED, PLAN_FULL]}
+Candidates:
+  type: object
+  required: [query, matchedCodes, total, groups]
+  properties:
+    query: {type: string}
+    matchedCodes: {type: integer}
+    total: {type: integer}
+    groups:
+      type: array
+      items:
+        type: object
+        required: [deliveryCode, total, page, pageSize, items]
+        properties:
+          deliveryCode: {type: string}
+          total: {type: integer}
+          page: {type: integer}
+          pageSize: {const: 5}
+          items: {type: array, items: {$ref: '#/Candidate'}}
+Entry:
+  type: object
+  required: [id, baleId, barcode, sequence, cycle, status, deliveryCode, weightGrams, rawWeight, model, name, operatorName, createdAt, voidReason]
+  properties:
+    id: {type: string, format: uuid}
+    baleId: {type: string, format: uuid}
+    barcode: {type: string}
+    sequence: {$ref: '#/Version'}
+    cycle: {type: integer}
+    status: {enum: [ACTIVE, VOIDED]}
+    deliveryCode: {type: string}
+    weightGrams: {type: string, pattern: '^\d+$'}
+    rawWeight: {type: string}
+    model: {type: string}
+    name: {type: string}
+    operatorName: {type: string}
+    createdAt: {type: string, format: date-time}
+    voidReason: {type: [string, 'null']}
+Entries:
+  type: object
+  required: [items, total, page, pageSize]
+  properties:
+    items: {type: array, items: {$ref: '#/Entry'}}
+    total: {type: integer}
+    page: {type: integer}
+    pageSize: {enum: [20, 50, 100]}
+CommandReceipt:
+  type: object
+  required: [receiptId, requestKey, orderId, action, result]
+  properties:
+    receiptId: {type: string, format: uuid}
+    requestKey: {type: string}
+    orderId: {type: string, format: uuid}
+    action: {enum: [START, WRITER, ADD, VOID, SUBMIT, REVIEW, RESUME]}
+    result:
+      oneOf:
+        - {$ref: '#/Submission'}
+        - type: object
+          required: [workId, version, status, fence]
+          properties:
+            workId: {type: string, format: uuid}
+            version: {$ref: '#/Version'}
+            status: {enum: [ACTIVE, REVIEW_REQUIRED, REJECTED, SUCCEEDED]}
+            fence: {$ref: '#/Version'}
+            entryId: {type: string, format: uuid}
+            physicalEvidence: {type: string}
+Lookup:
+  type: object
+  required: [receipt]
+  properties:
+    receipt: {oneOf: [{$ref: '#/CommandReceipt'}, {type: 'null'}]}

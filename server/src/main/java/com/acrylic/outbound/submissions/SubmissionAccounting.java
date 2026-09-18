@@ -17,7 +17,7 @@ public class SubmissionAccounting {
         UUID order=head.control().order();boolean deduct=jdbc.queryForObject("SELECT p.auto_deduct_inventory FROM order_publication p INNER JOIN order_assignment a ON a.publication_id=p.id WHERE a.id=?",Boolean.class,Ids.bytes(head.control().assignment()));
         var receipt=receipts.success(head,body,value,deduct); // Signing must succeed before any business commit.
         for(var scan:value.scans()) dispatch(head,scan,deduct);
-        jdbc.update("INSERT INTO order_result_version VALUES(?,?,?,?,?,?,?,UTC_TIMESTAMP(3))",Ids.bytes(order),1,Ids.bytes(head.control().id()),value.scans().size(),value.weight(),deduct,canonical(receipt));
+        jdbc.update("INSERT INTO order_result_version(order_id,result_version,submission_id,actual_count,weight_g,inventory_deducted,header_snapshot,created_at) VALUES(?,?,?,?,?,?,?,UTC_TIMESTAMP(3))",Ids.bytes(order),1,Ids.bytes(head.control().id()),value.scans().size(),value.weight(),deduct,canonical(receipt));
         jdbc.batchUpdate("INSERT INTO order_effective_line VALUES(?,1,?,?,?)",value.products(),200,(ps,p)->{
             ps.setBytes(1,Ids.bytes(order));ps.setString(2,p.code());ps.setLong(3,p.count());ps.setLong(4,p.weight());
         });
@@ -32,7 +32,7 @@ public class SubmissionAccounting {
         int changed=jdbc.update("UPDATE bale_commitment SET state='DISPATCHED' WHERE bale_id=? AND submission_id=? AND dispatch_cycle=? AND state='REVIEW_RESERVED'",
             Ids.bytes(bale.id()),Ids.bytes(head.control().id()),scan.cycle());
         if(changed!=1) throw new BusinessException(409,"BALE_COMMITMENT_CONFLICT","包占用不属于当前批次");
-        jdbc.update("INSERT INTO dispatch_record VALUES(?,?,?,?,?,?,?,?,?,?,?,?,UTC_TIMESTAMP(3))",Ids.bytes(dispatch),Ids.bytes(head.control().id()),Ids.bytes(head.control().order()),
+        jdbc.update("INSERT INTO dispatch_record(id,submission_id,order_id,capture_id,bale_id,dispatch_cycle,order_scan_seq,delivery_code,weight_g,raw_weight,model_snapshot,name_snapshot,confirmed_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,UTC_TIMESTAMP(3))",Ids.bytes(dispatch),Ids.bytes(head.control().id()),Ids.bytes(head.control().order()),
             Ids.bytes(scan.capture()),Ids.bytes(bale.id()),scan.cycle(),scan.sequence(),bale.code(),bale.weight(),bale.rawWeight(),bale.model(),bale.name());
         if(deduct) {
             changed=jdbc.update("UPDATE inventory_position SET book_status='DEDUCTED',row_version=row_version+1 WHERE bale_id=? AND book_status='NOT_DEDUCTED'",Ids.bytes(bale.id()));

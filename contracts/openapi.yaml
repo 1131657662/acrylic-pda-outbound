@@ -1,13 +1,33 @@
 openapi: 3.1.0
 info:
   title: 腈纶包出库系统 — 已实现接口
-  version: 0.12.0
-  description: 新增PDA短码配对登记、管理员及原机双确认与凭据恢复。Web会话、库存/映射、订单及政策、设备登记、PDA双身份认证、独占领取、签名资料准备、正式单冻结提交、短装审批、全局防重和可选自动记账。新增受控召回、恢复包、原机停止证明与主管零包作废；新增原人原机保留或凭据卸货/隔离续作及新轮次提交；完整同步、换机、更正及文件生成仍待接入。
+  version: 0.13.0
+  description: 新增独立PC手工出库渠道、在线计包、持久原请求恢复、结单审批；保持PDA证据校验。新增PDA短码配对登记、管理员及原机双确认与凭据恢复。Web会话、库存/映射、订单及政策、设备登记、PDA双身份认证、独占领取、签名资料准备、正式单冻结提交、短装审批、全局防重和可选自动记账。新增受控召回、恢复包、原机停止证明与主管零包作废；新增原人原机保留或凭据卸货/隔离续作及新轮次提交；完整同步、换机、更正及文件生成仍待接入。
 servers:
   - url: /api/v1
 security:
   - webSession: []
 paths:
+  /orders/{id}/pc:
+    $ref: './pc-paths.yaml#/View'
+  /orders/{id}/pc/candidates:
+    $ref: './pc-paths.yaml#/Candidates'
+  /orders/{id}/pc/entries:
+    $ref: './pc-paths.yaml#/Entries'
+  /orders/{id}/pc/start:
+    $ref: './pc-paths.yaml#/Start'
+  /orders/{id}/pc/writer:
+    $ref: './pc-paths.yaml#/Writer'
+  /orders/{id}/pc/void:
+    $ref: './pc-paths.yaml#/Void'
+  /orders/{id}/pc/submit:
+    $ref: './pc-paths.yaml#/Submit'
+  /orders/{id}/pc/review:
+    $ref: './pc-paths.yaml#/Review'
+  /orders/{id}/pc/resume:
+    $ref: './pc-paths.yaml#/Resume'
+  /orders/{id}/pc/requests/{key}:
+    $ref: './pc-paths.yaml#/Lookup'
   /pda/pairing/challenges:
     $ref: './pairing-paths.yaml#/Challenge'
   /pda/pairing/applications:

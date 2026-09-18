@@ -1,6 +1,6 @@
 # Web 页面与交互规范
 
-日期：2026-09-17。状态：公共工作台、订单列表和详情已按用户授权实施并完成本机验证，见[交付记录](WEB_UI_FOUNDATION_DELIVERY.md)；其他页面的完整迁移及PC手工出库仍待实施。尺寸为CSS像素基准，业务含义以[状态与恢复语义](status-semantics.md)为准。
+日期：2026-09-17。状态：公共工作台、订单列表和详情已按用户授权实施并完成本机验证，见[交付记录](WEB_UI_FOUNDATION_DELIVERY.md)；PC手工出库实施与验证见[专项交付记录](PC_MANUAL_OUTBOUND_GUIDE.md)，其他页面的完整迁移仍待实施。尺寸为CSS像素基准，业务含义以[状态与恢复语义](status-semantics.md)为准。
 
 ## 1. 信息架构与侧边栏
 

@@ -13,6 +13,7 @@ public final class SubmissionJson {
     private static final ObjectMapper JSON=new ObjectMapper().enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
         .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
     private SubmissionJson() { }
+    public static JsonNode parse(String text) { return parse(text.getBytes(StandardCharsets.UTF_8)); }
     public static JsonNode parse(byte[] bytes) {
         require(bytes.length>0 && bytes.length<=33554432,"正文大小不受支持");
         try { var value=JSON.readTree(bytes);canonical(value);return value; }

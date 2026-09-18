@@ -1,0 +1,274 @@
+View:
+  get:
+    summary: 本单PC作业、逐产品进度与最近提交；order:read
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+    responses:
+      '200':
+        description: 真实后台资料或原操作回执；计入不等于最终出库
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/View'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Candidates:
+  get:
+    summary: 固定本单产品范围查包；pc:operate；每人每分钟120次，分组5条真实分页
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - name: query
+        in: query
+        required: true
+        schema: {type: string, minLength: 4, maxLength: 11}
+      - name: code
+        in: query
+        required: false
+        schema: {type: string, default: '', description: 留空查询所有代码；指定代码时可翻该组页}
+      - name: page
+        in: query
+        required: false
+        schema: {type: integer, minimum: 1, maximum: 1000000, default: 1, description: 查询全部代码只允许第1页；越界回末页}
+    responses:
+      '200':
+        description: 真实后台资料或原操作回执；计入不等于最终出库
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/Candidates'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Entries:
+  get:
+    summary: 本单录入与撤销历史；order:read；序号倒序真实分页
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - name: search
+        in: query
+        required: false
+        schema: {type: string, maxLength: 11, default: ''}
+      - name: code
+        in: query
+        required: false
+        schema: {type: string, maxLength: 3, default: ''}
+      - name: page
+        in: query
+        required: false
+        schema: {type: integer, minimum: 1, maximum: 1000000, default: 1}
+      - name: pageSize
+        in: query
+        required: false
+        schema: {type: integer, enum: [20, 50, 100], default: 20}
+    responses:
+      '200':
+        description: 真实后台资料或原操作回执；计入不等于最终出库
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/Entries'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+  post:
+    summary: 核对实物后逐包保存并取得全局占用；pc:operate；不接受客户端重量
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pc-schemas.yaml#/Write'}
+    responses:
+      '200':
+        description: 真实后台资料或原操作回执；计入不等于最终出库
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/CommandReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Start:
+  post:
+    summary: 原子开始PC作业；pc:operate；草稿另需order:publish，发布与领取同事务
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pc-schemas.yaml#/Start'}
+    responses:
+      '200':
+        description: 真实后台资料或原操作回执；计入不等于最终出库
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/CommandReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Writer:
+  post:
+    summary: 原人员显式切换录入窗口，增加写入栅栏；pc:operate；不释放业务占用
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pc-schemas.yaml#/Start'}
+    responses:
+      '200':
+        description: 真实后台资料或原操作回执；计入不等于最终出库
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/CommandReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Void:
+  post:
+    summary: 实物确认后撤销未冻结录入并释放本次PC占用；pc:operate；原序号和原因保留
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pc-schemas.yaml#/Write'}
+    responses:
+      '200':
+        description: 真实后台资料或原操作回执；计入不等于最终出库
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/CommandReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Submit:
+  post:
+    summary: 冻结有序记录并校验；pc:operate；0包拒绝，短装须原因及审批，满计划无冲突则原子出库
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pc-schemas.yaml#/Write'}
+    responses:
+      '200':
+        description: 真实后台资料或原操作回执；计入不等于最终出库
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/CommandReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Review:
+  post:
+    summary: 核对固定摘要审批；submission:review；批准仍复核原人员和库存，退回保留占用
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pc-schemas.yaml#/Review'}
+    responses:
+      '200':
+        description: 真实后台资料或原操作回执；计入不等于最终出库
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/CommandReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Resume:
+  post:
+    summary: 主管凭实物记录恢复原人员及全部原有效包，递增轮次；order:resume；原冻结记录不改写
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pc-schemas.yaml#/Resume'}
+    responses:
+      '200':
+        description: 真实后台资料或原操作回执；计入不等于最终出库
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/CommandReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Lookup:
+  get:
+    summary: 按原请求标识查本账号本仓本单回执；order:read；不要求仍有pc:operate
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - name: key
+        in: path
+        required: true
+        schema: {type: string, pattern: '^[A-Za-z0-9._:-]{16,80}$'}
+    responses:
+      '200':
+        description: 真实后台资料或原操作回执；计入不等于最终出库
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/Lookup'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}

@@ -19,11 +19,13 @@ import OrderSubmission from './OrderSubmission.vue';
 import OrderRecall from './OrderRecall.vue';
 import OrderStatus from './OrderStatus.vue';
 import OrderPlan from './OrderPlan.vue';
+import PcOrderLink from '../pc/PcOrderLink.vue';
 const route = useRoute(); const router = useRouter(); const session = useSessionStore();
 const detail = ref<Detail | null>(null); const preflight = ref<Preflight | null>(null); const busy = ref(false);
 const error = ref(''); const checkError = ref(''); const receivedAt = ref('');
 const editor = ref(false); const cancelReason = ref(''); const cancelDialog = ref(false); const uncertain = ref(false);
 const publishDialog = ref(false); const recallBusy = ref(false); const submissionBusy = ref(false);
+const pcChannel = ref(false);
 const locked = computed(() => editor.value || cancelDialog.value || publishDialog.value || recallBusy.value || submissionBusy.value);
 const tab = computed({ get: () => ['plan', 'records', 'exceptions', 'history'].includes(String(route.query.tab)) ? String(route.query.tab) : 'plan',
   set: (value: string) => { void router.replace({ query: { ...orderRouteQuery(parseOrderQuery(route.query), session.warehouseId), tab: value } }); } });
@@ -83,6 +85,7 @@ onBeforeUnmount(() => { generation++; });
     <PageHeading :title="detail?.order.orderNo ?? '订单详情'" :subtitle="detail ? `车号：${detail.plan.vehicleNo}${detail.plan.containerNo ? ' · 柜号：' + detail.plan.containerNo : ''}` : undefined" back @back="back">
       <template #status><template v-if="detail"><OrderStatus :status="detail.order.status" /><el-tooltip content="复制订单号"><el-button text :icon="CopyDocument" aria-label="复制订单号" @click="copyOrder" /></el-tooltip></template></template>
       <template v-if="detail">
+        <PcOrderLink :key="detail.order.id" :order="detail.order.id" :warehouse="session.warehouseId" :version="detail.order.rowVersion" :status="detail.order.status" :disabled="busy || locked || !!error" @channel="pcChannel = $event" />
         <el-button v-if="canPublish && detail.order.status === 'DRAFT'" type="primary" :disabled="busy || locked || !!error || !preflight?.checksPassed" @click="publishDialog = true">发布订单</el-button>
         <el-button v-if="canWrite && unassigned && (detail.order.status === 'DRAFT' || canPublish)" :disabled="busy || locked || !!error" @click="editor = true">{{ detail.order.status === 'READY' ? '修订并重新发布' : '修订草稿' }}</el-button>
         <el-button v-if="canCancel && unassigned" type="danger" plain :disabled="busy || locked || !!error" @click="cancelDialog = true">作废订单</el-button>
@@ -96,8 +99,8 @@ onBeforeUnmount(() => { generation++; });
       <div class="result-summary"><span>{{ detail.order.createdBy }} · 创建于 {{ localTime(detail.order.createdAt) }}</span><span>数据读取于 {{ localTime(receivedAt) }}</span></div>
       <el-tabs v-model="tab" class="detail-tabs">
         <el-tab-pane label="产品计划" name="plan"><OrderPlan :detail="detail" :preflight="preflight" :check-error="checkError" @retry="load" /></el-tab-pane>
-        <el-tab-pane label="装车记录" name="records"><OrderSubmission :key="`submission-${detail.order.id}`" :version="detail.order.rowVersion" :warehouse-id="session.warehouseId" :order-id="detail.order.id" @updated="load" @busy="submissionBusy = $event" /></el-tab-pane>
-        <el-tab-pane label="异常处理" name="exceptions"><OrderRecall :key="`${session.warehouseId}-${detail.order.id}`" :warehouse-id="session.warehouseId" :order-id="detail.order.id" :row-version="detail.order.rowVersion" :status="detail.order.status" @updated="load" @busy="recallBusy = $event" /></el-tab-pane>
+        <el-tab-pane label="装车记录" name="records"><p v-if="pcChannel">本单采用PC手工录入，请通过上方“查看PC记录与结果”或“继续PC录入”核对全部记录与结果。</p><OrderSubmission v-else :key="`submission-${detail.order.id}`" :version="detail.order.rowVersion" :warehouse-id="session.warehouseId" :order-id="detail.order.id" @updated="load" @busy="submissionBusy = $event" /></el-tab-pane>
+        <el-tab-pane label="异常处理" name="exceptions"><p v-if="pcChannel">本单PC作业的审批和实物核验恢复在PC记录页面办理，原记录与占用保留。</p><OrderRecall v-else :key="`${session.warehouseId}-${detail.order.id}`" :warehouse-id="session.warehouseId" :order-id="detail.order.id" :row-version="detail.order.rowVersion" :status="detail.order.status" @updated="load" @busy="recallBusy = $event" /></el-tab-pane>
         <el-tab-pane label="操作记录" name="history">
           <OrderHistory :key="`${detail.order.id}-${detail.order.rowVersion}`" :warehouse-id="session.warehouseId" :order-id="detail.order.id" />
           <OrderPublications :key="`pub-${detail.order.id}-${detail.order.rowVersion}`" :warehouse-id="session.warehouseId" :order-id="detail.order.id" />
