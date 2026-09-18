@@ -22,6 +22,7 @@ test('PC full plan uses explicit package confirmation and preserves order naviga
   await page.getByRole('button', { name: '结单核对', exact: true }).click(); await confirmPcDialog(page, '', true);
   await expect(page.locator('.pc-result')).toContainText('后台已确认出库');
   expect((await workView(page, f)).submission.receipt.inventoryDeducted).toBe(true);
+  await expect(page.locator('.pc-records .el-loading-mask:visible')).toHaveCount(0);
   await page.screenshot({ path: '../.local/pc-result-completed.png', animations: 'disabled' });
   await page.getByRole('button', { name: '返回订单详情', exact: true }).click(); await expect(page).toHaveURL(/page=2/);
   await page.getByRole('button', { name: '返回订单列表', exact: true }).click(); await expect(page).toHaveURL(/search=.*page=2/);
