@@ -1,0 +1,20 @@
+OrderSync:
+  get:
+    security: [{pdaBearer: []}]
+    summary: 按当前恢复代次拉取订单基线和增量事件；游标属于恢复代次和仓库命名空间
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+      - {name: cursor, in: query, schema: {type: string}, description: 首次留空取得当前基线，后续使用nextCursor}
+      - {name: baselineId, in: query, schema: {type: string, format: uuid}, description: 基线分页时沿用服务器返回的baselineId}
+      - {name: baselineCursor, in: query, schema: {type: string}, description: 基线分页时使用baselineNextCursor；完成后再使用nextCursor拉增量}
+      - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 200, default: 50}}
+    responses:
+      '200':
+        description: 首次返回订单状态基线及高水位；后续返回不跳过的有序事件。基线不完整时不得自动恢复作业。
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './sync-schemas.yaml#/OrderSync'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}

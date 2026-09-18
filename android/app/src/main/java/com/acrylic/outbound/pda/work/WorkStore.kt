@@ -5,7 +5,13 @@ import com.acrylic.outbound.pda.security.JwtVerifier
 import org.json.JSONObject
 import java.util.UUID
 
-class WorkStore(val db: PdaDatabase, val access: WorkAccess) {
+class WorkStore(val db: PdaDatabase, access: WorkAccess) {
+    val access: WorkAccess = object : WorkAccess by access {
+        override fun authorize(order: PreparedOrder): java.time.Instant {
+            com.acrylic.outbound.pda.sync.SyncWorkGuard(db).requireAllowed(order)
+            return access.authorize(order)
+        }
+    }
     fun prepared(id: String): PreparedOrder {
         val original = checkNotNull(db.preparations().order(id)) { "订单资料尚未激活" }
         val continuation = db.continuations().current(id) ?: return original

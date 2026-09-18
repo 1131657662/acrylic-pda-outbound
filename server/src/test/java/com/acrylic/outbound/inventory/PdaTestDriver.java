@@ -38,7 +38,10 @@ record PdaTestDriver(PublicationDriver web) {
             .put("challengeId",challenge.get("challengeId").asText()).put("signature",sign(device,challenge.get("signedText").asText()));
     }
     MockHttpServletRequestBuilder command(String path,ObjectNode body) throws Exception {
-        return post("/api/v1/pda"+path).contentType("application/json").content(web.json().writeValueAsBytes(body));
+        // Independent test clients must not consume one shared authentication throttle window.
+        String address = web.identity().user().id().toString().replace("-", "").replaceAll("(.{4})(?!$)", "$1:");
+        return post("/api/v1/pda"+path).with(request -> { request.setRemoteAddr(address); return request; })
+            .contentType("application/json").content(web.json().writeValueAsBytes(body));
     }
     MockHttpServletRequestBuilder claim(String order,String key) throws Exception {
         return command("/orders/"+order+"/assignments",claimBody()).header("Idempotency-Key",key).header("X-Server-Recovery-Epoch","1");

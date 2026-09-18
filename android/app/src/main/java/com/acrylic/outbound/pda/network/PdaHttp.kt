@@ -17,9 +17,10 @@ interface PdaHttp {
     @POST fun post(@Url path: String, @HeaderMap headers: Map<String, String>, @Body body: RequestBody): Call<ResponseBody>
 }
 
-class ApiFailure(val code: String, message: String, val retryAfterSeconds: Long? = null) : Exception(message)
+class ApiFailure(val code: String, message: String, val retryAfterSeconds: Long? = null,
+    val httpStatus: Int? = null) : Exception(message)
 
-class PdaNetwork(baseUrl: String) {
+class PdaNetwork(baseUrl: String, private val observe: (JSONObject) -> Unit = {}) {
     private val http = Retrofit.Builder().baseUrl(baseUrl)
         .client(OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(45, TimeUnit.SECONDS)
             .callTimeout(90, TimeUnit.SECONDS).followRedirects(false).followSslRedirects(false).retryOnConnectionFailure(false).build())
@@ -30,9 +31,13 @@ class PdaNetwork(baseUrl: String) {
         val call = if (raw != null) http.post(path, headers, raw.toRequestBody("application/octet-stream".toMediaType()))
             else if (body == null) http.get(path, headers) else http.post(path, headers, body.toString().toRequestBody("application/json".toMediaType()))
         val response = call.execute()
-        val source = response.body() ?: response.errorBody() ?: throw ApiFailure("EMPTY_RESPONSE", "服务器未返回内容，请重试原操作")
-        val envelope = source.use { JSONObject(String(readLimited(it.byteStream(), 2 * 1024 * 1024), Charsets.UTF_8)) }
-        if (!response.isSuccessful || envelope.optString("code") != "OK") throw ApiFailure(envelope.optString("code"), envelope.optString("message", "请求失败"), response.headers()["Retry-After"]?.toLongOrNull())
+        val source = response.body() ?: response.errorBody() ?: throw ApiFailure("EMPTY_RESPONSE", "服务器未返回内容，请重试原操作", httpStatus = response.code())
+        val envelope = source.use {
+            try { JSONObject(String(readLimited(it.byteStream(), 2 * 1024 * 1024), Charsets.UTF_8)) }
+            catch (error: org.json.JSONException) { throw ApiFailure("INVALID_RESPONSE", "服务器响应格式不正确，请重试原操作", httpStatus = response.code()) }
+        }
+        observe(envelope)
+        if (!response.isSuccessful || envelope.optString("code") != "OK") throw ApiFailure(envelope.optString("code"), envelope.optString("message", "请求失败"), response.headers()["Retry-After"]?.toLongOrNull(), response.code())
         check(envelope.getString("serviceMode") == "NORMAL") { "服务器正在恢复，保留本地资料" }
         return envelope
     }
@@ -42,6 +47,7 @@ class PdaNetwork(baseUrl: String) {
         val response = http.get(path, headers).execute()
         if (!response.isSuccessful) {
             val error = response.errorBody()?.use { JSONObject(it.string()) }
+            error?.let(observe)
             throw ApiFailure(error?.optString("code") ?: "DOWNLOAD_FAILED", error?.optString("message") ?: "下载失败，占用已保留")
         }
         response.body()!!.use { body -> body.byteStream().use { input -> target.outputStream().use { output ->

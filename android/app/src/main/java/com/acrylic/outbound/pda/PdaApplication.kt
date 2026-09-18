@@ -11,10 +11,12 @@ import com.acrylic.outbound.pda.submission.*
 import com.acrylic.outbound.pda.recall.*
 import com.acrylic.outbound.pda.continuation.*
 import com.acrylic.outbound.pda.renewal.AuthorizationRenewalRepository
+import com.acrylic.outbound.pda.sync.SyncRepository
 
 class PdaApplication : Application() {
     val database by lazy { PdaDatabase.open(this) }
-    val session by lazy { PdaSession(this, ConnectionSettings(this), DeviceKeys(), SessionVault(this)) }
+    val session by lazy { PdaSession(this, ConnectionSettings(this), DeviceKeys(), SessionVault(this),
+        com.acrylic.outbound.pda.sync.RecoveryProtection(database)) }
     val pairing by lazy { com.acrylic.outbound.pda.pairing.PairingRepository(
         com.acrylic.outbound.pda.pairing.PairingVault(this), session.settings, DeviceKeys()) }
     val repository by lazy { PreparationRepository(this, database, session) }
@@ -26,4 +28,5 @@ class PdaApplication : Application() {
     val recalls by lazy { RecallRepository(database, session, work::pauseForRecall) }
     val recoveryFreezer by lazy { RecoveryFreeze(WorkStore(database, SessionWorkAccess(this, session)), session::now) }
     val renewals by lazy { AuthorizationRenewalRepository(database, session) }
+    val sync by lazy { SyncRepository(database, session) }
 }

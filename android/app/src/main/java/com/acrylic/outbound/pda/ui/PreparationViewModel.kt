@@ -64,6 +64,7 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
 
     private fun refreshData() {
         val current = app.session.requireSession()
+        val syncMessage = app.sync.refreshOrders()
         repository.local().filter { it.operatorId == current.getString("userId") && it.deviceId == current.getString("deviceId") }
             .forEach { app.recalls.check(it.assignmentId) }
         val assigned = repository.page("pda/assignments", "beforeId")
@@ -72,6 +73,7 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
             assignedCursor = assigned.nextCursor, availableCursor = available.nextCursor,
             assignedHasMore = assigned.nextCursor != null, availableHasMore = available.nextCursor != null) }
         loadLocal()
+        mutable.update { it.copy(message = syncMessage) }
     }
     private fun loadLocal() {
         val saved = app.session.saved()
@@ -99,7 +101,7 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) { action() }
-                mutable.update { it.copy(message = "操作已完成；资料和本机记录已保留") }
+                mutable.update { if (it.message == message) it.copy(message = "操作已完成；资料和本机记录已保留") else it }
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
                 withContext(Dispatchers.IO) { runCatching { loadLocal() } }

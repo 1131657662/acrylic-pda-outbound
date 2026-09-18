@@ -5,10 +5,14 @@ import com.acrylic.outbound.pda.security.*
 import org.json.JSONObject
 
 class PdaSession(private val context: Context, val settings: ConnectionSettings,
-    private val keys: DeviceKeys, private val vault: SessionVault) {
+    private val keys: DeviceKeys, private val vault: SessionVault,
+    private val recovery: com.acrylic.outbound.pda.sync.RecoveryProtection) {
     fun saved(): JSONObject? = vault.read()
     fun publicKey(): String = keys.publicKey(settings.device.isBlank()).also { settings.verifyKey(it) }
-    fun network() = PdaNetwork(settings.server)
+    fun network() = PdaNetwork(settings.server) { envelope ->
+        // A damaged login vault must still allow reauthentication; Room retains the recovery barrier.
+        recovery.observe(envelope, runCatching { saved()?.optString("serverRecoveryEpoch") }.getOrNull())
+    }
 
     fun login(username: String, password: String) {
         check(settings.device.isNotBlank()) { "请先登记并绑定设备" }
@@ -53,9 +57,6 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
             }
         }
         val current = requireSession()
-        if (current.getString("serverRecoveryEpoch") != envelope.getString("serverRecoveryEpoch")) {
-            update(current, envelope, started); error("服务器恢复代次已变化，请保留资料并联系主管对账")
-        }
         update(current, envelope, started)
         return envelope.getJSONObject("data")
     }

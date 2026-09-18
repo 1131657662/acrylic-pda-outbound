@@ -1,0 +1,40 @@
+BaselineOrder:
+  type: object
+  required: [orderId, status, rowVersion, updatedAt]
+  properties:
+    orderId: {type: string, format: uuid}
+    status: {type: string}
+    rowVersion: {type: string, pattern: '^[1-9][0-9]*$'}
+    updatedAt: {type: string, format: date-time}
+SyncEvent:
+  type: object
+  required: [eventId, sequence, orderId, entityVersion, eventType, status, createdAt]
+  properties:
+    eventId: {type: string, format: uuid}
+    sequence: {type: string, pattern: '^[1-9][0-9]*$'}
+    orderId: {type: string, format: uuid}
+    entityVersion: {type: string, pattern: '^[1-9][0-9]*$'}
+    eventType: {type: string}
+    status: {type: string, description: 已提交事件中的状态；不包含原始发布资料、授权或业务备注}
+    createdAt: {type: string, format: date-time}
+OrderSync:
+  type: object
+  required: [streamType, recoveryEpoch, warehouseId, baselineId, baselineNextCursor, baseline, baselineComplete, highWatermark, nextCursor, hasMore, events]
+  properties:
+    streamType: {type: string, const: ORDER}
+    recoveryEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
+    warehouseId: {type: string, format: uuid}
+    baselineId: {type: [string, 'null'], format: uuid}
+    baselineNextCursor: {type: [string, 'null'], description: 固定基线未下载完成时的下一页游标；与baselineId同时使用}
+    baseline:
+      type: array
+      maxItems: 200
+      items: {$ref: '#/BaselineOrder'}
+    baselineComplete: {type: boolean}
+    highWatermark: {type: string, pattern: '^[0-9]+$'}
+    nextCursor: {type: [string, 'null'], description: 基线未完成时必须为null；完成后原子应用所有基线行才可启用}
+    hasMore: {type: boolean, description: 基线完成后仍须用nextCursor拉取后续事件；增量为false表示本次已到发布高水位}
+    events:
+      type: array
+      maxItems: 200
+      items: {$ref: '#/SyncEvent'}

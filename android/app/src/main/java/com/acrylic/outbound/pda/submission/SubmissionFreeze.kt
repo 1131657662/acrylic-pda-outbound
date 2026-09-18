@@ -13,6 +13,7 @@ class SubmissionFreeze(private val store: WorkStore, private val now: () -> Inst
             store.access.identity(store.prepared(assignment))
             val old = store.db.submissions().forOrder(assignment)
             if (old != null) { result = old; return@runInTransaction }
+            com.acrylic.outbound.pda.sync.SyncWorkGuard(store.db).requireAllowed(store.prepared(assignment))
             val order = checkNotNull(store.db.work().order(assignment)); store.verifyTotals(assignment)
             check(order.state == "SCANNING" && order.actualCount > 0) { "必须有有效装车记录才能结单" }
             check(store.db.captures().pendingCount(assignment) == 0 && store.db.captures().failure(assignment) == null) { "请先处理全部未决输入和错误" }

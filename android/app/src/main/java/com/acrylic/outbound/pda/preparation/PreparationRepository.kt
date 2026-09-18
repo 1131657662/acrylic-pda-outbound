@@ -57,6 +57,7 @@ class PreparationRepository(private val context: Context, private val db: PdaDat
         check(intent.recoveryEpoch == auth.getString("serverRecoveryEpoch")) { "恢复代次已变化，请联系主管" }
         // Refresh authentication before sending the persisted write; a lost response keeps the intent intact.
         session.call("pda/devices/me")
+        com.acrylic.outbound.pda.sync.RecoveryProtection(db).requireNormal()
         db.preparations().markIntent(intent.orderId, "UNKNOWN", null)
         return try {
             val envelope = session.network().request("pda/orders/${intent.orderId}/assignments", JSONObject(intent.body),
@@ -113,6 +114,7 @@ class PreparationRepository(private val context: Context, private val db: PdaDat
     }
 
     fun readiness(order: PreparedOrder): String = try {
+        com.acrylic.outbound.pda.sync.SyncWorkGuard(db).requireAllowed(order)
         val auth = session.requireSession()
         JwtVerifier.authorization(JSONObject(order.assignmentJson), auth, JSONObject(order.signingKeyJson), session.now())
         check(db.preparations().count(order.assignmentId) == order.rowCount) { "本机资料不完整" }
