@@ -35,6 +35,7 @@ class DeviceSettingsActivity : ComponentActivity() {
         binding.sound.setOnCheckedChangeListener { _, enabled -> app.workSound.enabled = enabled }
         binding.copyKey.setOnClickListener { copyKey() }
         binding.checkConnection.setOnClickListener { checkConnection() }
+        binding.appUpdate.setOnClickListener { startActivity(android.content.Intent(this, PdaUpdateActivity::class.java)) }
         binding.logout.setOnClickListener { confirmLogout() }
         binding.advanced.setOnClickListener {
             binding.maintenance.visibility = if (binding.maintenance.visibility == View.GONE) View.VISIBLE else View.GONE

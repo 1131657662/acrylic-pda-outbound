@@ -11,14 +11,17 @@ android {
         applicationId = "com.acrylic.outbound.pda"
         minSdk = 28
         targetSdk = 35
-    versionCode = 10
-    versionName = "0.9.0-r05-sync"
+    versionCode = providers.gradleProperty("pdaVersionCode").map(String::toInt).orElse(10).get()
+    versionName = providers.gradleProperty("pdaVersionName").orElse("0.9.0-r05-sync").get()
         val serverUrl = providers.gradleProperty("pdaServerUrl").orElse("").get()
         val environment = providers.gradleProperty("pdaEnvironment").orElse("未配置服务环境").get()
+        val updatePublicKey = providers.gradleProperty("pdaUpdatePublicKey").orElse("").get()
         require(!serverUrl.contains('"') && !serverUrl.contains('\\') && !serverUrl.contains('\n'))
         require(!environment.contains('"') && !environment.contains('\\') && !environment.contains('\n'))
+        require(!updatePublicKey.contains('"') && !updatePublicKey.contains('\\') && !updatePublicKey.contains('\n'))
         buildConfigField("String", "PDA_SERVER_URL", "\"$serverUrl\"")
         buildConfigField("String", "PDA_ENVIRONMENT", "\"$environment\"")
+        buildConfigField("String", "PDA_UPDATE_PUBLIC_KEY", "\"$updatePublicKey\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { viewBinding = true; buildConfig = true }
@@ -28,13 +31,20 @@ android {
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
     buildTypes {
-        debug { applicationIdSuffix = ".debug" }
-        release { isMinifyEnabled = false }
+        debug {
+            applicationIdSuffix = ".debug"
+            buildConfigField("String", "PDA_UPDATE_CHANNEL", "\"debug\"")
+        }
+        release {
+            isMinifyEnabled = false
+            buildConfigField("String", "PDA_UPDATE_CHANNEL", "\"production\"")
+        }
         create("staging") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".staging"
             versionNameSuffix = "-test"
             matchingFallbacks += listOf("debug")
+            buildConfigField("String", "PDA_UPDATE_CHANNEL", "\"staging\"")
         }
     }
     testOptions {
