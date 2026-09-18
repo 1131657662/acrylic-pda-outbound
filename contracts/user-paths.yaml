@@ -1,0 +1,124 @@
+Users:
+  get:
+    summary: 当前仓库内完整授权范围可管理的人员，user:manage；真实总数和页码
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Warehouse'
+      - {name: username, in: query, schema: {type: string, maxLength: 64}, description: 完整账号精确匹配}
+      - {name: status, in: query, schema: {type: string, enum: ['', ACTIVE, DISABLED]}}
+      - {name: page, in: query, schema: {type: integer, minimum: 1, maximum: 100000, default: 1}}
+      - {name: pageSize, in: query, schema: {type: integer, enum: [20, 50, 100], default: 20}}
+    responses:
+      '200':
+        description: 人员ID倒序；越界页回到最后有效页，范围外人员不计入总数
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './user-schemas.yaml#/Page'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+  post:
+    summary: 新增人员及角色/仓库授权，user:manage；密码不返回、不记明文审计
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Warehouse'
+      - $ref: './openapi.yaml#/components/parameters/Csrf'
+      - $ref: './openapi.yaml#/components/parameters/Idempotency'
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+    requestBody:
+      required: true
+      content: {application/json: {schema: {$ref: './user-schemas.yaml#/Create'}}}
+    responses:
+      '200': {$ref: '#/Receipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Options:
+  get:
+    summary: 当前管理员可授予的现有角色及有效仓库，user:manage
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Warehouse'
+    responses:
+      '200':
+        description: 不返回超出管理员权限的角色或仓库
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './user-schemas.yaml#/Options'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+User:
+  parameters:
+    - $ref: './openapi.yaml#/components/parameters/Warehouse'
+    - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+  get:
+    summary: 查询可管理人员最新信息，user:manage
+    responses:
+      '200':
+        description: 不含密码及密码验证值
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './user-schemas.yaml#/Item'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+  post:
+    summary: 修订姓名、角色、仓库和启停状态；不能修改本人，不释放原订单占用
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Csrf'
+      - $ref: './openapi.yaml#/components/parameters/Idempotency'
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+    requestBody:
+      required: true
+      content: {application/json: {schema: {$ref: './user-schemas.yaml#/Update'}}}
+    responses:
+      '200': {$ref: '#/Receipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Password:
+  post:
+    summary: 重置可管理人员密码（允许本人）；使旧Web/PDA会话失效，不更新历史离线凭据
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Warehouse'
+      - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+      - $ref: './openapi.yaml#/components/parameters/Csrf'
+      - $ref: './openapi.yaml#/components/parameters/Idempotency'
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+    requestBody:
+      required: true
+      content: {application/json: {schema: {$ref: './user-schemas.yaml#/Password'}}}
+    responses:
+      '200': {$ref: '#/Receipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Lookup:
+  get:
+    summary: 按当前管理员、原仓库和原请求标识查询不可变回执，user:manage
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Warehouse'
+      - {name: key, in: path, required: true, schema: {type: string, pattern: '^[A-Za-z0-9._:-]{16,80}$'}}
+    responses:
+      '200': {$ref: '#/Receipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+History:
+  get:
+    summary: 可管理人员的不可变管理操作记录，user:manage；每页20条
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Warehouse'
+      - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+      - {name: beforeId, in: query, schema: {type: string, format: uuid}}
+    responses:
+      '200':
+        description: 回执ID倒序，不返回明文密码或密码验证值
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './user-schemas.yaml#/History'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Receipt:
+  description: 原请求回执；同键同内容返回原回执，不重复修改权限或密码
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: './schemas.yaml#/Envelope'
+          - properties: {data: {$ref: './user-schemas.yaml#/Receipt'}}

@@ -1,4 +1,4 @@
-import { Box, Document, Upload, Files, Setting, Monitor } from '@element-plus/icons-vue';
+import { Box, Document, Upload, Files, Setting, Monitor, User } from '@element-plus/icons-vue';
 import { ref } from 'vue';
 export const navigationCollapsed = ref(window.innerWidth < 1280);
 
@@ -10,6 +10,7 @@ export const navigation = [
     { path: '/inventory/mappings', label: '发货代码', permission: 'inventory:read', icon: Files },
   ] },
   { group: '系统管理', items: [
+    { path: '/users', label: '人员与权限', permission: 'user:manage', icon: User },
     { path: '/policies', label: '出库规则', permission: 'order:read', icon: Setting },
     { path: '/devices', label: 'PDA 设备', permission: 'device:manage', icon: Monitor },
   ] },

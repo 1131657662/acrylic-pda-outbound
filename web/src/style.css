@@ -64,6 +64,12 @@ a { color: var(--primary); text-underline-offset: 3px; }
 .auxiliary-stack > :not(.auxiliary-list), .auxiliary-list > :not(.auxiliary-table) { flex-shrink: 0; }
 .auxiliary-list { margin-bottom: 0; padding-bottom: 0; }
 .auxiliary-table { flex: 1; min-height: 180px; overflow: hidden; }
+.user-filter { display: flex; align-items: end; flex-wrap: wrap; gap: var(--space-3); }
+.user-filter label { display: grid; gap: var(--space-2); width: 220px; max-width: 100%; }
+.user-page-size { width: 112px; }
+.user-choices { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
+.user-choices .el-checkbox, .user-confirm { height: auto; min-height: 36px; margin-right: 0; white-space: normal; }
+.user-choices .el-checkbox__label, .user-confirm .el-checkbox__label { white-space: normal; overflow-wrap: anywhere; }
 .feedback-state { min-height: 220px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: var(--space-3); text-align: center; padding: var(--space-5); }
 .feedback-state p { max-width: 520px; overflow-wrap: anywhere; }
 .feedback-state .el-icon { font-size: 28px; color: var(--text-muted); }
