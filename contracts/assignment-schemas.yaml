@@ -6,7 +6,7 @@ Command:
     areaNote: {type: string, maxLength: 500, description: 可空的人工货堆备注，不代表条码预留}
 View:
   type: object
-  required: [id, orderId, revision, deviceId, deviceCode, operatorId, operatorName, epoch, serverRecoveryEpoch, inventorySnapshotId, planSha256, inventorySha256, startOrderScanSeq, allocationVersion, status, areaNote, issuedAt, expiresAt, downloadAckAt, offlineToken, offlineAuthorizationId]
+  required: [id, orderId, revision, deviceId, deviceCode, operatorId, operatorName, epoch, serverRecoveryEpoch, inventorySnapshotId, planSha256, inventorySha256, startOrderScanSeq, allocationVersion, status, areaNote, issuedAt, expiresAt, downloadAckAt, offlineToken, offlineAuthorizationId, authorizationSequence]
   properties:
     id: {type: string, format: uuid}
     orderId: {type: string, format: uuid}
@@ -29,6 +29,16 @@ View:
     downloadAckAt: {type: [string, 'null'], format: date-time, description: 收到有效本地激活确认的服务端时间；确认前为null，重复确认不更新}
     offlineToken: {type: [string, 'null'], description: RS256 JWT；活动列表中不是当前人员的凭据返回null}
     offlineAuthorizationId: {type: string, format: uuid}
+    authorizationSequence: {type: string, pattern: '^[0-9]+$', description: 同一作业授权历史中的序号；首次为0，续期递增}
+RenewalCommand:
+  type: object
+  required: [authorizationId, assignmentEpoch, orderId, revision, pendingInputCount]
+  properties:
+    authorizationId: {type: string, format: uuid, description: 当前本机持有的离线授权ID}
+    assignmentEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
+    orderId: {type: string, format: uuid}
+    revision: {type: integer, minimum: 1}
+    pendingInputCount: {type: integer, minimum: 0, description: 本机未决输入数量，必须为0}
 Page:
   type: object
   required: [items, nextCursor]

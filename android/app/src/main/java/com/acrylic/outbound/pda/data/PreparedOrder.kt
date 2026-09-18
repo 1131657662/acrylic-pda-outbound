@@ -19,5 +19,6 @@ data class PreparedOrder(
     val signedManifest: String,
     val activatedAt: String,
     val rowCount: Int,
-    val ackAt: String? = null
+    val ackAt: String? = null,
+    val authorizationHistoryJson: String = "[]"
 )

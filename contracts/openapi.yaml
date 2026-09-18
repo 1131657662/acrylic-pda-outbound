@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: 腈纶包出库系统 — 已实现接口
-  version: 0.15.0
-  description: 新增人员角色和仓库授权管理、账号启停、密码重置及原请求恢复，保留设备身份和作业事实。已实现独立PC手工出库、在线计包、持久原请求恢复、结单审批和异常处置。已实现PDA短码配对登记、管理员及原机双确认与凭据恢复；Web会话、库存/映射、订单及政策、设备登记、PDA双身份认证、独占领取、签名资料准备、正式单冻结提交、短装审批、全局防重和可选自动记账；受控召回、恢复包、原机停止证明、主管零包作废、凭据卸货/隔离续作及新轮次提交。通用续期、完整同步、换机、更正及文件生成仍待接入。
+  version: 0.16.0
+  description: 新增人员角色和仓库授权管理、账号启停、密码重置及受控离线授权续期，保留设备身份、授权历史和作业事实。已实现独立PC手工出库、在线计包、持久原请求恢复、结单审批和异常处置。已实现PDA短码配对登记、管理员及原机双确认与凭据恢复；Web会话、库存/映射、订单及政策、设备登记、PDA双身份认证、独占领取、签名资料准备、正式单冻结提交、短装审批、全局防重和可选自动记账；受控召回、恢复包、原机停止证明、主管零包作废、凭据卸货/隔离续作及新轮次提交。完整同步、换机、更正及文件生成仍待接入。
 servers:
   - url: /api/v1
 security:
@@ -958,6 +958,8 @@ paths:
     $ref: './pda-paths.yaml#/Claim'
   /pda/assignments:
     $ref: './pda-paths.yaml#/Assignments'
+  /pda/assignments/{id}/renewal:
+    $ref: './pda-paths.yaml#/Renewal'
   /pda/assignments/{id}/preparation:
     $ref: './preparation-paths.yaml#/Prepare'
   /pda/assignments/{id}/content/{part}:

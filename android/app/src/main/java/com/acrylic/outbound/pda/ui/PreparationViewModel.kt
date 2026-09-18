@@ -60,6 +60,7 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
         repository.prepare(assignment) { message -> mutable.update { it.copy(message = message) } }; refreshData()
     }
     fun ack(order: PreparedOrder) = run("正在重试下载确认") { repository.acknowledge(order); loadLocal() }
+    fun renew(order: PreparedOrder) = run("正在联网续期，原授权和本机记录会保留") { app.renewals.renew(order); loadLocal() }
 
     private fun refreshData() {
         val current = app.session.requireSession()
@@ -77,7 +78,8 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
         val local = repository.local().map {
             val recalled = app.database.recalls().header(it.assignmentId) != null
             val continuation = app.database.continuations().current(it.assignmentId)
-            val current = if (continuation == null) it else it.copy(assignmentJson = continuation.authorizationJson)
+            val current = if (continuation == null) it else it.copy(assignmentJson = continuation.authorizationJson,
+                authorizationHistoryJson = continuation.authorizationHistoryJson)
             LocalCard(current, if (recalled) "收到召回 · 停止作业，须核对恢复证据" else repository.readiness(current), recalled)
         }
         mutable.update { it.copy(bound = app.session.settings.device.isNotBlank(), username = saved?.optString("username") ?: "",

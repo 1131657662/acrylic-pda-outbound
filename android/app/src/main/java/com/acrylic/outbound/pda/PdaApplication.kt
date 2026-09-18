@@ -10,6 +10,7 @@ import com.acrylic.outbound.pda.device.WorkSound
 import com.acrylic.outbound.pda.submission.*
 import com.acrylic.outbound.pda.recall.*
 import com.acrylic.outbound.pda.continuation.*
+import com.acrylic.outbound.pda.renewal.AuthorizationRenewalRepository
 
 class PdaApplication : Application() {
     val database by lazy { PdaDatabase.open(this) }
@@ -24,4 +25,5 @@ class PdaApplication : Application() {
     val continuations by lazy { ContinuationRepository(WorkStore(database, SessionWorkAccess(this, session)), session, work::resumedContinuation) }
     val recalls by lazy { RecallRepository(database, session, work::pauseForRecall) }
     val recoveryFreezer by lazy { RecoveryFreeze(WorkStore(database, SessionWorkAccess(this, session)), session::now) }
+    val renewals by lazy { AuthorizationRenewalRepository(database, session) }
 }

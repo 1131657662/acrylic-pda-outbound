@@ -35,14 +35,16 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
         return result
     }
 
-    fun call(path: String, body: JSONObject? = null, epoch: String? = null, raw: ByteArray? = null): JSONObject {
+    fun call(path: String, body: JSONObject? = null, epoch: String? = null, raw: ByteArray? = null,
+        extraHeaders: Map<String, String> = emptyMap()): JSONObject {
         val session = requireSession()
         val started = TrustedTime.sample(context)
-        val envelope = try { network().request(path, body, headers(session, epoch), raw) }
+        val requestHeaders = headers(session, epoch) + extraHeaders
+        val envelope = try { network().request(path, body, requestHeaders, raw) }
         catch (failure: ApiFailure) {
             try {
                 if (failure.code != "AUTH_EXPIRED") throw failure
-                refresh(); network().request(path, body, headers(requireSession(), epoch), raw)
+                refresh(); network().request(path, body, headers(requireSession(), epoch) + extraHeaders, raw)
             } catch (rejected: ApiFailure) {
                 if (rejected.code in setOf("AUTH_EXPIRED", "DEVICE_DISABLED", "PERMISSION_DENIED")) {
                     vault.save(requireSession().put("blockedReason", rejected.message))

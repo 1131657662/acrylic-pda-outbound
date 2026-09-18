@@ -83,3 +83,26 @@ Assignments:
                 - $ref: './schemas.yaml#/Envelope'
                 - properties: {data: {$ref: './assignment-schemas.yaml#/Page'}}
       default: {$ref: './openapi.yaml#/components/responses/Error'}
+Renewal:
+  post:
+    security: [{pdaBearer: []}]
+    summary: 联网续期当前作业的离线授权；原人、原设备、原订单和固定资料必须保持一致
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/OrderId'
+      - $ref: './openapi.yaml#/components/parameters/Idempotency'
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './assignment-schemas.yaml#/RenewalCommand'}
+    responses:
+      '200':
+        description: 新授权固定48小时；同一幂等键重试返回同一新授权，不改写原授权
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './assignment-schemas.yaml#/View'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}

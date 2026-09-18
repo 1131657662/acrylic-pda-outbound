@@ -15,8 +15,16 @@ class OrderCards(private val parent: LinearLayout, private val model: Preparatio
         if (state.section == "LOCAL") localItems.forEach { item ->
             val plan = JSONObject(item.order.planJson).getJSONObject("order")
             val title = "本机 · ${plan.getJSONObject("plan").getString("vehicleNo") }"
+            val renewalNeeded = !item.recalled && item.readiness.contains("已到期")
+            val action = when {
+                renewalNeeded -> "联网续期"
+                item.order.ackAt == null -> "重试下载确认"
+                else -> null
+            }
             add(title, "${item.readiness}\n库存 ${item.order.rowCount} 包 · 计划 ${plan.getJSONObject("plan").getString("plannedTotal")} 包",
-                if (item.order.ackAt == null) "重试下载确认" else null, !state.busy && state.username.isNotBlank()) { model.ack(item.order) }
+                action, !state.busy && state.username.isNotBlank()) {
+                    if (renewalNeeded) model.renew(item.order) else model.ack(item.order)
+                }
                 .work.apply {
                     visibility = View.VISIBLE; isEnabled = !state.busy && state.username.isNotBlank()
                     if (item.recalled) text = "召回核对 / 停止证明"

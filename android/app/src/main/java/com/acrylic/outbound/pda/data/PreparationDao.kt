@@ -11,6 +11,8 @@ interface PreparationDao {
     @Insert fun insertOrder(order: PreparedOrder)
     @Insert fun insertBales(bales: List<PreparedBale>)
     @Query("UPDATE prepared_order SET ackAt=COALESCE(ackAt,:ack) WHERE assignmentId=:id") fun acknowledged(id: String, ack: String)
+    @Query("UPDATE prepared_order SET assignmentJson=:current, authorizationHistoryJson=:history WHERE assignmentId=:id")
+    fun replaceAuthorization(id: String, current: String, history: String)
     @Query("SELECT * FROM claim_intent WHERE orderId=:order") fun intent(order: String): ClaimIntent?
     @Query("SELECT * FROM claim_intent WHERE userId=:user AND deviceId=:device") fun pending(user: String, device: String): List<ClaimIntent>
     @Insert fun insertIntent(intent: ClaimIntent)
