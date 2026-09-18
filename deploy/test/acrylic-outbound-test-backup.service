@@ -1,0 +1,11 @@
+[Unit]
+Description=Consistent isolated acrylic test backup
+After=mysql.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/opt/acrylic-outbound-test/current/deploy/backup.sh
+Nice=10
+IOSchedulingClass=idle
+UMask=0077

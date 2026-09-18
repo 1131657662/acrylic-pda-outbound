@@ -11,7 +11,8 @@ import org.json.JSONObject
 class OrderCards(private val parent: LinearLayout, private val model: PreparationViewModel) {
     fun render(state: PreparationUi) {
         parent.removeAllViews()
-        state.local.forEach { item ->
+        val localItems = state.local
+        if (state.section == "LOCAL") localItems.forEach { item ->
             val plan = JSONObject(item.order.planJson).getJSONObject("order")
             val title = "本机 · ${plan.getJSONObject("plan").getString("vehicleNo") }"
             add(title, "${item.readiness}\n库存 ${item.order.rowCount} 包 · 计划 ${plan.getJSONObject("plan").getString("plannedTotal")} 包",
@@ -23,19 +24,24 @@ class OrderCards(private val parent: LinearLayout, private val model: Preparatio
                         .putExtra("assignmentId", item.order.assignmentId)) }
                 }
         }
-        state.pending.forEach { intent ->
-            add("领取结果待核对", "订单 ${intent.orderId}\n保留原请求，重试不会重复领取", "重试原领取", !state.busy) { model.retry(intent) }
+        if (state.section == "LOCAL") state.pending.forEach { intent ->
+            val rejected = intent.status == "REJECTED"
+            add(if (rejected) "领取被拒绝" else "领取结果待核对",
+                "订单 ${intent.orderId}\n" + (intent.lastError ?: "原请求已保留，网络未知时只能恢复原请求"),
+                if (rejected) "刷新订单状态" else "恢复原领取", !state.busy) {
+                    if (rejected) model.refresh() else model.retry(intent)
+                }
         }
-        state.assigned.filter { assignment -> state.local.none { it.order.orderId == assignment.getString("orderId") } }.forEach { assignment ->
+        if (state.section == "LOCAL") state.assigned.filter { assignment -> localItems.none { it.order.orderId == assignment.getString("orderId") } }.forEach { assignment ->
             val own = !assignment.isNull("offlineToken")
             add("本机已领取 · 待准备", "订单 ${assignment.getString("orderId")}\n操作员 ${assignment.getString("operatorName")}\n离线期限 ${assignment.getString("expiresAt")}",
                 if (own) "下载并校验资料" else "须原操作员登录", own && !state.busy) { model.prepare(assignment) }
         }
-        state.available.forEach { order ->
+        if (state.section == "AVAILABLE") state.available.forEach { order ->
             add("待领取 · ${order.getString("vehicleNo")}", "${order.getString("orderNo")}\n计划 ${order.getString("plannedTotal")} 包",
                 "领取订单", !state.busy) { claimDialog(order) }
         }
-        if (parent.childCount == 0) add("暂无订单资料", "登录后联网刷新，可查看待领取订单及本机占用。", null, false) {}
+        if (parent.childCount == 0) add("暂无订单资料", if (state.section == "AVAILABLE") "当前没有可领取订单。" else "本机暂无待处理订单，点击联网刷新查看最新状态。", null, false) {}
     }
 
     private fun add(title: String, detail: String, action: String?, enabled: Boolean, onClick: () -> Unit): OrderCardBinding {

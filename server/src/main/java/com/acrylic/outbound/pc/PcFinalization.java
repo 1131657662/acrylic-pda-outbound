@@ -33,7 +33,7 @@ public class PcFinalization {
         boolean shortShipment=products.stream().anyMatch(p->p.actualCount()<p.plannedCount());
         if(shortShipment && command.reason().isBlank()) throw new BusinessException(400,"PC_SHORT_REASON_REQUIRED","请填写短装原因，提交后需主管审核");
         var issues=stock.review(work,rows);if(shortShipment) issues.add(object().put("code","SHORT_SHIPMENT_APPROVAL_REQUIRED").put("reason",command.reason().strip()));
-        var payload=new Frozen(work.id(),work.order(),work.snapshot(),work.publication(),work.revision(),work.round(),rows,products,command.reason().strip());
+        var payload=new Frozen(work.id(),work.order(),work.snapshot(),work.publication(),work.revision(),work.round(),rows,products,command.reason().strip(),new PcExceptionStore(jdbc).dispositions(work));
         String encoded=json.encode(payload);UUID id=Ids.next();String hash=sha(parse(encoded));
         long weight=products.stream().mapToLong(p->Long.parseLong(p.weightGrams())).reduce(0,Math::addExact);
         submissions.save(work,new PcSubmissions.Input(id,hash,encoded,count,weight,command.reason().strip(),issues),actor);
@@ -54,6 +54,9 @@ public class PcFinalization {
         if(!command.payloadSha256().equals(current.payloadSha256())) throw new BusinessException(409,"PC_REVIEW_HASH","提交资料已变化，请重新核对当前批次");
         UUID id=UUID.fromString(current.id());var body=parse(submissions.payload(id));var rows=entries.all(work);
         if(!sha(body).equals(current.payloadSha256()) || !body.get("entries").equals(parse(json.encode(rows)))) throw new BusinessException(409,"PC_EVIDENCE_CHANGED","原冻结记录不一致，不能审批");
+        var dispositions=new PcExceptionStore(jdbc).dispositions(work);
+        if(body.has("dispositions")?!sha(body.get("dispositions")).equals(sha(dispositions)):!dispositions.isEmpty())
+            throw new BusinessException(409,"PC_EVIDENCE_CHANGED","原冻结处置证据不一致，不能审批");
         if(command.decision().equals("APPROVE")) {
             requireOperator(work);var issues=stock.review(work,rows);
             if(!issues.isEmpty()) throw new BusinessException(409,"PC_STILL_CONFLICTED","库存或占用冲突尚未解决，不能批准出库");
@@ -86,5 +89,5 @@ public class PcFinalization {
             throw new BusinessException(409,"PC_OPERATOR_UNAVAILABLE","原作业人员授权已变化，请先核对人员与仓库权限");
     }
     private record Frozen(UUID workId,UUID orderId,UUID snapshotId,UUID publicationId,int revision,long workRound,
-        List<PcEntries.Entry> entries,List<PcEntries.Product> products,String shortReason) { }
+        List<PcEntries.Entry> entries,List<PcEntries.Product> products,String shortReason,JsonNode dispositions) { }
 }

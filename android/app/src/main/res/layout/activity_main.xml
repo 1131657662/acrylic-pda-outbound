@@ -1,9 +1,14 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:fillViewport="true" android:background="#F3F5F4">
+    android:layout_height="match_parent" android:fillViewport="true" android:background="@color/pda_canvas">
     <LinearLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:padding="16dp">
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="腈纶出库 PDA"
-            android:textSize="24sp" android:textStyle="bold" android:textColor="#19372E" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="腈纶出库 PDA"
+                android:textSize="24sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
+            <Button android:id="@+id/deviceSettings" android:layout_width="wrap_content" android:layout_height="52dp" android:text="设备信息与设置" />
+        </LinearLayout>
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="当前环境与本机身份可在设备信息中查看；退出登录不会删除本机资料。" android:textSize="13sp" android:paddingTop="6dp" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="资料准备 · 本地扫码 · 结单上传" android:textSize="14sp" android:paddingTop="6dp" />
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -33,11 +38,18 @@
                 android:hint="密码" android:inputType="textPassword" android:saveEnabled="false" android:autofillHints="password" />
             <Button android:id="@+id/login" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="登录并恢复本机订单" />
         </LinearLayout>
-        <LinearLayout android:id="@+id/actions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <Button android:id="@+id/refresh" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="52dp" android:text="联网刷新" />
-            <Button android:id="@+id/logout" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="52dp" android:text="退出登录" />
+        <LinearLayout android:id="@+id/actions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+                <Button android:id="@+id/localSection" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="本机任务" />
+                <Button android:id="@+id/availableSection" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="待领取" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+                <Button android:id="@+id/refresh" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="52dp" android:text="联网刷新" />
+                <Button android:id="@+id/logout" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="52dp" android:text="退出登录" />
+            </LinearLayout>
         </LinearLayout>
         <TextView android:id="@+id/identity" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:paddingTop="8dp" />
         <LinearLayout android:id="@+id/cards" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+        <Button android:id="@+id/loadMore" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="加载下一页" />
     </LinearLayout>
 </ScrollView>

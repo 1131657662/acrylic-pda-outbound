@@ -6,7 +6,7 @@
 
 ## 实施选择（2026-09-18）
 
-实现采用独立pc_work/entry/submission/review/command_receipt和冻结行关联表，复用订单串行锁、全局bale_commitment、dispatch_record、结果与账务约束。写入窗口用随机ID、单调栅栏和版本；不设置过期自动释放。原写请求在浏览器发送前持久化，可跨刷新恢复。本轮主管恢复限原人员且保留全部原有效包，曾冻结的有效行不得普通撤销；换人及PC卸货处置需后续独立证据流程。具体权限、字段及重试规则见[契约0.13.0](../contracts/IMPLEMENTED_API.md)。以下设计要求继续作为验收基准，文末样稿检查是历史记录。
+实现采用独立pc_work/entry/submission/review/command_receipt和冻结行关联表，复用订单串行锁、全局bale_commitment、dispatch_record、结果与账务约束。写入窗口用随机ID、单调栅栏和版本；不设置过期自动释放。原写请求在浏览器发送前持久化，可跨刷新恢复。0.13.0基线主管恢复限原人员且保留全部原有效包，曾冻结的有效行不得普通撤销；0.14.0新增的换人、卸货释放和隔离走[独立异常处置证据流程](PC_EXCEPTION_DESIGN.md)，实际验证见[交付记录](PC_EXCEPTION_GUIDE.md)。具体权限、字段及重试规则见[当前契约](../contracts/IMPLEMENTED_API.md)。以下设计要求继续作为验收基准，文末样稿检查是历史记录。
 
 ## 1. 推荐流程与入口
 

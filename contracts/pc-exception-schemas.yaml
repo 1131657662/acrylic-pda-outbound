@@ -1,0 +1,130 @@
+Stop:
+  type: object
+  required: [expectedVersion, reason, physicalConfirmed]
+  properties:
+    expectedVersion: {$ref: './pc-schemas.yaml#/Version'}
+    reason: {type: string, minLength: 1, maxLength: 1000}
+    physicalConfirmed: {type: boolean, const: true}
+Line:
+  type: object
+  required: [entryId, expectedCycle, action, physicalEvidence]
+  properties:
+    entryId: {type: string, format: uuid}
+    expectedCycle: {type: integer, minimum: 1}
+    action: {enum: [RETAIN, RELEASE, QUARANTINE]}
+    physicalEvidence: {type: string, maxLength: 1000, description: RELEASE/QUARANTINE 必填实物位置、核验结果及凭据}
+PlanCommand:
+  type: object
+  required: [caseId, expectedVersion, snapshotSha256, targetUsername, outcome, reason, lines, physicalConfirmed]
+  properties:
+    caseId: {type: string, format: uuid}
+    expectedVersion: {$ref: './pc-schemas.yaml#/Version'}
+    snapshotSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    targetUsername: {type: string, minLength: 1, maxLength: 100}
+    outcome: {enum: [CONTINUE, CANCEL]}
+    reason: {type: string, minLength: 1, maxLength: 1000}
+    lines: {type: array, maxItems: 20000, items: {$ref: '#/Line'}, description: 停止时全部有效包的完整去向；不能重复、漏包或改变周期}
+    physicalConfirmed: {type: boolean, const: true}
+Decision:
+  type: object
+  required: [planId, expectedVersion, payloadSha256, decision, reason, physicalConfirmed]
+  properties:
+    planId: {type: string, format: uuid}
+    expectedVersion: {$ref: './pc-schemas.yaml#/Version'}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    decision: {enum: [APPROVE, REJECT], description: REJECT 可退回待审核方案或撤回尚未交接的批准}
+    reason: {type: string, minLength: 1, maxLength: 1000}
+    physicalConfirmed: {type: boolean, const: true}
+Apply:
+  type: object
+  required: [planId, expectedVersion, payloadSha256, physicalEvidence, physicalConfirmed]
+  properties:
+    planId: {type: string, format: uuid}
+    expectedVersion: {$ref: './pc-schemas.yaml#/Version'}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    physicalEvidence: {type: string, minLength: 1, maxLength: 1000}
+    physicalConfirmed: {type: boolean, const: true}
+Disposition:
+  type: object
+  required: [id, planId, entryId, action, expectedCycle, recordSha256, physicalEvidence]
+  properties:
+    id: {type: string, format: uuid}
+    planId: {type: string, format: uuid}
+    entryId: {type: string, format: uuid}
+    action: {enum: [RELEASE, QUARANTINE]}
+    expectedCycle: {type: integer}
+    recordSha256: {type: string}
+    physicalEvidence: {type: string}
+Case:
+  type: object
+  required: [id, round, status, snapshot, snapshotSha256, reason, stoppedAt]
+  properties:
+    id: {type: string, format: uuid}
+    round: {type: integer}
+    status: {enum: [STOPPED, APPLIED]}
+    snapshotSha256: {type: string}
+    reason: {type: string}
+    stoppedAt: {type: string, format: date-time}
+    snapshot:
+      type: object
+      required: [workId, orderId, round, operatorId, recoveryEpoch, entries, dispositions]
+      properties:
+        workId: {type: string, format: uuid}
+        orderId: {type: string, format: uuid}
+        round: {type: integer}
+        operatorId: {type: string, format: uuid}
+        recoveryEpoch: {type: string}
+        entries: {type: array, items: {$ref: './pc-schemas.yaml#/Entry'}}
+        dispositions: {type: array, items: {$ref: '#/Disposition'}}
+Plan:
+  type: object
+  required: [id, status, body, payloadSha256, approvedBy, handoverEvidence, requestedAt, appliedAt]
+  properties:
+    id: {type: string, format: uuid}
+    status: {enum: [PENDING, APPROVED, REJECTED, APPLIED]}
+    payloadSha256: {type: string}
+    approvedBy: {type: [string, 'null'], format: uuid}
+    handoverEvidence: {type: [string, 'null']}
+    requestedAt: {type: string, format: date-time}
+    appliedAt: {type: [string, 'null'], format: date-time}
+    body:
+      type: object
+      required: [caseId, snapshotSha256, targetUserId, targetUsername, targetName, outcome, reason, lines]
+      properties:
+        caseId: {type: string, format: uuid}
+        snapshotSha256: {type: string}
+        targetUserId: {type: string, format: uuid}
+        targetUsername: {type: string}
+        targetName: {type: string}
+        outcome: {enum: [CONTINUE, CANCEL]}
+        reason: {type: string}
+        lines: {type: array, items: {$ref: '#/Line'}}
+View:
+  type: object
+  required: [work, stopped, plans, reviews, history]
+  properties:
+    work: {$ref: './pc-schemas.yaml#/Work'}
+    stopped: {oneOf: [{$ref: '#/Case'}, {type: 'null'}]}
+    plans: {type: array, items: {$ref: '#/Plan'}, description: 所选停止核验记录的全部方案，最新在前}
+    reviews:
+      type: array
+      items:
+        type: object
+        required: [planId, decision, reason, actorName, createdAt]
+        properties:
+          planId: {type: string, format: uuid}
+          decision: {enum: [APPROVE, REJECT]}
+          reason: {type: string}
+          actorName: {type: string}
+          createdAt: {type: string, format: date-time}
+    history:
+      type: array
+      items:
+        type: object
+        required: [id, round, status, reason, stoppedAt]
+        properties:
+          id: {type: string, format: uuid}
+          round: {type: integer}
+          status: {enum: [STOPPED, APPLIED]}
+          reason: {type: string}
+          stoppedAt: {type: string, format: date-time}

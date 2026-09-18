@@ -1,0 +1,23 @@
+.pc-exception-workspace .page-content { display: flex; flex-direction: column; gap: var(--space-4); }
+.pc-exception-workspace h2 { font-size: var(--el-font-size-large); margin: 0 0 var(--space-3); }
+.pc-exception-workspace p { margin: 0; overflow-wrap: anywhere; }
+.pc-exception-workspace .el-alert { flex-shrink: 0; }
+.pc-exception-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.pc-exception-fields .el-form-item { display: block; margin: 0; }
+.pc-exception-fields .el-form-item__label { display: block; text-align: left; }
+.pc-exception-planner, .pc-exception-plan { display: flex; flex-direction: column; gap: var(--space-4); padding-block: var(--space-4); border-block: 1px solid var(--separator); }
+.pc-exception-table { min-width: 0; overflow-x: auto; }
+.pc-exception-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); margin: 0; }
+.pc-exception-facts dt { color: var(--text-secondary); }
+.pc-exception-facts dd { margin: var(--space-2) 0 0; overflow-wrap: anywhere; }
+.pc-exception-audit { display: grid; gap: var(--space-3); }
+.pc-exception-actions { flex-wrap: wrap; }
+.pc-exception-workspace .el-checkbox, .pc-exception-dialog .el-checkbox { height: auto; white-space: normal; }
+.pc-exception-workspace .el-checkbox__label, .pc-exception-dialog .el-checkbox__label { white-space: normal; line-height: 1.6; }
+.pc-exception-dialog { width: min(640px, calc(100vw - 24px)); max-height: calc(100dvh - 32px); display: flex; flex-direction: column; margin-block: 16px; }
+.pc-exception-dialog .el-dialog__body { overflow: auto; min-height: 0; }
+.pc-exception-dialog .el-dialog__footer { flex-shrink: 0; display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-2); }
+@media (max-width: 767px) {
+  .pc-exception-fields, .pc-exception-facts { grid-template-columns: minmax(0, 1fr); }
+  .pc-exception-actions > .el-button { flex: 1; margin: 0; }
+}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily isolated acrylic test backup
+
+[Timer]
+OnCalendar=*-*-* 04:10:00
+RandomizedDelaySec=300
+Persistent=true
+Unit=acrylic-outbound-test-backup.service
+
+[Install]
+WantedBy=timers.target

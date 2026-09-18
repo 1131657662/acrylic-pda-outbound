@@ -12,7 +12,9 @@ import org.json.JSONObject
 data class LocalCard(val order: PreparedOrder, val readiness: String, val recalled: Boolean = false)
 data class PreparationUi(val busy: Boolean = false, val message: String = "请先绑定设备并登录", val bound: Boolean = false,
     val username: String = "", val local: List<LocalCard> = emptyList(), val available: List<JSONObject> = emptyList(),
-    val assigned: List<JSONObject> = emptyList(), val pending: List<ClaimIntent> = emptyList(), val deviceLabel: String = "")
+    val assigned: List<JSONObject> = emptyList(), val pending: List<ClaimIntent> = emptyList(), val deviceLabel: String = "",
+    val section: String = "LOCAL", val availableCursor: String? = null, val assignedCursor: String? = null,
+    val availableHasMore: Boolean = false, val assignedHasMore: Boolean = false)
 
 class PreparationViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as PdaApplication
@@ -32,6 +34,19 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
         app.session.login(username, password); refreshData()
     }
     fun refresh() = run("正在刷新订单与授权") { refreshData() }
+    fun selectSection(section: String) { mutable.update { it.copy(section = section) } }
+    fun loadMore() = run("正在加载下一页订单") {
+        val state = mutable.value
+        if (state.section == "AVAILABLE" && state.availableHasMore) {
+            val page = repository.page("pda/orders", "cursor", state.availableCursor)
+            mutable.update { it.copy(available = it.available + page.items, availableCursor = page.nextCursor,
+                availableHasMore = page.nextCursor != null) }
+        } else if (state.section == "LOCAL" && state.assignedHasMore) {
+            val page = repository.page("pda/assignments", "beforeId", state.assignedCursor)
+            mutable.update { it.copy(assigned = it.assigned + page.items, assignedCursor = page.nextCursor,
+                assignedHasMore = page.nextCursor != null) }
+        }
+    }
     fun logout() = run("正在退出，本机资料会保留") {
         try { app.session.logout() } finally {
             mutable.update { it.copy(available = emptyList(), assigned = emptyList(), pending = emptyList()) }; loadLocal()
@@ -50,9 +65,12 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
         val current = app.session.requireSession()
         repository.local().filter { it.operatorId == current.getString("userId") && it.deviceId == current.getString("deviceId") }
             .forEach { app.recalls.check(it.assignmentId) }
-        val assigned = repository.list("pda/assignments", "beforeId")
-        val available = repository.list("pda/orders", "cursor")
-        mutable.update { it.copy(assigned = assigned, available = available) }; loadLocal()
+        val assigned = repository.page("pda/assignments", "beforeId")
+        val available = repository.page("pda/orders", "cursor")
+        mutable.update { it.copy(assigned = assigned.items, available = available.items,
+            assignedCursor = assigned.nextCursor, availableCursor = available.nextCursor,
+            assignedHasMore = assigned.nextCursor != null, availableHasMore = available.nextCursor != null) }
+        loadLocal()
     }
     private fun loadLocal() {
         val saved = runCatching { app.session.saved() }.getOrNull()
@@ -78,7 +96,7 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) { action() }
-                mutable.update { it.copy(message = "资料状态已更新；请在结单页上传并核对云端回执，待审核不能放行") }
+                mutable.update { it.copy(message = "操作已完成；资料和本机记录已保留") }
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
                 withContext(Dispatchers.IO) { runCatching { loadLocal() } }

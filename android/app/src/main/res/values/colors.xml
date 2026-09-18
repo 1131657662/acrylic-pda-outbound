@@ -1,0 +1,8 @@
+<resources>
+    <color name="pda_canvas">#F4F6F8</color>
+    <color name="pda_surface">#FFFFFF</color>
+    <color name="pda_text_primary">#1F2329</color>
+    <color name="pda_text_secondary">#4E5969</color>
+    <color name="pda_action_primary">#0F766E</color>
+    <color name="pda_warning_foreground">#92400E</color>
+</resources>

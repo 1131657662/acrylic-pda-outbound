@@ -16,7 +16,7 @@ const session = useSessionStore(); const route = useRoute(); const router = useR
 const error = ref(''); const drawer = ref(false); const collapsed = navigationCollapsed;
 const current = computed(() => navigation.flatMap(group => group.items).find(item => route.path.startsWith(item.path)));
 const authorized = computed(() => !current.value || session.identity?.permissions.includes(current.value.permission));
-const environment = import.meta.env.DEV ? '开发环境' : '';
+const environment = import.meta.env.VITE_ENVIRONMENT_NAME?.trim() || (import.meta.env.DEV ? '开发环境' : '');
 const parentLink = computed(() => ({ path: current.value?.path ?? '/orders', query: current.value?.path === '/orders'
   ? orderRouteQuery(parseOrderQuery(route.query), session.warehouseId) : {} }));
 function resize(): void { if (window.innerWidth >= 1024) drawer.value = false; }

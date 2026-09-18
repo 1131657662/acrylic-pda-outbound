@@ -1,0 +1,121 @@
+View:
+  get:
+    summary: 查看本单停止核验、固定方案、审核及交接历史；order:read
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - name: caseId
+        in: query
+        schema: {type: string, format: uuid}
+        description: 省略为最近一次核验；只允许本订单内记录
+    responses:
+      '200':
+        description: 当前作业及所选核验记录；清单为停止时固定集合，不包含全仓库存
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-exception-schemas.yaml#/View'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Stop:
+  post:
+    summary: 停止未完成PC作业并固定原事实；order:recall；收回旧窗口写入资格，不释放占用
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pc-exception-schemas.yaml#/Stop'}
+    responses:
+      '200':
+        description: 原请求回执；按原标识查询并同键同正文重试，未知结果时停止下一笔写入
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/CommandReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Plan:
+  post:
+    summary: 提出完整逐包处置及接续方案；order:resume；原包不得遗漏，减少行须实物凭据
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pc-exception-schemas.yaml#/PlanCommand'}
+    responses:
+      '200':
+        description: 原请求回执；按原标识查询并同键同正文重试，未知结果时停止下一笔写入
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/CommandReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Review:
+  post:
+    summary: 批准或退回方案；order:resume；减少行另需order:dispose，结束另需order:recall；批准不释放
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pc-exception-schemas.yaml#/Decision'}
+    responses:
+      '200':
+        description: 原请求回执；按原标识查询并同键同正文重试，未知结果时停止下一笔写入
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/CommandReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Apply:
+  post:
+    summary: 指定接续人员确认实物交接；pc:operate；重验审批权限及全部占用后原子生效
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './pc-exception-schemas.yaml#/Apply'}
+    responses:
+      '200':
+        description: 原请求回执；按原标识查询并同键同正文重试，未知结果时停止下一笔写入
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './pc-schemas.yaml#/CommandReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}

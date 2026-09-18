@@ -20,4 +20,6 @@ interface CaptureDao {
     fun acknowledge(id: String, at: String): Int
     @Query("SELECT * FROM work_capture WHERE assignmentId=:id AND orderScanSeq>:after ORDER BY orderScanSeq LIMIT :limit")
     fun page(id: String, after: Long, limit: Int): List<WorkCapture>
+    @Query("SELECT * FROM work_capture WHERE assignmentId=:id AND orderScanSeq>:after AND (state IN ('RECEIVED','WAITING_CONFIRM','CONFIRM_REQUESTED') OR (state IN ('INVALID','BUSINESS_REJECTED') AND failureAckAt IS NULL)) ORDER BY orderScanSeq LIMIT :limit")
+    fun unresolvedPage(id: String, after: Long, limit: Int): List<WorkCapture>
 }

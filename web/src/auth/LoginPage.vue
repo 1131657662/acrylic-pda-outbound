@@ -12,6 +12,7 @@ const username = ref('');
 const password = ref('');
 const busy = ref(false);
 const error = ref('');
+const environment = import.meta.env.VITE_ENVIRONMENT_NAME?.trim() || (import.meta.env.DEV ? '开发环境' : '正式环境');
 async function submit(): Promise<void> {
   if (busy.value) return;
   busy.value = true; error.value = '';
@@ -25,11 +26,12 @@ async function submit(): Promise<void> {
   <main class="login-layout">
       <form class="login-form" @submit.prevent="submit">
         <div class="brand-mark">纤</div><h1>腈纶出库</h1><p class="muted">登录管理工作台</p>
+        <el-tag class="login-environment" type="info">当前环境：{{ environment }}</el-tag>
         <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
         <label for="username">账号</label>
-        <el-input id="username" v-model="username" autocomplete="username" size="large" maxlength="64" required />
+        <el-input id="username" v-model="username" autocomplete="username" size="large" maxlength="64" required :disabled="busy" />
         <label for="password">密码</label>
-        <el-input id="password" v-model="password" type="password" autocomplete="current-password" size="large" show-password required />
+        <el-input id="password" v-model="password" type="password" autocomplete="current-password" size="large" show-password required :disabled="busy" />
         <el-button native-type="submit" type="primary" size="large" :loading="busy" class="login-submit">登录</el-button>
       </form>
   </main>

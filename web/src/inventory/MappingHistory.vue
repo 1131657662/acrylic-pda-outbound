@@ -21,10 +21,10 @@ watch(() => [props.warehouseId, props.code], () => { rows.value = []; next.value
 </script>
 <template>
   <section class="panel"><h2>{{ code }} · 映射历史</h2><el-alert v-if="error" :title="error" type="error" :closable="false" />
-    <el-table v-loading="busy" :data="rows">
+    <el-table v-loading="busy" :data="rows" empty-text="暂无此代码的历史记录">
       <el-table-column prop="version" label="版本" width="80" /><el-table-column prop="model" label="型号" min-width="180" />
       <el-table-column prop="name" label="名称" min-width="140" /><el-table-column label="状态" width="110"><template #default="{ row }">{{ row.enabled ? '启用' : '停用' }}{{ row.current ? ' · 当前' : '' }}</template></el-table-column>
       <el-table-column prop="reason" label="变更原因" min-width="180" /><el-table-column label="时间" min-width="180"><template #default="{ row }">{{ localTime(row.createdAt) }}</template></el-table-column>
-    </el-table><div class="pagination"><el-button :disabled="busy" @click="load()">历史第一页</el-button><el-button :disabled="busy || !next" @click="next && load(next)">历史下一页</el-button></div>
+    </el-table><div class="pagination"><span class="muted">每页 20 个版本</span><el-button :disabled="busy" @click="load()">历史第一页</el-button><el-button :disabled="busy || !next" @click="next && load(next)">历史下一页</el-button></div>
   </section>
 </template>

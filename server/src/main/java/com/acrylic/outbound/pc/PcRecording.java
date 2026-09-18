@@ -47,6 +47,8 @@ public class PcRecording {
         var entry=entries.required(work,command.entryId());if(!entry.status().equals("ACTIVE")) throw new BusinessException(409,"PC_ENTRY_VOIDED","此记录已撤销，请核对原结果");
         if(jdbc.queryForObject("SELECT COUNT(*) FROM pc_submission_entry WHERE entry_id=? AND frozen_status='ACTIVE'",Integer.class,Ids.bytes(command.entryId()))>0)
             throw new BusinessException(409,"PC_FROZEN_ENTRY","此包属于原冻结提交，仍须保留；不能通过普通撤销办理卸货");
+        if(jdbc.queryForObject("SELECT COUNT(*) FROM pc_retained_entry WHERE entry_id=?",Integer.class,Ids.bytes(command.entryId()))>0)
+            throw new BusinessException(409,"PC_RETAINED_ENTRY","此包已经实物交接保留，不能普通撤销；请由主管核验卸货处置");
         jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=? FOR UPDATE",Long.class,Ids.bytes(UUID.fromString(entry.baleId())));
         int removed=jdbc.update("DELETE FROM bale_commitment WHERE bale_id=? AND pc_work_id=? AND state='PC_RESERVED' AND dispatch_cycle=?",
             Ids.bytes(UUID.fromString(entry.baleId())),Ids.bytes(work.id()),entry.cycle());

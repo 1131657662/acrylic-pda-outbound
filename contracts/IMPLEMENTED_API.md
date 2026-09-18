@@ -1,6 +1,24 @@
 # 已实现接口与运行边界
 
-契约版本0.13.0，2026-09-18。机器契约见[openapi.yaml](openapi.yaml)。已实现Web身份、库存/映射管理、订单草稿及发布、政策与发布历史，以及[设备认证、独占领取和资料准备](PDA_API.md)。正式Android App已接下载验签、Room原子激活、确认和B模式本地扫码；已接正式首轮冻结/上传、短装审批、出库事实、按政策扣账和签名回执；已接受控召回、完整恢复包、原机停止证明、主管零包作废及原人原机全量保留续作；主管独立凭据支持的卸货释放/隔离减包续作已接入；换机、更正、增量同步和文件生成仍待开发。
+契约版本0.14.0，共82条路径，2026-09-18。机器契约见[openapi.yaml](openapi.yaml)。已实现Web身份、库存/映射管理、订单草稿及发布、政策与发布历史，以及[设备认证、独占领取和资料准备](PDA_API.md)。正式Android App已接下载验签、Room原子激活、确认和B模式本地扫码；已接正式首轮冻结/上传、短装审批、出库事实、按政策扣账和签名回执；已接受控召回、完整恢复包、原机停止证明、主管零包作废及原人原机全量保留续作；主管独立凭据支持的卸货释放/隔离减包续作已接入。PC独立换人、卸货释放及隔离处置已接入；PDA换机、已出库后更正、增量同步和文件生成仍待开发。
+
+## PC异常处置与交接（0.14.0）
+
+新增5个路径，见[路径](pc-exception-paths.yaml)、[字段](pc-exception-schemas.yaml)及[交付记录](../docs/PC_EXCEPTION_GUIDE.md)。以下均位于 `/orders/{id}/pc/exception`，要求当前仓库；写接口要求CSRF、原幂等键及恢复代次。
+
+| 方法/后缀 | 权限和事实 |
+| --- | --- |
+| GET（无后缀） | `order:read`；当前作业、所选停止记录、方案、审核及历史；`caseId`仅限本单 |
+| POST `/stop` | `order:recall`；固定停止快照、收回旧窗口写入资格、终止待审提交；原占用保持 |
+| POST `/plan` | `order:resume`；完整原有效包集合、周期、逐包去向、原因及指定本仓库接续账号 |
+| POST `/review` | `order:resume`；批准减少行另需`order:dispose`，结束另需`order:recall`；校验全部原包及保留库存；批准不释放 |
+| POST `/apply` | 指定人员的`pc:operate`与`order:read`；重验审批人、接续人、版本、摘要、周期及占用，同事务交接 |
+
+方案动作是`RETAIN/RELEASE/QUARANTINE`，无默认选择；减少行须实物位置、结果及凭据。`CONTINUE`开启新轮次并要求新窗口显式接续；`CANCEL`不得保留包，结束但不出库、不扣账。批准未交接前可用`REJECT`撤回，历史方案和审核不覆盖。隔离占用不能被PC/PDA或库存导入覆盖，不提供解除隔离。
+
+停止快照和方案分别用`snapshotSha256/payloadSha256`绑定；漏包、重复、串单、变更周期/摘要、无权限和旧恢复代次拒绝。主要冲突码为`PC_DISPOSITION_SET_MISMATCH`、`PC_STOP_EVIDENCE_CHANGED`、`PC_PLAN_SUPERSEDED`、`PC_PLAN_HASH_MISMATCH`、`PC_HANDOVER_PERMISSION_CHANGED`、`PC_DISPOSITION_CYCLE_CHANGED`、`PC_COMMITMENT_CONFLICT`、`PC_RETAINED_STOCK_CONFLICT`。冲突时保留占用并核对最新资料；未知结果继续使用既有`GET /pc/requests/{key}`和同键原正文恢复，不能另建请求绕过。
+
+Flyway V17新增独立停止、方案、审核、处置和保留交接证据。原录入字段与冻结正文保持；录入行只新增处置关联，派生`RELEASED/QUARANTINED`并退出有效汇总。曾冻结或交接保留的包不能普通撤销。新冻结正文含累计处置；原无处置的旧冻结正文仍可核验。新Web须配套V17后台；Android0.7.0/Room6不变。
 
 ## PC手工出库（0.13.0）
 

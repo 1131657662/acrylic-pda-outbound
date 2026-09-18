@@ -45,7 +45,7 @@ Work:
     operator: {type: string, format: uuid}
     operatorName: {type: string}
     epoch: {$ref: '#/Version'}
-    status: {enum: [ACTIVE, REVIEW_REQUIRED, REJECTED, SUCCEEDED]}
+    status: {enum: [ACTIVE, REVIEW_REQUIRED, REJECTED, SUCCEEDED, STOPPED, CANCELLED]}
     version: {$ref: '#/Version'}
     writerId: {type: string, format: uuid}
     fence: {$ref: '#/Version'}
@@ -69,7 +69,7 @@ Submission:
   properties:
     id: {type: string, format: uuid}
     round: {type: integer}
-    status: {enum: [REVIEW_REQUIRED, REJECTED, SUCCEEDED]}
+    status: {enum: [REVIEW_REQUIRED, REJECTED, SUCCEEDED, ABORTED]}
     payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
     actualCount: {type: string, pattern: '^\d+$'}
     weightGrams: {type: string, pattern: '^\d+$'}
@@ -145,7 +145,7 @@ Entry:
     barcode: {type: string}
     sequence: {$ref: '#/Version'}
     cycle: {type: integer}
-    status: {enum: [ACTIVE, VOIDED]}
+    status: {enum: [ACTIVE, VOIDED, RELEASED, QUARANTINED]}
     deliveryCode: {type: string}
     weightGrams: {type: string, pattern: '^\d+$'}
     rawWeight: {type: string}

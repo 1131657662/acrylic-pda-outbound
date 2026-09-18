@@ -13,6 +13,7 @@ Web“PDA 设备管理”已支持8位短码登记：PDA自动提交本机公钥
 仓库保存源码及文档；原始业务样本、服务器资产清单、本机凭据、APK和原始测试产物不随Git上传。克隆后的资料准备见[本地资料说明](docs/GIT_WORKFLOW.md#克隆后的本地资料)。本文的 `outputs/` 和 `demo-artifacts/` 链接指本机构建产物，安装包另按测试版本规则发布。
 
 - [仓库、分支与提交约定](docs/GIT_WORKFLOW.md)：开发分支、稳定分支、每次提交说明及测试版本发布规则。
+- [后续开发路线与跨会话衔接](docs/DEVELOPMENT_ROADMAP.md)：已确认的十步顺序、当前接续位置及发送“继续”时的执行规则；实际证据见[开发进度](docs/DEVELOPMENT_PROGRESS.md)。
 - [安装与构建](docs/DEMO_INSTALL.md)：APK、设备连接、保留数据升级。
 - [真机操作与测试](docs/DEMO_TEST_GUIDE.md)：扫码、实体按键、10 分钟压测、断电、内存、导出。
 - [M71 真机验收记录](docs/M71_ACCEPTANCE_REPORT.md)：现场操作、连续负载、问题修复与剩余门槛。

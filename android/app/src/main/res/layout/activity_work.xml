@@ -1,15 +1,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:orientation="vertical" android:background="#F3F5F4">
+    android:layout_height="match_parent" android:orientation="vertical" android:background="@color/pda_canvas">
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:paddingHorizontal="8dp">
         <Button android:id="@+id/back" android:layout_width="64dp" android:layout_height="52dp" android:text="@string/work_back" />
         <TextView android:id="@+id/vehicle" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-            android:textSize="20sp" android:textStyle="bold" android:textColor="#19372E" android:maxLines="2" />
+            android:textSize="20sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" android:maxLines="2" />
         <Button android:id="@+id/sound" android:layout_width="64dp" android:layout_height="52dp" android:text="@string/work_sound" />
     </LinearLayout>
     <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingHorizontal="12dp"
-        android:text="@string/work_not_released" android:textSize="14sp" android:textColor="#8A3418" />
+        android:text="@string/work_not_released" android:textSize="14sp" android:textColor="@color/pda_warning_foreground" />
     <TextView android:id="@+id/totals" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingHorizontal="12dp"
-        android:paddingVertical="6dp" android:textSize="20sp" android:textStyle="bold" android:textColor="#19372E" />
+        android:paddingVertical="6dp" android:textSize="20sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
     <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingHorizontal="12dp" android:orientation="vertical">
             <TextView android:id="@+id/message" android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -17,7 +17,8 @@
             <TextView android:id="@+id/products" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="8dp" android:textSize="15sp" />
             <TextView android:id="@+id/recent" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="8dp" android:textSize="14sp" />
             <Button android:id="@+id/voidLast" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="@string/work_void" />
-            <Button android:id="@+id/closeOrder" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="结单 / 上传 / 查询回执" />
+            <Button android:id="@+id/details" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="订单明细" />
+            <Button android:id="@+id/closeOrder" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="结单核对 / 上传回执" />
             <Button android:id="@+id/recall" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="召回核对 / 查询停止证明" />
         </LinearLayout>
     </ScrollView>

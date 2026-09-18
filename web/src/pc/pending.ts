@@ -1,5 +1,5 @@
 import { z } from 'zod';
-export const actionSchema = z.enum(['start', 'writer', 'entries', 'void', 'submit', 'review', 'resume']);
+export const actionSchema = z.enum(['start', 'writer', 'entries', 'void', 'submit', 'review', 'resume', 'exception/stop', 'exception/plan', 'exception/review', 'exception/apply']);
 export type Action = z.infer<typeof actionSchema>;
 const pendingSchema = z.object({ user: z.string().uuid(), warehouse: z.string().uuid(), order: z.string().uuid(), key: z.string().uuid(),
   epoch: z.string().regex(/^\d+$/), action: actionSchema, body: z.string() });
@@ -22,5 +22,5 @@ export function savePending(record: Pending): void {
   if (localStorage.getItem(key) !== text) throw new Error('原操作未能完整保存，本次请求未发送。');
 }
 export function clearPending(record: Pending): void { localStorage.removeItem(prefix + record.key); if (localStorage.getItem(prefix + record.key)) throw new Error('原操作恢复资料清理失败，请核对原回执。'); }
-export const actionNames: Record<Action, string> = { start: '开始PC作业', writer: '切换录入窗口', entries: '计入本包', void: '撤销本次录入', submit: '提交结单', review: '审批当前提交', resume: '核验恢复作业' };
-export const actionCodes: Record<Action, string> = { start: 'START', writer: 'WRITER', entries: 'ADD', void: 'VOID', submit: 'SUBMIT', review: 'REVIEW', resume: 'RESUME' };
+export const actionNames: Record<Action, string> = { start: '开始PC作业', writer: '切换录入窗口', entries: '计入本包', void: '撤销本次录入', submit: '提交结单', review: '审批当前提交', resume: '核验恢复作业', 'exception/stop': '停止PC作业', 'exception/plan': '提交实物处置方案', 'exception/review': '审核实物处置方案', 'exception/apply': '确认实物交接' };
+export const actionCodes: Record<Action, string> = { start: 'START', writer: 'WRITER', entries: 'ADD', void: 'VOID', submit: 'SUBMIT', review: 'REVIEW', resume: 'RESUME', 'exception/stop': 'EXCEPTION_STOP', 'exception/plan': 'EXCEPTION_PLAN', 'exception/review': 'EXCEPTION_REVIEW', 'exception/apply': 'EXCEPTION_APPLY' };

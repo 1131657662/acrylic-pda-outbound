@@ -59,6 +59,7 @@ onBeforeUnmount(() => { generation++; window.removeEventListener('focus', focus)
     <PageHeading title="PC 手工出库" :subtitle="detail ? `${detail.plan.vehicleNo} · ${detail.order.orderNo}` : ''" back back-label="返回订单详情" @back="back">
       <template #status><el-tag v-if="view?.work" :type="view.work.status === 'SUCCEEDED' ? 'success' : 'info'">{{ workLabels[view.work.status] }}</el-tag></template>
       <el-button :disabled="busy || !!pending || !!dialog" :loading="loading" @click="load">核对最新记录</el-button>
+      <el-button v-if="view?.work" :disabled="blocked || !!dialog" @click="router.push({ path: `/orders/${order}/pc-outbound/exception`, query: route.query })">异常处置与交接</el-button>
     </PageHeading>
     <el-alert v-if="readError" :title="readError + (view ? ' 当前为上次读取的资料，已暂停写入。' : '')" type="error" :closable="false" />
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
@@ -74,7 +75,9 @@ onBeforeUnmount(() => { generation++; window.removeEventListener('focus', focus)
     <template v-else>
       <div class="result-summary"><span>作业人员：{{ view.work.operatorName }} · 第 {{ view.work.round }} 轮</span><span>当前规则：{{ view.work.deduct ? '确认出库时自动扣库存' : '不自动扣库存，出库防重仍生效' }}</span></div>
       <div v-if="view.work.status === 'ACTIVE' && !writing" class="pc-writer-notice"><span>{{ mine ? '当前窗口只读，核对后可在此继续录入。' : `本单由 ${view.work.operatorName} 持有，请由原人员继续。` }}</span><el-button v-if="mine && canOperate" :disabled="blocked" @click="dialog = 'writer'">在本窗口继续</el-button></div>
-      <div v-if="view.submission && view.work.status !== 'ACTIVE'" class="pc-result">
+      <el-alert v-if="view.work.status === 'STOPPED'" title="本单已停止录入，包占用仍保留。请进入异常处置与交接，核对原方案。" type="warning" :closable="false" />
+      <el-alert v-if="view.work.status === 'CANCELLED'" title="本单已按实物处置方案结束，未办理出库。卸货和隔离记录可在异常处置与交接中查看。" type="info" :closable="false" />
+      <div v-if="view.submission && ['REVIEW_REQUIRED', 'REJECTED', 'SUCCEEDED'].includes(view.work.status)" class="pc-result">
         <el-alert :title="workLabels[view.work.status]" :type="view.work.status === 'SUCCEEDED' ? 'success' : 'warning'" :closable="false" />
         <p>{{ view.submission.actualCount }} 包已提交 · {{ view.submission.shortReason ? '短装原因：' + view.submission.shortReason : '各产品达到计划' }}</p>
         <p v-if="view.work.status === 'REJECTED'">原记录和占用保留，主管核验实物后可恢复原人员作业。</p>

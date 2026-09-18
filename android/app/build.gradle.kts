@@ -11,8 +11,8 @@ android {
         applicationId = "com.acrylic.outbound.pda"
         minSdk = 28
         targetSdk = 35
-        versionCode = 7
-        versionName = "0.7.0-pairing"
+    versionCode = 9
+    versionName = "0.8.0-r04"
         val serverUrl = providers.gradleProperty("pdaServerUrl").orElse("").get()
         val environment = providers.gradleProperty("pdaEnvironment").orElse("未配置服务环境").get()
         require(!serverUrl.contains('"') && !serverUrl.contains('\\') && !serverUrl.contains('\n'))
@@ -24,7 +24,16 @@ android {
     buildFeatures { viewBinding = true; buildConfig = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
-    buildTypes { debug { applicationIdSuffix = ".debug" }; release { isMinifyEnabled = false } }
+    buildTypes {
+        debug { applicationIdSuffix = ".debug" }
+        release { isMinifyEnabled = false }
+        create("staging") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-test"
+            matchingFallbacks += listOf("debug")
+        }
+    }
     testOptions {
         unitTests.isIncludeAndroidResources = true
         unitTests.all {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import WorkspaceLayout from '../WorkspaceLayout.vue';
+import FeedbackState from '../components/FeedbackState.vue';
 import { useSessionStore } from '../session';
 import { request, errorText } from '../api';
 import { pageSchema } from '../inventory/master-contracts';
@@ -36,10 +37,11 @@ watch(() => session.warehouseId, () => { current.value = null; history.value = [
       <el-alert v-else title="尚未设置：请管理员明确选择自动扣库存方式，才能发布订单。" type="warning" :closable="false" />
       <p class="muted">离线授权 48 小时 · 现场分堆作业 · 短装须主管批准 · 扫码自动保存，手输校验后人工确认</p>
     </section>
-    <section class="panel"><h2>规则历史</h2><el-table :data="history"><el-table-column prop="version" label="版本" width="90" />
+    <section class="panel"><div class="section-heading"><h2>规则历史</h2><span class="muted">每页 20 个版本</span></div><el-table v-if="history.length" :data="history" v-loading="busy"><el-table-column prop="version" label="版本" width="90" />
       <el-table-column label="自动扣库存" width="140"><template #default="{ row }">{{ row.autoDeductInventory ? '开启' : '关闭' }}</template></el-table-column>
       <el-table-column prop="reason" label="原因" min-width="220" /><el-table-column prop="publishedBy" label="操作人" width="140" />
       <el-table-column label="时间" width="190"><template #default="{ row }">{{ localTime(row.publishedAt) }}</template></el-table-column></el-table>
+      <FeedbackState v-else-if="!busy" title="尚无历史规则" description="管理员保存第一版出库规则后，历史会显示在这里。" />
       <el-button v-if="next" :loading="busy" @click="load(next ?? '')">更多规则版本</el-button>
     </section>
     <PolicyEditor v-if="editing" :warehouse-id="session.warehouseId" :current="current" @saved="saved" @cancel="editing = false" />

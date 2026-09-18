@@ -2,6 +2,8 @@
 
 日期：2026-09-18。分支：`codex/development`。实施提交 `41a295c` 已推送。状态：源码和本机隔离环境闭环已完成；未部署、未合入 `main`，不表示现场或生产验收完成。
 
+本页记录0.13.0正常PC流程的历史交付。后续0.14.0换人、卸货释放与隔离处置的实现、验证和限制见[PC异常处置交付记录](PC_EXCEPTION_GUIDE.md)；本页原“尚未完成”清单保留当时范围，不代表最新总进度。
+
 本轮按 [PC 手工出库设计](PC_MANUAL_OUTBOUND_DESIGN.md)实施订单内 PC 采集渠道。订单详情在有权限且状态允许时显示“PC 手工出库”或“继续PC录入”，进入 `/orders/:id/pc-outbound`。页面固定本单仓库，左侧提供条码候选和本单记录，右侧显示每个发货代码的计划、有效录入数和重量；返回订单详情时保留订单列表的仓库、筛选、页码和页大小上下文。
 
 后台新增 Flyway V15、V16 和 `pc` 服务包。`pc_work` 固定订单发布、库存快照、政策、操作员和恢复代次；`pc_entry` 保存可信重量、产品快照、录入序号和撤销历史；`pc_submission` 冻结本轮正文摘要；`pc_submission_entry` 防止冻结后的有效包被普通撤销；`pc_review`、`pc_command_receipt` 保存审批和原请求回执。PC 占用使用 `bale_commitment.state=PC_RESERVED`，确认出库后复用全局 `DISPATCHED`、`dispatch_record`、结果版本和可选库存账务约束。

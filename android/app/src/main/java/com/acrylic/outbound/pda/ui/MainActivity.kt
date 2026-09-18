@@ -35,8 +35,12 @@ class MainActivity : ComponentActivity() {
             model.login(binding.username.text.toString(), password)
         }
         binding.refresh.setOnClickListener { model.refresh() }; binding.logout.setOnClickListener { model.logout() }
+        binding.localSection.setOnClickListener { model.selectSection("LOCAL") }
+        binding.availableSection.setOnClickListener { model.selectSection("AVAILABLE") }
+        binding.loadMore.setOnClickListener { model.loadMore() }
         binding.copyKey.setOnClickListener { copyKey() }
         binding.pairing.setOnClickListener { startActivity(android.content.Intent(this, PairingActivity::class.java)) }
+        binding.deviceSettings.setOnClickListener { startActivity(android.content.Intent(this, DeviceSettingsActivity::class.java)) }
         binding.advancedSetup.setOnClickListener { binding.maintenance.visibility = if (binding.maintenance.visibility == View.GONE) View.VISIBLE else View.GONE }
         lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { model.state.collect { render(it) } } }
     }
@@ -44,14 +48,21 @@ class MainActivity : ComponentActivity() {
     override fun onResume() { super.onResume(); model.reloadLocal() }
 
     private fun render(state: PreparationUi) {
+        val scrollPosition = binding.root.scrollY
         binding.status.text = state.message
         binding.progress.visibility = if (state.busy) View.VISIBLE else View.GONE
         binding.setup.visibility = if (state.bound) View.GONE else View.VISIBLE
         binding.actions.visibility = if (state.username.isNotBlank()) View.VISIBLE else View.GONE
         binding.loginPanel.visibility = if (state.bound && state.username.isBlank()) View.VISIBLE else View.GONE
         binding.identity.text = (if (state.username.isBlank()) "未登录 · 原订单资料保留" else "当前人员：${state.username}") + state.deviceLabel
-        listOf(binding.login, binding.bind, binding.copyKey, binding.refresh, binding.logout).forEach { it.isEnabled = !state.busy }
+        listOf(binding.login, binding.bind, binding.copyKey, binding.refresh, binding.logout,
+            binding.localSection, binding.availableSection, binding.loadMore).forEach { it.isEnabled = !state.busy }
+        binding.localSection.isSelected = state.section == "LOCAL"
+        binding.availableSection.isSelected = state.section == "AVAILABLE"
+        binding.loadMore.visibility = if ((state.section == "AVAILABLE" && state.availableHasMore) ||
+            (state.section == "LOCAL" && state.assignedHasMore)) View.VISIBLE else View.GONE
         cards.render(state)
+        binding.root.post { binding.root.scrollTo(0, scrollPosition) }
     }
 
     private fun copyKey() {

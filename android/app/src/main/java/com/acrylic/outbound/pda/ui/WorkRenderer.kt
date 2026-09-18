@@ -19,8 +19,10 @@ class WorkRenderer(private val binding: ActivityWorkBinding) {
         if (order?.state == "FROZEN") binding.message.text = "本单已冻结，不能继续扫码或撤销；请进入结单页核对云端回执"
         if (order?.state in setOf("RECALL_PENDING", "RECALLED")) binding.message.text = "本单已收到召回并停止扫码，请进入召回页核对恢复证据及停止证明"
         binding.closeOrder.isEnabled = order?.state !in setOf("RECALL_PENDING", "RECALLED")
-        binding.products.text = state.lines.joinToString("\n") { "${it.deliveryCode}  ${it.actualCount}/${it.plannedCount} 包 · ${kg(it.weightGrams)} kg" }
-        binding.recent.text = "最近记录（扫码序号）\n" + state.recent.joinToString("\n") {
+        val visibleLines = state.lines.take(3)
+        binding.products.text = visibleLines.joinToString("\n") { "${it.deliveryCode}  ${it.actualCount}/${it.plannedCount} 包 · ${kg(it.weightGrams)} kg" } +
+            if (state.lines.size > visibleLines.size) "\n还有 ${state.lines.size - visibleLines.size} 个产品，结单前请打开明细核对" else ""
+        binding.recent.text = "最近记录（扫码序号）\n" + state.recent.take(5).joinToString("\n") {
             "${it.orderScanSeq}. ${it.barcode}  ${kg(it.weightGrams)} kg" + when {
                 state.dispositions[it.captureId] == "RELEASE" -> " · 已核验卸货（保留防重）"
                 state.dispositions[it.captureId] == "QUARANTINE" -> " · 已核验隔离"
@@ -37,8 +39,9 @@ class WorkRenderer(private val binding: ActivityWorkBinding) {
             c?.state in setOf("INVALID", "BUSINESS_REJECTED") -> "确认处理结果（本包未保存）"
             state.blocked.isNotEmpty() -> "恢复核对原记录"
             c?.state == "WAITING_CONFIRM" -> "确认保存这包 · 回车"
-            else -> "扫码通过后自动保存"
+            else -> "处理当前输入"
         }
+        binding.confirm.visibility = if (c != null || state.blocked.isNotEmpty()) android.view.View.VISIBLE else android.view.View.GONE
         binding.confirm.isEnabled = c?.state in setOf("INVALID", "BUSINESS_REJECTED") || state.blocked.isNotEmpty() || (state.ready && c?.state == "WAITING_CONFIRM")
         binding.validate.isEnabled = state.ready
         binding.voidLast.isEnabled = state.ready && state.pending == 0 && state.queued == 0 && c == null && state.recent.any { it.status == "ACTIVE" && it.captureId !in state.dispositions }

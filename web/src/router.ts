@@ -13,6 +13,7 @@ export const router = createRouter({
     { path: '/orders', component: () => import('./orders/OrdersPage.vue') },
     { path: '/orders/:id', component: () => import('./orders/OrderDetailPage.vue') },
     { path: '/orders/:id/pc-outbound', component: () => import('./pc/PcOutboundPage.vue') },
+    { path: '/orders/:id/pc-outbound/exception', component: () => import('./pc/PcExceptionPage.vue') },
     { path: '/policies', component: () => import('./policies/PoliciesPage.vue') },
     { path: '/devices', component: () => import('./devices/DevicesPage.vue') },
     { path: '/:pathMatch(.*)*', redirect: '/orders' },
@@ -35,7 +36,7 @@ router.beforeEach(async (to) => {
 });
 
 export function loginDestination(value: unknown, permissions: string[]): string {
-  if (typeof value === 'string' && /^\/(orders(?:\/[^/?#]+(?:\/pc-outbound)?)?|inventory\/(imports|bales|mappings)|policies|devices)(?:\?|$)/.test(value)) {
+  if (typeof value === 'string' && /^\/(orders(?:\/[^/?#]+(?:\/pc-outbound(?:\/exception)?)?)?|inventory\/(imports|bales|mappings)|policies|devices)(?:\?|$)/.test(value)) {
     const route = router.resolve(value);
     const permission = route.path.startsWith('/orders') || route.path === '/policies' ? 'order:read' : route.path === '/devices' ? 'device:manage' : 'inventory:read';
     if (permissions.includes(permission)) return value;

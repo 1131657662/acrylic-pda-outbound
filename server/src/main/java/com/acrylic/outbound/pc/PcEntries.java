@@ -10,16 +10,17 @@ public class PcEntries {
     private final JdbcTemplate jdbc;
     public PcEntries(JdbcTemplate jdbc) { this.jdbc=jdbc; }
     private static final String SELECT="""
-        SELECT BIN_TO_UUID(e.id),BIN_TO_UUID(e.bale_id),b.barcode,e.sequence_no,e.dispatch_cycle,e.status,e.delivery_code,
+        SELECT BIN_TO_UUID(e.id),BIN_TO_UUID(e.bale_id),b.barcode,e.sequence_no,e.dispatch_cycle,
+          CASE WHEN d.action='RELEASE' THEN 'RELEASED' WHEN d.action='QUARANTINE' THEN 'QUARANTINED' ELSE e.status END,e.delivery_code,
           e.weight_g,e.raw_weight,e.model_snapshot,e.name_snapshot,e.operator_name,e.created_at,e.void_reason
-        FROM pc_entry e INNER JOIN bale b ON b.id=e.bale_id
+        FROM pc_entry e INNER JOIN bale b ON b.id=e.bale_id LEFT JOIN pc_disposition d ON d.id=e.disposition_id
         """;
     public List<Entry> all(PcStore.Work work) { return jdbc.query(SELECT+" WHERE e.work_id=? ORDER BY e.sequence_no",this::map,Ids.bytes(work.id())); }
     public List<Product> products(PcStore.Work work) {
         return jdbc.query("""
             SELECT l.delivery_code,l.model_snapshot,l.name_snapshot,l.planned_count,COALESCE(e.cnt,0),COALESCE(e.weight,0)
             FROM order_line l INNER JOIN order_revision r ON r.id=l.revision_id
-            LEFT JOIN (SELECT delivery_code,COUNT(*) cnt,SUM(weight_g) weight FROM pc_entry WHERE work_id=? AND status='ACTIVE' GROUP BY delivery_code) e ON e.delivery_code=l.delivery_code
+            LEFT JOIN (SELECT delivery_code,COUNT(*) cnt,SUM(weight_g) weight FROM pc_entry WHERE work_id=? AND status='ACTIVE' AND disposition_id IS NULL GROUP BY delivery_code) e ON e.delivery_code=l.delivery_code
             WHERE r.order_id=? AND r.revision=? ORDER BY l.delivery_code
             """,(rs,n)->new Product(rs.getString(1),rs.getString(2),rs.getString(3),rs.getLong(4),rs.getLong(5),rs.getString(6)),Ids.bytes(work.id()),Ids.bytes(work.order()),work.revision());
     }

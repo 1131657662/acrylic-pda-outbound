@@ -1,0 +1,10 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true" android:background="@color/pda_canvas">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="12dp">
+        <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="52dp" android:text="返回扫码作业" />
+        <TextView android:id="@+id/summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="20sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
+        <TextView android:id="@+id/products" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="12dp" android:textSize="16sp" />
+        <TextView android:id="@+id/packages" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="12dp" android:textSize="15sp" />
+        <TextView android:id="@+id/pending" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="12dp" android:textSize="15sp" />
+        <Button android:id="@+id/loadMore" android:layout_width="match_parent" android:layout_height="56dp" android:text="加载更早明细" />
+    </LinearLayout>
+</ScrollView>

@@ -4,7 +4,7 @@ import { request, errorText } from '../api';
 import FeedbackState from '../components/FeedbackState.vue';
 import { kilograms } from '../orders/submission-contracts';
 import { localTime } from '../orders/contracts';
-import { entriesSchema, type Entry } from './contracts';
+import { entriesSchema, entryLabels, type Entry } from './contracts';
 const props = defineProps<{ order: string; warehouse: string; version: string; disabled: boolean }>();
 const emit = defineEmits<{ remove: [entry: Entry] }>();
 const rows = ref<Entry[]>([]); const total = ref(0); const page = ref(1); const search = ref(''); const code = ref('');
@@ -30,7 +30,7 @@ onBeforeUnmount(() => { generation++; });
       <el-table-column prop="sequence" label="录入序号" width="90" /><el-table-column prop="barcode" label="完整条码" min-width="160" />
       <el-table-column prop="deliveryCode" label="代码" width="75" /><el-table-column label="净重 kg" width="110"><template #default="{ row }">{{ kilograms(row.weightGrams) }}</template></el-table-column>
       <el-table-column label="人员 / 时间" min-width="160"><template #default="{ row }">{{ row.operatorName }}<div class="muted">{{ localTime(row.createdAt) }}</div></template></el-table-column>
-      <el-table-column label="状态" min-width="140"><template #default="{ row }">{{ row.status === 'ACTIVE' ? '有效录入' : '已撤销' }}<p v-if="row.voidReason" class="muted">{{ row.voidReason }}</p></template></el-table-column>
+      <el-table-column label="状态" min-width="140"><template #default="{ row }">{{ entryLabels[row.status as Entry['status']] }}<p v-if="row.voidReason" class="muted">{{ row.voidReason }}</p></template></el-table-column>
       <el-table-column label="操作" width="120"><template #default="{ row }"><el-button v-if="row.status === 'ACTIVE'" link type="danger" :disabled="disabled || busy || !!error" @click="emit('remove', row)">撤销本次录入</el-button></template></el-table-column>
       <template #empty><FeedbackState :loading="busy" :error="!!error" :title="busy ? '正在读取记录' : error ? '记录读取失败' : '暂无匹配录入记录'" /></template>
     </el-table></div>

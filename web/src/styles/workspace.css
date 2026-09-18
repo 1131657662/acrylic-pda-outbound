@@ -17,6 +17,7 @@
 .workspace.is-collapsed .sidebar .nav-item { justify-content: center; padding-inline: var(--space-2); }
 .workspace-body { min-width: 0; min-height: 0; flex: 1; display: flex; flex-direction: column; }
 .topbar { height: 56px; flex-shrink: 0; padding: 0 var(--space-5); background: var(--surface); border-bottom: 1px solid var(--separator); display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); }
+.topbar:focus-within { border-bottom-color: var(--info); }
 .topbar-location, .topbar-actions { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
 .topbar-actions { margin-left: auto; }
 .breadcrumb { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-muted); }
@@ -30,6 +31,7 @@
 .account-trigger { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
 .page-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: var(--space-5); }
 .page-content { background: var(--surface); padding: var(--space-5); min-width: 0; width: 100%; max-width: 1800px; margin: 0 auto; }
+.page-content > * { min-width: 0; }
 .workspace.is-list .page-scroll { display: flex; flex-direction: column; overflow: hidden; }
 .workspace.is-list .page-content { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .workspace.is-list .page-title { flex-shrink: 0; }
@@ -50,9 +52,11 @@
   .topbar-actions { width: 100%; margin: 0; gap: var(--space-2); }
   .warehouse-select { flex: 1; min-width: 100px; width: auto; }
   .warehouse-caption, .environment-tag { display: none; }
-  .account-trigger { max-width: 72px; }
+  .account-trigger { width: 40px; max-width: 40px; padding-inline: 8px; font-size: 0; }
+  .account-trigger .el-icon { margin: 0; font-size: 16px; }
   .connection-text { display: none; }
   .page-scroll, .page-content { padding: var(--space-3); }
+  .page-content { min-height: calc(100dvh - 100px); }
 }
 @media (max-height: 639px), (max-width: 767px) {
   .workspace.is-list .page-scroll { display: block; overflow-y: auto; }

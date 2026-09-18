@@ -31,7 +31,7 @@ export function statusLabel(status: string): string {
   return Object.hasOwn(orderStatusLabels, status) ? orderStatusLabels[status]! : '状态待核对';
 }
 export const orderStatusLabels: Record<string, string> = { DRAFT: '草稿', READY: '待领取', ASSIGNED: '已领取',
-  RECALL_PENDING: '已申请停止，待原机核对', REVIEW_REQUIRED: '待主管处理', COMPLETED: '后台已确认出库',
+  RECALL_PENDING: '停止作业处理中', REVIEW_REQUIRED: '待主管处理', COMPLETED: '后台已确认出库',
   CANCELLED: '已作废', CONTINUING: '恢复装车处理中', LINKED: '已关联正式订单' };
 export function localTime(value: string): string {
   const date = new Date(value);

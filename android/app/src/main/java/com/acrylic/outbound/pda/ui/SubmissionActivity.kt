@@ -76,6 +76,10 @@ class SubmissionActivity : ComponentActivity() {
         binding.reason.isEnabled = item == null; binding.freeze.isEnabled = item == null
         binding.upload.isEnabled = item != null && item.state !in setOf("SYNCED", "ABORTED", "REJECTED")
         binding.refresh.isEnabled = item != null; binding.back.isEnabled = true
+        binding.freeze.visibility = if (item == null) android.view.View.VISIBLE else android.view.View.GONE
+        binding.reason.visibility = if (item == null) android.view.View.VISIBLE else android.view.View.GONE
+        binding.upload.visibility = if (item != null && item.state !in setOf("SYNCED", "ABORTED", "REJECTED")) android.view.View.VISIBLE else android.view.View.GONE
+        binding.refresh.visibility = if (item != null && item.state !in setOf("SYNCED", "ABORTED", "REJECTED")) android.view.View.VISIBLE else android.view.View.GONE
         binding.notice.text = item?.let { "批次：${it.id}\n${it.error}\n" + if (it.autoRetry) "已排队：WiFi恢复后重试原批次" else "冻结正文和明细保留在本机" }
             ?: "全部产品足量可直接提交；短装必须填写原因。整单0包不能结单。"
         if (item?.state == "REVIEW_REQUIRED") binding.notice.append("\n请由主管在Web订单详情核对并审批，再点查询回执。")

@@ -2,6 +2,7 @@
 @import './styles/workspace.css';
 @import './styles/orders.css';
 @import './styles/pc.css';
+@import './styles/pc-exception.css';
 * { box-sizing: border-box; letter-spacing: 0; }
 body { margin: 0; }
 button, input, textarea { font: inherit; }
@@ -72,6 +73,8 @@ a { color: var(--primary); text-underline-offset: 3px; }
 .login-layout { min-height: 100dvh; display: grid; place-items: center; padding: var(--space-5); }
 .login-form { width: min(380px, calc(100vw - 48px)); }
 .login-form h1 { margin-bottom: var(--space-5); }
+.login-environment { display: inline-flex; margin-top: var(--space-3); }
+.login-form .el-alert { margin-top: var(--space-4); }
 .login-form label { display: block; margin: var(--space-5) 0 var(--space-2); }
 .login-submit { width: 100%; margin-top: var(--space-5); }
 .recovery-form, .recovery-form label { display: grid; gap: var(--space-3); }

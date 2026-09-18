@@ -30,6 +30,7 @@ class WorkActivity : ComponentActivity() {
     private var assignment = ""
     private var dialogOpen = false
     private var recallOpening = false
+    private var imeOpen = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,8 +39,10 @@ class WorkActivity : ComponentActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding = ActivityWorkBinding.inflate(layoutInflater); setContentView(binding.root)
         renderer = WorkRenderer(binding)
+        binding.sound.text = if (app.workSound.enabled) "声音开" else "声音关"
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val system = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            imeOpen = insets.isVisible(WindowInsetsCompat.Type.ime())
             view.setPadding(system.left, system.top, system.right, system.bottom); insets
         }
         scanner = ScannerReceiver(this, { engine.receive(it, "BROADCAST") }, engine::stop)
@@ -58,6 +61,9 @@ class WorkActivity : ComponentActivity() {
         binding.closeOrder.setOnClickListener {
             startActivity(android.content.Intent(this, SubmissionActivity::class.java).putExtra("assignmentId", assignment))
         }
+        binding.details.setOnClickListener {
+            startActivity(android.content.Intent(this, WorkDetailsActivity::class.java).putExtra("assignmentId", assignment))
+        }
         binding.confirm.setOnClickListener { confirmDisplayed() }
         binding.validate.setOnClickListener { manualInput() }
         binding.discard.setOnClickListener { discard() }
@@ -67,7 +73,10 @@ class WorkActivity : ComponentActivity() {
             binding.sound.text = if (app.workSound.enabled) "声音开" else "声音关"
         }
         binding.manualToggle.setOnClickListener {
-            binding.manualPanel.visibility = if (binding.manualPanel.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+            val visible = binding.manualPanel.visibility != View.VISIBLE
+            binding.manualPanel.visibility = if (visible) View.VISIBLE else View.GONE
+            binding.products.visibility = if (visible) View.GONE else View.VISIBLE
+            binding.recent.visibility = if (visible) View.GONE else View.VISIBLE
             hideKeyboard()
         }
     }
@@ -108,6 +117,7 @@ class WorkActivity : ComponentActivity() {
         dialog.setOnDismissListener { restoreInput() }; dialog.show()
     }
     private fun leave() {
+        if (imeOpen) { hideKeyboard(); return }
         val state = engine.state.value
         if (state.pending == 0 && state.queued == 0 && state.candidate == null) { finish(); return }
         suspendInput()

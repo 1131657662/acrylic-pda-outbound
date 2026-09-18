@@ -14,6 +14,8 @@ interface PreparationDao {
     @Query("SELECT * FROM claim_intent WHERE orderId=:order") fun intent(order: String): ClaimIntent?
     @Query("SELECT * FROM claim_intent WHERE userId=:user AND deviceId=:device") fun pending(user: String, device: String): List<ClaimIntent>
     @Insert fun insertIntent(intent: ClaimIntent)
+    @Query("UPDATE claim_intent SET status=:status,lastError=:message WHERE orderId=:order")
+    fun markIntent(order: String, status: String, message: String?)
     @Query("DELETE FROM claim_intent WHERE orderId=:order AND userId=:user AND deviceId=:device")
     fun resolveIntent(order: String, user: String, device: String)
 }

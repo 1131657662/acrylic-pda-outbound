@@ -15,7 +15,10 @@ class PairingViewModel(application: Application) : AndroidViewModel(application)
     private val app = application as PdaApplication
     private val mutable = MutableStateFlow(PairingUi())
     val state = mutable.asStateFlow()
-    init { run { app.pairing.saved() } }
+    init {
+        val saved = runCatching { app.pairing.saved() }.getOrNull()
+        mutable.value = PairingUi(saved = saved, bound = app.session.settings.device.isNotBlank())
+    }
     fun start() = run { app.pairing.start(BuildConfig.PDA_SERVER_URL) }
     fun recover() = run { app.pairing.resume() }
     fun confirm() = run { app.pairing.confirm() }

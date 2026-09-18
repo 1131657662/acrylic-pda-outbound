@@ -4,26 +4,41 @@ import android.content.Context
 import com.acrylic.outbound.pda.data.*
 import com.acrylic.outbound.pda.network.PdaSession
 import com.acrylic.outbound.pda.security.JwtVerifier
+import com.acrylic.outbound.pda.network.ApiFailure
 import org.json.JSONObject
 import java.io.File
 import java.util.UUID
 
 class PreparationRepository(private val context: Context, private val db: PdaDatabase, val session: PdaSession) {
+    data class RemotePage(val items: List<JSONObject>, val nextCursor: String?)
     fun local(): List<PreparedOrder> = db.preparations().orders()
     fun pending(): List<ClaimIntent> {
         val auth = session.saved() ?: return emptyList()
         return db.preparations().pending(auth.getString("userId"), auth.getString("deviceId"))
     }
 
+    fun page(path: String, cursorName: String, cursor: String? = null, limit: Int = 20): RemotePage {
+        require(limit in 20..100) { "分页大小不受支持" }
+        val encoded = cursor?.takeIf { it.isNotEmpty() }?.let {
+            "&$cursorName=${java.net.URLEncoder.encode(it, "UTF-8")}"
+        }.orEmpty()
+        val payload = session.call("$path?limit=$limit$encoded")
+        val items = payload.getJSONArray("items").let { array ->
+            List(array.length()) { index -> array.getJSONObject(index) }
+        }
+        val next = if (payload.isNull("nextCursor")) null else payload.getString("nextCursor").takeIf { it.isNotEmpty() }
+        check(next == null || next != cursor) { "分页未向后推进，请联网刷新" }
+        return RemotePage(items, next)
+    }
+
+    /** Test and one-off diagnostics helper; screen flows use [page] to keep memory bounded. */
     fun list(path: String, cursorName: String): List<JSONObject> {
-        val result = ArrayList<JSONObject>(); var cursor = ""; val seen = HashSet<String>()
+        val result = ArrayList<JSONObject>(); var cursor: String? = null; val seen = HashSet<String>()
         do {
-            check(seen.add(cursor)) { "服务器分页游标重复" }
-            val page = session.call("$path?limit=200" + if (cursor.isEmpty()) "" else "&$cursorName=${java.net.URLEncoder.encode(cursor, "UTF-8")}")
-            val items = page.getJSONArray("items")
-            for (index in 0 until items.length()) result.add(items.getJSONObject(index))
-            cursor = if (page.isNull("nextCursor")) "" else page.getString("nextCursor")
-        } while (cursor.isNotEmpty())
+            check(seen.add(cursor.orEmpty())) { "服务器分页游标重复" }
+            val next = page(path, cursorName, cursor, 100)
+            result.addAll(next.items); cursor = next.nextCursor
+        } while (cursor != null)
         return result
     }
 
@@ -36,14 +51,24 @@ class PreparationRepository(private val context: Context, private val db: PdaDat
     }
 
     fun retryClaim(intent: ClaimIntent): JSONObject {
+        check(intent.status != "REJECTED") { intent.lastError ?: "原领取已被拒绝，请联系主管核对订单" }
         val auth = session.requireSession()
         check(intent.userId == auth.getString("userId") && intent.deviceId == auth.getString("deviceId")) { "原领取属于其他人员，须由原人员恢复" }
         check(intent.recoveryEpoch == auth.getString("serverRecoveryEpoch")) { "恢复代次已变化，请联系主管" }
         // Refresh authentication before sending the persisted write; a lost response keeps the intent intact.
         session.call("pda/devices/me")
-        val envelope = session.network().request("pda/orders/${intent.orderId}/assignments", JSONObject(intent.body),
-            session.headers(epoch = intent.recoveryEpoch) + ("Idempotency-Key" to intent.key))
-        return envelope.getJSONObject("data").also { db.preparations().resolveIntent(intent.orderId, intent.userId, intent.deviceId) }
+        db.preparations().markIntent(intent.orderId, "UNKNOWN", null)
+        return try {
+            val envelope = session.network().request("pda/orders/${intent.orderId}/assignments", JSONObject(intent.body),
+                session.headers(epoch = intent.recoveryEpoch) + ("Idempotency-Key" to intent.key))
+            envelope.getJSONObject("data").also { db.preparations().resolveIntent(intent.orderId, intent.userId, intent.deviceId) }
+        } catch (failure: ApiFailure) {
+            if (failure.code in setOf("ORDER_ASSIGNED", "ORDER_VERSION_CONFLICT", "ORDER_STATE_CONFLICT",
+                    "ORDER_RECOVERY_REQUIRED", "ORDER_BASELINE_CHANGED")) {
+                db.preparations().markIntent(intent.orderId, "REJECTED", failure.message)
+            }
+            throw failure
+        }
     }
 
     fun prepare(assignment: JSONObject, progress: (String) -> Unit): PreparedOrder {
