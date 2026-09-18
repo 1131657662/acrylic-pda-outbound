@@ -3,49 +3,35 @@
     <LinearLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:padding="16dp">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
-            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="腈纶出库 PDA"
-                android:textSize="24sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
-            <Button android:id="@+id/deviceSettings" android:layout_width="wrap_content" android:layout_height="52dp" android:text="设备信息与设置" />
+            <TextView android:id="@+id/title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="装车订单"
+                android:textSize="20sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
+            <ImageButton android:id="@+id/deviceSettings" android:layout_width="48dp" android:layout_height="48dp"
+                android:src="@android:drawable/ic_menu_preferences" android:contentDescription="设备信息与设置" />
         </LinearLayout>
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="当前环境与本机身份可在设备信息中查看；退出登录不会删除本机资料。" android:textSize="13sp" android:paddingTop="6dp" />
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="资料准备 · 本地扫码 · 结单上传" android:textSize="14sp" android:paddingTop="6dp" />
+        <TextView android:id="@+id/environment" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" />
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:paddingTop="12dp" android:paddingBottom="12dp" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
         <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent"
             android:layout_height="4dp" android:indeterminate="true" android:visibility="gone" />
         <LinearLayout android:id="@+id/setup" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="首次登记设备" android:textSize="20sp" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:text="开始登记后，将8位登记码告知管理员，再在本机核对仓库及设备名称。" android:paddingTop="8dp" />
             <Button android:id="@+id/pairing" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:text="短码配对登记" />
-            <Button android:id="@+id/advancedSetup" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="高级身份维护" />
-            <LinearLayout android:id="@+id/maintenance" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
-            <Button android:id="@+id/copyKey" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="复制本机登记公钥" />
-            <EditText android:id="@+id/server" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
-                android:hint="服务器地址 https://…/api/v1/" android:inputType="textUri" android:autofillHints="" />
-            <EditText android:id="@+id/device" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
-                android:hint="高级维护：管理员提供的设备 UUID" android:inputType="textVisiblePassword" android:autofillHints="" />
-            <Button android:id="@+id/bind" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="保存设备绑定" />
-            </LinearLayout>
         </LinearLayout>
         <LinearLayout android:id="@+id/loginPanel" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="人员登录" android:textSize="20sp" android:paddingTop="16dp" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="账号" android:textSize="16sp" android:labelFor="@id/username" />
             <EditText android:id="@+id/username" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
-                android:hint="账号" android:inputType="textVisiblePassword" android:autofillHints="username" />
+                android:inputType="textVisiblePassword" android:singleLine="true" android:autofillHints="username" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="密码" android:textSize="16sp" android:paddingTop="8dp" android:labelFor="@id/password" />
             <EditText android:id="@+id/password" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
-                android:hint="密码" android:inputType="textPassword" android:saveEnabled="false" android:autofillHints="password" />
+                android:inputType="textPassword" android:singleLine="true" android:saveEnabled="false" android:autofillHints="password" />
+            <CheckBox android:id="@+id/showPassword" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="48dp" android:text="显示密码" />
             <Button android:id="@+id/login" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="登录并恢复本机订单" />
         </LinearLayout>
         <LinearLayout android:id="@+id/actions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
                 <Button android:id="@+id/localSection" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="本机任务" />
                 <Button android:id="@+id/availableSection" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="待领取" />
-            </LinearLayout>
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-                <Button android:id="@+id/refresh" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="52dp" android:text="联网刷新" />
-                <Button android:id="@+id/logout" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="52dp" android:text="退出登录" />
+                <ImageButton android:id="@+id/refresh" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_popup_sync" android:contentDescription="联网刷新" />
             </LinearLayout>
         </LinearLayout>
         <TextView android:id="@+id/identity" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:paddingTop="8dp" />

@@ -28,6 +28,7 @@ function changeWarehouse(value: string): void {
   if (props.busy || props.warehouseLocked) return;
   session.warehouseId = value;
   if (route.path.startsWith('/orders')) void router.push({ path: '/orders', query: { ...route.query, warehouse: value, page: '1', tab: undefined } });
+  else void router.replace({ query: { ...route.query, warehouse: value, import: undefined } });
 }
 async function logout(): Promise<void> {
   if (props.busy) return;

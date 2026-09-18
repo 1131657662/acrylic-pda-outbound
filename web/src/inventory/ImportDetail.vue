@@ -4,7 +4,7 @@ import ImportRows from './ImportRows.vue';
 import { weightKg, statusLabel, localTime } from './contracts';
 import type { ImportSummary } from './contracts';
 defineProps<{ item: ImportSummary }>();
-defineEmits<{ published: [item: ImportSummary] }>();
+defineEmits<{ published: [item: ImportSummary]; sending: [value: boolean] }>();
 </script>
 
 <template>
@@ -22,7 +22,7 @@ defineEmits<{ published: [item: ImportSummary] }>();
     <el-alert v-if="item.errorRows || item.duplicateRows" :type="item.errorRows ? 'error' : 'warning'" :closable="false" show-icon
       :title="`错误 ${item.errorRows} 行，重复 ${item.duplicateRows} 行。请核对原文件，不会自动发布有效子集。`" />
     <p v-if="item.ignoredRows" class="muted">已忽略 {{ item.ignoredRows }} 个空行，明细保留原始行号。</p>
-    <PublicationPanel :item="item" @published="$emit('published', $event)" />
+    <PublicationPanel :item="item" @published="$emit('published', $event)" @sending="$emit('sending', $event)" />
     <ImportRows :import-id="item.id" :warehouse-id="item.warehouseId" />
     <details class="file-proof"><summary>原文件校验信息</summary><p>SHA-256：{{ item.fileSha256 }}</p><p>解析配置：{{ item.parserVersion }}</p></details>
   </section>

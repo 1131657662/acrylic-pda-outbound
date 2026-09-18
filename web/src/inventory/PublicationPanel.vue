@@ -8,7 +8,7 @@ import { diffSchema, receiptSchema } from './master-contracts';
 import type { Diff } from './master-contracts';
 import PublicationDiff from './PublicationDiff.vue';
 const props = defineProps<{ item: ImportSummary }>();
-const emit = defineEmits<{ published: [item: ImportSummary] }>();
+const emit = defineEmits<{ published: [item: ImportSummary]; sending: [value: boolean] }>();
 const session = useSessionStore();
 const preview = ref<Diff | null>(null);
 const loading = ref(false); const publishing = ref(false); const error = ref('');
@@ -27,7 +27,7 @@ async function load(): Promise<void> {
 }
 async function publish(): Promise<void> {
   if (!preview.value || publishing.value) return;
-  publishing.value = true; error.value = '';
+  publishing.value = true; emit('sending', true); error.value = '';
   const body = JSON.stringify({ expectedActiveSnapshot: preview.value.baseline.activeSnapshotId,
     expectedMappingRevision: preview.value.baseline.mappingRevision, acceptIdenticalDuplicates: acceptDuplicates.value,
     acceptMappingChanges: acceptMappings.value, confirmedRemovedCount: acceptMissing.value ? preview.value.removed : 0, reason: reason.value });
@@ -39,7 +39,7 @@ async function publish(): Promise<void> {
     emit('published', await request(`/inventory/imports/${props.item.id}?warehouseId=${props.item.warehouseId}`, importSchema));
     preview.value = null;
   } catch (cause) { error.value = `${receiptId ? '发布已成功，刷新记录失败。再次点击可取回原回执。' : ''}${errorText(cause)}`; }
-  finally { publishing.value = false; }
+  finally { publishing.value = false; emit('sending', false); }
 }
 </script>
 <template>

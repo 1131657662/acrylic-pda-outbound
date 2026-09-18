@@ -1,34 +1,25 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { request, errorText } from '../api';
+import { request } from '../api';
 import { rowPageSchema, weightKg } from './contracts';
-import type { ImportRow } from './contracts';
+import { useCursorPage } from '../useCursorPage';
+import CursorPager from '../components/CursorPager.vue';
+import QueryFeedback from '../components/QueryFeedback.vue';
 
 const props = defineProps<{ importId: string; warehouseId: string }>();
-const rows = ref<ImportRow[]>([]);
 const errorsOnly = ref(false);
-const nextCursor = ref<string | null>(null);
-const busy = ref(false);
-const error = ref('');
-let generation = 0;
-async function load(afterLine = '0'): Promise<void> {
-  const current = ++generation;
-  busy.value = true; error.value = '';
-  const params = new URLSearchParams({ warehouseId: props.warehouseId, afterLine, errorsOnly: String(errorsOnly.value), limit: '50' });
-  try {
-    const page = await request(`/inventory/imports/${props.importId}/rows?${params}`, rowPageSchema);
-    if (current !== generation) return;
-    rows.value = page.items; nextCursor.value = page.nextCursor;
-  } catch (cause) { if (current === generation) error.value = errorText(cause); }
-  finally { if (current === generation) busy.value = false; }
-}
-watch(() => [props.importId, props.warehouseId, errorsOnly.value], () => { rows.value = []; void load(); }, { immediate: true });
+const paging = useCursorPage(async (cursor) => {
+  const params = new URLSearchParams({ warehouseId: props.warehouseId, afterLine: cursor || '0', errorsOnly: String(errorsOnly.value), limit: '50' });
+  return request(`/inventory/imports/${props.importId}/rows?${params}`, rowPageSchema);
+});
+const { rows, busy, error, page, nextCursor } = paging;
+watch(() => [props.importId, props.warehouseId, errorsOnly.value], paging.reset, { immediate: true });
 </script>
 
 <template>
   <div class="section-heading"><h3>文件明细</h3><el-switch v-model="errorsOnly" active-text="仅看错误 / 重复" /></div>
-  <el-alert v-if="error" :title="error" type="error" :closable="false" />
-  <el-table v-loading="busy" :data="rows" empty-text="没有符合条件的明细" stripe max-height="440" row-key="lineNo">
+  <QueryFeedback :busy="busy" :error="error" :count="rows.length" empty="没有符合条件的明细" @retry="paging.retry" />
+  <el-table v-if="rows.length" v-loading="busy" :data="rows" stripe row-key="lineNo">
     <el-table-column prop="lineNo" label="原行号" width="80" />
     <el-table-column prop="parsedFields.barcode" label="条码" width="145" />
     <el-table-column prop="parsedFields.deliveryCode" label="代码" width="70" />
@@ -42,8 +33,5 @@ watch(() => [props.importId, props.warehouseId, errorsOnly.value], () => { rows.
     </template></el-table-column>
     <el-table-column type="expand"><template #default="{ row }"><pre class="raw-line">{{ row.rawText }}</pre></template></el-table-column>
   </el-table>
-  <div class="pagination"><span class="muted">按原文件行号排序 · 每页 50 行</span>
-    <el-button :disabled="busy" @click="load()">第一页</el-button>
-    <el-button :disabled="busy || !nextCursor" @click="nextCursor && load(nextCursor)">下一页</el-button>
-  </div>
+  <CursorPager :page="page" :size="50" :busy="busy" :has-next="!!nextCursor" label="文件明细分页" @first="paging.first" @previous="paging.previous" @next="paging.next" />
 </template>

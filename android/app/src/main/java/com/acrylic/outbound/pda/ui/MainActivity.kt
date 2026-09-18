@@ -1,8 +1,7 @@
 package com.acrylic.outbound.pda.ui
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.os.Bundle
+import android.text.method.PasswordTransformationMethod
 import android.view.View
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -29,19 +28,20 @@ class MainActivity : ComponentActivity() {
             val system = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(system.left, system.top, system.right, system.bottom); insets
         }
-        binding.bind.setOnClickListener { model.bind(binding.server.text.toString(), binding.device.text.toString()) }
         binding.login.setOnClickListener {
             val password = binding.password.text.toString(); binding.password.text.clear()
             model.login(binding.username.text.toString(), password)
         }
-        binding.refresh.setOnClickListener { model.refresh() }; binding.logout.setOnClickListener { model.logout() }
+        binding.showPassword.setOnCheckedChangeListener { _, checked ->
+            binding.password.transformationMethod = if (checked) null else PasswordTransformationMethod.getInstance()
+            binding.password.setSelection(binding.password.length())
+        }
+        binding.refresh.setOnClickListener { model.refresh() }
         binding.localSection.setOnClickListener { model.selectSection("LOCAL") }
         binding.availableSection.setOnClickListener { model.selectSection("AVAILABLE") }
         binding.loadMore.setOnClickListener { model.loadMore() }
-        binding.copyKey.setOnClickListener { copyKey() }
         binding.pairing.setOnClickListener { startActivity(android.content.Intent(this, PairingActivity::class.java)) }
         binding.deviceSettings.setOnClickListener { startActivity(android.content.Intent(this, DeviceSettingsActivity::class.java)) }
-        binding.advancedSetup.setOnClickListener { binding.maintenance.visibility = if (binding.maintenance.visibility == View.GONE) View.VISIBLE else View.GONE }
         lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { model.state.collect { render(it) } } }
     }
 
@@ -49,29 +49,25 @@ class MainActivity : ComponentActivity() {
 
     private fun render(state: PreparationUi) {
         val scrollPosition = binding.root.scrollY
+        val loggedIn = state.bound && state.username.isNotBlank() && !state.loginRequired
+        binding.title.text = if (loggedIn) "装车订单" else if (state.bound) "人员登录" else "设备登记"
+        binding.environment.text = com.acrylic.outbound.pda.BuildConfig.PDA_ENVIRONMENT.ifBlank { "环境未配置" }
+        binding.environment.visibility = if (loggedIn) View.GONE else View.VISIBLE
         binding.status.text = state.message
         binding.progress.visibility = if (state.busy) View.VISIBLE else View.GONE
         binding.setup.visibility = if (state.bound) View.GONE else View.VISIBLE
-        binding.actions.visibility = if (state.username.isNotBlank()) View.VISIBLE else View.GONE
-        binding.loginPanel.visibility = if (state.bound && state.username.isBlank()) View.VISIBLE else View.GONE
-        binding.identity.text = (if (state.username.isBlank()) "未登录 · 原订单资料保留" else "当前人员：${state.username}") + state.deviceLabel
-        listOf(binding.login, binding.bind, binding.copyKey, binding.refresh, binding.logout,
+        binding.actions.visibility = if (loggedIn) View.VISIBLE else View.GONE
+        binding.loginPanel.visibility = if (state.bound && !loggedIn) View.VISIBLE else View.GONE
+        binding.cards.visibility = if (loggedIn) View.VISIBLE else View.GONE
+        binding.identity.text = (if (!loggedIn) "本机资料保留，请登录" else "当前人员：${state.username}") + state.deviceLabel
+        listOf(binding.login, binding.username, binding.password, binding.refresh,
             binding.localSection, binding.availableSection, binding.loadMore).forEach { it.isEnabled = !state.busy }
         binding.localSection.isSelected = state.section == "LOCAL"
         binding.availableSection.isSelected = state.section == "AVAILABLE"
-        binding.loadMore.visibility = if ((state.section == "AVAILABLE" && state.availableHasMore) ||
-            (state.section == "LOCAL" && state.assignedHasMore)) View.VISIBLE else View.GONE
-        cards.render(state)
+        binding.loadMore.visibility = if (loggedIn && ((state.section == "AVAILABLE" && state.availableHasMore) ||
+            (state.section == "LOCAL" && state.assignedHasMore))) View.VISIBLE else View.GONE
+        if (loggedIn) cards.render(state)
         binding.root.post { binding.root.scrollTo(0, scrollPosition) }
     }
 
-    private fun copyKey() {
-        lifecycleScope.launch {
-            try {
-                val key = model.publicKey()
-                getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("PDA登记公钥", key))
-                binding.status.text = "公钥已复制，请交管理员登记。此公钥不包含私钥。"
-            } catch (error: Exception) { binding.status.text = error.message ?: "无法读取设备身份" }
-        }
-    }
 }

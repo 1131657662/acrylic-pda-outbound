@@ -14,7 +14,7 @@ data class PreparationUi(val busy: Boolean = false, val message: String = "请�
     val username: String = "", val local: List<LocalCard> = emptyList(), val available: List<JSONObject> = emptyList(),
     val assigned: List<JSONObject> = emptyList(), val pending: List<ClaimIntent> = emptyList(), val deviceLabel: String = "",
     val section: String = "LOCAL", val availableCursor: String? = null, val assignedCursor: String? = null,
-    val availableHasMore: Boolean = false, val assignedHasMore: Boolean = false)
+    val availableHasMore: Boolean = false, val assignedHasMore: Boolean = false, val loginRequired: Boolean = false)
 
 class PreparationViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as PdaApplication
@@ -73,7 +73,7 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
         loadLocal()
     }
     private fun loadLocal() {
-        val saved = runCatching { app.session.saved() }.getOrNull()
+        val saved = app.session.saved()
         val local = repository.local().map {
             val recalled = app.database.recalls().header(it.assignmentId) != null
             val continuation = app.database.continuations().current(it.assignmentId)
@@ -81,14 +81,15 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
             LocalCard(current, if (recalled) "收到召回 · 停止作业，须核对恢复证据" else repository.readiness(current), recalled)
         }
         mutable.update { it.copy(bound = app.session.settings.device.isNotBlank(), username = saved?.optString("username") ?: "",
-            local = local, pending = if (saved == null) emptyList() else repository.pending(), deviceLabel = identityLabel()) }
+            local = local, pending = if (saved == null) emptyList() else repository.pending(), deviceLabel = identityLabel(),
+            loginRequired = saved == null || saved.has("blockedReason")) }
     }
     private fun identityLabel(): String {
         if (app.session.settings.device.isBlank()) return ""
         val result = app.pairing.saved()?.optJSONObject("result")
         val approval = if (result?.optString("deviceId") == app.session.settings.device) result.optJSONObject("approval") else null
         val name = if (approval == null) "已绑定设备" else "${approval.getString("warehouseName")} · ${approval.getString("name")}"
-        return "\n$name\n${app.session.settings.server}"
+        return "\n$name"
     }
     private fun run(message: String, action: () -> Unit) {
         if (mutable.value.busy) return

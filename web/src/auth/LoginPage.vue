@@ -12,7 +12,7 @@ const username = ref('');
 const password = ref('');
 const busy = ref(false);
 const error = ref('');
-const environment = import.meta.env.VITE_ENVIRONMENT_NAME?.trim() || (import.meta.env.DEV ? '开发环境' : '正式环境');
+const environment = import.meta.env.VITE_ENVIRONMENT_NAME?.trim() || (import.meta.env.DEV ? '开发环境' : '环境未标明');
 async function submit(): Promise<void> {
   if (busy.value) return;
   busy.value = true; error.value = '';

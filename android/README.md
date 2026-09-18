@@ -1,10 +1,10 @@
 # 正式PDA：资料准备、扫码、召回与受控续作
 
-2026-09-18 R04：辅助页面首轮统一完成，验证包为`0.8.0-r04`、versionCode9、Room7。新增独立“设备信息与设置”页，显示环境、版本、绑定身份、声音、连接诊断和保留资料退出登录；短码登记启动即恢复原申请，登录页明确环境并防连点。Web规则/映射历史补齐加载与空态。M71覆盖安装保留数据（versionCode9、Room7、数据 inode 保持），最终 staging APK SHA-256 为`C71ED78FBAC9D4F55EFF09FA5A818AB6C3F478B8F081522BD73BA23D44DA8B3C`、11016312 bytes；现场处于锁屏遮罩，设置页待解锁后复核；未做异地安装、长时负载或生产验收。详细结果见[开发进度](../docs/DEVELOPMENT_PROGRESS.md)。
+2026-09-18 R04：辅助页面开发与本机验证收尾，最终staging验证包为`0.8.0-r04-test`、versionCode9、Room7。登记读取失败保留原申请并阻止新登记；登录与订单区域互斥；独立设置页显示真实身份、环境、版本、声音、连接诊断和保留资料退出确认。最终69项主机测试通过，lint 0错误/99提示；M71原绑定staging包覆盖升级，设置只读原生检查在480×800、200%字体及480×600均通过，声音恢复原值，退出选择返回，FLAG_SECURE保持。最终APK SHA-256为`C47280AC5D4AF141BD476CA954DA11308D9202EF8085F0B6D8CAC6CD712B58C4`、11,025,620字节。覆盖后首次启动前文件摘要一致；最终业务数据库、绑定及配对文件保持，会话时间锚随诊断正常更新，不以inode证明数据相同。未做异地安装、真实退出/登录现场演练、长时负载或生产验收，02及其订单未操作。详细证据和旧记录更正见[R04交付记录](../docs/R04_AUXILIARY_UI_GUIDE.md)。
 
 2026-09-18 R02补验：公网staging包已完成两台设备登记、异地作业上传验签、PASS/FAIL现场确认及双机旧列表领取互斥；USB M71原debug包另完成0.3.0→0.7.0覆盖升级，身份、公钥/私钥签名、会话和原领取请求保持。本轮68项主机测试及升级两阶段native检查最终通过。原旧包没有扫码/冻结数据，不能把本次升级扩大为该类存量真机验证；具体版本、失败过程及证据见[R02记录](../docs/R02_TEST_DEPLOYMENT.md)。以下按版本保留历史记录。
 
-2026-09-18增加R03独立HTTPS测试并装包：构建类型staging，包名 `com.acrylic.outbound.pda.staging`，版本 `0.8.0-r03-test`。使用 `:app:testStagingUnitTest :app:assembleStaging :app:lintStaging -PpdaServerUrl=https://outbound-test.nbsmzwl.cn/api/v1/ -PpdaEnvironment=公网测试环境` 构建，覆盖安装保留原debug应用身份和数据；本机产物SHA256见开发进度。实际M71和尚未完成的验证见[开发进度](../docs/DEVELOPMENT_PROGRESS.md)。
+2026-09-18增加R03独立HTTPS测试并装包：构建类型staging，包名 `com.acrylic.outbound.pda.staging`，版本 `0.8.0-r03-test`。使用 `:app:testStagingUnitTest :app:assembleStaging :app:lintStaging -PpdaServerUrl=https://outbound-test.nbsmzwl.cn/api/v1/ -PpdaEnvironment=公网测试环境` 构建，覆盖原staging应用并保留其身份和数据；debug是并存的独立包，本次未覆盖。本机产物SHA256见开发进度。实际M71和尚未完成的验证见[开发进度](../docs/DEVELOPMENT_PROGRESS.md)。
 
 2026-09-17，版本`0.7.0-pairing`，versionCode7，Room6。本工程独立于已验收的`demo/`，App名称“腈纶出库 PDA”，debug包名`com.acrylic.outbound.pda.debug`。当前完成短码配对登记、设备密钥、人员登录、独占领取、固定资料下载校验、Room原子激活、下载确认、本地扫码、结单冻结、上传、短装审批恢复和签名回执校验，另加入受控召回、完整恢复包、原机停止证明及主管批准后的保留、卸货释放及隔离续作。
 
@@ -22,7 +22,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/build_pda.ps1 -ServerU
 
 后端Verify使用隔离测试库生成`server/build/pda-contract-fixture.json`、`pda-submission-fixture.json`、`pda-recall-fixture.json`与`pda-continuation-fixture.json`。Android主机测试直接消费真实后端签名及gzip文件，不自行伪造一套协议；测试时间锚定该样本的签发时间，不因样本保存超过48小时失效。修改后端下载协议后先重新Verify。构建脚本不运行Demo任务，也不安装到任何设备。
 
-历史0.7.0 debug产物仍见[`../outputs/pda/Acrylic-PDA-0.7.0-debug.apk`](../outputs/pda/Acrylic-PDA-0.7.0-debug.apk)；本轮0.8.0-r03 staging APK仅保存在`android/app/build/outputs/apk/staging/app-staging.apk`，未发布、未上传服务器。开发验证包未配置正式发布签名，测试fixture只位于被忽略的build目录，不打包测试账号、服务端私钥或登录凭据。
+历史0.7.0 debug产物仍见[`../outputs/pda/Acrylic-PDA-0.7.0-debug.apk`](../outputs/pda/Acrylic-PDA-0.7.0-debug.apk)；本轮0.8.0-r04-test staging APK仅保存在`android/app/build/outputs/apk/staging/app-staging.apk`，已覆盖安装USB M71，未发布、未上传服务器。最终Debug APK未构建，旧产物不能代表本轮源码。开发验证包未配置正式发布签名，测试fixture只位于被忽略的build目录，不打包测试账号、服务端私钥或登录凭据。
+
+原生测试默认使用debug；需要对已绑定staging设备做辅助页面只读检查时，构建增加`-PpdaTestBuildType=staging`，执行仅指定`com.acrylic.outbound.pda.AuxiliaryReadOnlyDeviceTest`。该类核对已有身份、切换声音后恢复、打开退出确认并返回，不真正退出或重新登录。既有M71不得运行整套会清理测试数据的端到端测试；含清理步骤的用例仅在专用模拟器或隔离设备运行。
 
 构建不指定`ServerUrl`时地址为空，短码页明确提示未配置并禁用开始登记。正式环境须传入已部署的HTTPS地址及准确环境名称；当前没有已验证的正式地址。上面的回环地址仅供独立测试后端18083及`adb -s <测试设备序列号> reverse tcp:18083 tcp:18083`联调，不代表异地可达，也不会自动启动后台服务。
 

@@ -36,7 +36,7 @@ class PairingActivity : ComponentActivity() {
         val result = ui.saved?.optJSONObject("result"); val status = result?.optString("status") ?: "NEW"
         val operation = ui.saved?.optString("operation").orEmpty()
         binding.environment.text = "${BuildConfig.PDA_ENVIRONMENT}\n${ui.saved?.optString("server") ?: BuildConfig.PDA_SERVER_URL.ifBlank { "服务地址尚未配置，请联系管理员配置安装包" }}"
-        binding.pairingStatus.text = if (ui.error.isNotEmpty()) "结果待核对：${ui.error}" else statusText(status, ui.bound, operation)
+        binding.pairingStatus.text = if (ui.error.isNotEmpty()) ui.error else statusText(status, ui.bound, operation)
         binding.pairingCode.text = if (status in setOf("WAITING", "PENDING")) result!!.getString("shortCode").chunked(4).joinToString(" ") else ""
         binding.expiry.text = if (status in setOf("WAITING", "PENDING")) "有效至 ${java.time.Instant.parse(result!!.getString("expiresAt")).atZone(java.time.ZoneId.systemDefault()).toLocalTime().withNano(0)}" else ""
         val approval = result?.optJSONObject("approval")
@@ -46,14 +46,15 @@ class PairingActivity : ComponentActivity() {
     }
     private fun controls(ui: PairingUi, status: String, operation: String) {
         binding.progress.visibility = if (ui.busy) View.VISIBLE else View.GONE
-        binding.startPairing.visibility = if (ui.saved == null || status in setOf("EXPIRED", "CANCELLED")) View.VISIBLE else View.GONE
+        binding.startPairing.visibility = if (!ui.storageFailed && !ui.bound && (ui.saved == null || status in setOf("EXPIRED", "CANCELLED"))) View.VISIBLE else View.GONE
         binding.startPairing.isEnabled = !ui.busy && BuildConfig.PDA_SERVER_URL.isNotBlank() && ui.error.isEmpty() && !ui.bound
-        binding.retryPairing.visibility = if (ui.saved != null && !ui.bound) View.VISIBLE else View.GONE
+        binding.retryPairing.visibility = if (ui.storageFailed || (ui.saved != null && !ui.bound)) View.VISIBLE else View.GONE
+        binding.retryPairing.text = if (ui.storageFailed) "重试读取本机申请" else "恢复原登记申请"
         binding.confirmPairing.visibility = if (status == "PENDING") View.VISIBLE else View.GONE
         binding.cancelPairing.visibility = if (status in setOf("WAITING", "PENDING")) View.VISIBLE else View.GONE
         binding.retryPairing.isEnabled = !ui.busy
         binding.confirmPairing.isEnabled = !ui.busy && ui.error.isEmpty() && operation.isEmpty()
-        binding.cancelPairing.isEnabled = !ui.busy && operation.isEmpty()
+        binding.cancelPairing.isEnabled = !ui.busy && !ui.storageFailed && operation.isEmpty()
         binding.backToLogin.text = if (ui.bound) "进入人员登录" else "返回"
     }
     private fun statusText(status: String, bound: Boolean, operation: String): String {

@@ -9,18 +9,19 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.json.JSONObject
 
-data class PairingUi(val busy: Boolean = false, val error: String = "", val saved: JSONObject? = null, val bound: Boolean = false)
+data class PairingUi(val busy: Boolean = false, val error: String = "", val saved: JSONObject? = null,
+    val bound: Boolean = false, val storageFailed: Boolean = false)
 
 class PairingViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as PdaApplication
     private val mutable = MutableStateFlow(PairingUi())
     val state = mutable.asStateFlow()
-    init {
-        val saved = runCatching { app.pairing.saved() }.getOrNull()
-        mutable.value = PairingUi(saved = saved, bound = app.session.settings.device.isNotBlank())
-    }
+    init { readSaved() }
+    private fun readSaved() = run { app.pairing.saved() }
     fun start() = run { app.pairing.start(BuildConfig.PDA_SERVER_URL) }
-    fun recover() = run { app.pairing.resume() }
+    fun recover() {
+        if (mutable.value.storageFailed) readSaved() else run { app.pairing.resume() }
+    }
     fun confirm() = run { app.pairing.confirm() }
     fun cancel() = run { app.pairing.cancel() }
     suspend fun pollWhileVisible() {
@@ -35,13 +36,26 @@ class PairingViewModel(application: Application) : AndroidViewModel(application)
         mutable.update { it.copy(busy = true, error = "") }
         viewModelScope.launch {
             try {
-                val saved = withContext(Dispatchers.IO) { action() }
-                mutable.value = PairingUi(saved = saved, bound = app.session.settings.device.isNotBlank())
+                mutable.value = withContext(Dispatchers.IO) {
+                    PairingUi(saved = action(), bound = app.session.settings.device.isNotBlank())
+                }
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
-                val saved = withContext(Dispatchers.IO) { runCatching { app.pairing.saved() }.getOrNull() }
-                mutable.value = PairingUi(error = error.message ?: "连接中断，原申请结果待核对，请恢复原请求", saved = saved)
+                restoreAfterFailure(error)
             } finally { mutable.update { it.copy(busy = false) } }
+        }
+    }
+
+    private suspend fun restoreAfterFailure(error: Exception) {
+        try {
+            mutable.value = withContext(Dispatchers.IO) {
+                PairingUi(error = error.message ?: "连接中断，请恢复原申请", saved = app.pairing.saved(),
+                    bound = app.session.settings.device.isNotBlank())
+            }
+        } catch (readError: Exception) {
+            if (readError is CancellationException) throw readError
+            mutable.update { it.copy(error = "无法读取本机登记申请。请保留资料并重试读取；仍失败时联系管理员。",
+                storageFailed = true) }
         }
     }
 }

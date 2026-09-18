@@ -6,15 +6,27 @@
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="设备信息与设置"
             android:textSize="22sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" android:paddingTop="12dp" />
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="声音、连接和身份信息只读显示；换机和迁仓请走管理员流程。" android:textSize="15sp" android:paddingTop="8dp" android:accessibilityLiveRegion="polite" />
+            android:text="正在读取本机身份" android:textSize="15sp" android:paddingTop="8dp" android:accessibilityLiveRegion="polite" />
+        <Button android:id="@+id/retryIdentity" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="重新读取本机信息" />
         <TextView android:id="@+id/environment" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="15sp" android:paddingTop="18dp" />
         <TextView android:id="@+id/version" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="15sp" android:paddingTop="8dp" />
-        <TextView android:id="@+id/server" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="15sp" android:paddingTop="8dp" />
-        <TextView android:id="@+id/device" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="15sp" android:paddingTop="8dp" />
+        <TextView android:id="@+id/deviceName" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:paddingTop="8dp" />
         <TextView android:id="@+id/identity" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="15sp" android:paddingTop="8dp" />
-        <Button android:id="@+id/sound" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:layout_marginTop="18dp" android:text="声音：开" />
+        <Switch android:id="@+id/sound" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:layout_marginTop="16dp" android:text="声音提示" />
         <Button android:id="@+id/checkConnection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="检查后台连接" />
-        <Button android:id="@+id/copyKey" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="复制本机登记公钥" />
         <Button android:id="@+id/logout" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="退出登录（资料保留）" />
+        <Button android:id="@+id/advanced" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="高级身份维护" />
+        <LinearLayout android:id="@+id/maintenance" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+            <TextView android:id="@+id/server" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" />
+            <TextView android:id="@+id/device" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:paddingTop="8dp" />
+            <Button android:id="@+id/copyKey" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="复制本机登记公钥" />
+            <LinearLayout android:id="@+id/bindFields" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="服务地址" android:labelFor="@id/serverInput" />
+                <EditText android:id="@+id/serverInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:inputType="textUri" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="管理员提供的设备标识" android:labelFor="@id/deviceInput" />
+                <EditText android:id="@+id/deviceInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:inputType="textVisiblePassword" />
+                <Button android:id="@+id/bind" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="保存设备绑定" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

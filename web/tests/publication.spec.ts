@@ -52,7 +52,9 @@ test('publish survives lost response, inventory query, mapping history and secon
   await page.getByLabel('查询条码', { exact: true }).fill(first);
   await page.getByRole('button', { name: '查询', exact: true }).click();
   await expect(page.locator('.el-table__body tr').filter({ hasText: first })).toContainText('300.5');
+  await page.getByText('版本与差异', { exact: true }).click();
   await expect(page.getByText('当前版本', { exact: true })).toBeVisible();
+  await page.getByText('库存列表', { exact: true }).click();
   await expect(page.locator('.el-loading-mask:visible')).toHaveCount(0);
   await expect(page.locator('.el-table').first().locator('.el-table__body tr')).toHaveCount(1);
   await page.screenshot({ path: '../.local/web-stock.png', fullPage: true, animations: 'disabled' });
@@ -68,8 +70,10 @@ test('publish survives lost response, inventory query, mapping history and secon
   await page.getByRole('button', { name: '保存映射版本' }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
   await mappingRow.getByRole('button', { name: '历史', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '997 · 映射历史' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '997 · 产品对应历史' })).toBeVisible();
   await expect(page.getByText(reason, { exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
   await page.getByRole('link', { name: '库存导入' }).click();
   await upload(page, row(first, '301.25'));
   await expect(page.getByRole('checkbox', { name: '确认本次全量文件缺少 1 包' })).toBeChecked();
@@ -83,6 +87,7 @@ test('publish survives lost response, inventory query, mapping history and secon
   await page.getByLabel('查询条码', { exact: true }).fill(second);
   await page.getByRole('button', { name: '查询', exact: true }).click();
   await expect(page.locator('.el-table__body tr').filter({ hasText: second })).toContainText('未列出');
+  await page.getByText('版本与差异', { exact: true }).click();
   await page.getByText('待核对差异', { exact: true }).click();
   await expect(page.locator('.el-table__body tr').filter({ hasText: second }).last()).toContainText('上游未列出');
 });
