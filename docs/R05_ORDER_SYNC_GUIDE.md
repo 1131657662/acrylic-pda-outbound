@@ -38,3 +38,10 @@
 继续R05条码可用状态流与通用审计补传，保持本机在途占用、防重及旧固定库存资料，之后接持久任务/失败重试、30分钟待审提醒和安全留存清理。订单状态同步目前由前台刷新触发，未实现持续后台同步或基线过期清理任务。
 
 恢复代次目前仍沿用已有数字字符串；恢复UUID、事实/账务/回执重建、跨设备缺口核对与对账后重新授权属于R09。当前没有自动或人工解除`RECONCILING`的入口，不将“已下载新基线”写成“已完成灾后恢复”。本轮提交/推送不等于部署、main合并或正式交付。
+
+## 2026-09-18 独立 test 部署核验
+
+- **部署结果**：已将提交 `4e0e249476aded2ab491751143a94e7e37c02f30` 部署到独立测试地址 [https://outbound-test.nbsmzwl.cn](https://outbound-test.nbsmzwl.cn)，发布目录为 `/opt/acrylic-outbound-test/releases/r05-20260918-01`，`acrylic-outbound-test` 服务为 `active`。后端 SHA-256 为 `f0895d4082661953e4d78858ca8c482a904c74181726cb46ddae6a30dda50867`，Web `index.html` SHA-256 为 `45150466fb58adbfbcfb933faa876f47b28518572e58eeb150e45725665e4e23`，均与发布清单一致。
+- **迁移与保护**：V18–V21 迁移成功，数据库版本为 V21。部署前后核对 67 张原表无非预期变化，仅新增预期迁移记录；设备 3 台、订单 5 个、领取授权 4 个、离线授权 4 个、订单 outbox 事件 14 条及原账号、业务事实、私有文件和签名配置均保留。备份位于 `/opt/backups/acrylic-outbound-test/20260918T135601Z`，保护证据位于 `/opt/acrylic-outbound-test/deployment-evidence/r05-20260918-01`，`migration-verification.json` 标记 `unexpectedChanges: []`。
+- **入口检查**：HTTPS 返回 200；HTTP 入口 301 跳转到 HTTPS；CSRF 入口返回 200 并提供令牌字段；Nginx 配置测试通过；测试 Web 使用 `admin / 123123` 登录后可见原 5 条订单。
+- **验证边界**：本次只验证 test 服务部署、迁移保护和只读入口；未更新 PDA APK，未用异地设备发起新的同步请求，当前同步表为空。因此不能据此宣称 PDA 真机同步、持续后台同步、生产部署或 R05 整体验收完成。
