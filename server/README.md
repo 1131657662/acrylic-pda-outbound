@@ -1,6 +1,6 @@
 # 正式工程本机运行
 
-2026-09-20 编号修复：当前契约0.23.1 / Flyway V31，新正式单使用FH日期流水，旧号及原UUID不改；验证/启用/回退边界见[编号记录](../docs/ORDER_NUMBER_GUIDE.md)。未部署。
+2026-09-20 编号修复：当前契约0.23.1 / Flyway V32，新正式单使用FH日期流水，旧号及原UUID不改；验证/启用/回退边界见[编号记录](../docs/ORDER_NUMBER_GUIDE.md)。未部署。
 
 2026-09-20 R06-B服务端契约0.23.0 / Flyway V30：独立TEMP 48小时资格、固定仓库资料包、受控下载及激活声明回执已实现，32单元/102 MySQL集成及102路径契约通过。Android临时资料激活及临时建单尚未接入，未部署，详见[R06-B记录](../docs/R06_TEMPORARY_PREPARATION_GUIDE.md)。R06-A浏览器仍待审批；V29上不能直接运行旧版未列名回执INSERT，原[兼容边界](../docs/R06_TEMPORARY_ORDER_ACCESS_GUIDE.md)保持。
 

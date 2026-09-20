@@ -12,11 +12,14 @@ import static org.assertj.core.api.Assertions.*;
 
 class OrderNumberMigrationIT {
     @Test @EnabledIfEnvironmentVariable(named="OUTBOUND_NUMBER_UPGRADE_DB_URL",matches=".+")
-    void migrationPreservesEveryV30TableAndLegacyOrderNumber() {
+    void numberMigrationPreservesExistingTablesAndLegacyOrderNumber() {
         var source=new DriverManagerDataSource(System.getenv("OUTBOUND_NUMBER_UPGRADE_DB_URL"),
             System.getenv("OUTBOUND_DB_USER"),System.getenv("OUTBOUND_DB_PASSWORD"));
         var jdbc=new JdbcTemplate(source);
-        Flyway.configure().dataSource(source).target("30").load().migrate();
+        String predecessor=System.getenv("OUTBOUND_NUMBER_PREDECESSOR_LOCATION");
+        var config=Flyway.configure().dataSource(source);
+        if(predecessor!=null) config.locations("classpath:db/migration",predecessor);
+        config.target(predecessor==null?"30":"31").load().migrate();
         var identity=IdentityFixture.create(jdbc,new BCryptPasswordEncoder(),"WAREHOUSE_ADMIN");
         UUID order=Ids.next();String legacy="OB"+order.toString().replace("-","");
         jdbc.update("""
@@ -25,7 +28,7 @@ class OrderNumberMigrationIT {
             """,Ids.bytes(order),Ids.bytes(identity.warehouse()),legacy,Ids.bytes(identity.user().id()));
         var before=checksums(jdbc);
 
-        var migration=Flyway.configure().dataSource(source).load().migrate();
+        var migration=config.target("32").load().migrate();
 
         assertThat(migration.migrationsExecuted).isEqualTo(1);
         var after=checksums(jdbc);
