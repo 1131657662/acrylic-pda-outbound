@@ -42,7 +42,7 @@ def freshness(config, now):
     require(captured <= finished <= now + 300 and captured <= now + 300, 'BACKUP_CLOCK_INVALID')
     age = max(0, now - captured)
     require(age <= config['max_age_seconds'], 'BACKUP_STALE')
-    return {'age_seconds': round(age), 'archive_verified': True}
+    return {'age_seconds': round(age), 'archive_verified': True, 'restore_verified': False}
 
 
 def disk(config):
@@ -111,6 +111,9 @@ def check(name, probe):
 def collect(config):
     now = time.time()
     results = [check('backup', lambda: freshness(config['backup'], now))]
+    if 'restore_evidence' in config:
+        from restore_monitor import latest_evidence
+        results.append(check('restore_evidence', lambda: latest_evidence(config, now)))
     for name in ('http', 'tcp'):
         if name in config:
             results.append(check(name, lambda name=name: globals()[name](config[name])))

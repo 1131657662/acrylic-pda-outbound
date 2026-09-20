@@ -21,7 +21,7 @@ def evaluate(values, limits):
 
 def collect(db, limits=None):
     db.verify()
-    require(db.query('SELECT MAX(CAST(version AS UNSIGNED)) FROM flyway_schema_history;') == '28', 'UNSUPPORTED_SCHEMA')
+    require(db.query('SELECT MAX(CAST(version AS UNSIGNED)) FROM flyway_schema_history;') in ('28', '32'), 'UNSUPPORTED_SCHEMA')
     row = db.query(QUERY).split('\t')
     require(len(row) == len(FIELDS) and all(value.isdigit() for value in row), 'JOB_METRICS_INVALID')
     return evaluate(dict(zip(FIELDS, map(int, row))), LIMITS if limits is None else limits)

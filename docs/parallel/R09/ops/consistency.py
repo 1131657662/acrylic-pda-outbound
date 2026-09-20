@@ -1,4 +1,4 @@
-"""Read-only integrity checks for committed V21/V28 snapshots; no reconstruction."""
+"""Read-only integrity checks for committed V21/V28/V32 snapshots; no reconstruction."""
 from collections import defaultdict
 from pathlib import Path
 import re
@@ -73,7 +73,7 @@ def dispatch_consistency(db):
 def inspect(db, paths):
     db.verify()
     version = db.query('SELECT MAX(CAST(version AS UNSIGNED)) FROM flyway_schema_history;')
-    require(version in ('21', '28'), 'UNSUPPORTED_SCHEMA')
+    require(version in ('21', '28', '32'), 'UNSUPPORTED_SCHEMA')
     require(db.query('SELECT COUNT(*) FROM flyway_schema_history WHERE success=0;') == '0', 'FAILED_MIGRATION')
     dispatch_consistency(db)
     result = {'foreign_keys_checked': foreign_keys(db),
@@ -81,13 +81,18 @@ def inspect(db, paths):
               'signed_receipts_verified': verify_all(db, paths['config'])}
     for name, query in SUMMARY.items():
         result[name] = int(db.query(query))
-    if version == '28':
+    if version in ('28', '32'):
         from receipts import signing_keys
         from submission_archives import verify_archives as submissions
         from audit_archives import verify_archives as audit
         keys = signing_keys(paths['config'])
         result.update(submissions(db, paths['files'], keys))
         result.update(audit(db, paths['files'], keys))
+    if version == '32':
+        from order_counters import verify_counters
+        from temporary_proofs import verify_preparations
+        result.update(verify_counters(db))
+        result.update(verify_preparations(db, keys))
     return result
 
 

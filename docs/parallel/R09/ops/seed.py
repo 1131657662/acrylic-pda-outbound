@@ -16,6 +16,11 @@ ARCHIVE_SCENARIOS = (
     '*SubmissionArchiveIT.durableCopiesProduceStableSignedConfirmationAndAndroidContract',
     '*AuditArchiveIT.stableSignedSegmentsProduceAndroidContract',
 )
+R06_COMMIT = '87e1893a49b598bbfdacee1a20d5eb455c5a5903'
+R06_SCENARIOS = (
+    '*TemporaryAuditIT.mixedOutOfOrderReplayArchivesWithoutChangingOriginalFormalDigest',
+    '*TemporaryAuditIT.unacknowledgedPreparationCanPreserveEvidenceWithoutAcknowledgingActivation',
+)
 
 
 def environment(db):
@@ -39,6 +44,8 @@ def seed(settings, source_commit=None):
     scenarios = [f'*SubmissionApiIT.{name}' for name in SCENARIOS]
     if source_commit:
         scenarios.extend(ARCHIVE_SCENARIOS)
+    if source_commit == R06_COMMIT:
+        scenarios.extend(R06_SCENARIOS)
     gradle = os.environ.get('R09_GRADLE', str(WORKTREE / ('gradlew.bat' if os.name == 'nt' else 'gradlew')))
     command = [gradle,
                '-p', str(source / 'server'), 'integrationTest', '--console=plain', '--rerun-tasks']

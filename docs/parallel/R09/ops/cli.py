@@ -11,13 +11,13 @@ def arguments():
     commands = parser.add_subparsers(dest='command', required=True)
     setup = commands.add_parser('setup')
     setup.add_argument('--mysql-bin', required=True)
-    for name in ('seed', 'backup', 'restore', 'stop', 'api-probe', 'worker-probe', 'jobs', 'v28-faults', 'metadata-probe'):
+    for name in ('seed', 'backup', 'restore', 'stop', 'api-probe', 'worker-probe', 'jobs', 'v28-faults', 'r06-faults', 'metadata-probe'):
         child = commands.add_parser(name)
         child.add_argument('--lab', required=True)
         if name in ('restore', 'metadata-probe'):
             child.add_argument('--backup', required=True)
         if name == 'seed':
-            child.add_argument('--source-commit', help='Full committed server hash; adds V28 archive fixtures')
+            child.add_argument('--source-commit', help='Full committed server hash; pinned R06 adds TEMP audit fixtures')
     verify = commands.add_parser('verify')
     verify.add_argument('--backup', required=True)
     legacy = commands.add_parser('verify-r02')
@@ -54,6 +54,9 @@ def execute(args):
 
 def lab_command(args, settings):
     from lab import stop
+    if args.command == 'r06-faults':
+        from r06_drill import drill
+        return drill(settings)
     if args.command == 'v28-faults':
         from v28_drill import drill
         return drill(settings)

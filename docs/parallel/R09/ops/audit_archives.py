@@ -1,36 +1,25 @@
-"""Validate V28 archive coverage and immutable event content, without rebuilding it."""
+"""Validate original formal/TEMP events and signed continuous archive coverage."""
 from uuid import UUID
 from archive_proofs import parse, canonical, content, verify_proof
 from safety import require, digest
 
 
 def events(db):
+    from audit_origins import event_index, provenance
+    version = db.query('SELECT MAX(CAST(version AS UNSIGNED)) FROM flyway_schema_history;')
+    extra = ',BIN_TO_UUID(temporary_authorization_id),BIN_TO_UUID(client_order_id)' if version == '32' else ''
     query = '''SELECT BIN_TO_UUID(id),BIN_TO_UUID(origin_device_id),local_seq,record_sha256,HEX(payload),
-        BIN_TO_UUID(warehouse_id),BIN_TO_UUID(assignment_id),BIN_TO_UUID(operator_id),source_recovery_epoch
-        FROM pda_audit_event ORDER BY origin_device_id,local_seq;'''
+        BIN_TO_UUID(warehouse_id),BIN_TO_UUID(assignment_id),BIN_TO_UUID(operator_id),source_recovery_epoch'''
+    query += extra + ' FROM pda_audit_event ORDER BY origin_device_id,local_seq;'
     result = {}
     for line in db.query(query).splitlines():
         row = line.split('\t')
         value = parse(bytes.fromhex(row[4]))
         require(digest(canonical(value).encode('utf-8')) == row[3], 'AUDIT_EVENT_HASH_MISMATCH')
-        names = ('id', 'originDeviceId', 'localSeq', 'assignmentId', 'operatorId')
-        for key, expected in zip(names, (row[0], row[1], row[2], row[6], row[7])):
-            require(str(value[key]) == expected, 'AUDIT_EVENT_INDEX_MISMATCH')
+        event_index(value, row)
         result[(row[1], int(row[2]))] = (value, row[5])
-    provenance(db)
+    provenance(db, version)
     return result
-
-
-def provenance(db):
-    query = '''SELECT COUNT(*) FROM pda_audit_event e
-        INNER JOIN order_assignment a ON a.id=e.assignment_id INNER JOIN outbound_order o ON o.id=a.order_id
-        WHERE e.origin_device_id<>a.device_id OR e.operator_id<>a.operator_id
-        OR e.source_recovery_epoch<>a.recovery_epoch OR e.warehouse_id<>o.warehouse_id;'''
-    require(db.query(query) == '0', 'AUDIT_PROVENANCE_MISMATCH')
-    query = '''SELECT COUNT(*) FROM pda_audit_event e INNER JOIN submitted_event s
-        ON s.id=e.id OR (s.origin_device_id=e.origin_device_id AND s.local_seq=e.local_seq)
-        WHERE s.record_sha256<>e.record_sha256;'''
-    require(db.query(query) == '0', 'AUDIT_SUBMITTED_EVENT_CONFLICT')
 
 
 def checkpoints(db, original):

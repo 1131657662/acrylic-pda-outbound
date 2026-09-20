@@ -4,7 +4,7 @@
 
 ## 恢复集清单
 
-下表中的 V21 数量属于 2026-09-18 历史演练。2026-09-20 的 V28 增量、实际计数及证据见 [R05 接入记录](R05_READY_EXTENSION.md)。全库恢复额外包含同步投影、PDA审计/检查点、后台任务/提醒、成功归档和审计归档表；不筛表排除这些材料。
+下表中的 V21 数量属于 2026-09-18 历史演练。2026-09-20 的 V28 增量见 [R05 接入记录](R05_READY_EXTENSION.md)，最新 V32 的93表/198组外键及原资格/FH计数器证据见 [R06 接入记录](R06_READY_EXTENSION.md)。全库恢复额外包含同步投影、PDA审计/检查点、后台任务/提醒、成功归档和审计归档表；不筛表排除这些材料。
 
 | 材料 | 当前存放/恢复要求 | 本轮检查与未完成边界 |
 | --- | --- | --- |
@@ -15,6 +15,8 @@
 | 回执/取消证明 | 当前 PDA 终态在 `submission.receipt_text`；密钥标识与原签名正文不变 | 恢复后实际 RSA 验签并核对成功回执的包数、重量、扣账和正文摘要；3 成功/1 ABORT。没有重建已丢失的回执/墓碑 |
 | V27成功归档 | `submission_archive` 原确认及 `files/submissions/<sha>.json` 中原正文、完整签名回执 | 对齐签名/来源/索引/长度/摘要/完成时间和至少5年期限；`localDeletionAllowed=false`。不证明异地副本或旧keyId轮换 |
 | V28审计归档 | `pda_audit_archive` 原证明、分段正文、`pda_audit_event`、`pda_audit_checkpoint` | 验签、连续范围、原事件及来源摘要、提交事件冲突、检查点覆盖；不重建截点后遗失审计 |
+| V30/V31临时准备及原来源 | 原资格/清单JWT、五个准备包、激活确认、`temporary_work_origin`及TEMP审计 | 原资格与设备/人员/仓库/代次固定，过期证据仍保留；检查原字节摘要和签名，正式/TEMP共用设备连续序号。V32实测3份资格/15个包/2个原来源 |
+| V32正式编号 | `outbound_order.order_no`与`order_number_counter`同一截点 | FH北京时间日期/扩展流水及计数器不回退，允许高于现存最大号；截点外已发号的可信高水位仍待独立恢复，不能据快照检查放开发号 |
 | 应用配置与 DB 凭据 | R02 `/etc/acrylic-outbound-test`；实验 `source/config` | R02 强制包含 runtime/migration 配置和签名文件；实验保存随机应用凭据。恢复配置先隔离核对，绝不直接 source/执行归档配置 |
 | 签名材料 | 当前服务签名私钥/公钥；未来保留所有历史 keyId 的验签公钥和必要受控私钥 | 实验新建 RSA3072 配对，恢复后签名/验签挑战。真实密钥未读。轮换和历史 keyId 密钥环、异地保存待接入 |
 | 发布与基础设施 | 发布 manifest、JAR/Web 摘要、API/数据库/客户端兼容表，unit/Nginx/TLS 配置 | 实验保存起点/JAR 摘要，R02 原包有 release/manifest。R02 原备份不包含发布包本体、systemd unit、Nginx站点和 Let's Encrypt 目录，须另存经核验发布包/配置，并安排 TLS 重新签发或加密托管 |
@@ -55,6 +57,8 @@ python docs/parallel/R09/ops/cli.py jobs --lab $lab
 ```
 
 V28 seed 运行原4项提交测试加1项成功归档、1项连续审计归档测试。Worker探测使用同一已校验JAR、同一专用source实例、worker非Web profile，完成任务后停止确切子进程。它不测Linux unit或退出码143语义。后续API探测也必须校验JAR摘要，不误用另一构建。
+
+V32仅在**新建且为空的**专用环境用`seed --source-commit 87e1893a49b598bbfdacee1a20d5eb455c5a5903`；增加两项既有TEMP审计场景，共8项。恢复后可运行`r06-faults --lab <本轮lab.json>`，仅在已验恢复库注入FH计数器回退/缺失、TEMP原代次/清单/签名/准备包故障，finally复原后全表/文件再比较。已保留的`.local/r09/20260920T084455Z-26ba55`不得重新seed或restore；续接应核对原实例身份后只读审计。V33的正文前ABORT、临时整包/分块待审与正式化目标尚未覆盖，不能将V33库交给当前检查器。
 
 顺序执行，逐条检查退出码；失败后不要继续后续步骤。`seed` 仅允许空 source 库，运行既有 4 个 `SubmissionApiIT` 场景并构建 JAR，不跑默认共享开发/测试库。不把它改成 `tools/development_server.ps1` 的默认验证入口。
 

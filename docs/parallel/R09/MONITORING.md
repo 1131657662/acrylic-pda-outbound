@@ -9,12 +9,15 @@
 | API 健康 | 本机回环 `/api/v1/auth/csrf`，超时、非200、重定向、非OK、非NORMAL、未知epoch、超延迟均失败 | 检查现有响应中的DB依赖状态，不新增正式API；可产生普通短期会话，不输出token或cookie。当前响应模式不是完整恢复栅栏的验收 |
 | 端口 | 指定回环TCP连接，连接失败报错 | 端口可连不证明DB/业务健康；必须结合API与unit状态 |
 | 最新备份 | 验证最新目录，完整性、gzip、内部文件/必需密钥材料和时间；默认26小时 | 更新的失败/partial不得被旧成功掩盖。R02目录时间采用备份开始UTC，比完成时间保守；新格式采用截点时间，不使用可被复制改变的mtime |
+| 已演练恢复证据 | 可选`restore_evidence`绑定最新备份路径、SHA256SUMS、固定源码/数据库版本、表数、业务摘要和报告时间 | 单独的完整性检查始终返回`restore_verified=false`；旧报告不能覆盖更新的备份。成功仅表示本地隔离快照恢复，明确`disaster_reconstruction_verified=false`及`local_deletion_allowed=false` |
 | 磁盘 | 对备份/业务文件/DB所在文件系统，剩余字节和百分比分别判断 | 不是目录占用量/长期容量预测；默认至少10GiB且15%，须按实际增长/恢复空间调整 |
 | 服务异常 | `systemctl show`：Result、ActiveState、NRestarts | API/已部署Worker必须active且Result=success；备份oneshot正常inactive允许，但上次失败不忽略。重启阈值是本次unit计数，不是每分钟速率 |
 | V28任务 | failed、expired_leases、ready、oldest_ready_seconds、retry | 只读聚合，不输出payload、去重键、租约token、last_error。专库jobs命令已实现；服务器仅交付SELECT查询和阈值，尚未接入timer |
 | 完整性 | 新/旧两种备份格式均可核验，恢复证据独立 | 监控 `PASS` 不等于备份经过实际恢复，更不等于灾后业务已重建 |
 
 `python cli.py monitor --config <本地配置.json>` 输出脱敏JSON；全部通过退出0，任一失败/配置损坏退出2。异常URL、子进程stderr、SQL、用户名、令牌、文件内容、私钥不输出。系统时钟明显异常或未来备份时间拒绝；接入告警时将非0、探针没有运行/报告缺失一起检测，不能只看“最后一次PASS”。
+
+V32已在原lab用真实最新备份/恢复报告完成监控CLI核验，见[R06记录](R06_READY_EXTENSION.md)。`restore_evidence`需要`backup`、`report`、`source_commit`、`schema`、`max_age_seconds`，其中`backup`必须就是顶层`backup.directory`中最新目录。报告必须由受控演练生成并限制写权限；SHA-256和本地报告不能证明恶意来源真实性。当前仅适配R09实验格式，不能给R02包附一份实验报告冒充服务器恢复已验收。
 
 ## 配置审阅与后续验证
 
