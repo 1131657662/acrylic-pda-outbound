@@ -15,6 +15,7 @@ class AuthorizationRenewalRepository(private val db: PdaDatabase, private val se
         val pending = db.captures().pendingCount(rootId)
         check(pending == 0 && db.captures().failure(rootId) == null) { "仍有未处理输入，先完成或明确拒绝后再续期" }
         check(db.work().order(rootId)?.state?.let { it == "SCANNING" } != false) { "当前作业已停止，请先完成恢复流程" }
+        com.acrylic.outbound.pda.sync.SyncWorkGuard(db).requireAllowed(order)
         val auth = session.requireSession()
         check(current.getString("operatorId") == auth.getString("userId") && current.getString("deviceId") == auth.getString("deviceId")) {
             "请由原操作员在原设备办理续期"
@@ -24,17 +25,33 @@ class AuthorizationRenewalRepository(private val db: PdaDatabase, private val se
             .put("assignmentEpoch", current.getString("epoch")).put("orderId", current.getString("orderId"))
             .put("revision", current.getInt("revision")).put("pendingInputCount", pending)
         val renewed = session.call("pda/assignments/${current.getString("id")}/renewal", command,
-            current.getString("serverRecoveryEpoch"), null, mapOf("Idempotency-Key" to key))
+            current.getString("serverRecoveryEpoch"), null, mapOf("Idempotency-Key" to key), expected = auth)
         verify(current, renewed)
+        return commit(order, renewed, auth)
+    }
+
+    private fun commit(order: PreparedOrder, renewed: JSONObject, auth: JSONObject): PreparedOrder {
+        val rootId = order.assignmentId
         val history = JSONArray(order.authorizationHistoryJson)
-        history.put(current)
+        history.put(JSONObject(order.assignmentJson))
         val currentJson = renewed.toString()
         db.runInTransaction {
+            com.acrylic.outbound.pda.network.SessionIdentity.requireSame(auth, session.saved())
+            com.acrylic.outbound.pda.sync.SyncWorkGuard(db).requireAllowed(order)
+            check(db.captures().pendingCount(rootId) == 0 && db.captures().failure(rootId) == null) {
+                "仍有未处理输入，先完成或明确拒绝后再续期"
+            }
+            check(db.work().order(rootId)?.state?.let { it == "SCANNING" } != false) { "当前作业已停止，请先完成恢复流程" }
             val continuation = db.continuations().current(rootId)
+            val saved = checkNotNull(db.preparations().order(rootId)) { "原作业资料不存在，请保留记录并核对" }
+            check((continuation?.authorizationJson ?: saved.assignmentJson) == order.assignmentJson &&
+                (continuation?.authorizationHistoryJson ?: saved.authorizationHistoryJson) == order.authorizationHistoryJson) {
+                "原授权已变化，请刷新后恢复原请求"
+            }
             if (continuation == null) db.preparations().replaceAuthorization(rootId, currentJson, history.toString())
             else db.continuations().replaceAuthorization(continuation.id, currentJson, history.toString())
         }
-        return if (db.continuations().current(rootId) == null) db.preparations().order(rootId)!! else order.copy(assignmentJson = currentJson)
+        return order.copy(assignmentJson = currentJson, authorizationHistoryJson = history.toString())
     }
 
     private fun verify(previous: JSONObject, renewed: JSONObject) {

@@ -52,7 +52,17 @@ class AuthorizationRenewalIT {
         assertThat(jdbc.queryForObject("SELECT status FROM order_assignment WHERE id=?", String.class, id)).isEqualTo("ACTIVE");
     }
 
-    @Test void recallAndPendingInputCannotBeRenewed() throws Exception {
+    @Test void pendingInputCannotReplaceTheCurrentCredential() throws Exception {
+        var first = pda.data(pda.claim(order, UUID.randomUUID().toString()), tokens);
+        pda.send(renew(first, UUID.randomUUID().toString(), 1), tokens).andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("OFFLINE_AUTH_PENDING_INPUT"));
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM offline_authorization WHERE assignment_id=?", Integer.class,
+            Ids.bytes(UUID.fromString(first.get("id").asText())))).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT revoked_at FROM offline_authorization WHERE id=?", java.sql.Timestamp.class,
+            Ids.bytes(UUID.fromString(first.get("offlineAuthorizationId").asText())))).isNull();
+    }
+
+    @Test void recalledAssignmentCannotBeRenewed() throws Exception {
         var first = pda.data(pda.claim(order, UUID.randomUUID().toString()), tokens);
         jdbc.update("UPDATE order_assignment SET status='RECALL_PENDING' WHERE id=?", Ids.bytes(UUID.fromString(first.get("id").asText())));
         pda.send(renew(first, UUID.randomUUID().toString()), tokens).andExpect(status().isConflict())
@@ -62,9 +72,13 @@ class AuthorizationRenewalIT {
     }
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder renew(JsonNode assignment, String key) {
+        return renew(assignment, key, 0);
+    }
+
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder renew(JsonNode assignment, String key, int pending) {
         ObjectNode body = json.createObjectNode().put("authorizationId", assignment.get("offlineAuthorizationId").asText())
             .put("assignmentEpoch", assignment.get("epoch").asText()).put("orderId", assignment.get("orderId").asText())
-            .put("revision", assignment.get("revision").asInt()).put("pendingInputCount", 0);
+            .put("revision", assignment.get("revision").asInt()).put("pendingInputCount", pending);
         try {
             return post("/api/v1/pda/assignments/" + assignment.get("id").asText() + "/renewal")
                 .header("Idempotency-Key", key).header("X-Server-Recovery-Epoch", "1")
