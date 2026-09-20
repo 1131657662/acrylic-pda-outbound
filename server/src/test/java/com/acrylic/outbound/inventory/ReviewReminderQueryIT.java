@@ -34,7 +34,7 @@ class ReviewReminderQueryIT {
         assertThat(result.path("items")).hasSize(1);
         assertThat(result.at("/items/0/submissionId").asText()).isEqualTo(fixture.id());
         assertThat(result.at("/items/0/orderId").asText()).isEqualTo(fixture.order);
-        assertThat(result.at("/items/0/orderNo").asText()).startsWith("OB");
+        assertThat(result.at("/items/0/orderNo").asText()).matches("FH[0-9]{12,18}");
         assertThat(result.path("nextCursor").isNull()).isTrue();
         assertThat(result.path("hasMore").asBoolean()).isFalse();
         assertThat(fixture.count("dispatch_record")).isZero();

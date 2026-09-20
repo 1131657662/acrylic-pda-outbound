@@ -8,13 +8,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class OrderWriter {
     private final JdbcTemplate jdbc;
-    public OrderWriter(JdbcTemplate jdbc) { this.jdbc = jdbc; }
+    private final OrderNumbers numbers;
+    public OrderWriter(JdbcTemplate jdbc,OrderNumbers numbers) { this.jdbc = jdbc;this.numbers=numbers; }
     public UUID create(UUID warehouse, UUID actor) {
         UUID id=Ids.next();
+        var createdAt=jdbc.queryForObject("SELECT UTC_TIMESTAMP(3)",java.time.LocalDateTime.class);
+        String orderNo=numbers.next(createdAt.toInstant(java.time.ZoneOffset.UTC));
         jdbc.update("""
             INSERT INTO outbound_order(id,warehouse_id,order_no,source,status,created_by,created_at,updated_at)
-            VALUES(?,?,?,'WEB','DRAFT',?,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))
-            """,Ids.bytes(id),Ids.bytes(warehouse),"OB"+id.toString().replace("-",""),Ids.bytes(actor));
+            VALUES(?,?,?,'WEB','DRAFT',?,?,?)
+            """,Ids.bytes(id),Ids.bytes(warehouse),orderNo,Ids.bytes(actor),createdAt,createdAt);
         return id;
     }
     public Head lock(UUID warehouse,UUID order) {

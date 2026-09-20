@@ -164,3 +164,7 @@
 优先涉及 [工作台](../web/src/WorkspaceLayout.vue)、[全局样式](../web/src/style.css)、[路由](../web/src/router.ts)、[订单列表](../web/src/orders/OrdersPage.vue)和[订单详情](../web/src/orders/OrderDetailPage.vue)，再迁移各模块。分页依赖对应服务端查询和契约变更；页面设计不能直接视为接口已经具备能力。
 
 每迁移一个完整流程，核对正常/空/加载/失败/未授权/数据变化状态与返回路径。最终验收矩阵见[设计总规范](design-system.md#8-验收清单)。
+
+## 2026-09-20 订单编号补充
+
+新正式订单统一使用服务端FH日期流水号，完整显示并支持原精确搜索；历史OB号继续识别，不由前端截短或重算。日期、并发、原号兼容及PDA同步规则见[编号记录](ORDER_NUMBER_GUIDE.md)。
