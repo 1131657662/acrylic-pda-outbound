@@ -10,6 +10,7 @@ import { localTime } from '../orders/contracts';
 import { kilograms, submissionLabel } from '../orders/submission-contracts';
 import { issueLabel, temporaryReviewSchema, type TemporaryReview } from './contracts';
 import TemporaryReviewScans from './TemporaryReviewScans.vue';
+import TemporaryDuplicateCandidates from './TemporaryDuplicateCandidates.vue';
 const session = useSessionStore(); const route = useRoute(); const router = useRouter();
 const detail = ref<TemporaryReview | null>(null); const busy = ref(false); const error = ref('');
 const id = computed(() => typeof route.params.id === 'string' ? route.params.id : '');
@@ -64,6 +65,7 @@ onBeforeUnmount(() => { generation++; });
         <p>原资格有效至 {{ localTime(detail.authorization.expiresAt) }}；到期不删除原记录、不释放实物占用。</p>
         <details><summary>上传时登记的待核对事项</summary><ul><li v-for="issue in detail.receivedIssues" :key="issue.code">{{ issueLabel(issue.code) }}（{{ issue.count }} 项）</li></ul></details>
       </section>
+      <TemporaryDuplicateCandidates :key="`${detail.submissionId}:${detail.checkedAt}`" :submission-id="detail.submissionId" :warehouse-id="session.warehouseId" />
       <TemporaryReviewScans :submission-id="detail.submissionId" :warehouse-id="session.warehouseId" />
       <section class="panel"><details class="file-proof"><summary>原来源与批次凭据</summary>
         <p>原临时单：{{ detail.source.clientOrderId }} · 原设备：{{ detail.source.creatorDeviceId }}</p>
