@@ -1,0 +1,88 @@
+Response:
+  type: object
+  required: [context, range, checkedAt, contextSha256, candidateSetSha256, total, items, nextCursor, hasMore, writeAvailable, releaseAllowed]
+  properties:
+    context: {$ref: '#/Context'}
+    range:
+      type: object
+      required: [fromDate, throughDate]
+      properties:
+        fromDate: {type: string, format: date}
+        throughDate: {type: string, format: date}
+    checkedAt: {type: string, format: date-time}
+    contextSha256: {$ref: '#/Hash'}
+    candidateSetSha256: {$ref: '#/Hash'}
+    total: {type: integer, minimum: 0}
+    items: {type: array, maxItems: 200, items: {$ref: '#/Candidate'}}
+    nextCursor: {type: [string, 'null'], maxLength: 400}
+    hasMore: {type: boolean}
+    writeAvailable: {type: boolean, const: false}
+    releaseAllowed: {type: boolean, const: false}
+Hash:
+  type: string
+  pattern: '^[a-f0-9]{64}$'
+Context:
+  type: object
+  required: [source, submissionId, payloadSha256, planSha256, workRound, currentSubmissionId, current, status, orderRevision, vehicleNo, containerNo, products, inventorySnapshotId, sourceRecoveryEpoch, serverRecoveryEpoch, serviceMode, reviewerPermissionVersion, receivedAt, closedAt, canonicalOrderId]
+  properties:
+    source: {$ref: './temporary-submission-schemas.yaml#/Source'}
+    submissionId: {type: string, format: uuid}
+    payloadSha256: {$ref: '#/Hash'}
+    planSha256: {$ref: '#/Hash'}
+    workRound: {$ref: './submission-schemas.yaml#/Positive'}
+    currentSubmissionId: {type: [string, 'null'], format: uuid}
+    current: {type: boolean}
+    status: {$ref: './temporary-review-schemas.yaml#/Detail/properties/status'}
+    orderRevision: {$ref: './submission-schemas.yaml#/Positive'}
+    vehicleNo: {type: string}
+    containerNo: {type: string}
+    products: {type: array, items: {$ref: './temporary-review-schemas.yaml#/Product'}}
+    inventorySnapshotId: {type: string, format: uuid}
+    sourceRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    serverRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    serviceMode: {$ref: './temporary-review-schemas.yaml#/Detail/properties/serviceMode'}
+    reviewerPermissionVersion: {$ref: './submission-schemas.yaml#/Positive'}
+    receivedAt: {type: string, format: date-time, description: 服务器完整接收时刻，默认查询范围锚点。}
+    closedAt: {type: string, format: date-time, description: 原PDA申报冻结时刻，只作证据展示，不作为可信检索时间。}
+    canonicalOrderId: {type: string, format: uuid, description: 当前已完整接收TEMP的正式化记录；无正文不伪造此字段。}
+Candidate:
+  type: object
+  required: [order, products, signals, blockers, linkAvailable]
+  properties:
+    order: {$ref: '#/Order'}
+    products: {type: array, items: {$ref: '#/Product'}}
+    signals: {type: array, items: {type: string, enum: [SAME_VEHICLE, SHARED_PRODUCT]}}
+    blockers:
+      type: array
+      description: 当前对照已知不满足条件；不构成完整关联授权，空集合仍不可关联。
+      items: {type: string, enum: [TARGET_NOT_READY, PDA_WORK_EXISTS, PC_WORK_EXISTS, SUBMISSION_EXISTS, RESULT_EXISTS, PLAN_DIFFERS, INVENTORY_VERSION_DIFFERS, SOURCE_NOT_PENDING]}
+    linkAvailable: {type: boolean, const: false}
+Order:
+  type: object
+  required: [id, orderNo, status, revision, rowVersion, revisionId, vehicleNo, containerNo, createdAt, updatedAt, inventorySnapshotId, mappingRevision, hasAssignment, hasPcWork, hasSubmission, hasResult]
+  properties:
+    id: {type: string, format: uuid}
+    orderNo: {type: string}
+    status: {type: string}
+    revision: {type: integer, minimum: 1}
+    rowVersion: {$ref: './submission-schemas.yaml#/Positive'}
+    revisionId: {type: string, format: uuid}
+    vehicleNo: {type: string}
+    containerNo: {type: string}
+    createdAt: {type: string, format: date-time}
+    updatedAt: {type: string, format: date-time}
+    inventorySnapshotId: {type: string, format: uuid}
+    mappingRevision: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    hasAssignment: {type: boolean, description: 任何已有PDA领取历史均显示为待人工处理，不把失效历史误当空白正式单。}
+    hasPcWork: {type: boolean}
+    hasSubmission: {type: boolean, description: 包含仅控制头、在途和历史终态批次。}
+    hasResult: {type: boolean}
+Product:
+  type: object
+  required: [deliveryCode, productId, model, name, plannedCount]
+  properties:
+    deliveryCode: {type: string}
+    productId: {type: string, format: uuid}
+    model: {type: string}
+    name: {type: string}
+    plannedCount: {$ref: './submission-schemas.yaml#/Positive'}

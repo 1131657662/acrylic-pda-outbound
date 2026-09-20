@@ -1,0 +1,46 @@
+Candidates:
+  get:
+    summary: 只读核对原TEMP批次的疑似重复正式订单
+    description: |
+      每次核验temporary_order:confirm及同仓授权；不要求order:read，也不授予正式订单写权限。
+      只查询同仓WEB正式单，服务器createdAt按北京时间首尾日期筛选；车号精确相同或产品ID有交集即提示候选，不自动合并。
+      不传日期时使用TEMP正文服务器receivedAt所在日期前后各7天；该可调整默认值不是48小时业务门槛。
+      两日期须同时提供、年份2000至9998、含首尾最多366天；无效范围400 TEMPORARY_DUPLICATE_RANGE_INVALID。
+      页序为createdAt及UUID倒序，每页1至200项。total是整个查询范围的候选数，不是本页数量，不静默截断。
+      同一次读取在只读REPEATABLE_READ事务内取得原上下文、完整候选版本摘要、总数和真实SQL分页。
+      cursor绑定仓库、原来源/批次/摘要/轮次/current/canonical/计划/权限版本/恢复代次、日期范围和完整候选版本摘要；
+      期间候选新增、发布/修订或原上下文变化返回409 TEMPORARY_DUPLICATE_CONTEXT_CHANGED，要求重新查询。
+      非法游标400 INVALID_CURSOR；非TEMP、正文前ABORT或异仓对象404 TEMPORARY_REVIEW_NOT_FOUND。
+      正文齐全的历史TEMP可读取但SOURCE_NOT_PENDING阻止将其视为可关联来源。
+      blockers只列本次已知不满足条件，空集合不证明全部写条件满足；linkAvailable/writeAvailable/releaseAllowed恒false。
+      未检出候选不代表无重复，范围外可能仍有候选；不写决定、排除、关联、占用、记账或回执。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './temporary-review-paths.yaml#/Id'}
+      - name: fromDate
+        in: query
+        schema: {type: string, format: date}
+      - name: throughDate
+        in: query
+        schema: {type: string, format: date}
+      - name: cursor
+        in: query
+        schema: {type: string, maxLength: 400, default: ''}
+      - {$ref: './temporary-review-paths.yaml#/Limit'}
+    responses:
+      '200':
+        description: 只读候选页及原批次对照上下文
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - type: object
+                  properties:
+                    data: {$ref: './temporary-duplicate-schemas.yaml#/Response'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
