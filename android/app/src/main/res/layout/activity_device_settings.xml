@@ -2,7 +2,7 @@
     android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true"
     android:background="@color/pda_canvas">
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
-        <Button android:id="@+id/back" android:layout_width="wrap_content" android:layout_height="52dp" android:text="返回" />
+        <Button android:id="@+id/back" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="52dp" android:text="返回" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="设备信息与设置"
             android:textSize="22sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" android:paddingTop="12dp" />
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -12,6 +12,7 @@
         <TextView android:id="@+id/version" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="15sp" android:paddingTop="8dp" />
         <TextView android:id="@+id/deviceName" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:paddingTop="8dp" />
         <TextView android:id="@+id/identity" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="15sp" android:paddingTop="8dp" />
+        <TextView android:id="@+id/syncStatus" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="15sp" android:paddingTop="8dp" />
         <Switch android:id="@+id/sound" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:layout_marginTop="16dp" android:text="声音提示" />
         <Button android:id="@+id/checkConnection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="检查后台连接" />
         <Button android:id="@+id/appUpdate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="应用更新" />

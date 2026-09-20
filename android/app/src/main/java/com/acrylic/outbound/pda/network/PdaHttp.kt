@@ -38,7 +38,8 @@ class PdaNetwork(baseUrl: String, private val observe: (JSONObject) -> Unit = {}
         }
         observe(envelope)
         if (!response.isSuccessful || envelope.optString("code") != "OK") throw ApiFailure(envelope.optString("code"), envelope.optString("message", "请求失败"), response.headers()["Retry-After"]?.toLongOrNull(), response.code())
-        check(envelope.getString("serviceMode") == "NORMAL") { "服务器正在恢复，保留本地资料" }
+        if (envelope.getString("serviceMode") != "NORMAL")
+            throw ApiFailure("SERVER_RECOVERY_REQUIRED", "服务器正在恢复，保留本地资料", httpStatus = 503)
         return envelope
     }
 

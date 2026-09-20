@@ -1,0 +1,37 @@
+Hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+Request:
+  type: object
+  additionalProperties: false
+  required: [payloadSha256, receiptSha256]
+  properties:
+    payloadSha256: {$ref: '#/Hash'}
+    receiptSha256:
+      allOf: [{$ref: '#/Hash'}]
+      description: 按SubmissionJson规范化完整回执（包含原signedReceipt）后UTF-8字节的SHA-256
+Confirmation:
+  type: object
+  additionalProperties: false
+  required: [archiveVersion, submissionId, orderId, assignmentId, warehouseId, operatorId, freezeDeviceId, workRound, sourceRecoveryEpoch, recoveryEpoch, payloadSha256, receiptSha256, payloadBytes, receiptBytes, completedAt, archivedAt, retainUntil, storagePolicy, localDeletionAllowed, signedArchive]
+  properties:
+    archiveVersion: {type: integer, const: 1}
+    submissionId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    assignmentId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    operatorId: {type: string, format: uuid}
+    freezeDeviceId: {type: string, format: uuid}
+    workRound: {$ref: './submission-schemas.yaml#/Positive'}
+    sourceRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    recoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    payloadSha256: {$ref: '#/Hash'}
+    receiptSha256: {$ref: '#/Hash'}
+    payloadBytes: {$ref: './submission-schemas.yaml#/Positive'}
+    receiptBytes: {$ref: './submission-schemas.yaml#/Positive'}
+    completedAt: {type: string, format: date-time, description: 原成功回执的完成时间}
+    archivedAt: {type: string, format: date-time, description: 首次云端耐久归档确认时间，重试不变}
+    retainUntil: {type: string, format: date-time, description: 至少保留至archivedAt的UTC日期加5个公历年；当前不提供云端删除处理器}
+    storagePolicy: {type: string, const: SERVER_DURABLE_FILES_V1}
+    localDeletionAllowed: {type: boolean, const: false}
+    signedArchive:
+      type: string
+      description: RS256 JWT，iss=acrylic-outbound、aud=acrylic-pda-archive，archive声明等于移除此字段后的完整响应；证明不按离线48小时过期，不能跨恢复代次授权清理。

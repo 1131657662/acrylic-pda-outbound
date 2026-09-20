@@ -28,6 +28,18 @@ public class SubmissionFiles {
             if(!ImportFiles.sha256(bytes).equals(hash)) throw new IOException("Archive digest mismatch");return bytes;
         } catch(IOException error) { throw new java.io.UncheckedIOException("Cannot read submission evidence",error); }
     }
+    /** Reassert durability before issuing a separate long-term archive confirmation. */
+    public byte[] confirm(String hash) {
+        byte[] bytes=read(hash);
+        try {
+            try(var channel=FileChannel.open(root.resolve(hash+".json"),StandardOpenOption.WRITE)) { channel.force(true); }
+            if(!System.getProperty("os.name").startsWith("Windows")) {
+                try(var channel=FileChannel.open(root,StandardOpenOption.READ)) { channel.force(true); }
+                try(var channel=FileChannel.open(root.getParent(),StandardOpenOption.READ)) { channel.force(true); }
+            }
+            return bytes;
+        } catch(IOException error) { throw new UncheckedIOException("Cannot confirm archive durability",error); }
+    }
     private void write(Path target,byte[] bytes) throws IOException {
         Path temporary=Files.createTempFile(root,"receiving-",".tmp");
         try {

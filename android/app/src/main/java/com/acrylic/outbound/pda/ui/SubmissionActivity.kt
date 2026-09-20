@@ -17,6 +17,7 @@ class SubmissionActivity : ComponentActivity() {
     private var assignment = ""
     private var local: LocalSubmission? = null
     private var busy = false
+    private var reconciling = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState); assignment = intent.getStringExtra("assignmentId").orEmpty()
         if (assignment.isBlank()) { finish(); return }
@@ -33,7 +34,7 @@ class SubmissionActivity : ComponentActivity() {
         run { }
     }
     private fun confirmFreeze() {
-        if (busy || local != null) return
+        if (busy || local != null || reconciling) return
         AlertDialog.Builder(this).setTitle("确认结单并冻结")
             .setMessage("请核对实物、车号和数量。冻结后不能扫码或撤销；短装需要主管批准。是否冻结本单？")
             .setNegativeButton("返回核对", null).setPositiveButton("确认冻结") { _, _ ->
@@ -55,8 +56,9 @@ class SubmissionActivity : ComponentActivity() {
             try { withContext(Dispatchers.IO) { com.acrylic.outbound.pda.update.UpdateGate.business(action) } }
             catch (error: Exception) { binding.error.text = error.message ?: "操作未确认，原记录保留" }
             finally {
-                val data = withContext(Dispatchers.IO) { app.database.submissions().forOrder(assignment) to app.database.work().order(assignment) }
-                local = data.first; val order = data.second; busy = false
+                val data = withContext(Dispatchers.IO) { Triple(app.database.submissions().forOrder(assignment),
+                    app.database.work().order(assignment), app.database.sync().recovery()?.mode == "RECONCILING") }
+                local = data.first; val order = data.second; reconciling = data.third; busy = false
                 binding.summary.text = order?.let { "${it.vehicleNo}\n实装 ${it.actualCount} / ${it.plannedTotal} 包 · ${WorkRenderer.kg(it.weightGrams)} kg" } ?: "未找到本地作业"
                 render()
             }
@@ -73,7 +75,9 @@ class SubmissionActivity : ComponentActivity() {
             "FROZEN" -> "本单已冻结 · 尚未上传 · 不可放行"
             else -> "本地记录 · 尚未结单 · 不可放行"
         }
-        binding.reason.isEnabled = item == null; binding.freeze.isEnabled = item == null
+        if (reconciling) binding.status.text = if (item?.state == "SYNCED") "历史回执已验签 · 当前恢复待对账"
+            else "恢复待对账 · 暂停新增扫码和结单\n${binding.status.text}"
+        binding.reason.isEnabled = item == null && !reconciling; binding.freeze.isEnabled = item == null && !reconciling
         binding.upload.isEnabled = item != null && item.state !in setOf("SYNCED", "ABORTED", "REJECTED")
         binding.refresh.isEnabled = item != null; binding.back.isEnabled = true
         binding.freeze.visibility = if (item == null) android.view.View.VISIBLE else android.view.View.GONE
@@ -83,6 +87,7 @@ class SubmissionActivity : ComponentActivity() {
         binding.notice.text = item?.let { "批次：${it.id}\n${it.error}\n" + if (it.autoRetry) "已排队：WiFi恢复后重试原批次" else "冻结正文和明细保留在本机" }
             ?: "全部产品足量可直接提交；短装必须填写原因。整单0包不能结单。"
         if (item?.state == "REVIEW_REQUIRED") binding.notice.append("\n请由主管在Web订单详情核对并审批，再点查询回执。")
+        if (reconciling) binding.notice.append("\n服务器正在恢复对账，原记录已保留；历史回执不代表本次恢复已完成，请联系主管。")
     }
     private fun buttons(enabled: Boolean) {
         binding.freeze.isEnabled = enabled; binding.upload.isEnabled = enabled; binding.refresh.isEnabled = enabled; binding.back.isEnabled = enabled

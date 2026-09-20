@@ -1,5 +1,6 @@
 package com.acrylic.outbound.submissions;
 
+import com.acrylic.outbound.sync.BarcodeChanges;
 import com.acrylic.outbound.common.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.UUID;
@@ -16,7 +17,7 @@ public class SubmissionAccounting {
     public JsonNode commit(SubmissionStore.Head head,JsonNode body,SubmissionSnapshot.Validated value,UUID actor) {
         UUID order=head.control().order();boolean deduct=jdbc.queryForObject("SELECT p.auto_deduct_inventory FROM order_publication p INNER JOIN order_assignment a ON a.publication_id=p.id WHERE a.id=?",Boolean.class,Ids.bytes(head.control().assignment()));
         var receipt=receipts.success(head,body,value,deduct); // Signing must succeed before any business commit.
-        for(var scan:value.scans()) dispatch(head,scan,deduct);
+        for(var scan:value.scans()) { dispatch(head,scan,deduct); BarcodeChanges.bale(jdbc,scan.bale().id()); }
         jdbc.update("INSERT INTO order_result_version(order_id,result_version,submission_id,actual_count,weight_g,inventory_deducted,header_snapshot,created_at) VALUES(?,?,?,?,?,?,?,UTC_TIMESTAMP(3))",Ids.bytes(order),1,Ids.bytes(head.control().id()),value.scans().size(),value.weight(),deduct,canonical(receipt));
         jdbc.batchUpdate("INSERT INTO order_effective_line VALUES(?,1,?,?,?)",value.products(),200,(ps,p)->{
             ps.setBytes(1,Ids.bytes(order));ps.setString(2,p.code());ps.setLong(3,p.count());ps.setLong(4,p.weight());

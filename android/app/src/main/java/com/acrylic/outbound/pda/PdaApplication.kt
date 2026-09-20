@@ -14,10 +14,19 @@ import com.acrylic.outbound.pda.renewal.AuthorizationRenewalRepository
 import com.acrylic.outbound.pda.sync.SyncRepository
 import com.acrylic.outbound.pda.update.PdaUpdateClient
 
-class PdaApplication : Application() {
+open class PdaApplication : Application(), androidx.work.Configuration.Provider {
+    override val workManagerConfiguration: androidx.work.Configuration
+        get() = androidx.work.Configuration.Builder().build()
+
+    override fun onCreate() {
+        super.onCreate()
+        com.acrylic.outbound.pda.sync.SyncScheduler.start(this)
+    }
     val database by lazy { PdaDatabase.open(this) }
     val session by lazy { PdaSession(this, ConnectionSettings(this), DeviceKeys(), SessionVault(this),
-        com.acrylic.outbound.pda.sync.RecoveryProtection(database)) }
+        com.acrylic.outbound.pda.sync.RecoveryProtection(database)) {
+            com.acrylic.outbound.pda.sync.SyncScheduler.resume(this)
+        } }
     val pairing by lazy { com.acrylic.outbound.pda.pairing.PairingRepository(
         com.acrylic.outbound.pda.pairing.PairingVault(this), session.settings, DeviceKeys()) }
     val repository by lazy { PreparationRepository(this, database, session) }
@@ -30,5 +39,12 @@ class PdaApplication : Application() {
     val recoveryFreezer by lazy { RecoveryFreeze(WorkStore(database, SessionWorkAccess(this, session)), session::now) }
     val renewals by lazy { AuthorizationRenewalRepository(database, session) }
     val sync by lazy { SyncRepository(database, session) }
+    val barcodeSync by lazy { com.acrylic.outbound.pda.sync.BarcodeRepository(database, session) }
+    val auditSync by lazy { com.acrylic.outbound.pda.sync.AuditRepository(database, session) }
+    val archives by lazy { com.acrylic.outbound.pda.retention.SubmissionArchiveRepository(database, session) }
+    val auditArchives by lazy { com.acrylic.outbound.pda.retention.AuditArchiveRepository(database, session) }
+    val backgroundSync by lazy { com.acrylic.outbound.pda.sync.BackgroundSync(sync, barcodeSync, auditSync, auditArchives, session::requireSession) }
+    val retention by lazy { com.acrylic.outbound.pda.retention.RetentionCleaner(database,
+        { session.requireSession().getString("serverRecoveryEpoch") }, session::now) }
     val updates by lazy { PdaUpdateClient(this, session.settings, database) { work.state.value } }
 }

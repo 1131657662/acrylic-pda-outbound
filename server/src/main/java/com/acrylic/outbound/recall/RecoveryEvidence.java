@@ -24,7 +24,7 @@ public class RecoveryEvidence {
         evidence.validateRecovery(a,h.warehouse(),body);var stock=snapshots.validateRecovery(a,body);
         var hashes=jdbc.queryForList("SELECT p.payload_sha256 FROM submission_payload p INNER JOIN submission s ON s.id=p.submission_id WHERE s.assignment_id=?",String.class,Ids.bytes(h.assignment()));
         for(String hash:hashes) unchanged(parse(files.read(hash)),body);
-        return new Validated(stock,audit.validate(UUID.fromString(a.deviceId()),body));
+        return new Validated(stock,audit.validate(UUID.fromString(a.deviceId()),h.warehouse(),body));
     }
     private void unchanged(JsonNode previous,JsonNode body) {
         for(String key:List.of("captures","scans","events")) {

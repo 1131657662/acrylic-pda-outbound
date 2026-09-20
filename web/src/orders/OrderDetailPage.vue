@@ -28,7 +28,7 @@ const publishDialog = ref(false); const recallBusy = ref(false); const submissio
 const pcChannel = ref(false);
 const locked = computed(() => editor.value || cancelDialog.value || publishDialog.value || recallBusy.value || submissionBusy.value);
 const tab = computed({ get: () => ['plan', 'records', 'exceptions', 'history'].includes(String(route.query.tab)) ? String(route.query.tab) : 'plan',
-  set: (value: string) => { void router.replace({ query: { ...orderRouteQuery(parseOrderQuery(route.query), session.warehouseId), tab: value } }); } });
+  set: (value: string) => { void router.replace({ query: { ...route.query, ...orderRouteQuery(parseOrderQuery(route.query), session.warehouseId), tab: value } }); } });
 let cancelBody = ''; let cancelKey = ''; let generation = 0;
 const canWrite = computed(() => session.identity?.permissions.includes('order:write'));
 const canCancel = computed(() => session.identity?.permissions.includes('order:cancel'));
@@ -76,13 +76,18 @@ async function copyOrder(): Promise<void> {
   try { await navigator.clipboard.writeText(detail.value.order.orderNo); ElMessage.success('订单号已复制'); }
   catch { ElMessage.error('复制失败，请选择订单号后复制。'); }
 }
-function back(): void { void router.push({ path: '/orders', query: orderRouteQuery(parseOrderQuery(route.query), session.warehouseId) }); }
+function back(): void {
+  if (route.query.from === 'review-reminders') {
+    void router.push({ path: '/review-reminders', query: { warehouse: session.warehouseId,
+      cursor: route.query.reminderWarehouse === session.warehouseId && typeof route.query.reminderCursor === 'string' ? route.query.reminderCursor : undefined } });
+  } else void router.push({ path: '/orders', query: orderRouteQuery(parseOrderQuery(route.query), session.warehouseId) });
+}
 watch(() => [session.warehouseId, route.params.id], () => { detail.value = null; preflight.value = null; void load(); }, { immediate: true });
 onBeforeUnmount(() => { generation++; });
 </script>
 <template>
   <WorkspaceLayout title="订单详情" :busy="locked">
-    <PageHeading :title="detail?.order.orderNo ?? '订单详情'" :subtitle="detail ? `车号：${detail.plan.vehicleNo}${detail.plan.containerNo ? ' · 柜号：' + detail.plan.containerNo : ''}` : undefined" back @back="back">
+    <PageHeading :title="detail?.order.orderNo ?? '订单详情'" :subtitle="detail ? `车号：${detail.plan.vehicleNo}${detail.plan.containerNo ? ' · 柜号：' + detail.plan.containerNo : ''}` : undefined" back :back-label="route.query.from === 'review-reminders' ? '返回超时待审' : '返回订单列表'" @back="back">
       <template #status><template v-if="detail"><OrderStatus :status="detail.order.status" /><el-tooltip content="复制订单号"><el-button text :icon="CopyDocument" aria-label="复制订单号" @click="copyOrder" /></el-tooltip></template></template>
       <template v-if="detail">
         <PcOrderLink :key="detail.order.id" :order="detail.order.id" :warehouse="session.warehouseId" :version="detail.order.rowVersion" :status="detail.order.status" :disabled="busy || locked || !!error" @channel="pcChannel = $event" />

@@ -1,5 +1,6 @@
 package com.acrylic.outbound.recall;
 
+import com.acrylic.outbound.sync.BarcodeChanges;
 import com.acrylic.outbound.common.Ids;
 import com.acrylic.outbound.submissions.SubmissionSnapshot;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -27,6 +28,7 @@ public class RecoveryStock {
                 VALUES(?,?,?,'RECOVERY_RESERVED',UTC_TIMESTAMP(3),?)
                 """,id,Ids.bytes(h.order()),scan.cycle(),Ids.bytes(packageId));
         }
+        for(var scan:value.scans()) BarcodeChanges.bale(jdbc,scan.bale().id());
         return issues;
     }
 }

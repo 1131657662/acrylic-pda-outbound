@@ -18,8 +18,10 @@ import org.robolectric.annotation.Config
 import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28], application = PdaApplication::class)
+@Config(sdk = [28], application = com.acrylic.outbound.pda.PdaTestApplication::class)
 class PairingRecoveryUiTest {
+    @org.junit.After fun closeScheduler() { androidx.work.testing.WorkManagerTestInitHelper.closeWorkDatabase() }
+
     @Test fun unreadableOriginalApplicationCannotBecomeNewRegistration() {
         val app = ApplicationProvider.getApplicationContext<PdaApplication>()
         val vault = File(app.noBackupFilesDir, "pairing.enc")

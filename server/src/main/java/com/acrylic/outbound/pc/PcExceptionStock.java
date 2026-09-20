@@ -1,5 +1,6 @@
 package com.acrylic.outbound.pc;
 
+import com.acrylic.outbound.sync.BarcodeChanges;
 import com.acrylic.outbound.common.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.*;
@@ -55,6 +56,7 @@ public class PcExceptionStock {
         int changed=action.equals("RELEASE")?jdbc.update("DELETE FROM bale_commitment WHERE bale_id=? AND pc_work_id=? AND state='PC_RESERVED'",bale,Ids.bytes(work.id())):
             jdbc.update("UPDATE bale_commitment SET state='QUARANTINED',pc_work_id=NULL,pc_disposition_id=? WHERE bale_id=? AND pc_work_id=? AND state='PC_RESERVED'",Ids.bytes(id),bale,Ids.bytes(work.id()));
         check(changed==1,"PC_COMMITMENT_CONFLICT","原占用已变化，处置未生效");
+        BarcodeChanges.bale(jdbc,UUID.fromString(entry.baleId()));
         jdbc.update("UPDATE pc_entry SET disposition_id=? WHERE id=? AND disposition_id IS NULL",Ids.bytes(id),Ids.bytes(UUID.fromString(entry.id())));
     }
     private record Removal(PcEntries.Entry entry,JsonNode line) { }

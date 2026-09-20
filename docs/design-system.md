@@ -13,6 +13,7 @@
 | [PDA 页面规范](pda-page-template.md) | 实际屏幕空间、扫码、列表、键盘、按键、离线作业 |
 | [状态与恢复语义](status-semantics.md) | 状态证据、业务术语、错误反馈、恢复动作 |
 | [PC手工出库](PC_MANUAL_OUTBOUND_DESIGN.md) | 用户新增需求：订单内模糊查包、人工确认计入、PC作业与结单 |
+| [PDA应用更新与首次安装](PDA_APP_UPDATE_DESIGN.md) | R05手动更新、系统安装与数据保护已有专项交付；Web“下载 PDA 应用”、固定下载页、短地址和二维码已完成源码与本机验证，部署/设备待验见[交付记录](PDA_DOWNLOAD_GUIDE.md) |
 
 优先依据当前用户指令、[已确认业务决策](OPEN_QUESTIONS.md)、最新接口与代码、[设备实测资料](DEVICE_SPEC.md)，以及[正式开发进度](DEVELOPMENT_PROGRESS.md)。旧背景资料中的116包限制、逐包回车、PDA打印不重新引入。当前工作区有其他任务的业务开发，实施前重新核对，不把本次源码阅读当成已安装版本的现场验收。
 

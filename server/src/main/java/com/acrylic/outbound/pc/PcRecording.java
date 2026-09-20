@@ -1,5 +1,6 @@
 package com.acrylic.outbound.pc;
 
+import com.acrylic.outbound.sync.BarcodeChanges;
 import com.acrylic.outbound.common.*;
 import com.acrylic.outbound.inventory.master.MutationAccess;
 import com.acrylic.outbound.orders.OrderWriter;
@@ -40,6 +41,7 @@ public class PcRecording {
             """,Ids.bytes(id),Ids.bytes(work.id()),Ids.bytes(bale.id()),work.nextSequence(),bale.cycle(),bale.code(),bale.weight(),bale.rawWeight(),bale.model(),bale.name(),Ids.bytes(actor),work.operatorName());
         jdbc.update("INSERT INTO bale_commitment(bale_id,order_id,pc_work_id,dispatch_cycle,state,created_at) VALUES(?,?,?,?,'PC_RESERVED',UTC_TIMESTAMP(3))",
             Ids.bytes(bale.id()),Ids.bytes(work.order()),Ids.bytes(work.id()),bale.cycle());
+        BarcodeChanges.bale(jdbc,bale.id());
         jdbc.update("UPDATE pc_work SET next_sequence=next_sequence+1 WHERE id=?",Ids.bytes(work.id()));return id;
     }
     private UUID remove(PcStore.Work work,UUID actor,PcCommands.Write command) {
@@ -54,6 +56,7 @@ public class PcRecording {
             Ids.bytes(UUID.fromString(entry.baleId())),Ids.bytes(work.id()),entry.cycle());
         if(removed!=1) throw new BusinessException(409,"PC_COMMITMENT_CONFLICT","原占用已变化，未撤销，请联系主管核对");
         jdbc.update("UPDATE pc_entry SET status='VOIDED',voided_by=?,voided_at=UTC_TIMESTAMP(3),void_reason=? WHERE id=?",Ids.bytes(actor),command.reason().strip(),Ids.bytes(command.entryId()));
+        BarcodeChanges.bale(jdbc,UUID.fromString(entry.baleId()));
         return command.entryId();
     }
     public record Input(String action,PcCommands.Write command) { }

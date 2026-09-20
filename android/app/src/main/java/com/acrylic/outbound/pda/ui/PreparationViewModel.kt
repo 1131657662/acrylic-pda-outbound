@@ -30,10 +30,13 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
     }
     fun reloadLocal() = run("正在读取本机身份与资料") { loadLocal() }
     suspend fun publicKey(): String = withContext(Dispatchers.IO) { app.session.publicKey() }
-    fun login(username: String, password: String) = run("正在验证人员与设备") {
+    fun login(username: String, password: String) = run("正在验证人员与设备", cleanCache = true) {
         app.session.login(username, password); refreshData()
     }
-    fun refresh() = run("正在刷新订单与授权") { refreshData() }
+    fun refresh() = run("正在刷新订单与授权", cleanCache = true) {
+        com.acrylic.outbound.pda.sync.SyncScheduler.resume(app)
+        refreshData()
+    }
     fun selectSection(section: String) { mutable.update { it.copy(section = section) } }
     fun loadMore() = run("正在加载下一页订单") {
         val state = mutable.value
@@ -64,7 +67,10 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
 
     private fun refreshData() {
         val current = app.session.requireSession()
-        val syncMessage = app.sync.refreshOrders()
+        val syncMessage = app.sync.refreshOrders() + "；" + app.barcodeSync.refreshBarcodes()
+        val restored = app.auditArchives.restore()
+        val auditMessage = if (restored) app.auditSync.upload() + "；" + app.auditArchives.archive()
+            else "历史审计归档正在分批恢复，本次刷新保留补传屏障"
         repository.local().filter { it.operatorId == current.getString("userId") && it.deviceId == current.getString("deviceId") }
             .forEach { app.recalls.check(it.assignmentId) }
         val assigned = repository.page("pda/assignments", "beforeId")
@@ -73,7 +79,8 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
             assignedCursor = assigned.nextCursor, availableCursor = available.nextCursor,
             assignedHasMore = assigned.nextCursor != null, availableHasMore = available.nextCursor != null) }
         loadLocal()
-        mutable.update { it.copy(message = syncMessage) }
+        val archiveMessage = app.archives.refresh()
+        mutable.update { it.copy(message = "$syncMessage；$auditMessage；$archiveMessage") }
     }
     private fun loadLocal() {
         val saved = app.session.saved()
@@ -95,18 +102,29 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
         val name = if (approval == null) "已绑定设备" else "${approval.getString("warehouseName")} · ${approval.getString("name")}"
         return "\n$name"
     }
-    private fun run(message: String, action: () -> Unit) {
+    private fun run(message: String, cleanCache: Boolean = false, action: () -> Unit) {
         if (mutable.value.busy) return
         mutable.update { it.copy(busy = true, message = message) }
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) { com.acrylic.outbound.pda.update.UpdateGate.business(action) }
+                withContext(Dispatchers.IO) {
+                    com.acrylic.outbound.pda.update.UpdateGate.business(action)
+                    if (cleanCache) cleanAfterRefresh()
+                }
                 mutable.update { if (it.message == message) it.copy(message = "操作已完成；资料和本机记录已保留") else it }
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
                 withContext(Dispatchers.IO) { runCatching { loadLocal() } }
                 mutable.update { it.copy(message = error.message ?: "操作未完成，资料和占用已保留，请重试") }
             } finally { mutable.update { it.copy(busy = false) } }
+        }
+    }
+
+    private fun cleanAfterRefresh() {
+        try { app.retention.clean() }
+        catch (error: Exception) {
+            if (error is CancellationException) throw error
+            mutable.update { it.copy(message = "${it.message}；过期缓存暂未清理，下次联网刷新重试") }
         }
     }
 }

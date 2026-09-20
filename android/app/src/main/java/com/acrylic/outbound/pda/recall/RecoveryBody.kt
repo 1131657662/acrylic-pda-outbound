@@ -10,9 +10,7 @@ class RecoveryBody(private val store: WorkStore) {
         val a = JSONObject(prepared.assignmentJson); val plan = JSONObject(prepared.planJson)
         val captures = store.db.captures().page(local.assignmentId, 0, Int.MAX_VALUE)
         val scans = store.db.scans().page(local.assignmentId, 0, Int.MAX_VALUE)
-        val audit = store.db.work().deviceEvents(prepared.deviceId)
-        check(audit.map { it.localSeq } == (1L..audit.size.toLong()).toList()) { "本设备审计不连续，请保留数据联系主管" }
-        return JSONObject().put("schemaVersion", 2).put("recoveryPackageId", id).put("changeRequestId", local.id)
+        val body = JSONObject().put("schemaVersion", 2).put("recoveryPackageId", id).put("changeRequestId", local.id)
             .put("assignmentId", a.getString("id")).put("orderId", prepared.orderId).put("assignmentEpoch", a.getString("epoch"))
             .put("orderRevision", a.getInt("revision")).put("inventorySnapshotId", a.getString("inventorySnapshotId"))
             .put("policyVersion", plan.getJSONObject("policy").getString("version"))
@@ -27,9 +25,9 @@ class RecoveryBody(private val store: WorkStore) {
             .put("dispositions", store.db.dispositions().proofs(local.assignmentId))
             .put("scans", JSONArray(scans.map(SubmissionRecords::scan)))
             .put("events", JSONArray(store.db.work().events(local.assignmentId).map(SubmissionRecords::event)))
-            .put("auditEvents", JSONArray(audit.map(SubmissionRecords::event)))
-            .put("auditCoverage", JSONArray().put(JSONObject().put("originDeviceId", prepared.deviceId)
-                .put("afterSeq", "0").put("throughSeq", audit.last().localSeq.toString())))
+        val warehouse = com.acrylic.outbound.pda.security.JwtVerifier.verify(a.getString("offlineToken"),
+            JSONObject(prepared.signingKeyJson), "acrylic-pda-offline").getString("warehouseId")
+        return RecoveryAuditBody(store).attach(body, prepared.deviceId, a.getString("serverRecoveryEpoch"), warehouse)
     }
     private fun summary(captures: List<WorkCapture>, scans: List<WorkScan>) = JSONObject()
         .put("received", captures.size.toString()).put("saved", scans.count { it.status == "ACTIVE" }.toString())

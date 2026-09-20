@@ -1,0 +1,8 @@
+{
+  "channel": "staging",
+  "environmentName": "公网测试环境",
+  "origin": "https://outbound-test.nbsmzwl.cn",
+  "publicKeyBase64": "REPLACE_WITH_VERIFIED_UPDATE_PUBLIC_KEY_SPKI_BASE64",
+  "certificateSha256": "REPLACE_WITH_VERIFIED_STAGING_APK_CERTIFICATE_SHA256",
+  "serverCompatibility": ["REPLACE_WITH_DEPLOYED_AND_VERIFIED_SERVER_CONTRACT"]
+}

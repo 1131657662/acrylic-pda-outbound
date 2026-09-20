@@ -7,7 +7,7 @@ import okhttp3.mockwebserver.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 /** Forwards to the real backend and can lose exactly one response after its transaction commits. */
-class SubmissionProxy(private val upstream: String) : AutoCloseable {
+class SubmissionProxy(private val upstream: String, port: Int = 0) : AutoCloseable {
     private val server = MockWebServer()
     private val client = OkHttpClient.Builder().retryOnConnectionFailure(false).build()
     val loseSubmissionResponse = AtomicBoolean(false)
@@ -38,7 +38,7 @@ class SubmissionProxy(private val upstream: String) : AutoCloseable {
                 }
             }
         }
-        server.start()
+        server.start(port)
     }
     override fun close() { server.shutdown(); client.dispatcher.executorService.shutdown(); client.connectionPool.evictAll() }
 }

@@ -1,0 +1,43 @@
+BaselineBarcode:
+  type: object
+  required: [baleId, barcode, status, dispatchCycle, rowVersion, updatedAt]
+  properties:
+    baleId: {type: string, format: uuid}
+    barcode: {type: string, pattern: '^[0-9A-Z]{11}$'}
+    dispatchCycle: {type: string, pattern: '^[1-9][0-9]*$'}
+    status: {type: string, enum: [AVAILABLE, UNAVAILABLE, RESERVED, DISPATCHED, QUARANTINED]}
+    rowVersion: {type: string, pattern: '^[1-9][0-9]*$'}
+    updatedAt: {type: string, format: date-time}
+SyncEvent:
+  type: object
+  required: [eventId, sequence, baleId, barcode, entityVersion, status, dispatchCycle, createdAt]
+  properties:
+    eventId: {type: string, format: uuid}
+    sequence: {type: string, pattern: '^[1-9][0-9]*$'}
+    baleId: {type: string, format: uuid}
+    barcode: {type: string, pattern: '^[0-9A-Z]{11}$'}
+    dispatchCycle: {type: string, pattern: '^[1-9][0-9]*$'}
+    entityVersion: {type: string, pattern: '^[1-9][0-9]*$'}
+    status: {type: string, enum: [AVAILABLE, UNAVAILABLE, RESERVED, DISPATCHED, QUARANTINED], description: 已提交条码状态；不授权或解除本机防重}
+    createdAt: {type: string, format: date-time}
+BarcodeSync:
+  type: object
+  required: [streamType, recoveryEpoch, warehouseId, baselineId, baselineNextCursor, baseline, baselineComplete, highWatermark, nextCursor, hasMore, events]
+  properties:
+    streamType: {type: string, const: BARCODE}
+    recoveryEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
+    warehouseId: {type: string, format: uuid}
+    baselineId: {type: [string, 'null'], format: uuid}
+    baselineNextCursor: {type: [string, 'null'], description: 固定基线未下载完成时的下一页游标；与baselineId同时使用}
+    baseline:
+      type: array
+      maxItems: 200
+      items: {$ref: '#/BaselineBarcode'}
+    baselineComplete: {type: boolean}
+    highWatermark: {type: string, pattern: '^[0-9]+$'}
+    nextCursor: {type: [string, 'null'], description: 基线未完成时必须为null；完成后原子应用所有基线行才可启用}
+    hasMore: {type: boolean, description: 基线完成后仍须用nextCursor拉取后续事件；增量为false表示本次已到发布高水位}
+    events:
+      type: array
+      maxItems: 200
+      items: {$ref: '#/SyncEvent'}

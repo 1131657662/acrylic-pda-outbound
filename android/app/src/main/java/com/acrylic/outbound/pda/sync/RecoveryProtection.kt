@@ -5,6 +5,8 @@ import org.json.JSONObject
 
 /** A new login, a NORMAL response or a downloaded baseline must never clear reconciliation. */
 class RecoveryProtection(private val db: PdaDatabase) {
+    /** Shares Room's short commit boundary with sync; never wraps a network request. */
+    internal fun <T> transaction(action: () -> T): T = db.runInTransaction(java.util.concurrent.Callable(action))
     fun observe(envelope: JSONObject, previousEpoch: String? = null) {
         val epoch = envelope.optString("serverRecoveryEpoch").takeIf { it.matches(Regex("[1-9][0-9]*")) } ?: return
         val serviceMode = envelope.optString("serviceMode")

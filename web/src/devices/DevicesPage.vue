@@ -44,7 +44,8 @@ onBeforeRouteLeave(() => !sending.value && !pairingSending.value);
 <template>
   <WorkspaceLayout title="PDA 设备管理" :busy="busy || !!dialog || pairingSending">
     <div class="page-title"><div><h1>PDA 设备管理</h1><p class="muted">通过短码核对本仓库设备，管理登记身份及联网使用状态。</p></div>
-      <el-button v-if="canManage" :disabled="busy || !!error || !!pending || !!storageError || pairingSending" @click="dialog = { device: null, pending: null }">高级公钥登记</el-button></div>
+      <div class="heading-actions"><a v-if="canManage" href="/pda-download" target="_blank" rel="noopener noreferrer">下载 PDA 应用</a>
+      <el-button v-if="canManage" :disabled="busy || !!error || !!pending || !!storageError || pairingSending" @click="dialog = { device: null, pending: null }">高级公钥登记</el-button></div></div>
     <el-alert v-if="!canManage" title="当前账号没有设备管理权限，请联系仓库管理员。" type="warning" :closable="false" />
     <template v-else>
       <DevicePairingPanel v-if="session.identity && session.warehouseId" :key="`${session.identity.id}:${session.warehouseId}`"

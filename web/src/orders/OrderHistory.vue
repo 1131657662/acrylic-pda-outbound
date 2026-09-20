@@ -28,15 +28,19 @@ async function run(action: () => Promise<void>): Promise<void> {
 async function inspect(revision: number): Promise<void> {
   await run(async () => { previous.value = await request(`/orders/${props.orderId}?warehouseId=${props.warehouseId}&revision=${revision}`, detailSchema); });
 }
-function reason(value: string): string {
+function reason(value: string, type: string): string {
   try {
+    if (type === 'SUBMISSION_REVIEW_REMINDER') {
+      const reminder = z.object({ submissionId: z.string().uuid(), dueAt: z.iso.datetime() }).safeParse(JSON.parse(value));
+      return reminder.success ? `批次 ${reminder.data.submissionId} 于 ${localTime(reminder.data.dueAt)} 待审满30分钟。当前处理结果请查看装车记录。` : '该批次曾待审超过30分钟。当前处理结果请查看装车记录。';
+    }
     const result = z.object({ reason: z.string() }).safeParse(JSON.parse(value));
     return result.success ? result.data.reason : '查看对应计划版本';
   } catch { return '查看对应计划版本'; }
 }
 function eventLabel(value: string): string {
   const labels: Record<string, string> = { ORDER_CREATED: '创建订单', ORDER_REVISED: '修订计划', ORDER_CANCELLED: '作废订单',
-    ORDER_PUBLISHED: '发布订单', ORDER_REVISED_PUBLISHED: '修订并重新发布' };
+    ORDER_PUBLISHED: '发布订单', ORDER_REVISED_PUBLISHED: '修订并重新发布', SUBMISSION_REVIEW_REMINDER: '待审超时提醒' };
   return labels[value] ?? value;
 }
 onMounted(() => { void run(async () => { await loadRevisions(); await loadEvents(); }); });
@@ -49,7 +53,7 @@ onMounted(() => { void run(async () => { await loadRevisions(); await loadEvents
     </el-table><el-button v-if="revisionNext" :loading="busy" @click="run(() => loadRevisions(revisionNext ?? ''))">更多版本</el-button></el-tab-pane>
     <el-tab-pane label="操作时间线"><el-table v-loading="busy" :data="events">
       <el-table-column label="动作" width="140"><template #default="{ row }">{{ eventLabel(row.type) }}</template></el-table-column>
-      <el-table-column prop="actor" label="操作人" width="130" /><el-table-column label="原因" min-width="200"><template #default="{ row }">{{ reason(row.details) }}</template></el-table-column><el-table-column label="时间" width="190"><template #default="{ row }">{{ localTime(row.serverTime) }}</template></el-table-column>
+      <el-table-column label="操作人" width="130"><template #default="{ row }">{{ row.actor ?? '系统' }}</template></el-table-column><el-table-column label="原因" min-width="200"><template #default="{ row }">{{ reason(row.details, row.type) }}</template></el-table-column><el-table-column label="时间" width="190"><template #default="{ row }">{{ localTime(row.serverTime) }}</template></el-table-column>
     </el-table><el-button v-if="eventNext" :loading="busy" @click="run(() => loadEvents(eventNext ?? ''))">更多记录</el-button></el-tab-pane></el-tabs>
     <el-dialog :model-value="!!previous" title="历史计划版本（只读）" width="720" @close="previous = null"><template v-if="previous">
       <h3>V{{ previous.plan.revision }} · {{ previous.plan.vehicleNo }} · {{ previous.plan.plannedTotal }} 包</h3><p class="muted">{{ previous.plan.reason }} · {{ previous.plan.createdBy }} · {{ localTime(previous.plan.createdAt) }}</p>

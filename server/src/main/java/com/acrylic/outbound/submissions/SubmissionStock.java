@@ -1,5 +1,6 @@
 package com.acrylic.outbound.submissions;
 
+import com.acrylic.outbound.sync.BarcodeChanges;
 import com.acrylic.outbound.common.Ids;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.*;
@@ -29,6 +30,7 @@ public class SubmissionStock {
             if(owners.isEmpty()) jdbc.update("INSERT INTO bale_commitment(bale_id,order_id,submission_id,dispatch_cycle,state,created_at) VALUES(?,?,?,?,'REVIEW_RESERVED',UTC_TIMESTAMP(3))",
                 Ids.bytes(bale),Ids.bytes(head.control().order()),Ids.bytes(head.control().id()),scan.cycle());
         }
+        for(var scan:sorted) BarcodeChanges.bale(jdbc,scan.bale().id());
         return issues;
     }
     private record Position(boolean present,String book,String blocked,String code,long weight,String model,String name) {

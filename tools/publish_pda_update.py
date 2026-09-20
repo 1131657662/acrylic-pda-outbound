@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+from verify_pda_release_apk import verify_first_install
 
 CHANNELS = {"debug", "staging", "production"}
 PACKAGE_NAMES = {
@@ -34,6 +35,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--release-notes", required=True)
     parser.add_argument("--signing-key", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--first-install-allowed", action="store_true",
+                        help="明确批准全新设备安装；须先完成该发布的首次安装验证")
+    parser.add_argument("--android-build-tools", type=Path,
+                        help="包含aapt及apksigner的Android Build Tools目录")
     return parser.parse_args()
 
 
@@ -90,14 +95,12 @@ def public_key(key: Path) -> str:
             raise SystemExit("需要 openssl 或 Python cryptography 才能导出公钥") from error
 
 
-def main() -> None:
-    args = parse_args()
-    validate(args)
-    apk_hash = sha256(args.apk)
-    payload = {
+def release_payload(args: argparse.Namespace, apk_hash: str) -> dict:
+    return {
         "apkPath": f"updates/{args.channel}/{args.release_id}.apk",
         "certificateSha256": args.certificate_sha256.lower(),
         "channel": args.channel,
+        "firstInstallAllowed": args.first_install_allowed,
         "maxSupportedVersionCode": args.max_supported_version_code,
         "minAndroidApi": 28,
         "minSupportedVersionCode": args.min_supported_version_code,
@@ -111,8 +114,9 @@ def main() -> None:
         "versionCode": args.version_code,
         "versionName": args.version_name,
     }
-    raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    manifest = {"payload": base64.b64encode(raw).decode("ascii"), "signature": base64.b64encode(sign(raw, args.signing_key)).decode("ascii")}
+
+
+def write_release(args: argparse.Namespace, manifest: dict, apk_hash: str) -> None:
     destination = args.output_dir / "updates" / args.channel
     destination.mkdir(parents=True, exist_ok=True)
     apk_target = destination / f"{args.release_id}.apk"
@@ -123,10 +127,19 @@ def main() -> None:
         previous = json.loads(base64.b64decode(json.loads(manifest_target.read_text(encoding="utf-8"))["payload"]))
         if args.version_code <= previous["versionCode"]:
             raise SystemExit("版本号必须高于当前发布")
-    descriptor, temporary_name = tempfile.mkstemp(prefix=args.release_id + "-", suffix=".tmp", dir=destination)
+    copy_verified_apk(args.apk, apk_target, apk_hash)
+    temporary_manifest = manifest_target.with_suffix(".json.tmp")
+    temporary_manifest.write_text(json.dumps(manifest, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    temporary_manifest.replace(manifest_target)
+    (args.output_dir / "update-public-key.base64").write_text(public_key(args.signing_key), encoding="ascii")
+    print(json.dumps({"manifest": str(manifest_target), "apk": str(apk_target), "sha256": apk_hash, "sizeBytes": args.apk.stat().st_size}, ensure_ascii=False))
+
+
+def copy_verified_apk(source_apk: Path, apk_target: Path, apk_hash: str) -> None:
+    descriptor, temporary_name = tempfile.mkstemp(prefix=apk_target.stem + "-", suffix=".tmp", dir=apk_target.parent)
     temporary = Path(temporary_name)
     try:
-        with os.fdopen(descriptor, "wb") as output, args.apk.open("rb") as source:
+        with os.fdopen(descriptor, "wb") as output, source_apk.open("rb") as source:
             shutil.copyfileobj(source, output)
             output.flush()
             os.fsync(output.fileno())
@@ -135,11 +148,19 @@ def main() -> None:
         os.link(temporary, apk_target)  # exclusive publish: never replaces an existing release
     finally:
         temporary.unlink(missing_ok=True)
-    temporary_manifest = manifest_target.with_suffix(".json.tmp")
-    temporary_manifest.write_text(json.dumps(manifest, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    temporary_manifest.replace(manifest_target)
-    (args.output_dir / "update-public-key.base64").write_text(public_key(args.signing_key), encoding="ascii")
-    print(json.dumps({"manifest": str(manifest_target), "apk": str(apk_target), "sha256": apk_hash, "sizeBytes": args.apk.stat().st_size}, ensure_ascii=False))
+
+
+def main() -> None:
+    args = parse_args()
+    validate(args)
+    if args.first_install_allowed:
+        if args.channel == "debug":
+            raise SystemExit("debug渠道不能通过公开首次安装页分发")
+        verify_first_install(args, PACKAGE_NAMES[args.channel])
+    apk_hash = sha256(args.apk)
+    raw = json.dumps(release_payload(args, apk_hash), ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    manifest = {"payload": base64.b64encode(raw).decode("ascii"), "signature": base64.b64encode(sign(raw, args.signing_key)).decode("ascii")}
+    write_release(args, manifest, apk_hash)
 
 
 if __name__ == "__main__":

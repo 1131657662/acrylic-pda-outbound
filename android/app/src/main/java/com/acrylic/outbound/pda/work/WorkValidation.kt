@@ -17,12 +17,14 @@ class WorkValidation(private val store: WorkStore) {
             c.authorizationId == assignment.getString("offlineAuthorizationId") && c.orderRevision == assignment.getInt("revision")) { "原扫码上下文已变化，保留记录并对账" }
         val bale = store.db.preparations().bale(c.assignmentId, c.barcode)
         val line = bale?.let { store.db.work().line(c.assignmentId, it.deliveryCode) }
+        val cloudReason = com.acrylic.outbound.pda.sync.BarcodeWorkGuard(store.db).reason(c)
         val error = when {
             !c.barcode.matches(Regex("[0-9A-Z]{11}")) || !c.rawInput.trim(' ', '\r', '\n', '\t').matches(Regex("[0-9A-Za-z]{11}")) -> "条码必须是完整11位数字或英文字母"
             bale == null -> "条码不在本单固定库存中"
             line == null -> "产品不属于本车计划"
             bale.dispatchCycle != c.expectedDispatchCycle -> "出库周期不一致，请保留记录并核对"
             !bale.available -> "该包在准备时已不可用"
+            cloudReason != null -> cloudReason
             store.db.scans().guard(c.barcode) != null -> "该条码已在本机订单中保存，不能重复装车"
             line.actualCount >= line.plannedCount -> "该产品已达计划，禁止超装"
             order.actualCount >= order.plannedTotal -> "整单已达计划，禁止超装"

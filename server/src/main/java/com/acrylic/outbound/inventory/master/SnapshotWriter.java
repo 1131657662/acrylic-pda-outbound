@@ -1,5 +1,6 @@
 package com.acrylic.outbound.inventory.master;
 
+import com.acrylic.outbound.sync.BarcodeChanges;
 import com.acrylic.outbound.common.Ids;
 import com.acrylic.outbound.common.JsonText;
 import com.acrylic.outbound.inventory.parser.ParsedBale;
@@ -31,6 +32,7 @@ public class SnapshotWriter {
         discrepancies.write(new DiscrepancyWriter.Changes(data.warehouse(), snapshot, data.preview()));
         positions(snapshot, data.warehouse());
         activate(snapshot, data);
+        BarcodeChanges.warehouse(jdbc, data.warehouse());
         return snapshot;
     }
     private void header(UUID id, Data data) {

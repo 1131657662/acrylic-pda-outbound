@@ -6,7 +6,9 @@ import org.json.JSONObject
 
 class PdaSession(private val context: Context, val settings: ConnectionSettings,
     private val keys: DeviceKeys, private val vault: SessionVault,
-    private val recovery: com.acrylic.outbound.pda.sync.RecoveryProtection) {
+    private val recovery: com.acrylic.outbound.pda.sync.RecoveryProtection,
+    private val changed: () -> Unit = {}) {
+    private val requests = SessionRequests(vault::read)
     fun saved(): JSONObject? = vault.read()
     fun publicKey(): String = keys.publicKey(settings.device.isBlank()).also { settings.verifyKey(it) }
     fun network() = PdaNetwork(settings.server) { envelope ->
@@ -14,7 +16,7 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
         recovery.observe(envelope, runCatching { saved()?.optString("serverRecoveryEpoch") }.getOrNull())
     }
 
-    fun login(username: String, password: String) {
+    fun login(username: String, password: String) = requests.run {
         check(settings.device.isNotBlank()) { "请先登记并绑定设备" }
         publicKey()
         val challenge = challenge("LOGIN", username)
@@ -23,11 +25,13 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
         val started = TrustedTime.sample(context)
         val envelope = network().request("pda/auth/login", body)
         val session = envelope.getJSONObject("data").put("username", username)
+            .put("localSessionId", java.util.UUID.randomUUID().toString())
         check(session.getString("deviceId") == settings.device)
         update(session, envelope, started)
         val key = call("pda/signing-key")
         val current = requireSession().put("signingKey", key)
-        vault.save(current)
+        save(current)
+        changed()
     }
 
     private fun challenge(purpose: String, binding: String): JSONObject {
@@ -40,7 +44,11 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
     }
 
     fun call(path: String, body: JSONObject? = null, epoch: String? = null, raw: ByteArray? = null,
-        extraHeaders: Map<String, String> = emptyMap()): JSONObject {
+        extraHeaders: Map<String, String> = emptyMap(), expected: JSONObject? = null): JSONObject =
+        requests.run(expected ?: requireSession()) { execute(path, body, epoch, raw, extraHeaders) }
+
+    private fun execute(path: String, body: JSONObject?, epoch: String?, raw: ByteArray?,
+        extraHeaders: Map<String, String>): JSONObject {
         val session = requireSession()
         val started = TrustedTime.sample(context)
         val requestHeaders = headers(session, epoch) + extraHeaders
@@ -51,7 +59,7 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
                 refresh(); network().request(path, body, headers(requireSession(), epoch) + extraHeaders, raw)
             } catch (rejected: ApiFailure) {
                 if (rejected.code in setOf("AUTH_EXPIRED", "DEVICE_DISABLED", "PERMISSION_DENIED")) {
-                    vault.save(requireSession().put("blockedReason", rejected.message))
+                    save(requireSession().put("blockedReason", rejected.message))
                 }
                 throw rejected
             }
@@ -69,6 +77,10 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
             .put("refreshToken", token).put("challengeId", challenge.getString("challengeId"))
             .put("signature", keys.sign(challenge.getString("signedText"))))
         val session = envelope.getJSONObject("data").put("username", previous.getString("username"))
+        check(session.getString("deviceId") == previous.getString("deviceId") &&
+            session.getString("userId") == previous.getString("userId") &&
+            session.getString("warehouseId") == previous.getString("warehouseId")) { "刷新会话身份不匹配" }
+        if (previous.has("localSessionId")) session.put("localSessionId", previous.getString("localSessionId"))
         if (previous.has("signingKey")) session.put("signingKey", previous.getJSONObject("signingKey"))
         update(session, envelope, started)
     }
@@ -78,8 +90,8 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
         put("Authorization", "Bearer ${session.getString("accessToken")}")
         if (epoch != null) put("X-Server-Recovery-Epoch", epoch)
     }
-    fun logout() {
-        try { call("pda/auth/logout", JSONObject()) } finally { vault.clear() }
+    fun logout() = requests.run {
+        try { call("pda/auth/logout", JSONObject()) } finally { recovery.transaction { vault.clear() }; changed() }
     }
     fun now(): java.time.Instant {
         val saved = requireSession()
@@ -90,6 +102,7 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
         session.put("serverRecoveryEpoch", envelope.getString("serverRecoveryEpoch"))
         // Anchor at request start: transmission delay can shorten, never extend, the offline deadline.
         session.put("timeAnchor", TrustedTime.anchor(envelope.getString("serverTime"), started))
-        vault.save(session)
+        save(session)
     }
+    private fun save(session: JSONObject) = recovery.transaction { vault.save(session) }
 }

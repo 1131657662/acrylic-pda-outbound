@@ -11,8 +11,8 @@ android {
         applicationId = "com.acrylic.outbound.pda"
         minSdk = 28
         targetSdk = 35
-        versionCode = providers.gradleProperty("pdaVersionCode").map(String::toInt).orElse(14).get()
-        versionName = providers.gradleProperty("pdaVersionName").orElse("0.10.3-r05-update").get()
+        versionCode = providers.gradleProperty("pdaVersionCode").map(String::toInt).orElse(15).get()
+        versionName = providers.gradleProperty("pdaVersionName").orElse("0.11.0-r05-sync").get()
         val serverUrl = providers.gradleProperty("pdaServerUrl").orElse("").get()
         val environment = providers.gradleProperty("pdaEnvironment").orElse("未配置服务环境").get()
         val updatePublicKey = providers.gradleProperty("pdaUpdatePublicKey").orElse("").get()
@@ -52,12 +52,16 @@ android {
         unitTests.all {
             it.inputs.file(rootProject.file("../server/build/pda-contract-fixture.json"))
             it.inputs.file(rootProject.file("../server/build/pda-submission-fixture.json"))
+            it.inputs.file(rootProject.file("../server/build/pda-archive-fixture.json"))
+            it.inputs.file(rootProject.file("../server/build/pda-audit-archive-fixture.json"))
             it.inputs.file(rootProject.file("../server/build/pda-recall-fixture.json"))
             it.inputs.file(rootProject.file("../server/build/pda-continuation-fixture.json"))
             it.inputs.file(rootProject.file("../server/build/pda-disposition-fixture.json"))
             it.inputs.dir(file("schemas/com.acrylic.outbound.pda.data.PdaDatabase"))
             it.systemProperty("pda.contractFixture", rootProject.file("../server/build/pda-contract-fixture.json").absolutePath)
             it.systemProperty("pda.submissionFixture", rootProject.file("../server/build/pda-submission-fixture.json").absolutePath)
+            it.systemProperty("pda.archiveFixture", rootProject.file("../server/build/pda-archive-fixture.json").absolutePath)
+            it.systemProperty("pda.auditArchiveFixture", rootProject.file("../server/build/pda-audit-archive-fixture.json").absolutePath)
             it.systemProperty("pda.recallFixture", rootProject.file("../server/build/pda-recall-fixture.json").absolutePath)
             it.systemProperty("pda.continuationFixture", rootProject.file("../server/build/pda-continuation-fixture.json").absolutePath)
             it.systemProperty("pda.dispositionFixture", rootProject.file("../server/build/pda-disposition-fixture.json").absolutePath)
@@ -83,6 +87,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("androidx.test:core:1.6.1")
+    testImplementation("androidx.work:work-testing:2.10.1")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("com.squareup.okhttp3:okhttp-tls:4.12.0")
     androidTestImplementation("androidx.test:runner:1.7.0")

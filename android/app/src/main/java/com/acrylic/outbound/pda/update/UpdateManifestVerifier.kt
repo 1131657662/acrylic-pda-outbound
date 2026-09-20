@@ -28,7 +28,7 @@ class UpdateCompatibility(private val packageName: String, private val channel: 
         check(payload.packageName == packageName) { "更新包不是本机应用" }
         check(payload.channel == channel) { "更新包渠道不匹配，不能跨渠道覆盖" }
         check(payload.apkPath.startsWith("updates/$channel/")) { "安装包地址不属于当前渠道" }
-        check(payload.serverCompatibility == "0.17.0") { "服务端兼容范围尚未验证，请联系管理员核对" }
+        check(payload.serverCompatibility in setOf("0.17.0", "0.18.0", "0.19.0", "0.20.0")) { "服务端兼容范围尚未验证，请联系管理员核对" }
         check(payload.minAndroidApi <= sdk) { "此版本需要更高的 Android 系统" }
         check(currentVersionCode in payload.minSupportedVersionCode..(payload.maxSupportedVersionCode ?: Long.MAX_VALUE)) {
             "当前版本不在可直接升级范围，请联系管理员"

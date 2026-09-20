@@ -34,7 +34,10 @@ public class SubmissionEvents {
             ps.setBytes(1,Ids.bytes(uuid(row,"id")));ps.setBytes(2,Ids.bytes(c.id()));ps.setBytes(3,Ids.bytes(c.order()));
             ps.setBytes(4,Ids.bytes(uuid(row,"originDeviceId")));ps.setLong(5,number(row,"deviceCaptureSeq"));ps.setLong(6,number(row,"orderScanSeq"));ps.setString(7,sha(row));
         });
-        var auditEvents=new java.util.ArrayList<JsonNode>();array(body,"events").forEach(row->{ if(fresh("submitted_event",row))auditEvents.add(row); });
+        var auditEvents=new java.util.ArrayList<JsonNode>();array(body,"events").forEach(row->{
+            com.acrylic.outbound.audit.PdaAuditFacts.verify(jdbc,row);
+            if(fresh("submitted_event",row))auditEvents.add(row);
+        });
         jdbc.batchUpdate("INSERT INTO submitted_event VALUES(?,?,?,?,?)",auditEvents,200,(ps,row)->{
             ps.setBytes(1,Ids.bytes(uuid(row,"id")));ps.setBytes(2,Ids.bytes(c.id()));ps.setBytes(3,Ids.bytes(uuid(row,"originDeviceId")));
             ps.setLong(4,number(row,"localSeq"));ps.setString(5,sha(row));

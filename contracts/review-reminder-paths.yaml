@@ -1,0 +1,50 @@
+List:
+  get:
+    summary: 当前仓库已生成提醒且仍待审的当前提交
+    description: 需要submission:review和当前仓库授权。按remindedAt/id倒序真实游标分页；已审批、退回、取消或已被新批次替代的历史提醒不返回。只读，不触发提醒生成或改变业务事实。Worker每分钟检查30分钟阈值。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - name: cursor
+        in: query
+        schema: {type: string, maxLength: 200, default: ''}
+        description: 原仓库返回的nextCursor；包含仓库、时间和唯一ID，无需边界记录仍在待办。跨仓库或无效游标返回400。
+      - name: limit
+        in: query
+        schema: {type: integer, minimum: 1, maximum: 200, default: 20}
+    responses:
+      '200':
+        description: 当前待办分页；不返回虚构总数
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/Page'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+Page:
+  type: object
+  required: [items, nextCursor, hasMore]
+  properties:
+    items:
+      type: array
+      items: {$ref: '#/Item'}
+    nextCursor: {type: [string, 'null']}
+    hasMore: {type: boolean}
+Item:
+  type: object
+  required: [id, submissionId, orderId, orderNo, vehicleNo, submittedAt, dueAt, remindedAt]
+  properties:
+    id: {type: string, format: uuid}
+    submissionId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    orderNo: {type: string}
+    vehicleNo: {type: string}
+    submittedAt: {type: string, format: date-time}
+    dueAt: {type: string, format: date-time}
+    remindedAt: {type: string, format: date-time}

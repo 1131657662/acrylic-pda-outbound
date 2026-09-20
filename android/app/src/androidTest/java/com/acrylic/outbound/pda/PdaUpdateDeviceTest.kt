@@ -22,11 +22,11 @@ class PdaUpdateDeviceTest {
     @Test fun stagingManifestAndApkDownloadAreVerifiedBeforeInstall() {
         val intent = Intent(ApplicationProvider.getApplicationContext(), PdaUpdateActivity::class.java)
         ActivityScenario.launch<PdaUpdateActivity>(intent).use {
-            onView(withId(com.acrylic.outbound.pda.R.id.check)).perform(click())
+            onView(withId(com.acrylic.outbound.pda.R.id.check)).perform(scrollTo(), click())
             waitForText("发现可用更新")
             onView(withId(com.acrylic.outbound.pda.R.id.download)).perform(scrollTo(), click())
             waitForText("安装包已校验")
-            onView(withId(com.acrylic.outbound.pda.R.id.install)).check(matches(isDisplayed()))
+            onView(withId(com.acrylic.outbound.pda.R.id.install)).perform(scrollTo()).check(matches(isDisplayed()))
         }
     }
 

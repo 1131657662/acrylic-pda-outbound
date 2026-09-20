@@ -1,0 +1,33 @@
+Confirmation:
+  post:
+    summary: 原人员在原设备确认成功提交的云端正文与签名回执耐久副本
+    description: >-
+      仅当前NORMAL恢复代次、原授权代次相同且SUCCEEDED的提交可办理；请求只含本机规范正文及完整原回执摘要。
+      每次请求均重新校验文件与原回执签名，同一提交和恢复代次返回原确认。文件缺失或损坏时拒绝返回旧确认。
+      此凭据证明服务器耐久文件在确认时可读，未证明异地备份或灾后恢复；不授权删除任何本机事实或审计。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/OrderId'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './archive-schemas.yaml#/Request'}
+    responses:
+      '200':
+        description: 已校验并持久保存的签名确认；仅代表此凭据签发时的副本状态
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - properties:
+                    data: {$ref: './archive-schemas.yaml#/Confirmation'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {description: SUBMISSION_NOT_FOUND，批次不存在或不属于当前身份}
+      '409': {description: ARCHIVE_NOT_READY、ARCHIVE_CONTENT_MISMATCH、ORDER_RECOVERY_REQUIRED或恢复代次不一致}
+      '413': {description: 请求超过1024字节}
+      '503': {description: ARCHIVE_EVIDENCE_UNAVAILABLE、SERVER_RECOVERY_REQUIRED或签名密钥不可用；保留本机原记录}

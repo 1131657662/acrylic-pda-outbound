@@ -1,5 +1,6 @@
 package com.acrylic.outbound.pc;
 
+import com.acrylic.outbound.sync.BarcodeChanges;
 import com.acrylic.outbound.common.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.*;
@@ -17,7 +18,7 @@ public class PcAccounting {
         var receipt=object().put("channel","PC").put("orderId",work.order().toString()).put("workId",work.id().toString())
             .put("submissionId",posting.submission().toString()).put("status","SUCCEEDED").put("actualCount",Integer.toString(rows.size()))
             .put("weightGrams",Long.toString(weight)).put("inventoryDeducted",work.deduct()).put("payloadSha256",posting.hash()).put("resultVersion","1");
-        for(var entry:rows) dispatch(work,posting.submission(),entry);
+        for(var entry:rows) { dispatch(work,posting.submission(),entry); BarcodeChanges.bale(jdbc,UUID.fromString(entry.baleId())); }
         jdbc.update("INSERT INTO order_result_version(order_id,result_version,pc_submission_id,actual_count,weight_g,inventory_deducted,header_snapshot,created_at) VALUES(?,1,?,?,?,?,?,UTC_TIMESTAMP(3))",
             Ids.bytes(work.order()),Ids.bytes(posting.submission()),rows.size(),weight,work.deduct(),canonical(receipt));
         jdbc.batchUpdate("INSERT INTO order_effective_line VALUES(?,1,?,?,?)",posting.products(),200,(ps,p)->{

@@ -37,6 +37,8 @@ class PreparationEndToEndTest {
         assertEquals(2, activated.rowCount); assertNotNull(activated.ackAt)
         assertTrue(app.repository.readiness(activated).contains("资料已就绪"))
         verifyActivityShowsPreparedOrder()
+        val verifyBackground = InstrumentationRegistry.getArguments().getString("verifyBackground") == "true"
+        if (verifyBackground) BackgroundSyncApiScenario.verify(app, activated.assignmentId, completed = false)
         WorkScreenScenario.exercise(app, activated.assignmentId)
         val submission = SubmissionScreenScenario.freeze(app, activated.assignmentId)
         val originalBody = app.database.submissions().get(submission)!!.payload
@@ -48,11 +50,16 @@ class PreparationEndToEndTest {
         assertEquals("SYNCED", app.submissions.upload(submission).state)
         assertEquals(originalBody, app.database.submissions().get(submission)!!.payload)
         SubmissionScreenScenario.showsSuccess(app, activated.assignmentId)
+        if (verifyBackground) BackgroundSyncApiScenario.verify(app, activated.assignmentId, completed = true)
+        val verifyArchives = InstrumentationRegistry.getArguments().getString("verifyArchives") == "true"
+        if (verifyArchives) ArchiveEndToEndScenario.verify(app, submission)
         app.database.close()
         val reopened = PdaDatabase.open(context)
         assertEquals(activated, reopened.preparations().order(activated.assignmentId))
         assertEquals(2, reopened.scans().total(activated.assignmentId).count)
-        assertEquals("SYNCED", reopened.submissions().get(submission)!!.state); reopened.close()
+        assertEquals("SYNCED", reopened.submissions().get(submission)!!.state)
+        if (verifyArchives) ArchiveEndToEndScenario.verifyReopened(app, reopened, submission)
+        reopened.close()
         val evidence = JSONObject().put("assignmentId", activated.assignmentId).put("orderId", activated.orderId)
             .put("deviceId", device).put("rows", activated.rowCount).put("ackAt", activated.ackAt)
             .put("keystoreProof", true).put("databaseReopened", true).put("activityShowsReadyOrder", true)

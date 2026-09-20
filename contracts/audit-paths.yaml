@@ -1,0 +1,55 @@
+Events:
+  post:
+    security: [{pdaBearer: []}]
+    summary: 补传本设备原操作事件；按恢复代次及原设备连续确认，不跳过缺口
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './audit-schemas.yaml#/Batch'}
+    responses:
+      '200':
+        description: 已持久接收并返回最后连续确认序号；批次摘要须与原请求一致，不代表订单出库成功
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './audit-schemas.yaml#/Acknowledgement'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+
+Archives:
+  post:
+    security: [{pdaBearer: []}]
+    summary: 固定当前恢复代次的连续审计归档段
+    parameters: [{ $ref: './openapi.yaml#/components/parameters/Epoch' }]
+    requestBody:
+      required: true
+      content: {application/json: {schema: {$ref: './audit-schemas.yaml#/ArchiveRequest'}}}
+    responses:
+      '200':
+        description: 服务端耐久保存原始审计段并返回不可变签名凭据
+        content:
+          application/json:
+            schema:
+              allOf: [{ $ref: './schemas.yaml#/Envelope' }, { properties: {data: {$ref: './audit-schemas.yaml#/ArchiveProof'}} }]
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+
+RestoreArchive:
+  post:
+    security: [{pdaBearer: []}]
+    summary: 在当前恢复代次核验旧代次审计归档并重建原始事实
+    parameters: [{ $ref: './openapi.yaml#/components/parameters/Epoch' }]
+    requestBody:
+      required: true
+      content: {application/json: {schema: {$ref: './audit-schemas.yaml#/RestoreRequest'}}}
+    responses:
+      '200':
+        description: 归档段已按原序号恢复并签发当前代次凭据
+        content:
+          application/json:
+            schema:
+              allOf: [{ $ref: './schemas.yaml#/Envelope' }, { properties: {data: {$ref: './audit-schemas.yaml#/ArchiveProof'}} }]
+      default: {$ref: './openapi.yaml#/components/responses/Error'}

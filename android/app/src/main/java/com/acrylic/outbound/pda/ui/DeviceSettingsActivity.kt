@@ -59,6 +59,8 @@ class DeviceSettingsActivity : ComponentActivity() {
         binding.deviceName.text = if (identity == null) "设备：${if (settings.device.isBlank()) "尚未登记" else "已绑定，可联网核对名称"}"
             else "设备：${identity.getString("name")}\n编号：${identity.getString("deviceCode")}\n仓库：${identity.getString("warehouseName")}"
         binding.identity.text = saved?.let { "当前人员：${it.optString("username")}" } ?: "当前未登录"
+        binding.syncStatus.text = if (saved == null) "登录后将自动同步，原作业资料保留"
+            else com.acrylic.outbound.pda.sync.SyncScheduleState(this).message()
         binding.bindFields.visibility = if (settings.device.isBlank()) View.VISIBLE else View.GONE
         binding.status.text = if (saved?.has("blockedReason") == true) "当前登录不可用，请返回人员登录。" else ""
     }
@@ -129,6 +131,7 @@ class DeviceSettingsActivity : ComponentActivity() {
         val saved = withContext(Dispatchers.IO) { app.session.saved() }
         signedIn = saved != null
         binding.identity.text = if (signedIn) "本机登录仍保留" else "当前未登录"
+        if (!signedIn) binding.syncStatus.text = "登录后将自动同步，原作业资料保留"
         binding.status.text = when {
             signedIn -> "本机登录未清除，请重试；原资料保留。"
             failure != null -> "本机已退出；后台注销未确认。原资料和占用保留。"

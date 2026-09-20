@@ -39,4 +39,49 @@ class UpdateGateTest {
         } finally { finish.countDown(); thread.join(5000) }
         UpdateGate.beginInstall()
     }
+
+    @Test fun maintenanceExcludesNewBusinessInstallationAndAnotherCleaner() {
+        val started = CountDownLatch(1); val finish = CountDownLatch(1)
+        val thread = Thread { UpdateGate.maintenance { started.countDown(); finish.await(5, TimeUnit.SECONDS) } }
+        thread.start()
+        try {
+            assertTrue(started.await(5, TimeUnit.SECONDS))
+            assertThrows(UpdateGate.Installing::class.java) { UpdateGate.enterBusiness() }
+            assertThrows(IllegalStateException::class.java) { UpdateGate.beginInstall() }
+            assertNull(UpdateGate.maintenance { "unexpected" })
+        } finally { finish.countDown(); thread.join(5000) }
+        assertEquals("resumed", UpdateGate.business { "resumed" })
+    }
+
+    @Test fun failedMaintenanceReleasesBusinessAdmission() {
+        assertThrows(IllegalArgumentException::class.java) { UpdateGate.maintenance { throw IllegalArgumentException() } }
+        assertEquals("resumed", UpdateGate.business { "resumed" })
+        UpdateGate.beginInstall()
+    }
+
+    @Test fun backgroundYieldsToNewScanBeforeCommit() {
+        UpdateGate.enterBackground().use {
+            UpdateGate.enterBusiness().use {
+                assertThrows(UpdateGate.Busy::class.java) { UpdateGate.commitWhenIdle { fail("scan owns admission") } }
+            }
+            assertEquals("saved", UpdateGate.commitWhenIdle { "saved" })
+        }
+    }
+
+    @Test fun backgroundExcludesAnotherWorkerInstallerAndCleaner() {
+        UpdateGate.enterBackground().use {
+            assertThrows(UpdateGate.Busy::class.java) { UpdateGate.enterBackground() }
+            assertThrows(IllegalStateException::class.java) { UpdateGate.beginInstall() }
+            assertNull(UpdateGate.maintenance { "unexpected" })
+        }
+        UpdateGate.beginInstall()
+    }
+
+    @Test fun failedBackgroundReleasesAdmission() {
+        assertThrows(IllegalArgumentException::class.java) {
+            UpdateGate.enterBackground().use { throw IllegalArgumentException() }
+        }
+        UpdateGate.enterBackground().close()
+        assertEquals("cleaned", UpdateGate.maintenance { "cleaned" })
+    }
 }

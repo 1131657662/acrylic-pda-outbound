@@ -1,0 +1,71 @@
+Event:
+  type: object
+  additionalProperties: false
+  required: [id, assignmentId, captureId, originDeviceId, operatorId, localSeq, type, detail, wallMs, elapsedMs, boot]
+  properties:
+    id: {type: string, format: uuid}
+    assignmentId: {type: string, format: uuid, description: 原授权；续作后不能替换历史来源}
+    captureId: {type: [string, 'null'], format: uuid}
+    originDeviceId: {type: string, format: uuid}
+    operatorId: {type: string, format: uuid, description: 原操作员，不以补传人员替换}
+    localSeq: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    type: {type: string, pattern: '^[A-Z][A-Z0-9_]{0,63}$'}
+    detail: {type: string, maxLength: 500}
+    wallMs: {type: string, pattern: '^(0|[1-9][0-9]{0,17})$'}
+    elapsedMs: {type: string, pattern: '^(0|[1-9][0-9]{0,17})$'}
+    boot: {type: integer, format: int32}
+Batch:
+  type: object
+  additionalProperties: false
+  required: [originDeviceId, events]
+  properties:
+    originDeviceId: {type: string, format: uuid, description: 必须等于认证设备；其他设备代传等待受控换机协议}
+    events:
+      type: array
+      maxItems: 200
+      items: {$ref: '#/Event'}
+  description: 规范化正文最多512KiB；原UUID和原设备序号幂等，重复同内容接受，不同内容整批拒绝
+Acknowledgement:
+  type: object
+  required: [recoveryEpoch, originDeviceId, acknowledgedThrough, batchSha256]
+  properties:
+    recoveryEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
+    originDeviceId: {type: string, format: uuid}
+    acknowledgedThrough: {type: string, pattern: '^(0|[1-9][0-9]*)$', description: 从1开始无缺口的最后序号，不是本批最大序号}
+    batchSha256: {type: string, pattern: '^[a-f0-9]{64}$', description: 按既有SubmissionJson规范化算法计算整个请求的SHA256}
+
+ArchiveRequest:
+  type: object
+  additionalProperties: false
+  required: [originDeviceId, afterSeq, throughSeq, payloadSha256]
+  properties:
+    originDeviceId: {type: string, format: uuid}
+    afterSeq: {type: string, pattern: '^(0|[1-9][0-9]*)$'}
+    throughSeq: {type: string, pattern: '^[1-9][0-9]*$'}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+
+ArchiveProof:
+  type: object
+  additionalProperties: false
+  required: [archiveVersion, originDeviceId, warehouseId, recoveryEpoch, afterSeq, throughSeq, payloadSha256, byteCount, archivedAt, retainUntil, storagePolicy, localDeletionAllowed, signedArchive]
+  properties:
+    archiveVersion: {type: integer, const: 1}
+    originDeviceId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    recoveryEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
+    afterSeq: {type: string, pattern: '^(0|[1-9][0-9]*)$'}
+    throughSeq: {type: string, pattern: '^[1-9][0-9]*$'}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    byteCount: {type: string, pattern: '^[1-9][0-9]*$'}
+    archivedAt: {type: string, format: date-time}
+    retainUntil: {type: string, format: date-time}
+    storagePolicy: {const: SERVER_DURABLE_FILES_V1}
+    localDeletionAllowed: {const: false}
+    signedArchive: {type: string}
+
+RestoreRequest:
+  type: object
+  additionalProperties: false
+  required: [archive]
+  properties:
+    archive: {$ref: '#/ArchiveProof'}

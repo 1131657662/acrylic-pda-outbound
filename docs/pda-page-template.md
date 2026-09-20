@@ -127,6 +127,8 @@ UI优化保留本机身份、原订单、原序号、原请求、签名校验、
 
 设置只放实际可用功能：设备名称/编号、当前仓库/环境、App版本、声音、连接与设备键位诊断。敏感标识、原始错误码在高级详情按权限查看；不提供“清空所有数据解决故障”的常规按钮。换机、解绑、迁仓须走已有独立业务流程，不能作为普通设置开关。
 
+设置页后续接入[应用检查更新与安全升级](PDA_APP_UPDATE_DESIGN.md)，登记/登录页也提供可达入口。第一版由操作员手动检查并调用系统安装器，检查、下载和安装状态可恢复，渠道/签名/清单/APK校验须通过。安装在经核对的安全点执行，与扫码、冻结和上传等动作互斥；已持久化的待上传/待审批资料按经过验证的迁移路径保留，恢复对账阻断不因升级解除。不清除设备密钥、订单或Room记录。
+
 ## 11. 验证与实施定位
 
 优先涉及[准备页](../android/app/src/main/res/layout/activity_main.xml)、[订单列表生成](../android/app/src/main/java/com/acrylic/outbound/pda/ui/OrderCards.kt)、[扫码布局](../android/app/src/main/res/layout/activity_work.xml)、[扫码渲染](../android/app/src/main/java/com/acrylic/outbound/pda/ui/WorkRenderer.kt)和[结单页](../android/app/src/main/res/layout/activity_submission.xml)，样式集中到Android资源，不为视觉调整重写作业引擎。

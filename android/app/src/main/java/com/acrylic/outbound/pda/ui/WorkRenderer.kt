@@ -16,8 +16,12 @@ class WorkRenderer(private val binding: ActivityWorkBinding) {
         binding.message.text = listOf(state.blocked.ifEmpty { state.message },
             "待处理 ${state.pending} · 待落盘 ${state.queued}" + if (state.pending >= 16) "，请放慢扫码" else "",
             soundError).filter { it.isNotEmpty() }.joinToString("\n")
-        if (order?.state == "FROZEN") binding.message.text = "本单已冻结，不能继续扫码或撤销；请进入结单页核对云端回执"
-        if (order?.state in setOf("RECALL_PENDING", "RECALLED")) binding.message.text = "本单已收到召回并停止扫码，请进入召回页核对恢复证据及停止证明"
+        val stopped = when (order?.state) {
+            "FROZEN" -> "本单已冻结，不能继续扫码或撤销；请进入结单页核对云端回执"
+            "RECALL_PENDING", "RECALLED" -> "本单已收到召回并停止扫码，请进入召回页核对恢复证据及停止证明"
+            else -> ""
+        }
+        if (stopped.isNotEmpty()) binding.message.text = listOf(state.blocked, stopped).filter { it.isNotEmpty() }.joinToString("\n")
         binding.closeOrder.isEnabled = order?.state !in setOf("RECALL_PENDING", "RECALLED")
         val visibleLines = state.lines.take(3)
         binding.products.text = visibleLines.joinToString("\n") { "${it.deliveryCode}  ${it.actualCount}/${it.plannedCount} 包 · ${kg(it.weightGrams)} kg" } +

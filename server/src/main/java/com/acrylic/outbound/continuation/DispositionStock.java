@@ -1,5 +1,6 @@
 package com.acrylic.outbound.continuation;
 
+import com.acrylic.outbound.sync.BarcodeChanges;
 import com.acrylic.outbound.common.Ids;
 import com.acrylic.outbound.submissions.SubmissionStore;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,6 +36,7 @@ public class DispositionStock {
                 WHERE bale_id=? AND order_id=? AND continuation_id=? AND state='CONTINUATION_RESERVED' AND dispatch_cycle=?
                 """,Ids.bytes(e.id()),bale,Ids.bytes(c.order()),Ids.bytes(c.continuation()),cycle);
             conflict(changed==1,"DISPOSITION_STOCK_CONFLICT","处置包占用已变化，停止接收新批次");
+            BarcodeChanges.bale(jdbc,e.bale());
             jdbc.update("UPDATE physical_disposition_evidence SET applied_submission_id=? WHERE id=?",Ids.bytes(c.id()),Ids.bytes(e.id()));
         }
     }

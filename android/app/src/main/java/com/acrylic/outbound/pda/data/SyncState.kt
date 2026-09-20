@@ -24,8 +24,8 @@ data class LocalRecoveryControl(
 
 @Dao
 abstract class SyncDao {
-    @Query("SELECT * FROM local_sync_state WHERE serverRecoveryEpoch=:epoch AND warehouseId=:warehouse AND streamType='ORDER'")
-    abstract fun state(epoch: String, warehouse: String): LocalSyncState?
+    @Query("SELECT * FROM local_sync_state WHERE serverRecoveryEpoch=:epoch AND warehouseId=:warehouse AND streamType=:stream")
+    abstract fun state(epoch: String, warehouse: String, stream: String = "ORDER"): LocalSyncState?
     @Insert(onConflict = OnConflictStrategy.REPLACE) abstract fun saveState(state: LocalSyncState)
     @Query("SELECT * FROM local_cloud_order WHERE serverRecoveryEpoch=:epoch AND warehouseId=:warehouse AND baselineId=:baseline AND orderId=:order")
     abstract fun order(epoch: String, warehouse: String, baseline: String, order: String): LocalCloudOrder?

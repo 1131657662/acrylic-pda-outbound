@@ -33,6 +33,10 @@ async function submit(): Promise<void> {
         <label for="password">密码</label>
         <el-input id="password" v-model="password" type="password" autocomplete="current-password" size="large" show-password required :disabled="busy" />
         <el-button native-type="submit" type="primary" size="large" :loading="busy" class="login-submit">登录</el-button>
+        <router-link class="login-download" to="/pda-download">下载 PDA 应用</router-link>
       </form>
   </main>
 </template>
+<style scoped>
+.login-download { display: inline-block; padding-block: var(--space-3); }
+</style>
