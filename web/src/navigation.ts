@@ -5,6 +5,7 @@ export const navigationCollapsed = ref(window.innerWidth < 1280);
 export const navigation = [
   { group: '装车作业', items: [
     { path: '/orders', label: '装车订单', permission: 'order:read', icon: Document },
+    { path: '/exports', label: '导出中心', permission: 'order:read', icon: Files },
     { path: '/review-reminders', label: '超时待审', permission: 'submission:review', icon: Bell },
   ] },
   { group: '库存管理', items: [

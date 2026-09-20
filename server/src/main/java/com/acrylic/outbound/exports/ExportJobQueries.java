@@ -30,16 +30,39 @@ public class ExportJobQueries {
         boolean old=!p.epoch().equals(state.current().epoch());
         return new View(job.id(),p.orderNo(),p.format(),p.basis(),1,p.revision(),old?"INVALIDATED":expired?"EXPIRED":job.status().name(),
                 job.attemptCount(),job.lastError(),job.createdAt(),p.expiresAt(),p.originalDay(),p.snapshotId(),
-                a==null?null:a.sha256(),a==null?null:a.bytes(),!old && !expired && a!=null && job.status()==BackgroundJob.Status.SUCCEEDED);
+                a==null?null:a.sha256(),a==null?null:a.bytes(),!old && !expired && a!=null && job.status()==BackgroundJob.Status.SUCCEEDED,
+                p.scope().order(),p.range(),p.orderCount()==null?1:p.orderCount(),p.retryOf());
     }
     public ExportModels.Page list(Scope scope,UUID before) {
-        String filter=before==null?"":" AND id<?";var args=new ArrayList<Object>(List.of(TYPE,scope.actor().toString(),scope.warehouse().toString(),scope.order().toString()));
-        if(before!=null) args.add(Ids.bytes(before));
+        return list(scope,new Filter(before,null,null));
+    }
+    public record Filter(UUID before,Format format,String status) { }
+    public ExportModels.Page list(Scope scope,Filter filter) {
+        var args=new ArrayList<Object>(List.of(TYPE,scope.actor().toString(),scope.warehouse().toString()));
+        String sql=conditions(scope,filter,args);
         var ids=jdbc.query("""
             SELECT BIN_TO_UUID(id) FROM background_job WHERE job_type=? AND payload->>'$.scope.actor'=?
-              AND payload->>'$.scope.warehouse'=? AND payload->>'$.scope.order'=?
-            """+filter+" ORDER BY id DESC LIMIT 21",(rs,n)->UUID.fromString(rs.getString(1)),args.toArray());
+              AND payload->>'$.scope.warehouse'=?
+            """+sql+" ORDER BY created_at DESC,id DESC LIMIT 21",(rs,n)->UUID.fromString(rs.getString(1)),args.toArray());
         return new ExportModels.Page(ids.stream().limit(20).map(id->view(jobs.find(id).orElseThrow())).toList(),ids.size()>20?ids.get(19):null);
+    }
+    private String conditions(Scope scope,Filter filter,List<Object> args) {
+        String sql="";
+        if(scope.order()!=null) { sql+=" AND payload->>'$.scope.order'=?";args.add(scope.order().toString()); }
+        if(filter.format()!=null) { sql+=" AND payload->>'$.format'=?";args.add(filter.format().name()); }
+        if(filter.status()!=null) {
+            if(!Set.of("PENDING","RUNNING","RETRY","SUCCEEDED","FAILED","EXPIRED","INVALIDATED").contains(filter.status()))
+                throw new BusinessException(400,"EXPORT_STATUS_INVALID","文件任务状态无效");
+            sql+=" AND CASE WHEN payload->>'$.epoch'<>? THEN 'INVALIDATED' WHEN CAST(REPLACE(REPLACE(payload->>'$.expiresAt','T',' '),'Z','') AS DATETIME(6))<=UTC_TIMESTAMP(6) THEN 'EXPIRED' ELSE status END=?";
+            args.add(state.current().epoch());args.add(filter.status());
+        }
+        if(filter.before()!=null) {
+            var cursor=owned(scope.actor(),scope.warehouse(),filter.before());
+            if(scope.order()!=null && !scope.order().equals(payload(cursor).scope().order())) throw missing();
+            sql+=" AND (created_at<? OR (created_at=? AND id<?))";
+            args.add(java.sql.Timestamp.from(cursor.createdAt()));args.add(java.sql.Timestamp.from(cursor.createdAt()));args.add(Ids.bytes(cursor.id()));
+        }
+        return sql;
     }
     public void checkCapacity(UUID actor) {
         Long active=jdbc.queryForObject("""

@@ -12,6 +12,7 @@ export const router = createRouter({
     { path: '/inventory/bales', component: () => import('./inventory/InventoryPage.vue') },
     { path: '/inventory/mappings', component: () => import('./inventory/MappingsPage.vue') },
     { path: '/orders', component: () => import('./orders/OrdersPage.vue') },
+    { path: '/exports', component: () => import('./exports/ExportCenterPage.vue') },
     { path: '/review-reminders', component: () => import('./review/ReviewRemindersPage.vue') },
     { path: '/orders/:id', component: () => import('./orders/OrderDetailPage.vue') },
     { path: '/orders/:id/pc-outbound', component: () => import('./pc/PcOutboundPage.vue') },
@@ -39,6 +40,7 @@ router.beforeEach(async (to) => {
 });
 
 export function loginDestination(value: unknown, permissions: string[]): string {
+  if (typeof value === 'string' && /^\/exports(?:\?|$)/.test(value) && permissions.includes('order:read')) return value;
   if (typeof value === 'string' && /^\/review-reminders(?:\?|$)/.test(value) && permissions.includes('submission:review')) return value;
   if (typeof value === 'string' && /^\/(orders(?:\/[^/?#]+(?:\/pc-outbound(?:\/exception)?)?)?|inventory\/(imports|bales|mappings)|policies|devices|users)(?:\?|$)/.test(value)) {
     const route = router.resolve(value);

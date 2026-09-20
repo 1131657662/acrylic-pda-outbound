@@ -1,6 +1,46 @@
 # R08 文件生成及原确认文件接入交付记录
 
-最新日期：2026-09-20。**独立文件模块、首版适配及单个正式订单“原确认文件”的 Web/API/Worker/下载闭环已完成源码与本机隔离验证。仅本子项完成，不代表完整R08或真实业务验收完成。** 更正净结果等待 R07 模型。
+最新日期：2026-09-20。**总调度已将 R08 交给执行子代理 W2 接管，原 B 会话仍暂停。原确认跨订单汇总、导出中心和原快照重生成本批已完成源码及本机隔离验证；下方暂停记录是历史断点。** 仅本子项完成，不代表完整 R08、真实业务或现场验收完成。
+
+## 总调度 W2 接管与本批收口（2026-09-20，当前接续）
+
+沿用 `D:/acrylic-pda-worktrees/r08-export` / `codex/r08-export-rendering`，从 `effba8f` 及原未提交断点继续。当前完成原确认上海日期汇总、固定成员和版本的 Excel/PDF、本人任务中心、真实游标及格式/有效状态筛选、丢响应原键恢复、原快照重生成和旧单订单 payload 兼容。范围严格限定正式订单 `ORIGINAL_CONFIRMED` V1；接口、约束与整合清单见 [EXPORT_CENTER](EXPORT_CENTER.md)。
+
+独立审查发现导出申请和重生成在等待用户行锁期间可能使用撤权前的检查结果。已在 `server_state` 共享锁、`app_user FOR UPDATE` 后且首次一致性读前重新执行 `Access.require`；会话失效、角色撤回、仓库撤回分别覆盖申请与重生成，共6项真实MySQL双连接测试通过。W1只读复审确认原P1关闭，未发现新的阻断问题；当前26个代码/测试文件的内容指纹为 `ca205d5d683f9132a369831b23c6a47b7d64df8cfd7112e1d61fecb8f9b8ea33`（排序后逐行path、TAB、原始文件SHA256、LF；不含本文档）。
+
+| 本批实际验证 | 最终结果与证据 |
+| --- | --- |
+| 后端集成 | **40项通过，0失败/错误/跳过**：AuthorizationRace 6、CenterPagination 4、ExportFence 4、Export 13、Retry 7、Summary 6。`.local/r08/center-authorization-final.log` 与 `server/build/test-results/integrationTest/`；覆盖原确认日界、精确汇总、固定快照、分页、越权、原键重试和旧payload兼容 |
+| 后端单元与构建 | 同一最终命令的 `test` **35项通过**（含3项子进程），`bootJar`通过。未将模块旧101项冒充本批重跑；本批未修改report-rendering |
+| Web | 类型检查和生产构建通过，`.local/r08/center-web-build.log`；既有大chunk提示保留 |
+| 真实浏览器 | 最终 **5项全部通过，52.4秒**：中心Excel/PDF及原快照重生成、中心丢响应刷新恢复、格式筛选、既有单订单3格式下载、既有单订单丢响应恢复。`.local/r08/center-browser-final-restart.log`；本轮不声称浏览器跨页/未应用筛选组合已验，分页4项为后端集成证据 |
+| 文件回读 | `.local/r08/integration/verify-center-files.py` 最终通过7份文件核对：冻结/重试各3包901.503kg；跨订单6包1803.006kg、4页PDF；空Excel；浏览器24包7212.024kg、7页PDF。核对快照成员、原顺序、文本条码、精确重量、无公式/链接、嵌入字体及原确认/TEST_SAMPLE口径。报告`center-file-verification.json`，执行日志`.local/r08/center-files-final.log` |
+| 视觉与差异 | 已检查跨订单PDF的Poppler 4页渲染及桌面/390px截图；最后浏览器重跑的新桌面/手机截图再次目视核对，未观察到上部页面横向溢出。`git diff --check`通过 |
+
+首次失败和修复均保留：
+
+- 初次32项IT中11项失败：多订单重复初始化政策，以及夹具直接设FAILED但未满足尝试次数约束；只修正夹具，第二轮32项通过，后续增加授权并发和旧payload/并发重试至最终40项。见`center-it-first.log`、`center-it-second.log`。
+- 首轮浏览器4通过/1失败，Element Plus占位层截获输入框点击；改为点击select容器，定向1项通过。该用例最终名称与断言只覆盖格式筛选，未把原标题提及的分页算作已验。见`center-browser-first.log`、`center-browser-filter-final.log`。
+- 最终完整复跑首次5项均在登录超时：API/Worker于17:18启动，原build JAR随后被17:33的最终bootJar覆盖；API出现`NoClassDefFoundError: ThrowableProxy`。只重启已核身的R08进程，改用经SHA256核对的固定副本，之后完整5项通过；未改源码、重跑Gradle或重置原种子。失败日志`center-browser-final.log`、`integration/center-api-error.log`保留。文件核对初次使用系统Python缺少openpyxl，改用Codex已安装运行时后通过，未安装或修改依赖。
+
+当前预览环境：API18108 **PID26576**、Worker **PID16292**、Web5178 **PID22608**、MySQL23308 **PID26004**保留运行，均已核对所属R08路径。API/Worker固定读取 `.local/r08/integration/center-final-server.jar`，SHA256 `D10AA00F0815F236A656285DD95C3A3D43D88AD7E3013CC47B5E4B09A0304CE6`。进程与摘要登记在`integration/preview-pids.json`，新日志为`center-final-api*.log`/`center-final-worker*.log`；原库、preview种子、签名资料、私有文件及证据保留。今后构建不得覆盖运行进程的JAR，先固定副本再启用。
+
+本批按授权仅提交并推送独立分支，具体SHA由Git及交付回报核验。下一步由总调度安排正式OpenAPI/版本和当前主线组合整合；共享点为Web导航/路由、基线server复合构建依赖和既有订单导出入口，`PcFixture`仅增加可选政策初始化重载。未合入development/main、打标签、发布、部署公网或操作PDA。
+
+未完成：TEMP来源、更正净结果、多设备来源、正式契约和主线组合回归、生产规模查询性能/索引、文件自动清理/配额与R09引用和异地备份，以及现场Excel/打印机、异地HTTPS。当前数据库仍用本R08已验证V28模型，无新迁移、Room或应用版本变化；不将本批汇总视为更正后的净结果。
+
+## 历史：用户要求暂停（2026-09-20，已由上述W2接管续接）
+
+用户要求B/C/D任务立即暂停，等待后续明确恢复。本任务已停止新增开发、测试和后续推进，仅记录断点；此次暂停不新增提交、推送或合并。没有子代理或本任务自动续跑安排。
+
+- **分支/已保存成果**：工作树 `D:/acrylic-pda-worktrees/r08-export`，分支 `codex/r08-export-rendering`。既有Excel/PDF、模板扫码Excel及单订单下载闭环已在暂停指令前通过 `effba8f` 提交并推送，当前HEAD与上游一致。该批本轮验证为模块101项、服务端35项单元、17项MySQL/MockMvc、Web构建及2项真实浏览器通过；首次失败和重跑见下一节。
+- **未提交开发断点**：原确认跨订单日期汇总、导出中心API/Web、原快照重生成已写入工作树但未完成功能验收。修改现有 `ExportModels/ExportProducer/ExportJobQueries/ExportSnapshotReader` 及Web导出契约、导航、路由；新增 `ExportRangeReader/ExportSummary/ExportSummaryQuery/ExportRetry/ExportCenterController` 与Web中心页面、汇总页和请求/任务状态模块。保留全部已修改及未跟踪文件，不清理、不重置。
+- **新增范围实际验证**：暂停前服务端 `compileJava`、Web `npm run typecheck` 通过。之后对ExportRetry的过期重试条件有一处修改，尚未重新编译；新增范围未运行单元/集成/浏览器/文件回读或视觉验证，不算完成。旧101/35/17/2项结果属于保存前基线，不能作为新增范围通过证据。
+- **已知运行不匹配**：本机API/Worker仍是保存前旧JAR，未重启接入新API；Web5178为Vite，会读取当前未提交源码。新Web导出契约增加字段，而旧API没有这些字段，因此当前浏览器预览可能报响应异常；暂停期间不修补或重启。
+- **运行环境**：本轮未启动长期服务。先前保留的专用MySQL `127.0.0.1:23308` PID26004、API18108 PID23468、独立Worker PID29816、Web5178 PID22608在暂停核对时仍运行，均属于R08原隔离环境；未停止。API/Worker使用preview库，IT使用 `acrylic_r08_it`。进程登记 `.local/r08/integration/preview-pids.json`；专用库、签名材料、快照/文件、日志和证据全部保留。本轮构建/测试命令均已退出，无在途本轮长操作。
+- **恢复后下一步**：先核对Git和上述环境，审查新增汇总/重试/分页及Web请求恢复逻辑；补越权、上海日界、固定成员/版本、幂等、分页、状态筛选和原快照重试测试，再完成独立环境API/Worker/Web及文件验证。正式OpenAPI及共享文件整合清单尚待整理；共享接入点目前为server构建两处、订单页、Web导航/路由，正式契约索引、版本、迁移编号由主线协调。临时来源、更正净结果、多设备来源分别等待对应已提交契约。
+
+主工作树和其他任务未修改，未改提交/记账核心，未合并development/main、打标签、发布、部署公网或操作PDA。等待用户明确恢复，不自行继续。
 
 ## 本次接续：先保存既有成果（2026-09-20）
 

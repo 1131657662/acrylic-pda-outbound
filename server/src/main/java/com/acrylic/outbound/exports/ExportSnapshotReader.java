@@ -34,4 +34,7 @@ public class ExportSnapshotReader {
         }
         return snapshot;
     }
+    ReportSnapshot.Provenance provenance() {
+        return sampleData?ReportSnapshot.Provenance.TEST_SAMPLE:ReportSnapshot.Provenance.SOURCE_SNAPSHOT;
+    }
 }
