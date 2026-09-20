@@ -2,7 +2,13 @@
 
 0.20.0新增审计连续前缀归档与跨恢复代次重建，字段、签名凭据和错误边界见[PDA接口](PDA_API.md#r05-审计连续前缀归档与恢复0200)。当前不授权删除本机事实。
 
-契约版本0.21.0，共96条路径，2026-09-19。机器契约见[openapi.yaml](openapi.yaml)。本版新增当前超时待审查询；0.20.0的审计连续前缀归档和跨恢复代次重建保持，PDA换机、已出库后更正、灾后账务重建和文件生成仍待开发。
+契约版本0.22.0，共97条路径，2026-09-20。机器契约见[openapi.yaml](openapi.yaml)。本版新增临时作业设备准入与独立权限配置；当前待审及审计恢复接口保留。临时订单完整闭环、PDA换机、已出库后更正、灾后账务重建和文件生成仍待开发。
+
+## 临时订单准入（0.22.0）
+
+`POST /devices/{id}/temporary-order?warehouseId=…`要求`device:manage`、`temporary_order:manage`及仓库范围，CSRF/幂等键/恢复代次齐全，正文为`expectedVersion/enabled/reason`。默认关闭；停用设备不能开启。新请求递增设备版本、撤销会话并原子保存回执与审计；保留订单、原离线授权、事实和占用。同键同正文返回原回执，回执的`temporaryOrderEnabled`保留当时值。设备列表、PDA设备查询及登记/启停回执均增加该布尔字段。
+
+人员管理在`user:manage`基础上，以`temporary_order:manage`配置三个独立执行角色：create/confirm/link；管理员不自动获得执行权限，仅持执行权限不能转授。查询/详情/可选角色/写操作使用同一可管理范围，其他权限及仓库边界保持。数据库V29，APK/Room未变；未签发TEMP资格、开放临时建单或部署，验证和回退限制见[R06-A记录](../docs/R06_TEMPORARY_ORDER_ACCESS_GUIDE.md)。
 
 ## 当前超时待审（0.21.0）
 

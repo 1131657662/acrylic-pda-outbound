@@ -16,17 +16,17 @@ public class UserStore {
         AND NOT EXISTS(SELECT 1 FROM user_warehouse tw WHERE tw.user_id=u.id AND NOT EXISTS(
             SELECT 1 FROM user_warehouse aw INNER JOIN warehouse w ON w.id=aw.warehouse_id
             WHERE aw.user_id=? AND aw.warehouse_id=tw.warehouse_id AND w.status='ACTIVE'))
-        AND NOT EXISTS(SELECT 1 FROM user_role tr INNER JOIN role_permission tp ON tp.role_id=tr.role_id
-            WHERE tr.user_id=u.id AND NOT EXISTS(SELECT 1 FROM user_role ar
-            INNER JOIN role_permission ap ON ap.role_id=ar.role_id WHERE ar.user_id=? AND ap.permission_id=tp.permission_id))
         """;
     public UserStore(JdbcTemplate jdbc) { this.jdbc=jdbc; }
     @Transactional(readOnly=true)
     public UserCommands.Page list(UserAccess.Scope scope,UUID warehouse,UserCommands.Query query) {
         if(query.page()<1 || query.page()>100000 || !Set.of(20,50,100).contains(query.pageSize()) || query.username().length()>64 ||
             !Set.of("","ACTIVE","DISABLED").contains(query.status())) throw new BusinessException(400,"INVALID_REQUEST","人员查询条件或分页不正确");
-        var args=new ArrayList<Object>(List.of(Ids.bytes(warehouse),Ids.bytes(scope.actor()),Ids.bytes(scope.actor())));
-        String where=SCOPE;
+        var args=new ArrayList<Object>(List.of(Ids.bytes(warehouse),Ids.bytes(scope.actor())));
+        String marks=String.join(",",Collections.nCopies(scope.manageablePermissions().size(),"?"));
+        String where=SCOPE+" AND NOT EXISTS(SELECT 1 FROM user_role tr INNER JOIN role_permission tp ON tp.role_id=tr.role_id "
+            +"INNER JOIN permission p ON p.id=tp.permission_id WHERE tr.user_id=u.id AND p.code NOT IN ("+marks+"))";
+        args.addAll(scope.manageablePermissions());
         if(!query.username().isBlank()) { where+=" AND u.username=?";args.add(query.username()); }
         if(!query.status().isBlank()) { where+=" AND u.status=?";args.add(query.status()); }
         long total=jdbc.queryForObject("SELECT COUNT(*) FROM app_user u WHERE "+where,Long.class,args.toArray());

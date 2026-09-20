@@ -20,17 +20,18 @@ public class DeviceReceipts {
     }
     public DeviceCommands.Receipt save(Ticket ticket,MutationAccess.Context context,Result result) {
         UUID id=Ids.next();
-        jdbc.update("INSERT INTO device_command_receipt VALUES(?,?,?,?,UTC_TIMESTAMP(3))",Ids.bytes(id),Ids.bytes(result.deviceId()),result.version(),result.status());
+        jdbc.update("INSERT INTO device_command_receipt(id,device_id,row_version,status,created_at,temporary_order_enabled) VALUES(?,?,?,?,UTC_TIMESTAMP(3),?)",
+            Ids.bytes(id),Ids.bytes(result.deviceId()),result.version(),result.status(),result.temporaryOrderEnabled());
         requests.record(ticket.key(),ticket.digest(),id);
         audit.append(new AuditWriter.Event(ticket.key().actor(),result.event(),"DEVICE",result.deviceId(),json.encode(result)),context.requestId());
         return get(id);
     }
     private DeviceCommands.Receipt get(UUID id) {
-        return jdbc.queryForObject("SELECT BIN_TO_UUID(id),BIN_TO_UUID(device_id),row_version,status FROM device_command_receipt WHERE id=?",
-            (rs,n)->new DeviceCommands.Receipt(rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4)),Ids.bytes(id));
+        return jdbc.queryForObject("SELECT BIN_TO_UUID(id),BIN_TO_UUID(device_id),row_version,status,temporary_order_enabled FROM device_command_receipt WHERE id=?",
+            (rs,n)->new DeviceCommands.Receipt(rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getBoolean(5)),Ids.bytes(id));
     }
     public record Payload(String action,UUID id,Object command) { }
     private record Body(UUID warehouse,Payload payload) { }
     public record Ticket(IdempotencyRequests.Key key,String digest,DeviceCommands.Receipt replay) { }
-    public record Result(UUID deviceId,String version,String status,String event,String reason) { }
+    public record Result(UUID deviceId,String version,String status,boolean temporaryOrderEnabled,String event,String reason) { }
 }

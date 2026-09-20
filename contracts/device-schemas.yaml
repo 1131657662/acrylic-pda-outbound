@@ -14,15 +14,16 @@ StatusCommand:
     reason: {type: string, minLength: 1, maxLength: 500}
 Receipt:
   type: object
-  required: [id, deviceId, rowVersion, status]
+  required: [id, deviceId, rowVersion, status, temporaryOrderEnabled]
   properties:
     id: {type: string, format: uuid}
     deviceId: {type: string, format: uuid}
     rowVersion: {type: string}
     status: {type: string, enum: [ACTIVE, DISABLED]}
+    temporaryOrderEnabled: {type: boolean, description: 操作当时的准入值；历史回执保持原值}
 Device:
   type: object
-  required: [id, warehouseId, deviceCode, name, publicKey, keySha256, status, rowVersion, createdAt, lastSeenAt]
+  required: [id, warehouseId, deviceCode, name, publicKey, keySha256, status, rowVersion, createdAt, lastSeenAt, temporaryOrderEnabled]
   properties:
     id: {type: string, format: uuid}
     warehouseId: {type: string, format: uuid}
@@ -34,6 +35,14 @@ Device:
     rowVersion: {type: string}
     createdAt: {type: string, format: date-time}
     lastSeenAt: {type: [string, 'null'], format: date-time}
+    temporaryOrderEnabled: {type: boolean, description: 默认关闭；不等同于人员权限或离线资格}
+TemporaryOrderCommand:
+  type: object
+  required: [expectedVersion, enabled, reason]
+  properties:
+    expectedVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    enabled: {type: boolean}
+    reason: {type: string, minLength: 1, maxLength: 500}
 Page:
   type: object
   required: [items, nextCursor]

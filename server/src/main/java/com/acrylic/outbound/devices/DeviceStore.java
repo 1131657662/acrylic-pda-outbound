@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 public class DeviceStore {
     private final JdbcTemplate jdbc;
     public DeviceStore(JdbcTemplate jdbc) { this.jdbc=jdbc; }
-    private static final String SELECT="SELECT BIN_TO_UUID(id),BIN_TO_UUID(warehouse_id),device_code,name,public_key,key_sha256,status,row_version,created_at,last_seen_at FROM device";
+    private static final String SELECT="SELECT BIN_TO_UUID(id),BIN_TO_UUID(warehouse_id),device_code,name,public_key,key_sha256,status,row_version,created_at,last_seen_at,temporary_order_enabled FROM device";
     public Device find(UUID id,boolean lock) {
         var rows=jdbc.query(SELECT+" WHERE id=?"+(lock?" FOR UPDATE":""),this::map,Ids.bytes(id));
         if(rows.isEmpty()) throw new BusinessException(404,"DEVICE_NOT_FOUND","设备不存在或无权访问");
@@ -34,14 +34,18 @@ public class DeviceStore {
         jdbc.update("UPDATE device SET status=?,row_version=row_version+1 WHERE id=?",status,Ids.bytes(device.id()));
         jdbc.update("UPDATE pda_session SET revoked_at=COALESCE(revoked_at,UTC_TIMESTAMP(3)) WHERE device_id=?",Ids.bytes(device.id()));
     }
+    public void temporaryOrder(Device device,boolean enabled) {
+        jdbc.update("UPDATE device SET temporary_order_enabled=?,row_version=row_version+1 WHERE id=?",enabled,Ids.bytes(device.id()));
+        jdbc.update("UPDATE pda_session SET revoked_at=COALESCE(revoked_at,UTC_TIMESTAMP(3)) WHERE device_id=?",Ids.bytes(device.id()));
+    }
     private Device map(java.sql.ResultSet rs,int n) throws java.sql.SQLException {
         var seen=rs.getTimestamp(10);
         return new Device(UUID.fromString(rs.getString(1)),UUID.fromString(rs.getString(2)),rs.getString(3),rs.getString(4),
-            rs.getString(5),rs.getString(6),rs.getString(7),rs.getString(8),rs.getTimestamp(9).toInstant().toString(),seen==null?null:seen.toInstant().toString());
+            rs.getString(5),rs.getString(6),rs.getString(7),rs.getString(8),rs.getTimestamp(9).toInstant().toString(),seen==null?null:seen.toInstant().toString(),rs.getBoolean(11));
     }
     public record NewDevice(UUID id,UUID warehouse,UUID actor) { }
     public record Device(UUID id,UUID warehouseId,String deviceCode,String name,String publicKey,String keySha256,
-        String status,String rowVersion,String createdAt,String lastSeenAt) {
+        String status,String rowVersion,String createdAt,String lastSeenAt,boolean temporaryOrderEnabled) {
         public void requireActive() { if(!status.equals("ACTIVE")) throw new BusinessException(401,"DEVICE_DISABLED","设备已停用，请联系管理员；本机记录必须保留"); }
     }
 }

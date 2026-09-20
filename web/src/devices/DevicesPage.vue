@@ -16,10 +16,11 @@ import DeviceIdentityDialog from './DeviceIdentityDialog.vue';
 import DevicePairingPanel from './DevicePairingPanel.vue';
 const session = useSessionStore();
 const canManage = computed(() => !!session.identity?.permissions.includes('device:manage'));
+const canManageTemporary = computed(() => canManage.value && !!session.identity?.permissions.includes('temporary_order:manage'));
 const warehouseName = computed(() => session.identity?.warehouses.find(w => w.id === session.warehouseId)?.name ?? '');
 const pending = ref<PendingDeviceRequest | null>(null); const storageError = ref(''); const sending = ref(false);
 const pairingSending = ref(false);
-const dialog = ref<{ device: Device | null; pending: PendingDeviceRequest | null } | null>(null);
+const dialog = ref<{ device: Device | null; pending: PendingDeviceRequest | null; action?: 'STATUS' | 'TEMPORARY_ORDER' } | null>(null);
 const identity = ref<Device | null>(null); const receipt = ref<DeviceReceipt | null>(null);
 function restore(): void {
   storageError.value = ''; pending.value = null;
@@ -51,7 +52,7 @@ onBeforeRouteLeave(() => !sending.value && !pairingSending.value);
       <DevicePairingPanel v-if="session.identity && session.warehouseId" :key="`${session.identity.id}:${session.warehouseId}`"
         :user-id="session.identity.id" :warehouse-id="session.warehouseId" :warehouse-name="warehouseName" @sending="pairingSending = $event" @changed="paging.reload" />
       <el-alert v-if="storageError" :title="storageError" type="error" :closable="false" />
-      <el-alert v-if="receipt" :title="`设备操作已确认（${receipt.status === 'ACTIVE' ? '启用' : '停用'}，回执版本${receipt.rowVersion}）。下方列表显示最新状态。`" type="success" :closable="false" />
+      <el-alert v-if="receipt" :title="`设备操作已确认（${receipt.status === 'ACTIVE' ? '启用' : '停用'}，临时作业准入${receipt.temporaryOrderEnabled ? '开启' : '关闭'}，回执版本${receipt.rowVersion}）。下方列表显示最新状态。`" type="success" :closable="false" />
       <section v-if="pending" class="panel"><div class="section-heading"><h2>有一项设备请求待核验</h2>
         <el-button type="warning" :disabled="busy" @click="dialog = { device: null, pending }">恢复原设备请求</el-button></div>
         <p class="muted">原内容已保存在本标签页。核验完成前暂停新设备操作；不会自动再次发送。关闭整个标签页会失去这里的恢复入口。</p></section>
@@ -63,14 +64,17 @@ onBeforeRouteLeave(() => !sending.value && !pairingSending.value);
           <el-table-column prop="name" label="名称" min-width="170" />
           <el-table-column label="状态" width="100"><template #default="{ row }"><el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'">{{ row.status === 'ACTIVE' ? '已启用' : '已停用' }}</el-tag></template></el-table-column>
           <el-table-column label="最近联网" min-width="180"><template #default="{ row }">{{ row.lastSeenAt ? localTime(row.lastSeenAt) : '尚无联网记录' }}</template></el-table-column>
-          <el-table-column label="操作" width="200"><template #default="{ row }"><el-button link type="primary" @click="identity = row">查看身份</el-button>
-            <el-button link :type="row.status === 'ACTIVE' ? 'danger' : 'primary'" :disabled="busy || !!error || !!pending || !!storageError" @click="dialog = { device: row, pending: null }">{{ row.status === 'ACTIVE' ? '停用' : '启用' }}</el-button></template></el-table-column>
+          <el-table-column label="临时作业准入" width="130"><template #default="{ row }">{{ row.temporaryOrderEnabled ? '已开启' : '已关闭' }}</template></el-table-column>
+          <el-table-column label="操作" width="300"><template #default="{ row }"><el-button link type="primary" @click="identity = row">查看身份</el-button>
+            <el-button link :type="row.status === 'ACTIVE' ? 'danger' : 'primary'" :disabled="busy || !!error || !!pending || !!storageError || pairingSending" @click="dialog = { device: row, pending: null }">{{ row.status === 'ACTIVE' ? '停用' : '启用' }}</el-button>
+            <el-button v-if="canManageTemporary" link type="primary" :disabled="busy || !!error || !!pending || !!storageError || pairingSending || (!row.temporaryOrderEnabled && row.status !== 'ACTIVE')"
+              @click="dialog = { device: row, pending: null, action: 'TEMPORARY_ORDER' }">{{ row.temporaryOrderEnabled ? '关闭临时准入' : '开启临时准入' }}</el-button></template></el-table-column>
         </el-table>
         <CursorPager :page="page" :size="50" :busy="busy" :has-next="!!nextCursor" label="设备列表分页" @first="paging.first" @previous="paging.previous" @next="paging.next" />
       </section>
     </template>
     <DeviceCommandDialog v-if="dialog && session.identity" :warehouse-id="session.warehouseId" :warehouse-name="warehouseName" :user-id="session.identity.id"
-      :device="dialog.device" :pending="dialog.pending" @close="close" @saved="saved" @sending="sending = $event" />
+      :device="dialog.device" :pending="dialog.pending" :action="dialog.action" @close="close" @saved="saved" @sending="sending = $event" />
     <DeviceIdentityDialog v-if="identity" :device="identity" @close="identity = null" />
   </WorkspaceLayout>
 </template>

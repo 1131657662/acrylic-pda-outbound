@@ -33,6 +33,7 @@ Users:
 Options:
   get:
     summary: 当前管理员可授予的现有角色及有效仓库，user:manage
+    description: temporary_order:manage允许在本人仓库范围管理create/confirm/link三个独立执行角色，但不赋予执行权限。仅持有执行权限不能转授。其余权限仍不得超出管理员本人权限。
     parameters:
       - $ref: './openapi.yaml#/components/parameters/Warehouse'
     responses:

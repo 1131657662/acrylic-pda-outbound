@@ -19,7 +19,7 @@ public class UserController {
     }
     @GetMapping("/options") public ApiEnvelope<?> options(@RequestParam UUID warehouseId,HttpServletRequest request) {
         var scope=access.read(warehouseId);
-        return responses.ok(Map.of("roles",store.roles().stream().filter(r->scope.permissions().containsAll(r.permissions())).toList(),"warehouses",scope.warehouses()),request);
+        return responses.ok(Map.of("roles",store.roles().stream().filter(r->scope.manageablePermissions().containsAll(r.permissions())).toList(),"warehouses",scope.warehouses()),request);
     }
     @GetMapping("/{id}") public ApiEnvelope<?> detail(@RequestParam UUID warehouseId,@PathVariable UUID id,HttpServletRequest request) {
         var scope=access.read(warehouseId);var item=store.find(id);access.target(scope,item,warehouseId);return responses.ok(item,request);

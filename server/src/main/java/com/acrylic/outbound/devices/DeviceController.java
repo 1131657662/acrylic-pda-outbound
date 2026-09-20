@@ -26,6 +26,10 @@ public class DeviceController {
         @Valid @RequestBody DeviceCommands.Status body,HttpServletRequest request) {
         return responses.ok(service.status(context(warehouseId,request),id,body),request);
     }
+    @PostMapping("/{id}/temporary-order") public ApiEnvelope<?> temporaryOrder(@RequestParam UUID warehouseId,@PathVariable UUID id,
+        @Valid @RequestBody DeviceCommands.TemporaryOrder body,HttpServletRequest request) {
+        return responses.ok(service.temporaryOrder(context(warehouseId,request),id,body),request);
+    }
     private MutationAccess.Context context(UUID warehouse,HttpServletRequest request) {
         String key=request.getHeader("Idempotency-Key"),epoch=request.getHeader("X-Server-Recovery-Epoch");
         if(key==null || epoch==null) throw new BusinessException(400,"INVALID_REQUEST","缺少幂等键或恢复代次");

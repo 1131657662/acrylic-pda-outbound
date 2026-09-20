@@ -47,6 +47,24 @@ Status:
     responses:
       '200': {$ref: '#/Receipt'}
       default: {$ref: './openapi.yaml#/components/responses/Error'}
+TemporaryOrder:
+  post:
+    summary: 调整临时作业准入，需device:manage及temporary_order:manage；递增设备版本并撤销会话，保留原授权/订单/事实/占用
+    description: 停用设备不能开启。原键同正文返回不可变回执，不覆盖之后的设置；本接口不签发TEMP资格或开放临时建单。
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Warehouse'
+      - $ref: './openapi.yaml#/components/parameters/OrderId'
+      - $ref: './openapi.yaml#/components/parameters/Csrf'
+      - $ref: './openapi.yaml#/components/parameters/Idempotency'
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './device-schemas.yaml#/TemporaryOrderCommand'}
+    responses:
+      '200': {$ref: '#/Receipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
 Assignment:
   get:
     summary: Web查看活动订单占用摘要，order:read；不返回签名凭据
