@@ -7,7 +7,7 @@ from safety import require, digest
 def events(db):
     from audit_origins import event_index, provenance
     version = db.query('SELECT MAX(CAST(version AS UNSIGNED)) FROM flyway_schema_history;')
-    extra = ',BIN_TO_UUID(temporary_authorization_id),BIN_TO_UUID(client_order_id)' if version == '32' else ''
+    extra = ',BIN_TO_UUID(temporary_authorization_id),BIN_TO_UUID(client_order_id)' if version in ('32', '33') else ''
     query = '''SELECT BIN_TO_UUID(id),BIN_TO_UUID(origin_device_id),local_seq,record_sha256,HEX(payload),
         BIN_TO_UUID(warehouse_id),BIN_TO_UUID(assignment_id),BIN_TO_UUID(operator_id),source_recovery_epoch'''
     query += extra + ' FROM pda_audit_event ORDER BY origin_device_id,local_seq;'

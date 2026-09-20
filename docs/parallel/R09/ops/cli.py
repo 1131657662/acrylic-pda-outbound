@@ -11,7 +11,7 @@ def arguments():
     commands = parser.add_subparsers(dest='command', required=True)
     setup = commands.add_parser('setup')
     setup.add_argument('--mysql-bin', required=True)
-    for name in ('seed', 'backup', 'restore', 'stop', 'api-probe', 'worker-probe', 'jobs', 'v28-faults', 'r06-faults', 'metadata-probe'):
+    for name in ('seed', 'seed-v33', 'backup', 'restore', 'stop', 'api-probe', 'worker-probe', 'jobs', 'v28-faults', 'r06-faults', 'v33-faults', 'metadata-probe'):
         child = commands.add_parser(name)
         child.add_argument('--lab', required=True)
         if name in ('restore', 'metadata-probe'):
@@ -42,6 +42,10 @@ def execute(args):
     if args.command == 'setup':
         return {'status': 'PASS', 'lab': str(setup(args.mysql_bin))}
     settings = load(args.lab)
+    if args.command == 'seed-v33':
+        from v33_seed import seed
+        seed(settings)
+        return {'status': 'PASS', 'command': args.command}
     if args.command == 'worker-probe':
         from worker_probe import probe
         return probe(settings)
@@ -54,6 +58,9 @@ def execute(args):
 
 def lab_command(args, settings):
     from lab import stop
+    if args.command == 'v33-faults':
+        from v33_drill import drill
+        return drill(settings)
     if args.command == 'r06-faults':
         from r06_drill import drill
         return drill(settings)
