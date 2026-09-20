@@ -14,7 +14,7 @@ class RecoveryProtection(private val db: PdaDatabase) {
         db.runInTransaction {
             val old = db.sync().recovery()
             val changed = (old?.observedServerEpoch ?: previousEpoch)?.let { it != epoch } ?: false
-            val historical = if (old == null) db.preparations().orders().any {
+            val historical = if (old == null) db.temporary().hasOtherEpoch(epoch) || db.preparations().orders().any {
                 JSONObject(it.assignmentJson).getString("serverRecoveryEpoch") != epoch
             } else false
             val blocked = old?.mode == "RECONCILING" || changed || historical || serviceMode != "NORMAL"

@@ -15,6 +15,7 @@ class BarcodeRepository internal constructor(private val db: PdaDatabase,
     @Synchronized fun syncBarcodes(limit: Int = 50, run: SyncRun = SyncRun()): SyncResult {
         require(limit in 1..200)
         val auth = org.json.JSONObject(currentSession().toString())
+        if (!PdaCapabilities.barcodes(auth)) return SyncResult("当前人员或设备未获条码同步准入，原资料保留", supported = false)
         val namespace = LocalSyncState(auth.getString("serverRecoveryEpoch"), auth.getString("warehouseId"), "BARCODE")
         repeat(run.batches) {
             run.identity(auth, currentSession)

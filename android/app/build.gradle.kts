@@ -11,8 +11,8 @@ android {
         applicationId = "com.acrylic.outbound.pda"
         minSdk = 28
         targetSdk = 35
-        versionCode = providers.gradleProperty("pdaVersionCode").map(String::toInt).orElse(15).get()
-        versionName = providers.gradleProperty("pdaVersionName").orElse("0.11.0-r05-sync").get()
+        versionCode = providers.gradleProperty("pdaVersionCode").map(String::toInt).orElse(17).get()
+        versionName = providers.gradleProperty("pdaVersionName").orElse("0.12.0-r06-preparation").get()
         val serverUrl = providers.gradleProperty("pdaServerUrl").orElse("").get()
         val environment = providers.gradleProperty("pdaEnvironment").orElse("未配置服务环境").get()
         val updatePublicKey = providers.gradleProperty("pdaUpdatePublicKey").orElse("").get()
@@ -51,6 +51,7 @@ android {
         unitTests.isIncludeAndroidResources = true
         unitTests.all {
             it.inputs.file(rootProject.file("../server/build/pda-contract-fixture.json"))
+            it.inputs.file(rootProject.file("../server/build/pda-temporary-contract-fixture.json"))
             it.inputs.file(rootProject.file("../server/build/pda-submission-fixture.json"))
             it.inputs.file(rootProject.file("../server/build/pda-archive-fixture.json"))
             it.inputs.file(rootProject.file("../server/build/pda-audit-archive-fixture.json"))
@@ -59,6 +60,7 @@ android {
             it.inputs.file(rootProject.file("../server/build/pda-disposition-fixture.json"))
             it.inputs.dir(file("schemas/com.acrylic.outbound.pda.data.PdaDatabase"))
             it.systemProperty("pda.contractFixture", rootProject.file("../server/build/pda-contract-fixture.json").absolutePath)
+            it.systemProperty("pda.temporaryFixture", rootProject.file("../server/build/pda-temporary-contract-fixture.json").absolutePath)
             it.systemProperty("pda.submissionFixture", rootProject.file("../server/build/pda-submission-fixture.json").absolutePath)
             it.systemProperty("pda.archiveFixture", rootProject.file("../server/build/pda-archive-fixture.json").absolutePath)
             it.systemProperty("pda.auditArchiveFixture", rootProject.file("../server/build/pda-audit-archive-fixture.json").absolutePath)

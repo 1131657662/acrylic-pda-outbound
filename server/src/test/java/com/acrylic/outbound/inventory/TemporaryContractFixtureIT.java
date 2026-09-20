@@ -22,13 +22,15 @@ class TemporaryContractFixtureIT {
         var receipt=f.prepare();var fixture=json.createObjectNode();fixture.set("receipt",receipt);
         fixture.set("signingKey",f.pda.data(get("/api/v1/pda/signing-key"),f.tokens));
         var session=fixture.putObject("session").put("serverRecoveryEpoch","1");
+        session.set("capabilities",f.tokens.get("capabilities"));
         for(String key:List.of("userId","deviceId","warehouseId","userAuthVersion","deviceVersion")) session.set(key,f.tokens.get(key));
         var payloads=fixture.putObject("gzip");
         for(String part:List.of("inventory","mapping","policy","rules","availability")) {
             byte[] content=f.pda.send(f.download(receipt,part),f.tokens).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
             payloads.put(part,Base64.getEncoder().encodeToString(content));
         }
-        var command=f.ack(receipt);fixture.set("activationCommand",command);
+        var command=f.ack(receipt).put("activatedAt",java.time.Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS).toString());
+        fixture.set("activationCommand",command);
         fixture.set("activationReceipt",f.pda.data(f.acknowledge(receipt,command,UUID.randomUUID().toString()),f.tokens));
         Files.writeString(Path.of("build","pda-temporary-contract-fixture.json"),json.writeValueAsString(fixture));
     }

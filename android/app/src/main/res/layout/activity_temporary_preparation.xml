@@ -1,0 +1,22 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true"
+    android:background="@color/pda_canvas">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="16dp">
+        <Button android:id="@+id/back" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:minHeight="48dp" android:text="返回" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="临时作业资料"
+            android:textSize="22sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" android:paddingTop="12dp" />
+        <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textSize="18sp" android:textColor="@color/pda_text_primary" android:paddingTop="16dp" android:accessibilityLiveRegion="polite" />
+        <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent" android:layout_height="4dp" android:indeterminate="true" android:visibility="gone" />
+        <TextView android:id="@+id/details" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textSize="16sp" android:textColor="@color/pda_text_primary" android:paddingTop="12dp" />
+        <Button android:id="@+id/prepare" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="56dp" android:layout_marginTop="16dp" android:text="联网准备临时资料" android:enabled="false" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="12dp"
+            android:textSize="16sp" android:textColor="@color/pda_text_primary"
+            android:text="当前版本仅提供资料准备与恢复。临时建单和扫码尚未开放；资料准备完成不能作为车辆放行依据。" />
+    </LinearLayout>
+</ScrollView>

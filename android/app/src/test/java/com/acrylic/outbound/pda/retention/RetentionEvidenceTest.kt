@@ -55,7 +55,7 @@ class RetentionEvidenceTest {
             val before = rows(work)
             rebuildEleven(work, before)
             work.db = PdaDatabase.open(work.context)
-            assertEquals(14, work.db.openHelper.readableDatabase.version)
+            assertEquals(15, work.db.openHelper.readableDatabase.version)
             assertEquals(before, rows(work))
             work.db.openHelper.readableDatabase.query("SELECT COUNT(*) FROM local_retained_baseline").use {
                 assertTrue(it.moveToFirst()); assertEquals(0, it.getInt(0))

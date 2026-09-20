@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.acrylic.outbound.pda.PdaApplication
 import com.acrylic.outbound.pda.data.*
+import com.acrylic.outbound.pda.network.PdaCapabilities
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.json.JSONObject
@@ -14,7 +15,8 @@ data class PreparationUi(val busy: Boolean = false, val message: String = "请�
     val username: String = "", val local: List<LocalCard> = emptyList(), val available: List<JSONObject> = emptyList(),
     val assigned: List<JSONObject> = emptyList(), val pending: List<ClaimIntent> = emptyList(), val deviceLabel: String = "",
     val section: String = "LOCAL", val availableCursor: String? = null, val assignedCursor: String? = null,
-    val availableHasMore: Boolean = false, val assignedHasMore: Boolean = false, val loginRequired: Boolean = false)
+    val availableHasMore: Boolean = false, val assignedHasMore: Boolean = false, val loginRequired: Boolean = false,
+    val formalOrders: Boolean = true, val temporaryVisible: Boolean = false)
 
 class PreparationViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as PdaApplication
@@ -39,6 +41,7 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
     }
     fun selectSection(section: String) { mutable.update { it.copy(section = section) } }
     fun loadMore() = run("正在加载下一页订单") {
+        check(PdaCapabilities.formal(app.session.requireSession())) { "当前人员无正式订单领取权限" }
         val state = mutable.value
         if (state.section == "AVAILABLE" && state.availableHasMore) {
             val page = repository.page("pda/orders", "cursor", state.availableCursor)
@@ -68,22 +71,32 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
     private fun refreshData() {
         val current = app.session.requireSession()
         val syncMessage = app.sync.refreshOrders() + "；" + app.barcodeSync.refreshBarcodes()
-        val restored = app.auditArchives.restore()
-        val auditMessage = if (restored) app.auditSync.upload() + "；" + app.auditArchives.archive()
+        val auditMessage = if (!PdaCapabilities.audit(current)) "当前人员无补传权限，原记录保留"
+            else if (app.auditArchives.restore()) app.auditSync.upload() + "；" + app.auditArchives.archive()
             else "历史审计归档正在分批恢复，本次刷新保留补传屏障"
-        repository.local().filter { it.operatorId == current.getString("userId") && it.deviceId == current.getString("deviceId") }
+        repository.local().filter { PdaCapabilities.recovery(current) && it.operatorId == current.getString("userId") && it.deviceId == current.getString("deviceId") }
             .forEach { app.recalls.check(it.assignmentId) }
-        val assigned = repository.page("pda/assignments", "beforeId")
-        val available = repository.page("pda/orders", "cursor")
+        refreshFormal(current)
+        loadLocal()
+        val archiveMessage = if (PdaCapabilities.audit(current)) app.archives.refresh() else "原批次保留"
+        mutable.update { it.copy(message = "$syncMessage；$auditMessage；$archiveMessage") }
+    }
+    private fun refreshFormal(current: JSONObject) {
+        if (!PdaCapabilities.formal(current)) {
+            mutable.update { it.copy(assigned = emptyList(), available = emptyList(), assignedCursor = null,
+                availableCursor = null, assignedHasMore = false, availableHasMore = false, section = "LOCAL") }
+            return
+        }
+        val assigned = repository.page("pda/assignments", "beforeId"); val available = repository.page("pda/orders", "cursor")
         mutable.update { it.copy(assigned = assigned.items, available = available.items,
             assignedCursor = assigned.nextCursor, availableCursor = available.nextCursor,
             assignedHasMore = assigned.nextCursor != null, availableHasMore = available.nextCursor != null) }
-        loadLocal()
-        val archiveMessage = app.archives.refresh()
-        mutable.update { it.copy(message = "$syncMessage；$auditMessage；$archiveMessage") }
     }
     private fun loadLocal() {
         val saved = app.session.saved()
+        val formal = saved?.let(PdaCapabilities::formal) ?: false
+        if (!formal) mutable.update { it.copy(assigned = emptyList(), available = emptyList(), assignedCursor = null,
+            availableCursor = null, assignedHasMore = false, availableHasMore = false, section = "LOCAL") }
         val local = repository.local().map {
             val recalled = app.database.recalls().header(it.assignmentId) != null
             val continuation = app.database.continuations().current(it.assignmentId)
@@ -93,7 +106,8 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
         }
         mutable.update { it.copy(bound = app.session.settings.device.isNotBlank(), username = saved?.optString("username") ?: "",
             local = local, pending = if (saved == null) emptyList() else repository.pending(), deviceLabel = identityLabel(),
-            loginRequired = saved == null || saved.has("blockedReason")) }
+            loginRequired = saved == null || saved.has("blockedReason"), formalOrders = formal,
+            temporaryVisible = saved != null && (PdaCapabilities.temporary(saved) || app.temporary.local() != null)) }
     }
     private fun identityLabel(): String {
         if (app.session.settings.device.isBlank()) return ""

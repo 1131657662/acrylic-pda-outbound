@@ -21,6 +21,7 @@ class BackgroundSync(private val orders: SyncRepository, private val barcodes: B
     }
 
     private fun syncAudit(control: SyncRun): SyncResult {
+        if (!PdaCapabilities.audit(current())) return SyncResult("当前人员无审计补传权限，原记录保留", supported = false)
         val restored = try { archives.restore(control) }
         catch (error: ApiFailure) {
             if (error.httpStatus == 404) return SyncResult("当前后台尚未支持审计恢复，原记录保留", supported = false)

@@ -15,6 +15,7 @@ class SyncRepository internal constructor(private val db: PdaDatabase,
     @Synchronized fun syncOrders(limit: Int = 50, run: SyncRun = SyncRun()): SyncResult {
         require(limit in 1..200)
         val auth = org.json.JSONObject(currentSession().toString())
+        if (!PdaCapabilities.formal(auth)) return SyncResult("当前人员无正式订单领取权限，原资料保留", supported = false)
         val namespace = LocalSyncState(auth.getString("serverRecoveryEpoch"), auth.getString("warehouseId"))
         repeat(run.batches) {
             run.identity(auth, currentSession)

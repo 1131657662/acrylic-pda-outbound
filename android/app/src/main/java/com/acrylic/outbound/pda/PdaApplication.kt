@@ -30,6 +30,8 @@ open class PdaApplication : Application(), androidx.work.Configuration.Provider 
     val pairing by lazy { com.acrylic.outbound.pda.pairing.PairingRepository(
         com.acrylic.outbound.pda.pairing.PairingVault(this), session.settings, DeviceKeys()) }
     val repository by lazy { PreparationRepository(this, database, session) }
+    val temporary by lazy { com.acrylic.outbound.pda.temporary.TemporaryRepository(database,
+        com.acrylic.outbound.pda.temporary.TemporarySession(session), java.io.File(cacheDir, "temporary-preparations")) }
     val workSound by lazy { WorkSound(this) }
     val work by lazy { WorkEngine(WorkStore(database, SessionWorkAccess(this, session))) { workSound.play(it) } }
     val submissions by lazy { SubmissionRepository(database, session) }

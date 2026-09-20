@@ -63,7 +63,13 @@ public class PdaSessions {
         int remaining=(int)Math.max(0,java.time.Duration.between(Instant.now(),times[0]).toSeconds());
         String authVersion=jdbc.queryForObject("SELECT user_auth_version FROM pda_session WHERE id=?",String.class,Ids.bytes(id));
         return new Tokens(access,refresh,"Bearer",remaining,id.toString(),user.toString(),device.id().toString(),device.warehouseId().toString(),
-            times[0].toString(),times[1].toString(),authVersion,device.rowVersion());
+            times[0].toString(),times[1].toString(),authVersion,device.rowVersion(),capabilities(user,device));
+    }
+    private Capabilities capabilities(UUID user,DeviceStore.Device device) {
+        var permissions=identities.permissions(user);
+        boolean formal=permissions.contains("pda:assign"), submit=permissions.contains("pda:submit");
+        boolean temporary=device.temporaryOrderEnabled() && submit && permissions.contains("pda:scan") && permissions.contains("temporary_order:create");
+        return new Capabilities(formal,temporary,formal || temporary,submit,permissions.contains("pda:recover"));
     }
     public void revoke(UUID session) { jdbc.update("UPDATE pda_session SET revoked_at=COALESCE(revoked_at,UTC_TIMESTAMP(3)) WHERE id=?",Ids.bytes(session)); }
     private Row map(java.sql.ResultSet rs,int n) throws java.sql.SQLException {
@@ -73,5 +79,6 @@ public class PdaSessions {
     private record Row(UUID id,UUID device,String username,long userVersion,String deviceVersion) { }
     public record Principal(UUID sessionId,UUID userId,String username,UUID deviceId,UUID warehouseId,String userAuthVersion,String deviceVersion) { }
     public record Tokens(String accessToken,String refreshToken,String tokenType,int expiresIn,String sessionId,String userId,
-        String deviceId,String warehouseId,String accessExpiresAt,String refreshExpiresAt,String userAuthVersion,String deviceVersion) { }
+        String deviceId,String warehouseId,String accessExpiresAt,String refreshExpiresAt,String userAuthVersion,String deviceVersion,Capabilities capabilities) { }
+    public record Capabilities(boolean formalOrders,boolean temporaryWork,boolean barcodeSync,boolean auditUpload,boolean recoveryRead) { }
 }

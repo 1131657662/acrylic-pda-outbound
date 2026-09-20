@@ -1,5 +1,7 @@
 # 腈纶包离线出库系统
 
+当前开发进度：R06-B服务端与Android临时资料准备、验签及恢复已完成源码/主机验证，下一步R06-C临时草稿、多产品计划与本机扫码。开发契约0.23/V30、Android0.12.0-r06-preparation/code17/Room15；213项Android主机、32后端单元、25MySQL/MockMvc及构建/lint通过，实际HTTP/设备验收待补。详见[交付记录](docs/R06_ANDROID_PREPARATION_GUIDE.md)及[当前进度](docs/DEVELOPMENT_PROGRESS.md)。源码在`codex/development`；现网仍0.18/V23/code16，临时出库完整闭环尚未完成，以下R05描述保留当轮版本边界。
+
 R05最新进度：当前超时待审API/Web入口及中文历史提醒已完成本机验证，见[交付记录](docs/R05_REVIEW_INBOX_GUIDE.md)。下载PDA应用固定页及双入口已部署独立测试公网，code16已完成隔离模拟器浏览器下载、用户来源授权与系统安装、配对登录/同步/更新检查，首次安装已开放，见[交付说明](docs/PDA_DOWNLOAD_GUIDE.md)。旧版本覆盖升级、真机和异地仍待补验，M71保持。此前审计连续前缀归档及召回对账见[审计归档记录](docs/R05_AUDIT_ARCHIVE_GUIDE.md)。本机契约0.21.0/V28/Room14；服务器仍为0.18.0/V23；整单事实清理、异地备份恢复及现场验收未完成。
 
 完整系统以 [V2.3 设计](docs/系统设计方案与开发计划-V2.3.md) 为准。**2026-09-16 Demo已按Q17约定范围验收完成：按键映射、B模式现场复验、真实断电恢复全部通过。**实际操作及取下电池重启后均为12包、3610kg、待处理0，明细、输入、审计与按键配置完整保留，见[现场验收记录](docs/M71_ACCEPTANCE_REPORT.md)和[按键记录](docs/M71_KEY_WIZARD_REPORT.md)。继续已获授权的正式开发，不追加Demo测试。

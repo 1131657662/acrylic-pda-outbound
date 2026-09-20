@@ -45,6 +45,16 @@ Tokens:
     deviceVersion: {type: string, pattern: '^[1-9][0-9]*$', description: 当前设备版本，重新登录不更新既有离线凭据}
     accessExpiresAt: {type: string, format: date-time}
     refreshExpiresAt: {type: string, format: date-time, description: 首次登录起30天的绝对上限，刷新不延长}
+    capabilities:
+      type: object
+      description: 0.23新增的入口及同步能力提示，每次登录和刷新重算；不替代服务端权限校验和离线签名。旧后台缺省时仅保持正式作业入口，不开启临时准备。
+      required: [formalOrders, temporaryWork, barcodeSync, auditUpload, recoveryRead]
+      properties:
+        formalOrders: {type: boolean, description: 具有pda:assign}
+        temporaryWork: {type: boolean, description: 具有临时create及scan/submit三权限且设备准入开启}
+        barcodeSync: {type: boolean, description: formalOrders或temporaryWork}
+        auditUpload: {type: boolean, description: 具有pda:submit}
+        recoveryRead: {type: boolean, description: 具有pda:recover，可核对原正式单召回状态}
 SigningKey:
   type: object
   required: [keyId, algorithm, publicKey]

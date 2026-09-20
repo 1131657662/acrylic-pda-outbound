@@ -29,6 +29,8 @@
             <Button android:id="@+id/login" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="登录并恢复本机订单" />
         </LinearLayout>
         <LinearLayout android:id="@+id/actions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <Button android:id="@+id/temporaryPreparation" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:minHeight="56dp" android:text="临时作业资料" android:visibility="gone" />
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
                 <Button android:id="@+id/localSection" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="本机任务" />
                 <Button android:id="@+id/availableSection" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="待领取" />

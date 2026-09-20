@@ -1,5 +1,7 @@
 # R06-B 临时仓库准备服务端验证记录
 
+后续Android资料准备、Room15与恢复已完成源码及主机验证，见[Android接续记录](R06_ANDROID_PREPARATION_GUIDE.md)。以下保留服务端阶段的当轮证据；当前下一动作以[开发进度](DEVELOPMENT_PROGRESS.md)为准，不把旧“尚未接入”当成最新结论。
+
 2026-09-20。基线`271eff7`，分支`codex/development`，契约0.23.0 / Flyway V30。本批完成独立TEMP资格、固定仓库资料、受控下载和激活声明回执的服务端实现及本机验证。R06-B的Android接入、Room激活及页面尚未实现；R06完整临时建单与确认闭环继续开发，不能据此放行或宣布上线。
 
 ## 实现与业务边界

@@ -43,6 +43,7 @@ class MainActivity : ComponentActivity() {
         binding.pairing.setOnClickListener { startActivity(android.content.Intent(this, PairingActivity::class.java)) }
         binding.deviceSettings.setOnClickListener { startActivity(android.content.Intent(this, DeviceSettingsActivity::class.java)) }
         binding.appUpdate.setOnClickListener { startActivity(android.content.Intent(this, PdaUpdateActivity::class.java)) }
+        binding.temporaryPreparation.setOnClickListener { startActivity(android.content.Intent(this, TemporaryPreparationActivity::class.java)) }
         lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { model.state.collect { render(it) } } }
     }
 
@@ -65,6 +66,9 @@ class MainActivity : ComponentActivity() {
             binding.localSection, binding.availableSection, binding.loadMore).forEach { it.isEnabled = !state.busy }
         binding.localSection.isSelected = state.section == "LOCAL"
         binding.availableSection.isSelected = state.section == "AVAILABLE"
+        binding.availableSection.visibility = if (state.formalOrders) View.VISIBLE else View.GONE
+        binding.temporaryPreparation.visibility = if (state.temporaryVisible) View.VISIBLE else View.GONE
+        binding.temporaryPreparation.isEnabled = !state.busy
         binding.loadMore.visibility = if (loggedIn && ((state.section == "AVAILABLE" && state.availableHasMore) ||
             (state.section == "LOCAL" && state.assignedHasMore))) View.VISIBLE else View.GONE
         if (loggedIn) cards.render(state)
