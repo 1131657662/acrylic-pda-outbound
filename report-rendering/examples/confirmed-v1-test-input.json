@@ -1,0 +1,307 @@
+{
+  "metadata" : {
+    "snapshotId" : "test-confirmed-v1",
+    "dataVersion" : "synthetic-confirmed-v1",
+    "cutoff" : "2026-09-20T16:00:00Z",
+    "generatedAt" : "2026-09-20T16:05:00Z",
+    "fromDate" : "2026-09-18",
+    "throughDate" : "2026-09-18",
+    "basis" : "ORIGINAL_CONFIRMED",
+    "provenance" : "TEST_SAMPLE",
+    "sourceDescription" : "Synthetic PDA/PC v1 facts; no business data or verified signatures",
+    "orderSortDescription" : "Explicit sample order membership; persisted per-order sequences"
+  },
+  "orders" : [ {
+    "id" : "order-PDA",
+    "number" : "TEST-R08-V1-PDA",
+    "revision" : 3,
+    "header" : {
+      "vehicle" : "0008",
+      "container" : "003",
+      "remark" : "测试备注"
+    },
+    "confirmedAt" : "2026-09-17T16:01:00Z",
+    "channel" : "PDA",
+    "sequenceReference" : "Synthetic fixed dispatch sequence",
+    "products" : [ {
+      "code" : "003",
+      "name" : "透明亚克力",
+      "model" : "1220×2440×3 mm",
+      "plannedCount" : 3
+    }, {
+      "code" : "007",
+      "name" : "磨砂亚克力",
+      "model" : "1220×2440×5 mm",
+      "plannedCount" : 3
+    }, {
+      "code" : "009",
+      "name" : "UNUSED",
+      "model" : "No dispatches",
+      "plannedCount" : 1
+    } ],
+    "dispatches" : [ {
+      "orderId" : "order-PDA",
+      "submissionId" : "submission-PDA",
+      "line" : {
+        "dispatchId" : "PDA-dispatch-1",
+        "captureId" : "PDA-capture-1",
+        "orderScanSeq" : 1,
+        "originDeviceId" : "device-PDA",
+        "deviceCaptureSeq" : 101,
+        "operatorName" : "测试操作员",
+        "inputSource" : "BROADCAST",
+        "barcode" : "00000000001",
+        "dispatchCycle" : 1,
+        "productCode" : "003",
+        "weightGrams" : "300501",
+        "rawWeight" : "300.501",
+        "receivedAt" : "2026-09-17T16:00:00.123Z",
+        "savedAt" : "2026-09-17T16:00:00.456Z",
+        "timeQuality" : "DEVICE_UNVERIFIED",
+        "remark" : "=HYPERLINK(\"https://invalid.example\",\"synthetic\")"
+      }
+    }, {
+      "orderId" : "order-PDA",
+      "submissionId" : "submission-PDA",
+      "line" : {
+        "dispatchId" : "PDA-dispatch-2",
+        "captureId" : "PDA-capture-2",
+        "orderScanSeq" : 3,
+        "originDeviceId" : "device-PDA",
+        "deviceCaptureSeq" : 103,
+        "operatorName" : "测试操作员",
+        "inputSource" : "BROADCAST",
+        "barcode" : "00000000002",
+        "dispatchCycle" : 1,
+        "productCode" : "007",
+        "weightGrams" : "300501",
+        "rawWeight" : "300.501",
+        "receivedAt" : "2026-09-17T16:00:00.123Z",
+        "savedAt" : "2026-09-17T16:00:00.456Z",
+        "timeQuality" : "DEVICE_UNVERIFIED",
+        "remark" : ""
+      }
+    }, {
+      "orderId" : "order-PDA",
+      "submissionId" : "submission-PDA",
+      "line" : {
+        "dispatchId" : "PDA-dispatch-3",
+        "captureId" : "PDA-capture-3",
+        "orderScanSeq" : 5,
+        "originDeviceId" : "device-PDA",
+        "deviceCaptureSeq" : 105,
+        "operatorName" : "测试操作员",
+        "inputSource" : "BROADCAST",
+        "barcode" : "00000000003",
+        "dispatchCycle" : 1,
+        "productCode" : "003",
+        "weightGrams" : "300501",
+        "rawWeight" : "300.501",
+        "receivedAt" : "2026-09-17T16:00:00.123Z",
+        "savedAt" : "2026-09-17T16:00:00.456Z",
+        "timeQuality" : "DEVICE_UNVERIFIED",
+        "remark" : ""
+      }
+    } ],
+    "result" : {
+      "orderId" : "order-PDA",
+      "submissionId" : "submission-PDA",
+      "version" : 1,
+      "actualCount" : "3",
+      "weightGrams" : "901503",
+      "products" : [ {
+        "productCode" : "003",
+        "actualCount" : "2",
+        "weightGrams" : "601002"
+      }, {
+        "productCode" : "007",
+        "actualCount" : "1",
+        "weightGrams" : "300501"
+      }, {
+        "productCode" : "009",
+        "actualCount" : "0",
+        "weightGrams" : "0"
+      } ]
+    },
+    "successReceipt" : {
+      "orderId" : "order-PDA",
+      "submissionId" : "submission-PDA",
+      "status" : "SUCCEEDED",
+      "resultVersion" : "1",
+      "actualCount" : "3",
+      "payloadSha256" : "0000000000000000000000000000000000000000000000000000000000000000",
+      "inventoryDeducted" : false,
+      "actualWeightGrams" : "901503",
+      "freezeDeviceId" : "device-PDA",
+      "orderStatus" : "COMPLETED",
+      "orderNo" : "TEST-R08-V1-PDA",
+      "firstOrderScanSeq" : "1",
+      "lastOrderScanSeq" : "5",
+      "completedAt" : "2026-09-17T16:01:00Z",
+      "receiptVersion" : 1,
+      "captureHighWatermark" : "6",
+      "workRound" : "1",
+      "issuedRecoveryEpoch" : 1,
+      "signedReceipt" : "SYNTHETIC_NOT_A_SIGNATURE",
+      "source" : {
+        "kind" : "FORMAL",
+        "sourceOrderId" : "order-PDA"
+      },
+      "items" : [ {
+        "deliveryCode" : "003",
+        "actualCount" : "2",
+        "actualWeightGrams" : "601002"
+      }, {
+        "deliveryCode" : "007",
+        "actualCount" : "1",
+        "actualWeightGrams" : "300501"
+      }, {
+        "deliveryCode" : "009",
+        "actualCount" : "0",
+        "actualWeightGrams" : "0"
+      } ]
+    },
+    "exceptions" : [ {
+      "eventId" : "void-PDA",
+      "orderScanSeq" : 2,
+      "originDeviceId" : "device-PDA",
+      "kind" : "VOID",
+      "barcode" : "00000000009",
+      "detail" : "Synthetic void excluded from confirmed facts",
+      "occurredAt" : "2026-09-17T16:00:00Z"
+    } ]
+  }, {
+    "id" : "order-PC",
+    "number" : "TEST-R08-V1-PC",
+    "revision" : 3,
+    "header" : {
+      "vehicle" : "0008",
+      "container" : "003",
+      "remark" : "测试备注"
+    },
+    "confirmedAt" : "2026-09-17T16:01:00Z",
+    "channel" : "PC",
+    "sequenceReference" : "Synthetic fixed dispatch sequence",
+    "products" : [ {
+      "code" : "003",
+      "name" : "透明亚克力",
+      "model" : "1220×2440×3 mm",
+      "plannedCount" : 3
+    }, {
+      "code" : "007",
+      "name" : "磨砂亚克力",
+      "model" : "1220×2440×5 mm",
+      "plannedCount" : 3
+    }, {
+      "code" : "009",
+      "name" : "UNUSED",
+      "model" : "No dispatches",
+      "plannedCount" : 1
+    } ],
+    "dispatches" : [ {
+      "orderId" : "order-PC",
+      "submissionId" : "submission-PC",
+      "line" : {
+        "dispatchId" : "PC-dispatch-1",
+        "captureId" : "PC-capture-1",
+        "orderScanSeq" : 1,
+        "originDeviceId" : "pc-work:work-PC",
+        "deviceCaptureSeq" : 1,
+        "operatorName" : "测试操作员",
+        "inputSource" : "PC_MANUAL",
+        "barcode" : "00000000101",
+        "dispatchCycle" : 1,
+        "productCode" : "003",
+        "weightGrams" : "300501",
+        "rawWeight" : "300.501",
+        "receivedAt" : "2026-09-17T16:00:00.456Z",
+        "savedAt" : "2026-09-17T16:00:00.456Z",
+        "timeQuality" : "SERVER_CAPTURED",
+        "remark" : "=HYPERLINK(\"https://invalid.example\",\"synthetic\")"
+      }
+    }, {
+      "orderId" : "order-PC",
+      "submissionId" : "submission-PC",
+      "line" : {
+        "dispatchId" : "PC-dispatch-2",
+        "captureId" : "PC-capture-2",
+        "orderScanSeq" : 3,
+        "originDeviceId" : "pc-work:work-PC",
+        "deviceCaptureSeq" : 3,
+        "operatorName" : "测试操作员",
+        "inputSource" : "PC_MANUAL",
+        "barcode" : "00000000102",
+        "dispatchCycle" : 1,
+        "productCode" : "007",
+        "weightGrams" : "300501",
+        "rawWeight" : "300.501",
+        "receivedAt" : "2026-09-17T16:00:00.456Z",
+        "savedAt" : "2026-09-17T16:00:00.456Z",
+        "timeQuality" : "SERVER_CAPTURED",
+        "remark" : ""
+      }
+    }, {
+      "orderId" : "order-PC",
+      "submissionId" : "submission-PC",
+      "line" : {
+        "dispatchId" : "PC-dispatch-3",
+        "captureId" : "PC-capture-3",
+        "orderScanSeq" : 5,
+        "originDeviceId" : "pc-work:work-PC",
+        "deviceCaptureSeq" : 5,
+        "operatorName" : "测试操作员",
+        "inputSource" : "PC_MANUAL",
+        "barcode" : "00000000103",
+        "dispatchCycle" : 1,
+        "productCode" : "003",
+        "weightGrams" : "300501",
+        "rawWeight" : "300.501",
+        "receivedAt" : "2026-09-17T16:00:00.456Z",
+        "savedAt" : "2026-09-17T16:00:00.456Z",
+        "timeQuality" : "SERVER_CAPTURED",
+        "remark" : ""
+      }
+    } ],
+    "result" : {
+      "orderId" : "order-PC",
+      "submissionId" : "submission-PC",
+      "version" : 1,
+      "actualCount" : "3",
+      "weightGrams" : "901503",
+      "products" : [ {
+        "productCode" : "003",
+        "actualCount" : "2",
+        "weightGrams" : "601002"
+      }, {
+        "productCode" : "007",
+        "actualCount" : "1",
+        "weightGrams" : "300501"
+      }, {
+        "productCode" : "009",
+        "actualCount" : "0",
+        "weightGrams" : "0"
+      } ]
+    },
+    "successReceipt" : {
+      "orderId" : "order-PC",
+      "submissionId" : "submission-PC",
+      "status" : "SUCCEEDED",
+      "resultVersion" : "1",
+      "actualCount" : "3",
+      "payloadSha256" : "0000000000000000000000000000000000000000000000000000000000000000",
+      "inventoryDeducted" : false,
+      "channel" : "PC",
+      "workId" : "work-PC",
+      "weightGrams" : "901503"
+    },
+    "exceptions" : [ {
+      "eventId" : "void-PC",
+      "orderScanSeq" : 2,
+      "originDeviceId" : "pc-work:work-PC",
+      "kind" : "VOID",
+      "barcode" : "00000000009",
+      "detail" : "Synthetic void excluded from confirmed facts",
+      "occurredAt" : "2026-09-17T16:00:00Z"
+    } ]
+  } ]
+}

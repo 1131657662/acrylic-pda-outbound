@@ -1,0 +1,91 @@
+plugins { id 'java-library'; id 'application' }
+group = 'com.acrylic.outbound'
+java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
+repositories { mavenCentral() }
+dependencies {
+    implementation 'org.apache.poi:poi-ooxml:5.4.1'
+    implementation 'com.microsoft.playwright:playwright:1.55.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.2'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.2'
+    implementation 'org.apache.pdfbox:pdfbox:3.0.5'
+    runtimeOnly 'org.apache.logging.log4j:log4j-to-jul:2.24.3'
+    testImplementation platform('org.junit:junit-bom:5.12.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+application { mainClass = 'com.acrylic.outbound.reports.ReportCli' }
+dependencyLocking { lockAllConfigurations() }
+def generatedResources = layout.buildDirectory.dir('generated/resources')
+sourceSets.main.resources.srcDir(generatedResources)
+tasks.register('prepareFont') {
+    def font = generatedResources.map { it.file('NotoSansCJKsc-Regular.otf') }
+    outputs.file(font)
+    doLast {
+        def file = font.get().asFile
+        file.parentFile.mkdirs()
+        def url = 'https://raw.githubusercontent.com/notofonts/noto-cjk/Sans2.004/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf'
+        if (!file.exists()) {
+            def pending = new File(file.parentFile, file.name + '.download')
+            try {
+                if (project.hasProperty('r08FontFile')) {
+                    java.nio.file.Files.copy(project.file(project.property('r08FontFile')).toPath(), pending.toPath(),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+                } else {
+                    def connection = new URI(url).toURL().openConnection()
+                    connection.connectTimeout = 30000
+                    connection.readTimeout = 60000
+                    connection.inputStream.withCloseable { input -> pending.withOutputStream { it << input } }
+                }
+                def hash = java.security.MessageDigest.getInstance('SHA-256').digest(pending.bytes).encodeHex().toString()
+                if (hash != '2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b')
+                    throw new GradleException('Downloaded Chinese font SHA-256 mismatch')
+                java.nio.file.Files.move(pending.toPath(), file.toPath())
+            } finally { pending.delete() }
+        }
+        def digest = java.security.MessageDigest.getInstance('SHA-256').digest(file.bytes).encodeHex().toString()
+        if (digest != '2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b')
+            throw new GradleException('Chinese font SHA-256 mismatch; remove only the failed font and retry')
+    }
+}
+tasks.named('processResources') { dependsOn 'prepareFont' }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+def scratch = layout.buildDirectory.dir('tmp/runtime').get().asFile
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    maxHeapSize = '768m'
+    systemProperty 'file.encoding', 'UTF-8'
+    systemProperty 'java.io.tmpdir', scratch.absolutePath
+    systemProperty 'pdfbox.fontcache', scratch.absolutePath
+    environment 'TMP', scratch.absolutePath
+    environment 'TEMP', scratch.absolutePath
+    environment 'PLAYWRIGHT_BROWSERS_PATH', layout.buildDirectory.dir('browsers').get().asFile.absolutePath
+    environment 'PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD', '1'
+    doFirst { scratch.mkdirs() }
+    testLogging { events 'failed', 'skipped' }
+}
+tasks.withType(JavaExec).configureEach {
+    systemProperty 'file.encoding', 'UTF-8'
+    systemProperty 'java.io.tmpdir', scratch.absolutePath
+    systemProperty 'pdfbox.fontcache', scratch.absolutePath
+    environment 'TMP', scratch.absolutePath
+    environment 'TEMP', scratch.absolutePath
+    environment 'PLAYWRIGHT_BROWSERS_PATH', layout.buildDirectory.dir('browsers').get().asFile.absolutePath
+    environment 'PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD', '1'
+    doFirst { scratch.mkdirs() }
+}
+tasks.register('installChromium', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.microsoft.playwright.CLI'
+    args 'install', 'chromium'
+}
+tasks.register('samples', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.acrylic.outbound.reports.GenerateSamples'
+}
+tasks.register('verifySamples', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.acrylic.outbound.reports.VerifySamples'
+    mustRunAfter 'samples'
+}

@@ -1,1 +1,2 @@
 rootProject.name = 'acrylic-outbound-server'
+includeBuild('../report-rendering')
