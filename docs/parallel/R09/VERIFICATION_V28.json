@@ -1,0 +1,337 @@
+{
+  "recorded_at": "2026-09-20T01:40:14.865992+00:00",
+  "worktree_base_commit": "2369392076083a5a4f59d8ea3d6edebe5067a03f",
+  "source_commit": "32ff90fb8ad4f7c444c0ddf9118479b4689d1928",
+  "branch": "codex/r09-ops-foundation",
+  "runtime": {
+    "python": "3.14.4",
+    "pymysql": "1.1.2",
+    "cryptography": "48.0.0",
+    "mysql": "8.0.46",
+    "java": "21.0.11",
+    "gradle": "8.11.1"
+  },
+  "release": {
+    "base_commit": "32ff90fb8ad4f7c444c0ddf9118479b4689d1928",
+    "source_snapshot": true,
+    "jar_sha256": "156dac89bb7a4790eacf05ee91c3985986ba0daec97540bf742f11f404198571",
+    "fixture_scenarios": [
+      "*SubmissionApiIT.completeSubmissionRecordsOnceAndRetriesReturnOriginalReceipt",
+      "*SubmissionApiIT.disabledAutomaticAccountingStillRetainsGlobalDispatchGuards",
+      "*SubmissionApiIT.shortShipmentReservesUntilExplicitSupervisorApproval",
+      "*SubmissionApiIT.abortBeforeBodyLeavesPermanentTombstoneAndNoFakePayload",
+      "*SubmissionArchiveIT.durableCopiesProduceStableSignedConfirmationAndAndroidContract",
+      "*AuditArchiveIT.stableSignedSegmentsProduceAndroidContract"
+    ],
+    "schema": "28"
+  },
+  "business_tests": {
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ops_tests": {
+    "tests": 42,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "resource_warnings_as_errors": true
+  },
+  "restore": {
+    "status": "PASS",
+    "verified_at": "2026-09-20T01:35:51.428527+00:00",
+    "seconds": 11.114,
+    "database": "r09_ops_restore",
+    "port": 19310,
+    "tables": 88,
+    "business": {
+      "foreign_keys_checked": 190,
+      "file_references_checked": 10,
+      "signed_receipts_verified": 5,
+      "dispatch_packages": 8,
+      "dispatch_weight_g": 2406000,
+      "ledger_rows": 4,
+      "ledger_weight_delta_g": -1203000,
+      "guard_rows": 8,
+      "success_submissions": 4,
+      "abort_tombstones": 1,
+      "idempotency_rows": 42,
+      "audit_rows": 66,
+      "capture_rows": 8,
+      "device_event_rows": 28,
+      "submission_archives_verified": 1,
+      "submission_archive_file_references": 2,
+      "audit_archives_verified": 2,
+      "archived_audit_events_verified": 7,
+      "audit_event_rows_verified": 7
+    },
+    "backup_sums_sha256": "5dd880ccb2adb014927fc31ff25541717e6e9d48b345c90ad09c5ba894f2caee",
+    "scope": "isolated snapshot restore; no disaster reconstruction"
+  },
+  "fault_drill": {
+    "status": "PASS",
+    "checks": [
+      "nonempty_restore_refused",
+      "system_database_access_refused",
+      "source_import_refused",
+      "missing_file_detected",
+      "changed_file_detected",
+      "forged_receipt_detected",
+      "invalid_private_key_detected",
+      "ledger_weight_difference_detected",
+      "stale_backup_detected",
+      "low_disk_detected",
+      "database_and_files_unchanged_after_faults"
+    ]
+  },
+  "v28_fault_drill": {
+    "status": "PASS",
+    "checks": [
+      "submission_archive_index",
+      "audit_archive_index",
+      "original_audit_hash",
+      "audit_checkpoint_gap",
+      "archive_checkpoint_regressed",
+      "missing_audit_archive",
+      "failed_task",
+      "overdue_task",
+      "all_tables_and_files_restored"
+    ]
+  },
+  "worker_probe": {
+    "status": "PASS",
+    "counts": {
+      "total": 1,
+      "failed": 0,
+      "expired_leases": 0,
+      "ready": 0,
+      "oldest_ready_seconds": 0,
+      "retry": 0
+    },
+    "exceeded": [],
+    "child_stopped": true,
+    "nonweb_port_free": true
+  },
+  "api_probe": {
+    "latency_ms": 2227,
+    "service_mode": "NORMAL",
+    "stopped_service_detected": true,
+    "status": "PASS"
+  },
+  "metadata_probe": {
+    "status": "PASS",
+    "seconds": 38.848,
+    "observations": [
+      {
+        "side": "source",
+        "round": 1,
+        "tables": 88
+      },
+      {
+        "side": "source",
+        "round": 2,
+        "tables": 88
+      },
+      {
+        "side": "source",
+        "round": 3,
+        "tables": 88
+      },
+      {
+        "side": "source",
+        "round": 4,
+        "tables": 88
+      },
+      {
+        "side": "source",
+        "round": 5,
+        "tables": 88
+      },
+      {
+        "side": "restore",
+        "round": 1,
+        "tables": 88
+      },
+      {
+        "side": "restore",
+        "round": 2,
+        "tables": 88
+      },
+      {
+        "side": "restore",
+        "round": 3,
+        "tables": 88
+      },
+      {
+        "side": "restore",
+        "round": 4,
+        "tables": 88
+      },
+      {
+        "side": "restore",
+        "round": 5,
+        "tables": 88
+      }
+    ],
+    "historical_intermittent_failure_root_caused": false
+  },
+  "direct_driver_1000_queries": {
+    "status": "PASS",
+    "queries": 1000,
+    "transport": "PyMySQL 1.1.2",
+    "seconds": 14.273
+  },
+  "native_transport_failure_reproduction": [
+    {
+      "mode": "pipe_eof",
+      "completed": 204,
+      "returncode": 0,
+      "stdout_hex": "",
+      "stderr_bytes": 0,
+      "seconds": 14.707
+    },
+    {
+      "mode": "pipe_newline",
+      "completed": 48,
+      "returncode": 0,
+      "stdout_hex": "",
+      "stderr_bytes": 0,
+      "seconds": 4.286
+    },
+    {
+      "mode": "file_newline",
+      "completed": 84,
+      "returncode": 0,
+      "stdout_hex": "",
+      "stderr_bytes": 0,
+      "seconds": 7.29
+    },
+    {
+      "mode": "execute_pipe",
+      "completed": 805,
+      "returncode": 0,
+      "stdout_hex": "",
+      "stderr_bytes": 0,
+      "seconds": 39.386
+    },
+    {
+      "mode": "file_file",
+      "completed": 1000,
+      "status": "PASS",
+      "seconds": 49.118
+    }
+  ],
+  "final_audit": {
+    "status": "PASS",
+    "business": {
+      "foreign_keys_checked": 190,
+      "file_references_checked": 10,
+      "signed_receipts_verified": 5,
+      "dispatch_packages": 8,
+      "dispatch_weight_g": 2406000,
+      "ledger_rows": 4,
+      "ledger_weight_delta_g": -1203000,
+      "guard_rows": 8,
+      "success_submissions": 4,
+      "abort_tombstones": 1,
+      "idempotency_rows": 42,
+      "audit_rows": 66,
+      "capture_rows": 8,
+      "device_event_rows": 28,
+      "submission_archives_verified": 1,
+      "submission_archive_file_references": 2,
+      "audit_archives_verified": 2,
+      "archived_audit_events_verified": 7,
+      "audit_event_rows_verified": 7
+    },
+    "post_api_changes": {
+      "spring_session": {
+        "before": {
+          "count": 0,
+          "checksum": "0",
+          "schema_sha256": "431e64cb1dded9639dc5be0969435bc504748d20094e766dd905415f35f811e9"
+        },
+        "after": {
+          "count": 1,
+          "checksum": "1291336528",
+          "schema_sha256": "431e64cb1dded9639dc5be0969435bc504748d20094e766dd905415f35f811e9"
+        }
+      },
+      "spring_session_attributes": {
+        "before": {
+          "count": 0,
+          "checksum": "0",
+          "schema_sha256": "1bbde70a657bff7be3d22e8d4ea492710e243b5020de85d5c720366b4acf319f"
+        },
+        "after": {
+          "count": 1,
+          "checksum": "2111941173",
+          "schema_sha256": "1bbde70a657bff7be3d22e8d4ea492710e243b5020de85d5c720366b4acf319f"
+        }
+      }
+    },
+    "source_all_tables_unchanged": true,
+    "restored_business_tables_unchanged": true,
+    "all_files_and_config_unchanged": true,
+    "jobs": {
+      "status": "PASS",
+      "counts": {
+        "total": 1,
+        "failed": 0,
+        "expired_leases": 0,
+        "ready": 0,
+        "oldest_ready_seconds": 0,
+        "retry": 0
+      },
+      "exceeded": []
+    },
+    "monitor": {
+      "observed_at": "2026-09-20T01:39:05.969998+00:00",
+      "status": "PASS",
+      "checks": [
+        {
+          "check": "backup",
+          "status": "PASS",
+          "age_seconds": 239,
+          "archive_verified": true
+        },
+        {
+          "check": "tcp",
+          "status": "PASS",
+          "connected": true
+        },
+        {
+          "check": "disk_0",
+          "status": "PASS",
+          "free_bytes": 153906589696,
+          "free_percent": 61.69
+        }
+      ]
+    }
+  },
+  "archive_bytes": {
+    "database.sql.gz": 68729,
+    "private-files-and-config.tar.gz": 9402
+  },
+  "private_lab": ".local\\r09\\20260920T013240Z-eccf0e",
+  "static_checked_files": 40,
+  "shutdown": {
+    "ports_19309_19310_18309_free": true,
+    "r09_java_mysql_children_absent": true
+  },
+  "deployed": false,
+  "full_disaster_recovery_complete": false,
+  "git_actions": {
+    "committed": false,
+    "pushed": false,
+    "merged": false
+  },
+  "limits": [
+    "native CLI empty-output precise root cause remains unknown; direct driver replaces query path",
+    "no production RPO/RTO, PITR, offsite immutability or key rotation validation",
+    "no Linux unit lifecycle or real PDA validation",
+    "no fact deletion authorization or disaster reconstruction"
+  ],
+  "final_change_note": "Post-drill empty native dump rejection added and unit-tested; no repeat restore claimed."
+}

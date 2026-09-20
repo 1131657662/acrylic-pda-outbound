@@ -1,0 +1,47 @@
+{
+  "backup": {
+    "directory": "/opt/backups/acrylic-outbound-test",
+    "format": "r02",
+    "max_age_seconds": 93600
+  },
+  "http": {
+    "url": "http://127.0.0.1:18085/api/v1/auth/csrf",
+    "timeout_seconds": 3,
+    "max_latency_ms": 2000
+  },
+  "tcp": {
+    "host": "127.0.0.1",
+    "port": 3306
+  },
+  "disks": [
+    {
+      "path": "/opt/backups/acrylic-outbound-test",
+      "minimum_free_bytes": 10737418240,
+      "minimum_free_percent": 15
+    },
+    {
+      "path": "/var/lib/acrylic-outbound-test/files",
+      "minimum_free_bytes": 10737418240,
+      "minimum_free_percent": 15
+    },
+    {
+      "path": "/var/lib/mysql",
+      "minimum_free_bytes": 10737418240,
+      "minimum_free_percent": 15
+    }
+  ],
+  "services": [
+    {
+      "unit": "acrylic-outbound-test.service",
+      "max_restarts": 3
+    },
+    {
+      "unit": "acrylic-outbound-test-backup.service",
+      "max_restarts": 0
+    },
+    {
+      "unit": "acrylic-outbound-test-worker.service",
+      "max_restarts": 3
+    }
+  ]
+}

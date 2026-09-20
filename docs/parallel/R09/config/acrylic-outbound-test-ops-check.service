@@ -1,0 +1,32 @@
+[Unit]
+Description=Review candidate - local acrylic test health and backup audit
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+WorkingDirectory=/opt/acrylic-outbound-test/ops-r09
+ExecStart=/usr/bin/python3 /opt/acrylic-outbound-test/ops-r09/cli.py monitor --config /etc/acrylic-outbound-test/ops-monitor.json
+UMask=0077
+TimeoutStartSec=300
+MemoryHigh=192M
+MemoryMax=256M
+CPUQuota=25%
+TasksMax=32
+Nice=15
+IOSchedulingClass=idle
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+StandardOutput=journal
+StandardError=journal
+# Reads private archive as root; Python prints only allowlisted aggregate results.
+# No writable application directories, OnFailure recipient, or external alert sender.
