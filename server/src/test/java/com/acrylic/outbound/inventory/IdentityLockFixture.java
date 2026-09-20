@@ -23,16 +23,21 @@ import static org.mockito.Mockito.*;
 abstract class IdentityLockFixture {
     static {
         String url=Objects.toString(System.getenv("OUTBOUND_DB_URL"),"");
-        if(!url.startsWith("jdbc:mysql://127.0.0.1:13316/acrylic_outbound_l1_20260920?") ||
-            !"outbound_l1_20260920".equals(System.getenv("OUTBOUND_DB_USER")))
-            throw new IllegalStateException("Identity lock tests require the dedicated L1 database and account");
+        boolean original=url.startsWith("jdbc:mysql://127.0.0.1:13316/acrylic_outbound_l1_20260920?")
+            && "outbound_l1_20260920".equals(System.getenv("OUTBOUND_DB_USER"));
+        boolean combined=url.startsWith("jdbc:mysql://127.0.0.1:13316/acrylic_outbound_wave3_20260920?")
+            && "outbound_wave3_20260920".equals(System.getenv("OUTBOUND_DB_USER"));
+        if(!original && !combined)
+            throw new IllegalStateException("Identity lock tests require a dedicated database and matching account");
     }
     @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired PasswordEncoder passwords;
     @MockitoSpyBean JdbcTemplate jdbc;
     @MockitoSpyBean Access access;
     @MockitoSpyBean IdentityWriteGuard guard;
     @BeforeEach void isolatedDatabase() {
-        assertThat(jdbc.queryForObject("SELECT DATABASE()",String.class)).isEqualTo("acrylic_outbound_l1_20260920");
+        String expected="outbound_wave3_20260920".equals(System.getenv("OUTBOUND_DB_USER"))
+            ? "acrylic_outbound_wave3_20260920" : "acrylic_outbound_l1_20260920";
+        assertThat(jdbc.queryForObject("SELECT DATABASE()",String.class)).isEqualTo(expected);
     }
     PublicationDriver web() {
         return new PublicationDriver(mvc,json,IdentityFixture.create(jdbc,passwords,"WAREHOUSE_ADMIN"));
