@@ -1,6 +1,30 @@
 # 设备身份、资料准备与正式订单首轮提交
 
-整体契约版本0.22.0，2026-09-20，本版PDA设备查询增加`temporaryOrderEnabled`；Web可配置准入和人员独立权限，尚不提供TEMP资格或临时建单接口。原签名令牌、准备包和冻结正文未变，APK/Room未改。以下接口已实现；完整字段见[OpenAPI](openapi.yaml)。0.20.0新增审计连续前缀归档和跨恢复代次重建；既有设备、订单、同步、召回与续作边界保持，换机、临时单完整闭环、更正、库存全量同步、灾后账务重建和完整上线验收仍待完成。
+整体契约版本0.23.0，2026-09-20，新增独立TEMP_WORK资格、仓库准备包及激活声明回执服务端接口，设备准入和人员独立权限保持。原正式单签名令牌、准备包和冻结正文未变，APK/Room未改；Android临时资料接入及临时建单仍待开发。以下接口已实现；完整字段见[OpenAPI](openapi.yaml)。0.20.0新增审计连续前缀归档和跨恢复代次重建；既有设备、订单、同步、召回与续作边界保持，换机、临时单完整闭环、更正、库存全量同步、灾后账务重建和完整上线验收仍待完成。
+
+## R06-B 临时仓库准备（0.23.0）
+
+所有路径加`/api/v1`。写请求及下载/基线核对均带`X-Server-Recovery-Epoch`，写请求还须固定`Idempotency-Key`。签发/下载/确认均要求有效PDA会话、`temporary_order:create`、`pda:scan`、`pda:submit`、设备临时准入；不要求`pda:assign`，默认管理员没有create。签发不创建正式订单、assignment或条码占用。
+
+| 方法/路径 | 行为 |
+| --- | --- |
+| GET `/pda/temporary-preparations/baseline` | 返回当前活动库存、映射修订和完整政策；尚未发布库存或政策返回409 |
+| POST `/pda/temporary-preparations` | 正文`inventorySnapshotId/mappingRevision/policyVersion`须与当前基线一致，原子签发及保存5份gzip；返回authorizationId/bundleId/offlineToken/manifest/manifestSha256/signedManifest |
+| GET `/pda/temporary-preparations/{id}` | 有效在线原人员、原设备和仓库读取原准备及可空激活回执；允许读到到期/旧版本证据，不能据此激活 |
+| GET `/pda/temporary-preparations/{id}/content/{part}?bundleId=…` | 固定gzip原字节；校验原身份、恢复代次、人员/设备版本及到期时间，no-store |
+| POST `/pda/temporary-preparations/{id}/download-ack` | 正文`bundleId/manifestSha256/authorizationEpoch/activatedAt`，保存首次激活声明及签名回执 |
+
+签名算法固定RS256，公钥沿用`/pda/signing-key`。作业令牌aud=`acrylic-pda-temporary-work`、purpose=`TEMP_WORK`，嵌套identity绑定授权/包/人员/设备/仓库、人员版本、设备版本、授权序号及恢复代次；manifestSha256绑定全部资料版本，scope仅`temporary_order:create pda:scan pda:submit`，iat/exp精确相差172800秒。它不具有confirm/link权限，也不是正式assignment。清单证明aud=`acrylic-pda-temporary-preparation`，必须同时校验原清单文本摘要、授权ID、包ID及期限。
+
+资料固定为：`inventory`按条码排序的原快照ParsedBale数组（model/name/barcode/deliveryCode/rawWeight/weightGrams）；`mapping`为完整当前映射数组，保留disabled项及productId；`policy`为完整政策对象；`rules`为规则1、11位大写字母数字条码、前三位deliveryCode、整数克和B模式；`availability`为全仓条码状态、周期/行版本及同步高水位/nextCursor。每份压缩与原始长度、SHA-256、行数均在清单中，原始每份上限16MiB。availability包含不在当前库存内的旧包/隔离/占用，不能把缺失库存或已有全机占用当可用。
+
+可用状态与流高水位在同一数据库读取截点取得，包含尚未发布的pending变更；可将nextCursor交给原`/pda/sync/barcodes`续接。历史未初始化的条码先建立版本1，后续变化递增。同步允许原pda:assign或临时三项权限加设备准入；后续客户端须按周期/行版本合并、保留全机guard，不能用增量AVAILABLE清掉本机事实。
+
+同键同正文签发永远返回原包及期限，即使当前资料已更新；同键改正文409。新键签发独立新资格，旧资格/旧包保持，不能默认为旧草稿续期或替换来源。下载后须在PDA完成验签、全部文件校验和Room原子激活，再用持久原正文确认；该Android流程尚未接入。
+
+激活声明时间须处于原资格窗口内且不超过服务器当前时间300秒，可在到期后补传；同正文换键仍返回首次证明，改正文不覆盖。声明只是原PDA报告，服务器签名证明接收，不独立证明真实离线激活时间、不授权到期续扫。确认仍需当前准入/权限及原版本/恢复代次；这些条件变更时保留原资料进入后续受控恢复，不能通过重新签发抹掉旧作业。回执aud=`acrylic-pda-temporary-activation`，无exp，绑定原清单、命令摘要、身份/代次及声明/接收时间。
+
+主要409：`TEMPORARY_BASELINE_CHANGED`、`TEMPORARY_REAUTHORIZATION_REQUIRED`、`TEMPORARY_RECOVERY_REQUIRED`、`TEMPORARY_AUTH_EXPIRED`、`TEMPORARY_ACTIVATION_MISMATCH/CONFLICT`；403准入/权限不足；404非本人本机资料或错包/分片；400字段/时间无效；413单份过大；503恢复模式或签名不可用。失败不创建半份资格，不改写既有事实或占用。
 
 ## 设备登记与身份
 

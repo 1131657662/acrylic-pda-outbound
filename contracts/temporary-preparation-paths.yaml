@@ -1,0 +1,108 @@
+AuthorizationId:
+  name: id
+  in: path
+  required: true
+  schema: {type: string, format: uuid}
+RequestKey:
+  name: Idempotency-Key
+  in: header
+  required: true
+  schema: {type: string, minLength: 16, maxLength: 80, pattern: '^[A-Za-z0-9._:-]{16,80}$'}
+Baseline:
+  get:
+    security: [{pdaBearer: []}]
+    summary: 核对当前仓库临时准备基线
+    description: 需要temporary_order:create、pda:scan、pda:submit及设备准入；没有正式订单也可准备。
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+    responses:
+      '200':
+        description: 当前活动库存、映射及政策版本；签发时再次核对
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './temporary-preparation-schemas.yaml#/Baseline'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Prepare:
+  post:
+    security: [{pdaBearer: []}]
+    summary: 原子签发TEMP_WORK固定48小时资格及五份仓库资料包
+    description: 同键同正文返回原令牌及包，不续期。要求三项作业权限、设备准入和当前恢复代次；固定基线不符409。新请求创建独立资格，不能用它替换已有临时作业的来源、计划或授权历史。
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+      - $ref: '#/RequestKey'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './temporary-preparation-schemas.yaml#/PrepareCommand'}
+    responses:
+      '200':
+        description: 不可变签名准备回执；不是出库或放行凭据
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './temporary-preparation-schemas.yaml#/Receipt'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+State:
+  get:
+    security: [{pdaBearer: []}]
+    summary: 原人员、原设备查询历史准备及激活回执
+    description: 需要当前有效PDA登录及同一仓库。到期、恢复代次或权限版本变化不改写原证据；返回历史回执不表示可以激活或续扫。
+    parameters:
+      - $ref: '#/AuthorizationId'
+    responses:
+      '200':
+        description: 固定准备及可空激活证明
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './temporary-preparation-schemas.yaml#/State'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Content:
+  get:
+    security: [{pdaBearer: []}]
+    summary: 下载绑定原资格的固定gzip文件
+    description: 每次校验原人员/设备/仓库、当前权限与准入、版本/恢复代次及到期时间。Cache-Control no-store，无Content-Encoding自动解压。
+    parameters:
+      - $ref: '#/AuthorizationId'
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+      - {name: part, in: path, required: true, schema: {type: string, enum: [inventory, mapping, policy, rules, availability]}}
+      - {name: bundleId, in: query, required: true, schema: {type: string, format: uuid}}
+    responses:
+      '200':
+        description: 固定压缩字节；单份解压最多16MiB，校验清单中两种大小、摘要和行数
+        content:
+          application/gzip:
+            schema: {type: string, format: binary}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Acknowledge:
+  post:
+    security: [{pdaBearer: []}]
+    summary: 保存PDA原子激活完成声明及签名回执
+    description: 原人员/设备、权限、准入和版本/恢复代次仍需有效；可在到期后补传有效期内的激活声明，不授权新作业或延长期限。首次回执不可改写，同正文新键仍返回原回执。声明时间不是服务器独立证明实际离线激活的证据。
+    parameters:
+      - $ref: '#/AuthorizationId'
+      - $ref: './openapi.yaml#/components/parameters/Epoch'
+      - $ref: '#/RequestKey'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './temporary-preparation-schemas.yaml#/AckCommand'}
+    responses:
+      '200':
+        description: 首次声明时间和接收时间及耐久签名证明；不代表订单确认
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: './schemas.yaml#/Envelope'
+                - properties: {data: {$ref: './temporary-preparation-schemas.yaml#/Acknowledgement'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}

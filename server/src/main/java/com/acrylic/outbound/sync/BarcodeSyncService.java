@@ -9,17 +9,15 @@ import org.springframework.transaction.annotation.*;
 @Service
 public class BarcodeSyncService {
     private final PdaAccess access;
-    private final ServerState state;
     private final BarcodeStreamStore store;
     private final BarcodeBaselineStore baselines;
-    public BarcodeSyncService(PdaAccess access,ServerState state,BarcodeStreamStore store,BarcodeBaselineStore baselines) {
-        this.access=access;this.state=state;this.store=store;this.baselines=baselines;
+    public BarcodeSyncService(PdaAccess access,BarcodeStreamStore store,BarcodeBaselineStore baselines) {
+        this.access=access;this.store=store;this.baselines=baselines;
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public Data barcodes(Context context) {
-        var principal=access.require("pda:assign");
+        var principal=access.barcodes(context.epoch());
         if(context.limit()<1 || context.limit()>200) throw new BusinessException(400,"INVALID_LIMIT","同步每页最多200条");
-        state.lockWritable(context.epoch());
         var ns=new BarcodeCursor.Namespace(context.epoch(),principal.warehouseId());
         if(!context.baselineId().isBlank()) {
             if(!context.cursor().isBlank()) throw invalidCursor();

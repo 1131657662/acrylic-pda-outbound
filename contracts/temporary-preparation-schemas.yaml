@@ -1,0 +1,117 @@
+PrepareCommand:
+  type: object
+  required: [inventorySnapshotId, mappingRevision, policyVersion]
+  properties:
+    inventorySnapshotId: {type: string, format: uuid}
+    mappingRevision: {type: string, pattern: '^(0|[1-9][0-9]{0,17})$'}
+    policyVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+Baseline:
+  type: object
+  required: [warehouseId, inventorySnapshotId, inventoryVersion, mappingRevision, inventoryRows, inventorySha256, policy]
+  properties:
+    warehouseId: {type: string, format: uuid}
+    inventorySnapshotId: {type: string, format: uuid}
+    inventoryVersion: {type: string}
+    mappingRevision: {type: string}
+    inventoryRows: {type: integer, minimum: 0}
+    inventorySha256: {$ref: './preparation-schemas.yaml#/Sha256'}
+    policy: {$ref: './publication-schemas.yaml#/Policy'}
+Receipt:
+  type: object
+  required: [authorizationId, bundleId, offlineToken, manifest, manifestSha256, signedManifest]
+  properties:
+    authorizationId: {type: string, format: uuid}
+    bundleId: {type: string, format: uuid}
+    offlineToken: {type: string, description: 'RS256；iss=acrylic-outbound、aud=acrylic-pda-temporary-work、purpose=TEMP_WORK、jti=authorizationId；identity与manifest一致，manifestSha256绑定全部资料版本；scope仅temporary_order:create pda:scan pda:submit；exp-iat=172800秒'}
+    manifest: {type: string, description: 'Manifest原始UTF-8 JSON，校验原字节SHA-256，禁止重序列化代替'}
+    manifestSha256: {$ref: './preparation-schemas.yaml#/Sha256'}
+    signedManifest: {type: string, description: 'RS256；iss=acrylic-outbound、aud=acrylic-pda-temporary-preparation，绑定authorizationId/bundleId/manifestSha256及iat/exp；不是正式单凭据'}
+Identity:
+  type: object
+  required: [authorizationId, bundleId, userId, deviceId, warehouseId, authorizationEpoch, userAuthVersion, deviceVersion, serverRecoveryEpoch]
+  properties:
+    authorizationId: {type: string, format: uuid}
+    bundleId: {type: string, format: uuid}
+    userId: {type: string, format: uuid}
+    deviceId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    authorizationEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
+    userAuthVersion: {type: string, pattern: '^[1-9][0-9]*$'}
+    deviceVersion: {type: string, pattern: '^[1-9][0-9]*$'}
+    serverRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
+Manifest:
+  type: object
+  required: [schemaVersion, purpose, identity, inventorySnapshotId, inventoryVersion, mappingRevision, policyVersion, barcodeRuleVersion, issuedAt, expiresAt, parts]
+  properties:
+    schemaVersion: {type: integer, const: 1}
+    purpose: {type: string, const: TEMP_WORK}
+    identity: {$ref: '#/Identity'}
+    inventorySnapshotId: {type: string, format: uuid}
+    inventoryVersion: {type: string}
+    mappingRevision: {type: string}
+    policyVersion: {type: string}
+    barcodeRuleVersion: {type: string, const: '1'}
+    issuedAt: {type: string, format: date-time}
+    expiresAt: {type: string, format: date-time}
+    parts:
+      type: array
+      minItems: 5
+      maxItems: 5
+      description: inventory、mapping、policy、rules、availability各一份；policy/rules行数1，availability为items行数
+      items: {$ref: '#/Part'}
+Part:
+  type: object
+  required: [name, compressedBytes, bytes, compressedSha256, sha256, rows]
+  properties:
+    name: {type: string, enum: [inventory, mapping, policy, rules, availability]}
+    compressedBytes: {type: integer, minimum: 1}
+    bytes: {type: integer, minimum: 1, maximum: 16777216}
+    compressedSha256: {$ref: './preparation-schemas.yaml#/Sha256'}
+    sha256: {$ref: './preparation-schemas.yaml#/Sha256'}
+    rows: {type: integer, minimum: 0}
+AckCommand:
+  type: object
+  required: [bundleId, manifestSha256, authorizationEpoch, activatedAt]
+  properties:
+    bundleId: {type: string, format: uuid}
+    manifestSha256: {$ref: './preparation-schemas.yaml#/Sha256'}
+    authorizationEpoch: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    activatedAt: {type: string, format: date-time, description: '资格签发<=声明时间<资格到期，且不超过服务器现在300秒；按服务器锚点计算，原请求须持久化'}
+Acknowledgement:
+  type: object
+  required: [authorizationId, bundleId, activatedAt, acknowledgedAt, signedAck]
+  properties:
+    authorizationId: {type: string, format: uuid}
+    bundleId: {type: string, format: uuid}
+    activatedAt: {type: string, format: date-time, description: 原激活声明时间截至毫秒}
+    acknowledgedAt: {type: string, format: date-time, description: 首次服务器接收时间}
+    signedAck: {type: string, description: 'RS256，aud=acrylic-pda-temporary-activation，绑定authorizationId/bundleId/manifestSha256/commandSha256/serverRecoveryEpoch/userId/deviceId及上述两时间；无exp的耐久声明接收证明，不是作业授权'}
+State:
+  type: object
+  required: [preparation, acknowledgement]
+  properties:
+    preparation: {$ref: '#/Receipt'}
+    acknowledgement:
+      anyOf:
+        - $ref: '#/Acknowledgement'
+        - {type: 'null'}
+Availability:
+  type: object
+  required: [streamType, recoveryEpoch, warehouseId, highWatermark, nextCursor, items]
+  properties:
+    streamType: {type: string, const: BARCODE}
+    recoveryEpoch: {type: string}
+    warehouseId: {type: string, format: uuid}
+    highWatermark: {type: string}
+    nextCursor: {type: string, description: 使用现有/pda/sync/barcodes续接；当前状态含尚未发布的变更，重复同版本事件不得抹掉本机占用}
+    items:
+      type: array
+      items:
+        type: object
+        required: [baleId, barcode, status, dispatchCycle, rowVersion]
+        properties:
+          baleId: {type: string, format: uuid}
+          barcode: {type: string}
+          status: {type: string, enum: [AVAILABLE, UNAVAILABLE, RESERVED, QUARANTINED, DISPATCHED]}
+          dispatchCycle: {type: string}
+          rowVersion: {type: string}

@@ -23,6 +23,7 @@ BarcodeSync:
   get:
     security: [{pdaBearer: []}]
     summary: 按当前恢复代次拉取条码基线和增量事件；游标属于恢复代次和仓库命名空间
+    description: 有效PDA身份需pda:assign，或同时持temporary_order:create、pda:scan、pda:submit并开启设备临时准入。临时资料包的nextCursor可从固定截点续接；本接口不续期或授予正式单领取权。
     parameters:
       - $ref: './openapi.yaml#/components/parameters/Epoch'
       - {name: cursor, in: query, schema: {type: string}, description: 首次留空取得已发布状态固定基线，后续使用nextCursor}
