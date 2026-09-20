@@ -13,6 +13,8 @@ from safety import inventory, secure_directory, sha, write_json
 
 def test_directory():
     base = LAB_ROOT / 'tests'
+    # Fresh worktrees do not have the ignored R09 lab root yet.
+    LAB_ROOT.mkdir(parents=True, exist_ok=True)
     if not base.exists():
         secure_directory(base)
     return Path(tempfile.mkdtemp(prefix='case-', dir=base))
