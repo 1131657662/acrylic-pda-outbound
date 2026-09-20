@@ -27,10 +27,11 @@ public class ReviewReminderStore {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public int createDueReminders(UUID warehouse) {
         var candidates = jdbc.query("""
-            SELECT BIN_TO_UUID(s.id),BIN_TO_UUID(c.warehouse_id),BIN_TO_UUID(c.source_order_id),s.created_at
+            SELECT BIN_TO_UUID(s.id),BIN_TO_UUID(c.warehouse_id),BIN_TO_UUID(COALESCE(c.canonical_order_id,c.source_order_id)),s.created_at
             FROM submission s INNER JOIN submission_scope c ON c.current_submission_id=s.id
             LEFT JOIN submission_review_reminder r ON r.submission_id=s.id
             WHERE s.status='REVIEW_REQUIRED' AND s.created_at<=TIMESTAMPADD(MINUTE,-30,UTC_TIMESTAMP(3))
+              AND COALESCE(c.canonical_order_id,c.source_order_id) IS NOT NULL
               AND r.id IS NULL AND (? IS NULL OR c.warehouse_id=?)
             ORDER BY s.created_at,s.id LIMIT 100 FOR UPDATE SKIP LOCKED
             """, (rs,n)->new Candidate(UUID.fromString(rs.getString(1)),UUID.fromString(rs.getString(2)),

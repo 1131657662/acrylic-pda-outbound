@@ -7,10 +7,11 @@ import FeedbackState from '../components/FeedbackState.vue';
 import { localTime } from '../orders/contracts';
 import { listPosition, saveListPosition } from '../orders/list-context';
 import { useReminders } from './useReminders';
+import type { Reminder } from './contracts';
 const session = useSessionStore(); const root = ref<HTMLElement>();
 const { rows, next, busy, loaded, error, receivedAt, cursor, key, previous, go, load } = useReminders();
-function destination(id: string) {
-  return { path: `/orders/${id}`, query: { warehouse: session.warehouseId, tab: 'records',
+function destination(row: Reminder) {
+  return { path: row.sourceType === 'TEMP' ? `/temporary-reviews/${row.submissionId}` : `/orders/${row.orderId}`, query: { warehouse: session.warehouseId, tab: 'records',
     from: 'review-reminders', reminderCursor: cursor.value || undefined, reminderWarehouse: session.warehouseId } };
 }
 function remember(id: string): void {
@@ -41,17 +42,18 @@ watch(receivedAt, async () => {
       <FeedbackState v-if="!rows.length" :title="cursor ? '本页待办已处理或已变化' : '暂无超时待审提醒'" description="可刷新查询最新待办；历史提醒仍保留在订单操作记录中。" />
       <div v-else ref="root" class="order-results" :aria-busy="busy">
         <div class="orders-grid"><el-table v-loading="busy" :data="rows" height="100%" row-key="id">
-          <el-table-column label="订单号" min-width="300"><template #default="{ row }"><router-link :data-order-id="row.orderId" :to="destination(row.orderId)" class="order-link" @click="remember(row.orderId)">{{ row.orderNo }}</router-link></template></el-table-column>
+          <el-table-column label="订单号" min-width="300"><template #default="{ row }"><router-link :data-order-id="row.orderId" :to="destination(row)" class="order-link" @click="remember(row.orderId)">{{ row.orderNo }}</router-link></template></el-table-column>
+          <el-table-column label="来源" width="100"><template #default="{ row }">{{ row.sourceType === 'TEMP' ? '临时单' : '正式单' }}</template></el-table-column>
           <el-table-column prop="vehicleNo" label="车号" min-width="130" />
           <el-table-column label="后台接收时间" min-width="175"><template #default="{ row }">{{ localTime(row.submittedAt) }}</template></el-table-column>
           <el-table-column label="提醒时间" min-width="175"><template #default="{ row }">{{ localTime(row.remindedAt) }}</template></el-table-column>
-          <el-table-column label="操作" width="130"><template #default="{ row }"><router-link :to="destination(row.orderId)" @click="remember(row.orderId)">核对并审批</router-link></template></el-table-column>
+          <el-table-column label="操作" width="130"><template #default="{ row }"><router-link :to="destination(row)" @click="remember(row.orderId)">{{ row.sourceType === 'TEMP' ? '审阅临时单' : '核对并审批' }}</router-link></template></el-table-column>
         </el-table></div>
         <div class="order-mobile-list"><article v-for="row in rows" :key="row.id" class="order-mobile-row">
-          <router-link :data-order-id="row.orderId" :to="destination(row.orderId)" class="order-link" @click="remember(row.orderId)">{{ row.orderNo }}</router-link>
-          <div><span>{{ row.vehicleNo }}</span><span>待主管处理</span></div>
+          <router-link :data-order-id="row.orderId" :to="destination(row)" class="order-link" @click="remember(row.orderId)">{{ row.orderNo }}</router-link>
+          <div><span>{{ row.vehicleNo }}</span><span>{{ row.sourceType === 'TEMP' ? '临时待确认' : '待主管处理' }}</span></div>
           <p class="muted">后台接收：{{ localTime(row.submittedAt) }}<br />提醒：{{ localTime(row.remindedAt) }}</p>
-          <router-link :to="destination(row.orderId)" @click="remember(row.orderId)">核对并审批</router-link>
+          <router-link :to="destination(row)" @click="remember(row.orderId)">{{ row.sourceType === 'TEMP' ? '审阅临时单' : '核对并审批' }}</router-link>
         </article></div>
       </div>
     </template>

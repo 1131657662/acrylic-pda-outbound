@@ -1,7 +1,7 @@
 List:
   get:
     summary: 当前仓库已生成提醒且仍待审的当前提交
-    description: 需要submission:review和当前仓库授权。按remindedAt/id倒序真实游标分页；已审批、退回、取消或已被新批次替代的历史提醒不返回。只读，不触发提醒生成或改变业务事实。Worker每分钟检查30分钟阈值。
+    description: 需要当前仓库授权及submission:review或temporary_order:confirm之一。FORMAL行仅submission:review可见，TEMP行仅temporary_order:confirm可见，双权限可见两类；sourceType决定进入正式审批或独立临时审阅。按remindedAt/id倒序真实游标分页；已审批、退回、取消或已被新批次替代的历史提醒不返回。只读，不触发提醒生成或改变业务事实。Worker每分钟检查30分钟阈值。
     security: [{webSession: []}]
     parameters:
       - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
@@ -38,7 +38,7 @@ Page:
     hasMore: {type: boolean}
 Item:
   type: object
-  required: [id, submissionId, orderId, orderNo, vehicleNo, submittedAt, dueAt, remindedAt]
+  required: [id, submissionId, orderId, orderNo, vehicleNo, submittedAt, dueAt, remindedAt, sourceType]
   properties:
     id: {type: string, format: uuid}
     submissionId: {type: string, format: uuid}
@@ -48,3 +48,4 @@ Item:
     submittedAt: {type: string, format: date-time}
     dueAt: {type: string, format: date-time}
     remindedAt: {type: string, format: date-time}
+    sourceType: {type: string, enum: [FORMAL, TEMP]}

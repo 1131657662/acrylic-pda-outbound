@@ -9,7 +9,8 @@
     "typecheck": "vue-tsc --noEmit",
     "test:e2e": "playwright test",
     "test:pda-download": "npm run build && playwright test --config=pda-download.config.ts",
-    "check:contract": "node tools/check-contract.mjs"
+    "check:contract": "node tools/check-contract.mjs",
+    "test:temporary-review": "node --experimental-strip-types --test tools/temporary-review.test.mjs"
   },
   "dependencies": {
     "@element-plus/icons-vue": "2.3.2",
