@@ -1,0 +1,268 @@
+{
+  "date": "2026-09-20",
+  "status": "PASS_WITH_RETAINED_FAILURE_HISTORY",
+  "business_base": "90581375128ee426fcf979a76eb44f4bb7734fef",
+  "branch": "codex/r09-v33-recovery",
+  "scope": "V33 isolated snapshot consistency and recovery; no disaster reconstruction or deployment",
+  "reviewed_delta_raw_fingerprints": {
+    "docs/parallel/R09/ops/audit_archives.py": "d5ac33b2a3cff7194c877ae90090b6fa357c0b21ac46a192f669b417ba9beebb",
+    "docs/parallel/R09/ops/audit_origins.py": "d3b3033c796a6654b51e330b383e993fd573a21e5d7968a7213878b31e8c73f7",
+    "docs/parallel/R09/ops/cli.py": "c58683b4e34316239b4a86a675789939e2478c9ae212491b619666aeb9747849",
+    "docs/parallel/R09/ops/consistency.py": "b724f68379ae67bd3fde8d0417015ecc11042314a765a7af09ba1cb56712f1a5",
+    "docs/parallel/R09/ops/temporary_payloads.py": "056175f15464c499b336e87d25cb04062d7bb7a78ba8e3b5d0fb24c0a584c59d",
+    "docs/parallel/R09/ops/temporary_plans.py": "fb843419ab6cfd55985fd76c7f89a5694b9a3529341ab0c038a704e02ed4598e",
+    "docs/parallel/R09/ops/temporary_submissions.py": "72cb19520d9a295dbec2ee350e2ccf17e613fc7a92f881f78fcf00ab146de273",
+    "docs/parallel/R09/ops/temporary_uploads.py": "4542240ebfb89b35d56416370b8ceeac9e85b3966ce5e7ad26f874a87e1dc87d",
+    "docs/parallel/R09/ops/v33_drill.py": "5d2ac0eb5cf567ef9ffebe8e0969ac2d970b957d21b5682c13d7502a90391c56",
+    "docs/parallel/R09/ops/v33_seed.py": "755489067c267aa03466e7494163428a518afc254e6988960a1294c5a08eb028",
+    "docs/parallel/R09/tests/test_v33_controls.py": "9079209e03ddcac12f5fcba318d58019ea68e46b359d2589d304acb25111a841",
+    "docs/parallel/R09/tests/test_v33_payloads.py": "bad8c483619f9ff3719ccc0766e41074e471d571bf7f1099740b3efd3c751145",
+    "server/src/test/java/com/acrylic/outbound/inventory/R09V33FixtureIT.java": "cf0b1c45a64b477e7fc3c680335fccc819062fa5c0dece237e3f93044a2e1f07"
+  },
+  "independent_review": {
+    "reviewer": "W2 /root/r08_export",
+    "result": "P1 fixture activation gate fixed; final baseline4/evidence reviewed, no remaining blocker"
+  },
+  "python": {
+    "tests": 71,
+    "failures": 0,
+    "errors": 0,
+    "resource_warning_as_error": true,
+    "log_sha256": "87c7130a31ac45fc4b450c1e557b23e55bc1bb80434c35a3e477576aab3135a9"
+  },
+  "fixture_gates": {
+    "disabled": {
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 10
+    },
+    "disabled_no_spring_or_hikari": true,
+    "wrong_instance": {
+      "tests": 10,
+      "failures": 10,
+      "errors": 0,
+      "skipped": 0
+    },
+    "wrong_instance_result": "expected hard rejection before database connection"
+  },
+  "lab1": {
+    "path": ".local/r09/20260920T132134Z-f1bb3b",
+    "fixture_before_gate_fix": true,
+    "tests": {
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "release": {
+      "base_commit": "90581375128ee426fcf979a76eb44f4bb7734fef",
+      "checkout_commit": "90581375128ee426fcf979a76eb44f4bb7734fef",
+      "source_snapshot": false,
+      "jar_sha256": "83fe6eb3c1bde444376d2a0cb0dbd9965cd91be566cca50e0300487322290dd0",
+      "fixture_scenarios": [
+        "*SubmissionApiIT.completeSubmissionRecordsOnceAndRetriesReturnOriginalReceipt",
+        "*SubmissionApiIT.disabledAutomaticAccountingStillRetainsGlobalDispatchGuards",
+        "*SubmissionApiIT.shortShipmentReservesUntilExplicitSupervisorApproval",
+        "*SubmissionApiIT.abortBeforeBodyLeavesPermanentTombstoneAndNoFakePayload",
+        "*SubmissionArchiveIT.durableCopiesProduceStableSignedConfirmationAndAndroidContract",
+        "*AuditArchiveIT.stableSignedSegmentsProduceAndroidContract",
+        "*TemporaryAuditIT.mixedOutOfOrderReplayArchivesWithoutChangingOriginalFormalDigest",
+        "*TemporaryAuditIT.unacknowledgedPreparationCanPreserveEvidenceWithoutAcknowledgingActivation",
+        "*R09V33FixtureIT"
+      ],
+      "fixture_sha256": "38f744ebe32763c27b84d18c418d0067d9b83300272a384abff706be327a9310",
+      "fixture_log": "fixture-1789912381536784000.log",
+      "schema": "33"
+    },
+    "backup": "backups/20260920T135520Z-becfd9",
+    "restore": {
+      "status": "PASS",
+      "verified_at": "2026-09-20T13:57:49.225114+00:00",
+      "seconds": 16.854,
+      "database": "r09_ops_restore",
+      "port": 19310,
+      "tables": 93,
+      "business": {
+        "foreign_keys_checked": 201,
+        "file_references_checked": 35,
+        "signed_receipts_verified": 10,
+        "dispatch_packages": 10,
+        "dispatch_weight_g": 3007500,
+        "ledger_rows": 4,
+        "ledger_weight_delta_g": -1203000,
+        "guard_rows": 16,
+        "success_submissions": 5,
+        "abort_tombstones": 5,
+        "idempotency_rows": 151,
+        "audit_rows": 224,
+        "capture_rows": 420,
+        "device_event_rows": 1270,
+        "submission_archives_verified": 1,
+        "submission_archive_file_references": 2,
+        "audit_archives_verified": 3,
+        "archived_audit_events_verified": 15,
+        "audit_event_rows_verified": 16,
+        "order_counter_dates_verified": 1,
+        "order_counter_exhausted_dates": 0,
+        "fh_orders_verified": 23,
+        "legacy_orders_preserved": 0,
+        "temporary_qualifications_verified": 13,
+        "temporary_parts_verified": 65,
+        "temporary_origins_verified": 12,
+        "temporary_audit_events_verified": 2,
+        "temporary_submissions_verified": 10,
+        "temporary_payloads_verified": 5,
+        "temporary_chunks_verified": 7,
+        "temporary_aborts_verified": 4
+      },
+      "backup_sums_sha256": "cc81b824696b2804699b10cb2b0da80fb6f02c430f2bec25ad94fa9e8e079a33",
+      "scope": "isolated snapshot restore; no disaster reconstruction"
+    },
+    "faults": {
+      "status": "PASS",
+      "checks": [
+        "scope_round",
+        "missing_current",
+        "wrong_authorization",
+        "wrong_original_epoch",
+        "slot_round",
+        "wrong_target_type",
+        "changed_plan",
+        "capture_hash",
+        "event_hash",
+        "upload_geometry",
+        "chunk_file_hash",
+        "declared_hash_not_accepted",
+        "abort_cannot_release",
+        "payload_file_hash",
+        "counter_regressed",
+        "counter_missing",
+        "unknown_schema_refused",
+        "all_tables_and_files_restored"
+      ],
+      "localDeletionAllowed": false
+    },
+    "initial_failures": [
+      "font download after generated outputs were invalidated; stopped own daemon before seed; both databases confirmed empty",
+      "dedicated IT needed explicit environment gate to avoid breaking ordinary full integration tests",
+      "first wrong-instance probe was UP-TO-DATE; invalid evidence, rerun produced actual hard rejection",
+      "fault pass1 numeric HEX original value restoration failed with MySQL1366; single injected scope round restored; all93 table facts matched",
+      "fault pass2 mutable version predicate prevented restoration; stable installed_rank used; all93 table facts matched"
+    ],
+    "stopped": true
+  },
+  "lab2": {
+    "path": ".local/r09/20260920T141033Z-14ede7",
+    "new_empty_source_seeded_once": true,
+    "final_fixture_gate_enabled": true,
+    "verification": {
+      "status": "PASS",
+      "test_suites": [
+        {
+          "name": "com.acrylic.outbound.inventory.AuditArchiveIT",
+          "tests": "1",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "com.acrylic.outbound.inventory.R09V33FixtureIT",
+          "tests": "10",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "com.acrylic.outbound.inventory.SubmissionApiIT",
+          "tests": "4",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "com.acrylic.outbound.inventory.SubmissionArchiveIT",
+          "tests": "1",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        },
+        {
+          "name": "com.acrylic.outbound.inventory.TemporaryAuditIT",
+          "tests": "2",
+          "failures": "0",
+          "errors": "0",
+          "skipped": "0"
+        }
+      ],
+      "business": {
+        "foreign_keys_checked": 201,
+        "file_references_checked": 35,
+        "signed_receipts_verified": 10,
+        "dispatch_packages": 10,
+        "dispatch_weight_g": 3007500,
+        "ledger_rows": 4,
+        "ledger_weight_delta_g": -1203000,
+        "guard_rows": 16,
+        "success_submissions": 5,
+        "abort_tombstones": 5,
+        "idempotency_rows": 151,
+        "audit_rows": 224,
+        "capture_rows": 420,
+        "device_event_rows": 1270,
+        "submission_archives_verified": 1,
+        "submission_archive_file_references": 2,
+        "audit_archives_verified": 3,
+        "archived_audit_events_verified": 15,
+        "audit_event_rows_verified": 16,
+        "order_counter_dates_verified": 1,
+        "order_counter_exhausted_dates": 0,
+        "fh_orders_verified": 23,
+        "legacy_orders_preserved": 0,
+        "temporary_qualifications_verified": 13,
+        "temporary_parts_verified": 65,
+        "temporary_origins_verified": 12,
+        "temporary_audit_events_verified": 2,
+        "temporary_submissions_verified": 10,
+        "temporary_payloads_verified": 5,
+        "temporary_chunks_verified": 7,
+        "temporary_aborts_verified": 4
+      },
+      "release": {
+        "base_commit": "90581375128ee426fcf979a76eb44f4bb7734fef",
+        "checkout_commit": "90581375128ee426fcf979a76eb44f4bb7734fef",
+        "source_snapshot": false,
+        "jar_sha256": "aa455de1878aa9426500326e2cc267469a10285e89f77f1a685806350f7ac31f",
+        "fixture_scenarios": [
+          "*SubmissionApiIT.completeSubmissionRecordsOnceAndRetriesReturnOriginalReceipt",
+          "*SubmissionApiIT.disabledAutomaticAccountingStillRetainsGlobalDispatchGuards",
+          "*SubmissionApiIT.shortShipmentReservesUntilExplicitSupervisorApproval",
+          "*SubmissionApiIT.abortBeforeBodyLeavesPermanentTombstoneAndNoFakePayload",
+          "*SubmissionArchiveIT.durableCopiesProduceStableSignedConfirmationAndAndroidContract",
+          "*AuditArchiveIT.stableSignedSegmentsProduceAndroidContract",
+          "*TemporaryAuditIT.mixedOutOfOrderReplayArchivesWithoutChangingOriginalFormalDigest",
+          "*TemporaryAuditIT.unacknowledgedPreparationCanPreserveEvidenceWithoutAcknowledgingActivation",
+          "*R09V33FixtureIT"
+        ],
+        "fixture_sha256": "cf0b1c45a64b477e7fc3c680335fccc819062fa5c0dece237e3f93044a2e1f07",
+        "fixture_log": "fixture-1789913477853723800.log",
+        "schema": "33"
+      }
+    },
+    "backup_restore_not_repeated": "gate-only fixture change did not change lab1 business/tools; lab1 exact snapshot proof retained",
+    "stopped": true
+  },
+  "ports_closed": {
+    "19309": true,
+    "19310": true,
+    "18309": true
+  },
+  "limitations": [
+    "Only pending/abort TEMP V33 supported; future success/rejection states fail closed",
+    "V33 abort clears issues_json, so only retained ownership subset is checked, not pre-abort full ownership history",
+    "FH checks compare counters only with same-snapshot orders; no cross-cutoff high-water proof or counter repair",
+    "V21/V28/V32 compatibility code and unit paths preserved, old lab rehearsals not rerun in this batch",
+    "No HTTP/device/public/live verification, no shared authority or write/Worker barrier integration, no main merge/deployment"
+  ],
+  "localDeletionAllowed": false
+}
