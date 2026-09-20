@@ -5,6 +5,7 @@ export const submissionSchema = z.object({
   submissionId: z.string().uuid(), orderId: z.string().uuid(), status: z.enum(['REGISTERED', 'RECEIVING', 'REVIEW_REQUIRED', 'REJECTED', 'ABORTED', 'SUCCEEDED']),
   payloadSha256: z.string().nullable(), actualCount: z.string().optional(), actualWeightGrams: z.string().optional(),
   inventoryDeducted: z.boolean().optional(), completedAt: z.string().optional(),
+  source: z.object({ kind: z.enum(['FORMAL', 'TEMP']) }).optional(),
   issues: z.array(z.object({ code: z.string(), barcode: z.string().optional(), reason: z.string().optional() })).optional(),
 });
 export const submissionDetailSchema = z.object({

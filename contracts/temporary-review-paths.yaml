@@ -1,0 +1,85 @@
+List:
+  get:
+    summary: 当前仓库临时待确认批次
+    description: 独立要求temporary_order:confirm及仓库授权，不要求submission:review。仅返回有完整正文且仍为当前REVIEW_REQUIRED的TEMP批次，按正文receivedAt与submissionId倒序分页。只读，不生成审批、出库、占用或放行结果。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: '#/Cursor'}
+      - {$ref: '#/Limit'}
+    responses:
+      '200':
+        description: 当前待确认批次
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - type: object
+                  properties:
+                    data: {$ref: './temporary-review-schemas.yaml#/Page'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+Detail:
+  get:
+    summary: 审阅原TEMP批次并读取当前待核对原因
+    description: 每次核对temporary_order:confirm和仓库。固定原来源、计划和正文；区分上传时receivedIssues与当前currentIssues。原人员/设备当前状态、版本、准入、权限和仓库、原资格期限、恢复代次及当前库存周期/占用仅供核对，不批准任何条件。到期不意味着必须拒绝，冲突消失不意味着可以放行。历史批次仍可审阅，正文前取消返回404。当前writeConfirmationAvailable和releaseAllowed始终false。本批没有写确认接口。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: '#/Id'}
+    responses:
+      '200':
+        description: 原批次与本次只读复核结果
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - type: object
+                  properties:
+                    data: {$ref: './temporary-review-schemas.yaml#/Detail'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+Scans:
+  get:
+    summary: 原TEMP冻结正文中的装车明细分页
+    description: temporary_order:confirm及仓库授权。按orderScanSeq升序，从原摘要校验通过的冻结正文服务端分页，不读取或改写当前本机事实。游标绑定submissionId和payloadSha256，跨批次或摘要游标返回400。ACTIVE与VOID均保留。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: '#/Id'}
+      - {$ref: '#/Cursor'}
+      - {$ref: '#/Limit'}
+    responses:
+      '200':
+        description: 原扫码记录分页
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - type: object
+                  properties:
+                    data: {$ref: './temporary-review-schemas.yaml#/ScanPage'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+Id:
+  name: id
+  in: path
+  required: true
+  schema: {type: string, format: uuid}
+Cursor:
+  name: cursor
+  in: query
+  schema: {type: string, maxLength: 200, default: ''}
+Limit:
+  name: limit
+  in: query
+  schema: {type: integer, minimum: 1, maximum: 200, default: 20}

@@ -5,6 +5,7 @@ export const navigationCollapsed = ref(window.innerWidth < 1280);
 export const navigation = [
   { group: '装车作业', items: [
     { path: '/orders', label: '装车订单', permission: 'order:read', icon: Document },
+    { path: '/temporary-reviews', label: '临时待确认', permission: 'temporary_order:confirm', icon: Files },
     { path: '/review-reminders', label: '超时待审', permission: 'submission:review', icon: Bell },
   ] },
   { group: '库存管理', items: [
@@ -19,5 +20,8 @@ export const navigation = [
   ] },
 ];
 export function firstWorkspacePath(permissions: string[]): string {
-  return navigation.flatMap(group => group.items).find(item => permissions.includes(item.permission))?.path ?? '/orders';
+  return navigation.flatMap(group => group.items).find(item => canNavigate(item, permissions))?.path ?? '/orders';
+}
+export function canNavigate(item: { path: string; permission: string }, permissions: string[] = []): boolean {
+  return permissions.includes(item.permission) || (item.path === '/review-reminders' && permissions.includes('temporary_order:confirm'));
 }

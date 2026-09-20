@@ -14,10 +14,11 @@ export function useReminders() {
   const scope = computed(() => JSON.stringify([session.identity?.id, session.warehouseId]));
   const key = computed(() => `${scope.value}:${cursor.value}`);
   const previous = computed(() => previousPositions.get(key.value));
+  const authorized = computed(() => session.identity?.permissions.some(p => ['submission:review', 'temporary_order:confirm'].includes(p)));
   let generation = 0;
   async function load(): Promise<void> {
     const current = ++generation;
-    if (!session.warehouseId || !session.identity?.permissions.includes('submission:review')) return;
+    if (!session.warehouseId || !authorized.value) return;
     busy.value = true; error.value = '';
     try {
       const params = new URLSearchParams({ warehouseId: session.warehouseId, limit: '20', cursor: cursor.value });
@@ -38,7 +39,7 @@ export function useReminders() {
     }
     void router.push({ path: '/review-reminders', query: { warehouse: session.warehouseId, cursor: value || undefined } });
   }
-  watch(() => [key.value, session.identity?.permissions.includes('submission:review')], () => {
+  watch(() => [key.value, JSON.stringify(session.identity?.permissions)], () => {
     rows.value = []; next.value = null; loaded.value = false; error.value = ''; busy.value = false; void load();
   }, { immediate: true });
   onBeforeUnmount(() => { generation++; });

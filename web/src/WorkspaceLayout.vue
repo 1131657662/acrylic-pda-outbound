@@ -7,7 +7,7 @@ import { errorText } from './api';
 import WorkspaceNavigation from './components/WorkspaceNavigation.vue';
 import ConnectionStatus from './components/ConnectionStatus.vue';
 import FeedbackState from './components/FeedbackState.vue';
-import { navigation, navigationCollapsed } from './navigation';
+import { navigation, navigationCollapsed, canNavigate } from './navigation';
 import { connection } from './connection';
 import SessionRecovery from './components/SessionRecovery.vue';
 import { orderRouteQuery, parseOrderQuery } from './orders/list-context';
@@ -15,7 +15,7 @@ const props = defineProps<{ title: string; busy?: boolean; list?: boolean; wareh
 const session = useSessionStore(); const route = useRoute(); const router = useRouter();
 const error = ref(''); const drawer = ref(false); const collapsed = navigationCollapsed;
 const current = computed(() => navigation.flatMap(group => group.items).find(item => route.path.startsWith(item.path)));
-const authorized = computed(() => !current.value || session.identity?.permissions.includes(current.value.permission));
+const authorized = computed(() => !current.value || canNavigate(current.value, session.identity?.permissions));
 const environment = import.meta.env.VITE_ENVIRONMENT_NAME?.trim() || (import.meta.env.DEV ? '开发环境' : '');
 const parentLink = computed(() => ({ path: current.value?.path ?? '/orders', query: current.value?.path === '/orders'
   ? orderRouteQuery(parseOrderQuery(route.query), session.warehouseId) : {} }));

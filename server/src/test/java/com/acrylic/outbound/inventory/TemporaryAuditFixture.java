@@ -12,7 +12,7 @@ final class TemporaryAuditFixture {
     final SubmissionFixture formal;final JsonNode authorization;final String client=UUID.randomUUID().toString();
     TemporaryAuditFixture(SubmissionFixture formal) throws Exception {
         this.formal=formal;
-        formal.jdbc.update("INSERT INTO user_role SELECT UUID_TO_BIN(?),id FROM role WHERE code='TEMPORARY_ORDER_CREATOR'",formal.tokens.get("userId").asText());
+        formal.jdbc.update("INSERT IGNORE INTO user_role SELECT UUID_TO_BIN(?),id FROM role WHERE code='TEMPORARY_ORDER_CREATOR'",formal.tokens.get("userId").asText());
         // Fixture-only admission: preserve the already-issued formal session for mixed evidence.
         formal.jdbc.update("UPDATE device SET temporary_order_enabled=1 WHERE id=UUID_TO_BIN(?)",device());
         authorization=prepare();acknowledge(authorization);

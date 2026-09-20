@@ -1,5 +1,7 @@
 # 已实现接口与运行边界
 
+契约版本0.26.0，共106条路径（2026-09-20）。新增TEMP独立只读待确认列表、原批次审阅及原扫描明细分页；要求temporary_order:confirm与仓库授权。当前资格/权限/恢复/库存占用复核仅生成待核对信息，不写审批、扣账、回执或放行。超时提醒按sourceType及两类独立权限分流。Flyway仍V33，Android/code20/Room17不变；M2b写确认、关联及实物处置未开放。见[审阅契约](temporary-review-paths.yaml)及[交付记录](../docs/R06_TEMPORARY_REVIEW_GUIDE.md)。
+
 契约版本0.25.0，共103条路径（2026-09-20）。新增TEMP稳定来源冻结正文接收，复用共享提交查询/分块/取消协议；Flyway V33允许正式来源或TEMP来源二选一，完整证据接收后才登记唯一PDA_TEMP正式记录。Android0.15.0-r06-submission/code20/Room17已接原批次恢复与签名取消；独立确认、受控关联和拒绝实物处置仍待后续，所有临时单均不得放行。详见[TEMP提交契约](temporary-submission-schemas.yaml)及[交付记录](../docs/R06_TEMPORARY_SUBMISSION_GUIDE.md)。以下0.24及更早说明保留为历史记录。
 
 0.20.0新增审计连续前缀归档与跨恢复代次重建，字段、签名凭据和错误边界见[PDA接口](PDA_API.md#r05-审计连续前缀归档与恢复0200)。当前不授权删除本机事实。

@@ -15,7 +15,8 @@ const emit = defineEmits<{ updated: []; busy: [value: boolean] }>();
 const session = useSessionStore(); const detail = ref<SubmissionDetail | null>(null);
 const busy = ref(false); const error = ref(''); const reason = ref(''); const pendingBody = ref(''); const decision = ref<'APPROVE' | 'REJECT' | null>(null);
 let generation = 0;
-const canReview = computed(() => session.identity?.permissions.includes('submission:review') && detail.value?.submission?.status === 'REVIEW_REQUIRED');
+const temporary = computed(() => detail.value?.submission?.source?.kind === 'TEMP');
+const canReview = computed(() => !temporary.value && session.identity?.permissions.includes('submission:review') && detail.value?.submission?.status === 'REVIEW_REQUIRED');
 function scanLabel(id: string, status: string): string {
   const proof = detail.value?.dispositions.find(d => d.captureId === id);
   return proof ? dispositionLabels[proof.action] : status === 'ACTIVE' ? '有效明细' : '本地已撤销';
@@ -54,6 +55,9 @@ onBeforeUnmount(() => { generation++; });
     <div class="section-heading"><div><h2>后台收到的装车记录</h2><p class="muted">后台确认出库后才能放行。退回和取消保留占用，不能直接重新扫码。</p></div><el-button :loading="busy" :disabled="!!pendingBody || !!decision" @click="load">查询结果</el-button></div>
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
     <template v-if="detail?.submission">
+      <p v-if="temporary">临时来源须独立核对，当前不可放行。
+        <router-link v-if="session.identity?.permissions.includes('temporary_order:confirm')" :to="{ path: `/temporary-reviews/${detail.submission.submissionId}`, query: { warehouse: warehouseId } }">查看临时审阅</router-link>
+      </p>
       <el-tag :type="detail.submission.status === 'SUCCEEDED' ? 'success' : 'warning'">{{ submissionLabel[detail.submission.status] }}</el-tag>
       <p>收到有效明细 {{ detail.expectedCount ?? '尚未收到' }} 包 · {{ detail.expectedWeightGrams != null ? kilograms(detail.expectedWeightGrams) : '尚未收到' }} kg</p>
       <p v-if="detail.submission.status === 'SUCCEEDED'">确认出库 {{ detail.submission.actualCount }} 包 · {{ kilograms(detail.submission.actualWeightGrams ?? '0') }} kg · {{ detail.submission.inventoryDeducted ? '已自动扣账' : '未自动扣账（已保留出库防重）' }}</p>

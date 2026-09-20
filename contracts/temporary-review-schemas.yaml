@@ -1,0 +1,104 @@
+Page:
+  type: object
+  required: [items, nextCursor, hasMore]
+  properties:
+    items: {type: array, items: {$ref: '#/Item'}}
+    nextCursor: {type: [string, 'null']}
+    hasMore: {type: boolean}
+ScanPage:
+  type: object
+  required: [items, nextCursor, hasMore]
+  properties:
+    items: {type: array, items: {$ref: '#/Scan'}}
+    nextCursor: {type: [string, 'null']}
+    hasMore: {type: boolean}
+Scan:
+  allOf:
+    - {$ref: './submission-evidence.yaml#/Scan'}
+    - type: object
+      required: [currentIssue]
+      properties:
+        currentIssue: {type: [string, 'null'], description: 本次明细读取时的库存周期或占用冲突；无冲突也不代表可以放行。}
+Item:
+  type: object
+  required: [submissionId, orderId, orderNo, vehicleNo, receivedAt, expectedCount, expectedWeightGrams, status]
+  properties:
+    submissionId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    orderNo: {type: string}
+    vehicleNo: {type: string}
+    receivedAt: {type: string, format: date-time}
+    expectedCount: {$ref: './submission-schemas.yaml#/Positive'}
+    expectedWeightGrams: {$ref: './submission-schemas.yaml#/Positive'}
+    status: {type: string, const: REVIEW_REQUIRED}
+Issue:
+  type: object
+  required: [code, count]
+  properties:
+    code: {type: string}
+    count: {$ref: './submission-schemas.yaml#/Positive'}
+  description: 按原因汇总；库存问题count为涉及包数，其他原因通常为1。是待核对信息，不是写审批结果。
+Product:
+  type: object
+  required: [deliveryCode, productId, model, name, plannedCount, actualCount, shortCount, weightGrams]
+  properties:
+    deliveryCode: {type: string}
+    productId: {type: string, format: uuid}
+    model: {type: string}
+    name: {type: string}
+    plannedCount: {$ref: './submission-schemas.yaml#/Positive'}
+    actualCount: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    shortCount: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    weightGrams: {$ref: './submission-schemas.yaml#/Nonnegative'}
+Authorization:
+  type: object
+  required: [authorizationId, issuedAt, expiresAt, userVersion, deviceVersion, recoveryEpoch]
+  properties:
+    authorizationId: {type: string, format: uuid}
+    issuedAt: {type: string, format: date-time}
+    expiresAt: {type: string, format: date-time}
+    userVersion: {$ref: './submission-schemas.yaml#/Positive'}
+    deviceVersion: {$ref: './submission-schemas.yaml#/Positive'}
+    recoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+Detail:
+  type: object
+  required: [submissionId, orderId, orderNo, temporaryNo, source, status, current, currentSubmissionId, vehicleNo, containerNo, reason, shortShipmentReason, payloadSha256, planSha256, workRound, orderRevision, sourceRecoveryEpoch, serverRecoveryEpoch, serviceMode, reviewerPermissionVersion, registeredAt, receivedAt, checkedAt, closedAt, operatorId, operatorName, deviceName, expectedCount, expectedWeightGrams, inventorySnapshotId, policyVersion, autoDeductInventory, writeConfirmationAvailable, releaseAllowed, authorization, products, receivedIssues, currentIssues]
+  properties:
+    submissionId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    orderNo: {type: string}
+    temporaryNo: {type: string}
+    source: {$ref: './temporary-submission-schemas.yaml#/Source'}
+    status: {type: string, enum: [REGISTERED, RECEIVING, REVIEW_REQUIRED, REJECTED, ABORTED, SUCCEEDED]}
+    current: {type: boolean}
+    currentSubmissionId: {type: [string, 'null'], format: uuid}
+    vehicleNo: {type: string}
+    containerNo: {type: string}
+    reason: {type: string}
+    shortShipmentReason: {type: [string, 'null']}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    planSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    workRound: {$ref: './submission-schemas.yaml#/Positive'}
+    orderRevision: {$ref: './submission-schemas.yaml#/Positive'}
+    sourceRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    serverRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    serviceMode: {type: string, enum: [NORMAL, RECOVERY_PENDING]}
+    reviewerPermissionVersion: {$ref: './submission-schemas.yaml#/Positive'}
+    registeredAt: {type: string, format: date-time}
+    receivedAt: {type: string, format: date-time}
+    checkedAt: {type: string, format: date-time}
+    closedAt: {type: string, format: date-time}
+    operatorId: {type: string, format: uuid}
+    operatorName: {type: string}
+    deviceName: {type: string}
+    expectedCount: {$ref: './submission-schemas.yaml#/Positive'}
+    expectedWeightGrams: {$ref: './submission-schemas.yaml#/Positive'}
+    inventorySnapshotId: {type: string, format: uuid}
+    policyVersion: {$ref: './submission-schemas.yaml#/Positive'}
+    autoDeductInventory: {type: boolean}
+    writeConfirmationAvailable: {type: boolean, const: false}
+    releaseAllowed: {type: boolean, const: false}
+    authorization: {$ref: '#/Authorization'}
+    products: {type: array, maxItems: 500, items: {$ref: '#/Product'}}
+    receivedIssues: {type: array, items: {$ref: '#/Issue'}}
+    currentIssues: {type: array, items: {$ref: '#/Issue'}}

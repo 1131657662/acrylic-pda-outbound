@@ -2,12 +2,12 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useSessionStore } from '../session';
-import { navigation } from '../navigation';
+import { navigation, canNavigate } from '../navigation';
 defineProps<{ collapsed?: boolean; busy?: boolean }>();
 defineEmits<{ navigate: [] }>();
 const session = useSessionStore(); const route = useRoute();
 const groups = computed(() => navigation.map(group => ({ ...group,
-  items: group.items.filter(item => session.identity?.permissions.includes(item.permission)),
+  items: group.items.filter(item => canNavigate(item, session.identity?.permissions)),
 })).filter(group => group.items.length));
 </script>
 <template>
