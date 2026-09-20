@@ -1,0 +1,373 @@
+[
+  {
+    "id": "object-order",
+    "raw": "{\"b\":2,\"a\":1}",
+    "canonical": "{\"a\":1,\"b\":2}",
+    "sha256": "43258cff783fe7036d8a43033f830adfc60ec037382473548ac742b888292777"
+  },
+  {
+    "id": "same-whitespace",
+    "raw": " { \"a\" : 1, \"b\" : 2 } \n",
+    "canonical": "{\"a\":1,\"b\":2}",
+    "sha256": "43258cff783fe7036d8a43033f830adfc60ec037382473548ac742b888292777"
+  },
+  {
+    "id": "nested-and-array",
+    "raw": "{\"z\":[{\"b\":false,\"a\":null},2,1],\"a\":\"原单\"}",
+    "canonical": "{\"a\":\"原单\",\"z\":[{\"a\":null,\"b\":false},2,1]}",
+    "sha256": "c6ea4b20d47c8f63b150025bc1c799c19683b718327724baccfba1c86baa458f"
+  },
+  {
+    "id": "array-reordered",
+    "raw": "{\"a\":\"原单\",\"z\":[{\"a\":null,\"b\":false},1,2]}",
+    "canonical": "{\"a\":\"原单\",\"z\":[{\"a\":null,\"b\":false},1,2]}",
+    "sha256": "560b407550d38abeb161d1c3705869ecc7ab7cc09515caec5a0308b9caaf243f"
+  },
+  {
+    "id": "safe-limits",
+    "raw": "[-9007199254740991,9007199254740991,-0]",
+    "canonical": "[-9007199254740991,9007199254740991,0]",
+    "sha256": "daaaf3e00cf7896b7760e1324617efbacaa0e3b8fbc873d245ea7a96640da08a"
+  },
+  {
+    "id": "decimal-string",
+    "raw": "{\"v\":\"9007199254740992\"}",
+    "canonical": "{\"v\":\"9007199254740992\"}",
+    "sha256": "829dabd68b27052f5069e16da10567eb66a352b9be80b49fb5c4a42243913818"
+  },
+  {
+    "id": "escaped-key",
+    "raw": "{\"\\u0061\":1}",
+    "canonical": "{\"a\":1}",
+    "sha256": "015abd7f5cc57a2dd94b7590f04ad8084273905ee33ec5cebeae62276a97f862"
+  },
+  {
+    "id": "utf16-order",
+    "raw": "{\"\":1,\"😀\":2,\"a\":3}",
+    "canonical": "{\"a\":3,\"😀\":2,\"\":1}",
+    "sha256": "84495633024b0992798250783e7ccb01ab2875649ab22f353f14c0d6a8389fc2"
+  },
+  {
+    "id": "escapes",
+    "raw": "{\"x\":\"a\\n\\t\\b\\f\\r\\\"\\\\/\"}",
+    "canonical": "{\"x\":\"a\\n\\t\\b\\f\\r\\\"\\\\/\"}",
+    "sha256": "b8c7e7a7289c753c06ce380e22aa7f48bdedbfa5237f09a7e670a87ed66911e3"
+  },
+  {
+    "id": "no-unicode-normalization",
+    "raw": "[\"é\",\"é\"]",
+    "canonical": "[\"é\",\"é\"]",
+    "sha256": "4f9aefe2a56dde33aa0522021cb5e8692f35b700043dbee664b3611e2b92f724"
+  },
+  {
+    "id": "null-not-missing",
+    "raw": "{\"canonicalOrderId\":null}",
+    "canonical": "{\"canonicalOrderId\":null}",
+    "sha256": "ea7fedc9ae38885eaf70868142d9b2ed7e11268fddb75cd00fbe05127457971a"
+  },
+  {
+    "id": "empty-object",
+    "raw": "{}",
+    "canonical": "{}",
+    "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  },
+  {
+    "id": "duplicate-key",
+    "raw": "{\"a\":1,\"a\":2}",
+    "reject": true
+  },
+  {
+    "id": "escaped-duplicate-key",
+    "raw": "{\"a\":1,\"\\u0061\":2}",
+    "reject": true
+  },
+  {
+    "id": "nested-duplicate-key",
+    "raw": "{\"x\":{\"a\":1,\"a\":1}}",
+    "reject": true
+  },
+  {
+    "id": "too-large-positive",
+    "raw": "9007199254740992",
+    "reject": true
+  },
+  {
+    "id": "too-large-negative",
+    "raw": "-9007199254740992",
+    "reject": true
+  },
+  {
+    "id": "long-overflow",
+    "raw": "9223372036854775808",
+    "reject": true
+  },
+  {
+    "id": "float-one",
+    "raw": "1.0",
+    "reject": true
+  },
+  {
+    "id": "exponent-one",
+    "raw": "1e0",
+    "reject": true
+  },
+  {
+    "id": "leading-zero",
+    "raw": "01",
+    "reject": true
+  },
+  {
+    "id": "nonfinite",
+    "raw": "NaN",
+    "reject": true
+  },
+  {
+    "id": "trailing-value",
+    "raw": "{} {}",
+    "reject": true
+  },
+  {
+    "id": "empty-document",
+    "raw": "",
+    "reject": true
+  },
+  {
+    "id": "unquoted-key",
+    "raw": "{a:1}",
+    "reject": true
+  },
+  {
+    "id": "numeric-key-order",
+    "raw": "{\"2\":1,\"10\":2}",
+    "canonical": "{\"10\":2,\"2\":1}",
+    "sha256": "cc0e4215ce9b47856142f2356851f02410d82609e64d037ee873afc483f703f6"
+  },
+  {
+    "id": "full-command",
+    "raw": "{\n  \"commandVersion\": 1,\n  \"commandType\": \"DUPLICATE_EXCLUDE\",\n  \"commandId\": \"00000000-0000-4000-8000-000000000006\",\n  \"warehouseId\": \"00000000-0000-4000-8000-000000000005\",\n  \"source\": {\n    \"kind\": \"TEMP\",\n    \"creatorDeviceId\": \"00000000-0000-4000-8000-000000000001\",\n    \"clientOrderId\": \"00000000-0000-4000-8000-000000000002\"\n  },\n  \"submissionId\": \"00000000-0000-4000-8000-000000000003\",\n  \"workRound\": \"1\",\n  \"authorizationId\": \"00000000-0000-4000-8000-000000000004\",\n  \"freezeDeviceId\": \"00000000-0000-4000-8000-000000000001\",\n  \"sourceRecoveryEpoch\": \"2\",\n  \"transportRecoveryEpoch\": \"2\",\n  \"expected\": {\n    \"canonicalOrderId\": \"00000000-0000-4000-8000-000000000008\",\n    \"mappingVersion\": \"1\",\n    \"currentSubmissionId\": \"00000000-0000-4000-8000-000000000003\",\n    \"scopeRound\": \"1\",\n    \"slotVersion\": \"3\",\n    \"decisionVersion\": \"0\",\n    \"receivedPayloadSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n    \"declaredUploadSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n    \"planSha256\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n    \"targetRevision\": \"7\",\n    \"candidateContextSha256\": \"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\n    \"userAuthVersion\": \"4\"\n  },\n  \"reason\": \"合成向量：保留原来源，逐单核对。\"\n}",
+    "canonical": "{\"authorizationId\":\"00000000-0000-4000-8000-000000000004\",\"commandId\":\"00000000-0000-4000-8000-000000000006\",\"commandType\":\"DUPLICATE_EXCLUDE\",\"commandVersion\":1,\"expected\":{\"candidateContextSha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"canonicalOrderId\":\"00000000-0000-4000-8000-000000000008\",\"currentSubmissionId\":\"00000000-0000-4000-8000-000000000003\",\"decisionVersion\":\"0\",\"declaredUploadSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"mappingVersion\":\"1\",\"planSha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"receivedPayloadSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"scopeRound\":\"1\",\"slotVersion\":\"3\",\"targetRevision\":\"7\",\"userAuthVersion\":\"4\"},\"freezeDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"reason\":\"合成向量：保留原来源，逐单核对。\",\"source\":{\"clientOrderId\":\"00000000-0000-4000-8000-000000000002\",\"creatorDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"kind\":\"TEMP\"},\"sourceRecoveryEpoch\":\"2\",\"submissionId\":\"00000000-0000-4000-8000-000000000003\",\"transportRecoveryEpoch\":\"2\",\"warehouseId\":\"00000000-0000-4000-8000-000000000005\",\"workRound\":\"1\"}",
+    "sha256": "89801086b115459e6684f321dc1cace432ad1ab38ac082e269512e262db4da5c"
+  },
+  {
+    "id": "null-command",
+    "raw": "{\n  \"commandVersion\": 1,\n  \"commandType\": \"DUPLICATE_EXCLUDE\",\n  \"commandId\": \"00000000-0000-4000-8000-000000000006\",\n  \"warehouseId\": \"00000000-0000-4000-8000-000000000005\",\n  \"source\": {\n    \"kind\": \"TEMP\",\n    \"creatorDeviceId\": \"00000000-0000-4000-8000-000000000001\",\n    \"clientOrderId\": \"00000000-0000-4000-8000-000000000002\"\n  },\n  \"submissionId\": \"00000000-0000-4000-8000-000000000003\",\n  \"workRound\": \"1\",\n  \"authorizationId\": \"00000000-0000-4000-8000-000000000004\",\n  \"freezeDeviceId\": \"00000000-0000-4000-8000-000000000001\",\n  \"sourceRecoveryEpoch\": \"2\",\n  \"transportRecoveryEpoch\": \"2\",\n  \"expected\": {\n    \"canonicalOrderId\": null,\n    \"mappingVersion\": \"0\",\n    \"currentSubmissionId\": \"00000000-0000-4000-8000-000000000003\",\n    \"scopeRound\": \"1\",\n    \"slotVersion\": null,\n    \"decisionVersion\": \"0\",\n    \"receivedPayloadSha256\": null,\n    \"declaredUploadSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n    \"planSha256\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n    \"targetRevision\": null,\n    \"candidateContextSha256\": \"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\n    \"userAuthVersion\": \"4\"\n  },\n  \"reason\": \"合成向量：保留原来源，逐单核对。\"\n}",
+    "canonical": "{\"authorizationId\":\"00000000-0000-4000-8000-000000000004\",\"commandId\":\"00000000-0000-4000-8000-000000000006\",\"commandType\":\"DUPLICATE_EXCLUDE\",\"commandVersion\":1,\"expected\":{\"candidateContextSha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"canonicalOrderId\":null,\"currentSubmissionId\":\"00000000-0000-4000-8000-000000000003\",\"decisionVersion\":\"0\",\"declaredUploadSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"mappingVersion\":\"0\",\"planSha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"receivedPayloadSha256\":null,\"scopeRound\":\"1\",\"slotVersion\":null,\"targetRevision\":null,\"userAuthVersion\":\"4\"},\"freezeDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"reason\":\"合成向量：保留原来源，逐单核对。\",\"source\":{\"clientOrderId\":\"00000000-0000-4000-8000-000000000002\",\"creatorDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"kind\":\"TEMP\"},\"sourceRecoveryEpoch\":\"2\",\"submissionId\":\"00000000-0000-4000-8000-000000000003\",\"transportRecoveryEpoch\":\"2\",\"warehouseId\":\"00000000-0000-4000-8000-000000000005\",\"workRound\":\"1\"}",
+    "sha256": "32bc8a6f6758abec41624cc6c96680d09a440ba6d3059b49453faa7a1d29ec11"
+  },
+  {
+    "id": "derived-control",
+    "raw": "{\n  \"controlVersion\": 1,\n  \"warehouseId\": \"00000000-0000-4000-8000-000000000005\",\n  \"source\": {\n    \"kind\": \"TEMP\",\n    \"creatorDeviceId\": \"00000000-0000-4000-8000-000000000001\",\n    \"clientOrderId\": \"00000000-0000-4000-8000-000000000002\"\n  },\n  \"submissionId\": \"00000000-0000-4000-8000-000000000003\",\n  \"workRound\": \"1\",\n  \"authorizationId\": \"00000000-0000-4000-8000-000000000004\",\n  \"freezeDeviceId\": \"00000000-0000-4000-8000-000000000001\",\n  \"sourceRecoveryEpoch\": \"2\",\n  \"assignmentId\": null,\n  \"continuationId\": null\n}",
+    "canonical": "{\"assignmentId\":null,\"authorizationId\":\"00000000-0000-4000-8000-000000000004\",\"continuationId\":null,\"controlVersion\":1,\"freezeDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"source\":{\"clientOrderId\":\"00000000-0000-4000-8000-000000000002\",\"creatorDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"kind\":\"TEMP\"},\"sourceRecoveryEpoch\":\"2\",\"submissionId\":\"00000000-0000-4000-8000-000000000003\",\"warehouseId\":\"00000000-0000-4000-8000-000000000005\",\"workRound\":\"1\"}",
+    "sha256": "0e91c4acfa0a507aded029e3b3ab8822ae4cbc604b198f2ec933c46e50930098"
+  },
+  {
+    "id": "unsigned-receipt",
+    "raw": "{\n  \"receiptVersion\": 1,\n  \"commandId\": \"00000000-0000-4000-8000-000000000006\",\n  \"originalKey\": \"00000000-0000-4000-8000-000000000006\",\n  \"routeScope\": \"r06.command.v1-proposal\",\n  \"commandType\": \"DUPLICATE_EXCLUDE\",\n  \"commandSha256\": \"892ada292dc5f6156302c57a66547ea163828ff7c0c4330cce5c10c267ca8a23\",\n  \"originalContext\": {\n    \"warehouseId\": \"00000000-0000-4000-8000-000000000005\",\n    \"source\": {\n      \"kind\": \"TEMP\",\n      \"creatorDeviceId\": \"00000000-0000-4000-8000-000000000001\",\n      \"clientOrderId\": \"00000000-0000-4000-8000-000000000002\"\n    },\n    \"submissionId\": \"00000000-0000-4000-8000-000000000003\",\n    \"workRound\": \"1\",\n    \"authorizationId\": \"00000000-0000-4000-8000-000000000004\",\n    \"freezeDeviceId\": \"00000000-0000-4000-8000-000000000001\",\n    \"sourceRecoveryEpoch\": \"2\",\n    \"transportRecoveryEpoch\": \"2\",\n    \"expected\": {\n      \"canonicalOrderId\": \"00000000-0000-4000-8000-000000000008\",\n      \"mappingVersion\": \"1\",\n      \"currentSubmissionId\": \"00000000-0000-4000-8000-000000000003\",\n      \"scopeRound\": \"1\",\n      \"slotVersion\": \"3\",\n      \"decisionVersion\": \"0\",\n      \"receivedPayloadSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"declaredUploadSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n      \"planSha256\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n      \"targetRevision\": \"7\",\n      \"candidateContextSha256\": \"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\n      \"userAuthVersion\": \"4\"\n    }\n  },\n  \"actor\": {\n    \"principalId\": \"00000000-0000-4000-8000-000000000007\",\n    \"userAuthVersion\": \"4\",\n    \"deviceId\": null,\n    \"sessionId\": null,\n    \"permissionSnapshot\": [\n      \"temporary_order:confirm\",\n      \"temporary_order:link\"\n    ]\n  },\n  \"originalOperatorId\": \"00000000-0000-4000-8000-000000000011\",\n  \"decision\": {\n    \"type\": \"DUPLICATE_EXCLUDE\",\n    \"outcome\": \"RECORDED\",\n    \"decisionVersion\": \"1\",\n    \"reason\": \"合成向量：保留原来源，逐单核对。\"\n  },\n  \"committedAt\": \"2026-09-20T00:00:00Z\",\n  \"writeAvailable\": false,\n  \"releaseAllowed\": false,\n  \"stockReleased\": false,\n  \"mayResumeScanning\": false,\n  \"localDeletionAllowed\": false\n}",
+    "canonical": "{\"actor\":{\"deviceId\":null,\"permissionSnapshot\":[\"temporary_order:confirm\",\"temporary_order:link\"],\"principalId\":\"00000000-0000-4000-8000-000000000007\",\"sessionId\":null,\"userAuthVersion\":\"4\"},\"commandId\":\"00000000-0000-4000-8000-000000000006\",\"commandSha256\":\"892ada292dc5f6156302c57a66547ea163828ff7c0c4330cce5c10c267ca8a23\",\"commandType\":\"DUPLICATE_EXCLUDE\",\"committedAt\":\"2026-09-20T00:00:00Z\",\"decision\":{\"decisionVersion\":\"1\",\"outcome\":\"RECORDED\",\"reason\":\"合成向量：保留原来源，逐单核对。\",\"type\":\"DUPLICATE_EXCLUDE\"},\"localDeletionAllowed\":false,\"mayResumeScanning\":false,\"originalContext\":{\"authorizationId\":\"00000000-0000-4000-8000-000000000004\",\"expected\":{\"candidateContextSha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"canonicalOrderId\":\"00000000-0000-4000-8000-000000000008\",\"currentSubmissionId\":\"00000000-0000-4000-8000-000000000003\",\"decisionVersion\":\"0\",\"declaredUploadSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"mappingVersion\":\"1\",\"planSha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"receivedPayloadSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"scopeRound\":\"1\",\"slotVersion\":\"3\",\"targetRevision\":\"7\",\"userAuthVersion\":\"4\"},\"freezeDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"source\":{\"clientOrderId\":\"00000000-0000-4000-8000-000000000002\",\"creatorDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"kind\":\"TEMP\"},\"sourceRecoveryEpoch\":\"2\",\"submissionId\":\"00000000-0000-4000-8000-000000000003\",\"transportRecoveryEpoch\":\"2\",\"warehouseId\":\"00000000-0000-4000-8000-000000000005\",\"workRound\":\"1\"},\"originalKey\":\"00000000-0000-4000-8000-000000000006\",\"originalOperatorId\":\"00000000-0000-4000-8000-000000000011\",\"receiptVersion\":1,\"releaseAllowed\":false,\"routeScope\":\"r06.command.v1-proposal\",\"stockReleased\":false,\"writeAvailable\":false}",
+    "sha256": "dc08fddac9f7aa79b0af410d71fc272b46a8e495a952c27be88700ed947ca89d"
+  },
+  {
+    "id": "control-value-00",
+    "raw": "{\"x\":\"\\u0000\"}",
+    "canonical": "{\"x\":\"\\u0000\"}",
+    "sha256": "d7812b46824f264486b41370fd0b2bc31dbd9bf10f3ddd3b325107002965c399"
+  },
+  {
+    "id": "control-value-01",
+    "raw": "{\"x\":\"\\u0001\"}",
+    "canonical": "{\"x\":\"\\u0001\"}",
+    "sha256": "a58b0fca4a029e9534859ebbe6431c3ec70da60e23b3efbe5085898b7f411b13"
+  },
+  {
+    "id": "control-value-02",
+    "raw": "{\"x\":\"\\u0002\"}",
+    "canonical": "{\"x\":\"\\u0002\"}",
+    "sha256": "4ba9a1a59c951240589da94afebd3305e5ad60349b1c7ca205941ccc8b09d257"
+  },
+  {
+    "id": "control-value-03",
+    "raw": "{\"x\":\"\\u0003\"}",
+    "canonical": "{\"x\":\"\\u0003\"}",
+    "sha256": "9f6e033cc39fb1063f0520a7d50d4ecaf8d1c02459233964f23b12e0011a1592"
+  },
+  {
+    "id": "control-value-04",
+    "raw": "{\"x\":\"\\u0004\"}",
+    "canonical": "{\"x\":\"\\u0004\"}",
+    "sha256": "d45d9d3b0a41a1018e0fffe102e6471c34bbaa6c6e232d6358ab1fcd3b24eb5b"
+  },
+  {
+    "id": "control-value-05",
+    "raw": "{\"x\":\"\\u0005\"}",
+    "canonical": "{\"x\":\"\\u0005\"}",
+    "sha256": "38196b6c800f632bea6bfd55358cd817cefe9aa7bc8e368124b010019c347d58"
+  },
+  {
+    "id": "control-value-06",
+    "raw": "{\"x\":\"\\u0006\"}",
+    "canonical": "{\"x\":\"\\u0006\"}",
+    "sha256": "97e88cb163bfe2eacfc8ecb881d910d91099cd60f903ab8b5a4a6cec48ffa78e"
+  },
+  {
+    "id": "control-value-07",
+    "raw": "{\"x\":\"\\u0007\"}",
+    "canonical": "{\"x\":\"\\u0007\"}",
+    "sha256": "7be0c218f9e01b7a432048e117b500c6e47b9747da6fda7c894016dbd3596760"
+  },
+  {
+    "id": "control-value-08",
+    "raw": "{\"x\":\"\\u0008\"}",
+    "canonical": "{\"x\":\"\\b\"}",
+    "sha256": "f708a7262604e3bcb15989712166c58836d9aae1c0019871a5cc89d4595785a6"
+  },
+  {
+    "id": "control-value-09",
+    "raw": "{\"x\":\"\\u0009\"}",
+    "canonical": "{\"x\":\"\\t\"}",
+    "sha256": "3c874596b0b25c2e54817aafe5b65c480d7ec0d2a254d4bf83f76bd5887f6c49"
+  },
+  {
+    "id": "control-value-0A",
+    "raw": "{\"x\":\"\\u000a\"}",
+    "canonical": "{\"x\":\"\\n\"}",
+    "sha256": "ad05b3aa2c40b95a11122599b4412611f4d56320eae283a0e837641fc07c21f5"
+  },
+  {
+    "id": "control-value-0B",
+    "raw": "{\"x\":\"\\u000b\"}",
+    "canonical": "{\"x\":\"\\u000B\"}",
+    "sha256": "6db6f39d570c167f764606b81f35fa0271bb82ee05d43b31df2984c8b9cdc8ea"
+  },
+  {
+    "id": "control-value-0C",
+    "raw": "{\"x\":\"\\u000c\"}",
+    "canonical": "{\"x\":\"\\f\"}",
+    "sha256": "7b0657a93d208d86de805906734d1f8587ceef6f50583085e2bc17c393d27344"
+  },
+  {
+    "id": "control-value-0D",
+    "raw": "{\"x\":\"\\u000d\"}",
+    "canonical": "{\"x\":\"\\r\"}",
+    "sha256": "174d1d9cb83104dfce83415efdc47f084db5c187c3f58f9b8c4fe120abc8b07c"
+  },
+  {
+    "id": "control-value-0E",
+    "raw": "{\"x\":\"\\u000e\"}",
+    "canonical": "{\"x\":\"\\u000E\"}",
+    "sha256": "717e58ddc5d3cb85a2a1648f604f6a2cbe1a675b17d084fc371640f8ae357f56"
+  },
+  {
+    "id": "control-value-0F",
+    "raw": "{\"x\":\"\\u000f\"}",
+    "canonical": "{\"x\":\"\\u000F\"}",
+    "sha256": "726a66e8b238418ea514ade39ca2aada6912c86f5b2d3e856e458d0cbb7e0945"
+  },
+  {
+    "id": "control-value-10",
+    "raw": "{\"x\":\"\\u0010\"}",
+    "canonical": "{\"x\":\"\\u0010\"}",
+    "sha256": "fdb00765c9e7789b52a0e681724ff59d53a522e5c2eaf9ac0604b66dc4331326"
+  },
+  {
+    "id": "control-value-11",
+    "raw": "{\"x\":\"\\u0011\"}",
+    "canonical": "{\"x\":\"\\u0011\"}",
+    "sha256": "8eebc4d7f784f19b8156d15a4202bca318d1994f91e0da50e55766200c475340"
+  },
+  {
+    "id": "control-value-12",
+    "raw": "{\"x\":\"\\u0012\"}",
+    "canonical": "{\"x\":\"\\u0012\"}",
+    "sha256": "742bb546d84a6079fc3d2ac1285c637f19c9fc2415c7ad2e3206959811ea7c0d"
+  },
+  {
+    "id": "control-value-13",
+    "raw": "{\"x\":\"\\u0013\"}",
+    "canonical": "{\"x\":\"\\u0013\"}",
+    "sha256": "a6122861698d9a4a0c0b6cb87c2dd580dcedf5c160371f100566efbed892fb98"
+  },
+  {
+    "id": "control-value-14",
+    "raw": "{\"x\":\"\\u0014\"}",
+    "canonical": "{\"x\":\"\\u0014\"}",
+    "sha256": "055b453ff948a840e1e1b31583eacd6d253a640a5516b9909692ecf00b694cfd"
+  },
+  {
+    "id": "control-value-15",
+    "raw": "{\"x\":\"\\u0015\"}",
+    "canonical": "{\"x\":\"\\u0015\"}",
+    "sha256": "875d851269a27a936ed62f82012eda4fd87ef2e15f7bb23499895022939945bf"
+  },
+  {
+    "id": "control-value-16",
+    "raw": "{\"x\":\"\\u0016\"}",
+    "canonical": "{\"x\":\"\\u0016\"}",
+    "sha256": "c3c5192688e6e30c89be9da3433f5370e0e1d1699ed449b59f5d0dc5316c7853"
+  },
+  {
+    "id": "control-value-17",
+    "raw": "{\"x\":\"\\u0017\"}",
+    "canonical": "{\"x\":\"\\u0017\"}",
+    "sha256": "5d788f639c22c4010d2463dd204039bc2db48adf6623567596a16c1487e116f0"
+  },
+  {
+    "id": "control-value-18",
+    "raw": "{\"x\":\"\\u0018\"}",
+    "canonical": "{\"x\":\"\\u0018\"}",
+    "sha256": "dbdc067af9b15cf94bbdbea764711186a212edbdb4864f27f798389ee6332cb3"
+  },
+  {
+    "id": "control-value-19",
+    "raw": "{\"x\":\"\\u0019\"}",
+    "canonical": "{\"x\":\"\\u0019\"}",
+    "sha256": "0b4b479ace2be77e648d18659c7e0d56b88a5e977bf6600cc0939ba59c2df4c0"
+  },
+  {
+    "id": "control-value-1A",
+    "raw": "{\"x\":\"\\u001a\"}",
+    "canonical": "{\"x\":\"\\u001A\"}",
+    "sha256": "06a5f49f68dd9a979f301ac6648b739ec51d22eb7380861ab49748b5dd414dae"
+  },
+  {
+    "id": "control-value-1B",
+    "raw": "{\"x\":\"\\u001b\"}",
+    "canonical": "{\"x\":\"\\u001B\"}",
+    "sha256": "e5cfbfe054c8283115261f0880079b32b740d3c8fac692bb564730ba898317fa"
+  },
+  {
+    "id": "control-value-1C",
+    "raw": "{\"x\":\"\\u001c\"}",
+    "canonical": "{\"x\":\"\\u001C\"}",
+    "sha256": "61e89a1d41507a220e50845cd1b172447355633697b7b3d0a2dac4299c8468c1"
+  },
+  {
+    "id": "control-value-1D",
+    "raw": "{\"x\":\"\\u001d\"}",
+    "canonical": "{\"x\":\"\\u001D\"}",
+    "sha256": "066e521c6585844ab4e4611b87a4427aa4c5e6e977e44bba6c31fdbbab21f0a5"
+  },
+  {
+    "id": "control-value-1E",
+    "raw": "{\"x\":\"\\u001e\"}",
+    "canonical": "{\"x\":\"\\u001E\"}",
+    "sha256": "977a10048799d0f04e113fda99075093638b24eb093b80460c0d55aa39967f46"
+  },
+  {
+    "id": "control-value-1F",
+    "raw": "{\"x\":\"\\u001f\"}",
+    "canonical": "{\"x\":\"\\u001F\"}",
+    "sha256": "f0f5bf4596eb313f7fb84721c93a94ef0edc6e96d619cd8ac4b715be6a3a85cb"
+  },
+  {
+    "id": "control-object-key",
+    "raw": "{\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\":true}",
+    "canonical": "{\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000B\\f\\r\\u000E\\u000F\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001A\\u001B\\u001C\\u001D\\u001E\\u001F\":true}",
+    "sha256": "1f4fbbc23d14388df5887b140bed2f8ed8717cceeb5c9c5a3f8d5e33c04aefd5"
+  },
+  {
+    "id": "control-literal-backslashes",
+    "raw": "[\"\\\\u001f\",\"\\\\\\\\u001f\",\"\\\\\\\\\\\\u001f\",\"\\\\\\\\\\\\\\\\u001f\"]",
+    "canonical": "[\"\\\\u001f\",\"\\\\\\\\u001f\",\"\\\\\\\\\\\\u001f\",\"\\\\\\\\\\\\\\\\u001f\"]",
+    "sha256": "7313a7fd34f8522dcdfb48e9f04b4d69fb7a5032b66432333fa407875b0c683c"
+  }
+]

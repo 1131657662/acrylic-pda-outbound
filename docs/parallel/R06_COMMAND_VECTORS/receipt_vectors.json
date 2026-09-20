@@ -1,0 +1,209 @@
+{
+  "syntheticOnly": true,
+  "status": "C0_FIXED_PROPOSAL_NOT_IMPLEMENTED",
+  "originalCommandReceipt": {
+    "receiptVersion": 1,
+    "commandId": "00000000-0000-4000-8000-000000000006",
+    "originalKey": "00000000-0000-4000-8000-000000000006",
+    "routeScope": "r06.command.v1-proposal",
+    "commandType": "DUPLICATE_EXCLUDE",
+    "commandSha256": "892ada292dc5f6156302c57a66547ea163828ff7c0c4330cce5c10c267ca8a23",
+    "originalContext": {
+      "warehouseId": "00000000-0000-4000-8000-000000000005",
+      "source": {
+        "kind": "TEMP",
+        "creatorDeviceId": "00000000-0000-4000-8000-000000000001",
+        "clientOrderId": "00000000-0000-4000-8000-000000000002"
+      },
+      "submissionId": "00000000-0000-4000-8000-000000000003",
+      "workRound": "1",
+      "authorizationId": "00000000-0000-4000-8000-000000000004",
+      "freezeDeviceId": "00000000-0000-4000-8000-000000000001",
+      "sourceRecoveryEpoch": "2",
+      "transportRecoveryEpoch": "2",
+      "expected": {
+        "canonicalOrderId": "00000000-0000-4000-8000-000000000008",
+        "mappingVersion": "1",
+        "currentSubmissionId": "00000000-0000-4000-8000-000000000003",
+        "scopeRound": "1",
+        "slotVersion": "3",
+        "decisionVersion": "0",
+        "receivedPayloadSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "declaredUploadSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "planSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "targetRevision": "7",
+        "candidateContextSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "userAuthVersion": "4"
+      }
+    },
+    "actor": {
+      "principalId": "00000000-0000-4000-8000-000000000007",
+      "userAuthVersion": "4",
+      "deviceId": null,
+      "sessionId": null,
+      "permissionSnapshot": [
+        "temporary_order:confirm",
+        "temporary_order:link"
+      ]
+    },
+    "originalOperatorId": "00000000-0000-4000-8000-000000000011",
+    "decision": {
+      "type": "DUPLICATE_EXCLUDE",
+      "outcome": "RECORDED",
+      "decisionVersion": "1",
+      "reason": "合成向量：保留原来源，逐单核对。"
+    },
+    "committedAt": "2026-09-20T00:00:00Z",
+    "writeAvailable": false,
+    "releaseAllowed": false,
+    "stockReleased": false,
+    "mayResumeScanning": false,
+    "localDeletionAllowed": false
+  },
+  "receiptCanonical": "{\"actor\":{\"deviceId\":null,\"permissionSnapshot\":[\"temporary_order:confirm\",\"temporary_order:link\"],\"principalId\":\"00000000-0000-4000-8000-000000000007\",\"sessionId\":null,\"userAuthVersion\":\"4\"},\"commandId\":\"00000000-0000-4000-8000-000000000006\",\"commandSha256\":\"892ada292dc5f6156302c57a66547ea163828ff7c0c4330cce5c10c267ca8a23\",\"commandType\":\"DUPLICATE_EXCLUDE\",\"committedAt\":\"2026-09-20T00:00:00Z\",\"decision\":{\"decisionVersion\":\"1\",\"outcome\":\"RECORDED\",\"reason\":\"合成向量：保留原来源，逐单核对。\",\"type\":\"DUPLICATE_EXCLUDE\"},\"localDeletionAllowed\":false,\"mayResumeScanning\":false,\"originalContext\":{\"authorizationId\":\"00000000-0000-4000-8000-000000000004\",\"expected\":{\"candidateContextSha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"canonicalOrderId\":\"00000000-0000-4000-8000-000000000008\",\"currentSubmissionId\":\"00000000-0000-4000-8000-000000000003\",\"decisionVersion\":\"0\",\"declaredUploadSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"mappingVersion\":\"1\",\"planSha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"receivedPayloadSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"scopeRound\":\"1\",\"slotVersion\":\"3\",\"targetRevision\":\"7\",\"userAuthVersion\":\"4\"},\"freezeDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"source\":{\"clientOrderId\":\"00000000-0000-4000-8000-000000000002\",\"creatorDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"kind\":\"TEMP\"},\"sourceRecoveryEpoch\":\"2\",\"submissionId\":\"00000000-0000-4000-8000-000000000003\",\"transportRecoveryEpoch\":\"2\",\"warehouseId\":\"00000000-0000-4000-8000-000000000005\",\"workRound\":\"1\"},\"originalKey\":\"00000000-0000-4000-8000-000000000006\",\"originalOperatorId\":\"00000000-0000-4000-8000-000000000011\",\"receiptVersion\":1,\"releaseAllowed\":false,\"routeScope\":\"r06.command.v1-proposal\",\"stockReleased\":false,\"writeAvailable\":false}",
+  "receiptSha256": "2eb783f60175935b9cc7e1ce2e4789d41cbb363cf50e9f7cc774227b3a3f1581",
+  "signatureCases": [
+    {
+      "id": "valid",
+      "expectedError": null
+    },
+    {
+      "id": "audience",
+      "path": "aud",
+      "value": "acrylic-pda-receipt",
+      "expectedError": "SIGNATURE_PURPOSE"
+    },
+    {
+      "id": "issuer",
+      "path": "iss",
+      "value": "unknown-test-issuer",
+      "expectedError": "SIGNATURE_PURPOSE"
+    },
+    {
+      "id": "signed-command-hash",
+      "path": "receipt.commandSha256",
+      "value": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "expectedError": "COMMAND_HASH_CHANGED"
+    },
+    {
+      "id": "signed-principal",
+      "path": "receipt.actor.principalId",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "expectedError": "RECEIPT_ACTOR_CHANGED"
+    },
+    {
+      "id": "signed-auth",
+      "path": "receipt.actor.userAuthVersion",
+      "value": "5",
+      "expectedError": "RECEIPT_AUTH_CHANGED"
+    },
+    {
+      "id": "signed-key",
+      "path": "receipt.originalKey",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "expectedError": "RECEIPT_KEY_CHANGED"
+    },
+    {
+      "id": "signed-scope",
+      "path": "receipt.routeScope",
+      "value": "other-route",
+      "expectedError": "RECEIPT_SCOPE_CHANGED"
+    },
+    {
+      "id": "signed-capability",
+      "path": "receipt.releaseAllowed",
+      "value": true,
+      "expectedError": "UNSUPPORTED_CAPABILITY"
+    },
+    {
+      "id": "signed-source-device",
+      "path": "receipt.originalContext.source.creatorDeviceId",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "expectedError": "SOURCE_CHANGED"
+    },
+    {
+      "id": "signed-round",
+      "path": "receipt.originalContext.workRound",
+      "value": "2",
+      "expectedError": "ROUND_CHANGED"
+    },
+    {
+      "id": "signed-source-epoch",
+      "path": "receipt.originalContext.sourceRecoveryEpoch",
+      "value": "3",
+      "expectedError": "SOURCE_EPOCH_CHANGED"
+    },
+    {
+      "id": "signed-transport-epoch",
+      "path": "receipt.originalContext.transportRecoveryEpoch",
+      "value": "3",
+      "expectedError": "TRANSPORT_EPOCH_CHANGED"
+    },
+    {
+      "id": "signed-target",
+      "path": "receipt.originalContext.expected.canonicalOrderId",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "expectedError": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "signed-mapping",
+      "path": "receipt.originalContext.expected.mappingVersion",
+      "value": "2",
+      "expectedError": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "signed-received-hash",
+      "path": "receipt.originalContext.expected.receivedPayloadSha256",
+      "value": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "expectedError": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "signed-current",
+      "path": "receipt.originalContext.expected.currentSubmissionId",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "expectedError": "EXPECTED_CONTEXT_CHANGED"
+    }
+  ],
+  "currentEffects": [
+    {
+      "evaluatedAt": "2026-09-20T00:01:00Z",
+      "appliesToOriginalContext": true,
+      "reason": "APPLICABLE_TO_ORIGINAL_CONTEXT",
+      "writeAvailable": false,
+      "releaseAllowed": false,
+      "localDeletionAllowed": false
+    },
+    {
+      "evaluatedAt": "2026-09-20T00:02:00Z",
+      "appliesToOriginalContext": false,
+      "reason": "MAPPING_CHANGED",
+      "writeAvailable": false,
+      "releaseAllowed": false,
+      "localDeletionAllowed": false
+    },
+    {
+      "evaluatedAt": "2026-09-20T00:03:00Z",
+      "appliesToOriginalContext": false,
+      "reason": "SOURCE_SUPERSEDED",
+      "writeAvailable": false,
+      "releaseAllowed": false,
+      "localDeletionAllowed": false
+    },
+    {
+      "evaluatedAt": "2026-09-20T00:04:00Z",
+      "appliesToOriginalContext": false,
+      "reason": "AUTHORIZATION_REVOKED",
+      "writeAvailable": false,
+      "releaseAllowed": false,
+      "localDeletionAllowed": false
+    },
+    {
+      "evaluatedAt": "2026-09-20T00:05:00Z",
+      "appliesToOriginalContext": false,
+      "reason": "RECOVERY_EPOCH_CHANGED",
+      "writeAvailable": false,
+      "releaseAllowed": false,
+      "localDeletionAllowed": false
+    }
+  ]
+}

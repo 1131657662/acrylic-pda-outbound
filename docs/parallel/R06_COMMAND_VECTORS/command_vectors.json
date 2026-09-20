@@ -1,0 +1,249 @@
+{
+  "syntheticOnly": true,
+  "status": "C0_FIXED_PROPOSAL_NOT_IMPLEMENTED",
+  "command": {
+    "commandVersion": 1,
+    "commandType": "DUPLICATE_EXCLUDE",
+    "commandId": "00000000-0000-4000-8000-000000000006",
+    "warehouseId": "00000000-0000-4000-8000-000000000005",
+    "source": {
+      "kind": "TEMP",
+      "creatorDeviceId": "00000000-0000-4000-8000-000000000001",
+      "clientOrderId": "00000000-0000-4000-8000-000000000002"
+    },
+    "submissionId": "00000000-0000-4000-8000-000000000003",
+    "workRound": "1",
+    "authorizationId": "00000000-0000-4000-8000-000000000004",
+    "freezeDeviceId": "00000000-0000-4000-8000-000000000001",
+    "sourceRecoveryEpoch": "2",
+    "transportRecoveryEpoch": "2",
+    "expected": {
+      "canonicalOrderId": "00000000-0000-4000-8000-000000000008",
+      "mappingVersion": "1",
+      "currentSubmissionId": "00000000-0000-4000-8000-000000000003",
+      "scopeRound": "1",
+      "slotVersion": "3",
+      "decisionVersion": "0",
+      "receivedPayloadSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "declaredUploadSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "planSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "targetRevision": "7",
+      "candidateContextSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "userAuthVersion": "4"
+    },
+    "reason": "合成向量：保留原来源，逐单核对。"
+  },
+  "trustedContext": {
+    "principalId": "00000000-0000-4000-8000-000000000007",
+    "routeScope": "r06.command.v1-proposal",
+    "originalKey": "00000000-0000-4000-8000-000000000006",
+    "currentReadAllowed": true,
+    "currentWriteAllowed": true
+  },
+  "changes": [
+    {
+      "id": "source-device",
+      "path": "source.creatorDeviceId",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "error": "SOURCE_CHANGED"
+    },
+    {
+      "id": "source-local-id",
+      "path": "source.clientOrderId",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "error": "SOURCE_CHANGED"
+    },
+    {
+      "id": "submission",
+      "path": "submissionId",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "error": "SUBMISSION_CHANGED"
+    },
+    {
+      "id": "round",
+      "path": "workRound",
+      "value": "2",
+      "error": "ROUND_CHANGED"
+    },
+    {
+      "id": "authorization",
+      "path": "authorizationId",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "error": "AUTHORIZATION_CHANGED"
+    },
+    {
+      "id": "warehouse",
+      "path": "warehouseId",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "error": "WAREHOUSE_CHANGED"
+    },
+    {
+      "id": "freeze-device",
+      "path": "freezeDeviceId",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "error": "FREEZE_DEVICE_CHANGED"
+    },
+    {
+      "id": "source-epoch",
+      "path": "sourceRecoveryEpoch",
+      "value": "3",
+      "error": "SOURCE_EPOCH_CHANGED"
+    },
+    {
+      "id": "transport-epoch",
+      "path": "transportRecoveryEpoch",
+      "value": "3",
+      "error": "TRANSPORT_EPOCH_CHANGED"
+    },
+    {
+      "id": "target",
+      "path": "expected.canonicalOrderId",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "error": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "mapping",
+      "path": "expected.mappingVersion",
+      "value": "2",
+      "error": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "received-hash",
+      "path": "expected.receivedPayloadSha256",
+      "value": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "error": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "declared-hash",
+      "path": "expected.declaredUploadSha256",
+      "value": null,
+      "error": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "plan-hash",
+      "path": "expected.planSha256",
+      "value": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "error": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "current",
+      "path": "expected.currentSubmissionId",
+      "value": "00000000-0000-4000-8000-000000000009",
+      "error": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "scope-round",
+      "path": "expected.scopeRound",
+      "value": "2",
+      "error": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "slot",
+      "path": "expected.slotVersion",
+      "value": "4",
+      "error": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "decision",
+      "path": "expected.decisionVersion",
+      "value": "1",
+      "error": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "target-revision",
+      "path": "expected.targetRevision",
+      "value": "8",
+      "error": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "candidates",
+      "path": "expected.candidateContextSha256",
+      "value": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "error": "EXPECTED_CONTEXT_CHANGED"
+    },
+    {
+      "id": "auth-version",
+      "path": "expected.userAuthVersion",
+      "value": "5",
+      "error": "EXPECTED_CONTEXT_CHANGED"
+    }
+  ],
+  "hashOnlyChanges": [
+    {
+      "id": "reason",
+      "path": "reason",
+      "value": "合成向量：另一理由"
+    },
+    {
+      "id": "command-family",
+      "path": "commandType",
+      "value": "NORMAL_CONFIRM"
+    },
+    {
+      "id": "command-id",
+      "path": "commandId",
+      "value": "00000000-0000-4000-8000-000000000009"
+    }
+  ],
+  "opaqueHashNotice": "a/b/c/d摘要是合成已知上下文常量，不宣称存在这些摘要对应的业务正文或已证明候选全集。",
+  "commandCanonical": "{\"authorizationId\":\"00000000-0000-4000-8000-000000000004\",\"commandId\":\"00000000-0000-4000-8000-000000000006\",\"commandType\":\"DUPLICATE_EXCLUDE\",\"commandVersion\":1,\"expected\":{\"candidateContextSha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"canonicalOrderId\":\"00000000-0000-4000-8000-000000000008\",\"currentSubmissionId\":\"00000000-0000-4000-8000-000000000003\",\"decisionVersion\":\"0\",\"declaredUploadSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"mappingVersion\":\"1\",\"planSha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"receivedPayloadSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"scopeRound\":\"1\",\"slotVersion\":\"3\",\"targetRevision\":\"7\",\"userAuthVersion\":\"4\"},\"freezeDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"reason\":\"合成向量：保留原来源，逐单核对。\",\"source\":{\"clientOrderId\":\"00000000-0000-4000-8000-000000000002\",\"creatorDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"kind\":\"TEMP\"},\"sourceRecoveryEpoch\":\"2\",\"submissionId\":\"00000000-0000-4000-8000-000000000003\",\"transportRecoveryEpoch\":\"2\",\"warehouseId\":\"00000000-0000-4000-8000-000000000005\",\"workRound\":\"1\"}",
+  "commandSha256": "892ada292dc5f6156302c57a66547ea163828ff7c0c4330cce5c10c267ca8a23",
+  "sameBytesOtherDomains": {
+    "payload": "89801086b115459e6684f321dc1cace432ad1ab38ac082e269512e262db4da5c",
+    "receipt": "4ecd95e6813fa25bd615fc0d25f1d63c4560389554c6f81e971ad243ec808e99",
+    "control": "d6a4a677858bd1f38273d9a84ffa8ecad68871ee275979d56f8f02e56756a094"
+  },
+  "derivedControl": {
+    "value": {
+      "controlVersion": 1,
+      "warehouseId": "00000000-0000-4000-8000-000000000005",
+      "source": {
+        "kind": "TEMP",
+        "creatorDeviceId": "00000000-0000-4000-8000-000000000001",
+        "clientOrderId": "00000000-0000-4000-8000-000000000002"
+      },
+      "submissionId": "00000000-0000-4000-8000-000000000003",
+      "workRound": "1",
+      "authorizationId": "00000000-0000-4000-8000-000000000004",
+      "freezeDeviceId": "00000000-0000-4000-8000-000000000001",
+      "sourceRecoveryEpoch": "2",
+      "assignmentId": null,
+      "continuationId": null
+    },
+    "canonical": "{\"assignmentId\":null,\"authorizationId\":\"00000000-0000-4000-8000-000000000004\",\"continuationId\":null,\"controlVersion\":1,\"freezeDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"source\":{\"clientOrderId\":\"00000000-0000-4000-8000-000000000002\",\"creatorDeviceId\":\"00000000-0000-4000-8000-000000000001\",\"kind\":\"TEMP\"},\"sourceRecoveryEpoch\":\"2\",\"submissionId\":\"00000000-0000-4000-8000-000000000003\",\"warehouseId\":\"00000000-0000-4000-8000-000000000005\",\"workRound\":\"1\"}",
+    "sha256": "62bab35db9a7b5ad597d9071df14f4e0803b356167ba85149dd48a9b60fd6dab"
+  },
+  "nullableCommand": {
+    "commandVersion": 1,
+    "commandType": "DUPLICATE_EXCLUDE",
+    "commandId": "00000000-0000-4000-8000-000000000006",
+    "warehouseId": "00000000-0000-4000-8000-000000000005",
+    "source": {
+      "kind": "TEMP",
+      "creatorDeviceId": "00000000-0000-4000-8000-000000000001",
+      "clientOrderId": "00000000-0000-4000-8000-000000000002"
+    },
+    "submissionId": "00000000-0000-4000-8000-000000000003",
+    "workRound": "1",
+    "authorizationId": "00000000-0000-4000-8000-000000000004",
+    "freezeDeviceId": "00000000-0000-4000-8000-000000000001",
+    "sourceRecoveryEpoch": "2",
+    "transportRecoveryEpoch": "2",
+    "expected": {
+      "canonicalOrderId": null,
+      "mappingVersion": "0",
+      "currentSubmissionId": "00000000-0000-4000-8000-000000000003",
+      "scopeRound": "1",
+      "slotVersion": null,
+      "decisionVersion": "0",
+      "receivedPayloadSha256": null,
+      "declaredUploadSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "planSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "targetRevision": null,
+      "candidateContextSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "userAuthVersion": "4"
+    },
+    "reason": "合成向量：保留原来源，逐单核对。"
+  },
+  "nullableCommandSha256": "dc4f8584d3067aced3362ef35a286140e18df3ae48ff612772914429a02cb80f"
+}
