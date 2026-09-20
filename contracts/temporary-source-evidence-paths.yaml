@@ -1,0 +1,101 @@
+# Standalone E1 fragment; root OpenAPI registration/version belongs to integration.
+Detail:
+  get:
+    summary: 按原TEMP来源与提交身份读取既有证据
+    description: '拟注册路径 GET /api/v1/temporary-source-evidence/{submissionId}。要求当前temporary_order:confirm及warehouseId范围，不要求order:read。必须精确匹配creatorDeviceId/clientOrderId/workRound/submissionId，不依赖canonical或orderId。只读RR快照；不受理证据、不分配订单/FH、不续扫或放行。404不证明无作业，零已知占用不证明车空。originalStoredReceiptUtf8仅指数据库receipt_text原UTF-8文本，不是完整HTTP响应。'
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: '#/SubmissionId'}
+      - {$ref: '#/Warehouse'}
+      - {$ref: '#/Creator'}
+      - {$ref: '#/Client'}
+      - {$ref: '#/Round'}
+    responses:
+      '200':
+        description: 只读来源、上传声明、已收正文、原回执和本次评估；首个详情不内嵌正文或块
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - type: object
+                  properties:
+                    data: {$ref: './temporary-source-evidence-schemas.yaml#/SourceEvidenceView'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Payload:
+  get:
+    summary: 读取已接收原冻结正文的精确字节
+    description: '拟注册路径 GET /api/v1/temporary-source-evidence/{submissionId}/payload。每次先当前同仓confirm授权和原来源定位，再检查file_key、摘要、字节数及正文控制身份。最大32MiB为技术资源上限；声明upload或收齐块均不能补造正文。无已接收正文404，缺失文件409 SOURCE_EVIDENCE_FILE_UNAVAILABLE，损坏或错源409 SOURCE_EVIDENCE_INTEGRITY_FAILURE；无服务器路径。Cache-Control:no-store。'
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: '#/SubmissionId'}
+      - {$ref: '#/Warehouse'}
+      - {$ref: '#/Creator'}
+      - {$ref: '#/Client'}
+      - {$ref: '#/Round'}
+    responses:
+      '200':
+        description: 原UTF-8冻结JSON字节，不包裹业务Envelope、不重新规范化
+        content:
+          application/json:
+            schema: {type: string, format: binary}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Chunk:
+  get:
+    summary: 读取原上传声明已收到的单块字节
+    description: '拟注册路径 GET /api/v1/temporary-source-evidence/{submissionId}/chunks/{index}。同详情授权与原身份参数；index0..127，单块最大256KiB，尾块长度按声明总大小验证。每次核私有文件引用、大小及SHA-256，不暴露路径，不把块当已接受正文。合法索引但未收到返回404；越界400 INVALID_CHUNK_INDEX；缺失/损坏文件409。Cache-Control:no-store。'
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: '#/SubmissionId'}
+      - {$ref: '#/Warehouse'}
+      - {$ref: '#/Creator'}
+      - {$ref: '#/Client'}
+      - {$ref: '#/Round'}
+      - name: index
+        in: path
+        required: true
+        schema: {type: integer, minimum: 0, maximum: 127}
+    responses:
+      '200':
+        description: 原块字节，不包裹业务Envelope
+        content:
+          application/octet-stream:
+            schema: {type: string, format: binary}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+SubmissionId:
+  name: submissionId
+  in: path
+  required: true
+  schema: {type: string, format: uuid}
+Warehouse:
+  name: warehouseId
+  in: query
+  required: true
+  schema: {type: string, format: uuid}
+Creator:
+  name: creatorDeviceId
+  in: query
+  required: true
+  schema: {type: string, format: uuid}
+Client:
+  name: clientOrderId
+  in: query
+  required: true
+  schema: {type: string, format: uuid}
+Round:
+  name: workRound
+  in: query
+  required: true
+  schema: {type: string, pattern: '^[1-9][0-9]{0,18}$'}

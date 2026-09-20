@@ -1,0 +1,147 @@
+SourceEvidenceView:
+  type: object
+  required: [viewVersion, provenance, control, mapping, receivedPayload, declaredUpload, terminalProof, physical, audit, currentAssessment]
+  properties:
+    viewVersion: {type: integer, const: 1}
+    provenance: {$ref: '#/Provenance'}
+    control: {$ref: '#/Control'}
+    mapping: {$ref: '#/Mapping'}
+    receivedPayload: {$ref: '#/Payload'}
+    declaredUpload: {$ref: '#/Upload'}
+    terminalProof: {$ref: '#/Proof'}
+    physical: {$ref: '#/Physical'}
+    audit: {$ref: '#/Audit'}
+    currentAssessment: {$ref: '#/Assessment'}
+Provenance:
+  type: object
+  required: [warehouseId, originalOperatorId, originalDeviceId, bindingVerified, authorizationId, authorizationEpoch, issuedAt, expiresAt]
+  properties:
+    warehouseId: {type: string, format: uuid}
+    originalOperatorId: {type: string, format: uuid}
+    originalDeviceId: {type: string, format: uuid}
+    bindingVerified: {type: boolean, const: true}
+    authorizationId: {type: string, format: uuid}
+    authorizationEpoch: {type: string}
+    issuedAt: {type: string, format: date-time}
+    expiresAt: {type: string, format: date-time}
+Control:
+  type: object
+  required: [submissionId, workRound, authorizationId, freezeDeviceId, sourceRecoveryEpoch, assignmentId, continuationId, status, source, scopeId, scopeRound, currentSubmissionId, registeredAt]
+  properties:
+    submissionId: {type: string, format: uuid}
+    workRound: {type: string}
+    authorizationId: {type: string, format: uuid}
+    freezeDeviceId: {type: string, format: uuid}
+    sourceRecoveryEpoch: {type: string}
+    assignmentId: {type: 'null'}
+    continuationId: {type: 'null'}
+    status: {type: string}
+    source:
+      type: object
+      required: [kind, creatorDeviceId, clientOrderId]
+      properties:
+        kind: {type: string, const: TEMP}
+        creatorDeviceId: {type: string, format: uuid}
+        clientOrderId: {type: string, format: uuid}
+    scopeId: {type: string, format: uuid}
+    scopeRound: {type: string}
+    currentSubmissionId: {type: [string, 'null'], format: uuid}
+    registeredAt: {type: string, format: date-time}
+Mapping:
+  type: object
+  required: [canonicalOrderId, order, slot]
+  description: 当前V33值；没有持久mappingVersion/history，不伪造这些字段。
+  properties:
+    canonicalOrderId: {type: [string, 'null'], format: uuid}
+    order:
+      type: [object, 'null']
+      properties:
+        id: {type: string, format: uuid}
+        orderNo: {type: string}
+        source: {type: string}
+        status: {type: string}
+        revision: {type: [string, 'null']}
+    slot:
+      type: [object, 'null']
+      properties:
+        scopeId: {type: string, format: uuid}
+        workRound: {type: string}
+        currentSubmissionId: {type: [string, 'null'], format: uuid}
+        phase: {type: string}
+Payload:
+  type: object
+  required: [received, sha256, bytes, fileVerified]
+  properties:
+    received: {type: boolean}
+    sha256: {type: [string, 'null'], pattern: '^[a-f0-9]{64}$'}
+    bytes: {type: [string, 'null']}
+    fileVerified: {type: boolean}
+Upload:
+  type: object
+  required: [present, declaredSha256, declaredBytes, declaredChunkCount, receivedChunks, receivedChunkCount, allDeclaredChunksReceived, acceptedPayload]
+  properties:
+    present: {type: boolean}
+    declaredSha256: {type: [string, 'null'], pattern: '^[a-f0-9]{64}$'}
+    declaredBytes: {type: [string, 'null']}
+    declaredChunkCount: {type: [integer, 'null'], minimum: 1, maximum: 128}
+    receivedChunkCount: {type: integer, minimum: 0, maximum: 128}
+    allDeclaredChunksReceived: {type: boolean}
+    acceptedPayload: {type: boolean}
+    receivedChunks:
+      type: array
+      maxItems: 128
+      items:
+        type: object
+        required: [index, sha256, bytes, fileVerified]
+        properties:
+          index: {type: integer, minimum: 0, maximum: 127}
+          sha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+          bytes: {type: string}
+          fileVerified: {type: boolean, const: true}
+Proof:
+  type: object
+  required: [originalStoredReceiptUtf8, originalStoredReceiptSha256, signedReceipt, verification]
+  description: 原receipt_text文本及签名原样；非HTTP外层响应，不重签。未知旧kid无历史keyring时明确缺口，不能代表已验签。
+  properties:
+    originalStoredReceiptUtf8: {type: [string, 'null']}
+    originalStoredReceiptSha256: {type: [string, 'null'], pattern: '^[a-f0-9]{64}$'}
+    signedReceipt: {type: [string, 'null']}
+    verification: {type: string, enum: [NOT_PRESENT, VERIFIED, UNVERIFIABLE_KEY, INVALID_SIGNATURE, INVALID_FORMAT, CONTROL_MISMATCH]}
+Physical:
+  type: object
+  required: [knownSubmittedCaptureCount, knownCommittedBaleCount, completeness, complete, vehicleEmptyProven, preAbortCommitmentSetProven]
+  properties:
+    knownSubmittedCaptureCount: {type: string}
+    knownCommittedBaleCount: {type: string}
+    completeness: {type: string, const: UNKNOWN_OR_PARTIAL}
+    complete: {type: boolean, const: false}
+    vehicleEmptyProven: {type: boolean, const: false}
+    preAbortCommitmentSetProven: {type: boolean, const: false}
+Audit:
+  type: object
+  required: [originDeviceId, sourceRecoveryEpoch, knownSourceEventCount, storedDeviceContinuousThroughSeq, deviceEvidenceComplete, sourceEvidenceComplete, scope]
+  properties:
+    originDeviceId: {type: string, format: uuid}
+    sourceRecoveryEpoch: {type: string}
+    knownSourceEventCount: {type: string}
+    storedDeviceContinuousThroughSeq: {type: [string, 'null']}
+    deviceEvidenceComplete: {type: boolean, const: false}
+    sourceEvidenceComplete: {type: boolean, const: false}
+    scope: {type: string, const: STORED_DEVICE_PREFIX_AT_SOURCE_EPOCH}
+Assessment:
+  type: object
+  required: [evaluatedAt, readerPermissionVersion, serverRecoveryEpoch, serviceMode, gaps, currentSubmission, writeAllowed, writeConfirmationAvailable, releaseAllowed, mayResumeScanning, stockReleaseAllowed, localDeletionAllowed, evidenceUploadAllowed]
+  properties:
+    evaluatedAt: {type: string, format: date-time}
+    readerPermissionVersion: {type: string}
+    serverRecoveryEpoch: {type: string}
+    serviceMode: {type: string}
+    currentSubmission: {type: boolean}
+    gaps: {type: array, items: {type: string}}
+    writeAllowed: {type: boolean, const: false}
+    writeConfirmationAvailable: {type: boolean, const: false}
+    releaseAllowed: {type: boolean, const: false}
+    mayResumeScanning: {type: boolean, const: false}
+    stockReleaseAllowed: {type: boolean, const: false}
+    localDeletionAllowed: {type: boolean, const: false}
+    evidenceUploadAllowed: {type: boolean, const: false}
