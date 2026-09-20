@@ -1,0 +1,173 @@
+{
+  "metadata" : {
+    "snapshotId" : "test-snapshot-r08",
+    "dataVersion" : "fixture-v1",
+    "cutoff" : "2026-09-20T16:00:00Z",
+    "generatedAt" : "2026-09-20T16:05:00Z",
+    "fromDate" : "2026-09-18",
+    "throughDate" : "2026-09-18",
+    "basis" : "CURRENT_EFFECTIVE",
+    "provenance" : "TEST_SAMPLE",
+    "sourceDescription" : "完全虚构测试样例，R06/R07字段仅验证接入提案",
+    "orderSortDescription" : "测试订单成员清单顺序"
+  },
+  "orders" : [ {
+    "id" : "order-1",
+    "number" : "TEST-R08-001",
+    "revision" : 3,
+    "resultVersion" : 4,
+    "source" : "TEMPORARY_PROPOSAL",
+    "originalHeader" : {
+      "vehicle" : "0008",
+      "container" : "003",
+      "remark" : "测试备注"
+    },
+    "effectiveHeader" : {
+      "vehicle" : "0009",
+      "container" : "003",
+      "remark" : "测试备注"
+    },
+    "confirmedAt" : "2026-09-17T16:01:00Z",
+    "sequenceProof" : {
+      "kind" : "PERSISTED_ORDER_SEQUENCE",
+      "reference" : "测试持久化订单序号样例"
+    },
+    "products" : [ {
+      "code" : "003",
+      "name" : "透明亚克力",
+      "model" : "1220×2440×3 mm",
+      "plannedCount" : 3
+    }, {
+      "code" : "007",
+      "name" : "磨砂亚克力",
+      "model" : "1220×2440×5 mm",
+      "plannedCount" : 3
+    } ],
+    "originalLines" : [ {
+      "dispatchId" : "dispatch-1",
+      "captureId" : "capture-1",
+      "orderScanSeq" : 1,
+      "originDeviceId" : "device-A",
+      "deviceCaptureSeq" : 1,
+      "operatorName" : "测试操作员",
+      "inputSource" : "BROADCAST",
+      "barcode" : "00000000001",
+      "dispatchCycle" : 1,
+      "productCode" : "003",
+      "weightGrams" : "300501",
+      "rawWeight" : "300.501",
+      "receivedAt" : "2026-09-17T16:00:00.123Z",
+      "savedAt" : "2026-09-17T16:00:00.456Z",
+      "timeQuality" : "DEVICE_UNVERIFIED",
+      "remark" : ""
+    }, {
+      "dispatchId" : "dispatch-2",
+      "captureId" : "capture-2",
+      "orderScanSeq" : 2,
+      "originDeviceId" : "device-A",
+      "deviceCaptureSeq" : 2,
+      "operatorName" : "测试操作员",
+      "inputSource" : "BROADCAST",
+      "barcode" : "00000000002",
+      "dispatchCycle" : 1,
+      "productCode" : "007",
+      "weightGrams" : "300501",
+      "rawWeight" : "300.501",
+      "receivedAt" : "2026-09-17T16:00:00.123Z",
+      "savedAt" : "2026-09-17T16:00:00.456Z",
+      "timeQuality" : "DEVICE_UNVERIFIED",
+      "remark" : ""
+    }, {
+      "dispatchId" : "dispatch-3",
+      "captureId" : "capture-3",
+      "orderScanSeq" : 3,
+      "originDeviceId" : "device-A",
+      "deviceCaptureSeq" : 3,
+      "operatorName" : "测试操作员",
+      "inputSource" : "BROADCAST",
+      "barcode" : "00000000003",
+      "dispatchCycle" : 1,
+      "productCode" : "003",
+      "weightGrams" : "300501",
+      "rawWeight" : "300.501",
+      "receivedAt" : "2026-09-17T16:00:00.123Z",
+      "savedAt" : "2026-09-17T16:00:00.456Z",
+      "timeQuality" : "DEVICE_UNVERIFIED",
+      "remark" : ""
+    } ],
+    "effectiveLines" : [ {
+      "dispatchId" : "dispatch-1",
+      "count" : 0,
+      "weightGrams" : "0"
+    }, {
+      "dispatchId" : "dispatch-2",
+      "count" : 1,
+      "weightGrams" : "300501"
+    }, {
+      "dispatchId" : "dispatch-3",
+      "count" : 1,
+      "weightGrams" : "300501"
+    } ],
+    "adjustments" : [ {
+      "correctionId" : "c1",
+      "lineId" : "line1",
+      "resultVersion" : 2,
+      "kind" : "WEIGHT_CORRECTION",
+      "dispatchId" : "dispatch-1",
+      "beforeCount" : 1,
+      "afterCount" : 1,
+      "beforeWeightGrams" : "300501",
+      "afterWeightGrams" : "301502",
+      "headerField" : "",
+      "beforeText" : "",
+      "afterText" : "",
+      "occurredAt" : "2026-09-19T01:00:00Z",
+      "reason" : "测试重量更正",
+      "approver" : "测试审批员",
+      "evidenceReference" : "test-evidence-weight"
+    }, {
+      "correctionId" : "c2",
+      "lineId" : "line2",
+      "resultVersion" : 3,
+      "kind" : "PHYSICAL_RETURN",
+      "dispatchId" : "dispatch-1",
+      "beforeCount" : 1,
+      "afterCount" : 0,
+      "beforeWeightGrams" : "301502",
+      "afterWeightGrams" : "0",
+      "headerField" : "",
+      "beforeText" : "",
+      "afterText" : "",
+      "occurredAt" : "2026-09-20T01:00:00Z",
+      "reason" : "测试退货已收货",
+      "approver" : "测试审批员",
+      "evidenceReference" : "test-evidence-return"
+    }, {
+      "correctionId" : "c3",
+      "lineId" : "line3",
+      "resultVersion" : 4,
+      "kind" : "HEADER_CORRECTION",
+      "dispatchId" : "",
+      "beforeCount" : 0,
+      "afterCount" : 0,
+      "beforeWeightGrams" : "0",
+      "afterWeightGrams" : "0",
+      "headerField" : "vehicle",
+      "beforeText" : "0008",
+      "afterText" : "0009",
+      "occurredAt" : "2026-09-20T02:00:00Z",
+      "reason" : "测试车号更正",
+      "approver" : "测试审批员",
+      "evidenceReference" : "test-evidence-header"
+    } ],
+    "exceptions" : [ {
+      "eventId" : "event-void",
+      "orderScanSeq" : 4,
+      "originDeviceId" : "device-A",
+      "kind" : "VOID",
+      "barcode" : "00000000004",
+      "detail" : "测试提交前撤销，不计入原确认",
+      "occurredAt" : "2026-09-17T16:00:01Z"
+    } ]
+  } ]
+}

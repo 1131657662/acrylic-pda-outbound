@@ -20,6 +20,7 @@ import OrderRecall from './OrderRecall.vue';
 import OrderStatus from './OrderStatus.vue';
 import OrderPlan from './OrderPlan.vue';
 import PcOrderLink from '../pc/PcOrderLink.vue';
+import OrderExports from '../exports/OrderExports.vue';
 const route = useRoute(); const router = useRouter(); const session = useSessionStore();
 const detail = ref<Detail | null>(null); const preflight = ref<Preflight | null>(null); const busy = ref(false);
 const error = ref(''); const checkError = ref(''); const receivedAt = ref('');
@@ -27,7 +28,7 @@ const editor = ref(false); const cancelReason = ref(''); const cancelDialog = re
 const publishDialog = ref(false); const recallBusy = ref(false); const submissionBusy = ref(false);
 const pcChannel = ref(false);
 const locked = computed(() => editor.value || cancelDialog.value || publishDialog.value || recallBusy.value || submissionBusy.value);
-const tab = computed({ get: () => ['plan', 'records', 'exceptions', 'history'].includes(String(route.query.tab)) ? String(route.query.tab) : 'plan',
+const tab = computed({ get: () => ['plan', 'records', 'exceptions', 'history', 'exports'].includes(String(route.query.tab)) ? String(route.query.tab) : 'plan',
   set: (value: string) => { void router.replace({ query: { ...route.query, ...orderRouteQuery(parseOrderQuery(route.query), session.warehouseId), tab: value } }); } });
 let cancelBody = ''; let cancelKey = ''; let generation = 0;
 const canWrite = computed(() => session.identity?.permissions.includes('order:write'));
@@ -103,6 +104,9 @@ onBeforeUnmount(() => { generation++; });
       <div class="detail-meta"><div><span>计划合计</span><strong class="numeric">{{ countLabel(detail.plan.plannedTotal) }} 包</strong></div><div><span>当前计划</span><strong>V{{ detail.plan.revision }}</strong></div><div><span>创建来源</span><strong>{{ detail.order.source === 'PDA_TEMP' ? 'PDA 临时单' : '管理工作台' }}</strong></div></div>
       <div class="result-summary"><span>{{ detail.order.createdBy }} · 创建于 {{ localTime(detail.order.createdAt) }}</span><span>数据读取于 {{ localTime(receivedAt) }}</span></div>
       <el-tabs v-model="tab" class="detail-tabs">
+        <el-tab-pane v-if="detail.order.status === 'COMPLETED' && detail.order.source === 'WEB'" label="原确认文件" name="exports">
+          <OrderExports v-if="tab === 'exports' && session.identity" :key="`${session.identity.id}-${session.warehouseId}-${detail.order.id}`" :actor="session.identity.id" :warehouse="session.warehouseId" :order="detail.order.id" />
+        </el-tab-pane>
         <el-tab-pane label="产品计划" name="plan"><OrderPlan :detail="detail" :preflight="preflight" :check-error="checkError" @retry="load" /></el-tab-pane>
         <el-tab-pane label="装车记录" name="records"><p v-if="pcChannel">本单采用PC手工录入，请通过上方“查看PC记录与结果”或“继续PC录入”核对全部记录与结果。</p><OrderSubmission v-else :key="`submission-${detail.order.id}`" :version="detail.order.rowVersion" :warehouse-id="session.warehouseId" :order-id="detail.order.id" @updated="load" @busy="submissionBusy = $event" /></el-tab-pane>
         <el-tab-pane label="异常处理" name="exceptions"><template v-if="pcChannel"><p>需要换人、卸货释放或实物隔离时，请核对逐包处置方案、主管审批和本人交接记录。</p><el-button :disabled="busy || locked || !!error" @click="router.push({ path: `/orders/${detail.order.id}/pc-outbound/exception`, query: route.query })">查看PC异常处置与交接</el-button></template><OrderRecall v-else :key="`${session.warehouseId}-${detail.order.id}`" :warehouse-id="session.warehouseId" :order-id="detail.order.id" :row-version="detail.order.rowVersion" :status="detail.order.status" @updated="load" @busy="recallBusy = $event" /></el-tab-pane>

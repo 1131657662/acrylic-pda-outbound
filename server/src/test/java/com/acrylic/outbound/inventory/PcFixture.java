@@ -11,12 +11,16 @@ class PcFixture {
     final PublicationDriver api;final OrderTestDriver orders;final String order;final String serial;final List<String> barcodes;
     String writer=UUID.randomUUID().toString();
     PcFixture(PublicationDriver api,boolean deduct,int plan,int perCode) throws Exception {
+        this(api,deduct,plan,perCode,true);
+    }
+    PcFixture(PublicationDriver api,boolean deduct,int plan,int perCode,boolean configurePolicy) throws Exception {
         this.api=api;orders=new OrderTestDriver(api);serial=unusedSerial(api);
         var rows=new ArrayList<byte[]>();barcodes=new ArrayList<>();
         for(String code:List.of("003","571","719")) for(int i=0;i<perCode;i++) {
             String barcode=code+String.format("%02d",i)+serial;barcodes.add(barcode);rows.add(SkuFixture.row(barcode,"300.501"));
         }
-        api.publish(api.stage(SkuFixture.concat(rows.toArray(byte[][]::new))));orders.policy("0",deduct);
+        api.publish(api.stage(SkuFixture.concat(rows.toArray(byte[][]::new))));
+        if(configurePolicy) orders.policy("0",deduct);
         var input=orders.plan();input.withArray("lines").removeAll();
         for(String code:List.of("003","571","719")) input.withArray("lines").addObject().put("deliveryCode",code).put("plannedCount",plan);
         order=orders.create(input).get("orderId").asText();

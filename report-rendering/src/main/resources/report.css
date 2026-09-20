@@ -1,0 +1,31 @@
+@page {
+  size: A4; margin: 22mm 14mm 18mm;
+  @top-left { font-family: ReportCJK; font-size: 7.5pt; vertical-align: middle; }
+  @bottom-center { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; font-family: ReportCJK; font-size: 9pt; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: ReportCJK, sans-serif; font-size: 10pt; color: #111; line-height: 1.5; }
+h1 { font-size: 21pt; margin: 0 0 8mm; }
+h2 { font-size: 15pt; margin: 7mm 0 3mm; border-bottom: 1.5pt solid #333; }
+h3 { font-size: 11pt; margin: 5mm 0 2mm; }
+h2, h3 { break-after: avoid; }
+p { margin: 2mm 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 9pt; }
+thead { display: table-header-group; }
+th { background: #eee; font-weight: 700; text-align: left; }
+th, td { border: 0.5pt solid #888; padding: 1.8mm; vertical-align: top; overflow-wrap: anywhere; white-space: pre-wrap; }
+.products th:first-child { width: 28%; }
+.products th:nth-child(2) { width: 8%; }
+.products th:nth-child(3), .products th:nth-child(4), .products th:nth-child(5) { width: 18%; }
+.products th:last-child { width: 10%; }
+.details:has(th:nth-child(6)) th:first-child { width: 7%; }
+.details:has(th:nth-child(6)) th:nth-child(2) { width: 23%; }
+.details:has(th:nth-child(6)) th:nth-child(3) { width: 12%; }
+.details:has(th:nth-child(6)) th:nth-child(4) { width: 16%; }
+.details:has(th:nth-child(6)) th:nth-child(5) { width: 23%; }
+tr { break-inside: avoid; }
+article { border-left: 2pt solid #888; padding-left: 3mm; }
+.total { font-weight: bold; border-top: 1pt solid #333; padding: 3mm 0; break-inside: avoid; }
+.signature { margin: 7mm 0; break-inside: avoid; }
+.closing { break-inside: avoid; }
+.empty { padding: 8mm; border: 0.5pt solid #aaa; }
