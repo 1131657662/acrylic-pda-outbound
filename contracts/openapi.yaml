@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: 腈纶包出库系统 — 已实现接口
-  version: 0.27.0
-  description: 已实现TEMP独立只读待确认审阅、正式与临时提醒分权，以及正式订单原确认V1的单订单Excel/扫码Excel/PDF、日期汇总、本人导出中心和原快照重生成。文件暂不接TEMP、更正净结果及未核验多设备来源。保留人员角色与仓库管理、受控离线续期、PDA持续同步/审计、PC手工出库、签名资料与提交、短装审批、全局防重/可选记账、短码配对、受控召回及卸货/隔离续作。TEMP写确认/关联/实物处置、PDA换机、更正和灾后账务重建仍待接入；R09当前仅独立运维方案与本机恢复证据，不代表新增灾后恢复API。
+  version: 0.28.0
+  description: 已实现TEMP独立只读待确认审阅、疑似重复正式单候选与原批次计划对照、正式与临时提醒分权，以及正式订单原确认V1的单订单Excel/扫码Excel/PDF、日期汇总、本人导出中心和原快照重生成。候选只供人工核对，不开放决定、排除或关联。文件暂不接TEMP、更正净结果及未核验多设备来源。保留人员角色与仓库管理、受控离线续期、PDA持续同步/审计、PC手工出库、签名资料与提交、短装审批、全局防重/可选记账、短码配对、受控召回及卸货/隔离续作。TEMP写确认/关联/实物处置、PDA换机、更正和灾后账务重建仍待接入；R09当前仅独立运维方案与本机恢复证据，不代表新增灾后恢复API。
 servers:
   - url: /api/v1
 security:
@@ -26,6 +26,8 @@ paths:
     $ref: './temporary-review-paths.yaml#/Detail'
   /temporary-reviews/{id}/scans:
     $ref: './temporary-review-paths.yaml#/Scans'
+  /temporary-reviews/{id}/duplicate-candidates:
+    $ref: './temporary-duplicate-paths.yaml#/Candidates'
   /pda/temporary-orders/submissions:
     $ref: './temporary-submission-paths.yaml#/Submit'
   /pda/temporary-preparations/baseline:
