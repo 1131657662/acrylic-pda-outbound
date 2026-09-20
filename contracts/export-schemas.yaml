@@ -1,0 +1,93 @@
+Format:
+  type: string
+  enum: [XLSX, SCAN_XLSX, PDF]
+Status:
+  type: string
+  enum: [PENDING, RUNNING, RETRY, SUCCEEDED, FAILED, EXPIRED, INVALIDATED]
+Range:
+  type: object
+  required: [fromDate, throughDate]
+  description: 北京时间原确认日期，含首尾日；最多31天，开始日不晚于结束日，年份2000至9998。
+  properties:
+    fromDate: {type: string, format: date}
+    throughDate: {type: string, format: date}
+SingleCommand:
+  type: object
+  required: [format, basis]
+  properties:
+    format: {$ref: '#/Format'}
+    basis: {type: string, const: ORIGINAL_CONFIRMED}
+    range: {type: 'null', description: 单订单请求必须省略或为null。}
+RangeCommand:
+  type: object
+  required: [format, basis, range]
+  properties:
+    format: {type: string, enum: [XLSX, PDF]}
+    basis: {type: string, const: ORIGINAL_CONFIRMED}
+    range: {$ref: '#/Range'}
+View:
+  type: object
+  required: [id, orderNo, format, basis, resultVersion, revision, status, attempts, errorCode, createdAt, expiresAt, originalDay, snapshotId, sha256, bytes, downloadable, orderId, range, orderCount, retryOf]
+  properties:
+    id: {type: string, format: uuid}
+    orderNo: {type: string, description: 单订单原编号；跨订单为汇总标题。}
+    format: {$ref: '#/Format'}
+    basis: {type: string, const: ORIGINAL_CONFIRMED}
+    resultVersion: {type: integer, const: 1}
+    revision: {type: integer, minimum: 0, description: 单订单原修订；跨订单为0。}
+    status: {$ref: '#/Status'}
+    attempts: {type: integer, minimum: 0}
+    errorCode: {type: [string, 'null']}
+    createdAt: {type: string, format: date-time}
+    expiresAt: {type: string, format: date-time, description: 申请后7天；不代表到期自动物理删除。}
+    originalDay: {type: string, format: date, description: 单订单原确认日；跨订单为范围开始日。}
+    snapshotId: {type: string}
+    sha256: {type: [string, 'null'], pattern: '^[a-f0-9]{64}$'}
+    bytes: {type: [integer, 'null'], minimum: 0}
+    downloadable: {type: boolean}
+    orderId: {type: [string, 'null'], format: uuid}
+    range:
+      anyOf:
+        - {$ref: '#/Range'}
+        - {type: 'null'}
+    orderCount: {type: integer, minimum: 0, maximum: 100}
+    retryOf: {type: [string, 'null'], format: uuid}
+Page:
+  type: object
+  required: [items, nextCursor]
+  properties:
+    items: {type: array, maxItems: 20, items: {$ref: '#/View'}}
+    nextCursor: {type: [string, 'null'], format: uuid}
+Summary:
+  type: object
+  required: [basis, range, readAt, orderCount, actualCount, weightGrams, orders, products]
+  properties:
+    basis: {type: string, const: ORIGINAL_CONFIRMED}
+    range: {$ref: '#/Range'}
+    readAt: {type: string, format: date-time}
+    orderCount: {type: integer, minimum: 0, maximum: 100}
+    actualCount: {type: integer, minimum: 0}
+    weightGrams: {type: string, pattern: '^[0-9]+$'}
+    orders: {type: array, maxItems: 100, items: {$ref: '#/OrderRow'}}
+    products: {type: array, items: {$ref: '#/ProductRow'}}
+OrderRow:
+  type: object
+  required: [id, orderNo, revision, originalDay, vehicle, actualCount, weightGrams]
+  properties:
+    id: {type: string, format: uuid}
+    orderNo: {type: string}
+    revision: {type: integer, minimum: 1}
+    originalDay: {type: string, format: date}
+    vehicle: {type: string}
+    actualCount: {type: integer, minimum: 0}
+    weightGrams: {type: string, pattern: '^[0-9]+$'}
+ProductRow:
+  type: object
+  required: [code, name, model, plannedCount, actualCount, weightGrams]
+  properties:
+    code: {type: string}
+    name: {type: string}
+    model: {type: string}
+    plannedCount: {type: integer, minimum: 0}
+    actualCount: {type: integer, minimum: 0}
+    weightGrams: {type: string, pattern: '^[0-9]+$'}

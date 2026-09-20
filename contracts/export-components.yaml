@@ -1,0 +1,51 @@
+Id:
+  name: id
+  in: path
+  required: true
+  schema: {type: string, format: uuid}
+Order:
+  name: order
+  in: path
+  required: true
+  schema: {type: string, format: uuid}
+Key:
+  name: Idempotency-Key
+  in: header
+  required: true
+  description: UUID；同账号原键、原请求、原恢复代次回放。参数冲突返回409，每次回放重验权限。
+  schema: {type: string, format: uuid}
+Before:
+  name: before
+  in: query
+  description: 上一页nextCursor；必须属于本人/当前仓库，单订单列表还须属于该订单。
+  schema: {type: string, format: uuid}
+JobResponse:
+  description: 文件任务元数据；申请接口的200仅表示接受或回放，不表示已生成文件。
+  content:
+    application/json:
+      schema:
+        allOf:
+          - {$ref: './schemas.yaml#/Envelope'}
+          - type: object
+            properties:
+              data: {$ref: './export-schemas.yaml#/View'}
+PageResponse:
+  description: 本人当前仓库任务，每页20项；created_at和id倒序，nextCursor为空表示无下一页。
+  content:
+    application/json:
+      schema:
+        allOf:
+          - {$ref: './schemas.yaml#/Envelope'}
+          - type: object
+            properties:
+              data: {$ref: './export-schemas.yaml#/Page'}
+SummaryResponse:
+  description: 查询时刻的原确认汇总；申请导出会重新读取并固定成员，可能与本次查询不同。
+  content:
+    application/json:
+      schema:
+        allOf:
+          - {$ref: './schemas.yaml#/Envelope'}
+          - type: object
+            properties:
+              data: {$ref: './export-schemas.yaml#/Summary'}

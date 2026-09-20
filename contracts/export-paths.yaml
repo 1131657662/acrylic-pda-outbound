@@ -1,0 +1,74 @@
+OrderExports:
+  parameters:
+    - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+    - {$ref: './export-components.yaml#/Order'}
+  get:
+    summary: 查询本人单订单文件任务
+    description: 当前order:read和仓库授权。每页20项，原确认V1文件；无匹配任务（含不存在的订单）返回200空列表。无权仓库或before属于他人、其他仓库/订单或不存在时返回404。
+    parameters:
+      - {$ref: './export-components.yaml#/Before'}
+    responses:
+      '200': {$ref: './export-components.yaml#/PageResponse'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+  post:
+    summary: 申请单订单原确认文件
+    description: 当前order:read和仓库授权。只接已完成WEB正式订单原确认V1，支持通用Excel、扫码记录Excel、PDF；TEMP、更正净结果及未核验多设备来源不开放。固定原快照、原修订、格式和模板；三种格式均先校验原来源最多5000包，超过为409 EXPORT_SOURCE_UNAVAILABLE；PDF另限1000包，通过前述来源检查后超限为409 EXPORT_LIMIT_EXCEEDED。每账号当前代次最多5项在途任务。锁内再次核验权限，恢复屏障或旧代次拒绝；文件有效期7天。
+    parameters:
+      - {$ref: './export-components.yaml#/Key'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './export-schemas.yaml#/SingleCommand'}
+    responses:
+      '200': {$ref: './export-components.yaml#/JobResponse'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '429': {$ref: './openapi.yaml#/components/responses/Error'}
+      '503': {$ref: './openapi.yaml#/components/responses/Error'}
+Status:
+  get:
+    summary: 查询本人文件任务状态
+    description: 当前order:read、仓库及本人归属。代次变化优先显示INVALIDATED，过期显示EXPIRED。旧持久payload缺少新增字段时仍作为单订单任务读取。
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './export-components.yaml#/Id'}
+    responses:
+      '200': {$ref: './export-components.yaml#/JobResponse'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+File:
+  get:
+    summary: 下载本人已完成文件
+    description: 当前order:read、仓库及本人归属。只允许当前恢复代次且未过期的SUCCEEDED文件，验证长度与SHA-256并记录下载审计；恢复屏障拒绝。失败或过期返回409，文件缺失或校验失败返回410。响应是二进制，不是ApiEnvelope。
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './export-components.yaml#/Id'}
+    responses:
+      '200':
+        description: XLSX或PDF附件；Cache-Control no-store，Pragma no-cache，X-Content-Type-Options nosniff。
+        headers:
+          Content-Disposition: {schema: {type: string}, description: attachment，安全生成的文件名。}
+          Content-Length: {schema: {type: integer, minimum: 0}}
+        content:
+          application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+            schema: {type: string, format: binary}
+          application/pdf:
+            schema: {type: string, format: binary}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '410': {$ref: './openapi.yaml#/components/responses/Error'}
+      '503': {$ref: './openapi.yaml#/components/responses/Error'}

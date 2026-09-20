@@ -1,5 +1,9 @@
 # 已实现接口与运行边界
 
+当前契约版本 **0.27.0**，共 **112 条路径**（2026-09-20）。整合 R06 独立只读临时审阅和 R08 完整 6 路径/8 操作：单订单原确认V1的通用Excel/扫码Excel/PDF、北京时间日期汇总、本人导出中心、固定原快照重生成及受权下载。要求当前order:read、仓库授权和本人任务归属；写请求需UUID幂等键、CSRF与恢复代次，锁内复核撤权。TEMP仍不可确认出库或放行，文件不含TEMP、更正净结果及未核验多设备来源。R09无新增共享恢复API。Flyway V33、Android code20/Room17不变；server/web工程版本仍为原0.1.0，不能与API契约版本混称。见[单订单/下载契约](export-paths.yaml)、[汇总/中心契约](export-center-paths.yaml)及[首轮整合记录](../docs/FIRST_WAVE_INTEGRATION_GUIDE.md)。以下0.26及更早段落保留为历史记录。
+
+导出接口沿用统一错误响应。范围超过31天、逆序或年份越界为400 `EXPORT_RANGE_INVALID`；不支持的范围格式/状态为400 `EXPORT_FORMAT_UNSUPPORTED`/`EXPORT_STATUS_INVALID`。未知或非本人任务、非法分页游标为404 `EXPORT_NOT_FOUND`；无权仓库为404 `WAREHOUSE_NOT_FOUND`。100单/汇总包数/已通过原来源5000包检查的PDF包数超限为409 `EXPORT_LIMIT_EXCEEDED`；单订单源不可用（含超过5000包）为409 `EXPORT_SOURCE_UNAVAILABLE`，原数据不一致为409 `EXPORT_SOURCE_INCONSISTENT`，扫码来源不足为409 `EXPORT_SCAN_SOURCE_UNAVAILABLE`。幂等冲突、未完成/未过期在途重生成、旧代次或不可用模板分别使用409 `IDEMPOTENCY_CONFLICT`/`EXPORT_NOT_RETRYABLE`/`EXPORT_GENERATION_CHANGED`/`EXPORT_TEMPLATE_UNAVAILABLE`。未生成或过期下载为409 `EXPORT_NOT_READY`；快照或文件缺失/校验失败为410 `EXPORT_SNAPSHOT_UNAVAILABLE`/`EXPORT_FILE_UNAVAILABLE`。最多5项在途超限为429 `EXPORT_QUEUE_FULL`，生成器未配置为503 `EXPORT_UNAVAILABLE`；共享恢复屏障为503 `SERVER_RECOVERY_REQUIRED`，代次头不匹配为409 `SERVER_RECOVERY_EPOCH_MISMATCH`。列表无匹配任务返回200空列表，不把不存在订单的空列表写成404。
+
 契约版本0.26.0，共106条路径（2026-09-20）。新增TEMP独立只读待确认列表、原批次审阅及原扫描明细分页；要求temporary_order:confirm与仓库授权。当前资格/权限/恢复/库存占用复核仅生成待核对信息，不写审批、扣账、回执或放行。超时提醒按sourceType及两类独立权限分流。Flyway仍V33，Android/code20/Room17不变；M2b写确认、关联及实物处置未开放。见[审阅契约](temporary-review-paths.yaml)及[交付记录](../docs/R06_TEMPORARY_REVIEW_GUIDE.md)。
 
 契约版本0.25.0，共103条路径（2026-09-20）。新增TEMP稳定来源冻结正文接收，复用共享提交查询/分块/取消协议；Flyway V33允许正式来源或TEMP来源二选一，完整证据接收后才登记唯一PDA_TEMP正式记录。Android0.15.0-r06-submission/code20/Room17已接原批次恢复与签名取消；独立确认、受控关联和拒绝实物处置仍待后续，所有临时单均不得放行。详见[TEMP提交契约](temporary-submission-schemas.yaml)及[交付记录](../docs/R06_TEMPORARY_SUBMISSION_GUIDE.md)。以下0.24及更早说明保留为历史记录。

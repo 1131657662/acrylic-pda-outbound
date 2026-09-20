@@ -1,0 +1,82 @@
+Summary:
+  get:
+    summary: 按北京时间日期查询正式订单原确认汇总
+    description: 当前order:read和仓库授权。只读一致性快照，限WEB正式已完成订单原确认V1；不含TEMP、更正净结果、未核验多设备来源。范围含首尾日，超过31天、逆序或年份越界返回400 EXPORT_RANGE_INVALID；最多100单、5000包，超限409 EXPORT_LIMIT_EXCEEDED，不截断。空范围返回零合计；原确认时刻、订单UUID升序，产品按原代码/名称/型号分组，重量为整数克字符串。查询结果不预占后续文件申请的成员。
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - name: fromDate
+        in: query
+        required: true
+        schema: {type: string, format: date}
+      - name: throughDate
+        in: query
+        required: true
+        schema: {type: string, format: date}
+    responses:
+      '200': {$ref: './export-components.yaml#/SummaryResponse'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Exports:
+  parameters:
+    - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+  get:
+    summary: 查询本人当前仓库导出中心任务
+    description: 当前order:read和仓库授权。同时返回单订单与跨订单任务；格式和有效状态在数据库分页前筛选，每页20项。状态是动态结果；恢复代次变化优先INVALIDATED，其次EXPIRED。before须属于本人仓库，跨权限范围统一404。
+    parameters:
+      - {$ref: './export-components.yaml#/Before'}
+      - name: format
+        in: query
+        schema: {$ref: './export-schemas.yaml#/Format'}
+      - name: status
+        in: query
+        schema: {$ref: './export-schemas.yaml#/Status'}
+    responses:
+      '200': {$ref: './export-components.yaml#/PageResponse'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+  post:
+    summary: 申请跨订单原确认汇总文件
+    description: 当前order:read和仓库授权。锁内再次核验权限，重新在一致性事务内固定完整成员及原确认V1；范围最多31天、100单，Excel5000包、PDF1000包，空范围可生成空文件。SCAN_XLSX仅单订单支持。每账号当前代次最多5项在途任务。原键丢响应回放保持原范围/格式/代次；恢复屏障、旧代次或幂等冲突拒绝。
+    parameters:
+      - {$ref: './export-components.yaml#/Key'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './export-schemas.yaml#/RangeCommand'}
+    responses:
+      '200': {$ref: './export-components.yaml#/JobResponse'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '429': {$ref: './openapi.yaml#/components/responses/Error'}
+      '503': {$ref: './openapi.yaml#/components/responses/Error'}
+Retry:
+  post:
+    summary: 按本人原任务固定快照重新生成
+    description: 当前order:read、仓库、本人归属和锁内再次授权。不接收新范围/格式，复用原快照摘要/ID/成员/修订/格式/模板，新任务ID和7天有效期，原任务文件保持。同原键回放同一新任务。FAILED、SUCCEEDED或已过期任务可重生成，未到期的在途任务拒绝；恢复代次不同、模板不可用返回409，快照缺失/损坏410，队列满429；渲染器未配置为503 EXPORT_UNAVAILABLE。旧payload兼容单订单。
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './export-components.yaml#/Id'}
+      - {$ref: './export-components.yaml#/Key'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+    responses:
+      '200': {$ref: './export-components.yaml#/JobResponse'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '410': {$ref: './openapi.yaml#/components/responses/Error'}
+      '429': {$ref: './openapi.yaml#/components/responses/Error'}
+      '503': {$ref: './openapi.yaml#/components/responses/Error'}
