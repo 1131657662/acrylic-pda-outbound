@@ -14,12 +14,12 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 
 @Service
 public class AuditArchiveService {
-    private final PdaAccess access;private final PdaAuthLocks locks;private final ServerState state;
+    private final PdaAccess access;private final PdaAuthLocks locks;private final IdentityWriteGuard guard;
     private final PdaAuditStore audit;private final AuditArchiveStore archives;private final AuditArchiveReader reader;
     private final SubmissionFiles files;private final OfflineSigner signer;private final RecoveryAudit recoveries;
-    public AuditArchiveService(PdaAccess access,PdaAuthLocks locks,ServerState state,PdaAuditStore audit,AuditArchiveStore archives,
+    public AuditArchiveService(PdaAccess access,PdaAuthLocks locks,IdentityWriteGuard guard,PdaAuditStore audit,AuditArchiveStore archives,
         AuditArchiveReader reader,SubmissionFiles files,OfflineSigner signer,RecoveryAudit recoveries) {
-        this.access=access;this.locks=locks;this.state=state;this.audit=audit;this.archives=archives;
+        this.access=access;this.locks=locks;this.guard=guard;this.audit=audit;this.archives=archives;
         this.reader=reader;this.files=files;this.signer=signer;this.recoveries=recoveries;
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
@@ -45,7 +45,7 @@ public class AuditArchiveService {
         body.set("events",events);return persist(actor,epoch,body);
     }
     private PdaSessions.Principal actor(String epoch) {
-        var actor=access.require("pda:submit");state.lockWritable(epoch);locks.device(actor.deviceId());return access.require("pda:submit");
+        var actor=access.require("pda:submit");guard.lock(epoch);locks.device(actor.deviceId());return access.require("pda:submit");
     }
     private JsonNode persist(PdaSessions.Principal actor,String epoch,JsonNode body) {
         long after=number(body,"afterSeq");var old=archives.find(epoch,actor.deviceId(),after);

@@ -1,21 +1,22 @@
 package com.acrylic.outbound.inventory.master;
 
 import com.acrylic.outbound.auth.Access;
-import com.acrylic.outbound.common.ServerState;
+import com.acrylic.outbound.common.IdentityWriteGuard;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MutationAccess {
     private final Access access;
-    private final ServerState state;
+    private final IdentityWriteGuard guard;
     private final WarehouseBaseline warehouse;
-    public MutationAccess(Access access, ServerState state, WarehouseBaseline warehouse) {
-        this.access = access; this.state = state; this.warehouse = warehouse;
+    public MutationAccess(Access access, IdentityWriteGuard guard, WarehouseBaseline warehouse) {
+        this.access = access; this.guard = guard; this.warehouse = warehouse;
     }
     public Locked lock(Context context, String permission) {
+        access.require(permission, context.warehouse());
+        guard.lock(context.epoch());
         var actor = access.require(permission, context.warehouse());
-        state.lockWritable(context.epoch());
         return new Locked(actor.id(), warehouse.read(context.warehouse(), true));
     }
     public void requireMapping(UUID warehouseId) { access.require("mapping:maintain", warehouseId); }

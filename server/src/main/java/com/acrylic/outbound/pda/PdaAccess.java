@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PdaAccess {
-    private final PdaSessions sessions;private final IdentityStore identities;private final ServerState state;private final PdaAuthLocks locks;
-    public PdaAccess(PdaSessions sessions,IdentityStore identities,ServerState state,PdaAuthLocks locks) {
-        this.sessions=sessions;this.identities=identities;this.state=state;this.locks=locks;
+    private final PdaSessions sessions;private final IdentityStore identities;private final IdentityWriteGuard guard;private final PdaAuthLocks locks;
+    public PdaAccess(PdaSessions sessions,IdentityStore identities,IdentityWriteGuard guard,PdaAuthLocks locks) {
+        this.sessions=sessions;this.identities=identities;this.guard=guard;this.locks=locks;
     }
     public PdaSessions.Principal current() {
         var auth=SecurityContextHolder.getContext().getAuthentication();
@@ -24,13 +24,13 @@ public class PdaAccess {
         return principal;
     }
     public PdaSessions.Principal lock(String epoch) {
-        var principal=require("pda:assign");state.lockWritable(epoch);locks.device(principal.deviceId());
+        var principal=require("pda:assign");guard.lock(epoch);locks.device(principal.deviceId());
         principal=require("pda:assign");
         if(!identities.permissions(principal.userId()).contains("pda:scan")) throw new BusinessException(403,"PERMISSION_DENIED","缺少扫码作业权限");
         return principal;
     }
     public PdaSessions.Principal barcodes(String epoch) {
-        var principal=current();state.lockWritable(epoch);
+        current();guard.lock(epoch);var principal=current();
         if(identities.permissions(principal.userId()).contains("pda:assign")) return principal;
         var device=locks.device(principal.deviceId());
         principal=require("temporary_order:create");require("pda:scan");require("pda:submit");

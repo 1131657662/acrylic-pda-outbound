@@ -15,14 +15,14 @@ import org.springframework.transaction.annotation.*;
 public class PdaAuthentication {
     private final IdentityStore identities;private final PasswordEncoder passwords;private final PdaAuthLocks locks;
     private final PdaChallenges challenges;private final PdaSessions sessions;private final AuditWriter audit;
-    private final String dummyHash;
-    public PdaAuthentication(IdentityStore identities,PasswordEncoder passwords,PdaAuthLocks locks,PdaChallenges challenges,PdaSessions sessions,AuditWriter audit) {
+    private final String dummyHash;private final IdentityWriteGuard guard;
+    public PdaAuthentication(IdentityStore identities,PasswordEncoder passwords,PdaAuthLocks locks,PdaChallenges challenges,PdaSessions sessions,AuditWriter audit,IdentityWriteGuard guard) {
         this.identities=identities;this.passwords=passwords;this.locks=locks;this.challenges=challenges;this.sessions=sessions;this.audit=audit;
-        this.dummyHash=passwords.encode(DeviceCrypto.secret());
+        this.guard=guard;this.dummyHash=passwords.encode(DeviceCrypto.secret());
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public PdaSessions.Tokens login(Login input,String requestId) {
-        var device=locks.device(input.deviceId());SessionUser user=null;
+        guard.authentication();var device=locks.device(input.deviceId());SessionUser user=null;
         try { user=identities.loadUserByUsername(input.username()); } catch(org.springframework.security.core.userdetails.UsernameNotFoundException ignored) { }
         boolean matches=passwords.matches(input.password(),user==null?dummyHash:user.passwordHash());
         if(user==null || !matches || !user.active() || !identities.permissions(user.id()).contains("pda:login") ||
@@ -35,14 +35,14 @@ public class PdaAuthentication {
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public PdaSessions.Tokens refresh(Refresh input,String requestId) {
-        var device=locks.device(input.deviceId());var principal=sessions.refresh(input.refreshToken(),device);
+        guard.authentication();var device=locks.device(input.deviceId());var principal=sessions.refresh(input.refreshToken(),device);
         challenges.consume(new PdaChallenges.Proof(input.challengeId(),"REFRESH",input.signature()),device,input.refreshToken());
         var result=sessions.rotate(principal,device);
         audit.append(new AuditWriter.Event(principal.userId(),"PDA_TOKEN_ROTATED","DEVICE",device.id(),"{}"),requestId);return result;
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public void logout(PdaSessions.Principal principal,String requestId) {
-        locks.device(principal.deviceId());sessions.revoke(principal.sessionId());
+        guard.authentication();locks.device(principal.deviceId());sessions.revoke(principal.sessionId());
         audit.append(new AuditWriter.Event(principal.userId(),"PDA_LOGOUT","DEVICE",principal.deviceId(),"{}"),requestId);
     }
     public record Login(@NotNull @Pattern(regexp="[A-Za-z0-9._-]{1,64}") String username,@NotBlank @Size(max=72) String password,

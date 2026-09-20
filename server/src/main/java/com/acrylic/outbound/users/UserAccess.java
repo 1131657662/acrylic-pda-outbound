@@ -4,14 +4,13 @@ import com.acrylic.outbound.auth.*;
 import com.acrylic.outbound.common.*;
 import com.acrylic.outbound.inventory.master.MutationAccess;
 import java.util.*;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserAccess {
-    private final Access access; private final IdentityStore identities; private final ServerState state; private final JdbcTemplate jdbc;
-    public UserAccess(Access access,IdentityStore identities,ServerState state,JdbcTemplate jdbc) {
-        this.access=access;this.identities=identities;this.state=state;this.jdbc=jdbc;
+    private final Access access; private final IdentityStore identities; private final IdentityWriteGuard guard;
+    public UserAccess(Access access,IdentityStore identities,IdentityWriteGuard guard) {
+        this.access=access;this.identities=identities;this.guard=guard;
     }
     public Scope read(UUID warehouse) {
         var actor=access.require("user:manage",warehouse);
@@ -27,8 +26,7 @@ public class UserAccess {
         return permissions;
     }
     public Scope lock(MutationAccess.Context context) {
-        access.require("user:manage",context.warehouse());state.lockWritable(context.epoch());
-        jdbc.queryForObject("SELECT id FROM user_management_guard WHERE id=1 FOR UPDATE",Integer.class);
+        access.require("user:manage",context.warehouse());guard.lock(context.epoch());
         return read(context.warehouse());
     }
     public void target(Scope scope,UserCommands.Item user,UUID warehouse) {

@@ -3,19 +3,16 @@ package com.acrylic.outbound.temporary;
 import com.acrylic.outbound.common.*;
 import com.acrylic.outbound.pda.*;
 import java.time.Instant;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TemporaryAccess {
-    private final PdaAccess access;private final PdaAuthLocks locks;private final ServerState state;private final JdbcTemplate jdbc;
-    public TemporaryAccess(PdaAccess access,PdaAuthLocks locks,ServerState state,JdbcTemplate jdbc) {
-        this.access=access;this.locks=locks;this.state=state;this.jdbc=jdbc;
+    private final PdaAccess access;private final PdaAuthLocks locks;private final IdentityWriteGuard guard;
+    public TemporaryAccess(PdaAccess access,PdaAuthLocks locks,IdentityWriteGuard guard) {
+        this.access=access;this.locks=locks;this.guard=guard;
     }
     public PdaSessions.Principal lock(String epoch) {
-        var principal=access.require("temporary_order:create");state.lockWritable(epoch);
-        // Same guard as personnel mutations; lock before warehouse/device/session to prevent concurrent revocation.
-        jdbc.queryForObject("SELECT id FROM user_management_guard WHERE id=1 FOR UPDATE",Integer.class);
+        var principal=access.require("temporary_order:create");guard.lock(epoch);
         var device=locks.device(principal.deviceId());
         principal=access.require("temporary_order:create");access.require("pda:scan");access.require("pda:submit");
         if(!device.temporaryOrderEnabled()) throw new BusinessException(403,"TEMPORARY_ORDER_DISABLED","此设备未开启临时作业准入");
