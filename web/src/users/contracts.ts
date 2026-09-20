@@ -20,7 +20,7 @@ export const pendingSchema = z.discriminatedUnion('kind', [
   base.extend({ kind: z.literal('UPDATE'), targetId: z.uuid(), username: z.string(), command: profile.extend({ status, expectedVersion: version }) }),
   base.extend({ kind: z.literal('PASSWORD'), targetId: z.uuid(), username: z.string(), command: z.object({ expectedVersion: version, reason }) }),
 ]);
-export const passwordSchema = z.string().min(12, '密码至少12位').refine(value => new TextEncoder().encode(value).length <= 72, '密码最多72个UTF-8字节');
+export const passwordSchema = z.string().min(8, '密码至少8位').refine(value => new TextEncoder().encode(value).length <= 72, '密码最多72个UTF-8字节');
 export type ManagedUser = z.infer<typeof userSchema>;
 export type UserOptions = z.infer<typeof optionsSchema>;
 export type PendingUserRequest = z.infer<typeof pendingSchema>;

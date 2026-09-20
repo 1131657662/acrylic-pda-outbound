@@ -111,7 +111,7 @@ class UserManagementIT {
             .header("X-Server-Recovery-Epoch","2")).andExpect(status().isConflict());
         var viewer=new PublicationDriver(mvc,json,IdentityFixture.create(jdbc,passwords,"ORDER_VIEWER"));
         viewer.send(get("/api/v1/users")).andExpect(status().isForbidden());viewer.send(users.command("",body,key)).andExpect(status().isForbidden());
-        web.send(users.command("",body.deepCopy().put("password","too-short"),key)).andExpect(status().isBadRequest());
+        web.send(users.command("",body.deepCopy().put("password","short7x"),key)).andExpect(status().isBadRequest());
         web.send(users.command("",body.deepCopy().put("password","密".repeat(30)),key)).andExpect(status().isBadRequest());
         body.putArray("roles").add("PDA_OPERATOR").add("PDA_OPERATOR");web.send(users.command("",body,key)).andExpect(status().isBadRequest());
     }

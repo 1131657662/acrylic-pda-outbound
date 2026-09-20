@@ -41,7 +41,7 @@ watch(busy, value => emit('sending', value), { flush: 'sync' });
       <el-form-item label="登录账号" required><el-input v-model="username" aria-label="登录账号" maxlength="64" :disabled="mode !== 'CREATE' || busy || !!original" autocomplete="off" /></el-form-item>
       <UserFields v-if="mode !== 'PASSWORD'" v-model:display-name="displayName" v-model:roles="roles" v-model:warehouses="warehouses" :options="options" :current-warehouse="warehouseId" :disabled="busy || !!original" />
       <el-form-item v-if="mode === 'UPDATE'" label="账号状态"><el-switch :model-value="status === 'ACTIVE'" active-text="已启用" inactive-text="已停用" :disabled="busy || !!original" @update:model-value="status = $event ? 'ACTIVE' : 'DISABLED'" /></el-form-item>
-      <el-form-item v-if="passwordNeeded" label="新密码" required><el-input v-model="password" aria-label="新密码" type="password" show-password autocomplete="new-password" :disabled="busy || (!!original && !retryAllowed)" maxlength="72" /><span class="muted">至少12位，最多72个UTF-8字节</span></el-form-item>
+      <el-form-item v-if="passwordNeeded" label="新密码" required><el-input v-model="password" aria-label="新密码" type="password" show-password autocomplete="new-password" :disabled="busy || (!!original && !retryAllowed)" maxlength="72" /><span class="muted">至少8位，不强制大小写或特殊符号，最多72个UTF-8字节</span></el-form-item>
       <el-form-item label="操作原因" required><el-input v-model="reason" aria-label="操作原因" type="textarea" :rows="2" maxlength="500" :disabled="busy || !!original" /></el-form-item>
       <p class="muted">{{ mode === 'CREATE' ? '新人员只获得所选角色和仓库权限。' : '保存后该人员须重新登录。离线设备回网后核验变更，原订单归属、作业记录和占用保留。' }}</p>
       <el-checkbox v-if="!original && !rejected" v-model="confirmed" class="user-confirm" :disabled="busy">已核对人员、授权范围和操作影响</el-checkbox>

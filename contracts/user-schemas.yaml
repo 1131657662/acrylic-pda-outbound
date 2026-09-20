@@ -59,7 +59,7 @@ Create:
       required: [username, password]
       properties:
         username: {type: string, pattern: '^[A-Za-z0-9_-]{1,64}$'}
-        password: {type: string, minLength: 12, maxLength: 72, writeOnly: true, description: 至少12字符且最多72个UTF-8字节；不自动改变既有密码}
+        password: {type: string, minLength: 8, maxLength: 72, writeOnly: true, description: 至少8字符且最多72个UTF-8字节；不自动改变既有密码}
 Update:
   allOf:
     - $ref: '#/Profile'
@@ -73,7 +73,7 @@ Password:
   required: [expectedVersion, password, reason]
   properties:
     expectedVersion: {$ref: '#/Version'}
-    password: {type: string, minLength: 12, maxLength: 72, writeOnly: true, description: 至少12字符且最多72个UTF-8字节}
+    password: {type: string, minLength: 8, maxLength: 72, writeOnly: true, description: 至少8字符且最多72个UTF-8字节}
     reason: {type: string, minLength: 1, maxLength: 500}
 Receipt:
   type: object

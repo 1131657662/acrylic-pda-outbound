@@ -27,7 +27,7 @@ test('request never sent may be resent only with original key and reentered pass
   await page.getByRole('button', { name: '恢复原人员请求' }).click();
   await page.getByRole('button', { name: '查询原提交结果' }).click();
   await expect(page.getByRole('button', { name: '补发原请求' })).toBeVisible();
-  await page.getByRole('button', { name: '补发原请求' }).click(); await expect(page.getByText('密码至少12位', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '补发原请求' }).click(); await expect(page.getByText('密码至少8位', { exact: true })).toBeVisible();
   await page.getByRole('textbox', { name: '新密码', exact: true }).fill(password);
   const sent = page.waitForRequest(request => request.method() === 'POST' && request.url().includes('/api/v1/users?'));
   await page.getByRole('button', { name: '补发原请求' }).click(); expect((await sent).headers()['idempotency-key']).toBe(saved.key);

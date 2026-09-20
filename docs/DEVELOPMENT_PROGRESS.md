@@ -550,3 +550,9 @@
 - Web类型检查/构建、OpenAPI0.9.0的58路径与差异检查通过，既有Element Plus大包提示保留。已查看1440×1050列表及启停确认截图，证据为`.local/web-devices-managed.png`及`.local/web-device-status-confirmation.png`。汇总`.local/device-management-verification.json`，日志`.local/device-api-verification.log`、`.local/device-browser-check.log`、`.local/device-browser-regression.log`和`.local/device-web-build.log`。
 - 该轮PDA仍为0.5.0/Room5；该次只接Web及补测试，没有新增APK、Android测试、模拟器或真机操作。完整系统的换机、卸货、更正、临时单、同步、UUID恢复代次及文件生成仍待实现。操作见[设备管理说明](WEB_DEVICE_GUIDE.md)。
 - 代码留在`codex/development`，没有commit/push、合并或发布。测试只用隔离库及专用18083/5174服务，完成后关闭本轮专用服务；原8083/5173及MySQL保持，未重启既有应用或部署生产。
+
+## 2026-09-20 并行修复：新增/重置密码至少8位
+
+用户确认PDA输入简化后，独立codex/password-min-eight分支将新增/重置下限12改8，保留72个UTF-8字节上限、BCrypt和原身份/会话失效规则；前后端、提示及契约同步。实际32后端单元、22 MySQL/MockMvc、11前端校验、JAR/Web构建及102路径契约通过。首轮单元因工作树缺原样本失败1项，补齐后全过；5项浏览器恢复场景仅发现检查，未做页面/设备/实际HTTP验收。详见[人员管理记录](R05_USER_MANAGEMENT_GUIDE.md)。
+
+本修复按已有授权提交、合回并推送codex/development，实际提交号及推送状态以Git为准；不混入R06-C Android文件，不修改现网、APK或数据库结构。现网未启用8位新密码，须Web/后端配套部署。R06-C继续原临时草稿、多产品计划及本机扫码任务，下一开发顺序不变；本机独立密码测试库和失败证据保留。
