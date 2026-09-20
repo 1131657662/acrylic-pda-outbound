@@ -1,6 +1,7 @@
 """Offline candidate for the SubmissionJson scalar-UTF8 profile; no business writer."""
 import hashlib
 import json
+import re
 
 LIMIT = 9007199254740991
 PREFIXES = {
@@ -47,7 +48,14 @@ def ordered(value):
 
 def canonical(value):
     text = json.dumps(ordered(value), ensure_ascii=False, separators=(',', ':'))
+    # Match whole escapes so literal backslash-u text keeps its original bytes.
+    text = re.sub(r'\\(?:u00[0-1][0-9a-f]|.)', jackson_escape, text)
     return text.encode('utf-8')
+
+
+def jackson_escape(match):
+    token = match.group(0)
+    return token[:2] + token[2:].upper() if token.startswith('\\u') else token
 
 
 def digest(value, domain='payload'):
