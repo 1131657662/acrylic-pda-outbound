@@ -35,7 +35,8 @@ public class ExportProducer {
         var existing=jobs.findByDedupeKey(key);
         if(existing.isPresent()) return replay(existing.get(),request);
         renderer.requireAvailable(request.command().format());queries.checkCapacity(request.scope().actor());
-        Instant now=Instant.now();var snapshot=request.scope().order()==null?ranges.read(request,now):snapshots.read(request.scope(),request.command().format(),now);
+        Instant now=jdbc.queryForObject("SELECT UTC_TIMESTAMP(6)",java.sql.Timestamp.class).toInstant();
+        var snapshot=request.scope().order()==null?ranges.read(request,now):snapshots.read(request.scope(),request.command().format(),now);
         var order=request.scope().order()==null?null:snapshot.orders().getFirst();String hash=files.store(snapshot);
         var p=new Payload(request.scope(),request.command().format(),request.command().basis(),request.epoch(),hash,
                 snapshot.metadata().snapshotId(),order==null?"跨订单原确认汇总":order.number(),order==null?0:order.revision(),snapshot.metadata().fromDate().toString(),

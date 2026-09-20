@@ -21,7 +21,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest @AutoConfigureMockMvc
 class R08ExportFenceIT {
     static {
-        if(!Objects.toString(System.getenv("OUTBOUND_DB_URL"),"").startsWith("jdbc:mysql://127.0.0.1:23308/acrylic_r08_it"))
+        String url=Objects.toString(System.getenv("OUTBOUND_DB_URL"),"");
+        boolean combined=url.startsWith("jdbc:mysql://127.0.0.1:13316/acrylic_outbound_wave1_20260920?")
+                && "outbound_wave1_20260920".equals(System.getenv("OUTBOUND_DB_USER"));
+        if(!combined && !url.startsWith("jdbc:mysql://127.0.0.1:23308/acrylic_r08_it"))
             throw new IllegalStateException("R08 fence tests require the dedicated database");
     }
     @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired JdbcTemplate jdbc;@Autowired PasswordEncoder passwords;

@@ -22,8 +22,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class R08ExportIT {
     static {
         String url=System.getenv("OUTBOUND_DB_URL");
-        if(url==null || !url.startsWith("jdbc:mysql://127.0.0.1:23308/acrylic_r08_"))
-            throw new IllegalStateException("R08 tests require the dedicated task MySQL on 23308");
+        boolean combined=url!=null && url.startsWith("jdbc:mysql://127.0.0.1:13316/acrylic_outbound_wave1_20260920?")
+                && "outbound_wave1_20260920".equals(System.getenv("OUTBOUND_DB_USER"));
+        if(!combined && (url==null || !url.startsWith("jdbc:mysql://127.0.0.1:23308/acrylic_r08_")))
+            throw new IllegalStateException("R08 tests require the dedicated R08 or first-wave synthetic database");
     }
     @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired JdbcTemplate jdbc;@Autowired PasswordEncoder passwords;
     @Autowired BackgroundJobWorker worker;@Autowired BackgroundJobStore jobs;@Autowired ExportFiles files;@Autowired ExportJobQueries queries;
