@@ -1,0 +1,130 @@
+{
+  "base_commit": "2369392076083a5a4f59d8ea3d6edebe5067a03f",
+  "branch": "codex/r09-ops-foundation",
+  "runtime": {
+    "python": "3.14.4",
+    "mysql": "8.0.46",
+    "java": "21.0.11",
+    "cryptography": "48.0.0"
+  },
+  "existing_business_tests": {
+    "tests": "4",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0"
+  },
+  "ops_tests": {
+    "tests": 29,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "resource_warnings_as_errors": true
+  },
+  "restore": {
+    "status": "PASS",
+    "verified_at": "2026-09-18T14:49:47.484598+00:00",
+    "seconds": 20.249,
+    "database": "r09_ops_restore",
+    "port": 19310,
+    "tables": 76,
+    "business": {
+      "foreign_keys_checked": 170,
+      "file_references_checked": 7,
+      "signed_receipts_verified": 4,
+      "dispatch_packages": 6,
+      "dispatch_weight_g": 1804500,
+      "ledger_rows": 4,
+      "ledger_weight_delta_g": -1203000,
+      "guard_rows": 6,
+      "success_submissions": 3,
+      "abort_tombstones": 1,
+      "idempotency_rows": 28,
+      "audit_rows": 45,
+      "capture_rows": 6,
+      "device_event_rows": 21
+    },
+    "backup_sums_sha256": "719f392cf258e7b1856916d87635274ab1becb221369a255a5b8d2afe6e1822a",
+    "scope": "isolated snapshot restore; no disaster reconstruction"
+  },
+  "fault_drill": {
+    "status": "PASS",
+    "checks": [
+      "nonempty_restore_refused",
+      "system_database_access_refused",
+      "source_import_refused",
+      "missing_file_detected",
+      "changed_file_detected",
+      "forged_receipt_detected",
+      "invalid_private_key_detected",
+      "ledger_weight_difference_detected",
+      "stale_backup_detected",
+      "low_disk_detected",
+      "database_and_files_unchanged_after_faults"
+    ]
+  },
+  "api_probe": {
+    "latency_ms": 2235,
+    "service_mode": "NORMAL",
+    "stopped_service_detected": true,
+    "status": "PASS"
+  },
+  "final_audit": {
+    "status": "PASS",
+    "same_source_snapshot_in_final_backup": true,
+    "business_unchanged_after_faults_and_api_probe": true,
+    "session_tables_changed_by_csrf_probe": {
+      "spring_session": 2,
+      "spring_session_attributes": 2
+    },
+    "monitor": {
+      "observed_at": "2026-09-18T15:06:27.004739+00:00",
+      "status": "PASS",
+      "checks": [
+        {
+          "check": "backup",
+          "status": "PASS",
+          "age_seconds": 279,
+          "archive_verified": true
+        },
+        {
+          "check": "tcp",
+          "status": "PASS",
+          "connected": true
+        },
+        {
+          "check": "disk_0",
+          "status": "PASS",
+          "free_bytes": 173746634752,
+          "free_percent": 69.64
+        }
+      ]
+    }
+  },
+  "archive_bytes": {
+    "business.json": 396,
+    "COMPLETE.json": 172,
+    "database-facts.json": 12491,
+    "database.sql.gz": 48351,
+    "manifest.json": 464,
+    "private-files-and-config.tar.gz": 5875,
+    "schema.sql": 98020,
+    "SHA256SUMS": 590,
+    "snapshot.json": 2331
+  },
+  "final_backup_sums_sha256": "fc65e61c219ac5eaa2c15bf96fef7b16420d3be36bac125168c21838adb61210",
+  "shutdown": {
+    "dedicated_mysql_stopped": true,
+    "ports_closed": [
+      19309,
+      19310,
+      18309
+    ],
+    "private_artifacts_retained": true
+  },
+  "deployment": {
+    "server_deployed": false,
+    "timers_enabled": false,
+    "external_alerts_enabled": false,
+    "complete_disaster_recovery": false
+  }
+}

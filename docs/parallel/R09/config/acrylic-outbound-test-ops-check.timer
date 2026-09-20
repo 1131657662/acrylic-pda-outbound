@@ -1,0 +1,12 @@
+[Unit]
+Description=Review candidate - acrylic test local checks every fifteen minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=15min
+RandomizedDelaySec=30
+Persistent=false
+Unit=acrylic-outbound-test-ops-check.service
+
+[Install]
+WantedBy=timers.target

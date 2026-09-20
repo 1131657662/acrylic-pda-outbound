@@ -1,0 +1,305 @@
+{
+  "recorded_at": "2026-09-20T09:15:43.022955+00:00",
+  "source_commit": "87e1893a49b598bbfdacee1a20d5eb455c5a5903",
+  "branch": "codex/r09-ops-foundation",
+  "prior_saved_commit": "4499716c33fb2295c925d73eec095fb114a0180f",
+  "compatibility_reference_only": "6d814f8c8ee9243afe833a0b0f802da3b8ad9d0c",
+  "runtime": {
+    "python": "3.14.4",
+    "pymysql": "1.1.2",
+    "cryptography": "48.0.0",
+    "mysql": "8.0.46",
+    "java": "21.0.11",
+    "gradle": "8.11.1"
+  },
+  "release": {
+    "base_commit": "87e1893a49b598bbfdacee1a20d5eb455c5a5903",
+    "source_snapshot": true,
+    "jar_sha256": "2f8fe92d32472fb20b2323e8323ee2514bfea488bc5bed7a40148072c28b7fec",
+    "fixture_scenarios": [
+      "*SubmissionApiIT.completeSubmissionRecordsOnceAndRetriesReturnOriginalReceipt",
+      "*SubmissionApiIT.disabledAutomaticAccountingStillRetainsGlobalDispatchGuards",
+      "*SubmissionApiIT.shortShipmentReservesUntilExplicitSupervisorApproval",
+      "*SubmissionApiIT.abortBeforeBodyLeavesPermanentTombstoneAndNoFakePayload",
+      "*SubmissionArchiveIT.durableCopiesProduceStableSignedConfirmationAndAndroidContract",
+      "*AuditArchiveIT.stableSignedSegmentsProduceAndroidContract",
+      "*TemporaryAuditIT.mixedOutOfOrderReplayArchivesWithoutChangingOriginalFormalDigest",
+      "*TemporaryAuditIT.unacknowledgedPreparationCanPreserveEvidenceWithoutAcknowledgingActivation"
+    ],
+    "schema": "32"
+  },
+  "pre_pause_business_tests": {
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "pre_pause_restore": {
+    "status": "PASS",
+    "verified_at": "2026-09-20T08:50:22.070878+00:00",
+    "seconds": 11.926,
+    "database": "r09_ops_restore",
+    "port": 19310,
+    "tables": 93,
+    "business": {
+      "foreign_keys_checked": 198,
+      "file_references_checked": 13,
+      "signed_receipts_verified": 6,
+      "dispatch_packages": 10,
+      "dispatch_weight_g": 3007500,
+      "ledger_rows": 4,
+      "ledger_weight_delta_g": -1203000,
+      "guard_rows": 10,
+      "success_submissions": 5,
+      "abort_tombstones": 1,
+      "idempotency_rows": 61,
+      "audit_rows": 92,
+      "capture_rows": 10,
+      "device_event_rows": 35,
+      "submission_archives_verified": 1,
+      "submission_archive_file_references": 2,
+      "audit_archives_verified": 3,
+      "archived_audit_events_verified": 15,
+      "audit_event_rows_verified": 16,
+      "order_counter_dates_verified": 1,
+      "order_counter_exhausted_dates": 0,
+      "fh_orders_verified": 8,
+      "legacy_orders_preserved": 0,
+      "temporary_qualifications_verified": 3,
+      "temporary_parts_verified": 15,
+      "temporary_origins_verified": 2,
+      "temporary_audit_events_verified": 2
+    },
+    "backup_sums_sha256": "c0740bbb1c0592367ba06818099f440354b161b90491b2b0f36b4b7b9eeb032e",
+    "scope": "isolated snapshot restore; no disaster reconstruction"
+  },
+  "pre_pause_r06_fault_drill": {
+    "status": "PASS",
+    "checks": [
+      "counter_regressed",
+      "counter_missing",
+      "temp_original_epoch_mismatch",
+      "temp_manifest_changed",
+      "temp_signature_changed",
+      "temp_part_missing",
+      "all_tables_and_files_restored"
+    ]
+  },
+  "pre_pause_v28_fault_drill": {
+    "status": "PASS",
+    "checks": [
+      "submission_archive_index",
+      "audit_archive_index",
+      "original_audit_hash",
+      "audit_checkpoint_gap",
+      "archive_checkpoint_regressed",
+      "missing_audit_archive",
+      "failed_task",
+      "overdue_task",
+      "all_tables_and_files_restored"
+    ]
+  },
+  "pre_pause_fault_drill": {
+    "status": "PASS",
+    "checks": [
+      "nonempty_restore_refused",
+      "system_database_access_refused",
+      "source_import_refused",
+      "missing_file_detected",
+      "changed_file_detected",
+      "forged_receipt_detected",
+      "invalid_private_key_detected",
+      "ledger_weight_difference_detected",
+      "stale_backup_detected",
+      "low_disk_detected",
+      "database_and_files_unchanged_after_faults"
+    ]
+  },
+  "pre_pause_worker_probe": {
+    "status": "PASS",
+    "counts": {
+      "total": 1,
+      "failed": 0,
+      "expired_leases": 0,
+      "ready": 0,
+      "oldest_ready_seconds": 0,
+      "retry": 0
+    },
+    "exceeded": [],
+    "child_stopped": true,
+    "nonweb_port_free": true,
+    "first_probe_collection_failed": "UNSUPPORTED_SCHEMA",
+    "probe_not_replayed": true
+  },
+  "pre_pause_api_probe": {
+    "latency_ms": 2263,
+    "service_mode": "NORMAL",
+    "stopped_service_detected": true,
+    "status": "PASS"
+  },
+  "resumed_ops_tests": {
+    "tests": 56,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "resource_warnings_as_errors": true,
+    "seconds": 3.518
+  },
+  "resumed_final_audit": {
+    "status": "PASS",
+    "observed_at": "2026-09-20T09:08:35.916359+00:00",
+    "tables": 93,
+    "source_all_tables_unchanged": true,
+    "restored_business_tables_unchanged": true,
+    "post_api_changes": {
+      "spring_session": {
+        "before": {
+          "count": 0,
+          "checksum": "0",
+          "schema_sha256": "431e64cb1dded9639dc5be0969435bc504748d20094e766dd905415f35f811e9"
+        },
+        "after": {
+          "count": 1,
+          "checksum": "1394132477",
+          "schema_sha256": "431e64cb1dded9639dc5be0969435bc504748d20094e766dd905415f35f811e9"
+        }
+      },
+      "spring_session_attributes": {
+        "before": {
+          "count": 0,
+          "checksum": "0",
+          "schema_sha256": "1bbde70a657bff7be3d22e8d4ea492710e243b5020de85d5c720366b4acf319f"
+        },
+        "after": {
+          "count": 1,
+          "checksum": "4030179638",
+          "schema_sha256": "1bbde70a657bff7be3d22e8d4ea492710e243b5020de85d5c720366b4acf319f"
+        }
+      }
+    },
+    "all_files_and_config_unchanged": true,
+    "business": {
+      "foreign_keys_checked": 198,
+      "file_references_checked": 13,
+      "signed_receipts_verified": 6,
+      "dispatch_packages": 10,
+      "dispatch_weight_g": 3007500,
+      "ledger_rows": 4,
+      "ledger_weight_delta_g": -1203000,
+      "guard_rows": 10,
+      "success_submissions": 5,
+      "abort_tombstones": 1,
+      "idempotency_rows": 61,
+      "audit_rows": 92,
+      "capture_rows": 10,
+      "device_event_rows": 35,
+      "submission_archives_verified": 1,
+      "submission_archive_file_references": 2,
+      "audit_archives_verified": 3,
+      "archived_audit_events_verified": 15,
+      "audit_event_rows_verified": 16,
+      "order_counter_dates_verified": 1,
+      "order_counter_exhausted_dates": 0,
+      "fh_orders_verified": 8,
+      "legacy_orders_preserved": 0,
+      "temporary_qualifications_verified": 3,
+      "temporary_parts_verified": 15,
+      "temporary_origins_verified": 2,
+      "temporary_audit_events_verified": 2
+    },
+    "jobs": {
+      "status": "PASS",
+      "counts": {
+        "total": 1,
+        "failed": 0,
+        "expired_leases": 0,
+        "ready": 0,
+        "oldest_ready_seconds": 0,
+        "retry": 0
+      },
+      "exceeded": []
+    },
+    "monitor": {
+      "observed_at": "2026-09-20T09:08:35.916340+00:00",
+      "status": "PASS",
+      "checks": [
+        {
+          "check": "backup",
+          "status": "PASS",
+          "age_seconds": 1200,
+          "archive_verified": true,
+          "restore_verified": false
+        },
+        {
+          "check": "restore_evidence",
+          "status": "PASS",
+          "restore_verified": true,
+          "schema": "32",
+          "age_seconds": 1094,
+          "scope": "isolated_snapshot_only",
+          "disaster_reconstruction_verified": false,
+          "local_deletion_allowed": false
+        },
+        {
+          "check": "tcp",
+          "status": "PASS",
+          "connected": true
+        },
+        {
+          "check": "disk_0",
+          "status": "PASS",
+          "free_bytes": 151608496128,
+          "free_percent": 60.77
+        }
+      ]
+    }
+  },
+  "live_monitor_cli": {
+    "status": "PASS",
+    "exit_code": 0,
+    "observed_at": "2026-09-20T09:10:04.120563+00:00"
+  },
+  "static_checks": {
+    "python_files": 37,
+    "fingerprinted_files": 47,
+    "ast": true,
+    "file_max_lines": 200,
+    "function_body_max_lines": 30,
+    "configuration_syntax": true,
+    "markdown_files": 10,
+    "local_links_checked": 55,
+    "broken_local_links": 0,
+    "git_diff_check": true
+  },
+  "archive_bytes": {
+    "database.sql.gz": 97906,
+    "private-files-and-config.tar.gz": 10647
+  },
+  "private_lab": ".local/r09/20260920T084455Z-26ba55",
+  "shutdown": {
+    "ports_19309_19310_18309_free": true,
+    "mysql_identity_verified_before_shutdown": true,
+    "resumed_mysql_pids": [
+      24824,
+      9720
+    ],
+    "api_or_worker_started_after_handoff": false,
+    "r09_java_mysql_children_absent": true
+  },
+  "failures_retained": [
+    "worker collection initially rejected V32; original completed job recollected without replay",
+    "five initial monitor fixtures raised FileExistsError; fixture corrected and final 56 tests passed",
+    "resume helper unused import failed before startup; corrected command resumed original instances",
+    "historical native MySQL zero-exit empty-output exact root cause unresolved"
+  ],
+  "limits": [
+    "V33 snapshot not exercised; checker rejects unsupported schema",
+    "no disaster reconstruction, external UUID gate or shared write/worker fencing implemented",
+    "no offsite/PITR, production RPO/RTO, Linux/PDA/field validation",
+    "no post-snapshot FH allocation high-water evidence closure",
+    "no local deletion authorization"
+  ],
+  "deployed": false,
+  "full_disaster_recovery_complete": false,
+  "local_deletion_allowed": false
+}

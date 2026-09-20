@@ -1,0 +1,4 @@
+# Lab SQL protocol and receipt verification. Server monitor/archive-only checks use stdlib.
+# Python >=3.12 is required for Windows junction rejection.
+cryptography==48.0.0
+PyMySQL==1.1.2
