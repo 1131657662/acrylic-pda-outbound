@@ -29,7 +29,8 @@ class TemporaryWorkRenderer(private val binding: ActivityWorkBinding) {
     }
     private fun controls(state: TemporaryWorkUi) {
         binding.recall.visibility = View.GONE
-        binding.closeOrder.text = "尚未开放上传 · 不得放行"; binding.closeOrder.isEnabled = false
+        binding.closeOrder.text = "核对并结单上传 · 不得放行"
+        binding.closeOrder.isEnabled = state.draft?.state == "SCANNING" && state.queued == 0 && state.candidate == null && state.total.count > 0
         binding.validate.isEnabled = state.ready
         binding.voidLast.isEnabled = state.ready && state.queued == 0 && state.candidate == null && state.recent.any { it.status == "ACTIVE" }
         binding.confirm.text = when {

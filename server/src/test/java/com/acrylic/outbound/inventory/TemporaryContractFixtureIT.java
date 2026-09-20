@@ -23,8 +23,8 @@ class TemporaryContractFixtureIT {
         fixture.set("nextPreparation",exportPreparation(f));
         Files.writeString(Path.of("build","pda-temporary-contract-fixture.json"),json.writeValueAsString(fixture));
     }
-    private com.fasterxml.jackson.databind.node.ObjectNode exportPreparation(TemporaryFixture f) throws Exception {
-        var receipt=f.prepare();var fixture=json.createObjectNode();fixture.set("receipt",receipt);
+    static com.fasterxml.jackson.databind.node.ObjectNode exportPreparation(TemporaryFixture f) throws Exception {
+        var receipt=f.prepare();var fixture=f.web.json().createObjectNode();fixture.set("receipt",receipt);
         fixture.set("signingKey",f.pda.data(get("/api/v1/pda/signing-key"),f.tokens));
         var session=fixture.putObject("session").put("serverRecoveryEpoch","1");
         session.set("capabilities",f.tokens.get("capabilities"));

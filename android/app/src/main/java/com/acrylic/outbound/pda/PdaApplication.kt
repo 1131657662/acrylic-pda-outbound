@@ -36,6 +36,8 @@ open class PdaApplication : Application(), androidx.work.Configuration.Provider 
     fun temporaryStore() = com.acrylic.outbound.pda.temporary.TemporaryWorkStore(database,
         com.acrylic.outbound.pda.temporary.TemporarySession(session)) { TrustedTime.sample(this) }
     val temporaryWork by lazy { com.acrylic.outbound.pda.temporary.TemporaryEngine(temporaryStore()) { workSound.play(it) } }
+    val temporarySubmissions by lazy { com.acrylic.outbound.pda.temporary.TemporarySubmissionRepository(database,
+        com.acrylic.outbound.pda.temporary.TemporarySession(session)) }
     val work by lazy { WorkEngine(WorkStore(database, SessionWorkAccess(this, session))) { workSound.play(it) } }
     val submissions by lazy { SubmissionRepository(database, session) }
     val freezer by lazy { SubmissionFreeze(WorkStore(database, SessionWorkAccess(this, session)), session::now) }

@@ -11,12 +11,15 @@ import org.springframework.stereotype.Component;
 public class SubmissionAccess {
     private final PdaAccess pda;private final PdaAuthLocks locks;private final AssignmentStore assignments;
     private final Access web;private final ServerState state;private final WarehouseBaseline warehouses;
-    public SubmissionAccess(PdaAccess pda,PdaAuthLocks locks,AssignmentStore assignments,Access web,ServerState state,WarehouseBaseline warehouses) {
+    private final com.acrylic.outbound.temporary.TemporarySubmissionAccess temporary;
+    public SubmissionAccess(PdaAccess pda,PdaAuthLocks locks,AssignmentStore assignments,Access web,ServerState state,WarehouseBaseline warehouses,com.acrylic.outbound.temporary.TemporarySubmissionAccess temporary) {
         this.pda=pda;this.locks=locks;this.assignments=assignments;this.web=web;this.state=state;this.warehouses=warehouses;
+        this.temporary=temporary;
     }
     public Actor pda(SubmissionControl control,String epoch,boolean write) {
         var actor=pda.require("pda:submit");
         if(write) { state.lockWritable(epoch);locks.device(actor.deviceId());actor=pda.require("pda:submit"); }
+        if(control.temporary()!=null)return temporary.verify(control,actor,epoch,write);
         AssignmentStore.View assignment;
         try { assignment=assignments.get(control.assignment()); }
         catch(org.springframework.dao.EmptyResultDataAccessException error) { throw missing(); }

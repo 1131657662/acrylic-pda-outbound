@@ -17,6 +17,11 @@ public class SubmissionController {
         var body=SubmissionJson.parse(bytes);return responses.ok(service.submit(order,body,epoch),request);
     }
     @GetMapping("/submissions/{id}") public ApiEnvelope<?> read(@PathVariable UUID id,HttpServletRequest request) { return responses.ok(service.read(id),request); }
+    @PostMapping("/temporary-orders/submissions")
+    public ApiEnvelope<?> temporary(@RequestHeader("X-Server-Recovery-Epoch") String epoch,@RequestBody byte[] bytes,HttpServletRequest request) {
+        if(bytes.length>1048576)throw new com.acrylic.outbound.common.BusinessException(413,"SUBMISSION_USE_CHUNKS","请分块传输完整冻结正文");
+        return responses.ok(service.submitTemporary(SubmissionJson.parse(bytes),epoch),request);
+    }
     @PostMapping("/submissions/{id}/abort") public ApiEnvelope<?> abort(@PathVariable UUID id,@RequestHeader("X-Server-Recovery-Epoch") String epoch,@RequestBody byte[] bytes,HttpServletRequest request) {
         return responses.ok(service.abort(id,SubmissionJson.parse(bytes),epoch),request);
     }

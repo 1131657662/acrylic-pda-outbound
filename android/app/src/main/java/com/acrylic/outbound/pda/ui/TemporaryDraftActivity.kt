@@ -51,8 +51,8 @@ class TemporaryDraftActivity : ComponentActivity() {
         listOf(binding.vehicle, binding.container, binding.reason, binding.product, binding.count, binding.add, binding.start).forEach { it.isEnabled = enabled }
         binding.save.isEnabled = !state.busy; binding.back.isEnabled = !state.busy
         binding.save.text = if (state.draft == null) "恢复原草稿" else "保存草稿"
-        if (!state.busy && state.draft?.state == "SCANNING" && !opened) {
-            opened = true; startActivity(Intent(this, TemporaryWorkActivity::class.java).putExtra("clientOrderId", model.id)); finish()
+        if (!state.busy && state.draft?.state in setOf("SCANNING", "FROZEN") && !opened) {
+            opened = true; startActivity(Intent(this, if (state.draft?.state == "FROZEN") TemporarySubmissionActivity::class.java else TemporaryWorkActivity::class.java).putExtra("clientOrderId", model.id)); finish()
         }
     }
     private fun add() {

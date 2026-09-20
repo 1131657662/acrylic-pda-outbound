@@ -17,6 +17,7 @@ public class SubmissionFinalizer {
         this.jdbc=jdbc;this.snapshots=snapshots;this.stock=stock;this.accounting=accounting;this.store=store;this.events=events;this.receipts=receipts;
     }
     public JsonNode finish(SubmissionStore.Head head,JsonNode body,Approval approval) {
+        if(head.control().temporary()!=null)throw new BusinessException(409,"TEMPORARY_CONFIRMATION_REQUIRED","临时单须独立确认，不能使用正式单审批放行");
         store.current(head);var assignment=new AssignmentStore(jdbc).get(head.control().assignment());
         var value=snapshots.validate(assignment,body);var issues=authorization(head,assignment);
         var publication=new AssignmentStore(jdbc).publication(head.control().order(),assignment.revision());

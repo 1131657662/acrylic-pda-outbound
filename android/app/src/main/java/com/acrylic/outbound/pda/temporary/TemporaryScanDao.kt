@@ -39,4 +39,6 @@ interface TemporaryScanDao {
         FROM temporary_event e INNER JOIN temporary_draft d ON d.clientOrderId=e.clientOrderId
         WHERE e.originDeviceId=:device AND e.localSeq>:after ORDER BY e.localSeq LIMIT :limit""")
     fun audit(device: String, after: Long, limit: Int): List<TemporaryAuditRecord>
+    @Query("SELECT * FROM temporary_capture WHERE clientOrderId=:id ORDER BY orderScanSeq") fun captures(id: String): List<TemporaryCapture>
+    @Query("SELECT * FROM temporary_scan WHERE clientOrderId=:id ORDER BY orderScanSeq") fun allScans(id: String): List<TemporaryScan>
 }

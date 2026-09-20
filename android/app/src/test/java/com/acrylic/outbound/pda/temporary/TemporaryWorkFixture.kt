@@ -5,8 +5,8 @@ import com.acrylic.outbound.pda.security.TimeSample
 import java.io.File
 import java.util.UUID
 
-class TemporaryWorkFixture(root: File, borrowed: PdaDatabase? = null) : AutoCloseable {
-    val fixture = TemporaryFixture(root, borrowed)
+class TemporaryWorkFixture(root: File, borrowed: PdaDatabase? = null, contract: org.json.JSONObject? = null) : AutoCloseable {
+    val fixture = TemporaryFixture(root, borrowed, contract)
     val db get() = fixture.db
     var store = newStore()
     val drafts get() = TemporaryDraftRepository(store)

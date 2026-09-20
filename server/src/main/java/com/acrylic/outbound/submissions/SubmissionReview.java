@@ -18,7 +18,7 @@ public class SubmissionReview {
     @Transactional(readOnly=true)
     public JsonNode forOrder(UUID order,UUID warehouse) {
         access.web(warehouse,"",false);
-        var ids=jdbc.queryForList("SELECT BIN_TO_UUID(current_submission_id) FROM submission_scope WHERE warehouse_id=? AND source_order_id=?",String.class,Ids.bytes(warehouse),Ids.bytes(order));
+        var ids=jdbc.queryForList("SELECT BIN_TO_UUID(current_submission_id) FROM submission_scope WHERE warehouse_id=? AND (source_order_id=? OR canonical_order_id=?)",String.class,Ids.bytes(warehouse),Ids.bytes(order),Ids.bytes(order));
         var result=object();if(ids.isEmpty() || ids.getFirst()==null) return result.putNull("submission");
         var head=store.required(UUID.fromString(ids.getFirst()));result.set("submission",service.response(head));String hash=store.payloadHash(head.control().id());
         if(hash!=null) {
@@ -32,6 +32,7 @@ public class SubmissionReview {
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode decide(UUID id,Command command,String epoch) {
         var before=store.required(id);var actor=access.web(before.warehouse(),epoch,true);var head=store.lockExisting(before);store.current(head);
+        if(head.control().temporary()!=null)throw new BusinessException(409,"TEMPORARY_CONFIRMATION_REQUIRED","临时单须使用独立确认及实物处置流程");
         if(!epoch.equals(head.control().epoch())) throw new BusinessException(409,"ORDER_RECOVERY_REQUIRED","旧恢复代次提交须先对账");
         String hash=store.payloadHash(id);equal(command.payloadSha256(),hash,"审批摘要与原正文不一致");
         require(Set.of("APPROVE","REJECT").contains(command.decision()) && command.reason()!=null && !command.reason().isBlank() && command.reason().length()<=500,"请填写审批决定及原因");

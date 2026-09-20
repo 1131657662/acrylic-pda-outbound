@@ -46,7 +46,7 @@ class TemporaryEngine(private val store: TemporaryWorkStore, private val sound: 
         }
     }
     @Synchronized fun pause() { foreground = false; mutable.update { it.copy(ready = false) }; lease?.close(); lease = null }
-    fun receive(raw: String, source: String): Boolean {
+    @Synchronized fun receive(raw: String, source: String): Boolean {
         if (!active(requested) || !mutable.value.ready) { sound("ERROR"); return false }
         val input = TemporaryInput(current, raw, source, store.sample())
         return enqueue { processor.reception.receive(input); processor.drain(input.order) { active(input.order) } }

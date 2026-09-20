@@ -15,8 +15,10 @@ public class SubmissionService {
     private final SubmissionAccess access;private final SubmissionStore store;private final SubmissionFiles files;
     private final AssignmentStore assignments;private final SubmissionEvidence evidence;private final SubmissionSnapshot snapshots;
     private final SubmissionEvents events;private final SubmissionFinalizer finalizer;private final SubmissionReceipts receipts;
+    private final com.acrylic.outbound.temporary.TemporarySubmissionIntake temporary;
     public SubmissionService(SubmissionAccess access,SubmissionStore store,SubmissionFiles files,AssignmentStore assignments,SubmissionEvidence evidence,
-        SubmissionSnapshot snapshots,SubmissionEvents events,SubmissionFinalizer finalizer,SubmissionReceipts receipts,com.acrylic.outbound.continuation.ContinuationEvidence continuations) {
+        SubmissionSnapshot snapshots,SubmissionEvents events,SubmissionFinalizer finalizer,SubmissionReceipts receipts,com.acrylic.outbound.continuation.ContinuationEvidence continuations,com.acrylic.outbound.temporary.TemporarySubmissionIntake temporary) {
+        this.temporary=temporary;
         this.continuations=continuations;
         this.access=access;this.store=store;this.files=files;this.assignments=assignments;this.evidence=evidence;
         this.snapshots=snapshots;this.events=events;this.finalizer=finalizer;this.receipts=receipts;
@@ -27,13 +29,20 @@ public class SubmissionService {
         equal(control.order(),order,"正文订单与路径不一致");var actor=access.pda(control,epoch,true);
         var head=store.lock(control,actor);store.current(head);return accept(head,body);
     }
+    @Transactional(isolation=Isolation.READ_COMMITTED)
+    public JsonNode submitTemporary(JsonNode body,String epoch) {
+        var control=SubmissionControl.read(uuid(body,"submissionId"),body);require(control.temporary()!=null,"此入口仅接收TEMP来源");
+        var actor=access.pda(control,epoch,true);var head=store.lock(control,actor);store.current(head);return accept(head,body);
+    }
     public JsonNode accept(SubmissionStore.Head head,JsonNode body) {
         equal(SubmissionControl.read(uuid(body,"submissionId"),body),head.control(),"分块正文的原控制身份不一致");
         String hash=sha(body),previous=store.payloadHash(head.control().id());
+        store.requireUploadHash(head.control().id(),hash);
         if(previous!=null && !previous.equals(hash)) throw new BusinessException(409,"IDEMPOTENCY_CONTENT_MISMATCH","同一提交ID正文不同，请恢复原正文");
         if(head.status().equals("ABORTED")) throw new BusinessException(409,"SUBMISSION_ABORTED","此批次已取消，不能复活或自动续扫");
         if(head.status().equals("REJECTED")) throw new BusinessException(409,"SUBMISSION_REJECTED","此批次已退回，需受控续作");
         if(previous!=null) return response(head);
+        if(head.control().temporary()!=null)return temporary.accept(head,body);
         store.requireBeforeRecovery(head.control().assignment());
         var assignment=assignments.get(head.control().assignment());evidence.validate(head,assignment,body);snapshots.validate(assignment,body);
         byte[] bytes=canonical(body).getBytes(StandardCharsets.UTF_8);equal(files.store(bytes),hash,"归档摘要不符");
@@ -53,6 +62,7 @@ public class SubmissionService {
         if(head.status().equals("SUCCEEDED") || head.status().equals("ABORTED") || head.status().equals("REJECTED")) return response(head);
         String reason=text(body,"reason").strip();require(!reason.isBlank() && reason.length()<=500,"取消必须填写1至500字原因");
         var receipt=receipts.abort(head,store.payloadHash(id),reason);store.select(head);store.state(id,"ABORTED",null,canonical(receipt));
-        events.transition(head,"REVIEW_REQUIRED",actor.user());return receipt;
+        events.aborted(head,receipt);
+        if(head.order()!=null)events.transition(head,"REVIEW_REQUIRED",actor.user());return receipt;
     }
 }

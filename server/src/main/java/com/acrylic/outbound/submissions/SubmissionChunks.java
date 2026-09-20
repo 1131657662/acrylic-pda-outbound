@@ -20,6 +20,8 @@ public class SubmissionChunks {
         var control=SubmissionControl.read(id,body);var actor=access.pda(control,epoch,true);var head=store.lock(control,actor);store.current(head);receiving(head);
         String hash=text(body,"payloadSha256");long size=number(body,"byteCount"),count=number(body,"chunkCount");
         require(hash.matches("[a-f0-9]{64}") && size>0 && size<=33554432 && count==(size+262143)/262144,"分块清单无效");
+        String accepted=store.payloadHash(id);
+        if(accepted!=null && !accepted.equals(hash))throw new BusinessException(409,"IDEMPOTENCY_CONTENT_MISMATCH","原提交正文已固定");
         var existing=upload(id);
         if(existing==null) jdbc.update("INSERT INTO submission_upload VALUES(?,?,?,?)",Ids.bytes(id),hash,size,count);
         else equal(existing,new Upload(hash,(int)size,(int)count),"同批次分块清单不可更改");

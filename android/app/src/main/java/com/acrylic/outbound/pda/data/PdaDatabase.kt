@@ -17,7 +17,7 @@ import com.acrylic.outbound.pda.temporary.*
     LocalSyncState::class, LocalCloudOrder::class, LocalRecoveryControl::class, LocalCloudBarcode::class, AuditCheckpoint::class,
     RetainedBaseline::class, SubmissionArchive::class, AuditArchive::class, TemporaryRequest::class,
     TemporaryPreparation::class, TemporaryPartChunk::class, TemporaryDraft::class, TemporaryLine::class,
-    TemporaryCapture::class, TemporaryScan::class, TemporaryGuard::class, TemporaryEvent::class], version = 16, exportSchema = true)
+    TemporaryCapture::class, TemporaryScan::class, TemporaryGuard::class, TemporaryEvent::class, TemporarySubmission::class], version = 17, exportSchema = true)
 abstract class PdaDatabase : RoomDatabase() {
     abstract fun preparations(): PreparationDao
     abstract fun work(): WorkDao
@@ -36,12 +36,13 @@ abstract class PdaDatabase : RoomDatabase() {
     abstract fun temporary(): TemporaryDao
     abstract fun temporaryDrafts(): TemporaryDraftDao
     abstract fun temporaryScans(): TemporaryScanDao
+    abstract fun temporarySubmissions(): TemporarySubmissionDao
 
     companion object {
         fun open(context: Context): PdaDatabase = Room.databaseBuilder(context, PdaDatabase::class.java, "outbound-pda.db")
             .openHelperFactory { FullSyncOpenHelper(it) }
             .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)
-            .addMigrations(WorkMigration, SubmissionMigration, RecallMigration, ContinuationMigration, DispositionMigration, ClaimIntentMigration, AuthorizationMigration, SyncMigration, BarcodeMigration, AuditMigration, RetentionMigration, SubmissionArchiveMigration, AuditArchiveMigration, TemporaryMigration, TemporaryWorkMigration)
+            .addMigrations(WorkMigration, SubmissionMigration, RecallMigration, ContinuationMigration, DispositionMigration, ClaimIntentMigration, AuthorizationMigration, SyncMigration, BarcodeMigration, AuditMigration, RetentionMigration, SubmissionArchiveMigration, AuditArchiveMigration, TemporaryMigration, TemporaryWorkMigration, TemporarySubmissionMigration)
             .addCallback(object : Callback() {
                 override fun onOpen(db: SupportSQLiteDatabase) {
                     db.query("PRAGMA synchronous").use { check(it.moveToFirst() && it.getInt(0) == 2) { "本地数据库耐久配置不正确" } }

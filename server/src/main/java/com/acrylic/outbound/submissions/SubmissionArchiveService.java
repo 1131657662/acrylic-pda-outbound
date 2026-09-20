@@ -22,6 +22,7 @@ public class SubmissionArchiveService {
         require(request.isObject() && request.size()==2 && text(request,"payloadSha256").matches("[a-f0-9]{64}") &&
             text(request,"receiptSha256").matches("[a-f0-9]{64}"),"归档确认须提供原正文与完整回执的规范摘要");
         var head=submissions.required(id);access.pda(head.control(),epoch,true);head=submissions.lockExisting(head);
+        if(head.control().temporary()!=null)throw new com.acrylic.outbound.common.BusinessException(409,"TEMPORARY_CONFIRMATION_REQUIRED","临时单独立确认及归档尚未开放，保留原记录");
         var value=evidence.read(head,request);var previous=archives.find(id,epoch);
         evidence.persistReceipt(value,previous!=null);
         if(previous!=null) { verifyPrevious(head,epoch,value,previous);return previous; }

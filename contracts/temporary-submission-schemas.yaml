@@ -1,0 +1,100 @@
+Source:
+  type: object
+  additionalProperties: false
+  required: [kind, creatorDeviceId, clientOrderId]
+  properties:
+    kind: {const: TEMP}
+    creatorDeviceId: {type: string, format: uuid}
+    clientOrderId: {type: string, format: uuid}
+Control:
+  type: object
+  required: [source, assignmentId, continuationId, authorizationId, freezeDeviceId, workRound, sourceRecoveryEpoch]
+  properties:
+    source: {$ref: '#/Source'}
+    assignmentId: {type: 'null'}
+    continuationId: {type: 'null'}
+    authorizationId: {type: string, format: uuid}
+    freezeDeviceId: {type: string, format: uuid, description: 必须等于原creatorDeviceId}
+    workRound: {const: '1'}
+    sourceRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+  description: 固定原TEMP资格及来源。首轮取消可先于正文，不需要正式订单或payloadSha256；不得伪造assignmentId。
+Body:
+  allOf:
+    - $ref: '#/Control'
+    - type: object
+      required: [schemaVersion, submissionId, authorizationEpoch, temporaryNo, temporaryOrder, planSha256, orderRevision, inventorySnapshotId, policyVersion, autoDeductInventory, closedAt, shortShipmentReason, expectedCount, expectedWeightGrams, captureHighWatermark, captureSummary, captures, scans, events, dispositions]
+      properties:
+        schemaVersion: {const: 2}
+        submissionId: {type: string, format: uuid}
+        authorizationEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+        temporaryNo: {type: string, minLength: 1, maxLength: 64}
+        temporaryOrder: {$ref: '#/Plan'}
+        planSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+        orderRevision: {$ref: './submission-schemas.yaml#/Positive'}
+        inventorySnapshotId: {type: string, format: uuid}
+        policyVersion: {$ref: './submission-schemas.yaml#/Positive'}
+        autoDeductInventory: {type: boolean}
+        closedAt: {type: string, format: date-time}
+        shortShipmentReason: {type: [string, 'null'], maxLength: 500}
+        expectedCount: {$ref: './submission-schemas.yaml#/Positive'}
+        expectedWeightGrams: {$ref: './submission-schemas.yaml#/Positive'}
+        captureHighWatermark: {$ref: './submission-schemas.yaml#/Positive'}
+        captureSummary: {$ref: './submission-schemas.yaml#/Body/allOf/1/properties/captureSummary'}
+        captures: {type: array, items: {$ref: '#/Capture'}}
+        scans: {type: array, items: {$ref: './submission-evidence.yaml#/Scan'}}
+        events: {type: array, items: {$ref: './audit-schemas.yaml#/TemporaryEvent'}}
+        dispositions: {type: array, maxItems: 0}
+      description: 完整验证原计划、资格有效期内保存证据、原快照及周期后，生成唯一PDA_TEMP正式记录并转REVIEW_REQUIRED。不会扣账、生成出库记录或放行。独立确认/关联/拒绝另行接入。
+Plan:
+  type: object
+  additionalProperties: false
+  required: [clientOrderId, creatorDeviceId, authorizationId, revision, vehicleNo, containerNo, reason, lines]
+  properties:
+    clientOrderId: {type: string, format: uuid}
+    creatorDeviceId: {type: string, format: uuid}
+    authorizationId: {type: string, format: uuid}
+    revision: {$ref: './submission-schemas.yaml#/Positive'}
+    vehicleNo: {type: string, minLength: 1, maxLength: 50}
+    containerNo: {type: string, maxLength: 50}
+    reason: {type: string, minLength: 1, maxLength: 500}
+    lines:
+      type: array
+      minItems: 1
+      items:
+        type: object
+        additionalProperties: false
+        required: [deliveryCode, productId, model, name, plannedCount]
+        properties:
+          deliveryCode: {type: string, pattern: '^[0-9]{3}$'}
+          productId: {type: string, format: uuid}
+          model: {type: string}
+          name: {type: string}
+          plannedCount: {$ref: './submission-schemas.yaml#/Positive'}
+      description: 按deliveryCode升序，代码不重复，每项正整数不超过2147483647；名称型号固定原映射。
+Capture:
+  type: object
+  required: [id, clientOrderId, originDeviceId, operatorId, orderScanSeq, deviceCaptureSeq, rawInput, barcode, inputSource, confirmationPolicy, receivedWallMs, receivedElapsedMs, receivedBoot, authorizationId, authorizationEpoch, snapshotId, sourceRecoveryEpoch, orderRevision, expectedDispatchCycle, state, error, confirmedAt, failureAckAt]
+  properties:
+    id: {type: string, format: uuid}
+    clientOrderId: {type: string, format: uuid}
+    originDeviceId: {type: string, format: uuid}
+    operatorId: {type: string, format: uuid}
+    orderScanSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    deviceCaptureSeq: {$ref: './submission-schemas.yaml#/Positive'}
+    rawInput: {type: string, maxLength: 128}
+    barcode: {type: string}
+    inputSource: {enum: [BROADCAST, MANUAL]}
+    confirmationPolicy: {enum: [AUTO_AFTER_VALIDATION, MANUAL]}
+    receivedWallMs: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    receivedElapsedMs: {$ref: './submission-schemas.yaml#/Nonnegative'}
+    receivedBoot: {type: integer}
+    authorizationId: {type: string, format: uuid}
+    authorizationEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    snapshotId: {type: string, format: uuid}
+    sourceRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    orderRevision: {$ref: './submission-schemas.yaml#/Positive'}
+    expectedDispatchCycle: {type: [string, 'null']}
+    state: {enum: [COMMITTED, INVALID, BUSINESS_REJECTED, DISCARDED]}
+    error: {type: string, maxLength: 500}
+    confirmedAt: {type: [string, 'null'], format: date-time}
+    failureAckAt: {type: [string, 'null'], format: date-time}

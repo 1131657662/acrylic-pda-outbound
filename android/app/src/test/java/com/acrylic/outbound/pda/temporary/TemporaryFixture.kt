@@ -9,11 +9,11 @@ import java.io.File
 import java.time.Instant
 import java.util.*
 
-class TemporaryFixture(val root: File, borrowed: PdaDatabase? = null) : TemporaryConnection, AutoCloseable {
+class TemporaryFixture(val root: File, borrowed: PdaDatabase? = null, contract: JSONObject? = null) : TemporaryConnection, AutoCloseable {
     val context: Context = ApplicationProvider.getApplicationContext()
     private val ownsDatabase = borrowed == null
     var db: PdaDatabase = borrowed ?: run { context.deleteDatabase("outbound-pda.db"); PdaDatabase.open(context) }
-    val fixture = JSONObject(File(checkNotNull(System.getProperty("pda.temporaryFixture"))).readText())
+    val fixture = contract ?: JSONObject(File(checkNotNull(System.getProperty("pda.temporaryFixture"))).readText())
     val receipt = fixture.getJSONObject("receipt")
     val key = fixture.getJSONObject("signingKey")
     val manifest = JSONObject(receipt.getString("manifest"))

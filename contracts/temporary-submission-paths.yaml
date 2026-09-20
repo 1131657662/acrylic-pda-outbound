@@ -1,0 +1,16 @@
+Submit:
+  post:
+    summary: 上传原资格下冻结的临时订单，接受后待独立确认
+    security: [{pdaBearer: []}]
+    parameters: [{$ref: './openapi.yaml#/components/parameters/Epoch'}]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './temporary-submission-schemas.yaml#/Body'}
+    responses:
+      '200': {$ref: './submission-paths.yaml#/Result'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '413': {description: 正文超过1MiB，复用原submissionId的upload/chunks/finalize接口，最多32MiB}

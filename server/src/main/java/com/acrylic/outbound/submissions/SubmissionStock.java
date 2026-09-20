@@ -28,7 +28,7 @@ public class SubmissionStock {
                 !positions.getFirst().matches(scan.bale())?"INVENTORY_BASELINE_CHANGED":null;
             if(conflict!=null) { issues.add(object().put("code",conflict).put("barcode",scan.bale().barcode()));continue; }
             if(owners.isEmpty()) jdbc.update("INSERT INTO bale_commitment(bale_id,order_id,submission_id,dispatch_cycle,state,created_at) VALUES(?,?,?,?,'REVIEW_RESERVED',UTC_TIMESTAMP(3))",
-                Ids.bytes(bale),Ids.bytes(head.control().order()),Ids.bytes(head.control().id()),scan.cycle());
+                Ids.bytes(bale),Ids.bytes(head.order()),Ids.bytes(head.control().id()),scan.cycle());
         }
         for(var scan:sorted) BarcodeChanges.bale(jdbc,scan.bale().id());
         return issues;

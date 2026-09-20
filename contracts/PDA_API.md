@@ -1,5 +1,11 @@
 # 设备身份、资料准备与正式订单首轮提交
 
+当前契约0.25.0（2026-09-20），Android0.15.0-r06-submission/code20/Room17接入TEMP冻结、原批次查询/上传、分块恢复及签名取消，见[交付说明](../docs/R06_TEMPORARY_SUBMISSION_GUIDE.md)。新增`POST /pda/temporary-orders/submissions`；超过1MiB复用`/pda/submissions/{id}/upload`、`chunks/{index}`及`finalize`，最多32MiB。控制头固定`source={kind:TEMP,creatorDeviceId,clientOrderId}`、`authorizationId`、`freezeDeviceId`、`workRound="1"`、`sourceRecoveryEpoch`，`assignmentId/continuationId`明确为null。完整正文包含原多产品计划/摘要、TEMP采集、保存事实及冻结事件；不补写正式assignment。
+
+取消可先于正文，仅登记共享控制头，`orderId/payloadSha256`可空；不会伪造正式订单或空正文摘要。完整正文验证成功才生成唯一PDA_TEMP正式记录，编号复用FH日期流水；原TEMP来源永不替换。重复请求返回原状态；同来源换ID、同ID换正文/资格、清单与正文摘要不同均拒绝。全部TEMP提交停在REVIEW_REQUIRED，不扣账、不放行；正式审批入口拒绝TEMP。独立确认/关联/拒绝和TEMP出库后归档待下一批。签名ABORTED持续保留扫码与实物占用。
+
+当前会话须有效并有pda:submit，原人员/设备/仓库及恢复代次匹配；上传历史证据可保留过期或准入关闭后的原资格，相关情况列待核对原因，不恢复扫码资格。Android先保存结果未知和取消意图，Room重开仍使用原ID/正文；Wi-Fi后台重试与人工操作共享互斥，回执保存前复核会话/原请求/恢复屏障；上传或取消结果未决时阻止安装更新。以下0.24及更早说明为历史记录。
+
 当前契约0.24.0（2026-09-20），Android0.14.0-r06-audit/code19/Room16接入TEMP与正式连续审计、混合签名归档和正式召回的全设备覆盖，见[接续说明](../docs/R06_TEMPORARY_AUDIT_GUIDE.md)。`audit-schemas.yaml#/Event`接受互斥的旧正式字段或TEMP字段；TEMP固定`source.kind/creatorDeviceId/clientOrderId`及`authorizationId`，原UUID/设备序号跨来源防重，仓库/原人员与资格一致。同一来源不得换资格。证据补传只保存历史，不批准激活或出库；所有签名归档继续禁止本机删除。旧后台拒绝TEMP时保留原请求。临时建单和本机扫码已有R06-C，冻结/上传/独立确认仍待开发。以下协议版本说明为历史记录。
 
 整体契约版本0.23.0，2026-09-20，新增独立TEMP_WORK资格、仓库准备包及激活声明回执；Android0.12.0-r06-preparation/code17/Room15已接资料下载验签与恢复，临时建单/扫码/独立确认待后续开发。登录/刷新新增能力提示，原正式单签名令牌、准备包和冻结正文未变。以下接口已实现；完整字段见[OpenAPI](openapi.yaml)。0.20.0新增审计连续前缀归档和跨恢复代次重建；既有设备、订单、同步、召回与续作边界保持，换机、临时单完整闭环、更正、库存全量同步、灾后账务重建和完整上线验收仍待完成。
