@@ -54,7 +54,7 @@ class AuditArchiveRepository internal constructor(private val db: PdaDatabase, p
         val through = minOf(checkpoint.acknowledgedThrough, after + 200)
         if (through <= after) return@Callable null
         check(rows.size < 1024) { "审计归档达到当前资源限额，请保留原记录联系管理员" }
-        val events = JSONArray(db.audit().page(device, after).filter { it.localSeq <= through }.map(SubmissionRecords::event))
+        val events = JSONArray(DeviceAuditTrail(db).page(device, after).filter { it.getString("localSeq").toLong() <= through })
         val payload = AuditArchiveVerifier.payload(device, after, through, events)
         val hash = AuditArchiveVerifier.digest(payload)
         val body = JSONObject().put("originDeviceId", device).put("afterSeq", after.toString()).put("throughSeq", through.toString()).put("payloadSha256", hash)
@@ -73,9 +73,9 @@ class AuditArchiveRepository internal constructor(private val db: PdaDatabase, p
             .getJSONObject("archive").getString("byteCount")) { "恢复审计长度与原归档不一致" }
         run.commit { db.runInTransaction {
             identity(auth);check(db.auditArchives().get(row.recoveryEpoch, row.originDeviceId, row.afterSeq) == row) { "审计归档进度变化" }
-            val local = db.audit().page(row.originDeviceId, row.afterSeq).filter { it.localSeq <= row.throughSeq }
+            val local = DeviceAuditTrail(db).page(row.originDeviceId, row.afterSeq).filter { it.getString("localSeq").toLong() <= row.throughSeq }
             if (!row.restoring || local.isNotEmpty()) {
-                val payload = AuditArchiveVerifier.payload(row.originDeviceId, row.afterSeq, row.throughSeq, JSONArray(local.map(SubmissionRecords::event)))
+                val payload = AuditArchiveVerifier.payload(row.originDeviceId, row.afterSeq, row.throughSeq, JSONArray(local))
                 check(AuditArchiveVerifier.digest(payload) == row.payloadSha256) { "本机审计归档内容已变化" }
                 check(SubmissionJson.canonical(payload).toByteArray(Charsets.UTF_8).size.toString() == proof.getString("byteCount")) {
                     "本机审计字节数与归档不一致"

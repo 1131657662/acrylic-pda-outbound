@@ -1,5 +1,7 @@
 # 正式PDA：资料准备、扫码、召回与受控续作
 
+2026-09-20 R06-D当前：TEMP/正式事件共用连续补传、签名归档与召回全设备覆盖，固定原TEMP资格；Android0.14.0-r06-audit/code19/Room16，需0.24后端，详见[审计接续](../docs/R06_TEMPORARY_AUDIT_GUIDE.md)。261项主机、构建/lint通过，APK未安装；临时单冻结/提交及独立确认仍待继续，审计补传不代表放行。主机测试新增输入`server/build/pda-temporary-audit-fixture.json`，由隔离库`TemporaryAuditContractFixtureIT`生成真实后端签名（另需既有临时准备及正式流程夹具）；全部夹具保持ignored，不进入APK。下列版本和TEMP补传暂停描述为历史记录。
+
 2026-09-20 编号显示修复：正式待领取、本机卡片及领取确认明确显示车号/订单号，兼容新FH日期流水和旧OB长号；见[编号记录](../docs/ORDER_NUMBER_GUIDE.md)。基于code18/Room16构建，尚未装机。
 
 2026-09-20 R06-C当前：稳定临时草稿、多产品计划锁定、本机扫码/手输确认、全机防重及新一轮准备历史链完成源码与主机验证，详见[本机作业记录](../docs/R06_LOCAL_WORK_GUIDE.md)。Android `0.13.0-r06-local-work`/code18/Room16，后端业务仍0.23/V30；250项主机、15项真实MySQL/MockMvc、构建/lint通过，Room15→16保留25张旧表。APK未安装，HTTP/设备页面待验。临时提交及独立出库确认待R06-D，车辆不得放行；通用审计在首条TEMP前暂停，原序号与全部记录保留。新准备只用于新草稿，不能刷新旧单资格或释放guard。以下按历史阶段保留原验证边界。

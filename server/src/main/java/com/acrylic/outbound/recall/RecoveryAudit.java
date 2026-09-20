@@ -11,8 +11,10 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 
 @Component
 public class RecoveryAudit {
-    private final JdbcTemplate jdbc;private final SubmissionFiles files;private final AuditArchiveReader archives;
-    public RecoveryAudit(JdbcTemplate jdbc,SubmissionFiles files,AuditArchiveReader archives) { this.jdbc=jdbc;this.files=files;this.archives=archives; }
+    private final JdbcTemplate jdbc;private final SubmissionFiles files;private final AuditArchiveReader archives;private final PdaAuditOrigins origins;
+    public RecoveryAudit(JdbcTemplate jdbc,SubmissionFiles files,AuditArchiveReader archives,PdaAuditOrigins origins) {
+        this.jdbc=jdbc;this.files=files;this.archives=archives;this.origins=origins;
+    }
     public long validate(UUID device,UUID warehouse,JsonNode body) {
         var coverage=array(body,"auditCoverage");require(coverage.size()==1,"当前恢复仅接受原设备审计");var c=coverage.get(0);
         equal(uuid(c,"originDeviceId"),device,"审计覆盖设备错误");
@@ -36,15 +38,16 @@ public class RecoveryAudit {
             rs->{remember(known,rs.getLong(1),rs.getString(2));},Ids.bytes(device));
         previousRecoveries(device,known);
         var current=new HashSet<String>();array(body,"events").forEach(e->current.add(text(e,"id")));
-        return new Context(device,text(body,"assignmentId"),owners,known,current,new HashMap<>());
+        return new Context(device,warehouse,text(body,"assignmentId"),owners,known,current,new HashMap<>());
     }
     private void validateEvent(JsonNode e,Context c) {
         PdaAuditFacts.validate(e);PdaAuditFacts.verify(jdbc,e);
         equal(uuid(e,"originDeviceId"),c.device(),"审计来源设备错误");
-        equal(text(e,"operatorId"),c.owners().get(text(e,"assignmentId")),"审计原授权或人员不匹配");
+        if(e.has("source")) origins.bind(c.device(),origins.verify(c.device(),c.warehouse(),e));
+        else equal(text(e,"operatorId"),c.owners().get(text(e,"assignmentId")),"审计原授权或人员不匹配");
         require(c.all().put(text(e,"id"),sha(e))==null,"审计ID重复");long seq=number(e,"localSeq");
         if(c.known().containsKey(seq))equal(sha(e),c.known().get(seq),"已上传审计内容被改写");
-        if(text(e,"assignmentId").equals(c.assignment()))require(c.current().contains(text(e,"id")),"本单审计被遗漏");
+        if(!e.has("source") && text(e,"assignmentId").equals(c.assignment()))require(c.current().contains(text(e,"id")),"本单审计被遗漏");
     }
     public void verifyExisting(UUID device,JsonNode events) {
         var known=new HashMap<Long,String>();previousRecoveries(device,known);
@@ -67,5 +70,5 @@ public class RecoveryAudit {
         String old=known.putIfAbsent(sequence,hash);require(old==null || old.equals(hash),"服务器既有审计不一致，须恢复核对");
     }
     private record Prior(String hash,UUID warehouse) { }
-    private record Context(UUID device,String assignment,Map<String,String> owners,Map<Long,String> known,Set<String> current,Map<String,String> all) { }
+    private record Context(UUID device,UUID warehouse,String assignment,Map<String,String> owners,Map<Long,String> known,Set<String> current,Map<String,String> all) { }
 }

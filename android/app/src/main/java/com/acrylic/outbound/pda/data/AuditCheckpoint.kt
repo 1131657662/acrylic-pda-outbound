@@ -14,9 +14,11 @@ interface AuditDao {
     @Query("SELECT * FROM local_audit_checkpoint WHERE recoveryEpoch=:epoch AND originDeviceId=:device")
     fun checkpoint(epoch: String, device: String): AuditCheckpoint?
     @Insert(onConflict = OnConflictStrategy.REPLACE) fun save(row: AuditCheckpoint)
-    @Query("SELECT * FROM work_event WHERE originDeviceId=:device AND localSeq>:after ORDER BY localSeq LIMIT 200")
-    fun page(device: String, after: Long): List<WorkEvent>
-    @Query("SELECT COUNT(*) FROM work_event WHERE originDeviceId=:device AND localSeq>:after AND localSeq<=:through")
+    @Query("SELECT * FROM work_event WHERE originDeviceId=:device AND localSeq>:after ORDER BY localSeq LIMIT :limit")
+    fun page(device: String, after: Long, limit: Int = 200): List<WorkEvent>
+    @Query("""SELECT CASE WHEN COUNT(*)=COUNT(DISTINCT localSeq) THEN COUNT(*) ELSE -1 END FROM (
+        SELECT localSeq FROM work_event WHERE originDeviceId=:device AND localSeq>:after AND localSeq<=:through
+        UNION ALL SELECT localSeq FROM temporary_event WHERE originDeviceId=:device AND localSeq>:after AND localSeq<=:through)""")
     fun coverage(device: String, after: Long, through: Long): Long
 }
 

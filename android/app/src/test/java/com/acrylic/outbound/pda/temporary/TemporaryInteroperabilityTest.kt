@@ -1,7 +1,6 @@
 package com.acrylic.outbound.pda.temporary
 
 import com.acrylic.outbound.pda.work.WorkFixture
-import com.acrylic.outbound.pda.sync.AuditRepository
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import org.junit.*
@@ -67,18 +66,6 @@ class TemporaryInteroperabilityTest {
                 assertThrows(Exception::class.java) { temp.drafts.create(UUID.randomUUID().toString()) }
                 assertThrows(Exception::class.java) { temp.drafts.save(temp.id, temp.plan()) }
             }
-        }
-    }
-    @Test fun temporaryAuditBarrierIsExplicitAndNeverUploadsPastItsSequence() = runBlocking<Unit>(Dispatchers.IO) {
-        TemporaryWorkFixture(folder.root).use { f ->
-            f.start(); f.scan()
-            var calls = 0
-            val repository = AuditRepository(f.db, { JSONObject(f.fixture.auth.toString()) }, { _: String, _: String -> calls++; error("Must not upload TEMP through FORMAL contract") })
-            val result = repository.syncAudit()
-            assertEquals(0, calls); assertFalse(result.supported); assertTrue(result.message.contains("临时"))
-            assertEquals(1L, f.db.temporaryScans().nextAudit(f.catalog.request.deviceId, 0))
-            assertTrue(f.db.temporaryScans().events(f.id).zipWithNext().all { (a, b) -> b.localSeq == a.localSeq + 1 })
-            assertNull(f.db.audit().checkpoint(f.catalog.request.recoveryEpoch, f.catalog.request.deviceId))
         }
     }
     private fun overlap(formal: WorkFixture, temp: TemporaryWorkFixture): String {

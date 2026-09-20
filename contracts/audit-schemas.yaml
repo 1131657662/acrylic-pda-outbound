@@ -1,4 +1,9 @@
 Event:
+  oneOf:
+    - $ref: '#/FormalEvent'
+    - $ref: '#/TemporaryEvent'
+  description: 两类事件共享原设备连续序号；正式事件保持旧正文，TEMP事件以创建设备及clientOrderId固定来源
+FormalEvent:
   type: object
   additionalProperties: false
   required: [id, assignmentId, captureId, originDeviceId, operatorId, localSeq, type, detail, wallMs, elapsedMs, boot]
@@ -8,6 +13,30 @@ Event:
     captureId: {type: [string, 'null'], format: uuid}
     originDeviceId: {type: string, format: uuid}
     operatorId: {type: string, format: uuid, description: 原操作员，不以补传人员替换}
+    localSeq: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    type: {type: string, pattern: '^[A-Z][A-Z0-9_]{0,63}$'}
+    detail: {type: string, maxLength: 500}
+    wallMs: {type: string, pattern: '^(0|[1-9][0-9]{0,17})$'}
+    elapsedMs: {type: string, pattern: '^(0|[1-9][0-9]{0,17})$'}
+    boot: {type: integer, format: int32}
+TemporaryEvent:
+  type: object
+  additionalProperties: false
+  required: [id, source, authorizationId, captureId, originDeviceId, operatorId, localSeq, type, detail, wallMs, elapsedMs, boot]
+  properties:
+    id: {type: string, format: uuid}
+    source:
+      type: object
+      additionalProperties: false
+      required: [kind, creatorDeviceId, clientOrderId]
+      properties:
+        kind: {const: TEMP}
+        creatorDeviceId: {type: string, format: uuid, description: 必须等于原设备及当前认证设备}
+        clientOrderId: {type: string, format: uuid, description: 稳定本机临时订单UUID；不能换成最终正式单ID}
+    authorizationId: {type: string, format: uuid, description: 首次原TEMP资格；同一来源后续不得换用新资格}
+    captureId: {type: [string, 'null'], format: uuid}
+    originDeviceId: {type: string, format: uuid}
+    operatorId: {type: string, format: uuid, description: 必须与原TEMP资格人员一致，不以补传人员替换}
     localSeq: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
     type: {type: string, pattern: '^[A-Z][A-Z0-9_]{0,63}$'}
     detail: {type: string, maxLength: 500}
@@ -24,7 +53,7 @@ Batch:
       type: array
       maxItems: 200
       items: {$ref: '#/Event'}
-  description: 规范化正文最多512KiB；原UUID和原设备序号幂等，重复同内容接受，不同内容整批拒绝
+  description: 规范化正文最多512KiB；原UUID和原设备序号跨来源幂等，重复同内容接受，不同内容整批拒绝。证据接收不批准新增作业、不确认资料激活、不确认出库，也不解除恢复屏障
 Acknowledgement:
   type: object
   required: [recoveryEpoch, originDeviceId, acknowledgedThrough, batchSha256]

@@ -19,10 +19,6 @@ class AuditRepository internal constructor(private val db: PdaDatabase, private 
         val auth = JSONObject(currentSession().toString())
         val namespace = AuditCheckpoint(auth.getString("serverRecoveryEpoch"), auth.getString("deviceId"))
         repeat(run.batches) {
-            val checkpoint = db.audit().checkpoint(namespace.recoveryEpoch, namespace.originDeviceId)
-            val acknowledged = checkpoint?.acknowledgedThrough ?: 0L
-            if (checkpoint?.pendingJson == null && db.temporaryScans().nextAudit(namespace.originDeviceId, acknowledged) == acknowledged + 1)
-                return SyncResult("临时作业操作记录已保存在本机，当前版本暂不能上传；未确认不得放行", supported = false)
             val pending = run.commit { db.runInTransaction(Callable { run.identity(auth, currentSession); prepare(namespace) }) }
                 ?: return SyncResult("操作记录已补传")
             run.identity(auth, currentSession)
@@ -38,13 +34,12 @@ class AuditRepository internal constructor(private val db: PdaDatabase, private 
     private fun prepare(namespace: AuditCheckpoint): AuditCheckpoint? = db.runInTransaction(Callable {
         val state = db.audit().checkpoint(namespace.recoveryEpoch, namespace.originDeviceId) ?: namespace
         if (state.pendingJson != null) return@Callable state
-        val barrier = db.temporaryScans().nextAudit(state.originDeviceId, state.acknowledgedThrough) ?: Long.MAX_VALUE
-        val rows = db.audit().page(state.originDeviceId, state.acknowledgedThrough).takeWhile { it.localSeq < barrier }
+        val rows = DeviceAuditTrail(db).page(state.originDeviceId, state.acknowledgedThrough)
         if (rows.isEmpty()) return@Callable null
         var next = state.acknowledgedThrough
-        rows.forEach { check(it.localSeq == Math.addExact(next, 1)) { "本机操作记录存在序号缺口，已保留原记录，请联系主管核对" }; next = it.localSeq }
+        rows.forEach { check(it.getString("localSeq").toLong() == Math.addExact(next, 1)) { "本机操作记录存在序号缺口，已保留原记录，请联系主管核对" }; next++ }
         val body = JSONObject().put("originDeviceId", state.originDeviceId)
-            .put("events", JSONArray().also { events -> rows.forEach { events.put(SubmissionRecords.event(it)) } })
+            .put("events", JSONArray(rows))
         state.copy(pendingJson = SubmissionJson.canonical(body)).also { db.audit().save(it) }
     })
     private fun acknowledge(expected: AuditCheckpoint, result: JSONObject) {
