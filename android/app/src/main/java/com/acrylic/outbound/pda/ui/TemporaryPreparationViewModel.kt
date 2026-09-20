@@ -14,7 +14,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 data class TemporaryUi(val busy: Boolean = false, val status: String = "正在读取本机资料", val details: String = "",
-    val action: String = "联网准备临时资料", val allowed: Boolean = false)
+    val action: String = "联网准备临时资料", val allowed: Boolean = false, val requestKey: String? = null)
 
 class TemporaryPreparationViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as PdaApplication
@@ -23,6 +23,10 @@ class TemporaryPreparationViewModel(application: Application) : AndroidViewModel
     fun reload() = run { load() }
     fun prepare() = run {
         app.temporary.prepare { message -> mutable.update { it.copy(status = message) } }
+        load()
+    }
+    fun prepareNext(key: String) = run {
+        app.temporary.prepareNext(key) { message -> mutable.update { it.copy(status = message) } }
         load()
     }
     private fun load() {
@@ -36,7 +40,7 @@ class TemporaryPreparationViewModel(application: Application) : AndroidViewModel
         }
         val status = if (request != null) app.temporary.readiness(request)
             else if (allowed) "尚未准备临时作业资料" else "当前账号或设备未开启临时作业，请联系主管核对后重新登录"
-        mutable.update { it.copy(status = status, details = details, allowed = allowed,
+        mutable.update { it.copy(status = status, details = details, allowed = allowed, requestKey = request?.key,
             action = if (request == null) "联网准备临时资料" else "联网恢复原准备请求") }
     }
     private fun displayTime(value: String) = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")

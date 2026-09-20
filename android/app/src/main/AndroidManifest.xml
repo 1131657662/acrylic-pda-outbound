@@ -22,6 +22,10 @@
         <activity android:name=".ui.DeviceSettingsActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity android:name=".ui.PdaUpdateActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity android:name=".ui.TemporaryPreparationActivity" android:exported="false" android:screenOrientation="portrait" />
+        <activity android:name=".ui.TemporaryOrdersActivity" android:exported="false" android:screenOrientation="portrait" />
+        <activity android:name=".ui.TemporaryDraftActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.TemporaryWorkActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.TemporaryDetailsActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity android:name=".ui.MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

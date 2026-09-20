@@ -1,0 +1,14 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:fillViewport="true" android:background="@color/pda_canvas">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+        <Button android:id="@+id/back" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="本机临时订单" android:textSize="22sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="未获云端最终确认，不得放行。" android:textSize="18sp" android:textColor="@color/pda_text_primary" />
+        <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textColor="@color/pda_text_primary" android:accessibilityLiveRegion="polite" />
+        <Button android:id="@+id/create" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:text="新建临时草稿" />
+        <LinearLayout android:id="@+id/orders" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+        <Button android:id="@+id/previous" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="上一页" />
+        <Button android:id="@+id/next" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="下一页" />
+        <Button android:id="@+id/retry" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="重新读取" />
+    </LinearLayout>
+</ScrollView>

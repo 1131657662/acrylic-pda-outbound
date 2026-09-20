@@ -14,6 +14,11 @@ class TemporaryRepository(private val db: PdaDatabase, private val connection: T
         return db.temporary().current(auth.getString("userId"), auth.getString("deviceId"), auth.getString("warehouseId"))
     }
     fun prepared(row: TemporaryRequest) = db.temporary().prepared(row.key)
+    @Synchronized fun prepareNext(previousKey: String, progress: (String) -> Unit): TemporaryPreparation = UpdateGate.business {
+        val expected = access.snapshot()
+        begin(expected, previousKey)
+        prepare(progress)
+    }
     @Synchronized fun prepare(progress: (String) -> Unit): TemporaryPreparation = UpdateGate.business {
         val expected = access.snapshot()
         var request = local() ?: begin(expected)
@@ -26,18 +31,30 @@ class TemporaryRepository(private val db: PdaDatabase, private val connection: T
         progress("临时资料已完整保存，正在确认下载")
         acknowledge(request, row, expected)
     }
-    private fun begin(expected: JSONObject): TemporaryRequest {
+    private fun begin(expected: JSONObject, previousKey: String? = null): TemporaryRequest {
+        if (previousKey != null) nextAllowed(previousKey, expected)
         val baseline = connection.call(TemporaryConnection.Call("pda/temporary-preparations/baseline", expected))
         check(baseline.getString("warehouseId") == expected.getString("warehouseId")) { "临时准备基线仓库错误" }
         val body = JSONObject().put("inventorySnapshotId", TemporaryVerifier.uuid(baseline.getString("inventorySnapshotId")))
             .put("mappingRevision", baseline.getString("mappingRevision")).put("policyVersion", baseline.getJSONObject("policy").getString("version"))
         val row = TemporaryRequest(UUID.randomUUID().toString(), expected.getString("userId"), expected.getString("deviceId"),
             expected.getString("warehouseId"), expected.getString("serverRecoveryEpoch"), expected.getString("userAuthVersion"),
-            expected.getString("deviceVersion"), body.toString(), expected.getJSONObject("signingKey").toString())
+            expected.getString("deviceVersion"), body.toString(), expected.getJSONObject("signingKey").toString(), previousKey = previousKey)
         return db.runInTransaction(Callable {
             access.check(expected)
-            db.temporary().current(row.userId, row.deviceId, row.warehouseId) ?: row.also { db.temporary().insertRequest(it) }
+            if (previousKey == null) db.temporary().current(row.userId, row.deviceId, row.warehouseId) ?: row.also { db.temporary().insertRequest(it) }
+            else { nextAllowed(previousKey, expected); row.also { db.temporary().insertRequest(it) } }
         })
+    }
+    private fun nextAllowed(key: String, expected: JSONObject) {
+        access.check(expected)
+        val previous = checkNotNull(local()) { "没有可接续的原准备" }
+        check(previous.key == key) { "准备请求已变化，请恢复当前请求，不能重复新建" }
+        check(previous.recoveryEpoch == expected.getString("serverRecoveryEpoch")) { "原资料待恢复对账，不能新建资格" }
+        check(db.work().unresolvedCount() == 0 && db.temporaryScans().unresolved() == 0) { "请先处理全机未决输入，再准备新资料" }
+        val prepared = checkNotNull(prepared(previous)) { "原准备结果尚未核对，请先恢复原请求" }
+        TemporaryAckVerifier.declaration(prepared, previous)
+        TemporaryAckVerifier.verify(prepared, previous, JSONObject(checkNotNull(prepared.ackJson) { "请先确认原资料下载，再准备新资料" }))
     }
     private fun issue(request: TemporaryRequest, expected: JSONObject): TemporaryRequest {
         val receipt = connection.call(TemporaryConnection.Call("pda/temporary-preparations", expected, JSONObject(request.bodyJson), request.key))

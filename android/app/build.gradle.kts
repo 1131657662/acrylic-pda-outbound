@@ -11,8 +11,8 @@ android {
         applicationId = "com.acrylic.outbound.pda"
         minSdk = 28
         targetSdk = 35
-        versionCode = providers.gradleProperty("pdaVersionCode").map(String::toInt).orElse(17).get()
-        versionName = providers.gradleProperty("pdaVersionName").orElse("0.12.0-r06-preparation").get()
+        versionCode = providers.gradleProperty("pdaVersionCode").map(String::toInt).orElse(18).get()
+        versionName = providers.gradleProperty("pdaVersionName").orElse("0.13.0-r06-local-work").get()
         val serverUrl = providers.gradleProperty("pdaServerUrl").orElse("").get()
         val environment = providers.gradleProperty("pdaEnvironment").orElse("未配置服务环境").get()
         val updatePublicKey = providers.gradleProperty("pdaUpdatePublicKey").orElse("").get()

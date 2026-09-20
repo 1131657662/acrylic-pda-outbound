@@ -17,6 +17,10 @@
             android:minHeight="56dp" android:layout_marginTop="16dp" android:text="联网准备临时资料" android:enabled="false" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="12dp"
             android:textSize="16sp" android:textColor="@color/pda_text_primary"
-            android:text="当前版本仅提供资料准备与恢复。临时建单和扫码尚未开放；资料准备完成不能作为车辆放行依据。" />
+            android:text="资料有效期内可离线建单和扫码。原资格、计划与扫码持续保留；本版本尚未开放临时上传确认，车辆不得放行。" />
+        <Button android:id="@+id/orders" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="56dp" android:text="本机临时订单 / 新建草稿" />
+        <Button android:id="@+id/nextPreparation" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="56dp" android:text="联网准备下一轮资料（旧单保持）" android:enabled="false" />
     </LinearLayout>
 </ScrollView>

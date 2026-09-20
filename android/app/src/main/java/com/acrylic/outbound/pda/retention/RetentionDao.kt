@@ -35,7 +35,8 @@ interface RetentionDao {
         SELECT c.rowid FROM local_cloud_barcode c WHERE c.serverRecoveryEpoch=:epoch
         AND c.warehouseId=:warehouse AND c.baselineId=:baseline
         AND c.barcode NOT IN (SELECT barcode FROM prepared_bale UNION SELECT barcode FROM work_capture
-            UNION SELECT barcode FROM work_guard UNION SELECT barcode FROM work_scan)
+            UNION SELECT barcode FROM work_guard UNION SELECT barcode FROM work_scan
+            UNION SELECT barcode FROM temporary_capture UNION SELECT barcode FROM temporary_guard UNION SELECT barcode FROM temporary_scan)
         ORDER BY c.barcode LIMIT :limit)""")
     fun deleteBarcodes(epoch: String, warehouse: String, baseline: String, limit: Int): Int
 }

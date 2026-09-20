@@ -22,6 +22,7 @@ class WorkStore(val db: PdaDatabase, access: WorkAccess) {
         db.runInTransaction {
             val prepared = prepared(id); access.identity(prepared)
             check(db.captures().unresolvedOther(id) == null) { "另一订单仍有未处理输入，请先恢复原订单" }
+            check(db.temporaryScans().unresolved() == 0) { "临时单仍有未处理输入，请先恢复原单" }
             if (db.work().order(id) != null) { verifyTotals(id); return@runInTransaction }
             check(db.recalls().header(id) == null) { "本单已收到召回；缺少原作业记录，请保留资料联系主管" }
             access.authorize(prepared)

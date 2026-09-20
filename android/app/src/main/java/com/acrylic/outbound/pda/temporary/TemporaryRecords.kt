@@ -2,10 +2,12 @@ package com.acrylic.outbound.pda.temporary
 
 import androidx.room.*
 
-@Entity(tableName = "temporary_request", indices = [Index(value = ["userId", "deviceId", "warehouseId"], unique = true)])
+@Entity(tableName = "temporary_request", indices = [Index(value = ["userId", "deviceId", "warehouseId"]),
+    Index(value = ["previousKey"], unique = true)], foreignKeys = [ForeignKey(entity = TemporaryRequest::class,
+        parentColumns = ["key"], childColumns = ["previousKey"])])
 data class TemporaryRequest(@PrimaryKey val key: String, val userId: String, val deviceId: String, val warehouseId: String,
     val recoveryEpoch: String, val userAuthVersion: String, val deviceVersion: String, val bodyJson: String,
-    val signingKeyJson: String, val receiptJson: String? = null)
+    val signingKeyJson: String, val receiptJson: String? = null, val previousKey: String? = null)
 
 @Entity(tableName = "temporary_preparation", indices = [Index(value = ["requestKey"], unique = true)],
     foreignKeys = [ForeignKey(entity = TemporaryRequest::class, parentColumns = ["key"], childColumns = ["requestKey"])])
@@ -19,7 +21,8 @@ data class TemporaryPartChunk(val authorizationId: String, val part: String, val
 
 @Dao
 interface TemporaryDao {
-    @Query("SELECT * FROM temporary_request WHERE userId=:user AND deviceId=:device AND warehouseId=:warehouse")
+    @Query("""SELECT r.* FROM temporary_request r WHERE userId=:user AND deviceId=:device AND warehouseId=:warehouse
+        AND NOT EXISTS (SELECT 1 FROM temporary_request n WHERE n.previousKey=r.`key`)""")
     fun current(user: String, device: String, warehouse: String): TemporaryRequest?
     @Query("SELECT * FROM temporary_request WHERE `key`=:key") fun request(key: String): TemporaryRequest?
     @Query("SELECT EXISTS(SELECT 1 FROM temporary_request WHERE recoveryEpoch!=:epoch)") fun hasOtherEpoch(epoch: String): Boolean
@@ -27,6 +30,7 @@ interface TemporaryDao {
     @Query("UPDATE temporary_request SET receiptJson=:receipt WHERE `key`=:key AND receiptJson IS NULL")
     fun received(key: String, receipt: String): Int
     @Query("SELECT * FROM temporary_preparation WHERE requestKey=:key") fun prepared(key: String): TemporaryPreparation?
+    @Query("SELECT * FROM temporary_preparation WHERE authorizationId=:id") fun byAuthorization(id: String): TemporaryPreparation?
     @Insert fun insertPreparation(row: TemporaryPreparation)
     @Insert fun insertChunk(row: TemporaryPartChunk)
     @Query("SELECT * FROM temporary_part_chunk WHERE authorizationId=:id AND part=:part AND ordinal=:ordinal")
