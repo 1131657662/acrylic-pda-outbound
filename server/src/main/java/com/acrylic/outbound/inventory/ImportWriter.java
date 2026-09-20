@@ -3,27 +3,33 @@ package com.acrylic.outbound.inventory;
 import com.acrylic.outbound.audit.AuditWriter;
 import com.acrylic.outbound.common.IdempotencyRequests;
 import com.acrylic.outbound.common.Ids;
-import com.acrylic.outbound.common.ServerState;
+import com.acrylic.outbound.common.IdentityWriteGuard;
+import com.acrylic.outbound.common.BusinessException;
+import com.acrylic.outbound.auth.Access;
 import com.acrylic.outbound.inventory.parser.ImportPreview;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.*;
 
 @Service
 public class ImportWriter {
     private final JdbcTemplate jdbc;
     private final ImportRowStore rows;
     private final AuditWriter audit;
-    private final ServerState state;
+    private final IdentityWriteGuard guard;
+    private final Access access;
     private final IdempotencyRequests requests;
-    public ImportWriter(JdbcTemplate jdbc, ImportRowStore rows, AuditWriter audit, ServerState state, IdempotencyRequests requests) {
-        this.jdbc = jdbc; this.rows = rows; this.audit = audit; this.state = state; this.requests = requests;
+    public ImportWriter(JdbcTemplate jdbc, ImportRowStore rows, AuditWriter audit, IdentityWriteGuard guard, IdempotencyRequests requests, Access access) {
+        this.jdbc = jdbc; this.rows = rows; this.audit = audit; this.guard = guard; this.access = access; this.requests = requests;
     }
 
-    @Transactional
+    @Transactional(isolation=Isolation.READ_COMMITTED)
     public UUID save(Prepared input) {
-        state.lockWritable(input.epoch());
+        guard.lock(input.epoch());
+        var actor = access.require("inventory:import", input.warehouse());
+        if (!actor.id().equals(input.actor()))
+            throw new BusinessException(401,"UNAUTHENTICATED","导入身份已变化，请重新登录");
         jdbc.queryForObject("SELECT id FROM warehouse WHERE id=? FOR UPDATE", byte[].class, Ids.bytes(input.warehouse()));
         var key = new IdempotencyRequests.Key(input.actor(), "inventory.import", input.key());
         UUID replay = requests.find(key, input.requestSha());

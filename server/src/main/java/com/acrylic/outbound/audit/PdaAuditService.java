@@ -1,6 +1,6 @@
 package com.acrylic.outbound.audit;
 
-import com.acrylic.outbound.common.ServerState;
+import com.acrylic.outbound.common.IdentityWriteGuard;
 import com.acrylic.outbound.pda.*;
 import com.acrylic.outbound.recall.RecoveryAudit;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,14 +11,14 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 
 @Service
 public class PdaAuditService {
-    private final PdaAccess access;private final PdaAuthLocks locks;private final ServerState state;
+    private final PdaAccess access;private final PdaAuthLocks locks;private final IdentityWriteGuard guard;
     private final PdaAuditStore store;private final RecoveryAudit recoveries;
-    public PdaAuditService(PdaAccess access,PdaAuthLocks locks,ServerState state,PdaAuditStore store,RecoveryAudit recoveries) {
-        this.access=access;this.locks=locks;this.state=state;this.store=store;this.recoveries=recoveries;
+    public PdaAuditService(PdaAccess access,PdaAuthLocks locks,IdentityWriteGuard guard,PdaAuditStore store,RecoveryAudit recoveries) {
+        this.access=access;this.locks=locks;this.guard=guard;this.store=store;this.recoveries=recoveries;
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public Result upload(String epoch,JsonNode body) {
-        var actor=access.require("pda:submit");state.lockWritable(epoch);locks.device(actor.deviceId());actor=access.require("pda:submit");
+        var actor=access.require("pda:submit");guard.lock(epoch);locks.device(actor.deviceId());actor=access.require("pda:submit");
         require(body.isObject() && body.size()==2,"审计批次字段无效");
         equal(uuid(body,"originDeviceId"),actor.deviceId(),"审计来源设备不匹配");
         var events=array(body,"events");require(events.size()<=200,"每批审计最多200条");

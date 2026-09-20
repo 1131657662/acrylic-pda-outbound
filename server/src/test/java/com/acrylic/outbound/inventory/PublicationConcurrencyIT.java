@@ -26,6 +26,7 @@ class PublicationConcurrencyIT {
     @Autowired JdbcTemplate jdbc;
     @Autowired PasswordEncoder passwords;
     @Autowired PlatformTransactionManager transactions;
+    @Autowired com.acrylic.outbound.common.IdentityWriteGuard identityGuard;
     @MockitoSpyBean Access access;
     @Test void competingPublishersCannotBothReplaceTheSameBaseline() throws Exception {
         var api = new PublicationDriver(mvc, json, IdentityFixture.create(jdbc, passwords, "WAREHOUSE_ADMIN"));
@@ -63,6 +64,8 @@ class PublicationConcurrencyIT {
         var pending = new java.util.concurrent.atomic.AtomicReference<Future<String>>();
         try (var pool = Executors.newSingleThreadExecutor(Thread.ofPlatform().name("stale-publisher").factory())) {
             tx.executeWithoutResult(status -> {
+                // The fixture participates in the same E/G/W order as real publications.
+                identityGuard.lock("1");
                 jdbc.queryForList("SELECT id FROM warehouse WHERE id=? FOR UPDATE", Ids.bytes(api.identity().warehouse()));
                 pending.set(pool.submit(() -> {
                     var response = api.send(api.publication(second, original, UUID.randomUUID().toString())).andReturn().getResponse();

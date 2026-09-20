@@ -10,15 +10,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class SubmissionAccess {
     private final PdaAccess pda;private final PdaAuthLocks locks;private final AssignmentStore assignments;
-    private final Access web;private final ServerState state;private final WarehouseBaseline warehouses;
+    private final Access web;private final IdentityWriteGuard guard;private final WarehouseBaseline warehouses;
     private final com.acrylic.outbound.temporary.TemporarySubmissionAccess temporary;
-    public SubmissionAccess(PdaAccess pda,PdaAuthLocks locks,AssignmentStore assignments,Access web,ServerState state,WarehouseBaseline warehouses,com.acrylic.outbound.temporary.TemporarySubmissionAccess temporary) {
-        this.pda=pda;this.locks=locks;this.assignments=assignments;this.web=web;this.state=state;this.warehouses=warehouses;
+    public SubmissionAccess(PdaAccess pda,PdaAuthLocks locks,AssignmentStore assignments,Access web,IdentityWriteGuard guard,WarehouseBaseline warehouses,com.acrylic.outbound.temporary.TemporarySubmissionAccess temporary) {
+        this.pda=pda;this.locks=locks;this.assignments=assignments;this.web=web;this.guard=guard;this.warehouses=warehouses;
         this.temporary=temporary;
     }
     public Actor pda(SubmissionControl control,String epoch,boolean write) {
         var actor=pda.require("pda:submit");
-        if(write) { state.lockWritable(epoch);locks.device(actor.deviceId());actor=pda.require("pda:submit"); }
+        if(write) { guard.lock(epoch);locks.device(actor.deviceId());actor=pda.require("pda:submit"); }
         if(control.temporary()!=null)return temporary.verify(control,actor,epoch,write);
         AssignmentStore.View assignment;
         try { assignment=assignments.get(control.assignment()); }
@@ -30,7 +30,7 @@ public class SubmissionAccess {
     }
     public Actor web(UUID warehouse,String epoch,boolean write) {
         var actor=web.require(write?"submission:review":"order:read",warehouse);
-        if(write) { state.lockWritable(epoch);warehouses.read(warehouse,true);actor=web.require("submission:review",warehouse); }
+        if(write) { guard.lock(epoch);warehouses.read(warehouse,true);actor=web.require("submission:review",warehouse); }
         return new Actor(actor.id(),warehouse,Long.toString(actor.authVersion()));
     }
     public static BusinessException missing() { return new BusinessException(404,"SUBMISSION_NOT_FOUND","批次不存在或不属于当前身份"); }

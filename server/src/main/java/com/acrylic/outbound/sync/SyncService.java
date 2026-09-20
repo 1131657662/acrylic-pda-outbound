@@ -9,17 +9,18 @@ import org.springframework.transaction.annotation.*;
 @Service
 public class SyncService {
     private final PdaAccess access;
-    private final ServerState state;
+    private final IdentityWriteGuard guard;
     private final SyncStreamStore store;
     private final SyncBaselineStore baselines;
-    public SyncService(PdaAccess access, ServerState state, SyncStreamStore store, SyncBaselineStore baselines) {
-        this.access = access; this.state = state; this.store = store; this.baselines = baselines;
+    public SyncService(PdaAccess access, IdentityWriteGuard guard, SyncStreamStore store, SyncBaselineStore baselines) {
+        this.access = access; this.guard = guard; this.store = store; this.baselines = baselines;
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public Data orders(Context context) {
         var principal = access.require("pda:assign");
         if (context.limit() < 1 || context.limit() > 200) throw new BusinessException(400, "INVALID_LIMIT", "同步每页最多200条");
-        state.lockWritable(context.epoch());
+        guard.lock(context.epoch());
+        principal = access.require("pda:assign");
         var namespace = new SyncCursor.Namespace(context.epoch(), principal.warehouseId());
         if (!context.baselineId().isBlank()) {
             if (!context.cursor().isBlank()) throw invalidCursor();

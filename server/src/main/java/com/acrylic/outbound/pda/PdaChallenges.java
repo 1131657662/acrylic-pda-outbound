@@ -7,13 +7,15 @@ import java.time.Instant;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.*;
 
 @Repository
 public class PdaChallenges {
-    private final JdbcTemplate jdbc;private final DeviceStore devices;
-    public PdaChallenges(JdbcTemplate jdbc,DeviceStore devices) { this.jdbc=jdbc;this.devices=devices; }
+    private final JdbcTemplate jdbc;private final DeviceStore devices;private final IdentityWriteGuard guard;
+    public PdaChallenges(JdbcTemplate jdbc,DeviceStore devices,IdentityWriteGuard guard) { this.jdbc=jdbc;this.devices=devices;this.guard=guard; }
+    @Transactional(isolation=Isolation.READ_COMMITTED)
     public Challenge create(Request input) {
-        devices.find(input.deviceId(),false).requireActive();UUID id=Ids.next();String nonce=DeviceCrypto.secret();
+        guard.authentication();devices.find(input.deviceId(),false).requireActive();UUID id=Ids.next();String nonce=DeviceCrypto.secret();
         Instant expires=Instant.now().plusSeconds(120);
         jdbc.update("INSERT INTO device_challenge VALUES(?,?,?,?,?,NULL,UTC_TIMESTAMP(3))",Ids.bytes(id),Ids.bytes(input.deviceId()),
             input.purpose(),nonce,java.sql.Timestamp.from(expires));
