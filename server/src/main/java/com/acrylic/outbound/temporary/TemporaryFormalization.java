@@ -28,7 +28,7 @@ public class TemporaryFormalization {
             ps.setString(5,text(m,"model"));ps.setString(6,text(m,"name"));ps.setLong(7,line.count());
         });
         jdbc.update("UPDATE outbound_order SET current_revision=? WHERE id=?",number(body,"revision"),Ids.bytes(id));
-        jdbc.update("UPDATE submission_scope SET canonical_order_id=? WHERE current_submission_id=? AND canonical_order_id IS NULL",Ids.bytes(id),Ids.bytes(head.control().id()));
+        TemporarySourceBaseline.accept(jdbc,head,id);
         jdbc.update("INSERT INTO order_submission_slot(order_id,scope_id,work_round,current_submission_id,phase) SELECT ?,scope_id,work_round,id,'FROZEN' FROM submission WHERE id=?",Ids.bytes(id),Ids.bytes(head.control().id()));
     }
 }
