@@ -10,13 +10,13 @@
 | W2 台账独立验收 | `b3f426546ef5555375213c212ffe578613ce575c`（生产接入 `896320e91faf6897a23fff56026b8556ab24e9c6`） | 原键回放、故障、并发、权限和历史读取验收 |
 | W3 协议独立消费者 | `fec06b0` | 固定生产编译、协议向量、可信 facts 消费和交叉复审 |
 
-整合只接入已审来源和本指南，没有改写生产 Java、测试、迁移或五份管理文件。组合树最终候选为 `127c9d7`；未经主协调终审，不 ff-only 合回或推送 `codex/development`。
+整合只接入已审来源和本指南，没有改写生产 Java、测试、迁移或五份管理文件。测试合并点为 `127c9d7`；指南固定提交另见 Git 及看板，须 W1 独立终审后由主协调安排 ff-only，当前未推送或合回 `codex/development`。
 
 ## 独立环境与保护
 
 组合仅使用新 MySQL `127.0.0.1:19328`、数据库 `acrylic_outbound_wave6_20260921`、账号 `outbound_wave6_20260921@127.0.0.1`、本树 `.local/mysql19328/data`、`.local/private-files` 和 `.local/signing/{private.der,public.der}`。19328 的端口、datadir、数据库和账号均按精确护栏核对；W2 的 19327、原 13316/19321–19327、旧库、设备和现网均未操作。组合完成后 `.local/wave6/stop-proof.json` 记录 `remainingListeners: 0`、`processPresent: false`；数据库、文件、签名和日志仍保留。
 
-本树原始环境资料及日志属于 ignored 证据，不进入 Git。报表字体使用已核 SHA-256 `2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b` 的 `NotoSansCJKsc-Regular.otf`；`unit-summary.json` 记录的路径来自第五轮整合树，属于可复核字体来源记录，不应解释为重新下载或组合树内生成路径。首次组合日志和停机前状态均保留。
+本树原始环境资料及日志属于 ignored 证据，不进入 Git。报表字体使用已核 SHA-256 `2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b` 的 `NotoSansCJKsc-Regular.otf`；`unit-summary.json` 记录的路径来自第五轮整合树，属于可复核字体来源记录，不应解释为重新下载或组合树内生成路径。17+25 单元 XML 齐全；首构建完整 stdout 缺失。停机前状态仍保留。
 
 ## 组合实际结果
 
@@ -24,16 +24,18 @@
 
 | 范围 | 实际结果 |
 | --- | --- |
-| W1 作者单元 | 17 个单元通过，其中 `LedgerAuthorIT` 9、`LedgerProductionBoundaryIT` 2；其余作者单元 XML 齐全 |
-| W1 护栏补测 | 25 个单元通过；与上述 11 个不相加 |
-| W2 独立台账 | 50 个不同 IT 通过，0 失败/错误/跳过；准备护栏与补测不计入该 50 |
-| W3 独立协议消费者 | 68 项通过，0 失败/错误/跳过；shape、密码学和负向子场景已包含在 68 内 |
+| 组合单元：`CommandReceiptCodecTest` | 17 个通过，XML 齐全 |
+| 组合单元：`LedgerRuntimeEnvironmentTest` | 25 个通过，XML 齐全 |
+| 组合协议单元：`TemporaryProtocolTest` | 13 个通过，计入组合单元合计 |
+| 组合作者/边界 IT | 11 个通过：`LedgerAuthorIT` 9、`LedgerProductionBoundaryIT` 2 |
 | 七类既有 API | Continuation 12、Disposition 11、Recall 11、Submission 12、TemporaryReview 10、TemporarySourceEvidence 5、TemporarySubmission 14，共 75 项；各套件单列 |
-| 单元合计口径 | 17（W1 作者）+25（W1 护栏）+13（协议 Java/协议汇总中的固定生产单元）=55；该算术仅作分组索引，不表示同一套件重复执行 |
-| 组合 IT 合计口径 | W1 作者/边界 11 + 旧 API 75 = 86；W2 独立台账 50 另列，W3 68 是独立协议测试，均不与组合 IT 合计相加 |
+| 组合单元合计口径 | 17（`CommandReceiptCodecTest`）+25（`LedgerRuntimeEnvironmentTest`）+13（`TemporaryProtocolTest`）=55 |
+| 组合 IT 合计口径 | 作者/边界 11 + 旧 API 75 = 86 |
+| 组合协议消费者 | 68 项通过，0 失败/错误/跳过；shape、密码学和负向子场景已包含在 68 内，独立原始工具证据另列 |
+| W2 独立台账 IT（不计组合） | 50 个不同 IT 通过，0 失败/错误/跳过；准备护栏与补测不计入该 50 |
 | 构建与契约 | `bootJar` 成功；`npm ci --ignore-scripts --no-audit --no-fund` 后 `check:contract` 成功，OpenAPI 3.1 共 120 paths |
 
-组合证据中的 JAR、120 路径和日志均来自本次固定生产源码；不把作者证据、W2 独立 50 项台账证据、W2 非空数据库证据或第五轮历史 233 项离线结果冒称为本轮组合测试。
+组合证据中的 JAR、120 路径和结果 XML 均来自本次固定生产源码；不把 W2 独立 50 项台账证据、W2 非空数据库证据或第五轮历史 233 项离线结果冒称为组合 86 IT 或组合单元。
 
 68 项的原始工具结果来自旧 W3 线程 `01a0c2ea-8c11-7cb1-92f9-7a3065bd2b8d` 的执行 `exec-8f846229-82ac-42b9-bf39-fcbd03e249d4`，工作目录为本组合树，命令为 `python -W error::ResourceWarning -m unittest discover -s docs/parallel/R06_LEDGER_PROTOCOL -v`，退出码 0，输出为 `Ran 68 tests in 2.840s` / `OK`。该线程输出是组合运行的原始证据；本树没有另存完整 stdout 日志，因此不虚构缺失的逐测试日志，也不重跑该验收。
 
