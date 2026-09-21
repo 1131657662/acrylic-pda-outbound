@@ -29,6 +29,7 @@ public class AuditArchiveService {
         require(text(request,"payloadSha256").matches("[a-f0-9]{64}"),"审计归档摘要无效");
         var body=archives.payload(actor.deviceId(),actor.warehouseId(),request);
         equal(sha(body),text(request,"payloadSha256"),"审计归档与本机原记录摘要不一致");
+        guard.users(audit.users(actor,array(body,"events")));locks.principal(actor);actor=access.require("pda:submit");
         recoveries.verifyExisting(actor.deviceId(),array(body,"events"));
         for(var row:array(body,"events")) audit.accept(actor,row);
         require(audit.advance(epoch,actor.deviceId())>=number(request,"throughSeq"),"须先补传此前连续审计");
@@ -38,6 +39,7 @@ public class AuditArchiveService {
     public JsonNode restore(String epoch,JsonNode request) {
         var actor=actor(epoch);require(request.isObject() && request.size()==1 && request.has("archive"),"审计恢复请求字段错误");
         var old=request.get("archive");var events=reader.read(old,actor.deviceId(),actor.warehouseId());
+        guard.users(audit.users(actor,events));locks.principal(actor);actor=access.require("pda:submit");
         require(number(old,"recoveryEpoch")<=Long.parseLong(epoch),"不能使用未来恢复代次的归档凭据");
         recoveries.verifyExisting(actor.deviceId(),events);for(var row:events) audit.accept(actor,row);
         require(audit.advance(epoch,actor.deviceId())>=number(old,"throughSeq"),"须先恢复此前连续审计");
@@ -45,7 +47,7 @@ public class AuditArchiveService {
         body.set("events",events);return persist(actor,epoch,body);
     }
     private PdaSessions.Principal actor(String epoch) {
-        var actor=access.require("pda:submit");guard.lock(epoch);locks.device(actor.deviceId());return access.require("pda:submit");
+        access.require("pda:submit");guard.lock(epoch);return access.require("pda:submit");
     }
     private JsonNode persist(PdaSessions.Principal actor,String epoch,JsonNode body) {
         long after=number(body,"afterSeq");var old=archives.find(epoch,actor.deviceId(),after);

@@ -41,7 +41,7 @@ public class PcExceptionChecks {
     }
     public void operator(PcStore.Work work,UUID user) { permission(work,user,"pc:operate");permission(work,user,"order:read"); }
     public void permission(PcStore.Work work,UUID user,String permission) {
-        var statuses=jdbc.queryForList("SELECT status FROM app_user WHERE id=? FOR SHARE",String.class,Ids.bytes(user));var identities=new IdentityStore(jdbc);
+        var statuses=jdbc.queryForList("SELECT status FROM app_user WHERE id=?",String.class,Ids.bytes(user));var identities=new IdentityStore(jdbc);
         check(statuses.size()==1 && statuses.getFirst().equals("ACTIVE") && identities.permissions(user).contains(permission)
             && identities.warehouses(user).stream().anyMatch(w->w.id().equals(work.warehouse())),"PC_HANDOVER_PERMISSION_CHANGED","处置或接续人员的账号、权限或仓库授权已变化，请重新核对");
     }

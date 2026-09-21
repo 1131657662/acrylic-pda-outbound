@@ -2,7 +2,6 @@ package com.acrylic.outbound.pc;
 
 import com.acrylic.outbound.common.*;
 import com.acrylic.outbound.inventory.master.MutationAccess;
-import com.acrylic.outbound.orders.OrderWriter;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,16 +12,17 @@ import static com.acrylic.outbound.pc.PcExceptionChecks.*;
 
 @Service
 public class PcExceptionRequests {
-    private final MutationAccess access;private final OrderWriter orders;private final PcStore works;private final PcReceipts receipts;
-    private final PcExceptionStore store;private final PcExceptionChecks checks;private final JdbcTemplate jdbc;private final JsonText json;private final PcExceptionStock stock;
-    public PcExceptionRequests(MutationAccess access,OrderWriter orders,PcStore works,PcReceipts receipts,
-        PcExceptionStore store,PcExceptionChecks checks,JdbcTemplate jdbc,JsonText json,PcExceptionStock stock) {
-        this.access=access;this.orders=orders;this.works=works;this.receipts=receipts;this.store=store;this.checks=checks;this.jdbc=jdbc;this.json=json;this.stock=stock;
+    private final PcStore works;private final PcReceipts receipts;
+    private final PcExceptionStore store;private final PcExceptionChecks checks;private final JdbcTemplate jdbc;private final JsonText json;private final PcExceptionStock stock;private final PcIdentityLocks identities;
+    public PcExceptionRequests(PcStore works,PcReceipts receipts,
+        PcExceptionStore store,PcExceptionChecks checks,JdbcTemplate jdbc,JsonText json,PcExceptionStock stock,PcIdentityLocks identities) {
+        this.works=works;this.receipts=receipts;this.store=store;this.checks=checks;this.jdbc=jdbc;this.json=json;this.stock=stock;this.identities=identities;
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode stop(MutationAccess.Context context,UUID order,PcExceptionCommands.Stop command) {
-        var actor=access.lock(context,"order:recall").actor();orders.lock(context.warehouse(),order);
+        var identity=identities.operator(context,"order:recall",order);var actor=identity.actor();
         var ticket=receipts.prepare(context,actor,new PcReceipts.Payload("EXCEPTION_STOP",order,command));if(ticket.replay()!=null)return ticket.replay();
+        identity.recheck();
         var work=works.required(order);checks.epoch(work,context);works.version(work,command.expectedVersion());physical(command.physicalConfirmed());
         check(Set.of("ACTIVE","REVIEW_REQUIRED","REJECTED").contains(work.status()),"PC_EXCEPTION_STATE","只能停止尚未完成的PC作业，请核对原处置记录");
         UUID id=Ids.next();store.saveCase(work,new PcExceptionStore.Stopped(id,checks.snapshot(work),command.reason()),actor);
@@ -33,8 +33,9 @@ public class PcExceptionRequests {
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode propose(MutationAccess.Context context,UUID order,PcExceptionCommands.Plan command) {
-        var actor=access.lock(context,"order:resume").actor();orders.lock(context.warehouse(),order);
+        var identity=identities.target(context,order,command.targetUsername());var actor=identity.actor();
         var ticket=receipts.prepare(context,actor,new PcReceipts.Payload("EXCEPTION_PLAN",order,command));if(ticket.replay()!=null)return ticket.replay();
+        identity.recheck();
         var work=works.required(order);checks.epoch(work,context);works.version(work,command.expectedVersion());physical(command.physicalConfirmed());
         var stopped=checks.stopped(work,command.caseId());var previous=store.current(stopped);
         check(previous==null || previous.status().equals("REJECTED"),"PC_PLAN_PENDING","已有待处理或已批准方案，请先核对或退回原方案");
@@ -48,8 +49,9 @@ public class PcExceptionRequests {
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode review(MutationAccess.Context context,UUID order,PcExceptionCommands.Decision command) {
-        var actor=access.lock(context,"order:resume").actor();orders.lock(context.warehouse(),order);
+        var identity=identities.plan(context,"order:resume",order,command.planId());var actor=identity.actor();
         var ticket=receipts.prepare(context,actor,new PcReceipts.Payload("EXCEPTION_REVIEW",order,command));if(ticket.replay()!=null)return ticket.replay();
+        identity.recheck();
         var work=works.required(order);checks.epoch(work,context);works.version(work,command.expectedVersion());physical(command.physicalConfirmed());
         var plan=checks.plan(work,command.planId(),command.payloadSha256());boolean approve=command.decision().equals("APPROVE");
         check(plan.status().equals("PENDING") || (!approve && plan.status().equals("APPROVED")),"PC_PLAN_REVIEW_STATE","此方案不能重复审批，请核对原决定");

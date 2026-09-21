@@ -18,7 +18,7 @@ public class SubmissionAccess {
     }
     public Actor pda(SubmissionControl control,String epoch,boolean write) {
         var actor=pda.require("pda:submit");
-        if(write) { guard.lock(epoch);locks.device(actor.deviceId());actor=pda.require("pda:submit"); }
+        if(write) { guard.lock(epoch);locks.principal(actor);actor=pda.require("pda:submit"); }
         if(control.temporary()!=null)return temporary.verify(control,actor,epoch,write);
         AssignmentStore.View assignment;
         try { assignment=assignments.get(control.assignment()); }
@@ -30,7 +30,7 @@ public class SubmissionAccess {
     }
     public Actor web(UUID warehouse,String epoch,boolean write) {
         var actor=web.require(write?"submission:review":"order:read",warehouse);
-        if(write) { guard.lock(epoch);warehouses.read(warehouse,true);actor=web.require("submission:review",warehouse); }
+        if(write) { guard.lock(epoch);guard.users(java.util.List.of(actor.id()));warehouses.read(warehouse,true);actor=web.require("submission:review",warehouse); }
         return new Actor(actor.id(),warehouse,Long.toString(actor.authVersion()));
     }
     public static BusinessException missing() { return new BusinessException(404,"SUBMISSION_NOT_FOUND","批次不存在或不属于当前身份"); }

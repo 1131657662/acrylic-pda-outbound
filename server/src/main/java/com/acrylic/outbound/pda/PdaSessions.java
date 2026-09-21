@@ -12,9 +12,9 @@ import org.springframework.stereotype.Repository;
 public class PdaSessions {
     private final JdbcTemplate jdbc;private final IdentityStore identities;private final DeviceStore devices;
     public PdaSessions(JdbcTemplate jdbc,IdentityStore identities,DeviceStore devices) { this.jdbc=jdbc;this.identities=identities;this.devices=devices; }
-    public Principal authenticate(String token) { return validate(find(DeviceCrypto.sha(token),false,false)); }
+    public Principal authenticate(String token) { return validate(find(DeviceCrypto.sha(token),false)); }
     public Principal refresh(String token,DeviceStore.Device device) {
-        var row=find(DeviceCrypto.sha(token),true,true);
+        var row=find(DeviceCrypto.sha(token),true);
         if(!row.device().equals(device.id())) throw expired();
         return validate(row);
     }
@@ -26,13 +26,13 @@ public class PdaSessions {
             """,this::map,Ids.bytes(principal.sessionId()));
         if(rows.isEmpty()) throw expired();return validate(rows.getFirst());
     }
-    private Row find(String hash,boolean refresh,boolean lock) {
+    private Row find(String hash,boolean refresh) {
         String column=refresh?"refresh_hash":"access_hash";
         var rows=jdbc.query("""
             SELECT BIN_TO_UUID(s.id),BIN_TO_UUID(s.device_id),u.username,s.user_auth_version,s.device_version
             FROM pda_session s INNER JOIN app_user u ON u.id=s.user_id WHERE s.
             """+column+"=? AND s.revoked_at IS NULL AND s.expires_at>UTC_TIMESTAMP(3)"+
-            (refresh?"":" AND s.access_expires_at>UTC_TIMESTAMP(3)")+(lock?" FOR UPDATE":""),this::map,hash);
+            (refresh?"":" AND s.access_expires_at>UTC_TIMESTAMP(3)"),this::map,hash);
         if(rows.isEmpty()) throw expired();return rows.getFirst();
     }
     private Principal validate(Row row) {

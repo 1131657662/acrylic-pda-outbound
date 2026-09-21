@@ -15,11 +15,11 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 public class PcFinalization {
     private final MutationAccess access;private final OrderWriter orders;private final PcStore store;private final PcReceipts receipts;
     private final PcEntries entries;private final PcStock stock;private final PcSubmissions submissions;private final PcAccounting accounting;
-    private final JdbcTemplate jdbc;private final JsonText json;
+    private final JdbcTemplate jdbc;private final JsonText json;private final PcIdentityLocks identities;
     public PcFinalization(MutationAccess access,OrderWriter orders,PcStore store,PcReceipts receipts,PcEntries entries,PcStock stock,
-        PcSubmissions submissions,PcAccounting accounting,JdbcTemplate jdbc,JsonText json) {
+        PcSubmissions submissions,PcAccounting accounting,JdbcTemplate jdbc,JsonText json,PcIdentityLocks identities) {
         this.access=access;this.orders=orders;this.store=store;this.receipts=receipts;this.entries=entries;this.stock=stock;
-        this.submissions=submissions;this.accounting=accounting;this.jdbc=jdbc;this.json=json;
+        this.submissions=submissions;this.accounting=accounting;this.jdbc=jdbc;this.json=json;this.identities=identities;
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode freeze(MutationAccess.Context context,UUID order,PcCommands.Write command) {
@@ -47,8 +47,9 @@ public class PcFinalization {
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode review(MutationAccess.Context context,UUID order,PcCommands.Review command) {
-        var actor=access.lock(context,"submission:review").actor();orders.lock(context.warehouse(),order);
+        var identity=identities.operator(context,"submission:review",order);var actor=identity.actor();
         var ticket=receipts.prepare(context,actor,new PcReceipts.Payload("REVIEW",order,command));if(ticket.replay()!=null)return ticket.replay();
+        identity.recheck();
         var work=store.required(order);epoch(work,context);var current=submissions.current(work);
         if(current==null || !current.status().equals("REVIEW_REQUIRED") || !work.status().equals("REVIEW_REQUIRED")) throw new BusinessException(409,"PC_REVIEW_STATE","当前没有可审批的PC提交");
         if(!command.payloadSha256().equals(current.payloadSha256())) throw new BusinessException(409,"PC_REVIEW_HASH","提交资料已变化，请重新核对当前批次");
@@ -70,8 +71,9 @@ public class PcFinalization {
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode resume(MutationAccess.Context context,UUID order,PcCommands.Resume command) {
-        var actor=access.lock(context,"order:resume").actor();orders.lock(context.warehouse(),order);
+        var identity=identities.operator(context,"order:resume",order);var actor=identity.actor();
         var ticket=receipts.prepare(context,actor,new PcReceipts.Payload("RESUME",order,command));if(ticket.replay()!=null)return ticket.replay();
+        identity.recheck();
         var work=store.required(order);epoch(work,context);store.version(work,command.expectedVersion());requireOperator(work);
         if(!work.status().equals("REJECTED")) throw new BusinessException(409,"PC_RESUME_STATE","仅主管已退回的PC作业可核验恢复");
         jdbc.update("UPDATE pc_work SET status='ACTIVE',work_round=work_round+1,writer_fence=writer_fence+1,writer_id=?,row_version=row_version+1,updated_at=UTC_TIMESTAMP(3) WHERE id=?",Ids.bytes(Ids.next()),Ids.bytes(work.id()));
@@ -84,7 +86,7 @@ public class PcFinalization {
     }
     private void requireOperator(PcStore.Work work) {
         var identities=new IdentityStore(jdbc);
-        boolean active=jdbc.queryForObject("SELECT status='ACTIVE' FROM app_user WHERE id=? FOR SHARE",Boolean.class,Ids.bytes(work.operator()));
+        boolean active=jdbc.queryForObject("SELECT status='ACTIVE' FROM app_user WHERE id=?",Boolean.class,Ids.bytes(work.operator()));
         if(!active || !identities.permissions(work.operator()).contains("pc:operate") || identities.warehouses(work.operator()).stream().noneMatch(w->w.id().equals(work.warehouse())))
             throw new BusinessException(409,"PC_OPERATOR_UNAVAILABLE","原作业人员授权已变化，请先核对人员与仓库权限");
     }

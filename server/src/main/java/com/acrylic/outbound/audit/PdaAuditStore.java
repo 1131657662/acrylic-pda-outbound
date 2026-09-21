@@ -12,6 +12,11 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 public class PdaAuditStore {
     private final JdbcTemplate jdbc;private final PdaAuditOrigins origins;
     public PdaAuditStore(JdbcTemplate jdbc,PdaAuditOrigins origins) { this.jdbc=jdbc;this.origins=origins; }
+    public Set<UUID> users(PdaSessions.Principal actor,JsonNode events) {
+        var users=new HashSet<UUID>();users.add(actor.userId());
+        for(var row:events) users.add(UUID.fromString(origins.verify(actor.deviceId(),actor.warehouseId(),row).operator()));
+        return users;
+    }
     public void accept(PdaSessions.Principal actor,JsonNode row) {
         equal(uuid(row,"originDeviceId"),actor.deviceId(),"当前通道只接受本设备原审计，不可改写或代传其他设备来源");
         var origin=origins.verify(actor.deviceId(),actor.warehouseId(),row);origins.bind(actor.deviceId(),origin);

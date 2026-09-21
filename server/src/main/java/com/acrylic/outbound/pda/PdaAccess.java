@@ -24,15 +24,14 @@ public class PdaAccess {
         return principal;
     }
     public PdaSessions.Principal lock(String epoch) {
-        var principal=require("pda:assign");guard.lock(epoch);locks.device(principal.deviceId());
+        var principal=require("pda:assign");guard.lock(epoch);locks.principal(principal);
         principal=require("pda:assign");
         if(!identities.permissions(principal.userId()).contains("pda:scan")) throw new BusinessException(403,"PERMISSION_DENIED","缺少扫码作业权限");
         return principal;
     }
     public PdaSessions.Principal barcodes(String epoch) {
-        current();guard.lock(epoch);var principal=current();
+        var principal=current();guard.lock(epoch);var device=locks.principal(principal);principal=current();
         if(identities.permissions(principal.userId()).contains("pda:assign")) return principal;
-        var device=locks.device(principal.deviceId());
         principal=require("temporary_order:create");require("pda:scan");require("pda:submit");
         if(!device.temporaryOrderEnabled()) throw new BusinessException(403,"TEMPORARY_ORDER_DISABLED","此设备未开启临时作业准入");
         return principal;

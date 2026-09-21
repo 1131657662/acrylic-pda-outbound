@@ -4,13 +4,15 @@ import com.acrylic.outbound.auth.*;
 import com.acrylic.outbound.common.*;
 import com.acrylic.outbound.inventory.master.MutationAccess;
 import java.util.*;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserAccess {
     private final Access access; private final IdentityStore identities; private final IdentityWriteGuard guard;
-    public UserAccess(Access access,IdentityStore identities,IdentityWriteGuard guard) {
-        this.access=access;this.identities=identities;this.guard=guard;
+    private final JdbcTemplate jdbc;
+    public UserAccess(Access access,IdentityStore identities,IdentityWriteGuard guard,JdbcTemplate jdbc) {
+        this.access=access;this.identities=identities;this.guard=guard;this.jdbc=jdbc;
     }
     public Scope read(UUID warehouse) {
         var actor=access.require("user:manage",warehouse);
@@ -26,7 +28,19 @@ public class UserAccess {
         return permissions;
     }
     public Scope lock(MutationAccess.Context context) {
-        access.require("user:manage",context.warehouse());guard.lock(context.epoch());
+        return lock(context,null,List.of());
+    }
+    public Scope lock(MutationAccess.Context context,UUID target) {
+        return lock(context,target,List.of());
+    }
+    public Scope lock(MutationAccess.Context context,UUID target,Collection<UUID> granted) {
+        var actor=access.require("user:manage",context.warehouse());guard.lock(context.epoch());
+        guard.users(Arrays.asList(actor.id(),target));
+        var warehouses=new HashSet<>(granted);warehouses.add(context.warehouse());
+        if(target!=null) warehouses.addAll(jdbc.query("SELECT BIN_TO_UUID(warehouse_id) FROM user_warehouse WHERE user_id=?",
+            (rs,n)->UUID.fromString(rs.getString(1)),Ids.bytes(target)));
+        warehouses.stream().sorted(Comparator.comparing(UUID::toString)).forEach(id->
+            jdbc.queryForList("SELECT id FROM warehouse WHERE id=? FOR UPDATE",Ids.bytes(id)));
         return read(context.warehouse());
     }
     public void target(Scope scope,UserCommands.Item user,UUID warehouse) {
