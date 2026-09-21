@@ -1,5 +1,25 @@
 # 总调度任务看板
 
+**第六轮续接核对（2026-09-21，当前）**：当前主协调任务`01a0c2e7-37d6-7c93-975a-93bf7bacff31`。本地/远端development仍`3e52aa2dac9691e339c991f372e69eccb1f4641a`，主目录为上次遗留五管理修改与原未跟踪out.xlsx，不能沿用下方“只有out.xlsx”的描述。三原交付树干净；W2最终已推送`b3f426546ef5555375213c212ffe578613ce575c`，仅加强第二次原键查询先于已过时expected的测试，窄复跑1项通过，50不同IT总数不变。其`ledger-second-expected-stale-results`及日志保留，19327再次正常停止。
+
+- 当前只读核对13316/19321–19328均无监听，组合树尚未创建；out.xlsx SHA-256为`C3BABA70BC900975503457C5468363DE91417F156F2441ED71A3B7BE5E8FB6C4`。不启动或改写原实例。
+- 旧主任务未加载，原子代理恢复工具返回不能直接恢复；当前沿相同角色创建承接执行代理W1 `/root/source_foundation`、W3 `/root/foundation_protocol_verify`，仍使用原交付树和证据。W1完成W3固定01635d7剩余复审，后接冻结管理保存及组合最终审；W3完成W1护栏0489036/W2最终b3f4265交叉复审，独占自己的复审记录。W2已交付，此时不恢复或另派重复测试。旧主协调/BCD保持不运行。
+- 交叉审查须明确唯一异常回滚后另读支路的动态覆盖边界；管理正文冻结保存后才确定组合基线。新树/19328/库/账号/目录沿下方明确分配，仅W3后续持有重型槽；此时未启动组合，不计任何新组合通过。生产仍05ed1d3，不接E2a或开放handler/POST/放行。
+
+**第六轮独立交付与组合队列（2026-09-21，最新）**：本地/远端development管理`3e52aa2dac9691e339c991f372e69eccb1f4641a`，主目录只有原out.xlsx；三交付分支均推送且干净，业务尚未合development。当前完成固定提交交叉复审后接新树组合，不恢复旧BCD。
+
+| 执行者 | 固定交付与实测 | 当前职责 |
+| --- | --- | --- |
+| W1 | 生产`05ed1d3`，最终含测试护栏`04890362cd8ebeaaf18c7782f6e145447d0ff92d`；原17单元/11IT/JAR/120路径通过，另25护栏单元通过；生产未再改 | 19326停止保留；准备护栏复审无阻断，后接固定组合最终只读复审；主协调冻结管理正文交其保存 |
+| W2 | `896320e91faf6897a23fff56026b8556ab24e9c6`（保留准备`8eb803c`及接入`06c26e3`）；50不同独立IT通过，0失败/错误/跳过 | 19327正常停止，r2迁移34/34、回执72；库/密钥/正文/失败断点保留，固定交付等待交叉复审 |
+| W3 | `01635d7deb3b2ec5ca9102a82a89b05cc45a80a4`；固定生产直编译与68消费者测试通过，0失败/错误/跳过 | 独立审W2最终提交及W1护栏，确认无阻断后独占新组合树/19328；不改生产 |
+
+- W2 50项按不同用例分列：首Replay8、保留断点1、同键/异文/同版本竞争3、逐阶段故障6、身份竞态4、四GET读权限4、撤旧session回放1、损坏关系9、历史读取3、合法重签元数据10、锁后第二查询1。重复组复跑不累加。第二查询证明并发提交后expected已过时仍回放；身份竞态证明变更先提交后当前身份失效拒绝，不将两者拼成未执行的撤写权并发场景。唯一异常回滚后另读支路是否动态触发交复审核对。
+- W2首矩阵40项3失败：坏request关系夹具漏非空resource_id、恢复夹具用V34不允许的RECOVERING、fraction在构造重签前被canonical拒绝；修为完整坏引用/RECOVERY_PENDING/version-null后相应组通过。首两次准备IT失败和字体超时仍保留。XML分布于W2 `.local/evidence-r2/ledger-first-results`、`ledger-matrix-first-results`、`ledger-matrix-second-results`、`ledger-matrix-third-results`；15+5准备护栏分组不计入50。原complete从13:24恢复检查点起才有前后快照。
+- W3 68项含实际codec4组、合法RSA重签47负向、Node4组与shape/static子场景，不能再相加；16实际编译源清单与37作者文件/5XML审查清单绑定`05ed1d3`。不替代SQL历史身份、数据库闭环、真实HTTP或设备验证；未知历史kid及Web历史完整权限表的限制保持。
+- **明确组合分配**：W3唯一使用新树`D:/acrylic-pda-worktrees/sixth-wave-integration`、分支`codex/sixth-wave-integration`；从最新已保存development保留三方历史整合，最终固定SHA另交W1独立只读复审后方可ff-only/push development。仅新`127.0.0.1:19328`、库`acrylic_outbound_wave6_20260921`、账号`outbound_wave6_20260921@127.0.0.1`、datadir本树`.local/mysql19328/data`、storage `.local/private-files`、签名`.local/signing/private.der`及`public.der`，整组精确护栏；当前未创建或启动。W2专属19327种子/恢复夹具默认禁用，原资料不搬入组合。重型槽随后归W3，原13316/19321–19327及其它实例保持。
+- 模型429导致三执行者中断，随后沿原树/原证据恢复；不是产品失败，未清库或重复造种子。普通正常确认空理由、localDeletionAllowed=false、V34/code20/Room17及生产handler/POST关闭保持；E2a、实际决定/放行、历史密钥环、R09恢复及HTTP/设备仍排后。
+
 **第六轮固定生产与独立验收（2026-09-21，最新）**：W1首生产`05ed1d3c4f121d9462d0077bd607c130f64cf562`已推送`codex/r06-ledger-runtime`，树干净；主调度只读核Git、XML、契约日志与停库证据。37文件为24个command生产文件、7作者测试、4契约、2专项文档，没有迁移/Android/五管理文件改动。development本地/远端仍`97c2603706cce2e87de6736411f7ca9e0bdb58ee`，本轮业务尚未整合。
 
 | 执行者 | 当前固定点与实际结果 | 接续职责 |
