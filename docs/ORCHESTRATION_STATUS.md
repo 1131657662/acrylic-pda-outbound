@@ -1,5 +1,11 @@
 # 总调度任务看板
 
+**第五轮实施接点（2026-09-21）**：启动管理记录`797efad4e1edaeed04e66527b760ab22776c0fca`已提交/推送development并核对远端一致；只保存五管理文件，未运行业务测试，out.xlsx原摘要保持。三执行者的生产/验收材料正在各自树准备，尚无第五轮作者冻结提交或业务通过结论。主调度只读发现commandVersion整数截断风险，已转W1修复、W3独立负向验证，最终证据待交付。
+
+- 已确定W1切分：V34新增TEMP scope迁移观察mapping/decision初值、source_evidence_object/set/item/verification、temporary_command_receipt/decision_event基础关系；共同K增加source_scope_id/source_evidence_set_id，仅新增SOURCE_RESERVED可空order分支，保留bale_id唯一主键和旧正式/PC真实order要求。本批不预造处置/续作表或owner。
+- 七命令exact schema、新域和NORMAL_CONFIRM空理由按共同协议实现；receipt/control本批仅严格JSON对象与域hash，没有可信actor语义、完整回执DTO或生产签发。W3合成OfflineSigner向量须明确此限制。
+- W2可在独占foundationmigration测试目录外增加测试桥接`server/src/test/java/com/acrylic/outbound/inventory/FoundationLegacySeed.java`，复用包内真实历史工厂；先准备非空V33事实/逐值快照，再消费W1固定提交。缺文件/坏签名属于前检工具核验，不冒充Flyway SQL能力。重型时段按实际占用内部协调。
+
 **第五轮启动（2026-09-21，当前）**：development本地/远端一致`85cb7cef02fb8728599b6801a28824183305dab8`；主目录仅未跟踪out.xlsx，SHA-256仍`C3BABA70BC900975503457C5468363DE91417F156F2441ED71A3B7BE5E8FB6C4`。中断后代理树初始仅主协调，无遗留Java；13316/19321/19322/19323无监听，其它两个MySQL进程未操作。已重新派三个执行子代理，均从该提交建立新树，旧作者树和旧BCD不恢复。第四轮结果仅历史依据，不计第五轮新验证。
 
 ## 第五轮：E2/C1共同基础
