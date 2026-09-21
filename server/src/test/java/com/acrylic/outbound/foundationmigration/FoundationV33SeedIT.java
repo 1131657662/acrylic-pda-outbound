@@ -18,7 +18,7 @@ class FoundationV33SeedIT {
     @Autowired ApplicationContext context;
 
     @DynamicPropertySource static void guard(DynamicPropertyRegistry properties) {
-        FoundationEnvironment.require();
+        FoundationEnvironment.requireSource();
         var jdbc = FoundationEnvironment.jdbc();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE()", Integer.class))
                 .as("Seed is single-use and only runs on a new empty schema").isZero();

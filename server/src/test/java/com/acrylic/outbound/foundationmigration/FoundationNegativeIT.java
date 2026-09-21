@@ -29,12 +29,13 @@ class FoundationNegativeIT {
         var jdbc = FoundationEnvironment.jdbc();
         new LegacySnapshot(jdbc).assertValuesAndFiles("v33-original.json");
         var preflight = new LegacyEvidencePreflight(jdbc, proofs); preflight.verify();
-        String mode = System.getenv("FOUNDATION_CASE");
+        String mode = System.getenv("FOUNDATION_CASE").replaceFirst("[0-9]+$", "");
         switch (mode) {
             case "missing" -> missing(preflight);
             case "signature" -> signature(preflight);
             case "dirty" -> dirty();
             case "ddl" -> ddl();
+            case "lock" -> new FoundationMetadataLock(jdbc).verify();
             default -> throw new IllegalStateException("No registered negative scenario");
         }
         new LegacySnapshot(jdbc).save("negative-" + mode + "-retained.json");
@@ -62,19 +63,21 @@ class FoundationNegativeIT {
         assertV33Only();
     }
 
-    private void dirty() {
+    private void dirty() throws Exception {
         var jdbc = FoundationEnvironment.jdbc();
         byte[] bale = jdbc.queryForObject("SELECT k.bale_id FROM bale_commitment k JOIN submission s ON s.id=k.submission_id "
                 + "JOIN submission_scope c ON c.id=s.scope_id WHERE c.creator_device_id IS NOT NULL ORDER BY k.bale_id LIMIT 1", byte[].class);
         byte[] wrong = jdbc.queryForObject("SELECT source_order_id FROM submission_scope WHERE source_order_id IS NOT NULL ORDER BY id LIMIT 1", byte[].class);
         jdbc.update("UPDATE bale_commitment SET order_id=? WHERE bale_id=?", wrong, bale);
+        new LegacySnapshot(jdbc).save("negative-dirty-injected.json");
         assertThatThrownBy(() -> migration().migrate()).hasMessageContaining("V34");
+        new LegacySnapshot(jdbc).assertValuesAndFiles("negative-dirty-injected.json");
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() "
                 + "AND TABLE_NAME='submission_scope' AND COLUMN_NAME='mapping_version'", Integer.class)).isZero();
         assertThat(jdbc.queryForObject("SELECT order_id FROM bale_commitment WHERE bale_id=?", byte[].class, bale)).isEqualTo(wrong);
     }
 
-    private void ddl() {
+    private void ddl() throws Exception {
         var jdbc = FoundationEnvironment.jdbc();
         jdbc.execute("CREATE TABLE source_evidence_set (failure_marker INT PRIMARY KEY)");
         jdbc.update("INSERT INTO source_evidence_set VALUES(34)");
@@ -84,6 +87,7 @@ class FoundationNegativeIT {
         assertThat(jdbc.queryForObject("SELECT failure_marker FROM source_evidence_set", Integer.class)).isEqualTo(34);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM flyway_schema_history WHERE version='34' AND success=0", Integer.class)).isEqualTo(1);
         assertThatThrownBy(() -> migration().migrate()).hasMessageContaining("failed migration");
+        new LegacySnapshot(jdbc).assertValuesAndFiles("v33-original.json");
     }
 
     private Flyway migration() {

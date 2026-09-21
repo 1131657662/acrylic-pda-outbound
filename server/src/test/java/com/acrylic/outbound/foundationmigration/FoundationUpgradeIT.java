@@ -42,6 +42,6 @@ class FoundationUpgradeIT {
         assertThat(jdbc.queryForList("SELECT * FROM flyway_schema_history WHERE CAST(version AS UNSIGNED)<=33 ORDER BY installed_rank")).isEqualTo(history);
         new LegacyEvidencePreflight(jdbc, proofs).verify();
         snapshot.save("v34-after-migration.json");
-        new FoundationLegacySeed(context).replayReceipts();
+        new FoundationLegacySeed(context).assertStoredResponseDtos();
     }
 }

@@ -14,7 +14,7 @@ public final class FoundationEnvironment {
 
     static String suffix(Map<String, String> env) {
         String suffix = env.getOrDefault("FOUNDATION_CASE", "");
-        if (!java.util.Set.of("", "dirty", "missing", "signature", "ddl").contains(suffix))
+        if (!java.util.Set.of("", "dirty", "dirty2", "missing", "signature", "ddl", "lock").contains(suffix))
             throw new IllegalStateException("Unknown isolated case");
         return suffix.isEmpty() ? "" : "_" + suffix;
     }
@@ -24,6 +24,11 @@ public final class FoundationEnvironment {
     static String user(Map<String, String> env) { return suffix(env).isEmpty() ? USER : "fndv_20260921" + suffix(env); }
 
     public static void require() { validate(System.getenv()); }
+    public static void requireSource() { requireSource(System.getenv()); }
+    static void requireSource(Map<String, String> env) {
+        validate(env);
+        if (!suffix(env).isEmpty()) throw new IllegalStateException("Only the retained base namespace may create original evidence");
+    }
 
     static void validate(Map<String, String> env) {
         String url = env.getOrDefault("OUTBOUND_DB_URL", "");

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import static org.assertj.core.api.Assertions.*;
 
-@EnabledIfEnvironmentVariable(named = "FOUNDATION_CASE", matches = "dirty|missing|signature|ddl")
+@EnabledIfEnvironmentVariable(named = "FOUNDATION_CASE", matches = "dirty|dirty2|missing|signature|ddl|lock")
 class FoundationCopyIT {
     @Test void restoresOnlyNewSyntheticSnapshotWithAllConstraintsEnabled() throws Exception {
         var jdbc = FoundationEnvironment.jdbc();

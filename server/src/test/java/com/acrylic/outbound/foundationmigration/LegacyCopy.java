@@ -2,7 +2,7 @@ package com.acrylic.outbound.foundationmigration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -41,8 +41,9 @@ final class LegacyCopy {
         var initial = references.initial(row);
         if (initial == null) return false;
         try { row.insert(jdbc, initial); return true; }
-        catch (DataIntegrityViolationException deferredNullableCheck) {
-            if (initial.equals(row.values())) throw deferredNullableCheck;
+        catch (DataAccessException deferredNullableCheck) {
+            if (initial.equals(row.values()) || !(deferredNullableCheck.getMostSpecificCause() instanceof java.sql.SQLException sql)
+                    || sql.getErrorCode() != 3819 || !"HY000".equals(sql.getSQLState())) throw deferredNullableCheck;
             return false;
         }
     }

@@ -135,15 +135,13 @@ public final class FoundationLegacySeed {
         entry.put("order", f.order); if (receipt != null) entry.set("receipt", receipt);
     }
 
-    public void replayReceipts() throws Exception {
+    public void assertStoredResponseDtos() throws Exception {
         var saved = json.readTree(FoundationEnvironment.evidence("seed-manifest.json").toFile());
         for (String name : List.of("formal-success-true", "formal-success-false", "formal-aborted", "temp-a", "temp-b", "temp-c", "temp-pending")) {
-            var entry = saved.path(name); var token = entry.path("tokens").path("accessToken").asText();
-            var mvc = context.getBean(MockMvc.class); var id = entry.path("body").path("submissionId").asText();
-            var response = mvc.perform(get("/api/v1/pda/submissions/" + id).header("Authorization", "Bearer " + token))
-                    .andReturn().getResponse();
-            assertThat(response.getStatus()).as(name).isEqualTo(200);
-            assertThat(json.readTree(response.getContentAsString()).path("data")).as(name).isEqualTo(entry.path("receipt"));
+            var entry = saved.path(name); var id = UUID.fromString(entry.path("body").path("submissionId").asText());
+            var head = context.getBean(SubmissionStore.class).required(id);
+            var response = context.getBean(SubmissionService.class).response(head);
+            assertThat(response).as(name + " service response only; no authentication bypass request").isEqualTo(entry.path("receipt"));
         }
     }
 }

@@ -32,4 +32,14 @@ class FoundationEnvironmentTest {
         env.put("OUTBOUND_DB_URL", env.get("OUTBOUND_DB_URL").replace("19324", port));
         assertThatThrownBy(() -> FoundationEnvironment.validate(env)).isInstanceOf(IllegalStateException.class);
     }
+
+    @ParameterizedTest @ValueSource(strings = {"dirty", "dirty2", "missing", "signature", "ddl", "lock"})
+    void negativeNamespaceCannotOverwriteFrozenSourceEvidence(String mode) {
+        var env = valid(); env.put("FOUNDATION_CASE", mode);
+        env.put("OUTBOUND_DB_URL", env.get("OUTBOUND_DB_URL").replace("20260921?", "20260921_" + mode + "?"));
+        env.put("OUTBOUND_DB_USER", "fndv_20260921_" + mode);
+        env.put("OUTBOUND_STORAGE", FoundationEnvironment.ROOT.resolve("private-files_" + mode).toString());
+        assertThatCode(() -> FoundationEnvironment.validate(env)).doesNotThrowAnyException();
+        assertThatThrownBy(() -> FoundationEnvironment.requireSource(env)).isInstanceOf(IllegalStateException.class);
+    }
 }
