@@ -1,0 +1,22 @@
+{
+  "productionCommit": "05ed1d3c4f121d9462d0077bd607c130f64cf562",
+  "basis": "Git LF bytes, checked against the independent consumer worktree",
+  "lfSha256": {
+    "server/src/main/java/com/acrylic/outbound/common/BusinessException.java": "8311bcb7f26282089fce93be4310346bac516d2602dbd0ccfe8c291d01323510",
+    "server/src/main/java/com/acrylic/outbound/common/JsonText.java": "603c7f9b4210b43917b9b63343a004e0338b0e48bc63e1c70a834b7b7f04bd72",
+    "server/src/main/java/com/acrylic/outbound/devices/DeviceCrypto.java": "af26a887b6d83544617bce1cac2f425be18b68ec670d8f62267026d4d78a6d46",
+    "server/src/main/java/com/acrylic/outbound/inventory/ImportFiles.java": "f8fe1be5ef8e406fa9da0c06a484a33722dadcf307e4221a5717a5677f25bafb",
+    "server/src/main/java/com/acrylic/outbound/pda/OfflineSigner.java": "7c258b9e6160880961152f91207d86b147ed12886c7d8928c8c5a632358afb33",
+    "server/src/main/java/com/acrylic/outbound/submissions/SubmissionJson.java": "1ed851adcae73027d002b820ce360004b72f11ea9c50d79534416825723584b5",
+    "server/src/main/java/com/acrylic/outbound/temporary/protocol/ProtocolJson.java": "32613972d001aff47dc02dae459d4ae053df4dd29f983fca27907bef2bebcb46",
+    "server/src/main/java/com/acrylic/outbound/temporary/protocol/TemporaryCommandShape.java": "49295e8bfc0dc1f20528702018bfae5460b22a122ea27e0c7cef7acb9a2979a9",
+    "server/src/main/java/com/acrylic/outbound/temporary/protocol/TemporaryProtocol.java": "ee24ed881b6480c3db88c078d1f0a2772541de183299237381cbc4af03f0e319",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandContext.java": "99084e87150b5fdda19ecc6bafc4d6f0c7951e942fee9357bd2840394e71eb60",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandErrors.java": "cd0f564844c168bd20813ce6fc31e524e28d9897d8b44aed600d3dc4ba66e3d4",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandInput.java": "f30b3417d26b1c3a248ce5b96920a139021f423969f7889612b31a8ac809adeb",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandReceiptCodec.java": "28e3215ff8baf05a0752f41fd1b77693bd703781c31958eb606a59a0d2b106f0",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandReceiptShape.java": "ed09c04b61e17e9527cc64b2b5e33944bc8b612a93df7800b508ae8338f2cdc4",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandSignature.java": "52800413f2a1784ac660dec3f47e68506cb914124a9a380f32f677ad106a77a6",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandWrite.java": "c20238e59e79f8bf99deca44481b03340fa18f703e08cf87e89193ee1e25463c"
+  }
+}
