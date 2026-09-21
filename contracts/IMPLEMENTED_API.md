@@ -1,5 +1,9 @@
 # 已实现接口与运行边界
 
+当前契约版本 **0.30.0**，共 **120 条路径**（2026-09-21）。新增本人原命令回执四个只读 GET：Web `/temporary-command-receipts/{commandId}`、PDA `/pda/temporary-command-receipts/{commandId}` 及各自 `/original`。当前身份、原仓与已存命令族权限或 `temporary_order:confirm` 共同控制读取；台账按 actor/`r06.command.v1`/原键精确定位，校验 request/receipt/event/audit、原字节/摘要/签名和原映射闭环。详情单列 `currentEffect`，原回执不随权限、会话、恢复代次或来源变化而重写；`/original` 直接输出原业务响应 bytes，均 no-store。详见[路径](temporary-command-paths.yaml)、[字段](temporary-command-schemas.yaml)及[实施卡](../docs/parallel/R06_LEDGER_RUNTIME/IMPLEMENTATION.md)。
+
+C1b 内部运行器仅提供事务和持久回执接点，生产七类命令 handler 集合为空、没有命令 POST。仅测试配置的合成参与者可生成 `INTERNAL_TEST_ONLY`、`businessDecision=null` 回执，所有确认、续扫、放行、释放和删除能力均 false。当前签名 key 不认识旧 kid 时409关闭，不重签；历史 Web 传输分类及完整角色/权限集合是已验可信写者的签名断言，无独立历史表可重新重建。原 PDA 会话仅核保留的稳定身份与时间窗口，不要求旧会话今天仍有效。Flyway 保持 V34，无 V35，Android code20/Room17不变。以下0.29及更早段落保留为历史记录。
+
 当前契约版本 **0.29.0**，共 **116 条路径**（2026-09-20）。新增三个只读GET：`/temporary-source-evidence/{submissionId}`、其`/payload`及`/chunks/{index}`。每次要求当前 `temporary_order:confirm` 与同仓授权，不要求 `order:read`；warehouseId、creatorDeviceId、clientOrderId、workRound均必填，按原TEMP来源与S/round精确选择，支持无正文ABORT与nullable canonical。声明上传、已收块和已接受正文分开，原存回执文本/摘要及签名校验状态与本次评估分开，所有写入/续扫/放行/释放/删除能力恒false。见[路径](temporary-source-evidence-paths.yaml)、[字段](temporary-source-evidence-schemas.yaml)及[第三轮整合记录](../docs/THIRD_WAVE_INTEGRATION_GUIDE.md)。Flyway V33、Android code20/Room17、server/web工程0.1.0保持；无新增共享灾后恢复API。以下0.28及更早段落保留为历史记录。
 
 来源证据详情只读RR快照，校验原资格/人员/设备/仓库/代次关联及文件证据。文件入口返回原字节而非业务Envelope，逐次重鉴权并校验私有引用、大小、SHA-256及正文控制身份；正文最大32MiB、块最大256KiB且index为0至127，均为技术上限。未知/错来源或缺正文/块为404 `SOURCE_EVIDENCE_NOT_FOUND`，非法轮次/块索引为400 `INVALID_WORK_ROUND`/`INVALID_CHUNK_INDEX`（参数格式错误沿统一校验响应）；缺失文件为409 `SOURCE_EVIDENCE_FILE_UNAVAILABLE`，证据不一致为409 `SOURCE_EVIDENCE_INTEGRITY_FAILURE`。未知历史签名key明确为 `UNVERIFIABLE_KEY`，不冒称验签成功。404或零已知占用不证明现场无作业，已知审计前缀不证明设备/来源完整。恢复屏障只作为当前评估缺口，不将此读取接口变成灾后写白名单。
