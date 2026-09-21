@@ -1,5 +1,17 @@
 # 总调度任务看板
 
+**第六轮固定生产与独立验收（2026-09-21，最新）**：W1首生产`05ed1d3c4f121d9462d0077bd607c130f64cf562`已推送`codex/r06-ledger-runtime`，树干净；主调度只读核Git、XML、契约日志与停库证据。37文件为24个command生产文件、7作者测试、4契约、2专项文档，没有迁移/Android/五管理文件改动。development本地/远端仍`97c2603706cce2e87de6736411f7ca9e0bdb58ee`，本轮业务尚未整合。
+
+| 执行者 | 当前固定点与实际结果 | 接续职责 |
+| --- | --- | --- |
+| W1 `/root/source_foundation` | `05ed1d3`；17新增单元、9台账/四GET IT及2无生产handler/仅GET边界IT通过；JAR与正式OpenAPI 0.30/120路径通过。属于作者验证，不是全仓或组合结果 | 冻结生产；独立只读审W2 `8eb803c`准备/恢复护栏，后接独立消费者复审；生产问题仍仅由W1修 |
+| W2 `/root/foundation_migration_verify` | 准备`8eb803c86e9af8d873a33375e6a0e82d67de83a2`已推送，12个独占测试/指南文件；15护栏和r2新增5护栏分组通过，2准备IT失败，尚无C1b产品通过 | 保留准备历史接入固定`05ed1d3`；独占19327/r2及重型Gradle槽，沿首complete建立恢复检查点并追加独立原键/故障/并发/权限会话验收 |
+| W3 `/root/foundation_protocol_verify` | 原消费者骨架已备，尚无实际动态结果 | 固定`05ed1d3`后运行真实Java codec/signature/shape及跨语言消费者，记录源清单并独立审生产/契约；轻量直编译可并行 |
+
+- **作者失败保留**：首9IT失败，8项为fixture漏授CONFIRMER，1项为产品JDBC DATETIME返回LocalDateTime却强转Timestamp；补夹具角色/修三处日期读取后，同19326库追加独立来源复跑9项通过。原`.local/it-first.log`、`.local/evidence/it-first/`及最终`it-second`/`boundary-final` XML留存；不删失败来源。源清单和证据说明在W1交付分支`docs/parallel/R06_LEDGER_RUNTIME/VALIDATION.md`，未合并前主目录无此交付文件。
+- **W2第二准备失败**：r2 V1→V34成功并经既有MockMvc路径保留首complete/正文/身份/密钥，快照helper仍指旧private-files而NoSuchFileException；未到重登、没有失败前完整原值快照。路径已修，后续只读定位原complete并从明确恢复时点起建立保留基线；不重跑LedgerSeedIT、不删marker、不重置r2、不建r3。字体超时及第一次未启迁移的0表失败库继续保留，不归因于C1b产品。
+- **边界与环境**：19326经精确护栏正常shutdown并保留库/文件/EC/失败资料；19327/r2仍归W2，原13316/19321–19325保持停止，其它实例不动。原out.xlsx摘要保持。生产七类决定handler为空且无POST，INTERNAL_TEST_ONLY/businessDecision=null/能力false；当前效力UNKNOWN不改原BLOB。独立验收、交叉复审、新树组合和development快进仍待完成，不新增迁移、不提前接E2a或声称TEMP可确认放行。
+
 **第六轮准备与在途审查（2026-09-21，当前）**：管理启动`34a2c58ee560fca35307111d6d4f0480897eed16`已推送development，生产树仍从`82a2e13`独立实施，尚无固定C1b生产交付。W1最小卡经主调度/W3早审无范围阻断：四个Web/PDA本人回执详情及`/original`只读路由，计划0.30/120路径；生产七族handler为空且无POST，测试注入的结果明确INTERNAL_TEST_ONLY/businessDecision=null/全能力false。原字节、历史身份/原mapping与动态currentEffect分开核验；这些仍属在途代码，不计接口或业务测试通过。
 
 - W2首构建在报表字体下载Read timed out退出，编译完成但未执行测试/seed；第二次使用已核SHA本机字体，15护栏单元通过、1准备IT失败。失败为`OUTBOUND_MIGRATE=false`下查询不存在的Flyway历史表，原19327目标schema经核为0表，尚未构造LedgerVerifySeed或产生身份/业务事实；不是V34执行迁移失败。原库、seed-started、日志/XML保留。

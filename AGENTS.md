@@ -1,5 +1,7 @@
 # 项目长期协作约定
 
+**第六轮首生产冻结（2026-09-21，当前）**：W1已提交推送`05ed1d3c4f121d9462d0077bd607c130f64cf562`至`codex/r06-ledger-runtime`，37文件含C1b内部台账/可信原回执/四个本人GET；17新增单元、9作者IT及2生产边界IT、JAR、正式0.30/120路径通过，均0失败/错误/跳过。首9IT失败（8夹具漏CONFIRMER、1产品JDBC日期类型转换）修正后同库追加场景通过，首日志/XML保留；19326已正常停止。W2准备`8eb803c`已推送，r2迁移V34及首complete已落，但快照旧路径导致第二个准备IT失败，尚无C1b独立通过；不重跑seed/删marker/建r3，沿保留来源追加验收。W2/W3已派消费固定`05ed1d3`，W2占重型槽，W1独立审准备护栏；详见[看板](docs/ORCHESTRATION_STATUS.md)。development当前`97c2603`仅管理，尚未整合本轮业务。生产决定handler/POST、E2a及放行仍未开放，V34/code20/Room17、原环境/审批/旧BCD及主协调仅管理边界保持。
+
 **第六轮准备接点（2026-09-21）**：启动管理`34a2c58`已推送development；W1正在实现C1b，四个本人回执GET及严格原字节/历史身份验证尚未冻结或实测，生产决定handler/POST仍关闭。W2首构建字体下载超时，后用已核本机字体完成15护栏单元；首准备IT因默认未启迁移而缺Flyway历史表失败，原19327库0表且未创建业务种子，marker/日志/XML保留。总调度已另分配同19327的`acrylic_outbound_ledger_verify_20260921_r2`、`ledger_verify_r2_20260921`及独立private-files-r2/签名/evidence-r2，须精确护栏和显式迁移；原datadir及失败库不重置。重型时段交回W1，W2再跑先协调。回执版本宽松转换及mappingVersion=0问题为静态预审发现，不编造修前红测；第五轮旧seed401仍未解决。详见[看板](docs/ORCHESTRATION_STATUS.md)，本条优先于下方启动时环境分配。
 
 **第六轮C1b已派（2026-09-21，当前）**：从本地/远端一致`82a2e13cac306f877ed5e2c887970adf3d8e57f0`续接第五轮基础。仍为主协调加三个执行者：W1 `/root/source_foundation`在新`r06-ledger-runtime`树唯一写台账/可信不可变回执/本人原键GET与currentEffect/内部事务及必要共享协议、鉴权、签名、契约；W2 `/root/foundation_migration_verify`在新`r06-ledger-verification`树独占数据库故障/权限并发/真实新会话验收；W3 `/root/foundation_protocol_verify`在新`r06-ledger-protocol`树独占实际回执独立消费者/向量及交叉复审。具体范围见[看板](docs/ORCHESTRATION_STATUS.md)。已有设计与用户“继续”授权按既定顺序实施，不重做第五轮。当前仅派工，不计新代码或测试通过。
