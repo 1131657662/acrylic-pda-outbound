@@ -1,5 +1,23 @@
 # 总调度任务看板
 
+**第五轮启动（2026-09-21，当前）**：development本地/远端一致`85cb7cef02fb8728599b6801a28824183305dab8`；主目录仅未跟踪out.xlsx，SHA-256仍`C3BABA70BC900975503457C5468363DE91417F156F2441ED71A3B7BE5E8FB6C4`。中断后代理树初始仅主协调，无遗留Java；13316/19321/19322/19323无监听，其它两个MySQL进程未操作。已重新派三个执行子代理，均从该提交建立新树，旧作者树和旧BCD不恢复。第四轮结果仅历史依据，不计第五轮新验证。
+
+## 第五轮：E2/C1共同基础
+
+| 执行者 | 独立工作树 / 分支 | 唯一写入范围 | 验收与当前状态 |
+| --- | --- | --- | --- |
+| W1 `/root/source_foundation` | `D:/acrylic-pda-worktrees/r06-source-foundation` / `codex/r06-source-foundation` | 唯一生产协议、Flyway、共同bale_commitment及旧消费者写者；自己的单元/消费者测试及`docs/parallel/R06_FOUNDATION/**`。最高V33已核对，本轮V34唯一分配W1，其余编号需再协调 | 先固定接口/字段/FK与可实施切分，再实现受控nullable owner和旧路径兼容；新命令/证据/决定API不开放。已派，尚无交付结论 |
+| W2 `/root/foundation_migration_verify` | `D:/acrylic-pda-worktrees/r06-foundation-verification` / `codex/r06-foundation-verification` | 非空V33验收fixture/专项测试、`docs/parallel/R06_FOUNDATION_VERIFY/**`；不写生产/Flyway/总契约 | 先准备真实历史合成事实及逐值/文件快照，再消费W1固定提交验M01-M06、负向副本及MySQL DDL失败；已派，动态验证未开始 |
+| W3 `/root/foundation_protocol_verify` | `D:/acrylic-pda-worktrees/r06-foundation-protocol` / `codex/r06-foundation-protocol` | `docs/parallel/R06_FOUNDATION_PROTOCOL/**`独立消费者/向量/交接，必要独占参考driver先商定；不写生产协议/Android | 消费W1实际规范字节/hash/签名接口，用独立预期验证新域与E2字段；C0原件不改，不将153历史向量当新协议通过。已派，另受派保存冻结管理文件 |
+
+- W1独占新19323 / `acrylic_outbound_foundation_20260921`；W2独占新19324 / `acrylic_outbound_foundation_verify_20260921`及明确负向副本，均须端口/datadir/库/账号精确护栏和默认禁用夹具。只能新建合成资料，不复制/重置旧数据库。原13316/19321/19322和其它实例保持；结束正常停自己的实例并保留数据库/签名/证据。
+- 首个重型Gradle时段归W1，W2实际数据库/重型验证开跑前内部协调；W3轻量离线可并行，Java/Gradle开跑先协调。不因等待接口而另造协议或在其它树抢写。
+- 持久关系复用scope，K主键仍bale_id；新null order分支与全部旧消费者必须同批兼容。原字段/正文/回执/ABORT/计数器不改，迁移观察不伪造旧命令/映射/签名；MySQL DDL失败不repair或删除失败历史冒充通过。
+- 正常确认空理由，localDeletionAllowed=false；台账执行器/证据上传/关联/处置/最终记账及Android耐久不在本基础批开放。C1原键恢复优先于新写权限/expected的合同保持。E/G/W前缀不重构，shared OpenAPI/Android/R09不抢写。
+- 主协调仅五管理文件，不写业务/数据库/冲突；执行者只提交推送明确范围短分支，冻结后交叉独立复审，再派组合整合。所有作者/独立验收/组合结果分列，失败不得省略；main/部署/旧BCD/现场和审批边界保持。
+
+以下为第四轮及更早历史检查点，不覆盖本节派工状态。
+
 **第四轮完成检查点（2026-09-21，当前）**：`c393d2debdaa224f89b45b3ac2d9ae1e8eca8291`已由整合执行者ff-only合回并推送development，本地/远端一致；三作者交付、两fixture护栏及最终整合均独立复审无阻断。组合新跑43单元/69IT/JAR、报表installDist和正式0.29/116路径全部通过，0失败/错误/跳过。18份锁等待/事务JSON和7份C04状态保存；新19322实例已正常停止、库/签名/证据保留。详见[第四轮整合](FOURTH_WAVE_INTEGRATION_GUIDE.md)。C0未变未重跑；作者532IT/2跳过及首轮6项R08配置失败单列，不与组合相加。
 
 本轮三执行者已完成开发/复审/整合，待下一明确派工；主协调继续只维护五管理文件。快进前后五文件及out.xlsx摘要一致，末次管理结论另交执行者按精确路径保存，提交号以实际Git为准。E2/C1仍仅方案；下一为唯一共享协议/迁移/共同K写者及非空V33升级，之后才接台账/证据写。旧BCD、原库/断点/设备/现网及审批边界保持，未合main/部署。以下为各阶段历史，不覆盖本段完成状态。
