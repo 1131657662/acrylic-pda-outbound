@@ -1,0 +1,44 @@
+{
+  "syntheticOnly": true,
+  "normalCommand": {
+    "commandVersion": 1,
+    "commandType": "NORMAL_CONFIRM",
+    "commandId": "00000000-0000-4000-8000-000000000001",
+    "warehouseId": "00000000-0000-4000-8000-000000000002",
+    "source": {
+      "kind": "TEMP",
+      "creatorDeviceId": "00000000-0000-4000-8000-000000000004",
+      "clientOrderId": "00000000-0000-4000-8000-000000000005"
+    },
+    "submissionId": "00000000-0000-4000-8000-000000000003",
+    "workRound": "1",
+    "authorizationId": "00000000-0000-4000-8000-000000000006",
+    "freezeDeviceId": "00000000-0000-4000-8000-000000000004",
+    "sourceRecoveryEpoch": "1",
+    "transportRecoveryEpoch": "1",
+    "expected": {
+      "canonicalOrderId": "00000000-0000-4000-8000-000000000010",
+      "mappingVersion": "1",
+      "currentSubmissionId": "00000000-0000-4000-8000-000000000003",
+      "scopeRound": "1",
+      "slotVersion": "1",
+      "decisionVersion": "0",
+      "receivedPayloadSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "declaredUploadSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "planSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "targetRevision": "1",
+      "candidateContextSha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "userAuthVersion": "2",
+      "evidenceSetId": null,
+      "evidenceSetSha256": null,
+      "verificationId": null,
+      "verificationVersion": null,
+      "verificationAlgorithmVersion": null,
+      "dispositionManifestSha256": null,
+      "dispositionManifestVersion": null,
+      "retainedManifestSha256": null,
+      "retainedManifestVersion": null
+    },
+    "reason": ""
+  }
+}

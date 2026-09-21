@@ -1,0 +1,330 @@
+{
+  "syntheticOnly": true,
+  "vectors": [
+    {
+      "id": "utf16-order",
+      "raw": "{\"\\ue000\":1,\"\\ud800\\udc00\":2,\"中\":3,\"10\":10,\"2\":2}",
+      "canonical": "{\"10\":10,\"2\":2,\"中\":3,\"𐀀\":2,\"\":1}"
+    },
+    {
+      "id": "negative-zero",
+      "raw": " -0 ",
+      "canonical": "0"
+    },
+    {
+      "id": "safe-limits",
+      "raw": "[9007199254740991,-9007199254740991]",
+      "canonical": "[9007199254740991,-9007199254740991]"
+    },
+    {
+      "id": "null",
+      "raw": "null",
+      "canonical": "null"
+    },
+    {
+      "id": "booleans",
+      "raw": " [ true , false ] ",
+      "canonical": "[true,false]"
+    },
+    {
+      "id": "null-member",
+      "raw": "{\"b\":null,\"a\":1}",
+      "canonical": "{\"a\":1,\"b\":null}"
+    },
+    {
+      "id": "missing-member",
+      "raw": "{\"a\":1}",
+      "canonical": "{\"a\":1}"
+    },
+    {
+      "id": "unicode-not-normalized",
+      "raw": "[\"é\",\"e\\u0301\"]",
+      "canonical": "[\"é\",\"é\"]"
+    },
+    {
+      "id": "line-separators",
+      "raw": "[\"\\u2028\",\"\\u2029\"]",
+      "canonical": "[\" \",\" \"]"
+    },
+    {
+      "id": "array-order",
+      "raw": "[{\"b\":2,\"a\":1},null,3]",
+      "canonical": "[{\"a\":1,\"b\":2},null,3]"
+    },
+    {
+      "id": "control-00",
+      "raw": "\"\\u0000\"",
+      "canonical": "\"\\u0000\""
+    },
+    {
+      "id": "control-01",
+      "raw": "\"\\u0001\"",
+      "canonical": "\"\\u0001\""
+    },
+    {
+      "id": "control-02",
+      "raw": "\"\\u0002\"",
+      "canonical": "\"\\u0002\""
+    },
+    {
+      "id": "control-03",
+      "raw": "\"\\u0003\"",
+      "canonical": "\"\\u0003\""
+    },
+    {
+      "id": "control-04",
+      "raw": "\"\\u0004\"",
+      "canonical": "\"\\u0004\""
+    },
+    {
+      "id": "control-05",
+      "raw": "\"\\u0005\"",
+      "canonical": "\"\\u0005\""
+    },
+    {
+      "id": "control-06",
+      "raw": "\"\\u0006\"",
+      "canonical": "\"\\u0006\""
+    },
+    {
+      "id": "control-07",
+      "raw": "\"\\u0007\"",
+      "canonical": "\"\\u0007\""
+    },
+    {
+      "id": "control-08",
+      "raw": "\"\\u0008\"",
+      "canonical": "\"\\b\""
+    },
+    {
+      "id": "control-09",
+      "raw": "\"\\u0009\"",
+      "canonical": "\"\\t\""
+    },
+    {
+      "id": "control-10",
+      "raw": "\"\\u000a\"",
+      "canonical": "\"\\n\""
+    },
+    {
+      "id": "control-11",
+      "raw": "\"\\u000b\"",
+      "canonical": "\"\\u000B\""
+    },
+    {
+      "id": "control-12",
+      "raw": "\"\\u000c\"",
+      "canonical": "\"\\f\""
+    },
+    {
+      "id": "control-13",
+      "raw": "\"\\u000d\"",
+      "canonical": "\"\\r\""
+    },
+    {
+      "id": "control-14",
+      "raw": "\"\\u000e\"",
+      "canonical": "\"\\u000E\""
+    },
+    {
+      "id": "control-15",
+      "raw": "\"\\u000f\"",
+      "canonical": "\"\\u000F\""
+    },
+    {
+      "id": "control-16",
+      "raw": "\"\\u0010\"",
+      "canonical": "\"\\u0010\""
+    },
+    {
+      "id": "control-17",
+      "raw": "\"\\u0011\"",
+      "canonical": "\"\\u0011\""
+    },
+    {
+      "id": "control-18",
+      "raw": "\"\\u0012\"",
+      "canonical": "\"\\u0012\""
+    },
+    {
+      "id": "control-19",
+      "raw": "\"\\u0013\"",
+      "canonical": "\"\\u0013\""
+    },
+    {
+      "id": "control-20",
+      "raw": "\"\\u0014\"",
+      "canonical": "\"\\u0014\""
+    },
+    {
+      "id": "control-21",
+      "raw": "\"\\u0015\"",
+      "canonical": "\"\\u0015\""
+    },
+    {
+      "id": "control-22",
+      "raw": "\"\\u0016\"",
+      "canonical": "\"\\u0016\""
+    },
+    {
+      "id": "control-23",
+      "raw": "\"\\u0017\"",
+      "canonical": "\"\\u0017\""
+    },
+    {
+      "id": "control-24",
+      "raw": "\"\\u0018\"",
+      "canonical": "\"\\u0018\""
+    },
+    {
+      "id": "control-25",
+      "raw": "\"\\u0019\"",
+      "canonical": "\"\\u0019\""
+    },
+    {
+      "id": "control-26",
+      "raw": "\"\\u001a\"",
+      "canonical": "\"\\u001A\""
+    },
+    {
+      "id": "control-27",
+      "raw": "\"\\u001b\"",
+      "canonical": "\"\\u001B\""
+    },
+    {
+      "id": "control-28",
+      "raw": "\"\\u001c\"",
+      "canonical": "\"\\u001C\""
+    },
+    {
+      "id": "control-29",
+      "raw": "\"\\u001d\"",
+      "canonical": "\"\\u001D\""
+    },
+    {
+      "id": "control-30",
+      "raw": "\"\\u001e\"",
+      "canonical": "\"\\u001E\""
+    },
+    {
+      "id": "control-31",
+      "raw": "\"\\u001f\"",
+      "canonical": "\"\\u001F\""
+    },
+    {
+      "id": "literal-backslashes-1",
+      "raw": "\"\\\\u001f\"",
+      "canonical": "\"\\\\u001f\""
+    },
+    {
+      "id": "literal-backslashes-2",
+      "raw": "\"\\\\\\\\u001f\"",
+      "canonical": "\"\\\\\\\\u001f\""
+    },
+    {
+      "id": "literal-backslashes-3",
+      "raw": "\"\\\\\\\\\\\\u001f\"",
+      "canonical": "\"\\\\\\\\\\\\u001f\""
+    },
+    {
+      "id": "literal-backslashes-4",
+      "raw": "\"\\\\\\\\\\\\\\\\u001f\"",
+      "canonical": "\"\\\\\\\\\\\\\\\\u001f\""
+    },
+    {
+      "id": "control-member",
+      "raw": "{\"\\u001f\":1,\"a\":2}",
+      "canonical": "{\"\\u001F\":1,\"a\":2}"
+    },
+    {
+      "id": "duplicate",
+      "raw": "{\"a\":1,\"a\":2}",
+      "reject": true
+    },
+    {
+      "id": "escaped-duplicate",
+      "raw": "{\"a\":1,\"\\u0061\":2}",
+      "reject": true
+    },
+    {
+      "id": "nested-duplicate",
+      "raw": "{\"o\":{\"a\":1,\"a\":2}}",
+      "reject": true
+    },
+    {
+      "id": "trailing-object",
+      "raw": "{}{}",
+      "reject": true
+    },
+    {
+      "id": "trailing-null",
+      "raw": "{} null",
+      "reject": true
+    },
+    {
+      "id": "fraction",
+      "raw": "1.0",
+      "reject": true
+    },
+    {
+      "id": "exponent",
+      "raw": "1e0",
+      "reject": true
+    },
+    {
+      "id": "nan",
+      "raw": "NaN",
+      "reject": true
+    },
+    {
+      "id": "infinity",
+      "raw": "Infinity",
+      "reject": true
+    },
+    {
+      "id": "positive-unsafe",
+      "raw": "9007199254740992",
+      "reject": true
+    },
+    {
+      "id": "negative-unsafe",
+      "raw": "-9007199254740992",
+      "reject": true
+    },
+    {
+      "id": "leading-zero",
+      "raw": "01",
+      "reject": true
+    },
+    {
+      "id": "plus-number",
+      "raw": "+1",
+      "reject": true
+    },
+    {
+      "id": "empty",
+      "raw": "",
+      "reject": true
+    },
+    {
+      "id": "bom",
+      "raw": "﻿{}",
+      "reject": true
+    },
+    {
+      "id": "high-surrogate",
+      "raw": "\"\\ud800\"",
+      "reject": true
+    },
+    {
+      "id": "low-surrogate",
+      "raw": "\"\\udc00\"",
+      "reject": true
+    },
+    {
+      "id": "surrogate-key",
+      "raw": "{\"\\ud800\":1}",
+      "reject": true
+    }
+  ]
+}

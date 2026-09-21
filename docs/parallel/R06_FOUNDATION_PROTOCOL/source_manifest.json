@@ -1,0 +1,14 @@
+{
+  "productionCommit": "0311dfaf4255671a605a17aa3defc145df9621a6",
+  "productionSourcesLfSha256": {
+    "server/src/main/java/com/acrylic/outbound/common/BusinessException.java": "8311bcb7f26282089fce93be4310346bac516d2602dbd0ccfe8c291d01323510",
+    "server/src/main/java/com/acrylic/outbound/common/JsonText.java": "603c7f9b4210b43917b9b63343a004e0338b0e48bc63e1c70a834b7b7f04bd72",
+    "server/src/main/java/com/acrylic/outbound/devices/DeviceCrypto.java": "af26a887b6d83544617bce1cac2f425be18b68ec670d8f62267026d4d78a6d46",
+    "server/src/main/java/com/acrylic/outbound/inventory/ImportFiles.java": "f8fe1be5ef8e406fa9da0c06a484a33722dadcf307e4221a5717a5677f25bafb",
+    "server/src/main/java/com/acrylic/outbound/pda/OfflineSigner.java": "7c258b9e6160880961152f91207d86b147ed12886c7d8928c8c5a632358afb33",
+    "server/src/main/java/com/acrylic/outbound/submissions/SubmissionJson.java": "1ed851adcae73027d002b820ce360004b72f11ea9c50d79534416825723584b5",
+    "server/src/main/java/com/acrylic/outbound/temporary/protocol/ProtocolJson.java": "32613972d001aff47dc02dae459d4ae053df4dd29f983fca27907bef2bebcb46",
+    "server/src/main/java/com/acrylic/outbound/temporary/protocol/TemporaryCommandShape.java": "49295e8bfc0dc1f20528702018bfae5460b22a122ea27e0c7cef7acb9a2979a9",
+    "server/src/main/java/com/acrylic/outbound/temporary/protocol/TemporaryProtocol.java": "ee24ed881b6480c3db88c078d1f0a2772541de183299237381cbc4af03f0e319"
+  }
+}
