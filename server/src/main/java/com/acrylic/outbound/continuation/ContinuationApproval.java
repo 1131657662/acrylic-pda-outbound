@@ -50,8 +50,8 @@ public class ContinuationApproval {
             Ids.bytes(UUID.fromString(assignment)),Ids.bytes(actor),evidence,canonical(receipt),Ids.bytes(h.id()));
         jdbc.update("UPDATE submission SET superseded_by=? WHERE id=?",Ids.bytes(h.id()),Ids.bytes(h.previous()));
         jdbc.update("UPDATE submission_scope SET work_round=?,current_submission_id=NULL WHERE id=?",h.toRound(),Ids.bytes(h.scope()));
-        jdbc.update("UPDATE order_submission_slot SET work_round=?,current_submission_id=NULL,phase='CONTINUING' WHERE order_id=?",h.toRound(),Ids.bytes(h.order()));
-        jdbc.update("UPDATE bale_commitment SET state='CONTINUATION_RESERVED',submission_id=NULL,recovery_package_id=NULL,continuation_id=? WHERE order_id=? AND state!='QUARANTINED'",Ids.bytes(h.id()),Ids.bytes(h.order()));
+        jdbc.update("UPDATE order_submission_slot SET work_round=?,current_submission_id=NULL,phase='CONTINUING',slot_version=slot_version+1 WHERE order_id=?",h.toRound(),Ids.bytes(h.order()));
+        jdbc.update("UPDATE bale_commitment SET state='CONTINUATION_RESERVED',submission_id=NULL,recovery_package_id=NULL,continuation_id=? WHERE order_id=? AND state IN ('REVIEW_RESERVED','RECOVERY_RESERVED','CONTINUATION_RESERVED') AND source_evidence_set_id IS NULL",Ids.bytes(h.id()),Ids.bytes(h.order()));
     }
     private JsonNode receipt(ContinuationStore.Head h) { return parse(h.receipt().getBytes(java.nio.charset.StandardCharsets.UTF_8)); }
 }

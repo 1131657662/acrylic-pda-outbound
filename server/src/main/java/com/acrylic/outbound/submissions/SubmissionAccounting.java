@@ -23,7 +23,7 @@ public class SubmissionAccounting {
             ps.setBytes(1,Ids.bytes(order));ps.setString(2,p.code());ps.setLong(3,p.count());ps.setLong(4,p.weight());
         });
         jdbc.update("UPDATE outbound_order SET current_result_version=1 WHERE id=?",Ids.bytes(order));
-        jdbc.update("UPDATE order_submission_slot SET phase='COMPLETED' WHERE order_id=?",Ids.bytes(order));
+        jdbc.update("UPDATE order_submission_slot SET phase='COMPLETED',slot_version=slot_version+1 WHERE order_id=?",Ids.bytes(order));
         jdbc.update("UPDATE order_assignment SET status='CLOSED' WHERE id=?",Ids.bytes(head.control().assignment()));
         if(head.control().continuation()!=null)jdbc.update("UPDATE order_continuation SET status='COMPLETED' WHERE id=?",Ids.bytes(head.control().continuation()));
         store.state(head.control().id(),"SUCCEEDED",null,canonical(receipt));events.transition(head,"COMPLETED",actor);return receipt;

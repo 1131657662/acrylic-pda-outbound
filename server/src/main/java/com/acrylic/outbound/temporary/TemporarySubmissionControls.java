@@ -19,6 +19,7 @@ public class TemporarySubmissionControls {
         UUID scope=scopes.isEmpty()?Ids.next():UUID.fromString(scopes.getFirst());
         if(scopes.isEmpty())jdbc.update("INSERT INTO submission_scope(id,warehouse_id,creator_device_id,client_order_id) VALUES(?,?,?,?)",
             Ids.bytes(scope),Ids.bytes(actor.warehouse()),Ids.bytes(t.creator()),Ids.bytes(t.client()));
+        if(scopes.isEmpty())TemporarySourceBaseline.register(jdbc,scope,actor.warehouse());
         var target=jdbc.queryForObject("SELECT BIN_TO_UUID(canonical_order_id) FROM submission_scope WHERE id=?",String.class,Ids.bytes(scope));
         if(target!=null)jdbc.queryForList("SELECT id FROM outbound_order WHERE id=UUID_TO_BIN(?) FOR UPDATE",target);
         var existing=jdbc.queryForList("SELECT id FROM submission WHERE id=? FOR UPDATE",byte[].class,Ids.bytes(c.id()));
