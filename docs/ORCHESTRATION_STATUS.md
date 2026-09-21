@@ -1,5 +1,12 @@
 # 总调度任务看板
 
+**第五轮首生产冻结（2026-09-21，当前）**：`0311dfaf4255671a605a17aa3defc145df9621a6`已提交推送`codex/r06-source-foundation`且远端一致，17文件；主调度只读核对作者56单元/5IT的最终XML、V34空库/JAR和历史失败。development目前仍为管理提交`aeb6fb2`，没有合入本轮生产交付。W2负责固定SHA非空升级/负向/旧服务回归，W3负责固定SHA新向量与独立生产复审，W1仅补PC/投影/真实K两连接测试；重型时段目前归W2。
+
+- 作者失败单列：56单元首轮1项缺sku样本失败，原日志保留但该轮XML被复跑覆盖；IT首次参数位置错误未运行；随后ALTER缺ADD CHECK、索引重名、CHECK括号三次DDL失败各导致同一组5项Context失败，不当15个不同业务场景。retry04首次5IT中1项测试复用原submissionId被正确400拒绝，改独立fixture后5IT全过。整数截断为静态发现，独立首次诊断已在修后，不编造修前红测。
+- 作者19323原库、_r2、_retry03失败断点和成功_retry04全部保留；retry03/04独立账号及私有目录，原库与r2共用的是本轮新账号/目录。19323仍供后续补充验收，结束正常停实例。原13316/19321/19322不动。
+- W2新19324基线实际9护栏/1种子IT通过，20场景、92业务表原列逐值（72非空/1604行）、38文件冻结；首轮2个夹具编译错误未运行测试/种子，日志保留。新_dirty/_missing/_signature/_ddl库各独立账号/私有目录，当前待固定迁移验收；源基线不重种。复制器DEFAULT_GENERATED误判经独立静态预审修正，schema原定义按明确白名单比对，接口DTO重放与原receipt_text存储字节分别记录。
+- W3在途176对照通过不算最终固定验收；生产receipt/control仍仅对象与域hash，合成签名不代表真实可信actor/签发/台账。独立预审尚无额外阻断，冻结复审/最终向量待报告。旧R09工具明确拒绝V34，其适配与完整恢复继续单列。
+
 **第五轮实施接点（2026-09-21）**：启动管理记录`797efad4e1edaeed04e66527b760ab22776c0fca`已提交/推送development并核对远端一致；只保存五管理文件，未运行业务测试，out.xlsx原摘要保持。三执行者的生产/验收材料正在各自树准备，尚无第五轮作者冻结提交或业务通过结论。主调度只读发现commandVersion整数截断风险，已转W1修复、W3独立负向验证，最终证据待交付。
 
 - 已确定W1切分：V34新增TEMP scope迁移观察mapping/decision初值、source_evidence_object/set/item/verification、temporary_command_receipt/decision_event基础关系；共同K增加source_scope_id/source_evidence_set_id，仅新增SOURCE_RESERVED可空order分支，保留bale_id唯一主键和旧正式/PC真实order要求。本批不预造处置/续作表或owner。
