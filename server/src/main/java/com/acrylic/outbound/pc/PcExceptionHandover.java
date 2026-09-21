@@ -2,7 +2,6 @@ package com.acrylic.outbound.pc;
 
 import com.acrylic.outbound.common.*;
 import com.acrylic.outbound.inventory.master.MutationAccess;
-import com.acrylic.outbound.orders.OrderWriter;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,15 +12,16 @@ import static com.acrylic.outbound.pc.PcExceptionChecks.*;
 
 @Service
 public class PcExceptionHandover {
-    private final MutationAccess access;private final OrderWriter orders;private final PcStore works;private final PcReceipts receipts;
-    private final PcExceptionChecks checks;private final PcExceptionStock stock;private final JdbcTemplate jdbc;
-    public PcExceptionHandover(MutationAccess access,OrderWriter orders,PcStore works,PcReceipts receipts,PcExceptionChecks checks,PcExceptionStock stock,JdbcTemplate jdbc) {
-        this.access=access;this.orders=orders;this.works=works;this.receipts=receipts;this.checks=checks;this.stock=stock;this.jdbc=jdbc;
+    private final PcStore works;private final PcReceipts receipts;
+    private final PcExceptionChecks checks;private final PcExceptionStock stock;private final JdbcTemplate jdbc;private final PcIdentityLocks identities;
+    public PcExceptionHandover(PcStore works,PcReceipts receipts,PcExceptionChecks checks,PcExceptionStock stock,JdbcTemplate jdbc,PcIdentityLocks identities) {
+        this.works=works;this.receipts=receipts;this.checks=checks;this.stock=stock;this.jdbc=jdbc;this.identities=identities;
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode apply(MutationAccess.Context context,UUID order,PcExceptionCommands.Apply command) {
-        var actor=access.lock(context,"pc:operate").actor();orders.lock(context.warehouse(),order);
+        var identity=identities.plan(context,"pc:operate",order,command.planId());var actor=identity.actor();
         var ticket=receipts.prepare(context,actor,new PcReceipts.Payload("EXCEPTION_APPLY",order,command));if(ticket.replay()!=null)return ticket.replay();
+        identity.recheck();
         var work=works.required(order);checks.epoch(work,context);works.version(work,command.expectedVersion());physical(command.physicalConfirmed());
         var plan=checks.plan(work,command.planId(),command.payloadSha256());
         check(plan.status().equals("APPROVED"),"PC_PLAN_NOT_APPROVED","请先取得主管批准，再由指定人员确认交接");

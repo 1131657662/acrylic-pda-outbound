@@ -13,7 +13,7 @@ public class TemporaryAccess {
     }
     public PdaSessions.Principal lock(String epoch) {
         var principal=access.require("temporary_order:create");guard.lock(epoch);
-        var device=locks.device(principal.deviceId());
+        var device=locks.principal(principal);
         principal=access.require("temporary_order:create");access.require("pda:scan");access.require("pda:submit");
         if(!device.temporaryOrderEnabled()) throw new BusinessException(403,"TEMPORARY_ORDER_DISABLED","此设备未开启临时作业准入");
         return principal;

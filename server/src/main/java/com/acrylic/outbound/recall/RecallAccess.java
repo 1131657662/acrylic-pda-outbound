@@ -4,7 +4,7 @@ import com.acrylic.outbound.auth.Access;
 import com.acrylic.outbound.common.*;
 import com.acrylic.outbound.inventory.master.WarehouseBaseline;
 import com.acrylic.outbound.pda.*;
-import java.util.UUID;
+import java.util.*;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,14 +15,20 @@ public class RecallAccess {
         this.web=web;this.pda=pda;this.guard=guard;this.warehouses=warehouses;this.locks=locks;this.assignments=assignments;
     }
     public UUID web(UUID warehouse,String epoch,boolean write) {
+        return web(warehouse,epoch,write,List.of());
+    }
+    public UUID web(UUID warehouse,String epoch,boolean write,Collection<UUID> users) {
         var actor=web.require(write?"order:recall":"order:read",warehouse);
-        if(write) { guard.lock(epoch);warehouses.read(warehouse,true);actor=web.require("order:recall",warehouse); }
+        if(write) {
+            guard.lock(epoch);var members=new ArrayList<>(users);members.add(actor.id());guard.users(members);
+            warehouses.read(warehouse,true);actor=web.require("order:recall",warehouse);
+        }
         return actor.id();
     }
     public void cancel(UUID warehouse) { web.require("order:cancel",warehouse); }
     public PdaSessions.Principal pda(UUID assignment,String epoch,boolean write) {
         var actor=pda.require("pda:recover");
-        if(write) { guard.lock(epoch);locks.device(actor.deviceId());actor=pda.require("pda:recover"); }
+        if(write) { guard.lock(epoch);locks.principal(actor);actor=pda.require("pda:recover"); }
         AssignmentStore.View a;
         try { a=assignments.get(assignment); } catch(org.springframework.dao.EmptyResultDataAccessException e) { throw missing(); }
         if(!a.deviceId().equals(actor.deviceId().toString()) || !a.operatorId().equals(actor.userId().toString())) throw missing();

@@ -31,10 +31,12 @@ public class DeviceStore {
             DeviceCrypto.sha(input.publicKey()),Ids.bytes(work.actor()));
     }
     public void status(Device device,String status) {
+        new com.acrylic.outbound.pda.PdaSessionLocks(jdbc).device(device.id());
         jdbc.update("UPDATE device SET status=?,row_version=row_version+1 WHERE id=?",status,Ids.bytes(device.id()));
         jdbc.update("UPDATE pda_session SET revoked_at=COALESCE(revoked_at,UTC_TIMESTAMP(3)) WHERE device_id=?",Ids.bytes(device.id()));
     }
     public void temporaryOrder(Device device,boolean enabled) {
+        new com.acrylic.outbound.pda.PdaSessionLocks(jdbc).device(device.id());
         jdbc.update("UPDATE device SET temporary_order_enabled=?,row_version=row_version+1 WHERE id=?",enabled,Ids.bytes(device.id()));
         jdbc.update("UPDATE pda_session SET revoked_at=COALESCE(revoked_at,UTC_TIMESTAMP(3)) WHERE device_id=?",Ids.bytes(device.id()));
     }

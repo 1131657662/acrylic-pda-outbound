@@ -79,12 +79,14 @@ public class UserStore {
         jdbc.update("UPDATE app_user SET password_hash=?,auth_version=auth_version+1 WHERE id=?",hash,Ids.bytes(id));revoke(id);
     }
     private void revoke(UUID id) {
+        new com.acrylic.outbound.pda.PdaSessionLocks(jdbc).user(id);
         jdbc.update("UPDATE pda_session SET revoked_at=COALESCE(revoked_at,UTC_TIMESTAMP(3)) WHERE user_id=?",Ids.bytes(id));
     }
     private void grants(UUID id,List<String> roles,List<UUID> warehouses) {
         jdbc.update("DELETE FROM user_role WHERE user_id=?",Ids.bytes(id));jdbc.update("DELETE FROM user_warehouse WHERE user_id=?",Ids.bytes(id));
         for(String role:roles) jdbc.update("INSERT INTO user_role SELECT ?,id FROM role WHERE code=?",Ids.bytes(id),role);
-        for(UUID warehouse:warehouses) jdbc.update("INSERT INTO user_warehouse VALUES(?,?)",Ids.bytes(id),Ids.bytes(warehouse));
+        for(UUID warehouse:warehouses.stream().sorted(Comparator.comparing(UUID::toString)).toList())
+            jdbc.update("INSERT INTO user_warehouse VALUES(?,?)",Ids.bytes(id),Ids.bytes(warehouse));
     }
     private UserCommands.Item map(ResultSet rs,int index) throws SQLException {
         return new UserCommands.Item(UUID.fromString(rs.getString(1)),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5),List.of(),List.of());

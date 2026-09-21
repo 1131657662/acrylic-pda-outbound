@@ -16,7 +16,7 @@ public class UserService {
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public UserCommands.Receipt create(MutationAccess.Context context,UserCommands.Create input) {
-        var scope=access.lock(context);password(input.password());
+        var scope=access.lock(context,null,input.warehouseIds());password(input.password());
         var metadata=Map.of("username",input.username(),"displayName",input.displayName(),"roles",input.roles(),"warehouseIds",input.warehouseIds(),"reason",input.reason());
         var ticket=receipts.prepare(context,scope.actor(),new UserReceipts.Payload("CREATE",metadata,input.password()));
         if(ticket.replay()!=null) return ticket.replay();
@@ -26,7 +26,7 @@ public class UserService {
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public UserCommands.Receipt update(MutationAccess.Context context,UUID id,UserCommands.Update input) {
-        var scope=access.lock(context);
+        var scope=access.lock(context,id,input.warehouseIds());
         var ticket=receipts.prepare(context,scope.actor(),new UserReceipts.Payload("UPDATE",Map.of("id",id,"command",input),null));
         if(ticket.replay()!=null) return ticket.replay();
         var before=store.find(id);access.target(scope,before,context.warehouse());version(before,input.expectedVersion());
@@ -36,7 +36,7 @@ public class UserService {
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public UserCommands.Receipt password(MutationAccess.Context context,UUID id,UserCommands.Password input) {
-        var scope=access.lock(context);password(input.password());
+        var scope=access.lock(context,id);password(input.password());
         var metadata=Map.of("id",id,"expectedVersion",input.expectedVersion(),"reason",input.reason());
         var ticket=receipts.prepare(context,scope.actor(),new UserReceipts.Payload("PASSWORD",metadata,input.password()));
         if(ticket.replay()!=null) return ticket.replay();

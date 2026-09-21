@@ -17,15 +17,27 @@ public class ContinuationAuthorization {
     public ContinuationAuthorization(AssignmentStore assignments,OfflineSigner signer,JdbcTemplate jdbc,PdaAuthLocks locks,IdentityStore identities) {
         this.assignments=assignments;this.signer=signer;this.jdbc=jdbc;this.locks=locks;this.identities=identities;
     }
-    public PdaSessions.Principal principal(RecallStore.Head r) {
-        var old=assignments.get(r.assignment());var device=locks.device(UUID.fromString(old.deviceId()));
-        UUID user=UUID.fromString(old.operatorId());var u=jdbc.queryForMap("SELECT username,auth_version,status FROM app_user WHERE id=? FOR UPDATE",Ids.bytes(user));
+    public Origin origin(RecallStore.Head r) {
+        var old=assignments.get(r.assignment());
+        return new Origin(r.assignment(),UUID.fromString(old.operatorId()),UUID.fromString(old.deviceId()));
+    }
+    public PdaSessions.Principal principal(RecallStore.Head r,Origin before) {
+        if(!before.equals(origin(r))) throw changed();
+        var device=locks.device(before.device());
+        UUID user=before.user();var u=jdbc.queryForMap("SELECT username,auth_version,status FROM app_user WHERE id=?",Ids.bytes(user));
         var permissions=identities.permissions(user);
         if(!u.get("status").equals("ACTIVE") || !permissions.containsAll(List.of("pda:login","pda:scan","pda:submit")) ||
             identities.warehouses(user).stream().noneMatch(w->w.id().equals(r.warehouse())))
             throw new BusinessException(409,"OFFLINE_AUTH_REAUTHORIZATION_REQUIRED","原人员或设备资格无效，须先核对");
         return new PdaSessions.Principal(null,user,(String)u.get("username"),device.id(),r.warehouse(),u.get("auth_version").toString(),device.rowVersion());
     }
+    public void recheck(RecallStore.Head current,Origin before) {
+        if(!before.equals(origin(current))) throw changed();
+    }
+    private BusinessException changed() {
+        return new BusinessException(409,"CONTINUATION_IDENTITY_CONTEXT_CHANGED","原授权人员或设备已变化，请刷新后重新核对");
+    }
+    public record Origin(UUID assignment,UUID user,UUID device) { }
     public AssignmentStore.View issue(ContinuationStore.Head h,PdaSessions.Principal actor) {
         var publication=assignments.publication(h.order(),h.revision());
         var issued=Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);var old=assignments.get(UUID.fromString(

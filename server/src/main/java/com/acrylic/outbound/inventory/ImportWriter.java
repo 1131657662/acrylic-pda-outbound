@@ -27,6 +27,7 @@ public class ImportWriter {
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public UUID save(Prepared input) {
         guard.lock(input.epoch());
+        guard.users(java.util.List.of(input.actor()));
         var actor = access.require("inventory:import", input.warehouse());
         if (!actor.id().equals(input.actor()))
             throw new BusinessException(401,"UNAUTHENTICATED","导入身份已变化，请重新登录");

@@ -23,9 +23,12 @@ public class ContinuationApproval {
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode approve(RecallRequests.Context c,UUID id,JsonNode command) {
-        UUID actor=access.web(c.warehouse(),c.epoch(),true);permissions.require("order:resume",c.warehouse());
+        permissions.require("order:recall",c.warehouse());permissions.require("order:resume",c.warehouse());
         var before=store.get(id);var r=recalls.get(before.recall());equal(r.warehouse(),c.warehouse(),"仓库不匹配");equal(r.epoch(),c.epoch(),"恢复代次变化须先对账");
-        var principal=authorization.principal(r);recalls.lock(r);var h=store.get(id);
+        var origin=authorization.origin(r);UUID actor=access.web(c.warehouse(),c.epoch(),true,List.of(origin.user()));
+        permissions.require("order:resume",c.warehouse());
+        var principal=authorization.principal(r,origin);recalls.lock(r);var h=store.get(id);
+        authorization.recheck(recalls.get(h.recall()),origin);
         var key=new IdempotencyRequests.Key(actor,"order.continuation.approve",c.key());String hash=sha(object().put("continuationId",id.toString()).set("command",command));
         var replay=requests.find(key,hash);if(replay!=null)return receipt(store.get(replay));
         ContinuationChecks.conflict(h.status().equals("REQUESTED"),"CONTINUATION_ALREADY_APPROVED","申请已批准，请查询原票据");
