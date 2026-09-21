@@ -1,5 +1,7 @@
 # 项目长期协作约定
 
+**第六轮准备接点（2026-09-21）**：启动管理`34a2c58`已推送development；W1正在实现C1b，四个本人回执GET及严格原字节/历史身份验证尚未冻结或实测，生产决定handler/POST仍关闭。W2首构建字体下载超时，后用已核本机字体完成15护栏单元；首准备IT因默认未启迁移而缺Flyway历史表失败，原19327库0表且未创建业务种子，marker/日志/XML保留。总调度已另分配同19327的`acrylic_outbound_ledger_verify_20260921_r2`、`ledger_verify_r2_20260921`及独立private-files-r2/签名/evidence-r2，须精确护栏和显式迁移；原datadir及失败库不重置。重型时段交回W1，W2再跑先协调。回执版本宽松转换及mappingVersion=0问题为静态预审发现，不编造修前红测；第五轮旧seed401仍未解决。详见[看板](docs/ORCHESTRATION_STATUS.md)，本条优先于下方启动时环境分配。
+
 **第六轮C1b已派（2026-09-21，当前）**：从本地/远端一致`82a2e13cac306f877ed5e2c887970adf3d8e57f0`续接第五轮基础。仍为主协调加三个执行者：W1 `/root/source_foundation`在新`r06-ledger-runtime`树唯一写台账/可信不可变回执/本人原键GET与currentEffect/内部事务及必要共享协议、鉴权、签名、契约；W2 `/root/foundation_migration_verify`在新`r06-ledger-verification`树独占数据库故障/权限并发/真实新会话验收；W3 `/root/foundation_protocol_verify`在新`r06-ledger-protocol`树独占实际回执独立消费者/向量及交叉复审。具体范围见[看板](docs/ORCHESTRATION_STATUS.md)。已有设计与用户“继续”授权按既定顺序实施，不重做第五轮。当前仅派工，不计新代码或测试通过。
 
 本轮生产七类决定handler及POST执行入口保持关闭，内部合成handler仅测试；不以台账写入或验签成功表示业务决定/放行。E2a证据写/STOP_PROOF/manifest后接，V34不重写、不预占V35，有实际schema缺口先协调。W1/W2新环境分别限19326/19327、各自独立datadir/库/账号/私有资料及精确护栏；原13316/19321–19325保持停止，其它实例不动。新fixture保留自己的EC私钥以真实挑战重登，旧seed401不改身份解锁。主协调仍只五管理文件；普通正常确认空理由、localDeletionAllowed=false、现网/原库/设备/审批/旧BCD及不合main/部署边界保持。
