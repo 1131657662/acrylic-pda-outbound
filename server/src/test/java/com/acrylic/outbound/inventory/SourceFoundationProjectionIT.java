@@ -2,6 +2,7 @@ package com.acrylic.outbound.inventory;
 
 import com.acrylic.outbound.pda.*;
 import com.acrylic.outbound.temporary.TemporaryAvailability;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
@@ -28,9 +29,11 @@ class SourceFoundationProjectionIT {
         var baseline=t.f.pda.data(get("/api/v1/pda/sync/barcodes").header("X-Server-Recovery-Epoch","1"),t.f.tokens);
         String set=SourceFoundationFixture.reserve(t,null),bale=t.body.at("/scans/0/baleId").asText();
         var delta=t.f.pda.data(get("/api/v1/pda/sync/barcodes").header("X-Server-Recovery-Epoch","1").param("cursor",baseline.get("nextCursor").asText()),t.f.tokens);
-        assertThat(delta.get("events").toString()).contains(bale,"RESERVED");
+        assertThat((Iterable<JsonNode>)delta.get("events")).filteredOn(row->bale.equals(row.path("baleId").asText())).singleElement()
+            .satisfies(row->assertThat(row.path("status").asText()).isEqualTo("RESERVED"));
         var data=preparations.read(assignments.get(UUID.fromString(t.f.assignment.get("id").asText())));
-        assertThat(json.readTree(data.availability()).findValuesAsText("available")).contains("false");
+        assertThat((Iterable<JsonNode>)json.readTree(data.availability())).filteredOn(row->bale.equals(row.path("baleId").asText())).singleElement()
+            .satisfies(row->assertThat(row.get("available")).isEqualTo(json.getNodeFactory().booleanNode(false)));
         String barcode=t.body.at("/scans/0/barcode").asText();
         t.f.web.publish(t.f.web.stage(SkuFixture.concat(SkuFixture.row(barcode,"300.5"),SkuFixture.row("003"+UUID.randomUUID().toString().replace("-","").substring(0,8).toUpperCase(),"200"))));
         assertThat(availability.read(t.f.web.identity().warehouse(),"1").items()).anySatisfy(item->{

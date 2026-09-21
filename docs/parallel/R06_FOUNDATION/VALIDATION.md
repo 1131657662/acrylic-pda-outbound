@@ -36,3 +36,11 @@
 W2另测非空V33升级/脏关系/故障及七类旧服务回归，W3另测233离线向量；都不算本作者29IT或本轮组合结果。W3 `dbb0693` 独立只读复审报告在本目录，未重跑其测试。
 
 真正证据接收/完整性、台账写者/原回执查询、LINK/处置/续作/最终成功、签名耐久、HTTP/Android/现场及R09 V34恢复/fence仍未实施或未验。原旧库/恢复断点、设备、现网、旧BCD和审批边界保持。
+
+## 独立复审后的投影断言加强
+
+在已测`27b69a7`之后，仅将SourceFoundationProjectionIT两处宽泛断言改为按目标baleId筛选唯一条目：该条码增量必须RESERVED、该正式准备条目available必须为JSON false，避免无关行满足断言。已静态核对BarcodeSyncService.Event和PreparationPayloads.Availability实际字段；生产/schema仍与`0311dfa`完全相同。
+
+重型验证槽释放后，仅运行`integrationTest --tests '*SourceFoundationProjectionIT'`，加强版2项通过，0失败/错误/跳过，Java测试编译通过；没有重跑其余27项或单元/JAR，仍为29个不同作者IT，不能累加成31或算作组合验证。本次日志`.local/projection-assertions-final.log`与XML`.local/evidence/projection-assertions-final/TEST-com.acrylic.outbound.inventory.SourceFoundationProjectionIT.xml`保留；XML SHA-256为`f608603eae204a635994eb7169f2e2f7f045a27413fba3b53fe55d6311cd5c47`，旧final-summary保留原批次含义。
+
+执行前精确核对19323未监听及本树原datadir/配置，恢复retry04原库、原私有目录和原签名；未重建或重种。收尾再次核对端口/datadir并mysqladmin正常停库，端口无监听，证据`.local/evidence/stop-19323-projection.txt`；四个新合成库与文件继续保留。没有新增失败，先前失败和所有未实施边界继续如上登记。
