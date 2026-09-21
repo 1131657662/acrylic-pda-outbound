@@ -24,7 +24,11 @@ class LedgerSecondLookupIT extends LedgerRuntimeFixture {
         var pool=Executors.newFixedThreadPool(2);
         try {
             var first=pool.submit(()->execute(seed,command));assertThat(firstMiss.await(10,TimeUnit.SECONDS)).isTrue();
-            var second=pool.submit(()->execute(seed,command));byte[] winner=second.get(20,TimeUnit.SECONDS);release.countDown();
+            var second=pool.submit(()->execute(seed,command));byte[] winner=second.get(20,TimeUnit.SECONDS);
+            // Make expected decision state stale after the competing commit; the first caller must replay before expected validation.
+            jdbc.update("UPDATE temporary_decision_state SET decision_version=decision_version+1 WHERE scope_id=UUID_TO_BIN(?)",
+                json.readTree(winner).at("/originalContext/scopeId").asText());
+            release.countDown();
             assertThat(first.get(20,TimeUnit.SECONDS)).isEqualTo(winner);
             var counts=new LedgerDatabaseFacts(jdbc).counts(seed,"verify-"+command.path("commandId").asText());
             for(String key:java.util.List.of("requests","receipts","events","audit"))assertThat(((Number)counts.get(key)).longValue()).isEqualTo(1);

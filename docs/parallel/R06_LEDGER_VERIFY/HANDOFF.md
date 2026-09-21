@@ -41,3 +41,5 @@ W1 固定生产父提交 `05ed1d3c4f121d9462d0077bd607c130f64cf562`，本树以 
 首次矩阵运行 40 项中 3 项失败均属验收夹具问题并保留原 XML：`receipt-request` 插入坏关系时漏填非空 `resource_id`；恢复模式误用不存在的 `RECOVERING` 值；`version-fraction` 在负向重签前即被严格 canonical 编码拒绝。修正后对应组重跑通过，不能将首次失败写成产品缺陷。首两次准备IT失败也继续单列：初始空库未开启 Flyway，r2 首complete快照工具旧目录；均未计台账通过。
 
 证据目录：`.local/evidence-r2/ledger-first-results/`、`ledger-matrix-first-results/`、`ledger-matrix-second-results/`、`ledger-matrix-third-results/`、保留基线及故障/并发/权限 JSON。敏感数据库、私钥、原始正文及日志均不入 Git。生产未修改、未部署、未合入 development/main；旧 seed401、真实 HTTP/设备/R09 恢复仍未验。
+
+追加窄核对：`LedgerSecondLookupIT` 在竞争者提交后再推进同scope当前decisionVersion，使首调用的expected确实过时，随后释放首调用；1项通过，证据在 `ledger-second-expected-stale-results`，未增加独立用例总数。19327已再次正常停止。
