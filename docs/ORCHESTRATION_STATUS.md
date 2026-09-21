@@ -1,5 +1,21 @@
 # 总调度任务看板
 
+**第六轮C1b启动（2026-09-21，当前）**：用户继续后已核对development本地/远端`82a2e13cac306f877ed5e2c887970adf3d8e57f0`，主目录仅原out.xlsx且摘要保持；13316/19321–19328无监听、无Java，其它MySQL进程4280/5384未动。复用三执行代理身份但各建新独立树，从已审C1方案实施台账/原键回放，不重做第五轮。主协调仅规划/派工/只读审查与五管理文件。当前只有派工与盘点结论，无第六轮源码/测试通过；第五轮成绩仍为历史。
+
+| 执行者 | 新独立工作树 / 分支 | 唯一写范围与当批交付 |
+| --- | --- | --- |
+| W1 `/root/source_foundation` | `D:/acrylic-pda-worktrees/r06-ledger-runtime` / `codex/r06-ledger-runtime` | 唯一生产`temporary/command`、必要协议/鉴权/共享锁/签名/总契约接点、作者测试及`docs/parallel/R06_LEDGER_RUNTIME/**`；窄仓储、可信回执、本人原键GET/currentEffect、内部事务协调器。先沟通最小接口卡，再固定源码供验收 |
+| W2 `/root/foundation_migration_verify` | `D:/acrylic-pda-worktrees/r06-ledger-verification` / `codex/r06-ledger-verification` | `server/src/test/java/com/acrylic/outbound/ledgerverify/**`、必要`inventory/LedgerVerifySeed.java`桥及`docs/parallel/R06_LEDGER_VERIFY/**`；真实MySQL唯一键/回滚/权限会话并发、原事实保留与新EC身份真实重新登录 |
+| W3 `/root/foundation_protocol_verify` | `D:/acrylic-pda-worktrees/r06-ledger-protocol` / `codex/r06-ledger-protocol` | `docs/parallel/R06_LEDGER_PROTOCOL/**`独立实际回执消费者/固定向量、W1与W2只读复审；不写生产/总契约/Android或共享测试。可另受派精确保存主协调冻结管理文件 |
+
+- C1b新执行内部链路为REQUIRED/READ_COMMITTED，当前身份/历史读资格后先查原键，E/G/排序U/W/D/H锁后再查；已提交命中先于新写权限/expected，原字节回放，异文冲突。未命中才检查所支持族的实际可信上下文/权限及expected、取得既有来源锁；不补建来源/订单。request/receipt/事件/审计等同事务，签名失败全回滚，唯一异常回滚后另读，禁止失败事务内续写。
+- 生产七类决定handler及POST新执行入口本轮关闭，内部合成handler仅测试注入；尚未实现的LINK/处置等不得因格式合法就签为成功。原响应字节与动态currentEffect分离；核request↔receipt、规范字节/摘要/token/稳定原上下文，未知kid或损坏fail-closed，历史回执不随当前授权/映射重写。NORMAL_CONFIRM空理由及放行/释放/删除能力false保持。
+- W1仅新19326 / `acrylic_outbound_ledger_20260921` / `outbound_ledger_20260921`；W2仅新19327 / `acrylic_outbound_ledger_verify_20260921` / `outbound_ledger_verify_20260921`。各自独立datadir/签名/私有文件，端口/datadir/库/账号精确护栏及合成资料；结束正常停自己实例保留证据。旧13316/19321–19325、旧库/断点及其它实例不动，不复用旧19324夹具。新设备EC私钥保存于ignored资料以真实挑战重登；旧seed GET401仍未完成，不改其身份或时间。
+- 第一个重型Gradle时段归W1，W2建库/重型验证前内部协调，W3轻量读取/消费者可并行，Java构建先协调。W2/W3先准备独立矩阵/预期，最终必须消费固定生产SHA，失败和作者/独立/组合证据分列。执行者不再派子代理；本轮完成后再交叉复审、明确新树组合与development快进。
+- V34已冻结不重写，尚未分配V35；真实schema缺口先报总调度。E2a证据接收/独立原键回执/STOP_PROOF/manifest、Android耐久、最终记账/决定/放行及R09 V34恢复/fence均后接。旧HTTP/代理审批阻断不重试或换入口绕过，MockMvc不冒称真实HTTP。现网/设备/旧BCD保持，不合main/部署。
+
+以下为第五轮及更早历史完成记录，不覆盖第六轮在途状态。
+
 **第五轮完成检查点（2026-09-21，当前，优先于下方历史）**：整合最终`f6e5af2abea77a844e358902866655e1c1c770d4`已由W1独立只读复审，无本轮基础范围阻断。W3从管理基线`b3e3fcd4987c426cf1086e8189bb981297fe408f`在新树保留三批历史整合，完成组合后已ff-only合回并推送`codex/development`，本地/远端一致。主协调未修改业务、测试或数据库，未提交/合并/处理冲突；仅更新五管理文件，随后交执行者精确保存。详见[第五轮整合指南](FIFTH_WAVE_INTEGRATION_GUIDE.md)。
 
 | 已审来源 / 整合职责 | 固定提交与实际结果 | 收尾状态 |

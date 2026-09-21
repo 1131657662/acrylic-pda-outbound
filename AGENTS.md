@@ -1,5 +1,9 @@
 # 项目长期协作约定
 
+**第六轮C1b已派（2026-09-21，当前）**：从本地/远端一致`82a2e13cac306f877ed5e2c887970adf3d8e57f0`续接第五轮基础。仍为主协调加三个执行者：W1 `/root/source_foundation`在新`r06-ledger-runtime`树唯一写台账/可信不可变回执/本人原键GET与currentEffect/内部事务及必要共享协议、鉴权、签名、契约；W2 `/root/foundation_migration_verify`在新`r06-ledger-verification`树独占数据库故障/权限并发/真实新会话验收；W3 `/root/foundation_protocol_verify`在新`r06-ledger-protocol`树独占实际回执独立消费者/向量及交叉复审。具体范围见[看板](docs/ORCHESTRATION_STATUS.md)。已有设计与用户“继续”授权按既定顺序实施，不重做第五轮。当前仅派工，不计新代码或测试通过。
+
+本轮生产七类决定handler及POST执行入口保持关闭，内部合成handler仅测试；不以台账写入或验签成功表示业务决定/放行。E2a证据写/STOP_PROOF/manifest后接，V34不重写、不预占V35，有实际schema缺口先协调。W1/W2新环境分别限19326/19327、各自独立datadir/库/账号/私有资料及精确护栏；原13316/19321–19325保持停止，其它实例不动。新fixture保留自己的EC私钥以真实挑战重登，旧seed401不改身份解锁。主协调仍只五管理文件；普通正常确认空理由、localDeletionAllowed=false、现网/原库/设备/审批/旧BCD及不合main/部署边界保持。
+
 **第五轮已收口（2026-09-21，优先于以下历史记录）**：W1`04a679b`、W2`8bdf1b8`、W3`1c5fca8`经独立复审，保留历史整合并以`f6e5af2abea77a844e358902866655e1c1c770d4`完成指南；W1最终固定复审无阻断后，W3已ff-only合回并推送development，本地/远端一致。生产/V34固定`0311dfa`，63交付文件无整合修码。新19325组合71单元/99执行IT/JAR、233离线及0.29/116路径通过，0失败/错误；另6类13专用夹具默认禁用跳过，不计通过。两份G等待/唯一K终态JSON留存，19325正常停止、库/签名/证据保留；19323/19324与原13316/19321/19322保持停止。作者失败及旧seed GET401未通过限制继续单列，不用服务DTO或新fixture替代旧身份HTTP验证。见[第五轮整合](docs/FIFTH_WAVE_INTEGRATION_GUIDE.md)及[看板](docs/ORCHESTRATION_STATUS.md)。
 
 下一先接C1b台账/不可变原回执与原键优先回放，再接E2a有界原机证据写；仍由一名执行者独占共享协议/事务/迁移，其余两名独立验收。证据首次接收的独立原键/回执、STOP_PROOF/manifest合同尚须固定，不能冒用七类决定命令或补建缺失来源；有实际schema缺口再分配迁移，不预占V35。本条登记下一队列，未派新业务实施。台账执行器、证据上传、决定/放行、R09 V34恢复/fence及HTTP/设备仍未完成；普通正常确认空理由、localDeletionAllowed=false、Android code20/Room17保持。主协调只管理，不写业务/数据库/冲突，不合main/部署，不恢复旧BCD；管理保存提交由实际Git确定。
