@@ -56,7 +56,7 @@ public class SubmissionStore {
             """,Ids.bytes(c.id()),Ids.bytes(scope),Ids.bytes(c.assignment()),Ids.bytes(c.device()),Ids.bytes(actor.user()),c.round(),Long.parseLong(c.epoch()));
         if(c.continuation()==null) {
             jdbc.update("UPDATE submission_scope SET current_submission_id=? WHERE id=?",Ids.bytes(c.id()),Ids.bytes(scope));
-            jdbc.update("INSERT INTO order_submission_slot VALUES(?,?,?,?,'FROZEN')",Ids.bytes(c.order()),Ids.bytes(scope),c.round(),Ids.bytes(c.id()));
+            jdbc.update("INSERT INTO order_submission_slot(order_id,scope_id,work_round,current_submission_id,phase) VALUES(?,?,?,?,'FROZEN')",Ids.bytes(c.order()),Ids.bytes(scope),c.round(),Ids.bytes(c.id()));
         }
         else {
             jdbc.update("UPDATE submission SET continuation_id=? WHERE id=?",Ids.bytes(c.continuation()),Ids.bytes(c.id()));
@@ -92,7 +92,7 @@ public class SubmissionStore {
     public void select(Head h) {
         if(h.control().continuation()==null)return;current(h);var c=h.control();
         jdbc.update("UPDATE submission_scope SET current_submission_id=? WHERE source_order_id=? AND work_round=?",Ids.bytes(c.id()),Ids.bytes(c.order()),c.round());
-        jdbc.update("UPDATE order_submission_slot SET current_submission_id=?,phase='FROZEN' WHERE order_id=? AND work_round=?",Ids.bytes(c.id()),Ids.bytes(c.order()),c.round());
+        jdbc.update("UPDATE order_submission_slot SET current_submission_id=?,phase='FROZEN',slot_version=slot_version+1 WHERE order_id=? AND work_round=?",Ids.bytes(c.id()),Ids.bytes(c.order()),c.round());
     }
     public String payloadHash(UUID id) {
         var hashes=jdbc.queryForList("SELECT payload_sha256 FROM submission_payload WHERE submission_id=?",String.class,Ids.bytes(id));return hashes.isEmpty()?null:hashes.getFirst();

@@ -17,9 +17,9 @@ public class RecoveryStock {
         var issues=object().putArray("issues");
         for(var scan:value.scans().stream().sorted(Comparator.comparing(s->s.bale().id().toString())).toList()) {
             byte[] id=Ids.bytes(scan.bale().id());long cycle=jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=? FOR UPDATE",Long.class,id);
-            var owner=jdbc.queryForList("SELECT IF(state='QUARANTINED','QUARANTINED',BIN_TO_UUID(order_id)) FROM bale_commitment WHERE bale_id=? FOR UPDATE",String.class,id);
+            var owner=jdbc.queryForList("SELECT IF(state IN ('QUARANTINED','SOURCE_RESERVED'),'FOREIGN_OWNER',BIN_TO_UUID(order_id)) FROM bale_commitment WHERE bale_id=? FOR UPDATE",String.class,id);
             if(cycle!=scan.cycle()) issues.add(object().put("code","DISPATCH_CYCLE_CONFLICT").put("barcode",scan.bale().barcode()));
-            if(!owner.isEmpty() && !owner.getFirst().equals(h.order().toString())) {
+            if(!owner.isEmpty() && !h.order().toString().equals(owner.getFirst())) {
                 issues.add(object().put("code","BALE_ALREADY_COMMITTED").put("barcode",scan.bale().barcode()));continue;
             }
             // Preserve physical evidence even when upstream/book/cycle is conflicted; recovery never permits dispatch.

@@ -27,8 +27,11 @@ public class SubmissionStock {
                 !positions.getFirst().present() || !positions.getFirst().book().equals("NOT_DEDUCTED") || positions.getFirst().blocked()!=null?"INVENTORY_UNAVAILABLE":
                 !positions.getFirst().matches(scan.bale())?"INVENTORY_BASELINE_CHANGED":null;
             if(conflict!=null) { issues.add(object().put("code",conflict).put("barcode",scan.bale().barcode()));continue; }
-            if(owners.isEmpty()) jdbc.update("INSERT INTO bale_commitment(bale_id,order_id,submission_id,dispatch_cycle,state,created_at) VALUES(?,?,?,?,'REVIEW_RESERVED',UTC_TIMESTAMP(3))",
-                Ids.bytes(bale),Ids.bytes(head.order()),Ids.bytes(head.control().id()),scan.cycle());
+            if(owners.isEmpty()) jdbc.update("""
+                INSERT INTO bale_commitment(bale_id,order_id,submission_id,dispatch_cycle,state,created_at,source_scope_id,source_warehouse_id)
+                SELECT ?,?,?,?,'REVIEW_RESERVED',UTC_TIMESTAMP(3),IF(s.temporary_authorization_id IS NULL,NULL,s.scope_id),IF(s.temporary_authorization_id IS NULL,NULL,c.warehouse_id)
+                FROM submission s INNER JOIN submission_scope c ON c.id=s.scope_id WHERE s.id=?
+                """,Ids.bytes(bale),Ids.bytes(head.order()),Ids.bytes(head.control().id()),scan.cycle(),Ids.bytes(head.control().id()));
         }
         for(var scan:sorted) BarcodeChanges.bale(jdbc,scan.bale().id());
         return issues;

@@ -40,6 +40,8 @@ public class ContinuationChecks {
         return DispositionProofs.effective(body);
     }
     public void stock(UUID order,JsonNode body,JsonNode proofs) {
+        conflict(jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE order_id=? AND source_evidence_set_id IS NOT NULL",Long.class,Ids.bytes(order))==0,
+            "SOURCE_COMMITMENT_REQUIRES_RESOLUTION","来源证据占用须通过独立来源处置核验");
         var held=dispositions.held(body,proofs);var excluded=new HashSet<String>();proofs.forEach(p->excluded.add(text(p,"captureId")));
         var ids=new ArrayList<JsonNode>();held.forEach(ids::add);ids.sort(Comparator.comparing(r->text(r,"baleId")));
         long count=jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE order_id=? AND state!='QUARANTINED'",Long.class,Ids.bytes(order));
