@@ -21,7 +21,7 @@ final class LedgerAuthorFixture {
         control.putObject("source").put("kind","TEMP").put("creatorDeviceId",temp.device.id()).put("clientOrderId",UUID.randomUUID().toString());
         temp.pda.data(post("/api/v1/pda/submissions/"+submission+"/abort").header("X-Server-Recovery-Epoch","1")
             .contentType("application/json").content(control.toString()),temp.tokens);
-        var directory=LedgerRuntimeEnvironment.ROOT.resolve("evidence/devices");Files.createDirectories(directory);
+        var directory=LedgerRuntimeEnvironment.root().resolve("evidence/devices");Files.createDirectories(directory);
         Files.write(directory.resolve(temp.device.id()+".pk8"),temp.device.key().getPrivate().getEncoded(),StandardOpenOption.CREATE_NEW);
     }
     ObjectNode command(CommandFacts facts,String kind) {
