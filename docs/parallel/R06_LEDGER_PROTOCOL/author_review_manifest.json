@@ -1,0 +1,86 @@
+{
+  "productionCommit": "05ed1d3c4f121d9462d0077bd607c130f64cf562",
+  "files": {
+    "contracts/IMPLEMENTED_API.md": "abc135476ca05e13f22a6e035390f553e81fc559f2d058bd83e3dcdbf5eeaa18",
+    "contracts/openapi.yaml": "bd5f2fe1ee9fd8905e65f01e3e929b19246c481a71ca60506f52427106bf94ae",
+    "contracts/temporary-command-paths.yaml": "44d1dc5be626216a440947bc09b0fe78c5541ba1eddf24f78e57376b88ea992d",
+    "contracts/temporary-command-schemas.yaml": "94cab0a2ef861decc4ef825c720711a6e8c113a36b77fdc5ba91c6ee0700df04",
+    "docs/parallel/R06_LEDGER_RUNTIME/IMPLEMENTATION.md": "20f8ff6ba594113cb1329fd7a3fa0b27d8a61c512de6289e54369709c2dc77a0",
+    "docs/parallel/R06_LEDGER_RUNTIME/VALIDATION.md": "a7595bf83d6a1e24ff62b0783a1c0f56b6562008b2170535e2aadbc5b8509815",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandContext.java": "99084e87150b5fdda19ecc6bafc4d6f0c7951e942fee9357bd2840394e71eb60",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandCurrentEffect.java": "f18fbb71ec7b280a44d73b6a05247d442519ef5d7ade2f06cbc6c93054f09e6a",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandErrors.java": "cd0f564844c168bd20813ce6fc31e524e28d9897d8b44aed600d3dc4ba66e3d4",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandExpected.java": "5e2e9c4749a892335a4cfd56faa6f8e338b1b6b84b8dd52bd57ed6374286dfb0",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandFacts.java": "33b8f9ad9adedd322d96ca2a55f36e744451c5abdc4ab435eee7584d21d64165",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandHistoricalIdentity.java": "c980c427faacb31ba02ef443488e4fad966ec9c37baa207e73abfcf320ea8f64",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandIdentity.java": "364a1f9df95858c25f65e390421568dcb68c81d5f0559be428d33237bcdc06e5",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandInput.java": "f30b3417d26b1c3a248ce5b96920a139021f423969f7889612b31a8ac809adeb",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandLocks.java": "0cea3903ac6755029dfe568ba87bf520e47e06a4bffeae3d5cc837453da6dda6",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandOperation.java": "2ce3dd67b65b88cedd391fb624202262c914812eec79a4feb7435a8fad4b5cdd",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandPermissions.java": "2f8e8348f47e5e9ac0da798c4dffa47088dd8eb8c6bc71aeafc57a58b6c8321b",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandReadController.java": "0f1cae1e65921721f254511070bcb08e7d5a3d67d802ba07e082d78701cf9aa4",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandReadService.java": "e316235f8c25bdb5ed3184b73dc1b00b5171b6a6671ee9245c63de4c8cb0a666",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandReceiptCodec.java": "28e3215ff8baf05a0752f41fd1b77693bd703781c31958eb606a59a0d2b106f0",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandReceiptIntegrity.java": "8718166f73f863c03fb3df588863c4a3940764153c35aacaffaa39979b701288",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandReceiptShape.java": "ed09c04b61e17e9527cc64b2b5e33944bc8b612a93df7800b508ae8338f2cdc4",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandRecord.java": "2c9ce20947ae7313278ca2261e8f2fac9bae4313ce75c66e33ef5eadb62c11cd",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandReplay.java": "cead4b6e3fb769722862f4cd65f121907a8d5d432a149e52fbbf38fcac2538dc",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandSignature.java": "52800413f2a1784ac660dec3f47e68506cb914124a9a380f32f677ad106a77a6",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandStore.java": "b8e0768796f56cb5c9f4f20194b1f3a9ec1b1a8f402718dabaf04865d3973626",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandSyntheticEligibility.java": "79deca16c24ee9e20689298028a63d819c09b74e8751cd438020eeaa78d7e458",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandUnitOfWork.java": "9b463770ed6a00b4009a7d47ca271be76d21d12e5b02208c317bb63bd3bc9c0e",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/CommandWrite.java": "c20238e59e79f8bf99deca44481b03340fa18f703e08cf87e89193ee1e25463c",
+    "server/src/main/java/com/acrylic/outbound/temporary/command/TemporaryCommandService.java": "7d9c994bd1d04e71b8664e214b6fbdebe8ba1028edfaeaf8b3d5c8a5bbf6078e",
+    "server/src/test/java/com/acrylic/outbound/inventory/LedgerAuthorFixture.java": "dab152fe3daf78d906adb2a6d8a593c62ec89775d526f5157fd0b702324222f9",
+    "server/src/test/java/com/acrylic/outbound/inventory/LedgerAuthorIT.java": "e79a1f369225cb7a57b4e96803cd2f919c1f9e232e8169dfdd2ea1e11e7514cb",
+    "server/src/test/java/com/acrylic/outbound/inventory/LedgerAuthorOperations.java": "ad1c4bec45f469dd48a29aa42b046d24cf563d8dbcdc557c4c8dd19fa8583b5f",
+    "server/src/test/java/com/acrylic/outbound/inventory/LedgerProductionBoundaryIT.java": "d86b7ed428be92b1bc3328b0129400119f9799e7f87b568fd48698df532dcef2",
+    "server/src/test/java/com/acrylic/outbound/temporary/command/CommandReceiptCodecTest.java": "8c48b643262b49ff05d098ea872b5c010d3d4bd858a0c864672aba8b5a1f482e",
+    "server/src/test/java/com/acrylic/outbound/temporary/command/CommandReceiptFixture.java": "4d42369515d21ae82b1bf2f4e2fbe15dc416d44373aa67872b6310bd846e8ca7",
+    "server/src/test/java/com/acrylic/outbound/temporary/command/LedgerRuntimeEnvironment.java": "685605c77975a4d0437b94c10896f8654a1ef04cc89f5f83414e8414b3e6a2de"
+  },
+  "authorXml": [
+    {
+      "path": ".local/evidence/boundary-final/TEST-com.acrylic.outbound.inventory.LedgerProductionBoundaryIT.xml",
+      "sha256": "9ac2ad9624072a3579ec02ffbe9cb60209248ac0a42a45841a161426e821bb2c",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": ".local/evidence/boundary-final/TEST-com.acrylic.outbound.temporary.command.CommandReceiptCodecTest.xml",
+      "sha256": "c4fba5ec5a34b1f99e414b6397be1366ab3877c3fd8028328a561b5230fd5990",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": ".local/evidence/it-first/TEST-com.acrylic.outbound.inventory.LedgerAuthorIT.xml",
+      "sha256": "7e0733927999257a3ac2262d91ecec272ba658bc4d063e74587584e2050b12cd",
+      "tests": 9,
+      "failures": 9,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": ".local/evidence/it-second/TEST-com.acrylic.outbound.inventory.LedgerAuthorIT.xml",
+      "sha256": "ca706c0ddcca4c5cf5d8e4d583903561dc79b5e751dcda6a3201d58c47d928ab",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": ".local/evidence/unit-first/TEST-com.acrylic.outbound.temporary.command.CommandReceiptCodecTest.xml",
+      "sha256": "f71da6b62266801bd2a97bfa757b6eb14af4a935118e8d4fdbb1c49222308251",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "authorProductionHashesMatched": 31,
+  "reviewMode": "read-only; author tests not rerun"
+}
