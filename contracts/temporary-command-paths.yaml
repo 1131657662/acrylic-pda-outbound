@@ -1,0 +1,67 @@
+WebDetail:
+  get:
+    summary: 读取本人原命令回执与独立的当前评估
+    description: 当前原仓范围及已存命令族权限或temporary_order:confirm。按当前actor/r06.command.v1/原键精确读取，先核不可变台账闭环。旧expected、会话、权限快照及恢复代次不替换。当前仅可验证INTERNAL_TEST_ONLY回执，businessDecision为null，不能确认、续扫、记账或放行。Cache-Control为no-store。
+    security: [{webSession: []}]
+    parameters: [{$ref: '#/Key'}, {$ref: '#/Warehouse'}]
+    responses: {$ref: '#/DetailResponses'}
+WebOriginal:
+  get:
+    summary: 读取本人原命令回执的精确UTF-8字节
+    description: 同详情鉴权与完整性核验，直接返回持久原业务响应bytes，无Envelope或重序列化；不包含HTTP头。Cache-Control为no-store。不存在不代表未执行或可放行。
+    security: [{webSession: []}]
+    parameters: [{$ref: '#/Key'}, {$ref: '#/Warehouse'}]
+    responses: {$ref: '#/OriginalResponses'}
+PdaDetail:
+  get:
+    summary: PDA读取本人原命令回执与当前评估
+    description: 当前有效PDA登录及原仓范围；与Web共享同actor原键域。可用新会话读取旧回执，原会话字段不改。签名历史与当前评估严格分开，全能力false，未开放任何命令POST或业务决定。
+    security: [{pdaBearer: []}]
+    parameters: [{$ref: '#/Key'}, {$ref: '#/Warehouse'}]
+    responses: {$ref: '#/DetailResponses'}
+PdaOriginal:
+  get:
+    summary: PDA读取本人原命令回执的精确UTF-8字节
+    description: 当前有效PDA登录、原仓及已存族权限或confirm；共享Web台账原键。核验后直接返回原bytes，Cache-Control为no-store，当前签名key未知或台账损坏失败关闭，不重新签发。
+    security: [{pdaBearer: []}]
+    parameters: [{$ref: '#/Key'}, {$ref: '#/Warehouse'}]
+    responses: {$ref: '#/OriginalResponses'}
+Key:
+  name: commandId
+  in: path
+  required: true
+  schema: {type: string, format: uuid}
+Warehouse:
+  name: warehouseId
+  in: query
+  required: true
+  schema: {type: string, format: uuid}
+DetailResponses:
+  '200':
+    description: 原回执与本次只读评估，当前适用性固定UNKNOWN且无写能力
+    headers:
+      Cache-Control: {schema: {type: string, const: no-store}}
+    content:
+      application/json:
+        schema:
+          allOf:
+            - {$ref: './schemas.yaml#/Envelope'}
+            - type: object
+              properties:
+                data: {$ref: './temporary-command-schemas.yaml#/ReceiptView'}
+  '400': {$ref: './openapi.yaml#/components/responses/Error'}
+  '401': {$ref: './openapi.yaml#/components/responses/Error'}
+  '404': {$ref: './openapi.yaml#/components/responses/Error'}
+  '409': {$ref: './openapi.yaml#/components/responses/Error'}
+OriginalResponses:
+  '200':
+    description: 原JSON业务回执bytes，仅INTERNAL_TEST_ONLY，不是成功出库凭证
+    headers:
+      Cache-Control: {schema: {type: string, const: no-store}}
+    content:
+      application/json:
+        schema: {type: string, format: binary}
+  '400': {$ref: './openapi.yaml#/components/responses/Error'}
+  '401': {$ref: './openapi.yaml#/components/responses/Error'}
+  '404': {$ref: './openapi.yaml#/components/responses/Error'}
+  '409': {$ref: './openapi.yaml#/components/responses/Error'}
