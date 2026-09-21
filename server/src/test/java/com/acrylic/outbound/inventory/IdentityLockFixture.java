@@ -29,7 +29,9 @@ abstract class IdentityLockFixture {
             && "outbound_wave3_20260920".equals(System.getenv("OUTBOUND_DB_USER"));
         boolean secondLocks=url.startsWith("jdbc:mysql://127.0.0.1:19321/acrylic_outbound_l2_20260921?")
             && "outbound_l2_20260921".equals(System.getenv("OUTBOUND_DB_USER"));
-        if(!original && !combined && !secondLocks)
+        boolean fourthWave=url.startsWith("jdbc:mysql://127.0.0.1:19322/acrylic_outbound_wave4_20260921?")
+            && "outbound_wave4_20260921".equals(System.getenv("OUTBOUND_DB_USER"));
+        if(!original && !combined && !secondLocks && !fourthWave)
             throw new IllegalStateException("Identity lock tests require a dedicated database and matching account");
     }
     @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired PasswordEncoder passwords;
@@ -40,6 +42,7 @@ abstract class IdentityLockFixture {
         String expected="outbound_wave3_20260920".equals(System.getenv("OUTBOUND_DB_USER"))
             ? "acrylic_outbound_wave3_20260920" : "acrylic_outbound_l1_20260920";
         if("outbound_l2_20260921".equals(System.getenv("OUTBOUND_DB_USER"))) expected="acrylic_outbound_l2_20260921";
+        if("outbound_wave4_20260921".equals(System.getenv("OUTBOUND_DB_USER"))) expected="acrylic_outbound_wave4_20260921";
         assertThat(jdbc.queryForObject("SELECT DATABASE()",String.class)).isEqualTo(expected);
     }
     PublicationDriver web() {

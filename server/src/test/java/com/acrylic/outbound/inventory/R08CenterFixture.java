@@ -29,7 +29,9 @@ abstract class R08CenterFixture {
                 && "outbound_wave3_20260920".equals(System.getenv("OUTBOUND_DB_USER"));
         boolean secondLocks=url.startsWith("jdbc:mysql://127.0.0.1:19321/acrylic_outbound_l2_20260921?")
                 && "outbound_l2_20260921".equals(System.getenv("OUTBOUND_DB_USER"));
-        if(!combined && !identityLocks && !thirdWave && !secondLocks && !url.startsWith("jdbc:mysql://127.0.0.1:23308/acrylic_r08_it?"))
+        boolean fourthWave=url.startsWith("jdbc:mysql://127.0.0.1:19322/acrylic_outbound_wave4_20260921?")
+                && "outbound_wave4_20260921".equals(System.getenv("OUTBOUND_DB_USER"));
+        if(!combined && !identityLocks && !thirdWave && !secondLocks && !fourthWave && !url.startsWith("jdbc:mysql://127.0.0.1:23308/acrylic_r08_it?"))
             throw new IllegalStateException("R08 center tests require the dedicated integration database");
     }
     @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired JdbcTemplate jdbc;@Autowired PasswordEncoder passwords;
