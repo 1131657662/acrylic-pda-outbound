@@ -1,0 +1,40 @@
+ReceiptView:
+  type: object
+  additionalProperties: false
+  required: [originalCommandReceiptUtf8, originalResponseSha256, currentEffect]
+  properties:
+    originalCommandReceiptUtf8:
+      type: string
+      description: 此字符串UTF-8编码后逐字节等于台账原业务回执，不能依据currentEffect重写原status或actor。
+    originalResponseSha256:
+      type: string
+      pattern: '^[0-9a-f]{64}$'
+    currentEffect: {$ref: '#/CurrentEffect'}
+CurrentEffect:
+  type: object
+  additionalProperties: false
+  required: [evaluatedAt, evaluation, applicable, serverRecoveryEpoch, serviceMode, currentContext, reasons, capabilities]
+  properties:
+    evaluatedAt: {type: string, format: date-time}
+    evaluation: {type: string, const: UNKNOWN}
+    applicable: {type: boolean, const: false}
+    serverRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
+    serviceMode: {type: string}
+    currentContext:
+      type: [object, 'null']
+      description: 当前来源/映射/轮次/决定/slot/正文事实快照；不可用为null。无业务决定、候选或E2证据适用性实现。
+    reasons:
+      type: array
+      items: {type: string}
+      description: 完整列出已观察身份/权限/上下文变化，并始终列业务、候选、证据评估未实现；不能解释为放行资格。
+    capabilities: {$ref: '#/Capabilities'}
+Capabilities:
+  type: object
+  additionalProperties: false
+  required: [writeConfirmationAvailable, releaseAllowed, mayResumeScanning, stockReleased, localDeletionAllowed]
+  properties:
+    writeConfirmationAvailable: {type: boolean, const: false}
+    releaseAllowed: {type: boolean, const: false}
+    mayResumeScanning: {type: boolean, const: false}
+    stockReleased: {type: boolean, const: false}
+    localDeletionAllowed: {type: boolean, const: false}
