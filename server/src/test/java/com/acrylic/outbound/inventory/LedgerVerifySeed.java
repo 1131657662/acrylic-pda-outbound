@@ -83,6 +83,25 @@ public final class LedgerVerifySeed {
     }
     public ObjectNode userChange() throws Exception { return manager.updateBody(manager.item(user())); }
     public JsonNode changeUser(ObjectNode body) throws Exception { return manager.web().data(manager.command("/"+user(),body,UUID.randomUUID().toString())); }
+    public Callable<JsonNode> identityMutation(String kind) throws Exception {
+        if(kind.equals("session"))return ()->pda(post("/api/v1/pda/auth/logout"));
+        var driver=manager;
+        if(kind.equals("warehouse"))driver=alternateManager();
+        var body=driver.updateBody(driver.item(user()));
+        if(kind.equals("roles"))body.putArray("roles").add("PDA_OPERATOR");
+        if(kind.equals("disabled"))body.put("status","DISABLED");
+        if(kind.equals("warehouse"))body.putArray("warehouseIds").add(driver.web().identity().warehouse().toString());
+        var selected=driver;return ()->selected.web().data(selected.command("/"+user(),body,UUID.randomUUID().toString()));
+    }
+    private UserManagementDriver alternateManager() {
+        // Extra synthetic fixture warehouse, allocated before either race transaction begins.
+        var jdbc=context.getBean(JdbcTemplate.class);String alternate=UUID.randomUUID().toString();
+        jdbc.update("INSERT INTO warehouse(id,code,name) VALUES(UUID_TO_BIN(?),?,?)",alternate,"W-"+alternate,"独立仓库权限竞争");
+        for(String id:List.of(user(),manager.web().identity().user().id().toString()))
+            jdbc.update("INSERT INTO user_warehouse VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?))",id,alternate);
+        return new UserManagementDriver(new PublicationDriver(fixture.web.mvc(),fixture.web.json(),
+            new IdentityFixture(manager.web().identity().user(),UUID.fromString(alternate))));
+    }
     public <T> T asPda(Callable<T> work) throws Exception {
         var previous=SecurityContextHolder.getContext();
         var principal=context.getBean(com.acrylic.outbound.pda.PdaSessions.class).authenticate(tokens().path("accessToken").asText());
@@ -93,6 +112,11 @@ public final class LedgerVerifySeed {
     public JsonNode pda(MockHttpServletRequestBuilder request) throws Exception { return fixture.pda.data(request,fixture.tokens); }
     public ResultActions sendPda(MockHttpServletRequestBuilder request) throws Exception { return fixture.pda.send(request,fixture.tokens); }
     public ResultActions sendWeb(MockHttpServletRequestBuilder request) throws Exception { return fixture.web.send(request); }
+    public ResultActions sendCurrentWeb(MockHttpServletRequestBuilder request,String warehouse) throws Exception {
+        var current=context.getBean(com.acrylic.outbound.auth.IdentityStore.class).loadUserByUsername(fixture.web.identity().user().username());
+        return fixture.web.mvc().perform(request.param("warehouseId",warehouse)
+            .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(current)));
+    }
     public JsonNode web(MockHttpServletRequestBuilder request) throws Exception { return fixture.web.data(request); }
     public JsonNode tokens() { return fixture.tokens; }
     public String user() { return fixture.web.identity().user().id().toString(); }

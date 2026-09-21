@@ -32,3 +32,12 @@ W1 最小卡已明确 `TemporaryCommandService.execute(byte[],requestId)`、测�
 | r2 seed-first | 新增5护栏通过，V1→V34初始化成功；首complete经既有真实MockMvc API生成身份、准备、S与原正文。快照工具仍引用旧 private-files，NoSuchFileException，故1准备IT失败；尚未执行真实重新登录，尚未建立完整原值快照。日志/XML/marker/新库/密钥/文件保留。 |
 
 快照目录已修到精确 r2。原单次 LedgerSeedIT 不重跑，不删marker、不建r3。随后对现有complete只读定位并在明示时点建立保留基线；不能声称第一次失败之前已有原值前后核对。其余场景由固定C1b后的独立用例追加新材料。每个验收用例使用独立真实来源，不修改旧身份/鉴权解决旧seed401。结束精确停19327并保留全部材料；原13316、19321–19326及其他实例不动。重型槽当前归W1，后续实际运行先协调。
+
+
+## 固定生产 SHA 后独立台账验收
+
+W1 固定生产父提交 `05ed1d3c4f121d9462d0077bd607c130f64cf562`，本树以 merge 提交 `06c26e3` 接入。W2 首批独立运行：`LedgerReplayIT` 8 项、`LedgerRetainedSeedIT` 1 项，均通过；后者在 2026-09-21 13:24:06 之后才建立 `retained-baseline-now.json`，不能解释为首次种子前已有快照。追加矩阵：`LedgerConcurrencyIT` 3、`LedgerFaultIT` 6、`LedgerIdentityRaceIT` 4、`LedgerReadAccessIT` 4、`LedgerReplayIT` 撤销历史会话 1、`LedgerCorruptionIT` 9、`LedgerHistoricalReadIT` 3、`LedgerSignedMetadataIT` 10、`LedgerSecondLookupIT` 1，均 0 失败/错误/跳过。`LedgerHistoricalReadIT` 使用真实 `RECOVERY_PENDING` 约束值；同键并发实际等待图、故障阶段事务回滚、四 GET 权限收敛、合法 RSA 重签字段拒绝、锁后第二原键查询均有 XML/JSON 证据。
+
+首次矩阵运行 40 项中 3 项失败均属验收夹具问题并保留原 XML：`receipt-request` 插入坏关系时漏填非空 `resource_id`；恢复模式误用不存在的 `RECOVERING` 值；`version-fraction` 在负向重签前即被严格 canonical 编码拒绝。修正后对应组重跑通过，不能将首次失败写成产品缺陷。首两次准备IT失败也继续单列：初始空库未开启 Flyway，r2 首complete快照工具旧目录；均未计台账通过。
+
+证据目录：`.local/evidence-r2/ledger-first-results/`、`ledger-matrix-first-results/`、`ledger-matrix-second-results/`、`ledger-matrix-third-results/`、保留基线及故障/并发/权限 JSON。敏感数据库、私钥、原始正文及日志均不入 Git。生产未修改、未部署、未合入 development/main；旧 seed401、真实 HTTP/设备/R09 恢复仍未验。
