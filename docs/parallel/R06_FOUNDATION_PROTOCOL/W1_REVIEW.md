@@ -23,3 +23,19 @@ receipt/control 目前只提供严格对象与域 hash，无完整 DTO、可信 
 SOURCE_RESERVED 新写、完整停止证据、处置/续作、台账原键恢复、最终成功、Android 耐久、R09 fence/新版本恢复及设备/现场验收均未开放或完成。普通正常确认空理由与 localDeletionAllowed=false 保持。
 
 另对 W2 在途夹具提出独立审查意见：修正 DEFAULT_GENERATED 普通时间列被误跳过；GET DTO 与数据库 receipt_text 字节分列；旧定义检查使用已知变化白名单；异 scope/TEMP-only 反例避免同时制造跨仓失败；DDL/脏数据负向在失败后逐旧值比对。前两组已看到作者修正，其余最终以 W2 冻结提交及证据复审记录为准。本段不是 W2 最终复审通过。
+
+## 最终补测提交复审
+
+2026-09-21 追加只读复审 W1 `27b69a7a7fb719f5f449206930d9f6dc684a605f`。相对 `0311dfa` 仅 3 个测试文件和 3 个文档文件；`server/src/main` 完全无差异。4 份最终测试源码的 Git blob LF SHA-256 全部匹配作者 `final-summary.json`，没有发现该补测范围整合阻断。
+
+作者最终 XML 为 56 单元通过，以及 29 个不同 IT 通过：来源基础 5、投影 2、竞争 2、条码同步 6、PC 9、TEMP 可用性 5。29 项取来源最终 9 与首轮已通过 20；原初始 5 已包含，不累计。补测首轮 29 中 5 个失败是合成 fixture 事务外调用 BarcodeChanges，XML 栈与源码修正一致。修前 fixture 未独立保存源码快照，报告明确没有修前 SHA，未把后来源码伪称为首轮运行版本。
+
+两份 `.local/evidence/source-concurrency/source-first-{true,false}.json` 已读取：均 READ-COMMITTED，连接 39 持有、连接 40 等待 `user_management_guard` 的 `X,REC_NOT_GAP` 锁，属于真实 G 等待而非直接 K 行锁等待。来源先提交后，正式服务报告占用冲突，唯一 K 仍为 SOURCE_RESERVED、原 evidence set 保留；正式先提交后，合成来源写者报告冲突，唯一 K 为 DISPATCHED、evidence set 为 null。两份最终证据中 dispatch_cycle 均为 1。
+
+来源竞争一方明确是合成 SQL 窄写者，按现有 E/G/U/W/B 锁顺序并在同一事务保存 K 与 BarcodeChanges；不证明生产证据 API、真实来源权限或完整 C09/C15 已实现。正式一方调用现有 MockMvc 提交服务。最终状态、等待对象和测试边界在作者指南中相符。
+
+投影实际覆盖 PC 候选 RESERVED、录入 409/PC_BALE_UNAVAILABLE 且无 pc_entry，条码增量、TEMP 可用性指定 bale/cycle、库存重发后原 evidence set 保留。正式 PreparationPayloads 仅断言响应出现 available=false，未按目标 bale 逐项断言，不能扩大为更细粒度专项验收。它与静态只要 K 存在便不可用的旧查询一致，当前没有生产改动阻断。
+
+上述精度限制随后由最终 `04a679beb9b5e250d0c67101edb97fdf1c264fac` 闭合：仅测试与作者记录两文件，delta 与 PreparationPayloads 都按目标 baleId 过滤唯一条目，分别断言 RESERVED 和严格 JSON false。独立读取新增 XML，2 项全部通过，0 失败/错误/跳过；SHA-256 为 `f608603eae204a635994eb7169f2e2f7f045a27413fba3b53fe55d6311cd5c47`。生产/V34 与 `0311dfa` 仍完全一致，本地/远端最终 SHA 一致、工作树干净。作者不同 IT 仍为 29，不把两项重跑加成 31；没有新增阻断。
+
+读取作者正常停机日志及四份失败/成功库留存说明；未启动或操作实例，未重跑单元、IT、JAR、数据库、HTTP 或设备。上述均是独立源码/原始证据审查，不能冒充组合新跑。W3 `dbb0693` 的作者复审报告也已随该提交保存，内容与本目录 233 项及生产基础限制一致。
