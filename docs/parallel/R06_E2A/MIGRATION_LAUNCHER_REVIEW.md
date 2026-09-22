@@ -6,8 +6,8 @@
 
 ## 动态启动前必须修复
 
-1. **P0：异常停机路径可跳过 shutdown，留下 19329 进程和监听。**
-   `E2aMigrationRunner.java:36-41` 的 `finally` 先调用 `requireOwnedListener(server)`，再调用 `shutdown`。当服务器存活但监听归属探针超时、输出不匹配或监听被其他进程占用时，归属检查直接抛异常，后续认证 shutdown、`stopped` 标记和端口释放检查均不会执行。触发条件是启动后任何监听归属异常；后果是测试失败时实例可能继续占用 19329，且没有可靠的停机证据。应把归属检查、shutdown、停止标记和端口复核放入嵌套的清理结构，保证 shutdown 至少尝试一次并保留原始失败原因。
+1. **P0：异常停机路径可跳过安全清理，留下本次实例或无法形成阻断证据。**
+   `E2aMigrationRunner.java:36-41` 的 `finally` 先调用 `requireOwnedListener(server)`，再调用 `shutdown`。当服务器存活但监听归属探针超时、输出不匹配或监听被其他进程占用时，归属检查直接抛异常，后续清理、`stopped` 标记和端口复核均不会执行。触发条件是启动后任何监听归属异常；后果是本次创建的实例可能继续占用 19329，且没有可靠的清理证据。应把异常保留、清理失败记录和 marker 写入放入嵌套结构；只有已证明监听 PID、命令行和 datadir 属于本次 `Process` 时，才允许认证 `mysqladmin shutdown`。若监听非本次 PID 或归属未证明，必须阻断并明确报告，不得按端口触碰外部实例。
 
 2. **P1：阶段失败证据可能被二次 I/O 异常覆盖，且不能保证写入。**
    `E2aMigrationRunner.java:33-35` 直接向 marker 追加失败类型；若 marker 不可写，原始迁移/连接异常会被 `Files.writeString` 的异常替换。`E2aMigrationRunner.java:98-103` 使用 `CREATE_NEW`，残留 started marker 会在真正启动前直接失败，因此不会产生本轮失败阶段记录。`E2aMigrationRunner.java:39` 只有 shutdown 成功返回时才写 `stopped`。触发条件是残留 marker、权限/磁盘错误或停机失败；后果是阶段失败证据不完整或误导。应保留原始异常、以独立 best-effort 方式记录失败/停止阶段，并把 marker 生命周期按 run 唯一 ID 隔离。
