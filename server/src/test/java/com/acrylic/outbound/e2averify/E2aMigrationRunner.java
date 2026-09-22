@@ -3,7 +3,6 @@ package com.acrylic.outbound.e2averify;
 import java.nio.file.Path;
 import java.util.Map;
 import java.nio.file.Files;
-import java.util.concurrent.TimeUnit;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.core.JdbcTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,11 +20,12 @@ public final class E2aMigrationRunner {
         Process server = E2aMysqlLauncher.startServer(env, root);
         try {
             awaitPort();
-            JdbcTemplate jdbc = E2aMigrationEnvironment.connect(env, false, root);
+            bootstrapAccount(env, root);
+            JdbcTemplate jdbc = E2aMigrationEnvironment.connectLive(env, root);
             runMigration(jdbc, root);
         } finally {
             E2aMysqlLauncher.shutdown(server, root);
-            if (portFree() == false) throw new IllegalStateException("19329 listener remains after shutdown");
+            if (!E2aMysqlLauncher.isPortFree()) throw new IllegalStateException("19329 listener remains after shutdown");
         }
     }
 
@@ -34,17 +34,16 @@ public final class E2aMigrationRunner {
     }
 
     static boolean portFree() {
-        String value = System.getenv().getOrDefault("E2A_MIGRATION_PORT_FREE", "false");
-        return "true".equals(value);
+        return E2aMysqlLauncher.isPortFree();
     }
 
     static void requireProfile(Map<String, String> env) {
-        E2aMigrationEnvironment.requireExact(env, "true".equals(env.get("E2A_MIGRATION_PORT_FREE")), workspace());
+        E2aMigrationEnvironment.requireExact(env, E2aMysqlLauncher.isPortFree(), workspace());
     }
 
     private static void awaitPort() throws InterruptedException {
         for (int i = 0; i < 60; i++) {
-            if (!portFree()) return;
+            if (!E2aMysqlLauncher.isPortFree()) return;
             Thread.sleep(500);
         }
         throw new IllegalStateException("MySQL 19329 did not become ready");
@@ -62,5 +61,20 @@ public final class E2aMigrationRunner {
         Flyway.configure().dataSource(jdbc.getDataSource()).target("35").load().migrate();
         E2aV35NegativeChecks.verify(jdbc); snapshot.assertPreserved(before); snapshot.saveAfter("after-v35.json");
         Files.createFile(marker);
+    }
+
+    private static void bootstrapAccount(Map<String, String> env, Path root) throws Exception {
+        String password = env.get("OUTBOUND_DB_PASSWORD");
+        if (password == null || password.isBlank()) throw new IllegalStateException("Missing guarded DB password");
+        Path sql = root.resolve(".local/evidence-e2a/bootstrap-account.sql");
+        Files.createDirectories(sql.getParent());
+        Files.writeString(sql, "CREATE DATABASE IF NOT EXISTS `" + E2aMigrationEnvironment.DATABASE + "`;\n"
+            + "CREATE USER IF NOT EXISTS '" + E2aMigrationEnvironment.USER + "'@'127.0.0.1' IDENTIFIED BY '" + password.replace("'", "''") + "';\n"
+            + "GRANT ALL ON `" + E2aMigrationEnvironment.DATABASE + "`.* TO '" + E2aMigrationEnvironment.USER + "'@'127.0.0.1';\nFLUSH PRIVILEGES;\n");
+        Path defaults = root.resolve(".local/evidence-e2a/bootstrap.cnf");
+        Files.writeString(defaults, "[client]\nuser=root\nhost=127.0.0.1\nport=" + E2aMigrationEnvironment.PORT + "\nprotocol=tcp\n");
+        Process p = new ProcessBuilder("C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe", "--defaults-extra-file=" + defaults,
+            "--database=mysql").redirectInput(sql.toFile()).redirectErrorStream(true).start();
+        if (!p.waitFor(30, java.util.concurrent.TimeUnit.SECONDS) || p.exitValue() != 0) throw new IllegalStateException("Account bootstrap failed");
     }
 }
