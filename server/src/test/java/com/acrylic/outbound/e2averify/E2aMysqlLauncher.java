@@ -47,7 +47,9 @@ public final class E2aMysqlLauncher {
             "--port=" + E2aMigrationEnvironment.PORT, "--bind-address=127.0.0.1",
             "--mysqlx=OFF", "--skip-name-resolve", "--skip-networking=false", "--skip-grant-tables=false");
         Path log = privateArtifact(workspace, "mysql-server-" + UUID.randomUUID() + ".log");
-        return new ProcessBuilder(command).directory(workspace.toFile()).redirectErrorStream(true).redirectOutput(log.toFile()).start();
+        Process process = new ProcessBuilder(command).directory(workspace.toFile()).redirectErrorStream(true).redirectOutput(log.toFile()).start();
+        verifyProcessDataDir(process, data);
+        return process;
     }
 
     public static void shutdown(Process process, Path workspace) throws IOException, InterruptedException {
@@ -63,7 +65,11 @@ public final class E2aMysqlLauncher {
         Files.writeString(defaults, "[client]\nuser=" + E2aMigrationEnvironment.USER + "\npassword=" + password + "\nhost=127.0.0.1\nport=" + E2aMigrationEnvironment.PORT + "\nprotocol=tcp\n");
         Process admin = new ProcessBuilder(MYSQLADMIN.toString(), "--no-defaults", "--defaults-file=" + defaults, "shutdown")
             .directory(workspace.toFile()).redirectErrorStream(true).start();
-        if (!admin.waitFor(30, TimeUnit.SECONDS) || admin.exitValue() != 0) {
+        if (!admin.waitFor(30, TimeUnit.SECONDS)) {
+            admin.destroyForcibly();
+            throw new IllegalStateException("mysqladmin shutdown timed out");
+        }
+        if (admin.exitValue() != 0) {
             throw new IllegalStateException("mysqladmin shutdown failed: " + admin.exitValue());
         }
         if (!process.waitFor(30, TimeUnit.SECONDS)) throw new IllegalStateException("MySQL process did not exit after authenticated shutdown");
@@ -75,6 +81,25 @@ public final class E2aMysqlLauncher {
             socket.connect(new java.net.InetSocketAddress("127.0.0.1", E2aMigrationEnvironment.PORT), 250);
             return false;
         } catch (java.io.IOException expected) { return true; }
+    }
+
+    private static void verifyProcessDataDir(Process process, Path data) {
+        if (!process.isAlive() || !Files.exists(data.resolve("mysqld-auto.cnf"))) {
+            throw new IllegalStateException("MySQL process/datadir identity check failed");
+        }
+        long pid = process.pid();
+        try {
+            Process probe = new ProcessBuilder("powershell", "-NoProfile", "-Command",
+                "(Get-CimInstance Win32_Process -Filter 'ProcessId=" + pid + "').CommandLine")
+                .redirectErrorStream(true).start();
+            if (!probe.waitFor(5, TimeUnit.SECONDS)) throw new IllegalStateException("PID probe timed out");
+            String commandLine = new String(probe.getInputStream().readAllBytes());
+            if (!commandLine.contains(data.toString()) || !commandLine.contains("--port=" + E2aMigrationEnvironment.PORT)) {
+                throw new IllegalStateException("MySQL PID/datadir/port mismatch");
+            }
+        } catch (IOException | InterruptedException error) {
+            throw new IllegalStateException("PID identity probe failed", error);
+        }
     }
 
     private static void requireNewDataDir(Path workspace) {
@@ -96,7 +121,7 @@ public final class E2aMysqlLauncher {
     }
 
     private static Path privateArtifact(Path workspace, String name) throws IOException {
-        Path root = workspace.resolve(".local/private-files/e2a-launcher").toAbsolutePath().normalize();
+        Path root = workspace.resolve(".local/launcher-private").toAbsolutePath().normalize();
         if (!root.startsWith(workspace.toAbsolutePath().normalize())) throw new IllegalStateException("Private artifact escapes workspace");
         Files.createDirectories(root);
         Path file = root.resolve(name);

@@ -78,15 +78,20 @@ public final class E2aMigrationRunner {
     private static void bootstrapAccount(Map<String, String> env, Path root) throws Exception {
         String password = env.get("OUTBOUND_DB_PASSWORD");
         if (password == null || password.isBlank()) throw new IllegalStateException("Missing guarded DB password");
-        Path sql = root.resolve(".local/evidence-e2a/bootstrap-account.sql");
+        Path sql = root.resolve(".local/launcher-private/bootstrap-account.sql");
         Files.createDirectories(sql.getParent());
         Files.writeString(sql, "CREATE DATABASE IF NOT EXISTS `" + E2aMigrationEnvironment.DATABASE + "`;\n"
             + "CREATE USER IF NOT EXISTS '" + E2aMigrationEnvironment.USER + "'@'127.0.0.1' IDENTIFIED BY '" + password.replace("'", "''") + "';\n"
-            + "GRANT ALL ON `" + E2aMigrationEnvironment.DATABASE + "`.* TO '" + E2aMigrationEnvironment.USER + "'@'127.0.0.1';\nFLUSH PRIVILEGES;\n");
-        Path defaults = root.resolve(".local/evidence-e2a/bootstrap.cnf");
+            + "GRANT ALL ON `" + E2aMigrationEnvironment.DATABASE + "`.* TO '" + E2aMigrationEnvironment.USER + "'@'127.0.0.1';\n"
+            + "GRANT SHUTDOWN ON *.* TO '" + E2aMigrationEnvironment.USER + "'@'127.0.0.1';\nFLUSH PRIVILEGES;\n");
+        Path defaults = root.resolve(".local/launcher-private/bootstrap.cnf");
         Files.writeString(defaults, "[client]\nuser=root\nhost=127.0.0.1\nport=" + E2aMigrationEnvironment.PORT + "\nprotocol=tcp\n");
-        Process p = new ProcessBuilder("C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe", "--defaults-extra-file=" + defaults,
+        Process p = new ProcessBuilder("C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe", "--defaults-file=" + defaults,
             "--database=mysql").redirectInput(sql.toFile()).redirectErrorStream(true).start();
-        if (!p.waitFor(30, java.util.concurrent.TimeUnit.SECONDS) || p.exitValue() != 0) throw new IllegalStateException("Account bootstrap failed");
+        if (!p.waitFor(30, java.util.concurrent.TimeUnit.SECONDS)) {
+            p.destroyForcibly();
+            throw new IllegalStateException("Account bootstrap timed out");
+        }
+        if (p.exitValue() != 0) throw new IllegalStateException("Account bootstrap failed: " + p.exitValue());
     }
 }
