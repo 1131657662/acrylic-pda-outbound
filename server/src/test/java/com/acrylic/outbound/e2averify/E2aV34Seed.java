@@ -13,12 +13,11 @@ public final class E2aV34Seed {
     private E2aV34Seed() { }
 
     public static Map<String, String> seed(JdbcTemplate jdbc, Path storage) throws Exception {
-        E2aV34BaseFixture.ensure(jdbc);
-        requireSyntheticV34Base(jdbc);
-        var template = jdbc.queryForMap("SELECT BIN_TO_UUID(a.warehouse_id) warehouseId,BIN_TO_UUID(a.order_id) orderId,BIN_TO_UUID(a.device_id) deviceId,BIN_TO_UUID(a.operator_id) operatorId,BIN_TO_UUID(a.id) assignmentId,BIN_TO_UUID(t.id) authorizationId FROM order_assignment a JOIN temporary_authorization t ON t.device_id=a.device_id AND t.warehouse_id=a.warehouse_id WHERE a.status='ACTIVE' ORDER BY a.id LIMIT 1");
+        Map<String, String> fixture = E2aV34BaseFixture.ensure(jdbc, storage);
         var result = new LinkedHashMap<String, String>();
-        String warehouse=(String)template.get("warehouseId"), device=(String)template.get("deviceId"), operator=(String)template.get("operatorId");
-        String sourceOrder=(String)template.get("orderId"), assignment=(String)template.get("assignmentId"), authorization=(String)template.get("authorizationId");
+        result.putAll(fixture);
+        String warehouse=fixture.get("warehouseId"), device=fixture.get("deviceId"), operator=fixture.get("operatorId");
+        String sourceOrder=fixture.get("orderId"), authorization=fixture.get("authorizationId");
         for(String mode: new String[]{"mapping0","mapped","abort"}) {
             String scope=UUID.randomUUID().toString(), submission=UUID.randomUUID().toString(), clientOrder=UUID.randomUUID().toString();
             String mapping = UUID.randomUUID().toString();
@@ -98,8 +97,4 @@ public final class E2aV34Seed {
     private static void requireOne(int rows) { if(rows != 1) throw new IllegalStateException("E2a seed expected one row, got " + rows); }
     private static String sha(byte[] bytes) throws Exception { var d=MessageDigest.getInstance("SHA-256"); var out=d.digest(bytes); var s=new StringBuilder(64); for(byte b:out)s.append(String.format("%02x",b)); return s.toString(); }
 
-    private static void requireSyntheticV34Base(JdbcTemplate jdbc) {
-        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM order_assignment a JOIN temporary_authorization t ON t.device_id=a.device_id AND t.warehouse_id=a.warehouse_id JOIN inventory_snapshot i ON i.id=t.inventory_snapshot_id JOIN policy_version p ON p.id=t.policy_id WHERE a.status='ACTIVE'", Integer.class);
-        if (count == null || count == 0) throw new IllegalStateException("E2aV34Seed requires a pre-seeded synthetic V34 identity/order/authorization/inventory fixture; it will not clone an existing or real row");
-    }
 }

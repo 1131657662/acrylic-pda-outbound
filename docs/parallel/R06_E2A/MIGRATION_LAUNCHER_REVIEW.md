@@ -27,3 +27,4 @@
 
 - 本复审不重复 V35 迁移资源/API 未整合的既有结论；上述 classpath/hash 项仍是允许动态启动前的独立缺口。
 - 未执行 MySQL、Flyway、负向矩阵、seed、HTTP、部署或生产放行；没有“迁移通过”结论。
+- foundation fixture 生成的少量 `e2a.csv` 仅作为合成导入输入并保存真实 SHA-256；它不属于来源证据文件保留断言范围。
