@@ -3,6 +3,10 @@ package com.acrylic.outbound.e2averify;
 import java.nio.file.Path;
 import java.util.Map;
 import java.nio.file.Files;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.util.Enumeration;
+import java.util.HexFormat;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.core.JdbcTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,12 +35,18 @@ public final class E2aMigrationRunner {
             runMigration(jdbc, root);
             Files.writeString(marker, "completed\n", java.nio.file.StandardOpenOption.APPEND);
         } catch (Exception failure) {
-            Files.writeString(marker, "failed: " + failure.getClass().getSimpleName() + "\n", java.nio.file.StandardOpenOption.APPEND);
+            appendMarker(marker, "failed: " + failure.getClass().getSimpleName());
             throw failure;
         } finally {
-            if (server.isAlive()) requireOwnedListener(server);
-            E2aMysqlLauncher.shutdown(server, root, "root", "");
-            Files.writeString(marker, "stopped\n", java.nio.file.StandardOpenOption.APPEND);
+            Exception cleanupFailure = null;
+            try {
+                if (server.isAlive()) {
+                    requireOwnedListener(server);
+                    E2aMysqlLauncher.shutdown(server, root, "root", "");
+                }
+            } catch (Exception error) { cleanupFailure = error; }
+            appendMarker(marker, cleanupFailure == null ? "stopped" : "stop-failed: " + cleanupFailure.getClass().getSimpleName());
+            if (cleanupFailure != null) throw cleanupFailure;
             if (!E2aMysqlLauncher.isPortFree()) throw new IllegalStateException("19329 listener remains after shutdown");
         }
     }
@@ -74,25 +84,19 @@ public final class E2aMigrationRunner {
         var snapshot = new E2aMigrationSnapshot(jdbc, root, root.resolve(E2aMigrationEnvironment.STORAGE_DIR));
         JsonNode before = snapshot.capture(); snapshot.saveBefore("before-v35.json");
         Flyway.configure().dataSource(jdbc.getDataSource()).target("35").load().migrate();
-        E2aV35NegativeChecks.verify(jdbc); snapshot.assertPreserved(before); snapshot.saveAfter("after-v35.json");
+        new E2aV35NegativeChecks(jdbc).verify(root.resolve(E2aMigrationEnvironment.EVIDENCE_DIR));
+        snapshot.assertPreserved(before); snapshot.saveAfter("after-v35.json");
         Files.createFile(marker);
     }
 
     private static void requireTarget35Resource(Path root) throws Exception {
-        Path migrationRoot = root.resolve("server/src/main/resources/db/migration").toAbsolutePath().normalize();
-        try (var files = Files.list(migrationRoot)) {
-            boolean present = files.anyMatch(E2aMigrationRunner::isNonEmptyV35);
-            if (!present) throw new IllegalStateException("Required V35 migration resource is missing");
-        }
-    }
-
-    private static boolean isNonEmptyV35(Path path) {
-        try {
-            return path.getFileName().toString().matches("V35__.+\\.sql")
-                && Files.isRegularFile(path) && Files.size(path) > 0;
-        } catch (java.io.IOException error) {
-            throw new IllegalStateException("Cannot inspect V35 migration resource", error);
-        }
+        Enumeration<URL> resources = E2aMigrationRunner.class.getClassLoader().getResources("db/migration/V35__source_evidence_intake_receipts.sql");
+        if (!resources.hasMoreElements()) throw new IllegalStateException("Required V35 migration resource is missing from classpath");
+        URL resource = resources.nextElement();
+        if (resources.hasMoreElements()) throw new IllegalStateException("Duplicate V35 migration resources on classpath");
+        byte[] bytes = resource.openStream().readAllBytes();
+        String hash = HexFormat.of().withUpperCase().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+        if (!"CE433B38BDC06A2050C3E4A6C4BA413C8FF57E55EDC1477A65D78667F30F420C".equals(hash)) throw new IllegalStateException("Unexpected V35 migration resource hash");
     }
 
     private static Path createPhaseMarker(Path root, String phase) throws Exception {
@@ -101,6 +105,11 @@ public final class E2aMigrationRunner {
         Files.createFile(marker);
         Files.writeString(marker, phase + "\n", java.nio.file.StandardOpenOption.APPEND);
         return marker;
+    }
+
+    private static void appendMarker(Path marker, String value) {
+        try { Files.writeString(marker, value + "\n", java.nio.file.StandardOpenOption.APPEND); }
+        catch (Exception ignored) { }
     }
 
     private static void bootstrapAccount(Map<String, String> env, Path root) throws Exception {
