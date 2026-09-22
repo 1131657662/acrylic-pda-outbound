@@ -47,6 +47,12 @@
 
 结论：DDL 列名/约束静态兼容已核对；seed 的零行静默、非隔离短路和证据路径关联仍未满足非空 V34 验收。不得将该静态结果记作 seed、迁移或负向通过。
 
+## V35 negative-matrix handoff notes
+
+V35 DDL `source_evidence_intake_receipt` 的可直接 SQL 约束范围包括：四种 `operation_kind`、五种 `receipt_status`、1..262144 字节边界、64 位小写摘要正则、`principal_id=original_operator_id`、OPEN 的三引用必须为空、verification 必须有 set、唯一自然键、复合 scope/submission/round/object/set/verification 外键及 immutable update/delete triggers。PAGE/STOP/VERIFY 的业务引用形状超出当前 DDL 已表达范围，不能由 SQL helper 冒充 writer 协议验证。
+
+交接给 W2 的 helper 必须在每个独立事务中记录成功控制插入数、失败 SQLState/vendor code/约束标签，并用 CREATE_NEW JSON 保存摘要证据；不输出原始 request/response bytes。当前固定 W2 SHA 仍无合法 intake 行，故未在本树实现或连接数据库。
+
 ## Snapshot helper follow-up
 
 在本树 `d114785` 的 `E2aSnapshotFiles` 中补充了递归路径的真实路径校验：storage 根和每个 regular file 均经 `toRealPath()` 检查仍位于工作树/存储根内，防止子路径 junction/reparse point 通过逻辑 `normalize()` 逃逸。该 helper 修复不改变 W2 业务入口或迁移行为；Flyway history 的 JDBC/Jackson 类型兼容与 `E2aMigrationSnapshot` 调用签名仍由 W2 新 SHA 负责确认。
