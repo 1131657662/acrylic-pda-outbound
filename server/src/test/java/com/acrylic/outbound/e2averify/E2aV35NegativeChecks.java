@@ -3,6 +3,7 @@ package com.acrylic.outbound.e2averify;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -26,6 +27,7 @@ public final class E2aV35NegativeChecks {
     private final TransactionTemplate transaction;
     private final Seed seed;
     private Path evidenceRoot;
+    private JsonNode baseline;
 
     public E2aV35NegativeChecks(JdbcTemplate jdbc) {
         this.jdbc = Objects.requireNonNull(jdbc);
@@ -37,6 +39,7 @@ public final class E2aV35NegativeChecks {
         Objects.requireNonNull(evidence);
         Files.createDirectories(evidence.toAbsolutePath().normalize());
         int beforeCount = jdbc.queryForObject("SELECT COUNT(*) FROM " + TABLE, Integer.class);
+        baseline = new E2aSnapshotRows(jdbc).capture();
         this.evidenceRoot = evidence.toAbsolutePath().normalize();
         ArrayNode cases = JSON.createArrayNode();
         control(cases, "OPEN", null, null, null);
@@ -47,12 +50,25 @@ public final class E2aV35NegativeChecks {
         negative(cases, "version-check", b -> b.version = 2);
         negative(cases, "request-digest-check", b -> b.requestSha = "0");
         negative(cases, "response-size-check", b -> b.response = new byte[0]);
+        negative(cases, "request-empty", b -> { b.request = new byte[0]; b.requestSha = sha(b.request); });
+        negative(cases, "request-too-large", b -> { b.request = new byte[262145]; b.requestSha = sha(b.request); });
+        negative(cases, "response-too-large", b -> { b.response = new byte[262145]; b.responseSha = sha(b.response); });
+        negative(cases, "response-digest-format", b -> b.responseSha = "G".repeat(64));
+        negative(cases, "unknown-operation", b -> b.operation = "UNKNOWN");
+        negative(cases, "principal-mismatch", b -> b.principal = seed.otherPrincipal());
         negative(cases, "open-reference-shape", b -> b.object = seed.objectId());
         negative(cases, "page-reference-shape", b -> { b.operation = "PAGE"; b.object = null; });
         negative(cases, "verify-reference-shape", b -> { b.operation = "VERIFY"; b.set = null; b.verification = null; });
+        negative(cases, "verify-set-only", b -> { b.operation = "VERIFY"; b.set = seed.setId(); });
+        negative(cases, "verify-verification-only", b -> { b.operation = "VERIFY"; b.verification = seed.verificationId(); });
+        negative(cases, "stop-missing-object", b -> { b.operation = "STOP"; b.object = null; });
+        negative(cases, "stop-extra-references", b -> { b.operation = "STOP"; b.object = seed.objectId(); b.set = seed.setId(); b.verification = seed.verificationId(); });
         negative(cases, "scope-composite-fk", b -> b.scope = uuid());
+        if (seed.otherScope() == null) throw new IllegalStateException("V35 matrix requires a second TEMP scope");
+        negative(cases, "cross-scope-parent-fk", b -> b.scope = seed.otherScope());
         negative(cases, "submission-round-fk", b -> b.round++);
         negative(cases, "natural-key", this::duplicateNaturalKey);
+        negative(cases, "natural-key-different-bytes", this::duplicateNaturalKeyDifferentBytes);
         negative(cases, "immutable-update", this::immutableUpdate);
         negative(cases, "immutable-delete", this::immutableDelete);
         ObjectNode report = JSON.createObjectNode().put("generatedAt", Instant.now().toString());
@@ -68,20 +84,30 @@ public final class E2aV35NegativeChecks {
     private void control(ArrayNode cases, String operation, byte[] object, byte[] set, byte[] verification) {
         CaseBuilder b = new CaseBuilder(seed, operation, object, set, verification);
         boolean[] inserted = {false};
-        transaction.executeWithoutResult(status -> { insert(b); inserted[0] = true; status.setRollbackOnly(); });
+        try {
+            transaction.executeWithoutResult(status -> { insert(b); inserted[0] = true; status.setRollbackOnly(); });
+        } catch (RuntimeException | AssertionError error) {
+            record(cases, JSON.createObjectNode().put("name", "control-" + operation).put("failed", true)
+                .put("error", error.getClass().getSimpleName()));
+            assertStable();
+            throw error;
+        }
         record(cases, JSON.createObjectNode().put("name", "control-" + operation).put("accepted", inserted[0]).put("rolledBack", true));
+        assertStable();
     }
 
     private void negative(ArrayNode cases, String name, java.util.function.Consumer<CaseBuilder> change) {
         CaseBuilder b = new CaseBuilder(seed, "OPEN", null, null, null);
         Failure failure = new Failure();
         transaction.executeWithoutResult(status -> {
-            try { change.accept(b); if (!"natural-key".equals(name) && !name.startsWith("immutable-")) insert(b); failure.unexpected = true; }
+            try { change.accept(b); if (!name.startsWith("natural-key") && !name.startsWith("immutable-")) insert(b); failure.unexpected = true; }
             catch (DataAccessException error) { failure.capture(error); }
+            catch (AssertionError error) { failure.unexpected = true; }
             status.setRollbackOnly();
         });
         ObjectNode row = JSON.createObjectNode().put("name", name).put("sqlState", failure.sqlState).put("vendorCode", failure.vendorCode);
         record(cases, row);
+        assertStable();
         if (failure.unexpected || failure.sqlState == null) throw new AssertionError(name + " unexpectedly succeeded");
         if (!failure.matches(name)) throw new AssertionError(name + " wrong SQL error " + failure.sqlState + "/" + failure.vendorCode);
     }
@@ -89,8 +115,20 @@ public final class E2aV35NegativeChecks {
     private void duplicateNaturalKey(CaseBuilder b) {
         insert(b);
         b.id = uuid();
-        try { insert(b); throw new AssertionError("duplicate accepted"); }
-        catch (DataAccessException expected) { throw expected; }
+        insert(b);
+    }
+
+    private void duplicateNaturalKeyDifferentBytes(CaseBuilder b) {
+        insert(b);
+        b.id = uuid();
+        b.request = "different".getBytes();
+        b.requestSha = sha(b.request);
+        insert(b);
+    }
+
+    private void assertStable() {
+        JsonNode after = new E2aSnapshotRows(jdbc).capture();
+        if (!baseline.equals(after)) throw new AssertionError("V35 case changed database snapshot");
     }
 
     private void immutableUpdate(CaseBuilder b) {
@@ -124,16 +162,20 @@ public final class E2aV35NegativeChecks {
     }
 
     public record Result(int cases, Path evidence) { }
-    private static final class Failure { String sqlState; int vendorCode; boolean unexpected; void capture(Throwable error) { SQLException sql = find(error); if (sql != null) { sqlState = sql.getSQLState(); vendorCode = sql.getErrorCode(); } } boolean matches(String name) { if (name.equals("natural-key")) return "23000".equals(sqlState) && vendorCode == 1062; if (name.startsWith("immutable-")) return "45000".equals(sqlState) && vendorCode == 1644; if (name.equals("scope-composite-fk") || name.equals("submission-round-fk")) return "23000".equals(sqlState) && vendorCode == 1452; return "HY000".equals(sqlState) && vendorCode == 3819; } }
+    private static final class Failure { String sqlState; int vendorCode; boolean unexpected; void capture(Throwable error) { SQLException sql = find(error); if (sql != null) { sqlState = sql.getSQLState(); vendorCode = sql.getErrorCode(); } } boolean matches(String name) { return switch (name) { case "natural-key", "natural-key-different-bytes" -> "23000".equals(sqlState) && vendorCode == 1062; case "scope-composite-fk", "cross-scope-parent-fk", "submission-round-fk" -> "23000".equals(sqlState) && vendorCode == 1452; case "immutable-update", "immutable-delete" -> "45000".equals(sqlState) && vendorCode == 1644; default -> "HY000".equals(sqlState) && vendorCode == 3819; }; } }
     private static SQLException find(Throwable error) { for (Throwable t = error; t != null; t = t.getCause()) if (t instanceof SQLException sql) return sql; return null; }
     private static final class CaseBuilder {
         byte[] id=uuid(), principal, originalKey=uuid(), warehouse, scope, submission, device, order, authorization, operator, object, set, verification;
         int version=1; String route="temporary.source", operation, status="RECEIVED", requestSha, responseSha; byte[] request="request".getBytes(), response="response".getBytes(); long round, epoch;
         CaseBuilder(Seed s,String op,byte[] object,byte[] set,byte[] verification){principal=s.principal;warehouse=s.warehouse;scope=s.scope;submission=s.submission;device=s.device;order=s.order;authorization=s.authorization;operator=s.operator;round=s.round;epoch=s.epoch;operation=op;this.object=object;this.set=set;this.verification=verification;requestSha=sha(request);responseSha=sha(response);}
     }
-    public record Seed(byte[] principal, byte[] warehouse, byte[] scope, byte[] submission, byte[] device, byte[] order, byte[] authorization, byte[] operator, byte[] objectId, byte[] setId, byte[] verificationId, long round, long epoch) {
+    public record Seed(byte[] principal, byte[] warehouse, byte[] scope, byte[] submission, byte[] device, byte[] order, byte[] authorization, byte[] operator, byte[] objectId, byte[] setId, byte[] verificationId, long round, long epoch, byte[] otherScope, byte[] otherPrincipal) {
         static Seed load(JdbcTemplate j) {
-            return j.queryForObject("SELECT s.operator_id,c.warehouse_id,c.id,s.id,c.creator_device_id,c.client_order_id,s.temporary_authorization_id,s.operator_id,o.id,es.id,v.id,s.work_round,s.source_recovery_epoch FROM submission s JOIN submission_scope c ON c.id=s.scope_id JOIN source_evidence_object o ON o.scope_id=s.scope_id AND o.submission_id=s.id AND o.work_round=s.work_round JOIN source_evidence_set es ON es.scope_id=s.scope_id AND es.submission_id=s.id AND es.work_round=s.work_round JOIN source_evidence_verification v ON v.set_id=es.id AND v.scope_id=es.scope_id WHERE c.creator_device_id IS NOT NULL ORDER BY s.id LIMIT 1", (rs,n) -> new Seed(rs.getBytes(1),rs.getBytes(2),rs.getBytes(3),rs.getBytes(4),rs.getBytes(5),rs.getBytes(6),rs.getBytes(7),rs.getBytes(8),rs.getBytes(9),rs.getBytes(10),rs.getBytes(11),rs.getLong(12),rs.getLong(13)));
+            Seed base = j.queryForObject("SELECT s.operator_id,c.warehouse_id,c.id,s.id,c.creator_device_id,c.client_order_id,s.temporary_authorization_id,s.operator_id,o.id,es.id,v.id,s.work_round,s.source_recovery_epoch FROM submission s JOIN submission_scope c ON c.id=s.scope_id JOIN source_evidence_object o ON o.scope_id=s.scope_id AND o.submission_id=s.id AND o.work_round=s.work_round JOIN source_evidence_set es ON es.scope_id=s.scope_id AND es.submission_id=s.id AND es.work_round=s.work_round JOIN source_evidence_verification v ON v.set_id=es.id AND v.scope_id=es.scope_id WHERE c.creator_device_id IS NOT NULL ORDER BY s.id LIMIT 1", (rs,n) -> new Seed(rs.getBytes(1),rs.getBytes(2),rs.getBytes(3),rs.getBytes(4),rs.getBytes(5),rs.getBytes(6),rs.getBytes(7),rs.getBytes(8),rs.getBytes(9),rs.getBytes(10),rs.getBytes(11),rs.getLong(12),rs.getLong(13),null));
+            byte[] other = j.query("SELECT id FROM submission_scope WHERE id<>? AND temporary_scope_id IS NOT NULL ORDER BY id LIMIT 1", ps -> ps.setBytes(1, base.scope()), rs -> rs.next() ? rs.getBytes(1) : null);
+            byte[] otherPrincipal = j.query("SELECT id FROM app_user WHERE id<>? ORDER BY id LIMIT 1", ps -> ps.setBytes(1, base.operator()), rs -> rs.next() ? rs.getBytes(1) : null);
+            if (other == null || otherPrincipal == null) throw new IllegalStateException("V35 matrix requires second TEMP scope and app user");
+            return new Seed(base.principal(),base.warehouse(),base.scope(),base.submission(),base.device(),base.order(),base.authorization(),base.operator(),base.objectId(),base.setId(),base.verificationId(),base.round(),base.epoch(),other,otherPrincipal);
         }
     }
 }
