@@ -118,6 +118,7 @@ public final class ProductionBridge {
 
         ObjectNode manifest = SubmissionJson.object().put("schemaVersion", 1).put("manifestId", "m")
             .put("manifestVersion", 1).put("snapshotId", "s").put("source", "TEMP")
+            .put("sourceId", "source-1").put("submissionId", "submission-1")
             .put("workRound", 1).put("pageCount", 1).put("entryCount", 0).put("byteCount", 0)
             .put("endPageNo", 1);
         manifest.putArray("pages").add(SubmissionJson.object().put("pageNo", 1).put("pageHash", E2aProtocol.pageHash(page)));

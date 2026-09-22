@@ -48,3 +48,9 @@ git show <fixed-sha>:server/src/main/java/com/acrylic/outbound/temporary/protoco
 - 固定向量 `e2a-v1-empty-set-vector.json` 的 page hash 重算通过；manifest/set hash 在 `workRound` 字符串上触发生产 `NUMBER`，两项为 false；完整 STOP 也为 false，因为该资源的 `stopCoreUtf8` 仍只有旧四字段，不能满足 15 字段 `validateStopCore`。向量文件 SHA-256 为 `FF3764A7814909C9F80CA4B5D6711953F7F300A6A54480ECA11939225C70EB9F`。
 
 生产源 SHA-256：`E2aProtocol.java` `C8D2A4E53DCBC8C37796B311A055555CF8511CA2EC9075E78587559F2C36A40F`；`ProtocolJson.java` `731DB23EBE0C9E3B9DFFFC4A8F6455FE4CA0FA96BD75C851BF8864996C9B5070`；`SubmissionJson.java` `BD35AF05BB0AC0523DD9A1E4E0F959C488A193242D0F29342A206E750190A7DC`；`OfflineSigner.java` `BC0D19EE94D856A3E10EB4D163F6094EDB9482D0A3C88F7C940AD20DCE89C818`；`ImportFiles.java` `F69E3E612A299A8368C552CAB2F6E77D0212B6E5901456A294C9A56870BE83DC`。
+
+## `fa7981d` 修正版窄复跑
+
+实际消费 SHA：`fa7981d7db9253e7ec0a9efbbcb1ce909d0301db`。同一桥接仅复跑受影响协议/向量矩阵；生产 `compileJava` 成功，`runBridge` 退出 0，完整日志为 `.local/e2a-bridge-fa7981d-rerun.log`。所有桥接 case 和固定向量 case 均为 `result=true`：schema overflow 严格拒绝，零 epoch/high-watermark 按合同接受，RSA 合法重签错 facts/空 facts 返回 `UNTRUSTED_FACTS`，未知 key 拒绝；page/manifest/set hash 与完整 15 字段 STOP 签名均真实重算/验签通过。
+
+该次实际生产源 `E2aProtocol.java` SHA-256 为 `B582CECE44AB1C29CDF09BFB26160E76BFFC18EC62415E80DA7A934691BED1AE`；其余未变源仍为上节 hash。修正版固定向量 SHA-256 为 `986DAA74381802CD68404B1390DFA780D43F4E489A457F1E67345212A875181A`。`.local/e2a-run-fa7981d/` 仅为归档编译快照，不入 Git。
