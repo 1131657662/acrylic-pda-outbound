@@ -13,6 +13,7 @@ public final class E2aV34Seed {
     private E2aV34Seed() { }
 
     public static Map<String, String> seed(JdbcTemplate jdbc, Path storage) throws Exception {
+        E2aV34BaseFixture.ensure(jdbc);
         requireSyntheticV34Base(jdbc);
         var template = jdbc.queryForMap("SELECT BIN_TO_UUID(c.warehouse_id) warehouseId,BIN_TO_UUID(c.source_order_id) orderId,BIN_TO_UUID(c.creator_device_id) deviceId,BIN_TO_UUID(s.id) submissionId,BIN_TO_UUID(s.operator_id) operatorId,BIN_TO_UUID(s.assignment_id) assignmentId,BIN_TO_UUID(s.temporary_authorization_id) authorizationId FROM submission_scope c JOIN submission s ON s.scope_id=c.id WHERE c.creator_device_id IS NOT NULL AND c.canonical_order_id IS NOT NULL ORDER BY c.id LIMIT 1");
         var result = new LinkedHashMap<String, String>();
