@@ -34,6 +34,19 @@
 
 本固定 SHA 结论仅是独立静态复审；不得记作编译、数据库、迁移、负向、停机或组合通过。
 
+## W1 V34 fixture static review: d852a92850642711700a2b526df758cb7f945896
+
+本节只记录对 W1 固定 SHA 的静态 DDL/fixture 对照；未连接数据库、未运行迁移。`E2aV34BaseFixture` 的 INSERT 列名均可在 V1--V34 最终 schema 找到，未发现确定的不存在列：warehouse 的 `mapping_revision` 在 V4 已添加；device/product/import/mapping/snapshot/bale/position/policy/order/revision/publication/assignment/authorization 列均与对应 DDL 一致，所用状态和数值满足现有 CHECK；`barcode` 的 `E2A` 加 8 位十六进制长度为 11，符合 V4 `CHAR(11)`。
+
+仍有静态阻断：
+
+1. `E2aV34Seed.java:25-30` 的新 scope、temporary origin 和 submission 均使用 `INSERT ... SELECT`，但没有检查影响行数。尤其 line 29 从新 scope 连接模板 submission，`s.id=templateSubmissionId` 在新 scope 下通常返回零行，导致三种场景 submission 不存在，line 30 current-submission 更新也静默零行。
+2. `E2aV34Seed.java:50` 的 command receipt 同样依赖新 scope 已有 submission，未检查插入行数；`line 54` 的 bale 查询在无可用 bale 时直接失败。
+3. Base fixture `ensure` 以任意已有 `creator_device_id` 行短路，无法证明本次使用隔离合成事实；`E2aV34BaseFixture.java:16` 的 `now` 变量未使用但不影响 SQL。
+4. `file_key` 使用绝对文件路径，虽满足 V34 ASCII/长度约束，但无法与 storage 快照的相对路径稳定关联。
+
+结论：DDL 列名/约束静态兼容已核对；seed 的零行静默、非隔离短路和证据路径关联仍未满足非空 V34 验收。不得将该静态结果记作 seed、迁移或负向通过。
+
 ## Snapshot helper follow-up
 
 在本树 `d114785` 的 `E2aSnapshotFiles` 中补充了递归路径的真实路径校验：storage 根和每个 regular file 均经 `toRealPath()` 检查仍位于工作树/存储根内，防止子路径 junction/reparse point 通过逻辑 `normalize()` 逃逸。该 helper 修复不改变 W2 业务入口或迁移行为；Flyway history 的 JDBC/Jackson 类型兼容与 `E2aMigrationSnapshot` 调用签名仍由 W2 新 SHA 负责确认。
