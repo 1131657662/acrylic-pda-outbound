@@ -15,16 +15,20 @@ public final class E2aMigrationRunner {
         Map<String, String> env = System.getenv();
         Path root = workspace();
         requireProfile(env);
+        Path marker = createPhaseMarker(root, "started");
         Process initialized = E2aMysqlLauncher.start(env, root);
         if (initialized.isAlive()) throw new IllegalStateException("MySQL initialize did not finish");
+        Files.writeString(marker, "initialized\n", java.nio.file.StandardOpenOption.APPEND);
         Process server = E2aMysqlLauncher.startServer(env, root);
         try {
             awaitPort();
             bootstrapAccount(env, root);
             JdbcTemplate jdbc = E2aMigrationEnvironment.connectLive(env, root);
             runMigration(jdbc, root);
+            Files.writeString(marker, "completed\n", java.nio.file.StandardOpenOption.APPEND);
         } finally {
             E2aMysqlLauncher.shutdown(server, root);
+            Files.writeString(marker, "stopped\n", java.nio.file.StandardOpenOption.APPEND);
             if (!E2aMysqlLauncher.isPortFree()) throw new IllegalStateException("19329 listener remains after shutdown");
         }
     }
@@ -61,6 +65,14 @@ public final class E2aMigrationRunner {
         Flyway.configure().dataSource(jdbc.getDataSource()).target("35").load().migrate();
         E2aV35NegativeChecks.verify(jdbc); snapshot.assertPreserved(before); snapshot.saveAfter("after-v35.json");
         Files.createFile(marker);
+    }
+
+    private static Path createPhaseMarker(Path root, String phase) throws Exception {
+        Path marker = root.resolve(".local/e2a-launcher-" + phase + ".marker");
+        Files.createDirectories(marker.getParent());
+        Files.createFile(marker);
+        Files.writeString(marker, phase + "\n", java.nio.file.StandardOpenOption.APPEND);
+        return marker;
     }
 
     private static void bootstrapAccount(Map<String, String> env, Path root) throws Exception {

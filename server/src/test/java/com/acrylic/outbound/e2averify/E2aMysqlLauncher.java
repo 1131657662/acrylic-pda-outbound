@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.UUID;
 
 /** Opt-in launcher for only the assigned MySQL 19329 instance. */
 public final class E2aMysqlLauncher {
@@ -23,7 +24,7 @@ public final class E2aMysqlLauncher {
             "--datadir=" + data, "--port=" + E2aMigrationEnvironment.PORT,
             "--bind-address=127.0.0.1", "--mysqlx=OFF", "--skip-name-resolve",
             "--skip-networking=false", "--skip-grant-tables=false");
-        Path log = workspace.resolve(".local/evidence-e2a/mysql-initialize.log");
+        Path log = privateArtifact(workspace, "mysql-initialize-" + UUID.randomUUID() + ".log");
         Files.createDirectories(log.getParent());
         Process process = new ProcessBuilder(command).directory(workspace.toFile()).redirectErrorStream(true)
             .redirectOutput(log.toFile()).start();
@@ -45,7 +46,8 @@ public final class E2aMysqlLauncher {
         List<String> command = List.of(MYSQLD.toString(), "--no-defaults", "--datadir=" + data,
             "--port=" + E2aMigrationEnvironment.PORT, "--bind-address=127.0.0.1",
             "--mysqlx=OFF", "--skip-name-resolve", "--skip-networking=false", "--skip-grant-tables=false");
-        return new ProcessBuilder(command).directory(workspace.toFile()).redirectErrorStream(true).start();
+        Path log = privateArtifact(workspace, "mysql-server-" + UUID.randomUUID() + ".log");
+        return new ProcessBuilder(command).directory(workspace.toFile()).redirectErrorStream(true).redirectOutput(log.toFile()).start();
     }
 
     public static void shutdown(Process process, Path workspace) throws IOException, InterruptedException {
@@ -56,15 +58,15 @@ public final class E2aMysqlLauncher {
         requireTool(MYSQLADMIN);
         String password = System.getenv("OUTBOUND_DB_PASSWORD");
         if (password == null || password.isBlank()) throw new IllegalStateException("Missing guarded DB password");
-        Path defaults = workspace.resolve(".local/evidence-e2a/mysqladmin.cnf");
+        Path defaults = privateArtifact(workspace, "mysqladmin-" + UUID.randomUUID() + ".cnf");
         Files.createDirectories(defaults.getParent());
         Files.writeString(defaults, "[client]\nuser=" + E2aMigrationEnvironment.USER + "\npassword=" + password + "\nhost=127.0.0.1\nport=" + E2aMigrationEnvironment.PORT + "\nprotocol=tcp\n");
-        Process admin = new ProcessBuilder(MYSQLADMIN.toString(), "--defaults-extra-file=" + defaults, "shutdown")
+        Process admin = new ProcessBuilder(MYSQLADMIN.toString(), "--no-defaults", "--defaults-file=" + defaults, "shutdown")
             .directory(workspace.toFile()).redirectErrorStream(true).start();
         if (!admin.waitFor(30, TimeUnit.SECONDS) || admin.exitValue() != 0) {
             throw new IllegalStateException("mysqladmin shutdown failed: " + admin.exitValue());
         }
-        if (!process.waitFor(30, TimeUnit.SECONDS)) process.destroyForcibly();
+        if (!process.waitFor(30, TimeUnit.SECONDS)) throw new IllegalStateException("MySQL process did not exit after authenticated shutdown");
         if (process.isAlive()) throw new IllegalStateException("MySQL process did not exit");
     }
 
@@ -91,5 +93,14 @@ public final class E2aMysqlLauncher {
 
     private static void requireTool(Path tool) {
         if (!Files.isRegularFile(tool)) throw new IllegalStateException("Missing MySQL tool: " + tool);
+    }
+
+    private static Path privateArtifact(Path workspace, String name) throws IOException {
+        Path root = workspace.resolve(".local/private-files/e2a-launcher").toAbsolutePath().normalize();
+        if (!root.startsWith(workspace.toAbsolutePath().normalize())) throw new IllegalStateException("Private artifact escapes workspace");
+        Files.createDirectories(root);
+        Path file = root.resolve(name);
+        if (Files.exists(file)) throw new IllegalStateException("Refusing artifact overwrite: " + file);
+        return file;
     }
 }
