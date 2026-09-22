@@ -15,7 +15,7 @@ class E2aProtocolTest {
             .put("pageNo",1).put("pageCount",1).put("isFinal",true).put("itemCount",0).put("byteCount",0).putNull("prevPageHash"); page.putArray("items");
         String pageHash=E2aProtocol.pageHash(page);assertThat(pageHash).hasSize(64);
         ObjectNode manifest=SubmissionJson.object().put("schemaVersion",1).put("manifestId","m").put("manifestVersion",1)
-            .put("snapshotId","s").put("source","TEMP").put("workRound",1).put("pageCount",1).put("entryCount",0).put("byteCount",0).put("endPageNo",1);
+            .put("snapshotId","s").put("source","TEMP").put("sourceId","source").put("submissionId","submission").put("workRound",1).put("pageCount",1).put("entryCount",0).put("byteCount",0).put("endPageNo",1);
         manifest.putArray("pages").add(SubmissionJson.object().put("pageNo",1).put("pageHash",pageHash));
         var first=E2aProtocol.manifestHashes(manifest);assertThat(first.manifestBytesHash()).isNotEqualTo(first.setHash());
         manifest.put("setHash",first.setHash());
@@ -35,6 +35,7 @@ class E2aProtocolTest {
         envelope.put("extra","reject");assertThat(E2aProtocol.verifyStop(envelope,pair.getPublic())).isFalse();
         envelope.remove("extra");envelope.put("keyId","0".repeat(64));assertThat(E2aProtocol.verifyStop(envelope,pair.getPublic())).isFalse();
         envelope.put("keyId",com.acrylic.outbound.inventory.ImportFiles.sha256(pair.getPublic().getEncoded()));envelope.put("schemaVersion","1");assertThat(E2aProtocol.verifyStop(envelope,pair.getPublic())).isFalse();
+        envelope.put("schemaVersion",4294967297L);assertThat(E2aProtocol.verifyStop(envelope,pair.getPublic())).isFalse();
     }
     @Test void stopRejectsNonP256Key() throws Exception {
         var keys=KeyPairGenerator.getInstance("EC");keys.initialize(384);KeyPair pair=keys.generateKeyPair();

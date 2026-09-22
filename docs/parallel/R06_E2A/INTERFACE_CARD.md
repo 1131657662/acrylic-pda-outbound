@@ -37,6 +37,15 @@ respective domain prefix.
 device/epoch, stop event/high-watermark/audit sequence and the derived
 manifest/set hashes. The EC signature covers only `domain || canonical(core)`.
 
+The internal wire shape is fixed as follows: IDs (`warehouseId`, `sourceId`,
+`submissionId`, operator/device/event and manifest IDs) are non-empty JSON
+strings; `sourceId` identifies the existing TEMP source/authorization and is
+paired with `submissionId` and `workRound` (the V34 scope/S context); versions,
+rounds, audit/stop counters and page counters are JSON safe integers (no
+strings, booleans, floats or overflow); hashes and key IDs are lowercase
+64-character hexadecimal strings. `source` remains the source kind (`TEMP`)
+and does not replace the source/S identifiers.
+
 ## Intake receipt seam
 
 V35 adds an INSERT-only `source_evidence_intake_receipt` keyed by
@@ -73,7 +82,12 @@ cycle and current bale. The receipt itself never grants occupancy.
 Trusted facts are server-observed source, identity, device, recovery-epoch and
 B/K context facts compared as a complete object; client-declared lists,
 quantities, order IDs or re-signed receipts are never trusted facts by
-themselves.
+themselves. `verifyRsaReceipt` proves only cryptographic receipt integrity;
+`verifyTrustedRsaReceipt` additionally compares the signed receipt object with
+a non-empty complete facts object supplied by the server-side caller. This
+primitive does not define or persist that facts schema, permissions, keyring,
+or database context; a caller must supply the full context and reject missing
+fields before treating the result as trusted.
 
 ## Negative invariants
 
