@@ -13,6 +13,7 @@ public final class E2aMysqlLauncher {
 
     public static Process start(Path workspace) throws IOException {
         requireNewDataDir(workspace);
+        requireTool(MYSQLD);
         Path data = workspace.resolve(E2aMigrationEnvironment.DATA_DIR).toAbsolutePath().normalize();
         Files.createDirectories(data);
         List<String> command = List.of(MYSQLD.toString(), "--datadir=" + data,
@@ -23,6 +24,7 @@ public final class E2aMysqlLauncher {
 
     public static void shutdown(Process process, Path workspace) throws IOException, InterruptedException {
         if (process == null || !process.isAlive()) return;
+        requireTool(MYSQLADMIN);
         new ProcessBuilder(MYSQLADMIN.toString(), "--host=127.0.0.1", "--port=" + E2aMigrationEnvironment.PORT,
             "--protocol=tcp", "--shutdown").directory(workspace.toFile()).inheritIO().start().waitFor();
         process.waitFor();
@@ -33,5 +35,9 @@ public final class E2aMysqlLauncher {
         if (!data.startsWith(workspace.toAbsolutePath().normalize()) || Files.exists(data.resolve("ibdata1"))) {
             throw new IllegalStateException("Refusing old or outside E2a datadir");
         }
+    }
+
+    private static void requireTool(Path tool) {
+        if (!Files.isRegularFile(tool)) throw new IllegalStateException("Missing MySQL tool: " + tool);
     }
 }
