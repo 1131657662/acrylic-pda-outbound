@@ -1,6 +1,7 @@
 package com.acrylic.outbound.temporary.protocol;
 
 import com.acrylic.outbound.submissions.SubmissionJson;
+import com.acrylic.outbound.pda.OfflineSigner;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -25,6 +26,11 @@ class E2aProductionVectorTest {
         envelope.put("signature",vector.path("stopSignatureDerBase64").asText());
         var key=KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(vector.path("ecPublicKeySpkiBase64").asText())));
         assertThat(E2aProtocol.verifyStop(envelope,key)).isTrue();
+        var receipt=(com.fasterxml.jackson.databind.node.ObjectNode)SubmissionJson.parse(vector.path("unsignedReceiptUtf8").asText());
+        receipt.put("signedReceipt",vector.path("signedReceiptJwt").asText());
+        var rsa=new OfflineSigner.PublicKeyView(vector.path("rsaKeyId").asText(),"RS256",vector.path("rsaPublicKeySpkiBase64").asText());
+        assertThat(E2aProtocol.verifyRsaReceipt(receipt,rsa)).isEqualTo("VERIFIED");
+        receipt.put("status","CONFLICT");assertThat(E2aProtocol.verifyRsaReceipt(receipt,rsa)).isEqualTo("INVALID_SIGNATURE");
     }
     private static byte[] resource() throws IOException {
         try(InputStream input=E2aProductionVectorTest.class.getResourceAsStream("/e2a/e2a-v1-empty-set-vector.json")) {
