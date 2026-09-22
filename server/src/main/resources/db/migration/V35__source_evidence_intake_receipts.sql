@@ -53,7 +53,8 @@ CREATE TABLE source_evidence_intake_receipt (
  CHECK(original_response_sha256 REGEXP '^[0-9a-f]{64}$'),
  CHECK((operation_kind='OPEN' AND object_id IS NULL AND evidence_set_id IS NULL AND evidence_verification_id IS NULL)
     OR operation_kind<>'OPEN'),
- CHECK(evidence_verification_id IS NULL OR evidence_set_id IS NOT NULL)
+ CHECK((object_id IS NULL AND evidence_set_id IS NULL AND evidence_verification_id IS NULL)
+    OR (object_id IS NOT NULL AND evidence_set_id IS NOT NULL AND evidence_verification_id IS NOT NULL))
 ) ENGINE=InnoDB;
 CREATE TRIGGER trg_evidence_intake_no_update BEFORE UPDATE ON source_evidence_intake_receipt
  FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='source evidence intake receipts are immutable';
