@@ -54,11 +54,11 @@ copied into the receipt. There is no UPDATE/DELETE path; current effect is a
 separate read/append concern.
 
 The intake order is `OPEN -> PAGE* -> STOP -> VERIFY`: every PAGE and STOP
-must reference the manifest identity returned by OPEN, STOP is accepted only
-after the required pages are present and its independent object is durable,
-and VERIFY is accepted only after STOP and the page set close successfully.
-Missing or late pages remain `PARTIAL`; they cannot be used to skip STOP or
-to create a `VERIFIED_COMPLETE_AT_STOP` verification.
+must reference the manifest identity returned by OPEN, and STOP records an
+independent durable object even when pages are still incomplete. VERIFY is
+accepted only after STOP and the page set close successfully. Missing or late
+pages remain `PARTIAL`; they cannot be used to skip STOP or to create a
+`VERIFIED_COMPLETE_AT_STOP` verification.
 
 ## Limits and capabilities
 

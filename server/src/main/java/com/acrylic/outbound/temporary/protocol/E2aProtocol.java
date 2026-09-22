@@ -37,6 +37,7 @@ public final class E2aProtocol {
         return new Hashes(hash("MANIFEST",bytes),hash("SET",bytes));
     }
     public static ObjectNode signStop(ObjectNode core, PrivateKey key, String keyId) {
+        validateStopCore(core);
         require(isP256(key),"STOP_KEY");
         require(keyId != null && keyId.matches("[0-9a-f]{64}"),"STOP_KEY_ID");
         byte[] input=signingBytes("STOP",core);String signature;
@@ -48,11 +49,12 @@ public final class E2aProtocol {
     public static boolean verifyStop(JsonNode envelope, PublicKey key) {
         try {
             fields(envelope,Set.of("schemaVersion","algorithm","keyId","core","signature"));
-            require(envelope.path("schemaVersion").asInt()==1,"STOP_SCHEMA");
+            require(envelope.path("schemaVersion").isIntegralNumber() && envelope.path("schemaVersion").asInt()==1,"STOP_SCHEMA");
             require(envelope.path("algorithm").asText().equals("ECDSA_P256_SHA256_DER"),"STOP_ALGORITHM");
             require(key instanceof java.security.interfaces.ECPublicKey ec && isP256(ec),"STOP_KEY");
             String computed=hex(key.getEncoded());require(computed.equals(envelope.path("keyId").asText()),"STOP_KEY_ID");
             require(envelope.path("core").isObject(),"STOP_CORE");
+            validateStopCore((ObjectNode) envelope.path("core"));
             byte[] signature=decodeStandardBase64(envelope.path("signature"));
             var verifier=Signature.getInstance("SHA256withECDSA");verifier.initVerify(key);
             verifier.update(signingBytes("STOP",(ObjectNode)envelope.path("core")));
@@ -78,18 +80,33 @@ public final class E2aProtocol {
             return ISSUER.equals(claims.path("iss").asText()) && AUDIENCE.equals(claims.path("aud").asText()) && claims.path("receipt").equals(unsigned)?"VERIFIED":"INVALID_SIGNATURE";
         } catch(GeneralSecurityException | RuntimeException error) { return "INVALID_SIGNATURE"; }
     }
+    public static String verifyTrustedRsaReceipt(JsonNode receipt, OfflineSigner.PublicKeyView key, JsonNode expectedFacts) {
+        String result=verifyRsaReceipt(receipt,key);
+        if(!"VERIFIED".equals(result)) return result;
+        try {
+            JsonNode signed=ProtocolJson.parse(decodeUrlBase64(receipt.path("signedReceipt").asText().split("\\.",-1)[1])).path("receipt");
+            return trustedFacts(signed,expectedFacts)?"VERIFIED":"UNTRUSTED_FACTS";
+        } catch(RuntimeException error) { return "INVALID_SIGNATURE"; }
+    }
     public static String intakeSha256(byte[] canonicalRequest) { return hash("INTAKE", canonical(canonicalRequest)); }
-    public static boolean trustedFacts(JsonNode actual, JsonNode expected) { return actual != null && expected != null && actual.isObject() && expected.isObject() && actual.equals(expected); }
+    public static boolean trustedFacts(JsonNode actual, JsonNode expected) { return actual != null && expected != null && actual.isObject() && expected.isObject() && !actual.isEmpty() && !expected.isEmpty() && actual.equals(expected); }
+    private static void validateStopCore(ObjectNode core) {
+        fields(core,Set.of("warehouseId","sourceId","submissionId","workRound","originalOperatorId","freezeDeviceId","sourceRecoveryEpoch","stopEventId","captureHighWatermark","auditThroughSeq","stopTransactionVersion","manifestId","manifestVersion","manifestBytesHash","setHash"));
+        for(String key: Set.of("warehouseId","sourceId","submissionId","originalOperatorId","freezeDeviceId","stopEventId","manifestId")) text(core,key);
+        for(String key: Set.of("workRound","sourceRecoveryEpoch","captureHighWatermark","auditThroughSeq","stopTransactionVersion","manifestVersion")) positive(core,key);
+        hashField(core,"manifestBytesHash"); hashField(core,"setHash");
+    }
+    private static void hashField(JsonNode value,String key){ require(value.path(key).isTextual() && value.path(key).asText().matches("[0-9a-f]{64}"),key+"_HASH"); }
     private static void validateManifestCore(ObjectNode core) {
         fields(core,Set.of("schemaVersion","manifestId","manifestVersion","snapshotId","source","workRound","pageCount","entryCount","byteCount","pages","endPageNo"));
-        require(core.path("schemaVersion").asInt()==1,"MANIFEST_SCHEMA"); text(core,"manifestId"); positive(core,"manifestVersion"); text(core,"snapshotId"); text(core,"source"); positive(core,"workRound"); positive(core,"pageCount"); positiveOrZero(core,"entryCount"); positiveOrZero(core,"byteCount"); positive(core,"endPageNo"); require(core.path("endPageNo").asLong()==core.path("pageCount").asLong(),"MANIFEST_END"); require(core.path("pages").isArray() && core.path("pages").size()==core.path("pageCount").asInt(),"MANIFEST_PAGES");
+        require(core.path("schemaVersion").isIntegralNumber() && core.path("schemaVersion").asInt()==1,"MANIFEST_SCHEMA"); text(core,"manifestId"); positive(core,"manifestVersion"); text(core,"snapshotId"); text(core,"source"); positive(core,"workRound"); positive(core,"pageCount"); positiveOrZero(core,"entryCount"); positiveOrZero(core,"byteCount"); positive(core,"endPageNo"); require(core.path("endPageNo").asLong()==core.path("pageCount").asLong(),"MANIFEST_END"); require(core.path("pages").isArray() && core.path("pages").size()==core.path("pageCount").asInt(),"MANIFEST_PAGES");
         long prior=0; for(JsonNode page:core.path("pages")){ fields(page,Set.of("pageNo","pageHash")); positive(page,"pageNo"); require(page.path("pageNo").asLong()==++prior,"MANIFEST_PAGE_ORDER"); require(page.path("pageHash").asText().matches("[0-9a-f]{64}"),"MANIFEST_PAGE_HASH"); }
     }
     private static void fields(JsonNode value,Set<String> expected){ require(value!=null && value.isObject(),"FIELDS"); Set<String> actual=new java.util.HashSet<>(); value.fieldNames().forEachRemaining(actual::add); require(actual.equals(expected),"FIELDS"); }
     private static void text(JsonNode value,String key){ require(value.path(key).isTextual() && !value.path(key).asText().isBlank(),key+"_TEXT"); }
     private static void positive(JsonNode value,String key){ require(number(value.path(key))>0,key+"_POSITIVE"); }
     private static void positiveOrZero(JsonNode value,String key){ require(number(value.path(key))>=0,key+"_NONNEGATIVE"); }
-    private static long number(JsonNode node){ require(node.isIntegralNumber() || node.isTextual(),"NUMBER"); try { return Long.parseLong(node.asText()); } catch(NumberFormatException e){ throw new IllegalArgumentException("NUMBER"); } }
+    private static long number(JsonNode node){ require(node.isIntegralNumber(),"NUMBER"); return node.asLong(); }
     private static String hex(byte[] bytes){ return com.acrylic.outbound.inventory.ImportFiles.sha256(bytes); }
     private static byte[] decodeStandardBase64(JsonNode value) {
         require(value != null && value.isTextual(),"BASE64_TYPE"); String encoded=value.asText();
