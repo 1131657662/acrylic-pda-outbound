@@ -9,8 +9,6 @@ final class E2aV34BaseFixture {
     private E2aV34BaseFixture() { }
 
     static void ensure(JdbcTemplate jdbc) {
-        Integer existing = jdbc.queryForObject("SELECT COUNT(*) FROM submission_scope WHERE creator_device_id IS NOT NULL", Integer.class);
-        if (existing != null && existing > 0) return;
         String user = uuid(), warehouse = uuid(), device = uuid(), product = uuid(), importId = uuid(), snapshot = uuid(), bale = uuid();
         String policy = uuid(), order = uuid(), revision = uuid(), publication = uuid(), assignment = uuid(), authorization = uuid();
         String now = Instant.now().toString();
@@ -34,11 +32,10 @@ final class E2aV34BaseFixture {
         jdbc.update("INSERT INTO order_publication(id,warehouse_id,order_id,revision,row_version,policy_id,auto_deduct_inventory,recovery_epoch,snapshot_json,reason,published_by,published_at) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),1,1,UUID_TO_BIN(?),0,1,'{}','synthetic',UUID_TO_BIN(?),UTC_TIMESTAMP(3))",publication,warehouse,order,policy,user);
         jdbc.update("INSERT INTO order_assignment(id,warehouse_id,order_id,revision,publication_id,device_id,operator_id,epoch,recovery_epoch,inventory_snapshot_id,policy_id,plan_sha256,inventory_sha256,start_order_scan_seq,allocation_version,status,area_note,issued_at,expires_at) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),1,UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),1,1,UUID_TO_BIN(?),UUID_TO_BIN(?),REPEAT('d',64),REPEAT('e',64),1,0,'ACTIVE','synthetic',UTC_TIMESTAMP(3),DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 1 DAY))",assignment,warehouse,order,publication,device,user,snapshot,policy);
         jdbc.update("INSERT INTO temporary_authorization(id,bundle_id,warehouse_id,device_id,user_id,authorization_epoch,user_auth_version,device_version,recovery_epoch,inventory_snapshot_id,mapping_revision,policy_id,issued_at,expires_at,key_id,signed_token,manifest_text,manifest_sha256,signed_manifest) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),1,1,1,1,UUID_TO_BIN(?),1,UUID_TO_BIN(?),UTC_TIMESTAMP(3),DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 172800 SECOND),'e2a','synthetic','{}',REPEAT('f',64),'synthetic')",authorization,uuid(),warehouse,device,user,snapshot,policy);
-        jdbc.update("INSERT INTO temporary_work_origin(creator_device_id,client_order_id,authorization_id) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?))",device,uuid(),authorization);
         String scope = uuid(), submission = uuid(), client = uuid();
-        jdbc.update("INSERT INTO submission_scope(id,warehouse_id,source_order_id,work_round,creator_device_id,client_order_id,canonical_order_id,mapping_version,current_submission_id) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),1,UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),1,NULL)",scope,warehouse,order,device,client,order);
         jdbc.update("INSERT INTO temporary_work_origin(creator_device_id,client_order_id,authorization_id) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?))",device,client,authorization);
-        jdbc.update("INSERT INTO submission(id,scope_id,assignment_id,temporary_authorization_id,freeze_device_id,operator_id,work_round,source_recovery_epoch,status,created_at,updated_at) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),1,1,'REVIEW_REQUIRED',UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))",submission,scope,assignment,authorization,device,user);
+        jdbc.update("INSERT INTO submission_scope(id,warehouse_id,source_order_id,work_round,creator_device_id,client_order_id,canonical_order_id,mapping_version,current_submission_id) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),NULL,1,UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),1,NULL)",scope,warehouse,device,client,order);
+        jdbc.update("INSERT INTO submission(id,scope_id,assignment_id,temporary_authorization_id,freeze_device_id,operator_id,work_round,source_recovery_epoch,status,receipt_text,created_at,updated_at) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),NULL,UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),1,1,'REVIEW_REQUIRED',NULL,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))",submission,scope,authorization,device,user);
         jdbc.update("UPDATE submission_scope SET current_submission_id=UUID_TO_BIN(?) WHERE id=UUID_TO_BIN(?)",submission,scope);
     }
     private static String uuid() { return UUID.randomUUID().toString(); }
