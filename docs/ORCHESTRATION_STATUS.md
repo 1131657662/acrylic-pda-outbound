@@ -2,8 +2,40 @@
 
 <!-- CURRENT_STATE_START -->
 ## 当前有效状态（唯一接续入口）
+### 2026-09-22 23:25 R08 SCAN_XLSX 姓名口径放宽并已部署 test（代码改动未提交）
 
-更新时间：2026-09-22 19:48（Asia/Shanghai）。E2a原三树已保留历史整合、窄编译通过；19329未启动，非空迁移/28案数据库验证未执行。本区结束即停止读取。
+- 按用户确认去掉“必须含中文汉字”：姓名非空且非占位（拒空/空白、`原人员ID:` 前缀、人员ID含无连字符写法、账号名），**中英文姓名均可**；判定统一由新增 `report-rendering` 的 `OperatorNames.usable` 提供，服务端 `ExportOperatorNames`（并读 username）与 `ScanRecordExcelRenderer.validate` 共用；错误码不变，提示改为“扫码人姓名缺失或无效…”。文档口径已同步 `docs/parallel/R08/{SCAN_RECORDS,PROGRESS,WEB_INTEGRATION}.md`。
+- 本地验证：`ScanRecordExcelRendererTest` 10 项 + 新 `OperatorNamesTest` 15 项通过（同模块 116 项中 2 项 PDF 因本机缺 Playwright `chromium_headless_shell-1187` 失败，属环境缺件）；`compileTestJava`、`bootJar`、`installDist` 均 BUILD SUCCESSFUL（构建字体取自同级工作树，SHA `2c76254f…`）。`R08ExportIT` **未跑**（需 R08/wave1 合成库，23308 未运行、`.local/r08` 已不在）。
+- **已部署 test 并真实 HTTP 验证**：overlay 发布 `releases/v34-386739c-r08name-01`（仅替换 `server.jar` `5767ea05…` 与 `report-rendering…/acrylic-report-rendering.jar` `684ee017…`，manifest/source-sha256 重写后本包 `verify_backend_release.py` 通过）；`activate_backend.sh` EXIT=0，API/worker 23:25:26/23:25:41 active、18085 监听、csrf 200；三格式全部 OK/SUCCEEDED（XLSX 13493B、PDF 360560B、**SCAN_XLSX 4314B**，列 E 实测 `test_pda01`），旧 `EXPORT_OPERATOR_NAME_UNAVAILABLE` 阻塞已消除；旧发布与 `web/APK` 未动、库仍 V34 无迁移。证据 `deployment-evidence/r08name-20260922/`；回滚=对 `v34-386739c-02` 重跑同一 `activate_backend.sh`。代码与文档改动已提交 `686dd12`（推送状态见下方收尾记录）。
+
+### 2026-09-22 23:05 只读核对（最新；test 部署线以此为准，取代下方同线旧结论）
+
+- 核对者为本会话（DSH `session-4913edce-5187-4359-bca3-93830acba979`），**仅读取**：未写远端、未改数据库、未跑测试/构建、未提交未推送。核对时刻 2026-09-22 23:05 +08:00。
+- **test 已实际切换并激活**：`/opt/acrylic-outbound-test/current -> releases/v34-386739c-02`（symlink 21:21）；`deployment-evidence/v34-20260922-complete/activation-live.txt` = `Verified backend package: v34-386739c-02` → `Activated backend /opt/acrylic-outbound-test/releases/v34-386739c-02; Web and APK publication untouched.`。`acrylic-outbound-test.service` 21:21:33 起 active running（pid 3150868，ExecMainStatus=0）、`acrylic-outbound-test-worker.service` 21:21:50 起 active（pid 3150993），均运行 `current/server.jar`；test API 绑 `127.0.0.1:18085`，`OUTBOUND_MIGRATE=false`（写已开放，已不在停写态）；`/actuator/health` 返回 401（需鉴权，服务可达）。
+- **库已到 V34**：`acrylic_outbound_test` 的 Flyway max=34 / 34 条 / success 34；`live-migration.log` 记 validate 34 migrations、current version 23、applied 11、`now at version v34`（21:20）。
+- **原值保留已落盘**：`preservation-result.json` 原 84 表 / 70327 行 / 33 文件，变化仅 flyway_schema_history+11、permission+4、role+3、role_permission+4，`unexpected` 为空；备份校验 `database.sql.gz/database-facts.json/private-files-and-config.tar.gz/release.txt/manifest.json/active-services.txt` 全 OK；`previous-release.txt = r05-sync-20260919-01`。
+- **真实 HTTP 导出副本结果**：XLSX SUCCEEDED / http200 / 13495B / sha256 `e0689a61…`；PDF SUCCEEDED / http200 / 360561B / sha256 `369a9d4c…`；**SCAN_XLSX 未通过**：`BLOCKED_BY_EXISTING_NAME` / `EXPORT_OPERATOR_NAME_UNAVAILABLE`（既定中文姓名校验限制，未修改人员资料）。**因此不得写作「三格式通过」或「三格式全绿」**。
+- 其他已核证据：激活测试 8/8 OK、checkpoint 7/7 PASS、`nginx -t` ok、副本内容核对 7 工作表 / 1 包 / 300.5kg / 2 页 / `contentMatch: true`。PDA/APK 发布物未动：`update-records/` 仅 `r05-download-16`、`updates/` 仅 staging + `update-public-key.base64`、`web-releases/` 仅 `pda-download-20260919-01`（均 09-18/09-19）。
+- **下方被取代的旧结论（原文保留作历史，不无痕覆盖）**：①「live 目标 current=r05-sync-20260919-01、API PID2930319、worker inactive/PID0、V23；尚未切换」；②「已开始 test 停写备份/迁移，未在此断点声明切换完成；成功后仍停写待激活」；③「live 未切」；④「原列逐值/文件完整保留仍待核；三格式/143/正式切换尚未回报通过」。四点均以本轮远端证据更新。
+- **未消除的缺口**：SCAN_XLSX 仍受阻（非产品失败、非已通过）；本轮未见 143/SIGTERM 停止语义的新动态证据（unit 已配 `SuccessExitStatus=143` 与 `TimeoutStopSec=60`）；副本侧遗留常驻 JVM pid 3136227（`--server.port=18089 --spring.main.web-application-type=none`，20:12 起未退出），下方未登记，需确认是否应结束；副本 `acrylic-outbound-v34-verify-{api,worker}-20260922` 仍 active（API `127.0.0.1:18088`，20:12 起）。
+- **本地与下方一致（本轮复验）**：主树 `codex/development` @ `93bae37`，`origin/codex/development` 同 SHA、0/0（仅本地 remote-tracking 缓存）；未提交 `AGENTS.md`/`docs/GIT_WORKFLOW.md`/本看板 + 新增 2 个 history 快照 + 原未跟踪 `docs/out.xlsx`；E2a 三树 `319305f`（仅 `.local-e2a-vector.log` 未跟踪）/`568683c`（干净）/`79cad44`（仅 `bridge-classes/` 未跟踪）逐条相符；本机 `13316/18088/19321–19329` 无监听、无 java/gradle 执行者；本地库 28 个 schema 中无 e2a/v34/v35/migrate，最新 schema 时间 2026-09-20。
+- **本次未能核实（限制，不得当作已核）**：远端实时 Git ref 无法联网核验（HTTPS 走 schannel 报 `SEC_E_NO_CREDENTIALS`；git-over-ssh 受沙箱管道限制报 `couldn't create signal pipe, Win32 error 5`；私有仓库匿名 GitHub API 返回 404；原生 OpenSSH 可认证为 `1131657662`，说明网络与密钥正常）；nginx `proxy_pass` 站点文件未取到（`conf.d` 内 grep 为空）。
+
+### 2026-09-22 本轮 test 部署接管（优先于下述旧断点）
+
+> **本段为接续前记录，读时降级为历史**：其 test 部署线结论（「已开始停写备份/迁移、未声明切换完成」「成功后仍停写待激活」「live 未切」「原列逐值/文件保留仍待核」「三格式/143/正式切换尚未回报通过」）均已被上方「2026-09-22 23:05 只读核对」按远端证据取代；未删原文仅为保留接续前状态。
+
+- 用户在本任务明确确认“请帮我完成且部署”，随后再次“继续”。当前任务 `01a0c928-470d-7943-88ec-afe3390967ee` 直接持有原 sixth-wave-integration、test API/Worker/Web/库及本次管理记录写权；20:54任务列表核旧总调度/部署/导出任务均notLoaded，本机无旧ssh/scp/java执行者，不唤醒旧代理、不新建任务/树。
+- 业务固定 `386739cfbe450e0cb58937b0745c6a74bf4c7297` / API0.30.0 / V34；部署修正已提交 `0b1094ee93d2987a4b4c578996e99c28488808b4`，原三文件修改已保留接续。修正版 `/opt/acrylic-outbound-test/releases/v34-386739c-02`；旧候选未覆盖。
+- 本轮作者部署验证：Linux激活8/8、启停7/7、Bash语法及systemd配置通过；副本XLSX/PDF成功、真实HTTP下载/hash通过，7工作表与2页PDF核对1包300.5kg。原01/02英文姓名使SCAN_XLSX仍受既定中文姓名校验限制，未修改人员资料。
+- 已开始test停写备份/迁移；未在此断点声明切换完成。精确状态以远端证据 `/opt/acrylic-outbound-test/deployment-evidence/v34-20260922-complete/` 为准；执行 `migrate-v34.sh`，成功后仍停写待激活。PDA/APK、main和生产不动；E2a冻结继续。
+- 替换前完整结论见 [部署接管前快照](history/ORCHESTRATION_STATE_before_test_deploy_2026-09-22.md)。下述旧身份、写权与运行状态仅是接管前记录，部署结束后整理当前区。
+
+规则更新时间：2026-09-22（Asia/Shanghai）。本次仅恢复默认调度与模型配置；下列业务、环境与执行者信息除明确标注外沿用19:48断点，未复验远端、监听或测试。本区结束即停止读取。
+
+- **默认模式已恢复**：取消固定主协调/三执行者、禁止主协调开发及强制转派。当前助手可在已核写权内直接完成工作；未经用户要求不主动创建子代理。成本角色已移出加载目录，固定子代理模型/推理强度/并发数已移除；本机全局模型恢复调整前备份的 `gpt-6-astra-pro / xhigh`。配置解析与差异已核，现有会话实际模型未声称已热切换；重新启动 Codex 后继续。此条优先于下文及其他文档中的旧编排规则。
+- **本次核对**：主树 `codex/development` / `93bae37aa399598be15d1fd82a3c551f70497892`，origin仍原仓库。修改前仅原 `docs/out.xlsx` 未跟踪；本次另修改 AGENTS、Git工作流、看板并新增历史快照，未提交/推送。任务列表显示旧总调度与部署任务均 systemError，不将旧代理身份视为活跃；本任务仅配置/规则写权，不接管业务、DB、重型槽或部署。
+- **历史保留**：恢复前完整当前区见 [默认恢复前快照](history/ORCHESTRATION_STATE_before_default_restore_2026-09-22.md)。原业务准备、作者、独立、组合结果及失败/未验继续如下；下一次业务接续先核写权和实际环境，沿原树/提交继续。
 
 ### 当前目标与下一步
 
@@ -71,6 +103,13 @@
 ## 当前区历史快照（2026-09-22 19:25，2026-09-22 19:48更新前保存）
 
 ## 当前有效状态（唯一接续入口）
+### 2026-09-22 本轮 test 部署接管（优先于下述旧断点）
+
+- 用户在本任务明确确认“请帮我完成且部署”，随后再次“继续”。当前任务 `01a0c928-470d-7943-88ec-afe3390967ee` 直接持有原 sixth-wave-integration、test API/Worker/Web/库及本次管理记录写权；20:54任务列表核旧总调度/部署/导出任务均notLoaded，本机无旧ssh/scp/java执行者，不唤醒旧代理、不新建任务/树。
+- 业务固定 `386739cfbe450e0cb58937b0745c6a74bf4c7297` / API0.30.0 / V34；部署修正已提交 `0b1094ee93d2987a4b4c578996e99c28488808b4`，原三文件修改已保留接续。修正版 `/opt/acrylic-outbound-test/releases/v34-386739c-02`；旧候选未覆盖。
+- 本轮作者部署验证：Linux激活8/8、启停7/7、Bash语法及systemd配置通过；副本XLSX/PDF成功、真实HTTP下载/hash通过，7工作表与2页PDF核对1包300.5kg。原01/02英文姓名使SCAN_XLSX仍受既定中文姓名校验限制，未修改人员资料。
+- 已开始test停写备份/迁移；未在此断点声明切换完成。精确状态以远端证据 `/opt/acrylic-outbound-test/deployment-evidence/v34-20260922-complete/` 为准；执行 `migrate-v34.sh`，成功后仍停写待激活。PDA/APK、main和生产不动；E2a冻结继续。
+- 替换前完整结论见 [部署接管前快照](history/ORCHESTRATION_STATE_before_test_deploy_2026-09-22.md)。下述旧身份、写权与运行状态仅是接管前记录，部署结束后整理当前区。
 
 更新时间：2026-09-22 19:25（Asia/Shanghai）。E2a原三树已保留历史整合、窄编译通过；19329未启动，非空迁移/28案数据库验证未执行。本区结束即停止读取。
 
@@ -136,6 +175,13 @@
 ## 当前区历史快照（2026-09-22 19:23，19:25转派前保存）
 
 ## 当前有效状态（唯一接续入口）
+### 2026-09-22 本轮 test 部署接管（优先于下述旧断点）
+
+- 用户在本任务明确确认“请帮我完成且部署”，随后再次“继续”。当前任务 `01a0c928-470d-7943-88ec-afe3390967ee` 直接持有原 sixth-wave-integration、test API/Worker/Web/库及本次管理记录写权；20:54任务列表核旧总调度/部署/导出任务均notLoaded，本机无旧ssh/scp/java执行者，不唤醒旧代理、不新建任务/树。
+- 业务固定 `386739cfbe450e0cb58937b0745c6a74bf4c7297` / API0.30.0 / V34；部署修正已提交 `0b1094ee93d2987a4b4c578996e99c28488808b4`，原三文件修改已保留接续。修正版 `/opt/acrylic-outbound-test/releases/v34-386739c-02`；旧候选未覆盖。
+- 本轮作者部署验证：Linux激活8/8、启停7/7、Bash语法及systemd配置通过；副本XLSX/PDF成功、真实HTTP下载/hash通过，7工作表与2页PDF核对1包300.5kg。原01/02英文姓名使SCAN_XLSX仍受既定中文姓名校验限制，未修改人员资料。
+- 已开始test停写备份/迁移；未在此断点声明切换完成。精确状态以远端证据 `/opt/acrylic-outbound-test/deployment-evidence/v34-20260922-complete/` 为准；执行 `migrate-v34.sh`，成功后仍停写待激活。PDA/APK、main和生产不动；E2a冻结继续。
+- 替换前完整结论见 [部署接管前快照](history/ORCHESTRATION_STATE_before_test_deploy_2026-09-22.md)。下述旧身份、写权与运行状态仅是接管前记录，部署结束后整理当前区。
 
 更新时间：2026-09-22 19:23（Asia/Shanghai）。E2a原三树已保留历史整合、窄编译通过；19329未启动，非空迁移/28案数据库验证未执行。本区结束即停止读取。
 
@@ -200,6 +246,13 @@
 ## 当前区历史快照（2026-09-22 18:58，19:23接续前保存）
 
 ## 当前有效状态（唯一接续入口）
+### 2026-09-22 本轮 test 部署接管（优先于下述旧断点）
+
+- 用户在本任务明确确认“请帮我完成且部署”，随后再次“继续”。当前任务 `01a0c928-470d-7943-88ec-afe3390967ee` 直接持有原 sixth-wave-integration、test API/Worker/Web/库及本次管理记录写权；20:54任务列表核旧总调度/部署/导出任务均notLoaded，本机无旧ssh/scp/java执行者，不唤醒旧代理、不新建任务/树。
+- 业务固定 `386739cfbe450e0cb58937b0745c6a74bf4c7297` / API0.30.0 / V34；部署修正已提交 `0b1094ee93d2987a4b4c578996e99c28488808b4`，原三文件修改已保留接续。修正版 `/opt/acrylic-outbound-test/releases/v34-386739c-02`；旧候选未覆盖。
+- 本轮作者部署验证：Linux激活8/8、启停7/7、Bash语法及systemd配置通过；副本XLSX/PDF成功、真实HTTP下载/hash通过，7工作表与2页PDF核对1包300.5kg。原01/02英文姓名使SCAN_XLSX仍受既定中文姓名校验限制，未修改人员资料。
+- 已开始test停写备份/迁移；未在此断点声明切换完成。精确状态以远端证据 `/opt/acrylic-outbound-test/deployment-evidence/v34-20260922-complete/` 为准；执行 `migrate-v34.sh`，成功后仍停写待激活。PDA/APK、main和生产不动；E2a冻结继续。
+- 替换前完整结论见 [部署接管前快照](history/ORCHESTRATION_STATE_before_test_deploy_2026-09-22.md)。下述旧身份、写权与运行状态仅是接管前记录，部署结束后整理当前区。
 
 更新时间：2026-09-22 18:58（Asia/Shanghai）。E2a验收准备继续；19329未启动，非空迁移尚未执行。以下区段结束即停止读取。
 
@@ -265,6 +318,13 @@
 ## 当前区历史快照（2026-09-22 17:45，18:58接续前保存）
 
 ## 当前有效状态（唯一接续入口）
+### 2026-09-22 本轮 test 部署接管（优先于下述旧断点）
+
+- 用户在本任务明确确认“请帮我完成且部署”，随后再次“继续”。当前任务 `01a0c928-470d-7943-88ec-afe3390967ee` 直接持有原 sixth-wave-integration、test API/Worker/Web/库及本次管理记录写权；20:54任务列表核旧总调度/部署/导出任务均notLoaded，本机无旧ssh/scp/java执行者，不唤醒旧代理、不新建任务/树。
+- 业务固定 `386739cfbe450e0cb58937b0745c6a74bf4c7297` / API0.30.0 / V34；部署修正已提交 `0b1094ee93d2987a4b4c578996e99c28488808b4`，原三文件修改已保留接续。修正版 `/opt/acrylic-outbound-test/releases/v34-386739c-02`；旧候选未覆盖。
+- 本轮作者部署验证：Linux激活8/8、启停7/7、Bash语法及systemd配置通过；副本XLSX/PDF成功、真实HTTP下载/hash通过，7工作表与2页PDF核对1包300.5kg。原01/02英文姓名使SCAN_XLSX仍受既定中文姓名校验限制，未修改人员资料。
+- 已开始test停写备份/迁移；未在此断点声明切换完成。精确状态以远端证据 `/opt/acrylic-outbound-test/deployment-evidence/v34-20260922-complete/` 为准；执行 `migrate-v34.sh`，成功后仍停写待激活。PDA/APK、main和生产不动；E2a冻结继续。
+- 替换前完整结论见 [部署接管前快照](history/ORCHESTRATION_STATE_before_test_deploy_2026-09-22.md)。下述旧身份、写权与运行状态仅是接管前记录，部署结束后整理当前区。
 
 更新时间：2026-09-22 17:45（Asia/Shanghai）。E2a验收准备继续；19329未启动，非空迁移尚未执行。以下区段结束即停止读取。
 
@@ -329,6 +389,13 @@
 ## 当前区历史快照（2026-09-22 17:21，17:45接续前保存）
 
 ## 当前有效状态（唯一接续入口）
+### 2026-09-22 本轮 test 部署接管（优先于下述旧断点）
+
+- 用户在本任务明确确认“请帮我完成且部署”，随后再次“继续”。当前任务 `01a0c928-470d-7943-88ec-afe3390967ee` 直接持有原 sixth-wave-integration、test API/Worker/Web/库及本次管理记录写权；20:54任务列表核旧总调度/部署/导出任务均notLoaded，本机无旧ssh/scp/java执行者，不唤醒旧代理、不新建任务/树。
+- 业务固定 `386739cfbe450e0cb58937b0745c6a74bf4c7297` / API0.30.0 / V34；部署修正已提交 `0b1094ee93d2987a4b4c578996e99c28488808b4`，原三文件修改已保留接续。修正版 `/opt/acrylic-outbound-test/releases/v34-386739c-02`；旧候选未覆盖。
+- 本轮作者部署验证：Linux激活8/8、启停7/7、Bash语法及systemd配置通过；副本XLSX/PDF成功、真实HTTP下载/hash通过，7工作表与2页PDF核对1包300.5kg。原01/02英文姓名使SCAN_XLSX仍受既定中文姓名校验限制，未修改人员资料。
+- 已开始test停写备份/迁移；未在此断点声明切换完成。精确状态以远端证据 `/opt/acrylic-outbound-test/deployment-evidence/v34-20260922-complete/` 为准；执行 `migrate-v34.sh`，成功后仍停写待激活。PDA/APK、main和生产不动；E2a冻结继续。
+- 替换前完整结论见 [部署接管前快照](history/ORCHESTRATION_STATE_before_test_deploy_2026-09-22.md)。下述旧身份、写权与运行状态仅是接管前记录，部署结束后整理当前区。
 
 更新时间：2026-09-22 17:21（Asia/Shanghai）。本轮沿原树补迁移验收准备；尚未启动19329，无动态迁移结果。
 读取本区至 `CURRENT_STATE_END` 即停止；下方历史不覆盖本区。实际Git变化先核差异，不按旧SHA回退。
@@ -403,6 +470,13 @@
 
 
 ## 当前有效状态（唯一接续入口）
+### 2026-09-22 本轮 test 部署接管（优先于下述旧断点）
+
+- 用户在本任务明确确认“请帮我完成且部署”，随后再次“继续”。当前任务 `01a0c928-470d-7943-88ec-afe3390967ee` 直接持有原 sixth-wave-integration、test API/Worker/Web/库及本次管理记录写权；20:54任务列表核旧总调度/部署/导出任务均notLoaded，本机无旧ssh/scp/java执行者，不唤醒旧代理、不新建任务/树。
+- 业务固定 `386739cfbe450e0cb58937b0745c6a74bf4c7297` / API0.30.0 / V34；部署修正已提交 `0b1094ee93d2987a4b4c578996e99c28488808b4`，原三文件修改已保留接续。修正版 `/opt/acrylic-outbound-test/releases/v34-386739c-02`；旧候选未覆盖。
+- 本轮作者部署验证：Linux激活8/8、启停7/7、Bash语法及systemd配置通过；副本XLSX/PDF成功、真实HTTP下载/hash通过，7工作表与2页PDF核对1包300.5kg。原01/02英文姓名使SCAN_XLSX仍受既定中文姓名校验限制，未修改人员资料。
+- 已开始test停写备份/迁移；未在此断点声明切换完成。精确状态以远端证据 `/opt/acrylic-outbound-test/deployment-evidence/v34-20260922-complete/` 为准；执行 `migrate-v34.sh`，成功后仍停写待激活。PDA/APK、main和生产不动；E2a冻结继续。
+- 替换前完整结论见 [部署接管前快照](history/ORCHESTRATION_STATE_before_test_deploy_2026-09-22.md)。下述旧身份、写权与运行状态仅是接管前记录，部署结束后整理当前区。
 
 更新时间：2026-09-22 17:01（Asia/Shanghai）。本轮沿原树补迁移验收准备；尚未启动19329，无动态迁移结果。
 读取本区至 `CURRENT_STATE_END` 即停止；下方历史不覆盖本区。实际Git变化先核差异，不按旧SHA回退。
@@ -470,6 +544,13 @@
 
 
 ## 当前有效状态（唯一接续入口）
+### 2026-09-22 本轮 test 部署接管（优先于下述旧断点）
+
+- 用户在本任务明确确认“请帮我完成且部署”，随后再次“继续”。当前任务 `01a0c928-470d-7943-88ec-afe3390967ee` 直接持有原 sixth-wave-integration、test API/Worker/Web/库及本次管理记录写权；20:54任务列表核旧总调度/部署/导出任务均notLoaded，本机无旧ssh/scp/java执行者，不唤醒旧代理、不新建任务/树。
+- 业务固定 `386739cfbe450e0cb58937b0745c6a74bf4c7297` / API0.30.0 / V34；部署修正已提交 `0b1094ee93d2987a4b4c578996e99c28488808b4`，原三文件修改已保留接续。修正版 `/opt/acrylic-outbound-test/releases/v34-386739c-02`；旧候选未覆盖。
+- 本轮作者部署验证：Linux激活8/8、启停7/7、Bash语法及systemd配置通过；副本XLSX/PDF成功、真实HTTP下载/hash通过，7工作表与2页PDF核对1包300.5kg。原01/02英文姓名使SCAN_XLSX仍受既定中文姓名校验限制，未修改人员资料。
+- 已开始test停写备份/迁移；未在此断点声明切换完成。精确状态以远端证据 `/opt/acrylic-outbound-test/deployment-evidence/v34-20260922-complete/` 为准；执行 `migrate-v34.sh`，成功后仍停写待激活。PDA/APK、main和生产不动；E2a冻结继续。
+- 替换前完整结论见 [部署接管前快照](history/ORCHESTRATION_STATE_before_test_deploy_2026-09-22.md)。下述旧身份、写权与运行状态仅是接管前记录，部署结束后整理当前区。
 
 更新时间：2026-09-22 15:46（Asia/Shanghai）。本轮沿原树补迁移验收准备；尚未启动19329，无动态迁移结果。
 读取本区至 `CURRENT_STATE_END` 即停止；下方历史不覆盖本区。实际Git变化先核差异，不按旧SHA回退。
@@ -534,6 +615,13 @@
 
 
 ## 当前有效状态（唯一接续入口）
+### 2026-09-22 本轮 test 部署接管（优先于下述旧断点）
+
+- 用户在本任务明确确认“请帮我完成且部署”，随后再次“继续”。当前任务 `01a0c928-470d-7943-88ec-afe3390967ee` 直接持有原 sixth-wave-integration、test API/Worker/Web/库及本次管理记录写权；20:54任务列表核旧总调度/部署/导出任务均notLoaded，本机无旧ssh/scp/java执行者，不唤醒旧代理、不新建任务/树。
+- 业务固定 `386739cfbe450e0cb58937b0745c6a74bf4c7297` / API0.30.0 / V34；部署修正已提交 `0b1094ee93d2987a4b4c578996e99c28488808b4`，原三文件修改已保留接续。修正版 `/opt/acrylic-outbound-test/releases/v34-386739c-02`；旧候选未覆盖。
+- 本轮作者部署验证：Linux激活8/8、启停7/7、Bash语法及systemd配置通过；副本XLSX/PDF成功、真实HTTP下载/hash通过，7工作表与2页PDF核对1包300.5kg。原01/02英文姓名使SCAN_XLSX仍受既定中文姓名校验限制，未修改人员资料。
+- 已开始test停写备份/迁移；未在此断点声明切换完成。精确状态以远端证据 `/opt/acrylic-outbound-test/deployment-evidence/v34-20260922-complete/` 为准；执行 `migrate-v34.sh`，成功后仍停写待激活。PDA/APK、main和生产不动；E2a冻结继续。
+- 替换前完整结论见 [部署接管前快照](history/ORCHESTRATION_STATE_before_test_deploy_2026-09-22.md)。下述旧身份、写权与运行状态仅是接管前记录，部署结束后整理当前区。
 
 更新时间：2026-09-22 15:07（Asia/Shanghai）。本轮沿原树补迁移验收准备；尚未启动19329，无动态迁移结果。
 读取本区至 `CURRENT_STATE_END` 即停止；下方历史不覆盖本区。实际Git变化先核差异，不按旧SHA回退。
@@ -597,6 +685,13 @@
 
 
 ## 当前有效状态（唯一接续入口）
+### 2026-09-22 本轮 test 部署接管（优先于下述旧断点）
+
+- 用户在本任务明确确认“请帮我完成且部署”，随后再次“继续”。当前任务 `01a0c928-470d-7943-88ec-afe3390967ee` 直接持有原 sixth-wave-integration、test API/Worker/Web/库及本次管理记录写权；20:54任务列表核旧总调度/部署/导出任务均notLoaded，本机无旧ssh/scp/java执行者，不唤醒旧代理、不新建任务/树。
+- 业务固定 `386739cfbe450e0cb58937b0745c6a74bf4c7297` / API0.30.0 / V34；部署修正已提交 `0b1094ee93d2987a4b4c578996e99c28488808b4`，原三文件修改已保留接续。修正版 `/opt/acrylic-outbound-test/releases/v34-386739c-02`；旧候选未覆盖。
+- 本轮作者部署验证：Linux激活8/8、启停7/7、Bash语法及systemd配置通过；副本XLSX/PDF成功、真实HTTP下载/hash通过，7工作表与2页PDF核对1包300.5kg。原01/02英文姓名使SCAN_XLSX仍受既定中文姓名校验限制，未修改人员资料。
+- 已开始test停写备份/迁移；未在此断点声明切换完成。精确状态以远端证据 `/opt/acrylic-outbound-test/deployment-evidence/v34-20260922-complete/` 为准；执行 `migrate-v34.sh`，成功后仍停写待激活。PDA/APK、main和生产不动；E2a冻结继续。
+- 替换前完整结论见 [部署接管前快照](history/ORCHESTRATION_STATE_before_test_deploy_2026-09-22.md)。下述旧身份、写权与运行状态仅是接管前记录，部署结束后整理当前区。
 
 更新时间：2026-09-22 14:39（Asia/Shanghai）。新总调度已核实本地/远端、原树、旧执行者空闲及端口；本轮正补编译与独立复审，尚无新动态结果。
 读取本区至 `CURRENT_STATE_END` 即停止；下方带“当前/最新”的旧段落均为历史，不覆盖本区。若实际 Git 或执行者状态变化，先核差异再更新，不能照旧 SHA 回退。
@@ -660,6 +755,13 @@
 
 
 ## 当前有效状态（唯一接续入口）
+### 2026-09-22 本轮 test 部署接管（优先于下述旧断点）
+
+- 用户在本任务明确确认“请帮我完成且部署”，随后再次“继续”。当前任务 `01a0c928-470d-7943-88ec-afe3390967ee` 直接持有原 sixth-wave-integration、test API/Worker/Web/库及本次管理记录写权；20:54任务列表核旧总调度/部署/导出任务均notLoaded，本机无旧ssh/scp/java执行者，不唤醒旧代理、不新建任务/树。
+- 业务固定 `386739cfbe450e0cb58937b0745c6a74bf4c7297` / API0.30.0 / V34；部署修正已提交 `0b1094ee93d2987a4b4c578996e99c28488808b4`，原三文件修改已保留接续。修正版 `/opt/acrylic-outbound-test/releases/v34-386739c-02`；旧候选未覆盖。
+- 本轮作者部署验证：Linux激活8/8、启停7/7、Bash语法及systemd配置通过；副本XLSX/PDF成功、真实HTTP下载/hash通过，7工作表与2页PDF核对1包300.5kg。原01/02英文姓名使SCAN_XLSX仍受既定中文姓名校验限制，未修改人员资料。
+- 已开始test停写备份/迁移；未在此断点声明切换完成。精确状态以远端证据 `/opt/acrylic-outbound-test/deployment-evidence/v34-20260922-complete/` 为准；执行 `migrate-v34.sh`，成功后仍停写待激活。PDA/APK、main和生产不动；E2a冻结继续。
+- 替换前完整结论见 [部署接管前快照](history/ORCHESTRATION_STATE_before_test_deploy_2026-09-22.md)。下述旧身份、写权与运行状态仅是接管前记录，部署结束后整理当前区。
 
 更新时间：2026-09-22 14:27（Asia/Shanghai）。新总调度已核实本地/远端、原树、旧执行者空闲及端口；本轮正补编译与独立复审，尚无新动态结果。
 读取本区至 `CURRENT_STATE_END` 即停止；下方带“当前/最新”的旧段落均为历史，不覆盖本区。若实际 Git 或执行者状态变化，先核差异再更新，不能照旧 SHA 回退。
@@ -722,6 +824,13 @@
 
 
 ## 当前有效状态（唯一接续入口）
+### 2026-09-22 本轮 test 部署接管（优先于下述旧断点）
+
+- 用户在本任务明确确认“请帮我完成且部署”，随后再次“继续”。当前任务 `01a0c928-470d-7943-88ec-afe3390967ee` 直接持有原 sixth-wave-integration、test API/Worker/Web/库及本次管理记录写权；20:54任务列表核旧总调度/部署/导出任务均notLoaded，本机无旧ssh/scp/java执行者，不唤醒旧代理、不新建任务/树。
+- 业务固定 `386739cfbe450e0cb58937b0745c6a74bf4c7297` / API0.30.0 / V34；部署修正已提交 `0b1094ee93d2987a4b4c578996e99c28488808b4`，原三文件修改已保留接续。修正版 `/opt/acrylic-outbound-test/releases/v34-386739c-02`；旧候选未覆盖。
+- 本轮作者部署验证：Linux激活8/8、启停7/7、Bash语法及systemd配置通过；副本XLSX/PDF成功、真实HTTP下载/hash通过，7工作表与2页PDF核对1包300.5kg。原01/02英文姓名使SCAN_XLSX仍受既定中文姓名校验限制，未修改人员资料。
+- 已开始test停写备份/迁移；未在此断点声明切换完成。精确状态以远端证据 `/opt/acrylic-outbound-test/deployment-evidence/v34-20260922-complete/` 为准；执行 `migrate-v34.sh`，成功后仍停写待激活。PDA/APK、main和生产不动；E2a冻结继续。
+- 替换前完整结论见 [部署接管前快照](history/ORCHESTRATION_STATE_before_test_deploy_2026-09-22.md)。下述旧身份、写权与运行状态仅是接管前记录，部署结束后整理当前区。
 
 更新时间：2026-09-22 13:39（Asia/Shanghai）。本区由本次文档维护只读核对 Git、任务状态和监听端口后更新；业务验证沿用下列精确来源，未重跑。
 读取本区至 `CURRENT_STATE_END` 即停止；下方带“当前/最新”的旧段落均为历史，不覆盖本区。若实际 Git 或执行者状态变化，先核差异再更新，不能照旧 SHA 回退。
