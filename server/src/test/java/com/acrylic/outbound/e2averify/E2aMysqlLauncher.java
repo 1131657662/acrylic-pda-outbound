@@ -29,14 +29,26 @@ public final class E2aMysqlLauncher {
         Files.createDirectories(log.getParent());
         Process process = new ProcessBuilder(command).directory(workspace.toFile()).redirectErrorStream(true)
             .redirectOutput(log.toFile()).start();
-        if (!process.waitFor(90, TimeUnit.SECONDS)) {
-            process.destroyForcibly();
-            throw new IllegalStateException("MySQL initialization timed out; see " + log);
+        Throwable failure = null;
+        try {
+            if (!process.waitFor(90, TimeUnit.SECONDS)) throw new IllegalStateException("MySQL initialization timed out; see " + log);
+            if (process.exitValue() != 0) throw new IllegalStateException("MySQL initialization failed: " + process.exitValue() + "; see " + log);
+            return process;
+        } catch (Exception error) {
+            failure = error;
+            throw error;
+        } finally {
+            if (failure != null && process.isAlive()) {
+                process.destroy();
+                try {
+                    if (!process.waitFor(10, TimeUnit.SECONDS)) {
+                        process.destroyForcibly();
+                        if (!process.waitFor(10, TimeUnit.SECONDS)) failure.addSuppressed(new IllegalStateException("MySQL initialization process remained after forced cleanup"));
+                    }
+                }
+                catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); failure.addSuppressed(interrupted); process.destroyForcibly(); }
+            }
         }
-        if (process.exitValue() != 0) {
-            throw new IllegalStateException("MySQL initialization failed: " + process.exitValue() + "; see " + log);
-        }
-        return process;
     }
 
     public static Process startServer(Map<String, String> env, Path workspace) throws IOException {

@@ -65,13 +65,10 @@ public final class E2aMigrationRunner {
                     }
                 }
             }
-            Exception markerFailure = appendMarker(marker, cleanupFailure == null ? "stopped" : "stop-failed: " + cleanupFailure.getClass().getSimpleName());
-            if (!E2aMysqlLauncher.isPortFree()) {
-                Exception listenerFailure = new IllegalStateException("19329 listener remains after shutdown");
-                if (cleanupFailure != null) cleanupFailure.addSuppressed(listenerFailure);
-                else if (primary != null) primary.addSuppressed(listenerFailure);
-                else cleanupFailure = listenerFailure;
-            }
+            boolean portFreeAfter = E2aMysqlLauncher.isPortFree();
+            if (!portFreeAfter && cleanupFailure == null) cleanupFailure = new IllegalStateException("19329 listener remains after shutdown");
+            Exception markerFailure = appendMarker(marker, cleanupFailure == null && portFreeAfter
+                ? "stopped" : "stop-failed: " + (cleanupFailure == null ? "listener-remains" : cleanupFailure.getClass().getSimpleName()));
             if (primary != null) {
                 if (cleanupFailure != null) primary.addSuppressed(cleanupFailure);
                 if (markerFailure != null) primary.addSuppressed(markerFailure);
@@ -125,8 +122,14 @@ public final class E2aMigrationRunner {
         if (resources.hasMoreElements()) throw new IllegalStateException("Duplicate V35 migration resources on classpath");
         byte[] bytes;
         try (var stream = resource.openStream()) { bytes = stream.readAllBytes(); }
-        String hash = HexFormat.of().withUpperCase().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
-        if (!"CE433B38BDC06A2050C3E4A6C4BA413C8FF57E55EDC1477A65D78667F30F420C".equals(hash)) throw new IllegalStateException("Unexpected V35 migration resource hash");
+        String rawHash = HexFormat.of().withUpperCase().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+        String canonicalHash = HexFormat.of().withUpperCase().formatHex(MessageDigest.getInstance("SHA-256").digest(new String(bytes, java.nio.charset.StandardCharsets.UTF_8).replace("\r\n", "\n").getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        Path evidence = root.resolve(E2aMigrationEnvironment.EVIDENCE_DIR).resolve("v35-resource.json");
+        Files.createDirectories(evidence.getParent());
+        Files.writeString(evidence, "{\"commit\":\"fa7981d7db9253e7ec0a9efbbcb1ce909d0301db\",\"resource\":\"" + resource + "\",\"rawSha256\":\"" + rawHash + "\",\"canonicalSha256\":\"" + canonicalHash + "\"}\n", java.nio.file.StandardOpenOption.CREATE_NEW);
+        if (!"CE433B38BDC06A2050C3E4A6C4BA413C8FF57E55EDC1477A65D78667F30F420C".equals(canonicalHash)) {
+            throw new IllegalStateException("Unexpected V35 migration resource hash raw=" + rawHash + " canonical=" + canonicalHash);
+        }
     }
 
     private static Path createPhaseMarker(Path root, String phase) throws Exception {
