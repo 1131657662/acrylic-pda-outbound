@@ -8,8 +8,10 @@ open HTTP routes, receive files, write K, or enable a business decision.
 * `schemaVersion=1`, `routeScope=r06.e2a.evidence.v1`
 * JWT issuer `acrylic-outbound`, audience `acrylic-r06-e2a-intake-v1`
 * RSA receipt signatures use `RS256` with base64url segments (no padding).
-* STOP signatures use `ES256`/P-256 `SHA256withECDSA`; signature bytes are
-  standard ASN.1 DER and are base64 (not base64url).
+* STOP signatures use the explicit algorithm
+  `ECDSA_P256_SHA256_DER` (P-256 `SHA256withECDSA`); this is deliberately not
+  JOSE `ES256` raw `r||s`. Signature bytes are standard ASN.1 DER and are
+  base64 (not base64url).
 * Public keys are base64 X.509 SubjectPublicKeyInfo DER. `keyId` is lowercase
   SHA-256 of those DER bytes.
 * Hashes are lowercase ASCII SHA-256. Domain prefixes are UTF-8 bytes ending
