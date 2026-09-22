@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.Base64;
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class E2aProtocolTest {
     @Test void pageAndManifestHashesExcludeDerivedFields() {
@@ -17,8 +17,9 @@ class E2aProtocolTest {
         ObjectNode manifest=SubmissionJson.object().put("schemaVersion",1).put("manifestId","m").put("manifestVersion",1)
             .put("source","TEMP").put("workRound","1").put("pageCount",1).put("entryCount",0).put("byteCount",0).put("endPageNo",1);
         manifest.putArray("pages").add(SubmissionJson.object().put("pageNo",1).put("pageHash",pageHash));
-        var first=E2aProtocol.manifestHashes(manifest);manifest.put("setHash",first.setHash());
-        assertThat(E2aProtocol.manifestHashes(manifest)).isEqualTo(first);
+        var first=E2aProtocol.manifestHashes(manifest);assertThat(first.manifestBytesHash()).isNotEqualTo(first.setHash());
+        manifest.put("setHash",first.setHash());
+        assertThatThrownBy(() -> E2aProtocol.manifestHashes(manifest)).isInstanceOf(IllegalArgumentException.class);
     }
     @Test void stopSignatureUsesDerAndRejectsMutation() throws Exception {
         var keys=KeyPairGenerator.getInstance("EC");keys.initialize(256);KeyPair pair=keys.generateKeyPair();
