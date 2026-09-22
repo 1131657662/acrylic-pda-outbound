@@ -26,6 +26,7 @@ public final class E2aV34Seed {
             jdbc.update("UPDATE submission_scope SET current_submission_id=UUID_TO_BIN(?) WHERE id=UUID_TO_BIN(?)", submission, scope);
             result.put(mode+"ScopeId",scope); result.put(mode+"SubmissionId",submission); result.put(mode+"ClientOrderId",clientOrder);
             seedEvidence(jdbc,storage,result,mode,warehouse,scope,submission,device,operator);
+            if ("mapped".equals(mode)) seedReserved(jdbc,result,warehouse,scope,submission);
         }
         seedCommandReceipt(jdbc,result,"mapped",warehouse,device,operator,authorization);
         return result;
@@ -44,6 +45,11 @@ public final class E2aV34Seed {
         jdbc.update("INSERT INTO api_idempotency_request(id,principal_id,route_scope,idempotency_key,request_sha256,resource_id,created_at) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),'r06.e2a.seed',?,REPEAT('a',64),UUID_TO_BIN(?),UTC_TIMESTAMP(3))",request,operator,receipt,submission);
         jdbc.update("INSERT INTO temporary_command_receipt(id,api_request_id,warehouse_id,scope_id,submission_id,work_round,creator_device_id,client_order_id,temporary_authorization_id,original_operator_id,source_recovery_epoch,original_mapping_id,command_version,command_type,canonical_command_bytes,command_sha256,receipt_version,original_response_bytes,original_response_sha256,unsigned_receipt_sha256,signature_key_id,signed_receipt,recorded_at) SELECT UUID_TO_BIN(?),UUID_TO_BIN(?),warehouse_id,scope_id,id,1,UUID_TO_BIN(?),client_order_id,temporary_authorization_id,operator_id,1,UUID_TO_BIN(?),1,'NORMAL_CONFIRM',CAST('{}' AS BINARY),REPEAT('a',64),1,CAST('{}' AS BINARY),REPEAT('b',64),REPEAT('c',64),'e2a-seed','seed',UTC_TIMESTAMP(3) FROM submission_scope c JOIN submission s ON s.scope_id=c.id WHERE c.id=UUID_TO_BIN(?)",receipt,request,device,mapping,scope);
         result.put("commandReceiptId",receipt); result.put("commandRequestId",request);
+    }
+    private static void seedReserved(JdbcTemplate jdbc,Map<String,String> result,String warehouse,String scope,String submission) {
+        String bale=jdbc.queryForObject("SELECT BIN_TO_UUID(b.id) FROM bale b WHERE b.warehouse_id=UUID_TO_BIN(?) AND NOT EXISTS(SELECT 1 FROM bale_commitment k WHERE k.bale_id=b.id) ORDER BY b.id LIMIT 1",String.class,warehouse);
+        jdbc.update("INSERT INTO bale_commitment(bale_id,order_id,submission_id,dispatch_cycle,state,created_at,source_scope_id,source_evidence_set_id,source_warehouse_id) VALUES(UUID_TO_BIN(?),NULL,NULL,1,'SOURCE_RESERVED',UTC_TIMESTAMP(3),UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?))",bale,scope,result.get("mappedSetId"),warehouse);
+        result.put("reservedBaleId",bale);
     }
     private static String sha(byte[] bytes) throws Exception { var d=MessageDigest.getInstance("SHA-256"); var out=d.digest(bytes); var s=new StringBuilder(64); for(byte b:out)s.append(String.format("%02x",b)); return s.toString(); }
 }
