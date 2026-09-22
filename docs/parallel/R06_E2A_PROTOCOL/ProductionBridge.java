@@ -3,11 +3,17 @@ package e2a.review;
 import com.acrylic.outbound.pda.OfflineSigner;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.acrylic.outbound.temporary.protocol.E2aProtocol;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.KeyFactory;
+import java.security.PublicKey;
 import java.security.Signature;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 /** Lightweight bridge invoking the frozen production E2aProtocol class. */
@@ -18,13 +24,14 @@ public final class ProductionBridge {
         stopNegativeMatrix();
         rsaNegativeMatrix();
         shapeNegativeMatrix();
+        if (args.length == 1) frozenVectorMatrix(Path.of(args[0]));
     }
 
     private static void stopNegativeMatrix() throws Exception {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         generator.initialize(256);
         KeyPair pair = generator.generateKeyPair();
-        ObjectNode validCore = stopCore();
+        ObjectNode validCore = stopCore(1, 1);
         String keyId = hex(pair.getPublic().getEncoded());
         ObjectNode valid = E2aProtocol.signStop(validCore, pair.getPrivate(), keyId);
         report("stop_valid_p256_keyid", E2aProtocol.verifyStop(valid, pair.getPublic()));
@@ -44,6 +51,13 @@ public final class ProductionBridge {
         ObjectNode emptyCore = valid.deepCopy();
         emptyCore.set("core", SubmissionJson.object());
         report("stop_empty_core_rejected", !E2aProtocol.verifyStop(emptyCore, pair.getPublic()));
+
+        ObjectNode overflowSchema = valid.deepCopy();
+        overflowSchema.put("schemaVersion", 4294967297L);
+        report("stop_schema_overflow_rejected", !E2aProtocol.verifyStop(overflowSchema, pair.getPublic()));
+
+        report("stop_zero_epoch_accepted_by_contract", signs(stopCore(0, 1), pair, keyId));
+        report("stop_zero_high_watermark_accepted_by_contract", signs(stopCore(1, 0), pair, keyId));
 
         KeyPairGenerator p384 = KeyPairGenerator.getInstance("EC");
         p384.initialize(384);
@@ -70,7 +84,7 @@ public final class ProductionBridge {
         changedFacts.remove("signedReceipt");
         changedFacts.put("signedReceipt", signReceipt(changedFacts, pair, keyId));
         report("rsa_legal_resign_changed_facts_signature_valid", "VERIFIED".equals(E2aProtocol.verifyRsaReceipt(changedFacts, view)));
-        report("rsa_legal_resign_changed_facts_not_trusted", !E2aProtocol.trustedFacts(changedFacts, receipt));
+        report("rsa_legal_resign_changed_facts_not_trusted", "UNTRUSTED_FACTS".equals(E2aProtocol.verifyTrustedRsaReceipt(changedFacts, view, receipt)));
 
         ObjectNode unknownKid = receipt.deepCopy();
         unknownKid.remove("signedReceipt");
@@ -81,9 +95,10 @@ public final class ProductionBridge {
         emptyFacts.remove("actorId");
         emptyFacts.remove("sourceId");
         emptyFacts.remove("sourceRecoveryEpoch");
+        emptyFacts.remove("signedReceipt");
         emptyFacts.put("signedReceipt", signReceipt(emptyFacts, pair, keyId));
         report("rsa_empty_facts_signature_valid", "VERIFIED".equals(E2aProtocol.verifyRsaReceipt(emptyFacts, view)));
-        report("rsa_empty_facts_not_trusted", !E2aProtocol.trustedFacts(emptyFacts, receipt));
+        report("rsa_empty_facts_not_trusted", "UNTRUSTED_FACTS".equals(E2aProtocol.verifyTrustedRsaReceipt(emptyFacts, view, receipt)));
 
         ObjectNode unsafeKey = receipt.deepCopy();
         unsafeKey.put("signedReceipt", signReceipt(receipt, pair, keyId));
@@ -110,11 +125,41 @@ public final class ProductionBridge {
         report("manifest_derived_field_rejected", !hashesSucceed(manifest.deepCopy().put("setHash", "0".repeat(64))));
     }
 
-    private static ObjectNode stopCore() {
-        return SubmissionJson.object().put("manifestId", "manifest-1").put("manifestVersion", 1)
-            .put("snapshotId", "snapshot-1").put("source", "TEMP").put("workRound", 1)
-            .put("stopEventId", "event-1").put("auditThroughSeq", 4)
+    private static ObjectNode stopCore(long epoch, long highWatermark) {
+        return SubmissionJson.object().put("warehouseId", "warehouse-1").put("sourceId", "source-1")
+            .put("submissionId", "submission-1").put("workRound", 1).put("originalOperatorId", "operator-1")
+            .put("freezeDeviceId", "device-1").put("sourceRecoveryEpoch", epoch).put("stopEventId", "event-1")
+            .put("captureHighWatermark", highWatermark).put("auditThroughSeq", 1).put("stopTransactionVersion", 1)
+            .put("manifestId", "manifest-1").put("manifestVersion", 1)
             .put("manifestBytesHash", "a".repeat(64)).put("setHash", "b".repeat(64));
+    }
+
+    private static boolean signs(ObjectNode core, KeyPair pair, String keyId) {
+        try { E2aProtocol.signStop(core, pair.getPrivate(), keyId); return true; }
+        catch (RuntimeException error) { return false; }
+    }
+
+    private static void frozenVectorMatrix(Path vectorPath) throws Exception {
+        JsonNode vector = SubmissionJson.parse(Files.readAllBytes(vectorPath));
+        ObjectNode page = (ObjectNode) SubmissionJson.parse(vector.path("pageCoreUtf8").asText());
+        ObjectNode manifest = (ObjectNode) SubmissionJson.parse(vector.path("manifestCoreUtf8").asText());
+        report("vector_page_hash_matches", E2aProtocol.pageHash(page).equals(vector.path("pageHash").asText()));
+        try {
+            E2aProtocol.Hashes hashes = E2aProtocol.manifestHashes(manifest);
+            report("vector_manifest_hash_matches", hashes.manifestBytesHash().equals(vector.path("manifestBytesHash").asText()));
+            report("vector_set_hash_matches", hashes.setHash().equals(vector.path("setHash").asText()));
+        } catch (RuntimeException error) {
+            report("vector_manifest_hash_matches", false);
+            report("vector_set_hash_matches", false);
+            System.out.println("case=vector_manifest_error type=" + error.getClass().getSimpleName() + " message=" + error.getMessage());
+        }
+        ObjectNode stop = SubmissionJson.object().put("schemaVersion", 1)
+            .put("algorithm", vector.path("stopAlgorithm").asText()).put("keyId", vector.path("ecKeyId").asText())
+            .put("signature", vector.path("stopSignatureDerBase64").asText());
+        stop.set("core", SubmissionJson.parse(vector.path("stopCoreUtf8").asText()));
+        PublicKey key = KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(
+            Base64.getDecoder().decode(vector.path("ecPublicKeySpkiBase64").asText())));
+        report("vector_complete_stop_accepted", E2aProtocol.verifyStop(stop, key));
     }
 
     private static String signReceipt(ObjectNode receipt, KeyPair pair, String keyId) throws Exception {
