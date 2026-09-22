@@ -13,18 +13,21 @@ public final class E2aV34Seed {
     private E2aV34Seed() { }
 
     public static Map<String, String> seed(JdbcTemplate jdbc, Path storage) throws Exception {
+        requireSyntheticV34Base(jdbc);
         var template = jdbc.queryForMap("SELECT BIN_TO_UUID(c.warehouse_id) warehouseId,BIN_TO_UUID(c.source_order_id) orderId,BIN_TO_UUID(c.creator_device_id) deviceId,BIN_TO_UUID(s.id) submissionId,BIN_TO_UUID(s.operator_id) operatorId,BIN_TO_UUID(s.assignment_id) assignmentId,BIN_TO_UUID(s.temporary_authorization_id) authorizationId FROM submission_scope c JOIN submission s ON s.scope_id=c.id WHERE c.creator_device_id IS NOT NULL AND c.canonical_order_id IS NOT NULL ORDER BY c.id LIMIT 1");
         var result = new LinkedHashMap<String, String>();
         String warehouse=(String)template.get("warehouseId"), device=(String)template.get("deviceId"), operator=(String)template.get("operatorId");
         String sourceOrder=(String)template.get("orderId"), assignment=(String)template.get("assignmentId"), authorization=(String)template.get("authorizationId");
         for(String mode: new String[]{"mapping0","mapped","abort"}) {
             String scope=UUID.randomUUID().toString(), submission=UUID.randomUUID().toString(), clientOrder=UUID.randomUUID().toString();
-            jdbc.update("INSERT INTO submission_scope(id,warehouse_id,source_order_id,work_round,creator_device_id,client_order_id,canonical_order_id,mapping_version,current_submission_id) SELECT UUID_TO_BIN(?),warehouse_id,UUID_TO_BIN(?),1,device_id,UUID_TO_BIN(?),?, ?,UUID_TO_BIN(?) FROM submission_scope c WHERE c.source_order_id=UUID_TO_BIN(?) LIMIT 1", scope, UUID.randomUUID(), clientOrder, "mapping0".equals(mode)?null:sourceOrder, "mapping0".equals(mode)?0:1, submission, sourceOrder);
-            jdbc.update("INSERT INTO temporary_source_mapping(id,warehouse_id,scope_id,mapping_version,canonical_order_id,origin,observed_at) SELECT UUID_TO_BIN(?),warehouse_id,UUID_TO_BIN(?),?, ?, 'SOURCE_REGISTERED',UTC_TIMESTAMP(3) FROM submission_scope WHERE id=UUID_TO_BIN(?)", UUID.randomUUID(), scope, "mapping0".equals(mode)?0:1, "mapping0".equals(mode)?null:sourceOrder, scope);
+            String mapping = UUID.randomUUID().toString();
+            jdbc.update("INSERT INTO submission_scope(id,warehouse_id,source_order_id,work_round,creator_device_id,client_order_id,canonical_order_id,mapping_version,current_submission_id) SELECT UUID_TO_BIN(?),warehouse_id,source_order_id,1,creator_device_id,UUID_TO_BIN(?),CASE WHEN ?=0 THEN NULL ELSE canonical_order_id END,?,NULL FROM submission_scope c WHERE c.source_order_id=UUID_TO_BIN(?) LIMIT 1", scope, clientOrder, "mapping0".equals(mode) ? 0 : 1, "mapping0".equals(mode) ? 0 : 1, sourceOrder);
+            jdbc.update("INSERT INTO temporary_work_origin(creator_device_id,client_order_id,authorization_id) SELECT creator_device_id,UUID_TO_BIN(?),temporary_authorization_id FROM submission s WHERE s.id=UUID_TO_BIN(?)", clientOrder, (String)template.get("submissionId"));
+            jdbc.update("INSERT INTO temporary_source_mapping(id,warehouse_id,scope_id,mapping_version,canonical_order_id,origin,observed_at) SELECT UUID_TO_BIN(?),warehouse_id,UUID_TO_BIN(?),?,CASE WHEN ?=0 THEN NULL ELSE canonical_order_id END,'SOURCE_REGISTERED',UTC_TIMESTAMP(3) FROM submission_scope WHERE id=UUID_TO_BIN(?)", mapping, scope, "mapping0".equals(mode) ? 0 : 1, "mapping0".equals(mode) ? 0 : 1, scope);
             jdbc.update("INSERT INTO temporary_decision_state(scope_id,decision_version,origin,initialized_at) VALUES(UUID_TO_BIN(?),0,'SOURCE_REGISTERED',UTC_TIMESTAMP(3))", scope);
             jdbc.update("INSERT INTO submission(id,scope_id,assignment_id,temporary_authorization_id,freeze_device_id,operator_id,work_round,source_recovery_epoch,status,created_at,updated_at) SELECT UUID_TO_BIN(?),UUID_TO_BIN(?),assignment_id,temporary_authorization_id,device_id,operator_id,1,1,?,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3) FROM submission_scope c JOIN submission s ON s.scope_id=UUID_TO_BIN(?) WHERE s.id=UUID_TO_BIN(?)", submission, scope, "abort".equals(mode)?"ABORTED":"REVIEW_REQUIRED", scope, (String)template.get("submissionId"));
             jdbc.update("UPDATE submission_scope SET current_submission_id=UUID_TO_BIN(?) WHERE id=UUID_TO_BIN(?)", submission, scope);
-            result.put(mode+"ScopeId",scope); result.put(mode+"SubmissionId",submission); result.put(mode+"ClientOrderId",clientOrder);
+            result.put(mode+"ScopeId",scope); result.put(mode+"SubmissionId",submission); result.put(mode+"ClientOrderId",clientOrder); result.put(mode+"MappingId",mapping);
             seedEvidence(jdbc,storage,result,mode,warehouse,scope,submission,device,operator);
             if ("mapped".equals(mode)) seedReserved(jdbc,result,warehouse,scope,submission);
         }
@@ -41,7 +44,7 @@ public final class E2aV34Seed {
     }
 
     private static void seedCommandReceipt(JdbcTemplate jdbc,Map<String,String> result,String mode,String warehouse,String device,String operator,String authorization) {
-        String scope=result.get(mode+"ScopeId"), submission=result.get(mode+"SubmissionId"), receipt=UUID.randomUUID().toString(), request=UUID.randomUUID().toString(), mapping=UUID.randomUUID().toString();
+        String scope=result.get(mode+"ScopeId"), submission=result.get(mode+"SubmissionId"), receipt=UUID.randomUUID().toString(), request=UUID.randomUUID().toString(), mapping=result.get(mode+"MappingId");
         jdbc.update("INSERT INTO api_idempotency_request(id,principal_id,route_scope,idempotency_key,request_sha256,resource_id,created_at) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),'r06.e2a.seed',?,REPEAT('a',64),UUID_TO_BIN(?),UTC_TIMESTAMP(3))",request,operator,receipt,submission);
         jdbc.update("INSERT INTO temporary_command_receipt(id,api_request_id,warehouse_id,scope_id,submission_id,work_round,creator_device_id,client_order_id,temporary_authorization_id,original_operator_id,source_recovery_epoch,original_mapping_id,command_version,command_type,canonical_command_bytes,command_sha256,receipt_version,original_response_bytes,original_response_sha256,unsigned_receipt_sha256,signature_key_id,signed_receipt,recorded_at) SELECT UUID_TO_BIN(?),UUID_TO_BIN(?),warehouse_id,scope_id,id,1,UUID_TO_BIN(?),client_order_id,temporary_authorization_id,operator_id,1,UUID_TO_BIN(?),1,'NORMAL_CONFIRM',CAST('{}' AS BINARY),REPEAT('a',64),1,CAST('{}' AS BINARY),REPEAT('b',64),REPEAT('c',64),'e2a-seed','seed',UTC_TIMESTAMP(3) FROM submission_scope c JOIN submission s ON s.scope_id=c.id WHERE c.id=UUID_TO_BIN(?)",receipt,request,device,mapping,scope);
         result.put("commandReceiptId",receipt); result.put("commandRequestId",request);
@@ -52,4 +55,9 @@ public final class E2aV34Seed {
         result.put("reservedBaleId",bale);
     }
     private static String sha(byte[] bytes) throws Exception { var d=MessageDigest.getInstance("SHA-256"); var out=d.digest(bytes); var s=new StringBuilder(64); for(byte b:out)s.append(String.format("%02x",b)); return s.toString(); }
+
+    private static void requireSyntheticV34Base(JdbcTemplate jdbc) {
+        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM submission_scope c JOIN submission s ON s.scope_id=c.id JOIN order_assignment a ON a.id=s.assignment_id JOIN temporary_authorization t ON t.id=s.temporary_authorization_id JOIN inventory_snapshot i ON i.id=t.inventory_snapshot_id JOIN policy_version p ON p.id=t.policy_id WHERE c.creator_device_id IS NOT NULL", Integer.class);
+        if (count == null || count == 0) throw new IllegalStateException("E2aV34Seed requires a pre-seeded synthetic V34 identity/order/authorization/inventory fixture; it will not clone an existing or real row");
+    }
 }
