@@ -46,16 +46,34 @@ source context and nullable set/object/verification references. Receipt to set
 and verification references use the existing V34 composite parents so scope,
 submission and work round cannot be bypassed by NULLs.
 
-All nullable references are nullable as a group; a CHECK rejects partial
-references. No source item/page columns are copied into the receipt. There is
-no UPDATE/DELETE path; current effect is a separate read/append concern.
+Reference nullability follows lifecycle: OPEN has no object/set/verification;
+PAGE and STOP carry exactly one object and no set/verification; VERIFY carries
+set plus verification and no object. Composite FK columns remain all-context
+bound, so NULL cannot bypass a stage CHECK. No source item/page columns are
+copied into the receipt. There is no UPDATE/DELETE path; current effect is a
+separate read/append concern.
+
+The intake order is `OPEN -> PAGE* -> STOP -> VERIFY`: every PAGE and STOP
+must reference the manifest identity returned by OPEN, STOP is accepted only
+after the required pages are present and its independent object is durable,
+and VERIFY is accepted only after STOP and the page set close successfully.
+Missing or late pages remain `PARTIAL`; they cannot be used to skip STOP or
+to create a `VERIFIED_COMPLETE_AT_STOP` verification.
 
 ## Limits and capabilities
 
 Page and manifest bytes are capped at 256 KiB, object bytes at 32 MiB, sets at
-4096 pages and 128 MiB raw bytes. `PARTIAL` and `UNVERIFIABLE` never imply
-trusted occupancy. Every generated capability is false, including
+4096 pages and 128 MiB raw bytes. `PARTIAL` never implies a complete trusted
+set or release; it may retain a specific package only after independent server
+facts and B/K lock checks prove that package's original qualification, capture,
+cycle and current bale. The receipt itself never grants occupancy.
+`UNVERIFIABLE` never grants occupancy. Every generated capability is false, including
 `localDeletionAllowed`.
+
+Trusted facts are server-observed source, identity, device, recovery-epoch and
+B/K context facts compared as a complete object; client-declared lists,
+quantities, order IDs or re-signed receipts are never trusted facts by
+themselves.
 
 ## Negative invariants
 

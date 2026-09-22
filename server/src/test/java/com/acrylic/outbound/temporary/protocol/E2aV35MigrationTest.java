@@ -17,8 +17,9 @@ class E2aV35MigrationTest {
         assertThat(ddl).contains("FOREIGN KEY(object_id,scope_id,submission_id,work_round)")
             .contains("FOREIGN KEY(evidence_set_id,scope_id,submission_id,work_round)")
             .contains("FOREIGN KEY(evidence_verification_id,evidence_set_id,scope_id)")
-            .contains("object_id IS NULL AND evidence_set_id IS NULL AND evidence_verification_id IS NULL")
-            .contains("object_id IS NOT NULL AND evidence_set_id IS NOT NULL AND evidence_verification_id IS NOT NULL");
+            .contains("operation_kind='OPEN' AND object_id IS NULL AND evidence_set_id IS NULL AND evidence_verification_id IS NULL")
+            .contains("operation_kind IN ('PAGE','STOP') AND object_id IS NOT NULL AND evidence_set_id IS NULL AND evidence_verification_id IS NULL")
+            .contains("operation_kind='VERIFY' AND object_id IS NULL AND evidence_set_id IS NOT NULL AND evidence_verification_id IS NOT NULL");
     }
     @Test void openCannotCreateSetAndRowsAreImmutable() {
         assertThat(ddl).contains("operation_kind='OPEN' AND object_id IS NULL AND evidence_set_id IS NULL AND evidence_verification_id IS NULL")
