@@ -1,7 +1,11 @@
 # V35 结构负向矩阵
 
-`E2aV35NegativeChecks` 面向已经完成 V34 synthetic intake seed 的隔离数据库。构造器从真实 `source_evidence_intake_receipt` 及其 object/set/verification 关系读取基线 ID；它不生成签名、HTTP 回执或可信业务事实。
+`E2aV35NegativeChecks` 依赖 V34 父关系和 synthetic seed：从 `submission`、`submission_scope`、`source_evidence_object`、`source_evidence_set`、`source_evidence_verification` 读取一组完整 TEMP 上下文，并要求数据库另有第二个 TEMP scope 和第二个既有 `app_user`。它不创建用户、scope、签名、HTTP 回执或可信业务事实；缺少这些准备数据时明确失败。
 
-`verify(evidenceRoot)` 先验证 OPEN、PAGE、STOP、VERIFY 四个合法形状可插入，再逐案回滚执行以下数据库约束：route/status/version、请求摘要格式、字节边界、操作引用形状、scope/submission/round 复合外键、自然键重复，以及 immutable UPDATE/DELETE trigger。每案使用独立 Spring JDBC 事务，失败结果记录 SQLState 和 vendor code；意外成功会使验证失败。总表及逐案 JSON 使用 `CREATE_NEW` 写入，并核对 intake 行数在验证前后不变。
+`verify(evidenceRoot)` 共执行 4 个合法 control（OPEN、PAGE、STOP、VERIFY）和 24 个负向案例：
 
-该 helper 只证明 V35 DDL 结构约束。它不替代 writer、真实 HTTP、签名验证、PAGE/STOP/VERIFY 业务流程或生产回执验收；需要在 V35 动态迁移和 W1 最新 seed 合入后由 W2 在 `127.0.0.1:19329` 隔离实例执行。
+`status-check`、`version-check`、`request-digest-check`、`response-size-check`、`request-empty`、`request-too-large`、`response-too-large`、`response-digest-format`、`unknown-operation`、`principal-mismatch`、`open-reference-shape`、`page-reference-shape`、`verify-reference-shape`、`verify-set-only`、`verify-verification-only`、`stop-missing-object`、`stop-extra-references`、`scope-composite-fk`、`cross-scope-parent-fk`、`submission-round-fk`、`natural-key`、`natural-key-different-bytes`、`immutable-update`、`immutable-delete`。
+
+每案使用独立 Spring JDBC 事务并标记 rollback；事务内或事务调用外的失败都会先写唯一 `CREATE_NEW` JSON。每个 control/negative 都用 `E2aSnapshotRows` 做全表 before/after 逐值相等检查，最终另写总报告并核对 intake 行数不变。自然键两案预期 `23000/1062`，scope/submission 外键预期 `23000/1452`，immutable trigger 预期 `45000/1644`，其余 DDL CHECK 预期 `HY000/3819`。
+
+`cross-scope-parent-fk` 当前只把 intake 行的 `scope_id` 替换为第二个 TEMP scope，验证父关系外键失败；它不声称覆盖 object/set/verification 的跨 scope 业务组合。`response-digest-format` 只验证摘要字段格式；摘要内容与字节是否一致属于 writer 层，crypto 一致性未验。本文和 helper 截至当前提交均未运行编译、测试或真实数据库动态执行。

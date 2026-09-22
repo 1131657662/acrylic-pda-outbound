@@ -99,12 +99,17 @@ public final class E2aV35NegativeChecks {
     private void negative(ArrayNode cases, String name, java.util.function.Consumer<CaseBuilder> change) {
         CaseBuilder b = new CaseBuilder(seed, "OPEN", null, null, null);
         Failure failure = new Failure();
-        transaction.executeWithoutResult(status -> {
-            try { change.accept(b); if (!name.startsWith("natural-key") && !name.startsWith("immutable-")) insert(b); failure.unexpected = true; }
-            catch (DataAccessException error) { failure.capture(error); }
-            catch (AssertionError error) { failure.unexpected = true; }
-            status.setRollbackOnly();
-        });
+        try {
+            transaction.executeWithoutResult(status -> {
+                try { change.accept(b); if (!name.startsWith("natural-key") && !name.startsWith("immutable-")) insert(b); failure.unexpected = true; }
+                catch (DataAccessException error) { failure.capture(error); }
+                catch (AssertionError error) { failure.unexpected = true; }
+                status.setRollbackOnly();
+            });
+        } catch (RuntimeException error) {
+            failure.capture(error);
+            failure.unexpected = failure.sqlState == null;
+        }
         ObjectNode row = JSON.createObjectNode().put("name", name).put("sqlState", failure.sqlState).put("vendorCode", failure.vendorCode);
         record(cases, row);
         assertStable();
@@ -171,7 +176,7 @@ public final class E2aV35NegativeChecks {
     }
     public record Seed(byte[] principal, byte[] warehouse, byte[] scope, byte[] submission, byte[] device, byte[] order, byte[] authorization, byte[] operator, byte[] objectId, byte[] setId, byte[] verificationId, long round, long epoch, byte[] otherScope, byte[] otherPrincipal) {
         static Seed load(JdbcTemplate j) {
-            Seed base = j.queryForObject("SELECT s.operator_id,c.warehouse_id,c.id,s.id,c.creator_device_id,c.client_order_id,s.temporary_authorization_id,s.operator_id,o.id,es.id,v.id,s.work_round,s.source_recovery_epoch FROM submission s JOIN submission_scope c ON c.id=s.scope_id JOIN source_evidence_object o ON o.scope_id=s.scope_id AND o.submission_id=s.id AND o.work_round=s.work_round JOIN source_evidence_set es ON es.scope_id=s.scope_id AND es.submission_id=s.id AND es.work_round=s.work_round JOIN source_evidence_verification v ON v.set_id=es.id AND v.scope_id=es.scope_id WHERE c.creator_device_id IS NOT NULL ORDER BY s.id LIMIT 1", (rs,n) -> new Seed(rs.getBytes(1),rs.getBytes(2),rs.getBytes(3),rs.getBytes(4),rs.getBytes(5),rs.getBytes(6),rs.getBytes(7),rs.getBytes(8),rs.getBytes(9),rs.getBytes(10),rs.getBytes(11),rs.getLong(12),rs.getLong(13),null));
+            Seed base = j.queryForObject("SELECT s.operator_id,c.warehouse_id,c.id,s.id,c.creator_device_id,c.client_order_id,s.temporary_authorization_id,s.operator_id,o.id,es.id,v.id,s.work_round,s.source_recovery_epoch FROM submission s JOIN submission_scope c ON c.id=s.scope_id JOIN source_evidence_object o ON o.scope_id=s.scope_id AND o.submission_id=s.id AND o.work_round=s.work_round JOIN source_evidence_set es ON es.scope_id=s.scope_id AND es.submission_id=s.id AND es.work_round=s.work_round JOIN source_evidence_verification v ON v.set_id=es.id AND v.scope_id=es.scope_id WHERE c.creator_device_id IS NOT NULL ORDER BY s.id LIMIT 1", (rs,n) -> new Seed(rs.getBytes(1),rs.getBytes(2),rs.getBytes(3),rs.getBytes(4),rs.getBytes(5),rs.getBytes(6),rs.getBytes(7),rs.getBytes(8),rs.getBytes(9),rs.getBytes(10),rs.getBytes(11),rs.getLong(12),rs.getLong(13),null,null));
             byte[] other = j.query("SELECT id FROM submission_scope WHERE id<>? AND temporary_scope_id IS NOT NULL ORDER BY id LIMIT 1", ps -> ps.setBytes(1, base.scope()), rs -> rs.next() ? rs.getBytes(1) : null);
             byte[] otherPrincipal = j.query("SELECT id FROM app_user WHERE id<>? ORDER BY id LIMIT 1", ps -> ps.setBytes(1, base.operator()), rs -> rs.next() ? rs.getBytes(1) : null);
             if (other == null || otherPrincipal == null) throw new IllegalStateException("V35 matrix requires second TEMP scope and app user");
