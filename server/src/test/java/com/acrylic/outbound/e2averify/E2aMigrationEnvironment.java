@@ -19,7 +19,8 @@ public final class E2aMigrationEnvironment {
 
     private E2aMigrationEnvironment() { }
 
-    public static void requireExact(boolean portFree, Path workspace) {
+    /** Full preflight validation; callers must invoke before SQL, Flyway, or process startup. */
+    public static void requireExact(Map<String, String> env, boolean portFree, Path workspace) {
         Path actualWorkspace = workspace.toAbsolutePath().normalize();
         Path expectedWorkspace = EXPECTED_WORKSPACE.toAbsolutePath().normalize();
         if (!portFree || !actualWorkspace.equals(expectedWorkspace)) {
@@ -28,11 +29,6 @@ public final class E2aMigrationEnvironment {
         requireUnderWorkspace(actualWorkspace, DATA_DIR, "datadir");
         requireUnderWorkspace(actualWorkspace, STORAGE_DIR, "storage");
         requireUnderWorkspace(actualWorkspace, SIGNING_DIR, "signing");
-    }
-
-    /** Full preflight validation; callers must invoke before SQL, Flyway, or process startup. */
-    public static void requireExact(Map<String, String> env, boolean portFree, Path workspace) {
-        requireExact(portFree, workspace);
         if (!"true".equals(env.get("E2A_MIGRATION_VERIFY"))
                 || !"true".equals(env.get("OUTBOUND_MIGRATE"))
                 || !URL.equals(env.get("OUTBOUND_DB_URL"))

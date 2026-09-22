@@ -63,7 +63,9 @@ all failed negative evidence. Do not touch 13316 or 19321-19328.
 
 S0 can begin only after W1 provides the exact V35 SHA. S1-S4 are pending
 coordination and environment approval. No dynamic result in this file is a
-pass claim.
+pass claim. The executable runner and SQL files are deliberately inert until
+the full profile guard succeeds; the runner exits before any datasource or
+Flyway setup and reports that dynamic execution is unscheduled.
 
 The full preflight must match the exact JDBC URL, schema, account, port,
 datadir, storage directory, and both signing files. It must canonicalize every

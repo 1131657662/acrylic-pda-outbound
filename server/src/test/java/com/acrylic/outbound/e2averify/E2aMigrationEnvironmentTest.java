@@ -27,19 +27,19 @@ class E2aMigrationEnvironmentTest {
 
     @Test
     void acceptsExactPortAndWorkspace() {
-        assertThatCode(() -> E2aMigrationEnvironment.requireExact(true, WORKSPACE))
+        assertThatCode(() -> E2aMigrationEnvironment.requireExact(valid(), true, WORKSPACE))
             .doesNotThrowAnyException();
     }
 
     @Test
     void rejectsOccupiedPortBeforeAnyDatabaseAction() {
-        assertThatThrownBy(() -> E2aMigrationEnvironment.requireExact(false, WORKSPACE))
+        assertThatThrownBy(() -> E2aMigrationEnvironment.requireExact(valid(), false, WORKSPACE))
             .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void rejectsAnotherWorktreeBeforeAnyDatabaseAction() {
-        assertThatThrownBy(() -> E2aMigrationEnvironment.requireExact(true,
+        assertThatThrownBy(() -> E2aMigrationEnvironment.requireExact(valid(), true,
                 Path.of("D:/acrylic-pda-outbound")))
             .isInstanceOf(IllegalStateException.class);
     }
