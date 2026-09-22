@@ -6,6 +6,7 @@ import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.jdbc.core.JdbcTemplate;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /** Opt-in target-34/35 execution; never runs in the default test task. */
 @EnabledIfEnvironmentVariable(named = "E2A_MIGRATION_RUN", matches = "true")
@@ -19,11 +20,14 @@ class E2aMigrationExecutionIT {
         createNewMarker();
         requireEmptySchema(jdbc);
         Flyway.configure().dataSource(jdbc.getDataSource()).target("34").load().migrate();
-        E2aV34Seed.seed(jdbc, WORKSPACE);
-        E2aMigrationSnapshot.save(jdbc, WORKSPACE, "before-v35.json");
+        E2aV34Seed.seed(jdbc, WORKSPACE.resolve(E2aMigrationEnvironment.STORAGE_DIR));
+        var snapshot = new E2aMigrationSnapshot(jdbc, WORKSPACE, WORKSPACE.resolve(E2aMigrationEnvironment.STORAGE_DIR));
+        JsonNode before = snapshot.capture();
+        snapshot.saveBefore("before-v35.json");
         Flyway.configure().dataSource(jdbc.getDataSource()).target("35").load().migrate();
         E2aV35NegativeChecks.verify(jdbc);
-        E2aMigrationSnapshot.save(jdbc, WORKSPACE, "after-v35.json");
+        snapshot.assertPreserved(before);
+        snapshot.saveAfter("after-v35.json");
         Files.writeString(MARKER, "target35-complete\n");
     }
 
