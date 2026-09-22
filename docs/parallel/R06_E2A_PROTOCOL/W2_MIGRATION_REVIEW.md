@@ -19,3 +19,17 @@
 5. 当前 `E2aMigrationExecutionIT` 的 `seedTarget34MigrateTarget35AndCapturePreservation` 仍将动态阶段描述为 pending domain seed；不得把其编译、护栏或 marker 保留误记为迁移通过。
 
 结论：W2 当前材料可作为环境/执行入口准备，尚不能作为 S1/S2/S4 迁移证据。待 W2 固定 SHA 后，W3 只读复审应重新核对上述五项是否由实际代码和输出覆盖；在此之前不运行 Gradle、启库或连接 19329。
+
+## 固定 SHA 独立复审：3a4b9b842fdfd118e6a2d64dea5bdb95b571d31d
+
+复审范围：仅使用该提交的 Git 内容，未启动 19329、未连接数据库、未运行 Gradle 或动态迁移。
+
+1. `E2aMigrationRunner.java:10-12` 在通过护栏后固定抛出 “dynamic execution is not scheduled”，且仓库中没有调用 `E2aMysqlLauncher` 的入口。`E2aMigrationExecutionIT.java:18-31` 直接连接数据库并执行 Flyway，没有启动/初始化 MySQL、创建目标 schema/账号或正常停机链，因此当前空环境不可执行。
+2. `E2aMysqlLauncher.java:15-25` 的 `start` 只执行 `--initialize-insecure`，该进程完成初始化后退出；`startServer` 又要求 `ibdata1` 不存在却未完成初始化串联。`shutdown` 通过共享密码调用固定端口，未绑定或核验目标进程 PID，不能证明关闭的是本次实例。
+3. `E2aV34Seed.java:17-30` 先查询空 target-34 库中既有 `submission_scope`/`submission`，没有构造 TEMP S/round、mapping version 0/null、mapped source、ABORT、command receipt、`SOURCE_RESERVED` 等 S1 事实；空库会直接查询不到行而失败。
+4. `E2aMigrationExecutionIT.java:20-21` 在连接和后续迁移前创建一次性 marker；任一步失败都会遗留 marker，且 marker 未记录提交 SHA、迁移版本、schema、端口、seed/snapshot 摘要或失败阶段。该保护必须保留，但当前缺少可审计的失败/续接证据。
+5. `E2aV35NegativeChecks.java:14-26` 只有三类 UPDATE/DELETE/stage mismatch，未覆盖 operation reference shape、复合 FK、重复 natural key、未知 key、route/status/digest/size、页/manifest 和文件耐久负向；SQLState 只从最深层直接 `SQLException` 读取，包装异常时可能为空。
+6. `E2aMigrationSnapshot.java` 的逐值快照使用 JDBC `getBytes` 后 Base64，能够保留 NULL 和二进制字段，但 `flywayHistory` 依赖 JDBC 返回值的 Jackson 类型。`row.path("version").asText()` 对非文本数值通常可用，`row.path("success").asBoolean()` 对 JDBC 字符串 `"1"` 不保证按预期得到 true；应在 W2 修正后确认编码或显式兼容。Flyway 历史应按结构化字段比较，不能退回字符串包含匹配。
+7. W2 当前快照 helper 在该固定 SHA 上还存在与其正在修订的 `E2aMigrationSnapshot` 调用签名适配风险；本树不复制该修复，避免与 W2 写权冲突。新 SHA 必须重新检查编译签名、逐值 legacy projection、Flyway success 判定和 marker 输出。
+
+本固定 SHA 结论仅是独立静态复审；不得记作编译、数据库、迁移、负向、停机或组合通过。
