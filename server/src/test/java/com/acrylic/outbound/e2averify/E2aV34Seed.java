@@ -22,12 +22,12 @@ public final class E2aV34Seed {
         for(String mode: new String[]{"mapping0","mapped","abort"}) {
             String scope=UUID.randomUUID().toString(), submission=UUID.randomUUID().toString(), clientOrder=UUID.randomUUID().toString();
             String mapping = UUID.randomUUID().toString();
-            jdbc.update("INSERT INTO submission_scope(id,warehouse_id,source_order_id,work_round,creator_device_id,client_order_id,canonical_order_id,mapping_version,current_submission_id) SELECT UUID_TO_BIN(?),warehouse_id,source_order_id,1,creator_device_id,UUID_TO_BIN(?),CASE WHEN ?=0 THEN NULL ELSE canonical_order_id END,?,NULL FROM submission_scope c WHERE c.source_order_id=UUID_TO_BIN(?) LIMIT 1", scope, clientOrder, "mapping0".equals(mode) ? 0 : 1, "mapping0".equals(mode) ? 0 : 1, sourceOrder);
+            requireOne(jdbc.update("INSERT INTO submission_scope(id,warehouse_id,source_order_id,work_round,creator_device_id,client_order_id,canonical_order_id,mapping_version,current_submission_id) SELECT UUID_TO_BIN(?),c.warehouse_id,c.source_order_id,1,c.creator_device_id,UUID_TO_BIN(?),CASE WHEN ?=0 THEN NULL ELSE c.canonical_order_id END,?,NULL FROM submission_scope c WHERE c.source_order_id=UUID_TO_BIN(?) LIMIT 1", scope, clientOrder, "mapping0".equals(mode) ? 0 : 1, "mapping0".equals(mode) ? 0 : 1, sourceOrder);
             jdbc.update("INSERT INTO temporary_work_origin(creator_device_id,client_order_id,authorization_id) SELECT creator_device_id,UUID_TO_BIN(?),temporary_authorization_id FROM submission s WHERE s.id=UUID_TO_BIN(?)", clientOrder, (String)template.get("submissionId"));
             jdbc.update("INSERT INTO temporary_source_mapping(id,warehouse_id,scope_id,mapping_version,canonical_order_id,origin,observed_at) SELECT UUID_TO_BIN(?),warehouse_id,UUID_TO_BIN(?),?,CASE WHEN ?=0 THEN NULL ELSE canonical_order_id END,'SOURCE_REGISTERED',UTC_TIMESTAMP(3) FROM submission_scope WHERE id=UUID_TO_BIN(?)", mapping, scope, "mapping0".equals(mode) ? 0 : 1, "mapping0".equals(mode) ? 0 : 1, scope);
             jdbc.update("INSERT INTO temporary_decision_state(scope_id,decision_version,origin,initialized_at) VALUES(UUID_TO_BIN(?),0,'SOURCE_REGISTERED',UTC_TIMESTAMP(3))", scope);
             jdbc.update("INSERT INTO submission(id,scope_id,assignment_id,temporary_authorization_id,freeze_device_id,operator_id,work_round,source_recovery_epoch,status,created_at,updated_at) SELECT UUID_TO_BIN(?),UUID_TO_BIN(?),assignment_id,temporary_authorization_id,device_id,operator_id,1,1,?,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3) FROM submission_scope c JOIN submission s ON s.scope_id=UUID_TO_BIN(?) WHERE s.id=UUID_TO_BIN(?)", submission, scope, "abort".equals(mode)?"ABORTED":"REVIEW_REQUIRED", scope, (String)template.get("submissionId"));
-            jdbc.update("UPDATE submission_scope SET current_submission_id=UUID_TO_BIN(?) WHERE id=UUID_TO_BIN(?)", submission, scope);
+            requireOne(jdbc.update("UPDATE submission_scope SET current_submission_id=UUID_TO_BIN(?) WHERE id=UUID_TO_BIN(?)", submission, scope));
             result.put(mode+"ScopeId",scope); result.put(mode+"SubmissionId",submission); result.put(mode+"ClientOrderId",clientOrder); result.put(mode+"MappingId",mapping);
             seedEvidence(jdbc,storage,result,mode,warehouse,scope,submission,device,operator);
             if ("mapped".equals(mode)) seedReserved(jdbc,result,warehouse,scope,submission);
@@ -55,6 +55,7 @@ public final class E2aV34Seed {
         jdbc.update("INSERT INTO bale_commitment(bale_id,order_id,submission_id,dispatch_cycle,state,created_at,source_scope_id,source_evidence_set_id,source_warehouse_id) VALUES(UUID_TO_BIN(?),NULL,NULL,1,'SOURCE_RESERVED',UTC_TIMESTAMP(3),UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?))",bale,scope,result.get("mappedSetId"),warehouse);
         result.put("reservedBaleId",bale);
     }
+    private static void requireOne(int rows) { if(rows != 1) throw new IllegalStateException("E2a seed expected one row, got " + rows); }
     private static String sha(byte[] bytes) throws Exception { var d=MessageDigest.getInstance("SHA-256"); var out=d.digest(bytes); var s=new StringBuilder(64); for(byte b:out)s.append(String.format("%02x",b)); return s.toString(); }
 
     private static void requireSyntheticV34Base(JdbcTemplate jdbc) {
