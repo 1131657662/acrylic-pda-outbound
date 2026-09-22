@@ -26,9 +26,13 @@ public final class E2aMigrationEnvironment {
     public static void requireExact(Map<String, String> env, boolean portFree, Path workspace) {
         Path actualWorkspace = workspace.toAbsolutePath().normalize();
         Path expectedWorkspace = EXPECTED_WORKSPACE.toAbsolutePath().normalize();
-        if (!portFree || !actualWorkspace.equals(expectedWorkspace)) {
-            throw new IllegalStateException("E2a migration environment guard failed: port/workspace");
-        }
+        if (!portFree || !actualWorkspace.equals(expectedWorkspace)) throw new IllegalStateException("E2a migration environment guard failed: port/workspace");
+        requireProfile(env, workspace);
+    }
+
+    public static void requireProfile(Map<String, String> env, Path workspace) {
+        Path actualWorkspace = workspace.toAbsolutePath().normalize();
+        if (!actualWorkspace.equals(EXPECTED_WORKSPACE.toAbsolutePath().normalize())) throw new IllegalStateException("Unexpected E2a workspace");
         requireUnderWorkspace(actualWorkspace, DATA_DIR, "datadir");
         requireUnderWorkspace(actualWorkspace, STORAGE_DIR, "storage");
         requireUnderWorkspace(actualWorkspace, SIGNING_DIR, "signing");
@@ -59,22 +63,12 @@ public final class E2aMigrationEnvironment {
     }
 
     public static JdbcTemplate connectLive(Map<String, String> env, Path workspace) {
+        if (E2aMysqlLauncher.isPortFree()) throw new IllegalStateException("E2a live port is not listening");
         requireProfile(env, workspace);
         var source = new DriverManagerDataSource(URL, USER, env.get("OUTBOUND_DB_PASSWORD"));
         var jdbc = new JdbcTemplate(source);
         verifyConnected(jdbc, workspace);
         return jdbc;
-    }
-
-    private static void requireProfile(Map<String, String> env, Path workspace) {
-        Path actual = workspace.toAbsolutePath().normalize();
-        if (!actual.equals(EXPECTED_WORKSPACE.toAbsolutePath().normalize())) throw new IllegalStateException("Unexpected E2a workspace");
-        if (!"true".equals(env.get("E2A_MIGRATION_VERIFY")) || !"true".equals(env.get("OUTBOUND_MIGRATE"))
-            || !URL.equals(env.get("OUTBOUND_DB_URL")) || !USER.equals(env.get("OUTBOUND_DB_USER"))) throw new IllegalStateException("E2a profile mismatch");
-        requirePath(env, "OUTBOUND_DATADIR", DATA_DIR, workspace);
-        requirePath(env, "OUTBOUND_STORAGE", STORAGE_DIR, workspace);
-        requirePath(env, "OUTBOUND_AUTH_SIGNING_PRIVATE_KEY", SIGNING_DIR.resolve("private.der"), workspace);
-        requirePath(env, "OUTBOUND_AUTH_SIGNING_PUBLIC_KEY", SIGNING_DIR.resolve("public.der"), workspace);
     }
 
     public static void verifyConnected(JdbcTemplate jdbc, Path workspace) {
