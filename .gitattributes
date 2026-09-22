@@ -1,0 +1,2 @@
+# Deployment entry points are executed by Bash on the Linux test server.
+deploy/test/*.sh text eol=lf

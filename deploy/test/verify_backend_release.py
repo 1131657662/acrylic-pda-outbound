@@ -26,7 +26,7 @@ def verify(root):
     manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
     require(manifest['release'] == root.name, 'Release ID mismatch')
     require(manifest['environment'] == 'independent-test', 'Environment mismatch')
-    require(manifest['contract'] == '0.20.0' and manifest['flyway'] == 28, 'Unsupported contract/schema')
+    require(manifest['contract'] == '0.30.0' and manifest['flyway'] == 34, 'Unsupported contract/schema')
     hashes = manifest['artifactHashes']
     require(REQUIRED <= hashes.keys(), 'Missing deployment artifact')
     for relative, expected in hashes.items():
