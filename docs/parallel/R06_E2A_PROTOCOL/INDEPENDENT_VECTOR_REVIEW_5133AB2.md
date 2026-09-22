@@ -1,6 +1,6 @@
 # W1 E2a 生产向量独立消费记录
 
-审查对象：W1 完整生产基线 `5133ab21a3302d53dd7d9cf362f0018b4e25777f`（包含向量生成提交 `1374da535b204a6ec918573131475451b5717775` 的空集向量及 V35 引用完整性修订）。输入文件为：
+审查对象：W1 完整生产基线 `20ec84bb50226630082ccbf72deb93464fa28200`（包含 `5133ab21a3302d53dd7d9cf362f0018b4e25777f` 的 V35 引用完整性修订及 RS256 回执扩展）。输入文件为：
 
 `server/src/test/resources/e2a/e2a-v1-empty-set-vector.json`
 
@@ -35,6 +35,32 @@ derived_in_core_rejected True
 der_not_raw_jose True
 ```
 
+## RS256 回执独立消费
+
+同一向量新增的 `unsignedReceiptUtf8` 与 JWT 已独立解析和验签：
+
+| 项目 | 独立结果 |
+|---|---|
+| 三段 compact JWT、无填充 base64url | PASS |
+| header `alg=RS256`、`typ=JWT`、`kid=e2a-vector-rsa` | PASS |
+| `iss=acrylic-outbound`、`aud=acrylic-r06-e2a-intake-v1` | PASS |
+| payload receipt 与 `unsignedReceiptUtf8` 字节一致 | PASS |
+| RSA SPKI DER length / PKCS#1 v1.5 SHA-256 verify | 294 bytes / PASS |
+| payload facts 变更后验签拒绝 | PASS |
+
+RSA 独立命令完整 stdout：
+
+```text
+segments 3 padding_present False
+alg_typ_kid RS256 JWT e2a-vector-rsa
+iss_aud acrylic-outbound acrylic-r06-e2a-intake-v1
+receipt_matches True
+rsa_spki_len 294
+rsa_verify True sig_len 256
+mutated_payload_rejected True
+rsa_keyid_sha256 bf5b217b5dbbf0d49c4f3d7630ffd69aeae9e177bb6f6fca7fbfdc28d893ad3e
+```
+
 ## Negative checks
 
 The following were performed in memory against the same vector:
@@ -47,4 +73,4 @@ These are protocol-consumer checks only. They do not establish receipt persisten
 
 ## Cross-review note
 
-The latest W1 V35 revision `5133ab2` atomically enforces all-or-none object/set/verification references. The consumer review found no additional wire/hash/signature or no-cycle blocker. Remaining independent work is the wider negative matrix (duplicate/out-of-order pages, mixed manifest/snapshot, unknown historical key, RSA re-sign with mismatched facts, and limits) once corresponding fixed fixtures are supplied.
+The latest W1 V35 revision `5133ab2` atomically enforces all-or-none object/set/verification references. The consumer review found no additional wire/hash/signature or no-cycle blocker. Remaining independent work is the wider negative matrix (duplicate/out-of-order pages, mixed manifest/snapshot, unknown historical key, and limits) once corresponding fixed fixtures are supplied; RSA mismatched-facts coverage is now independently recorded above.
