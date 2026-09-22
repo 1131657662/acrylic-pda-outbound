@@ -1,6 +1,7 @@
 package com.acrylic.outbound.e2averify;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /** W2-owned negative-check entry point; each check must assert rollback independently. */
 public final class E2aV35NegativeChecks {
@@ -10,17 +11,23 @@ public final class E2aV35NegativeChecks {
         requireTable(jdbc, "source_evidence_object");
         requireTable(jdbc, "source_evidence_set");
         requireTable(jdbc, "source_evidence_verification");
-        expectFailure(jdbc, "UPDATE source_evidence_intake_receipt SET receipt_version=2", "immutable update");
-        expectFailure(jdbc, "DELETE FROM source_evidence_intake_receipt", "immutable delete");
-        expectFailure(jdbc, "INSERT INTO source_evidence_intake_receipt (id,receipt_version,principal_id,route_scope,original_key,warehouse_id,scope_id,submission_id,work_round,creator_device_id,client_order_id,temporary_authorization_id,original_operator_id,source_recovery_epoch,operation_kind,receipt_status,canonical_request_bytes,request_sha256,original_response_bytes,original_response_sha256,signature_key_id,signed_receipt,recorded_at) VALUES (UUID_TO_BIN(UUID()),1,UUID_TO_BIN(UUID()),'bad',UUID_TO_BIN(UUID()),UUID_TO_BIN(UUID()),UUID_TO_BIN(UUID()),UUID_TO_BIN(UUID()),1,UUID_TO_BIN(UUID()),UUID_TO_BIN(UUID()),UUID_TO_BIN(UUID()),UUID_TO_BIN(UUID()),1,'OPEN','RECEIVED','{}',REPEAT('0',64),'{}',REPEAT('0',64),'k','jwt',UTC_TIMESTAMP(3))", "invalid FK/domain");
+        Integer before = jdbc.queryForObject("SELECT COUNT(*) FROM source_evidence_intake_receipt", Integer.class);
+        if (before == null || before < 1) throw new IllegalStateException("Negative checks require a valid intake receipt");
+        var tx = new org.springframework.jdbc.datasource.DataSourceTransactionManager(jdbc.getDataSource());
+        expectFailure(tx, jdbc, "UPDATE source_evidence_intake_receipt SET receipt_version=2", "immutable update");
+        expectFailure(tx, jdbc, "DELETE FROM source_evidence_intake_receipt", "immutable delete");
+        expectFailure(tx, jdbc, "UPDATE source_evidence_intake_receipt SET operation_kind='OPEN' WHERE operation_kind='VERIFY'", "stage mismatch");
+        Integer after = jdbc.queryForObject("SELECT COUNT(*) FROM source_evidence_intake_receipt", Integer.class);
+        if (!before.equals(after)) throw new IllegalStateException("Negative case changed intake count");
     }
 
-    private static void expectFailure(JdbcTemplate jdbc, String sql, String label) {
+    private static void expectFailure(org.springframework.transaction.PlatformTransactionManager tx, JdbcTemplate jdbc, String sql, String label) {
         try {
-            jdbc.update(sql);
+            new TransactionTemplate(tx).executeWithoutResult(status -> jdbc.update(sql));
             throw new IllegalStateException("Negative case unexpectedly succeeded: " + label);
         } catch (org.springframework.dao.DataAccessException expected) {
-            // Expected: caller records this SQL failure in the dynamic evidence log.
+            String state = expected.getMostSpecificCause() instanceof java.sql.SQLException sqlError ? sqlError.getSQLState() : "";
+            if (!"45000".equals(state) && !"23000".equals(state)) throw new IllegalStateException("Unexpected SQLState for " + label + ": " + state, expected);
         }
     }
 
