@@ -72,12 +72,14 @@ class ScanRecordExcelRendererTest {
             assertEquals(1,book.getNumberOfSheets());assertEquals(0,book.getSheetAt(0).getPhysicalNumberOfRows());
         }
     }
-    @Test void rejectsUnclearBasisNamesAndTimes() {
+    @Test void rejectsUnclearBasisPlaceholderNamesAndTimes() {
         assertThrows(IllegalArgumentException.class,()->ScanRecordExcelRenderer.validate(Samples.report(List.of(Samples.corrected()))));
         var order=Samples.order(1);var line=order.originalLines().getFirst();
-        for(String name:List.of("operator-123","原人员ID:123",""))
+        for(String name:List.of("原人员ID:123","","   ","5052f470-906c-44e3-9e7a-af0e08ff93f7","5052F470906C44E39E7AAF0E08FF93F7"))
             assertThrows(IllegalArgumentException.class,()->ScanRecordExcelRenderer.validate(original(List.of(
                     Samples.withLines(order,List.of(changed(line,1,name,line.receivedAt())))))));
+        for(String name:List.of("operator-123","Liu Ying","张 三","test_pda01"))
+            ScanRecordExcelRenderer.validate(original(List.of(Samples.withLines(order,List.of(changed(line,1,name,line.receivedAt()))))));
         assertThrows(IllegalArgumentException.class,()->ScanRecordExcelRenderer.validate(original(List.of(
                 Samples.withLines(order,List.of(changed(line,1,"中文名","")))))));
     }

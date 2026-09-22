@@ -21,8 +21,7 @@ public final class ScanRecordExcelRenderer {
             Values.require(order.originalLines().size() <= 1_048_576, "扫码记录超过单表行数上限");
             for (var product : order.products()) Values.required(product.model());
             for (var line : order.originalLines()) {
-                Values.require(line.operatorName().codePoints().anyMatch(c -> Character.UnicodeScript.of(c) == Character.UnicodeScript.HAN)
-                        && !line.operatorName().startsWith("原人员ID:"), "扫码人缺少中文姓名，请完善人员资料后重新申请导出");
+                Values.require(OperatorNames.usable(line.operatorName()), "扫码人姓名缺失或无效，请完善人员资料后重新申请导出");
                 var time = Instant.parse(Values.required(line.receivedAt())).atZone(Values.ZONE).toLocalDateTime();
                 Values.require(time.getYear() >= 1900 && time.getYear() <= 9999, "扫码时间超出Excel日期范围");
             }

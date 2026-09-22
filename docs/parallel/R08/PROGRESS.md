@@ -2,6 +2,20 @@
 
 最新日期：2026-09-20。**总调度已将 R08 交给执行子代理 W2 接管，原 B 会话仍暂停。原确认跨订单汇总、导出中心和原快照重生成本批已完成源码及本机隔离验证；下方暂停记录是历史断点。** 仅本子项完成，不代表完整 R08、真实业务或现场验收完成。
 
+## 2026-09-22 扫码人姓名口径放宽（扫码记录 Excel）
+
+用户反馈 test 环境导出 `SCAN_XLSX` 报“扫码人缺少中文姓名，请完善人员资料后重新申请导出（请求 5052f470-…）”，并确认英文姓名应可用。核实：该限制是本格式自加的“必须含汉字”校验（`ExportOperatorNames` / `ScanRecordExcelRenderer`），人员资料录入本身只要求 `@NotBlank @Size(max=100)`，允许英文名；姓名来源为申请时读取的 `app_user.display_name`。
+
+改动：新增 `report-rendering` 的 `OperatorNames.usable(name, reserved…)` 统一判定——姓名非空且不是占位值（拒绝空/纯空白、`原人员ID:` 前缀、人员ID本身含无连字符写法、账号名，账号比较忽略大小写与首尾空格）；**不再要求汉字，英文与其他文字姓名同样接受**。服务端 `ExportOperatorNames` 同时读取 `username` 参与判定，渲染前 `ScanRecordExcelRenderer.validate` 复用同一判定；错误码 `EXPORT_OPERATOR_NAME_UNAVAILABLE` 保留，提示改为“扫码人姓名缺失或无效，请完善人员资料后重新申请导出”。
+
+本轮实际验证：渲染模块 `ScanRecordExcelRendererTest` 10 项（含新占位值拒绝/英文姓名接受用例）与新增 `OperatorNamesTest` 15 项全部通过；`gradlew -p server compileTestJava` BUILD SUCCESSFUL（exit 0）。同模块本轮 116 项中 2 项 PDF 测试因本机缺 Playwright `chromium_headless_shell-1187`（本机仅有 1228/1243）失败，属环境缺件，与本改动无关，不计入本次通过。
+
+未做/未验：`R08ExportIT` 与 `R08ExportFenceIT` 未运行（需 R08 专用库 23308 或 wave1 合成库，当前均未运行，`.local/r08` 环境已不在）。
+
+部署与真实验证（2026-09-22 23:25，用户授权）：以 overlay 方式发布 `/opt/acrylic-outbound-test/releases/v34-386739c-r08name-01`——复制原 `v34-386739c-02` 后仅替换 `server.jar`（`5767ea05bcec…`）与 `report-rendering/acrylic-report-rendering/lib/acrylic-report-rendering.jar`（`684ee0170d7b…`），重写 manifest.json/source-sha256.json 并通过发布自带 `verify_backend_release.py`；`activate_backend.sh` EXIT=0，API/worker 于 23:25:26/23:25:41 active，18085 监听、csrf 200。真实 HTTPS 三格式本轮全部 OK/SUCCEEDED（XLSX 13493B、PDF 360560B、SCAN_XLSX 4314B，sha256 `467ef76699ca…`）；导出的扫码记录工作簿列 E 实测为 `test_pda01`（英文姓名已可导出，旧阻塞消除）。Web/APK 发布物与数据库（仍 V34，无迁移）未动；旧发布保留，回滚=对 `v34-386739c-02` 重跑同一激活脚本。证据 `deployment-evidence/r08name-20260922/`。代码与文档改动**尚未提交、未推送**。
+
+本文档 2026-09-20 小节中的“中文扫码人/缺失中文名拒绝”为当时口径，已被本节取代。
+
 ## 总调度 W2 接管与本批收口（2026-09-20，当前接续）
 
 沿用 `D:/acrylic-pda-worktrees/r08-export` / `codex/r08-export-rendering`，从 `effba8f` 及原未提交断点继续。当前完成原确认上海日期汇总、固定成员和版本的 Excel/PDF、本人任务中心、真实游标及格式/有效状态筛选、丢响应原键恢复、原快照重生成和旧单订单 payload 兼容。范围严格限定正式订单 `ORIGINAL_CONFIRMED` V1；接口、约束与整合清单见 [EXPORT_CENTER](EXPORT_CENTER.md)。
@@ -52,9 +66,9 @@
 
 ## 最新补充：模板扫码记录 Excel（2026-09-20）
 
-用户指定 `docs/out.xlsx` 后，新增 `SCAN_XLSX` / `r08-scan-records-1`：单表 `out`，序号/型号/条码/kg重量/中文扫码人/中国时间六列，无标题、表头和合计。列宽逐列与参考文件一致，默认及单元格字体宋体11；长文本保持列宽换行。原顺序按持久化订单序号，显示序号从1连续编排。独立模块、CLI、Web按钮、固定快照、后台任务及受权下载已接入，仅本扫码记录子项完成。详细字段及限制见 [扫码记录接入说明](SCAN_RECORDS.md)。
+用户指定 `docs/out.xlsx` 后，新增 `SCAN_XLSX` / `r08-scan-records-1`：单表 `out`，序号/型号/条码/kg重量/扫码人（人员资料姓名）/中国时间六列，无标题、表头和合计。列宽逐列与参考文件一致，默认及单元格字体宋体11；长文本保持列宽换行。原顺序按持久化订单序号，显示序号从1连续编排。独立模块、CLI、Web按钮、固定快照、后台任务及受权下载已接入，仅本扫码记录子项完成。详细字段及限制见 [扫码记录接入说明](SCAN_RECORDS.md)。
 
-PDA姓名是申请导出时读取并固定的账号中文姓名，私有快照保留原人员ID及来源；不是扫码时历史姓名。PC使用原冻结姓名。缺失中文名拒绝申请；后续改名不改变原幂等请求。扫码时刻转Asia/Shanghai，模板显示到分钟，底层保留毫秒；不校正设备时钟。仍只支持单个正式订单原确认V1，不包含R07更正净结果和临时订单。
+PDA姓名是申请导出时读取并固定的人员资料姓名，私有快照保留原人员ID及来源；不是扫码时历史姓名。PC使用原冻结姓名。姓名缺失或为占位值（人员ID/账号）时拒绝申请，中英文姓名均可（口径放宽见下节 2026-09-22）；后续改名不改变原幂等请求。扫码时刻转Asia/Shanghai，模板显示到分钟，底层保留毫秒；不校正设备时钟。仍只支持单个正式订单原确认V1，不包含R07更正净结果和临时订单。
 
 本轮最终实际验证：
 

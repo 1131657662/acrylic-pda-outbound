@@ -14,7 +14,7 @@
 
 接收请求时在一致性事务内读取：原计划修订、首版结果和产品汇总、原dispatch、原PC/PDA成功回执和冻结正文。PC核对正文摘要与回执；PDA通过既有 `SubmissionFiles` 核对持久正文摘要，再核对回执、原归属与高水位。逐包匹配身份、重量、序号、周期及有效集合；短装的计划零实绩产品也必须匹配。撤销、无效输入、卸货/隔离等原处置证据单列。
 
-PDA冻结正文只有原人员ID，无完整姓名快照，通用Excel/PDF明确写“原人员ID:...”；扫码记录Excel按用户要求在申请时读取中文姓名并固定，来源写入私有快照，不冒充历史姓名。PC使用冻结的operatorName和createdAt。原车柜号和备注来自原order_revision，首版header_snapshot实为回执，不能当作完整抬头。
+PDA冻结正文只有原人员ID，无完整姓名快照，通用Excel/PDF明确写“原人员ID:...”；扫码记录Excel按用户要求在申请时读取人员资料姓名并固定（中英文均可，仅排除缺失、人员ID、账号等占位值），来源写入私有快照，不冒充历史姓名。PC使用冻结的operatorName和createdAt。原车柜号和备注来自原order_revision，首版header_snapshot实为回执，不能当作完整抬头。
 
 固定JSON先持久化到 `outbound.storage/exports/snapshots/<sha256>.json`。小型任务payload保存范围、恢复代次、快照摘要/ID、修订、原出库日、格式、模板和到期时间。相同创建人及幂等键串行复核，已完成任务回放不再重新生成快照。
 
