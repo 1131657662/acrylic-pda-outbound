@@ -2,10 +2,15 @@
 
 <!-- CURRENT_STATE_START -->
 ## 当前有效状态（唯一接续入口）
-### 2026-09-22 23:25 R08 SCAN_XLSX 姓名口径放宽并已部署 test（代码改动未提交）
+### 2026-09-22 23:40 PDA 升级通道核查（现场可用线，只登记未改动产品代码）
+
+- 现场设备 code15（`0.11.0-r05-sync-test`）被公开清单 `minSupportedVersionCode=16` 挡住 App 内升级，属发布时有意设置（清单自述“旧版本覆盖升级尚需单独核验”）；15→16 的系统覆盖升级已由隔离模拟器验过（Room11→14、身份/会话/未上传冻结批次保留）。公开 code16 与清单哈希一致（11173106B / `9bc281b2…`），用户已选手动安装。
+- **新发现缺口（此前未记录）**：App 侧 `UpdateManifestVerifier.kt:31` 把可接受的服务端兼容值硬编码为 `{0.17.0,0.18.0,0.19.0,0.20.0}`，而 test 后端与发布清单契约已是 **0.30.0**；面向 R06 新版 APK 的诚实兼容声明不落在旧机白名单内，声明 0.18.0 又与后端不符。故 **code15/16 → R06 包无法诚实走 App 内升级**，只能系统安装器手动装包；已在 `docs/R05_PENDING_ACCEPTANCE.md` R05-OPS-01 登记。现场项沿用该文件 R05-FIELD-01..05，不新建重复清单。
+
+### 2026-09-22 23:25 R08 SCAN_XLSX 姓名口径放宽并已部署 test（已提交推送）
 
 - 按用户确认去掉“必须含中文汉字”：姓名非空且非占位（拒空/空白、`原人员ID:` 前缀、人员ID含无连字符写法、账号名），**中英文姓名均可**；判定统一由新增 `report-rendering` 的 `OperatorNames.usable` 提供，服务端 `ExportOperatorNames`（并读 username）与 `ScanRecordExcelRenderer.validate` 共用；错误码不变，提示改为“扫码人姓名缺失或无效…”。文档口径已同步 `docs/parallel/R08/{SCAN_RECORDS,PROGRESS,WEB_INTEGRATION}.md`。
-- 本地验证：`ScanRecordExcelRendererTest` 10 项 + 新 `OperatorNamesTest` 15 项通过（同模块 116 项中 2 项 PDF 因本机缺 Playwright `chromium_headless_shell-1187` 失败，属环境缺件）；`compileTestJava`、`bootJar`、`installDist` 均 BUILD SUCCESSFUL（构建字体取自同级工作树，SHA `2c76254f…`）。`R08ExportIT` **未跑**（需 R08/wave1 合成库，23308 未运行、`.local/r08` 已不在）。
+- 本地验证：`ScanRecordExcelRendererTest` 10 项 + 新 `OperatorNamesTest` 15 项通过（同模块 116 项中 2 项 PDF 因本机缺 Playwright chromium-1187 失败，属环境缺件）；`compileTestJava`/`bootJar`/`installDist` BUILD SUCCESSFUL。`R08ExportIT` **未跑**（需 R08/wave1 合成库，当前未运行）。
 - **已部署 test 并真实 HTTP 验证**：overlay 发布 `releases/v34-386739c-r08name-01`（仅替换 `server.jar` `5767ea05…` 与 `report-rendering…/acrylic-report-rendering.jar` `684ee017…`，manifest/source-sha256 重写后本包 `verify_backend_release.py` 通过）；`activate_backend.sh` EXIT=0，API/worker 23:25:26/23:25:41 active、18085 监听、csrf 200；三格式全部 OK/SUCCEEDED（XLSX 13493B、PDF 360560B、**SCAN_XLSX 4314B**，列 E 实测 `test_pda01`），旧 `EXPORT_OPERATOR_NAME_UNAVAILABLE` 阻塞已消除；旧发布与 `web/APK` 未动、库仍 V34 无迁移。证据 `deployment-evidence/r08name-20260922/`；回滚=对 `v34-386739c-02` 重跑同一 `activate_backend.sh`。代码与文档改动已提交 `686dd12`（R08 代码与专项文档）与 `b3750ce`（管理记录），并已推送到远端 `codex/development`（远端 SHA `b3750ce4e9018ae064b99cb0d39316761eaaf292`；本机 `origin` 的 HTTPS 通道不可用，推送与 fetch 使用 SSH 地址，tracking ref 已同步）。test 与 Git 的代码漂移已消除。
 
 ### 2026-09-22 23:05 只读核对（最新；test 部署线以此为准，取代下方同线旧结论）
