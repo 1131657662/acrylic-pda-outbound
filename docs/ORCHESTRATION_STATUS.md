@@ -6,7 +6,7 @@
 
 - 现场设备 code15（`0.11.0-r05-sync-test`）被公开清单 `minSupportedVersionCode=16` 挡住 App 内升级，属发布时有意设置（清单自述“旧版本覆盖升级尚需单独核验”）；15→16 的系统覆盖升级已由隔离模拟器验过（Room11→14、身份/会话/未上传冻结批次保留）。公开 code16 与清单哈希一致（11173106B / `9bc281b2…`），用户已选手动安装。
 - **新发现缺口（此前未记录）**：App 侧 `UpdateManifestVerifier.kt:31` 把可接受的服务端兼容值硬编码为 `{0.17.0,0.18.0,0.19.0,0.20.0}`，而 test 后端与发布清单契约已是 **0.30.0**；面向 R06 新版 APK 的诚实兼容声明不落在旧机白名单内，声明 0.18.0 又与后端不符。故 **code15/16 → R06 包无法诚实走 App 内升级**，只能系统安装器手动装包；已在 `docs/R05_PENDING_ACCEPTANCE.md` R05-OPS-01 登记。现场项沿用该文件 R05-FIELD-01..05，不新建重复清单。
-- **本地候选包已构建核对（未发布、未安装）**：`outputs/pda-candidate/Acrylic-PDA-0.15.0-r06-submission-test-code20.apk`，包名 `com.acrylic.outbound.pda.staging` / code20 / `0.15.0-r06-submission-test` / Room17 / minSdk28；签名摘要 `2437447b…`（与公开 code16 同一 debug 证书，可覆盖安装），11731828B、sha256 `a1535dc8…`；内嵌服务地址 `https://outbound-test.nbsmzwl.cn/api/v1/` 与更新公钥均与线上一致。Room 14→17 三跳迁移及对应主机测试存在但**本会话未运行**（需 server fixtures），真机/Android9 未验；R06 独立确认/正式化/放行仍关闭。
+- **本地候选包已构建核对（未发布、未安装）**：`outputs/pda-candidate/Acrylic-PDA-0.15.0-r06-submission-test-code20.apk`，包名 `com.acrylic.outbound.pda.staging` / code20 / `0.15.0-r06-submission-test` / Room17 / minSdk28；签名摘要 `2437447b…`（与公开 code16 同一 debug 证书，可覆盖安装），11731828B、sha256 `a1535dc8…`；内嵌服务地址 `https://outbound-test.nbsmzwl.cn/api/v1/` 与更新公钥均与线上一致。Room 迁移与主机测试已跑：`testStagingUnitTest` **67 类 / 274 项 / 0 失败 / 0 错误 / 0 跳过**（含以 schema14 重建并断言打开后为 17、原表逐行保留的迁移用例 13 项）；fixtures 由 10 个 `integrationTest` 用例生成（BUILD SUCCESSFUL）。为生成 fixtures 启动了本机 MySQL `127.0.0.1:13316`（workspace 实例，未停止）。**真机/Android9 仍未验**；R06 独立确认/正式化/放行仍关闭。
 
 ### 2026-09-22 23:25 R08 SCAN_XLSX 姓名口径放宽并已部署 test（已提交推送）
 
