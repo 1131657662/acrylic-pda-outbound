@@ -60,3 +60,9 @@ all failed negative evidence. Do not touch 13316 or 19321-19328.
 S0 can begin only after W1 provides the exact V35 SHA. S1-S4 are pending
 coordination and environment approval. No dynamic result in this file is a
 pass claim.
+
+The full preflight must match the exact JDBC URL, schema, account, port,
+datadir, storage directory, and both signing files. It must canonicalize every
+configured path and reject a symlink/junction that resolves outside this
+worktree. It must reject reset, repair, seed deletion, or any database action
+until the preflight succeeds; a boolean port-free input alone is insufficient.
