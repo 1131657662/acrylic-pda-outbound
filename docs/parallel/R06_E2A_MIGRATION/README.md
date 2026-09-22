@@ -19,6 +19,24 @@
 
 代码护栏 `E2aMigrationEnvironment.requireExact` 还会拒绝非精确工作树，并确认 datadir、私有文件和签名目录均解析在该工作树内；它不创建目录、不检查监听器、不连接数据库。
 
+### Operation-specific reference matrix
+
+The intake receipt references follow the contract lifecycle; they are not one
+all-or-none group across every operation:
+
+| Operation | object_id | evidence_set_id | evidence_verification_id | Expected parent state |
+| --- | --- | --- | --- | --- |
+| OPEN | NULL | NULL | NULL | intake envelope only |
+| PAGE | NOT NULL | NULL | NULL | MANIFEST_PAGE object |
+| STOP | NOT NULL | NULL | NULL | STOP_PROOF object; set is created only after matching |
+| VERIFY | NULL | NOT NULL | NOT NULL | existing set plus appended verification |
+
+The V35 acceptance must reject any other combination, while each non-null
+reference still uses the full V34 scope/submission/round composite parent.
+`MANIFEST_PAGE` versus `STOP_PROOF` kind and the PAGE/STOP ordering remain
+narrow-writer checks because the receipt table cannot constrain a referenced
+object's kind directly.
+
 ## 验收矩阵
 
 | ID | 目标 | 关键断言 | 证据要求 | 状态 |
