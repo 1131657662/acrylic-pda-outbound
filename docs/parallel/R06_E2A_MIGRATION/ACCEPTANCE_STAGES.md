@@ -16,9 +16,12 @@ operation reference matrix:
 | STOP | present | NULL | NULL |
 | VERIFY | NULL | present | present |
 
-Also verify that `PAGE` and `STOP` object kind, manifest identity, and
-PAGE-before-STOP-before-VERIFY are writer checks. The DDL cannot constrain an
-object's `kind` through the existing composite foreign key.
+Also verify that `PAGE` and `STOP` object kind, manifest identity, and the
+fixed `routeScope` are writer/protocol checks unless W1 adds explicit DDL
+constraints. The DDL cannot constrain an object's `kind` through the existing
+composite foreign key. STOP may be durably recorded while pages are missing,
+with the intake remaining `PARTIAL`; missing pages must prevent set closure and
+complete VERIFY, rather than being treated as an invalid network ordering.
 
 ## Non-empty V34 stage S1
 
@@ -41,7 +44,8 @@ records the database error and post-rollback row count:
 - cross-scope, cross-submission, and cross-round composite references;
 - duplicate natural keys with changed request bytes;
 - UPDATE and DELETE attempts against immutable receipts;
-- invalid route, status, operation, digest, and over-limit bytes.
+- invalid route, status, operation, digest, and over-limit bytes (route and
+  protocol-shape failures are writer checks unless represented in DDL).
 
 Natural-key same-byte replay, original-response replay, file durability and
 `currentEffect` are writer/transaction acceptance and must remain separate;

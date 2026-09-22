@@ -33,9 +33,12 @@ all-or-none group across every operation:
 
 The V35 acceptance must reject any other combination, while each non-null
 reference still uses the full V34 scope/submission/round composite parent.
-`MANIFEST_PAGE` versus `STOP_PROOF` kind and the PAGE/STOP ordering remain
-narrow-writer checks because the receipt table cannot constrain a referenced
-object's kind directly.
+`MANIFEST_PAGE` versus `STOP_PROOF` kind, fixed route scope, and lifecycle
+state remain narrow-writer checks because the receipt table cannot constrain a
+referenced object's kind directly. A STOP can be recorded with missing pages
+as `PARTIAL`; the writer must prevent set closure and complete VERIFY until
+the page set is closed, rather than treating transport arrival order as a
+database invariant.
 
 ## 验收矩阵
 
