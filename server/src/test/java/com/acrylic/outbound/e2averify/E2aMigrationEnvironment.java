@@ -3,6 +3,8 @@ package com.acrylic.outbound.e2averify;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.util.Map;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 /** Test-only guard values; callers must invoke before any database or process action. */
 public final class E2aMigrationEnvironment {
@@ -16,6 +18,7 @@ public final class E2aMigrationEnvironment {
     public static final Path SIGNING_DIR = Path.of(".local/signing");
     public static final String URL = "jdbc:mysql://127.0.0.1:" + PORT + "/" + DATABASE
         + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+    public static final Path EVIDENCE_DIR = Path.of(".local/evidence-e2a");
 
     private E2aMigrationEnvironment() { }
 
@@ -45,6 +48,32 @@ public final class E2aMigrationEnvironment {
         requirePath(env, "OUTBOUND_STORAGE", STORAGE_DIR, workspace);
         requirePath(env, "OUTBOUND_AUTH_SIGNING_PRIVATE_KEY", SIGNING_DIR.resolve("private.der"), workspace);
         requirePath(env, "OUTBOUND_AUTH_SIGNING_PUBLIC_KEY", SIGNING_DIR.resolve("public.der"), workspace);
+    }
+
+    public static JdbcTemplate connect(Map<String, String> env, boolean portFree, Path workspace) {
+        requireExact(env, portFree, workspace);
+        var source = new DriverManagerDataSource(URL, USER, env.get("OUTBOUND_DB_PASSWORD"));
+        var jdbc = new JdbcTemplate(source);
+        verifyConnected(jdbc, workspace);
+        return jdbc;
+    }
+
+    public static void verifyConnected(JdbcTemplate jdbc, Path workspace) {
+        String datadir = jdbc.queryForObject("SELECT @@datadir", String.class).replace('\\', '/');
+        String expected = workspace.resolve(DATA_DIR).toAbsolutePath().normalize().toString().replace('\\', '/') + "/";
+        if (!expected.equalsIgnoreCase(datadir)
+                || !DATABASE.equals(jdbc.queryForObject("SELECT DATABASE()", String.class))
+                || PORT != jdbc.queryForObject("SELECT @@port", Integer.class)
+                || !(USER + "@127.0.0.1").equals(jdbc.queryForObject("SELECT CURRENT_USER()", String.class))) {
+            throw new IllegalStateException("Unexpected connected E2a migration instance");
+        }
+    }
+
+    public static Path evidence(Path workspace, String name) {
+        if (!name.matches("[a-z0-9-]+\\.json")) throw new IllegalArgumentException("Unexpected evidence name");
+        Path root = workspace.resolve(EVIDENCE_DIR).normalize();
+        requireUnderWorkspace(workspace.toAbsolutePath().normalize(), EVIDENCE_DIR, "evidence");
+        return root.resolve(name);
     }
 
     private static void requireUnderWorkspace(Path workspace, Path relative, String label) {
