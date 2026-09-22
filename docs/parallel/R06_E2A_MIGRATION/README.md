@@ -9,7 +9,7 @@
 - `source_evidence_object.kind` 已允许 `MANIFEST_PAGE`；`source_evidence_item.item_kind` 只有 `CAPTURE/SCAN/AUDIT/STOP/ARCHIVE`，没有 PAGE。分页根和顺序须由 manifest bytes 与窄写者校验，不能把 PAGE 当作现有数据库枚举。
 - `temporary_command_receipt` 的 `command_type` 只允许七类业务命令，不能承载 E2a intake 原键/原回执；需要 W1 提供独立 envelope/idempotency schema 后再验。
 - 当前 `SourceEvidenceService` 只有只读 GET，`pda:recover` 是现有独立证据能力；本批不新增 POST 或扩大权限。
-- 本工作树只做迁移验收准备。W1 提供 V35 精确 SHA、接口卡和合成数据入口后，才可把矩阵中的“待 schema”改为实际结果；此前不得启动数据库、迁移或重型构建。
+- 本工作树只做迁移验收准备。W1 提供 V35 精确 SHA、接口卡和合成数据入口后，才可把矩阵中的“待 schema”改为实际结果；此前不得启动数据库、迁移或重型构建。当前 runner、fixture SQL 和负向 SQL 仅为惰性资源，完整环境护栏未通过时不会触碰数据源。
 
 ## 环境护栏
 
