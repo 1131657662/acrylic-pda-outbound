@@ -1,0 +1,13 @@
+{
+  "vectorVersion": 1,
+  "pageCoreUtf8": "{\"byteCount\":0,\"isFinal\":true,\"itemCount\":0,\"items\":[],\"manifestId\":\"00000000-0000-0000-0000-000000000101\",\"manifestVersion\":1,\"pageCount\":1,\"pageNo\":1,\"prevPageHash\":null,\"snapshotId\":\"00000000-0000-0000-0000-000000000102\"}",
+  "pageHash": "fc36c7cb01e57aa6fb9876109ce1447f41e0e2dc3bd82d92c2e7fac22be95934",
+  "manifestCoreUtf8": "{\"byteCount\":0,\"endPageNo\":1,\"entryCount\":0,\"manifestId\":\"00000000-0000-0000-0000-000000000101\",\"manifestVersion\":1,\"pageCount\":1,\"pages\":[{\"pageHash\":\"fc36c7cb01e57aa6fb9876109ce1447f41e0e2dc3bd82d92c2e7fac22be95934\",\"pageNo\":1}],\"schemaVersion\":1,\"snapshotId\":\"00000000-0000-0000-0000-000000000102\",\"source\":\"TEMP\",\"workRound\":\"1\"}",
+  "manifestBytesHash": "0f847400b1735e9b21f848b4c87b4015fa86f73fbacd9f55cb9dada454ba5923",
+  "setHash": "34b4620369483cb613f81cc4730c85bf6af1962868429cf3a7a364dd9ae0cb0f",
+  "stopCoreUtf8": "{\"manifestBytesHash\":\"0f847400b1735e9b21f848b4c87b4015fa86f73fbacd9f55cb9dada454ba5923\",\"manifestId\":\"00000000-0000-0000-0000-000000000101\",\"manifestVersion\":1,\"setHash\":\"34b4620369483cb613f81cc4730c85bf6af1962868429cf3a7a364dd9ae0cb0f\"}",
+  "stopAlgorithm": "ECDSA_P256_SHA256_DER",
+  "ecPublicKeySpkiBase64": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAElhASiYkA5ymn3UAK0KhkN3DfE++Pab4Yls+B4GHXZLU4JuM/FjYBsak/1s5KM6uInJi6ydew8QUsMFlFZH2NmA==",
+  "ecKeyId": "1ff9da44cb1c2c20bc921a996bb2e6d4d5a4ed53313df31a889a17091d0c43f4",
+  "stopSignatureDerBase64": "MEYCIQCesU8lYuBG1Z+Rt3zTbFNZDfWKy3tTF/2i8XuXjyiWGAIhAMxIW91amTXB38BBkVD96dSk4cM9jEZvRTiLbfgtXrZg"
+}
