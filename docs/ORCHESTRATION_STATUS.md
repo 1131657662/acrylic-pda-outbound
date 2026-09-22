@@ -3,6 +3,257 @@
 <!-- CURRENT_STATE_START -->
 ## 当前有效状态（唯一接续入口）
 
+更新时间：2026-09-22 15:46（Asia/Shanghai）。本轮沿原树补迁移验收准备；尚未启动19329，无动态迁移结果。
+读取本区至 `CURRENT_STATE_END` 即停止；下方历史不覆盖本区。实际Git变化先核差异，不按旧SHA回退。
+
+### 当前目标与下一步
+
+- R06 E2a内部协议/V35候选已固定；本轮补非空V34→V35验收准备，三方业务未整合，不称E2a整体收口。
+- 下一：seed语法修复已保存并编译通过，下一完成fixture真实SQL关系、launcher剩余护栏及V35成功control/精确负向矩阵，固定后交叉复审。新接替代理出现空payload/错误Linux环境，当前已停，不将环境失败算产品失败。
+- 只有完整参数护栏、编译、独立复审均通过且主协调分配数据库槽后，W2才运行target34→seed→before→target35→negative→preservation。保留失败库、marker、日志，禁止删库/重置/重复种子。
+- 已完成的协议9作者/25独立桥接不重跑；本轮测试夹具修正不能算迁移通过。HTTP/writer/设备耐久等后续不混入本轮DDL通过结论。
+
+### Git、工作树与写权
+
+- 主目录 `D:/acrylic-pda-outbound` / `codex/development`：本地远端基线 `27f7c601ae2b14286897672ab9a78a32992ab694`。本轮看板由主协调维护，保存提交完成后以git log/远端核对为准；`docs/out.xlsx`原未跟踪保留。
+- 当前唯一总调度任务 `01a0c7c8-b72e-7980-91a3-3e594373319f`。旧总调度 `01a0c70f-b642-74b0-93a5-70b3588580d3` 已显式交接，interrupt其旧三代理并停派工/停管理写入；旧B/C/D与误建归档任务不恢复。
+- 旧三代理最初idle，跨任务恢复旧live path失败后，当前团队沿同职责原树接替；无新app任务或工作树。后续回报只发当前/root，避免误唤醒旧协调。
+- 执行树统一 `D:/acrylic-pda-worktrees/`，同名 `codex/`短分支；下表为已知固定候选，工作中改动以实核为准。
+
+| 角色 / 当前代理 | 原树 | 最近固定SHA | 当前写权与未提交归属 |
+| --- | --- | --- | --- |
+| W1职责（原e2a_seed/seed_finish已停） | `r06-e2a-foundation` | `ec42301b751d051a187fe346ffdb9777286fbb0e` | W2临时代修语法已完成推送；仅原`.local-e2a-vector.log`未跟踪，当前无活跃业务写入 |
+| W2 `/root/e2a_migration` | `r06-e2a-migration` | `b5cd86eebd6bc284a492392fcb11f6fdad736f8a` | 原W2工具已实核Windows可用，foundation窄修完成；接续优先复用此可用执行者，迁移树干净，19329未获启动槽 |
+| W3 `/root/e2a_review`（已停） | `r06-e2a-protocol` | `6c57fb723b1de9ea4657af5c37089c132bf9d540` | snapshot/专项审查已保存；负向矩阵只有准备文档，尚未实现；原`bridge-classes/`保留 |
+
+### 准备、作者、独立、组合结果
+
+- **准备**：W2已消费W1 dc41b3f、W3 d114785/d8d3940；W1后续4094f82/81831c5/d852a92/36cbff7仍需修正才可消费为动态候选。基础fixture有真实DDL实体，但执行链尚有确定零行问题。
+- **作者编译**：W2 `5cf73b407f22386d5ac8d2a2927325749a02dbc9`、`93e87b1b71c3f947b5bd31e3b6b05c2aecf0a302`、b29096f作者报告正确入口`./gradlew -p server compileTestJava`通过；未动态执行。首聚焦test被report-rendering字体SocketTimeout阻断，保留失败。
+- **当前seed编译**：`ec42301b751d051a187fe346ffdb9777286fbb0e`本地/远端已核一致；`compileTestJava`日志实核BUILD SUCCESSFUL（UP-TO-DATE），语法修复已保存。日志foundation树`.local/compile-testjava-20260922-1518.log`，不代表SQL动态通过。
+- **作者窄测**：W3 `ebbaa63dc779102743be35446e601812001c158c` 路径helper测试XML实核2项、0失败/错误/跳过；覆盖文件摘要和外部symlink拒绝。使用现有r08FontFile参数及本地hash匹配字体，未绕过检查。
+- **独立复审**：W3 `e71611b4c3b2d57960b9cf552e805bba09e0f7d2`保存固定3a4b9b8审查，005d3e4追加d852a92 DDL核验。未发现base fixture确定不存在列；种子零行/文件关联阻断仍在。5cf73b4的启动/连接/停机阻断已报告，后续候选需重新独立审。
+- **组合**：三方业务尚未整合，未跑真实非空迁移、SQL负向矩阵或组合验证；不可累计成通过。
+
+### 当前失败、阻断及历史限制
+
+- W1：2da584e已改submission为VALUES、file CREATE_NEW相对key并插STOP item；首版语法括号缺失已由ec42301修复。temporary_work_origin读取submission.creator_device_id、receipt列歧义/影响行数、scope唯一约束、set.item_count与item不一致、SOURCE_RESERVED bale对应SCAN事实及基础fixture任意旧行短路仍待核修；不能称全链正确。
+- W2：b5cd86e已移配置至launcher-private、增加SHUTDOWN grant及部分timeout处理并报告编译通过；源码实核仍有mysqladmin --no-defaults与--defaults-file并用、身份校验依赖新库未必有的mysqld-auto.cnf、未核监听OwningProcess、启动校验在finally外、private真实路径/ACL/CREATE_NEW不足。必须修后才能启动。负向helper仍只有少数旧检查，没有完整control/矩阵。
+- W2本轮工具服务502曾中断，已原代理续接，未丢弃修改；不是产品测试失败。
+- W1冻结生产 `fa7981d7db9253e7ec0a9efbbcb1ce909d0301db` 的9作者XML及W3 `8241c53fea2c26674ff4532888af5a7aa1643246` 25生产桥接均为历史协议范围通过。本轮未重跑。
+- 旧6beb4f6溢出/零值/旧向量失败、首次桥接适配及完整服务器139/140（SkuParserTest缺外部样本）保留，不称全仓通过。
+- 可信facts仍依赖未来服务端完整可信上下文；唯一异常回滚后另读、旧seed401、历史keyring/权限、真实HTTP、Android code20/Room17耐久、R05关键未验、R09/现场/审批限制继续单列。合成fixture签名只满足DB结构，不是可信身份/生产回执。
+
+### 环境、槽与证据
+
+- 本轮19329未启动，最近只读13316/19321–19329无监听；不触及其它mysqld进程。foundation无DB编译已完成，重型槽释放；其他代理已停写，数据库槽未分配。15:42只读上述端口无监听。
+- 唯一目标仍 `127.0.0.1:19329` / `acrylic_outbound_e2a_migrate_20260921` / `e2a_migrate_20260921`，migration树 `.local/mysql19329/data`、`.local/private-files`、`.local/signing`；新辅助私有配置须仍限定该树且不混入业务storage快照。
+- W2编译报告 `server/build/reports/problems/problems-report.html`；W3 XML `server/build/test-results/test/TEST-com.acrylic.outbound.e2averify.E2aSnapshotFilesTest.xml`。旧失败日志保留；实际运行stdout须进一步完善。
+- 字体已只读hash核对：foundation树`report-rendering/build/generated/resources/NotoSansCJKsc-Regular.otf`，SHA256 `2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b`，符合构建脚本；可传`-Pr08FontFile=绝对路径`。
+- 原`docs/out.xlsx` SHA256 `C3BABA70BC900975503457C5468363DE91417F156F2441ED71A3B7BE5E8FB6C4`保持。不提交本机数据/配置/数据库/密钥。
+- V35未动态应用，V1–V34不重写；正常确认空理由与`localDeletionAllowed=false`保持。HTTP接收/文件写事务/K写服务/七类生产handler/POST/决定/放行关闭，不合main、不部署。
+
+### 按需证据入口与断点维护
+
+- 合同：`docs/parallel/R06_E2A/CONTRACT.md`、`IMPLEMENTATION_PLAN.md`、W1 `INTERFACE_CARD.md`。
+- W2：`docs/parallel/R06_E2A_MIGRATION/README.md`、`ACCEPTANCE_STAGES.md`及`server/src/test/java/com/acrylic/outbound/e2averify/`；旧准备表述不能覆盖当前实际代码。
+- W3：`docs/parallel/R06_E2A_PROTOCOL/W2_MIGRATION_REVIEW.md`、`CONSUMER_MATRIX.md`；按固定SHA读审查。
+- 第六轮既有组合证据仍见`docs/SIXTH_WAVE_INTEGRATION_GUIDE.md`，未重跑。每次收尾归档旧当前区再更新精确SHA/写权/未提交/槽/环境/失败限制，五管理只由主协调维护。
+<!-- CURRENT_STATE_END -->
+
+## 当前区历史快照（2026-09-22 15:07，15:44接续前保存）
+
+
+## 当前有效状态（唯一接续入口）
+
+更新时间：2026-09-22 15:07（Asia/Shanghai）。本轮沿原树补迁移验收准备；尚未启动19329，无动态迁移结果。
+读取本区至 `CURRENT_STATE_END` 即停止；下方历史不覆盖本区。实际Git变化先核差异，不按旧SHA回退。
+
+### 当前目标与下一步
+
+- R06 E2a内部协议/V35候选已固定；本轮补非空V34→V35验收准备，三方业务未整合，不称E2a整体收口。
+- 下一：W1完成空库fixture的真实三场景及每条SQL影响行数；W2完成完整launcher/认证停机/实例身份/marker护栏；W3补V35成功control和精确负向矩阵。固定后交叉复审和必要聚焦验证。
+- 只有完整参数护栏、编译、独立复审均通过且主协调分配数据库槽后，W2才运行target34→seed→before→target35→negative→preservation。保留失败库、marker、日志，禁止删库/重置/重复种子。
+- 已完成的协议9作者/25独立桥接不重跑；本轮测试夹具修正不能算迁移通过。HTTP/writer/设备耐久等后续不混入本轮DDL通过结论。
+
+### Git、工作树与写权
+
+- 主目录 `D:/acrylic-pda-outbound` / `codex/development`：本地远端基线 `27f7c601ae2b14286897672ab9a78a32992ab694`。本轮看板修改未提交；`docs/out.xlsx`原未跟踪保留。
+- 当前唯一总调度任务 `01a0c7c8-b72e-7980-91a3-3e594373319f`。旧总调度 `01a0c70f-b642-74b0-93a5-70b3588580d3` 已显式交接，interrupt其旧三代理并停派工/停管理写入；旧B/C/D与误建归档任务不恢复。
+- 旧三代理最初idle，跨任务恢复旧live path失败后，当前团队沿同职责原树接替；无新app任务或工作树。后续回报只发当前/root，避免误唤醒旧协调。
+- 执行树统一 `D:/acrylic-pda-worktrees/`，同名 `codex/`短分支；下表为已知固定候选，工作中改动以实核为准。
+
+| 角色 / 当前代理 | 原树 | 最近固定SHA | 当前写权与未提交归属 |
+| --- | --- | --- | --- |
+| W1 `/root/e2a_seed` | `r06-e2a-foundation` | `36cbff76f221d8a359bc9d8a45fd6a45d80681e7` | 仅seed/base fixture；生产fa7981d/V35冻结。原`.local-e2a-vector.log`保留；继续修已证实零行/别名/文件关联 |
+| W2 `/root/e2a_migration` | `r06-e2a-migration` | `b29096fe80c205b8f34004d1ff40e6e5df060389` | launcher/Runner/Environment/ExecutionIT、19329及无DB构建槽；negative文件写权已移交W3 |
+| W3 `/root/e2a_review` | `r06-e2a-protocol` | `005d3e470af96c746516aaac200b27ec6834ecfa` | snapshot/专项审查；新增独立V35负向helper在自己树实现；原`bridge-classes/`保留 |
+
+### 准备、作者、独立、组合结果
+
+- **准备**：W2已消费W1 dc41b3f、W3 d114785/d8d3940；W1后续4094f82/81831c5/d852a92/36cbff7仍需修正才可消费为动态候选。基础fixture有真实DDL实体，但执行链尚有确定零行问题。
+- **作者编译**：W2 `5cf73b407f22386d5ac8d2a2927325749a02dbc9`、`93e87b1b71c3f947b5bd31e3b6b05c2aecf0a302`、b29096f作者报告正确入口`./gradlew -p server compileTestJava`通过；未动态执行。首聚焦test被report-rendering字体SocketTimeout阻断，保留失败。
+- **作者窄测**：W3 `ebbaa63dc779102743be35446e601812001c158c` 路径helper测试XML实核2项、0失败/错误/跳过；覆盖文件摘要和外部symlink拒绝。使用现有r08FontFile参数及本地hash匹配字体，未绕过检查。
+- **独立复审**：W3 `e71611b4c3b2d57960b9cf552e805bba09e0f7d2`保存固定3a4b9b8审查，005d3e4追加d852a92 DDL核验。未发现base fixture确定不存在列；种子零行/文件关联阻断仍在。5cf73b4的启动/连接/停机阻断已报告，后续候选需重新独立审。
+- **组合**：三方业务尚未整合，未跑真实非空迁移、SQL负向矩阵或组合验证；不可累计成通过。
+
+### 当前失败、阻断及历史限制
+
+- W1：旧seed从空V34无模板；补base后新scope连接旧submission的INSERT SELECT仍零行；receipt别名/影响行数、file_key相对关联、SOURCE_RESERVED item代表关系须补全。36cbff7只修少数点，不称可动态运行。
+- W2：b29096f尚缺启动前PID/datadir归属绑定；bootstrap凭据仍在普通evidence；账号无SHUTDOWN全局权导致认证停机路径不成立；defaults参数互斥/顺序、超时exitValue、marker完整失败记录须修。当前要求先完成这组生命周期阻断，再消费W3负向矩阵。
+- W2本轮工具服务502曾中断，已原代理续接，未丢弃修改；不是产品测试失败。
+- W1冻结生产 `fa7981d7db9253e7ec0a9efbbcb1ce909d0301db` 的9作者XML及W3 `8241c53fea2c26674ff4532888af5a7aa1643246` 25生产桥接均为历史协议范围通过。本轮未重跑。
+- 旧6beb4f6溢出/零值/旧向量失败、首次桥接适配及完整服务器139/140（SkuParserTest缺外部样本）保留，不称全仓通过。
+- 可信facts仍依赖未来服务端完整可信上下文；唯一异常回滚后另读、旧seed401、历史keyring/权限、真实HTTP、Android code20/Room17耐久、R05关键未验、R09/现场/审批限制继续单列。合成fixture签名只满足DB结构，不是可信身份/生产回执。
+
+### 环境、槽与证据
+
+- 本轮19329未启动，最近只读13316/19321–19329无监听；不触及其它mysqld进程。W2独占无DB编译/聚焦槽，W1/W3静态工作；数据库槽未分配。
+- 唯一目标仍 `127.0.0.1:19329` / `acrylic_outbound_e2a_migrate_20260921` / `e2a_migrate_20260921`，migration树 `.local/mysql19329/data`、`.local/private-files`、`.local/signing`；新辅助私有配置须仍限定该树且不混入业务storage快照。
+- W2编译报告 `server/build/reports/problems/problems-report.html`；W3 XML `server/build/test-results/test/TEST-com.acrylic.outbound.e2averify.E2aSnapshotFilesTest.xml`。旧失败日志保留；实际运行stdout须进一步完善。
+- 字体已只读hash核对：foundation树`report-rendering/build/generated/resources/NotoSansCJKsc-Regular.otf`，SHA256 `2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b`，符合构建脚本；可传`-Pr08FontFile=绝对路径`。
+- 原`docs/out.xlsx` SHA256 `C3BABA70BC900975503457C5468363DE91417F156F2441ED71A3B7BE5E8FB6C4`保持。不提交本机数据/配置/数据库/密钥。
+- V35未动态应用，V1–V34不重写；正常确认空理由与`localDeletionAllowed=false`保持。HTTP接收/文件写事务/K写服务/七类生产handler/POST/决定/放行关闭，不合main、不部署。
+
+### 按需证据入口与断点维护
+
+- 合同：`docs/parallel/R06_E2A/CONTRACT.md`、`IMPLEMENTATION_PLAN.md`、W1 `INTERFACE_CARD.md`。
+- W2：`docs/parallel/R06_E2A_MIGRATION/README.md`、`ACCEPTANCE_STAGES.md`及`server/src/test/java/com/acrylic/outbound/e2averify/`；旧准备表述不能覆盖当前实际代码。
+- W3：`docs/parallel/R06_E2A_PROTOCOL/W2_MIGRATION_REVIEW.md`、`CONSUMER_MATRIX.md`；按固定SHA读审查。
+- 第六轮既有组合证据仍见`docs/SIXTH_WAVE_INTEGRATION_GUIDE.md`，未重跑。每次收尾归档旧当前区再更新精确SHA/写权/未提交/槽/环境/失败限制，五管理只由主协调维护。
+
+
+
+## 当前区历史快照（2026-09-22 14:39，15:07接续前保存）
+
+
+## 当前有效状态（唯一接续入口）
+
+更新时间：2026-09-22 14:39（Asia/Shanghai）。新总调度已核实本地/远端、原树、旧执行者空闲及端口；本轮正补编译与独立复审，尚无新动态结果。
+读取本区至 `CURRENT_STATE_END` 即停止；下方带“当前/最新”的旧段落均为历史，不覆盖本区。若实际 Git 或执行者状态变化，先核差异再更新，不能照旧 SHA 回退。
+
+### 当前目标与下一步
+
+- 当前阶段：R06 E2a 内部协议/V35候选已固定，正在补非空 V34→V35 验收准备；三方业务尚未整合，不称 E2a 整体收口。
+- 下一动作：沿 W2 原 migration 树，核实已消费 W1 最新 seed 与 W3 最新 snapshot helper；核对正确 server 构建入口完成编译，再由独立执行者对固定 SHA 复审 launcher、完整参数护栏、真实种子、逐值快照和负向矩阵。
+- 只有前述护栏/编译/复审完成且主协调明确分配重型槽后，才由 W2 在已分配 19329 环境运行 target34 seed→before snapshot→target35→负向/保留核对。保留原失败、marker、库、文件及日志，不重置或重复种子。
+- 本轮W2独占编译槽，消费最新helper并补可运行候选；W1核新target34库缺模板的seed前置；W3先审固定旧候选，再审W2新SHA。19329尚未获启动槽。
+
+### Git、工作树与写权
+
+- 主目录：`D:/acrylic-pda-outbound`，分支 `codex/development`。本轮实核本地/远端一致 `27f7c601ae2b14286897672ab9a78a32992ab694`；当前仅本看板由主协调修改，原 `docs/out.xlsx` 保留。
+- 三个执行树根目录均为 `D:/acrylic-pda-worktrees/`，短分支前缀均为 `codex/`；下表为当前本地实核；本轮新增提交的推送状态待执行者回报及远端复核。
+
+| 角色 / 原代理路径 | 工作树名 / 同名短分支 | 当前 HEAD | 职责与未提交资料 |
+| --- | --- | --- | --- |
+| W1 `/root/e2a_seed` | `r06-e2a-foundation` | `dc41b3f93befc88022a6849072a9b01213d0d93e` | 唯一生产协议/V35负责人；最新增量为 seed helper。仅原未跟踪 `.local-e2a-vector.log` 保留 |
+| W2 `/root/e2a_migration` | `r06-e2a-migration` | `7a8d791c390b74c9d686abf56f50eb6536d5568b` | 已摘入dc41 seed及d114 snapshot；未提交Runner、Snapshot、MysqlLauncher修正，独占19329/构建槽 |
+| W3 `/root/e2a_review` | `r06-e2a-protocol` | `d11478508b1b50b4caa8c0a357a939a4d9b17508` | 独立协议消费者、snapshot helper与只读复审；原未跟踪 `docs/parallel/R06_E2A_PROTOCOL/bridge-classes/` 保留；复审文档已暂存待提交 |
+
+- 原业务总调度任务 `01a0c70f-b642-74b0-93a5-70b3588580d3`：本次工具显示 `systemError`，最后一轮因服务503失败；不是产品测试失败。
+- W1任务 `01a0c718-0684-78e0-a682-8b5c6d205f42`、W2任务 `01a0c722-2729-7833-95b9-ff3c6e9fee80`、W3任务 `01a0c729-9b64-7383-8656-66bda1af3016`：本次快照均 `idle`。这些是定位标识，不保证跨会话可恢复。
+- 当前唯一总调度任务 `01a0c7c8-b72e-7980-91a3-3e594373319f`；旧设置任务 `01a0c793-6375-7052-9a4c-6f641d7f75cf` 已idle，无业务写权。本轮子代理见上表，均沿原树续接，无新app任务/工作树。
+- 本轮已核旧主协调systemError、旧三执行者idle；恢复旧 `/root/review_sol` 返回 live agent path not found，当前团队最初仅/root。因此以上三代理按原职责接替，旧执行者/旧B/C/D/误建归档任务保持停写。
+
+### 已有验证与限制（不可累计冒充新通过）
+
+- W1生产候选 `fa7981d7db9253e7ec0a9efbbcb1ce909d0301db`：历史作者9项（1+5+3）XML通过；W3 `8241c53fea2c26674ff4532888af5a7aa1643246` 消费该精确候选的25项生产桥接全部true。均是既有协议范围结果。
+- 保留旧 `6beb4f6` 的溢出、零值、旧向量失败及首次桥接夹具适配记录。完整服务器历史139/140，1项SkuParserTest缺外部样本失败；不能写全仓通过。
+- W1旧seed作者历史回报编译/diff通过，但本轮静态核实无法用于空target34库：依赖旧模板、随机source_order FK、receipt原mapping无对应行及场景/证据关系不全。W1继续实现完整合成fixture；旧编译不能视为SQL正确。
+- W2 `3a4b9b8`：作者仅报告 diff 检查通过；根 Gradle 不含 server 项目、Android SDK缺失的构建尝试限制保留。尚无当前 W2 编译成功、动态迁移、种子、快照或负向运行证据。
+- W3独立静态复审固定 `3a4b9b8` 发现阻断：Runner永久退出、launcher初始化/启动/停机未串联、空库seed不成立、旧snapshot必因V35新表失败、负向矩阵不足；专项文档保存中。W2正在修正，未终审。
+- W2本轮首次因工具服务502中断，已原代理续接，未丢弃3个未提交文件；不是产品测试失败。当前编译结果及日志待回报，不预写通过。`19329`仍未启动。
+- 可信facts仍依赖未来服务端调用者给出完整可信上下文，不代表数据库事实/占用闭环。唯一异常回滚后另读、旧seed401、历史keyring/权限、HTTP/Android耐久/R09/现场缺口继续单列。
+
+### 环境与保护边界
+
+- 本次只读查询 `13316`、`19321–19329` 无监听；没有启动/停止任何实例。当前W2独占server编译及无数据库聚焦测试槽；W1/W3静态工作。数据库槽未分配，启动前须重新核实。
+- W2唯一新环境：`127.0.0.1:19329`，库 `acrylic_outbound_e2a_migrate_20260921`，账号 `e2a_migrate_20260921`；原 migration 树下 `.local/mysql19329/data`、`.local/private-files`、`.local/signing/` 和独立证据目录。启动须完整精确护栏，不影响其它实例。
+- V35未动态应用；V1–V34不重写。HTTP接收/文件写事务/K写服务/七类生产handler/POST/决定/放行仍关闭；不合main、不部署。
+- 原库/原资料/旧恢复断点/设备/现网/审批边界保持，正常确认空理由、`localDeletionAllowed=false` 保持。
+- 主目录原未跟踪 `docs/out.xlsx` 不纳入提交；本次SHA-256仍为 `C3BABA70BC900975503457C5468363DE91417F156F2441ED71A3B7BE5E8FB6C4`。
+
+### 按需定位证据
+
+- 合同：`docs/parallel/R06_E2A/CONTRACT.md`、`IMPLEMENTATION_PLAN.md`；生产字段/候选材料在 W1 同路径的 `INTERFACE_CARD.md`。
+- W2原树：`docs/parallel/R06_E2A_MIGRATION/README.md`、`ACCEPTANCE_STAGES.md` 及 `server/src/test/java/com/acrylic/outbound/e2averify/`。旧README的“最高V34/待schema”等表述属于准备阶段，当前以固定候选及Git为准。
+- W3原树：`docs/parallel/R06_E2A_PROTOCOL/CONSUMER_MATRIX.md`、`W2_MIGRATION_REVIEW.md`；旧审查只作定位，新SHA需对应复审。
+- 第六轮组合历史：`docs/SIXTH_WAVE_INTEGRATION_GUIDE.md`；本次没有重跑既有组合验证。
+- 原AGENTS完整归档：[历史索引](history/README.md)。下方保留旧看板全文，按关键词/标题取所需段落即可。
+
+### 断点维护约定
+
+每次交付、阶段收尾、可控中断或换会话前，更新本区的时间、目标/下一步、精确SHA、工作树/未提交归属、执行者写权、环境/重型槽、验证/失败限制和证据位置。旧结论移至历史区，不在顶部继续堆叠，也不复制到其他管理文档。突发硬中断可能来不及更新；恢复时以Git/文件/任务事实核差异。完整流程见根目录AGENTS.md。
+
+
+
+## 当前区历史快照（2026-09-22 14:27，14:39接续前保存）
+
+
+## 当前有效状态（唯一接续入口）
+
+更新时间：2026-09-22 14:27（Asia/Shanghai）。新总调度已核实本地/远端、原树、旧执行者空闲及端口；本轮正补编译与独立复审，尚无新动态结果。
+读取本区至 `CURRENT_STATE_END` 即停止；下方带“当前/最新”的旧段落均为历史，不覆盖本区。若实际 Git 或执行者状态变化，先核差异再更新，不能照旧 SHA 回退。
+
+### 当前目标与下一步
+
+- 当前阶段：R06 E2a 内部协议/V35候选已固定，正在补非空 V34→V35 验收准备；三方业务尚未整合，不称 E2a 整体收口。
+- 下一动作：沿 W2 原 migration 树，核实已消费 W1 最新 seed 与 W3 最新 snapshot helper；核对正确 server 构建入口完成编译，再由独立执行者对固定 SHA 复审 launcher、完整参数护栏、真实种子、逐值快照和负向矩阵。
+- 只有前述护栏/编译/复审完成且主协调明确分配重型槽后，才由 W2 在已分配 19329 环境运行 target34 seed→before snapshot→target35→负向/保留核对。保留原失败、marker、库、文件及日志，不重置或重复种子。
+- 本轮W2独占编译槽，消费最新helper并补可运行候选；W1核新target34库缺模板的seed前置；W3先审固定旧候选，再审W2新SHA。19329尚未获启动槽。
+
+### Git、工作树与写权
+
+- 主目录：`D:/acrylic-pda-outbound`，分支 `codex/development`。本轮实核本地/远端一致 `27f7c601ae2b14286897672ab9a78a32992ab694`；当前仅本看板由主协调修改，原 `docs/out.xlsx` 保留。
+- 三个执行树根目录均为 `D:/acrylic-pda-worktrees/`，短分支前缀均为 `codex/`；下表为本次实核本地/远端一致的提交。
+
+| 角色 / 原代理路径 | 工作树名 / 同名短分支 | 当前 HEAD | 职责与未提交资料 |
+| --- | --- | --- | --- |
+| W1 `/root/e2a_seed` | `r06-e2a-foundation` | `dc41b3f93befc88022a6849072a9b01213d0d93e` | 唯一生产协议/V35负责人；最新增量为 seed helper。仅原未跟踪 `.local-e2a-vector.log` 保留 |
+| W2 `/root/e2a_migration` | `r06-e2a-migration` | `3a4b9b842fdfd118e6a2d64dea5bdb95b571d31d` | 独占迁移护栏、执行夹具及19329；工作树干净 |
+| W3 `/root/e2a_review` | `r06-e2a-protocol` | `d11478508b1b50b4caa8c0a357a939a4d9b17508` | 独立协议消费者、snapshot helper与只读复审；原未跟踪 `docs/parallel/R06_E2A_PROTOCOL/bridge-classes/` 保留 |
+
+- 原业务总调度任务 `01a0c70f-b642-74b0-93a5-70b3588580d3`：本次工具显示 `systemError`，最后一轮因服务503失败；不是产品测试失败。
+- W1任务 `01a0c718-0684-78e0-a682-8b5c6d205f42`、W2任务 `01a0c722-2729-7833-95b9-ff3c6e9fee80`、W3任务 `01a0c729-9b64-7383-8656-66bda1af3016`：本次快照均 `idle`。这些是定位标识，不保证跨会话可恢复。
+- 当前唯一总调度任务 `01a0c7c8-b72e-7980-91a3-3e594373319f`；旧设置任务 `01a0c793-6375-7052-9a4c-6f641d7f75cf` 已idle，无业务写权。本轮子代理见上表，均沿原树续接，无新app任务/工作树。
+- 本轮已核旧主协调systemError、旧三执行者idle；恢复旧 `/root/review_sol` 返回 live agent path not found，当前团队最初仅/root。因此以上三代理按原职责接替，旧执行者/旧B/C/D/误建归档任务保持停写。
+
+### 已有验证与限制（不可累计冒充新通过）
+
+- W1生产候选 `fa7981d7db9253e7ec0a9efbbcb1ce909d0301db`：历史作者9项（1+5+3）XML通过；W3 `8241c53fea2c26674ff4532888af5a7aa1643246` 消费该精确候选的25项生产桥接全部true。均是既有协议范围结果。
+- 保留旧 `6beb4f6` 的溢出、零值、旧向量失败及首次桥接夹具适配记录。完整服务器历史139/140，1项SkuParserTest缺外部样本失败；不能写全仓通过。
+- W1最新 seed helper：作者最终回报 server `compileTestJava` 与 diff 检查通过；本次未重跑或逐项复核XML。真实数据库 seed 尚未执行。
+- W2 `3a4b9b8`：作者仅报告 diff 检查通过；根 Gradle 不含 server 项目、Android SDK缺失的构建尝试限制保留。尚无当前 W2 编译成功、动态迁移、种子、快照或负向运行证据。
+- W3 `d114785`：helper已提交推送，作者未运行数据库、Gradle或动态迁移。此前 `W2_MIGRATION_REVIEW.md` 针对旧未固定 runner；须重审当前SHA，不能套用旧结论。
+- 可信facts仍依赖未来服务端调用者给出完整可信上下文，不代表数据库事实/占用闭环。唯一异常回滚后另读、旧seed401、历史keyring/权限、HTTP/Android耐久/R09/现场缺口继续单列。
+
+### 环境与保护边界
+
+- 本次只读查询 `13316`、`19321–19329` 无监听；没有启动/停止任何实例。当前W2独占server编译及无数据库聚焦测试槽；W1/W3静态工作。数据库槽未分配，启动前须重新核实。
+- W2唯一新环境：`127.0.0.1:19329`，库 `acrylic_outbound_e2a_migrate_20260921`，账号 `e2a_migrate_20260921`；原 migration 树下 `.local/mysql19329/data`、`.local/private-files`、`.local/signing/` 和独立证据目录。启动须完整精确护栏，不影响其它实例。
+- V35未动态应用；V1–V34不重写。HTTP接收/文件写事务/K写服务/七类生产handler/POST/决定/放行仍关闭；不合main、不部署。
+- 原库/原资料/旧恢复断点/设备/现网/审批边界保持，正常确认空理由、`localDeletionAllowed=false` 保持。
+- 主目录原未跟踪 `docs/out.xlsx` 不纳入提交；本次SHA-256仍为 `C3BABA70BC900975503457C5468363DE91417F156F2441ED71A3B7BE5E8FB6C4`。
+
+### 按需定位证据
+
+- 合同：`docs/parallel/R06_E2A/CONTRACT.md`、`IMPLEMENTATION_PLAN.md`；生产字段/候选材料在 W1 同路径的 `INTERFACE_CARD.md`。
+- W2原树：`docs/parallel/R06_E2A_MIGRATION/README.md`、`ACCEPTANCE_STAGES.md` 及 `server/src/test/java/com/acrylic/outbound/e2averify/`。旧README的“最高V34/待schema”等表述属于准备阶段，当前以固定候选及Git为准。
+- W3原树：`docs/parallel/R06_E2A_PROTOCOL/CONSUMER_MATRIX.md`、`W2_MIGRATION_REVIEW.md`；旧审查只作定位，新SHA需对应复审。
+- 第六轮组合历史：`docs/SIXTH_WAVE_INTEGRATION_GUIDE.md`；本次没有重跑既有组合验证。
+- 原AGENTS完整归档：[历史索引](history/README.md)。下方保留旧看板全文，按关键词/标题取所需段落即可。
+
+### 断点维护约定
+
+每次交付、阶段收尾、可控中断或换会话前，更新本区的时间、目标/下一步、精确SHA、工作树/未提交归属、执行者写权、环境/重型槽、验证/失败限制和证据位置。旧结论移至历史区，不在顶部继续堆叠，也不复制到其他管理文档。突发硬中断可能来不及更新；恢复时以Git/文件/任务事实核差异。完整流程见根目录AGENTS.md。
+
+
+
+## 当前区历史快照（2026-09-22 13:39，14:27接续前保存）
+
+
+## 当前有效状态（唯一接续入口）
+
 更新时间：2026-09-22 13:39（Asia/Shanghai）。本区由本次文档维护只读核对 Git、任务状态和监听端口后更新；业务验证沿用下列精确来源，未重跑。
 读取本区至 `CURRENT_STATE_END` 即停止；下方带“当前/最新”的旧段落均为历史，不覆盖本区。若实际 Git 或执行者状态变化，先核差异再更新，不能照旧 SHA 回退。
 
@@ -57,7 +308,8 @@
 ### 断点维护约定
 
 每次交付、阶段收尾、可控中断或换会话前，更新本区的时间、目标/下一步、精确SHA、工作树/未提交归属、执行者写权、环境/重型槽、验证/失败限制和证据位置。旧结论移至历史区，不在顶部继续堆叠，也不复制到其他管理文档。突发硬中断可能来不及更新；恢复时以Git/文件/任务事实核差异。完整流程见根目录AGENTS.md。
-<!-- CURRENT_STATE_END -->
+
+
 
 ## 历史接点（定向查阅，不作为当前派工依据）
 
