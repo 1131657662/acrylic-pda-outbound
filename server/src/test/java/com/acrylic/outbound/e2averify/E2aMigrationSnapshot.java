@@ -96,8 +96,9 @@ public final class E2aMigrationSnapshot {
         var result = JSON.createObjectNode();
         for (String table : jdbc.queryForList("SHOW TABLES", String.class)) {
             if (table.equals("flyway_schema_history")) continue;
-            result.put(table, jdbc.queryForObject("SHOW CREATE TABLE " + E2aSnapshotRows.identifier(table),
-                (rs, row) -> rs.getString(2)));
+            String ddl = jdbc.queryForObject("SHOW CREATE TABLE " + E2aSnapshotRows.identifier(table),
+                (rs, row) -> rs.getString(2));
+            result.put(table, ddl);
         }
         return result;
     }

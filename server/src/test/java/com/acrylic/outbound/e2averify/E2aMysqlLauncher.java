@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /** Opt-in launcher for only the assigned MySQL 19329 instance. */
 public final class E2aMysqlLauncher {
@@ -12,7 +13,7 @@ public final class E2aMysqlLauncher {
     private static final Path MYSQLADMIN = Path.of("C:/Program Files/MySQL/MySQL Server 8.0/bin/mysqladmin.exe");
     private E2aMysqlLauncher() { }
 
-    public static Process start(Map<String, String> env, Path workspace) throws IOException {
+    public static Process start(Map<String, String> env, Path workspace) throws IOException, InterruptedException {
         E2aMigrationEnvironment.requireExact(env, isPortFree(), workspace);
         requireNewDataDir(workspace);
         requireTool(MYSQLD);
@@ -22,7 +23,11 @@ public final class E2aMysqlLauncher {
             "--datadir=" + data, "--port=" + E2aMigrationEnvironment.PORT,
             "--bind-address=127.0.0.1", "--mysqlx=OFF", "--skip-name-resolve",
             "--skip-networking=false", "--skip-grant-tables=false");
-        return new ProcessBuilder(command).directory(workspace.toFile()).redirectErrorStream(true).start();
+        Process process = new ProcessBuilder(command).directory(workspace.toFile()).redirectErrorStream(true).start();
+        if (!process.waitFor(90, TimeUnit.SECONDS) || process.exitValue() != 0) {
+            throw new IllegalStateException("MySQL initialization failed: " + process.exitValue());
+        }
+        return process;
     }
 
     public static Process startServer(Map<String, String> env, Path workspace) throws IOException {
@@ -38,13 +43,12 @@ public final class E2aMysqlLauncher {
 
     public static void shutdown(Process process, Path workspace) throws IOException, InterruptedException {
         if (process == null || !process.isAlive()) return;
-        requireTool(MYSQLADMIN);
-        String password = System.getenv("OUTBOUND_DB_PASSWORD");
-        if (password == null || password.isBlank()) throw new IllegalStateException("Missing guarded DB password");
-        new ProcessBuilder(MYSQLADMIN.toString(), "--no-defaults", "--host=127.0.0.1",
-            "--port=" + E2aMigrationEnvironment.PORT, "--protocol=tcp", "--user=" + E2aMigrationEnvironment.USER,
-            "--password=" + password, "shutdown").directory(workspace.toFile()).inheritIO().start().waitFor();
-        process.waitFor();
+        if (!workspace.toAbsolutePath().normalize().equals(Path.of("D:/acrylic-pda-worktrees/r06-e2a-migration").toAbsolutePath().normalize())) {
+            throw new IllegalStateException("Unexpected shutdown workspace");
+        }
+        process.destroy();
+        if (!process.waitFor(30, TimeUnit.SECONDS)) process.destroyForcibly();
+        if (process.isAlive()) throw new IllegalStateException("MySQL process did not exit");
     }
 
     private static boolean isPortFree() {
