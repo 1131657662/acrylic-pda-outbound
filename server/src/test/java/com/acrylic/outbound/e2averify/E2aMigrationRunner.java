@@ -21,12 +21,15 @@ public final class E2aMigrationRunner {
         requireProfile(env);
         requireTarget35Resource(root);
         Path marker = createPhaseMarker(root, "started");
-        Process initialized = E2aMysqlLauncher.start(env, root);
-        if (initialized.isAlive()) throw new IllegalStateException("MySQL initialize did not finish");
-        Files.writeString(marker, "initialized\n", java.nio.file.StandardOpenOption.APPEND);
-        Process server = E2aMysqlLauncher.startServer(env, root);
+        Process server = null;
         Path data = root.resolve(E2aMigrationEnvironment.DATA_DIR).toAbsolutePath().normalize();
+        Throwable primary = null;
         try {
+            Process initialized = E2aMysqlLauncher.start(env, root);
+            if (initialized.isAlive()) throw new IllegalStateException("MySQL initialize did not finish");
+            Exception initializedMarkerFailure = appendMarker(marker, "initialized");
+            if (initializedMarkerFailure != null) throw initializedMarkerFailure;
+            server = E2aMysqlLauncher.startServer(env, root);
             E2aMysqlLauncher.awaitReady(server);
             E2aMysqlLauncher.verifyProcessDataDir(server, data);
             requireOwnedListener(server);
@@ -34,20 +37,46 @@ public final class E2aMigrationRunner {
             JdbcTemplate jdbc = E2aMigrationEnvironment.connectLive(env, root);
             runMigration(jdbc, root);
             Files.writeString(marker, "completed\n", java.nio.file.StandardOpenOption.APPEND);
-        } catch (Exception failure) {
-            appendMarker(marker, "failed: " + failure.getClass().getSimpleName());
-            throw failure;
+        } catch (Throwable failure) {
+            primary = failure;
+            addMarkerFailure(primary, marker, "failed: " + failure.getClass().getSimpleName());
+            if (failure instanceof Exception error) throw error;
+            if (failure instanceof Error error) throw error;
+            throw new RuntimeException(failure);
         } finally {
             Exception cleanupFailure = null;
-            try {
-                if (server.isAlive()) {
+            if (server != null && server.isAlive()) {
+                boolean owned = false;
+                try {
+                    E2aMysqlLauncher.verifyProcessDataDir(server, data);
+                    owned = true;
                     requireOwnedListener(server);
                     E2aMysqlLauncher.shutdown(server, root, "root", "");
+                } catch (Exception error) {
+                    cleanupFailure = error;
+                    if (owned && server.isAlive()) {
+                        server.destroy();
+                        try {
+                            if (!server.waitFor(10, java.util.concurrent.TimeUnit.SECONDS)) {
+                                cleanupFailure.addSuppressed(new IllegalStateException("Owned MySQL process remained after cleanup timeout"));
+                            }
+                        }
+                        catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); cleanupFailure.addSuppressed(interrupted); }
+                    }
                 }
-            } catch (Exception error) { cleanupFailure = error; }
-            appendMarker(marker, cleanupFailure == null ? "stopped" : "stop-failed: " + cleanupFailure.getClass().getSimpleName());
-            if (cleanupFailure != null) throw cleanupFailure;
-            if (!E2aMysqlLauncher.isPortFree()) throw new IllegalStateException("19329 listener remains after shutdown");
+            }
+            Exception markerFailure = appendMarker(marker, cleanupFailure == null ? "stopped" : "stop-failed: " + cleanupFailure.getClass().getSimpleName());
+            if (!E2aMysqlLauncher.isPortFree()) {
+                Exception listenerFailure = new IllegalStateException("19329 listener remains after shutdown");
+                if (cleanupFailure != null) cleanupFailure.addSuppressed(listenerFailure);
+                else if (primary != null) primary.addSuppressed(listenerFailure);
+                else cleanupFailure = listenerFailure;
+            }
+            if (primary != null) {
+                if (cleanupFailure != null) primary.addSuppressed(cleanupFailure);
+                if (markerFailure != null) primary.addSuppressed(markerFailure);
+            } else if (cleanupFailure != null) throw cleanupFailure;
+            else if (markerFailure != null) throw markerFailure;
         }
     }
 
@@ -94,7 +123,8 @@ public final class E2aMigrationRunner {
         if (!resources.hasMoreElements()) throw new IllegalStateException("Required V35 migration resource is missing from classpath");
         URL resource = resources.nextElement();
         if (resources.hasMoreElements()) throw new IllegalStateException("Duplicate V35 migration resources on classpath");
-        byte[] bytes = resource.openStream().readAllBytes();
+        byte[] bytes;
+        try (var stream = resource.openStream()) { bytes = stream.readAllBytes(); }
         String hash = HexFormat.of().withUpperCase().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
         if (!"CE433B38BDC06A2050C3E4A6C4BA413C8FF57E55EDC1477A65D78667F30F420C".equals(hash)) throw new IllegalStateException("Unexpected V35 migration resource hash");
     }
@@ -107,9 +137,14 @@ public final class E2aMigrationRunner {
         return marker;
     }
 
-    private static void appendMarker(Path marker, String value) {
-        try { Files.writeString(marker, value + "\n", java.nio.file.StandardOpenOption.APPEND); }
-        catch (Exception ignored) { }
+    private static Exception appendMarker(Path marker, String value) {
+        try { Files.writeString(marker, value + "\n", java.nio.file.StandardOpenOption.APPEND); return null; }
+        catch (Exception error) { return error; }
+    }
+
+    private static void addMarkerFailure(Throwable primary, Path marker, String value) {
+        Exception markerFailure = appendMarker(marker, value);
+        if (markerFailure != null) primary.addSuppressed(markerFailure);
     }
 
     private static void bootstrapAccount(Map<String, String> env, Path root) throws Exception {

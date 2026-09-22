@@ -1,10 +1,12 @@
-# R06 E2a V34 非空迁移验收准备
+# R06 E2a 迁移验收准备
 
 基线：`7a30523743a4317d2f9f007a6b99613b168de449`。本目录只记录 W2 的独立验收矩阵和环境护栏；不修改生产迁移、总契约或 API，也不声称已有 intake 接收通过。
 
 ## 当前结论
 
-- 最高迁移是 V34；本批不分配或编写 V35。
+当前整合候选已包含生产协议/V35候选 `fa7981d`、foundation `319305f` 和 protocol `79cad441`，并保留各自历史；本树最新静态护栏修复为 `aea2c5d` 后续提交。尚未运行最终编译、数据库、Flyway、seed 或动态矩阵，重型槽归部署执行者；整合不计验证通过。
+
+- V35 资源已进入整合候选，runner 会从实际 classpath 校验唯一资源及固定内容 SHA 后才允许启动。
 - V34 已有 `source_evidence_object`、`source_evidence_set`、`source_evidence_item`、`source_evidence_verification`，以及 `SOURCE_RESERVED` 的 `bale_commitment` 分支，可作为复用基线。
 - `source_evidence_object.kind` 已允许 `MANIFEST_PAGE`；`source_evidence_item.item_kind` 只有 `CAPTURE/SCAN/AUDIT/STOP/ARCHIVE`，没有 PAGE。分页根和顺序须由 manifest bytes 与窄写者校验，不能把 PAGE 当作现有数据库枚举。
 - `temporary_command_receipt` 的 `command_type` 只允许七类业务命令，不能承载 E2a intake 原键/原回执；需要 W1 提供独立 envelope/idempotency schema 后再验。

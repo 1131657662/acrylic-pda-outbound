@@ -1,7 +1,10 @@
 # E2a W2 Migration Acceptance Stages
 
-This is a preparation record only. It does not create a database, start port
-19329, run Flyway, or claim V35 behavior has passed.
+This remains a preparation record. The current static candidate integrates
+production/V35 `fa7981d`, foundation `319305f`, and protocol `79cad441`, plus
+the launcher fixes through the current branch. Final compile, database,
+Flyway, seed, and dynamic V35 execution have not run; integration is not a
+pass claim and the heavy slot belongs to deployment.
 
 ## Static stage S0
 
