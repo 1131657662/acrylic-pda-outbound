@@ -32,8 +32,8 @@ test('low-height editor keeps footer reachable and drawer navigation remains ava
   await dialog.getByRole('button', { name: '取消', exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: '打开导航', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: '腈纶出库', exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: '纤序', exact: true })).toBeVisible();
   await page.getByRole('link', { name: '库存查询', exact: true }).click();
   await expect(page.getByRole('heading', { name: '库存查询', exact: true })).toBeVisible();
-  await expect(page.getByRole('dialog', { name: '腈纶出库', exact: true })).toBeHidden();
+  await expect(page.getByRole('dialog', { name: '纤序', exact: true })).toBeHidden();
 });

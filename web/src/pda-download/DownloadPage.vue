@@ -12,7 +12,7 @@ const androidVersions: Record<number, string> = { 28: '9', 29: '10', 30: '11', 3
 <template>
   <main class="download-page">
     <header class="download-header">
-      <p class="muted">腈纶出库 · {{ current?.config.environmentName || environment }}</p>
+      <p class="muted">纤序 · {{ current?.config.environmentName || environment }}</p>
       <h1>下载 PDA 应用</h1>
       <p>供新 PDA 首次安装，安装后需要短码登记和人员登录。</p>
       <el-tag v-if="current" disable-transitions :type="current.config.channel === 'staging' ? 'warning' : 'info'">
@@ -48,7 +48,7 @@ const androidVersions: Record<number, string> = { 28: '9', 29: '10', 30: '11', 3
       <ol class="download-steps">
         <li>下载 APK，在浏览器的下载记录中打开安装包。</li>
         <li>在 Android 系统安装器确认安装。如提示来源未允许，请按系统提示为当前浏览器授权后继续。</li>
-        <li>打开“腈纶出库 PDA”，请管理员在设备管理页核对短码完成登记。</li>
+        <li>打开“纤序作业”，请管理员在设备管理页核对短码完成登记。</li>
         <li>使用已授权的人员账号登录，再到设置中检查应用更新。</li>
       </ol>
       <p>下载完成只表示安装包已保存，是否安装成功以系统安装器和 App 实际状态为准。</p>

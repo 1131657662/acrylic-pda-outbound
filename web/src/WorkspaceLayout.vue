@@ -42,7 +42,7 @@ async function reconnect(): Promise<void> {
 </script>
 <template>
   <div class="workspace" :class="{ 'is-collapsed': collapsed, 'is-list': list }">
-    <aside class="sidebar"><div class="sidebar-brand"><span class="brand-mark">纤</span><span class="brand-name">腈纶出库</span></div>
+    <aside class="sidebar"><div class="sidebar-brand"><img class="brand-mark" src="/favicon.svg" alt="" width="32" height="32" /><span class="brand-name">纤序</span></div>
       <WorkspaceNavigation :collapsed="collapsed" :busy="busy" />
     </aside>
     <div class="workspace-body">
@@ -72,7 +72,7 @@ async function reconnect(): Promise<void> {
         <slot v-else />
       </main></div>
     </div>
-    <el-drawer v-model="drawer" title="腈纶出库" direction="ltr" size="min(280px, 88vw)" class="navigation-drawer">
+    <el-drawer v-model="drawer" title="纤序" direction="ltr" size="min(280px, 88vw)" class="navigation-drawer">
       <WorkspaceNavigation :busy="busy" @navigate="drawer = false" />
     </el-drawer>
     <SessionRecovery />

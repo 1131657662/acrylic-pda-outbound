@@ -25,7 +25,7 @@ async function submit(): Promise<void> {
 <template>
   <main class="login-layout">
       <form class="login-form" @submit.prevent="submit">
-        <div class="brand-mark">纤</div><h1>腈纶出库</h1><p class="muted">登录管理工作台</p>
+        <img class="brand-mark" src="/favicon.svg" alt="" width="32" height="32" /><h1>纤序</h1><p class="muted">登录管理工作台</p>
         <el-tag class="login-environment" type="info">当前环境：{{ environment }}</el-tag>
         <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
         <label for="username">账号</label>
