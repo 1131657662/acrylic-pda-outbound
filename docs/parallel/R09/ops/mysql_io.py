@@ -18,8 +18,9 @@ class Database:
         self.side = side
         self.settings = settings
         self.root = Path(settings['root']) / side
-        self.name = f'r09_ops_{side}'
-        self.port = 19309 if side == 'source' else 19310
+        self.name = settings.get(f'{side}_database', f'r09_ops_{side}')
+        self.port = settings.get(f'{side}_port', 19309 if side == 'source' else 19310)
+        require(bool(re.fullmatch(r'[a-z0-9_]+', self.name)), 'BAD_SQL_IDENTIFIER')
 
     def command(self, executable='mysql', account='client'):
         binary = Path(self.settings['mysql_bin']) / (executable + ('.exe' if __import__('os').name == 'nt' else ''))

@@ -11,7 +11,9 @@ def arguments():
     commands = parser.add_subparsers(dest='command', required=True)
     setup = commands.add_parser('setup')
     setup.add_argument('--mysql-bin', required=True)
-    for name in ('seed', 'seed-v33', 'backup', 'restore', 'stop', 'api-probe', 'worker-probe', 'jobs', 'v28-faults', 'r06-faults', 'v33-faults', 'metadata-probe'):
+    setup_v34 = commands.add_parser('setup-v34')
+    setup_v34.add_argument('--mysql-bin', required=True)
+    for name in ('seed', 'seed-v33', 'seed-v34', 'backup', 'restore', 'stop', 'api-probe', 'worker-probe', 'jobs', 'v28-faults', 'r06-faults', 'v33-faults', 'v34-faults', 'metadata-probe'):
         child = commands.add_parser(name)
         child.add_argument('--lab', required=True)
         if name in ('restore', 'metadata-probe'):
@@ -41,7 +43,17 @@ def execute(args):
     from lab import setup, load, stop
     if args.command == 'setup':
         return {'status': 'PASS', 'lab': str(setup(args.mysql_bin))}
+    if args.command == 'setup-v34':
+        from lab import setup_v34
+        return {'status': 'PASS', 'lab': str(setup_v34(args.mysql_bin))}
     settings = load(args.lab)
+    if args.command in ('seed-v34', 'v34-faults'):
+        from safety import require
+        require(settings['purpose'] == 'R09_V34_SYNTHETIC_ONLY', 'V34_LAB_REQUIRED')
+    if args.command == 'seed-v34':
+        from v34_seed import seed
+        seed(settings)
+        return {'status': 'PASS', 'command': args.command}
     if args.command == 'seed-v33':
         from v33_seed import seed
         seed(settings)
@@ -58,6 +70,9 @@ def execute(args):
 
 def lab_command(args, settings):
     from lab import stop
+    if args.command == 'v34-faults':
+        from v34_drill import drill
+        return drill(settings)
     if args.command == 'v33-faults':
         from v33_drill import drill
         return drill(settings)

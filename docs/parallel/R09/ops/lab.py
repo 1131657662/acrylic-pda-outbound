@@ -1,6 +1,7 @@
 """Provision new, private R09 MySQL instances; never reset or delete existing data."""
 import os
 from pathlib import Path
+import re
 import secrets
 import socket
 import subprocess
@@ -23,7 +24,18 @@ def load(path):
     require(path.parent.parent == LAB_ROOT.resolve(), 'LAB_CONFIG_OUTSIDE_R09')
     settings = read_json(path)
     require(Path(settings['root']).resolve() == path.parent, 'LAB_ROOT_MISMATCH')
-    require(settings['purpose'] == 'R09_SYNTHETIC_ONLY', 'LAB_PURPOSE_MISMATCH')
+    require(settings['purpose'] in ('R09_SYNTHETIC_ONLY', 'R09_V34_SYNTHETIC_ONLY'), 'LAB_PURPOSE_MISMATCH')
+    if settings['purpose'] == 'R09_V34_SYNTHETIC_ONLY':
+        require((settings.get('source_port'), settings.get('restore_port'), settings.get('api_port')) ==
+                (19434, 19435, 18434), 'LAB_PORT_MISMATCH')
+        token = path.parent.name[-6:]
+        for side in ('source', 'restore'):
+            require(bool(re.fullmatch('[0-9a-f]{6}', token)) and
+                    settings.get(f'{side}_database') == f'r09_v34_{token}_{side}',
+                    'LAB_DATABASE_MISMATCH')
+    else:
+        require(not any(key in settings for key in ('source_port', 'restore_port', 'api_port',
+                'source_database', 'restore_database')), 'LAB_PROFILE_MISMATCH')
     require(not path.parent.is_symlink() and not path.parent.is_junction(), 'LAB_LINK_REFUSED')
     return settings
 
@@ -38,6 +50,26 @@ def setup(mysql_bin):
     root = LAB_ROOT / stamp
     secure_directory(root)
     settings = {'purpose': 'R09_SYNTHETIC_ONLY', 'root': str(root), 'mysql_bin': str(Path(mysql_bin).resolve())}
+    write_json(root / 'lab.json', settings)
+    for side in ('source', 'restore'):
+        provision(Database(settings, side))
+    run(['java', str(WORKTREE / 'tools/CreateDevelopmentSigningKey.java'), str(root / 'source/config')])
+    return root / 'lab.json'
+
+
+def setup_v34(mysql_bin):
+    os.umask(0o077)
+    require(LAB_ROOT.resolve().is_relative_to(WORKTREE.resolve()), 'LAB_ROOT_OUTSIDE_WORKTREE')
+    for port in (19434, 19435, 18434):
+        port_free(port)
+    LAB_ROOT.mkdir(parents=True, exist_ok=True)
+    token = secrets.token_hex(3)
+    root = LAB_ROOT / (datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-v34-' + token)
+    secure_directory(root)
+    settings = {'purpose': 'R09_V34_SYNTHETIC_ONLY', 'root': str(root),
+                'mysql_bin': str(Path(mysql_bin).resolve()), 'source_port': 19434, 'restore_port': 19435,
+                'api_port': 18434, 'source_database': f'r09_v34_{token}_source',
+                'restore_database': f'r09_v34_{token}_restore'}
     write_json(root / 'lab.json', settings)
     for side in ('source', 'restore'):
         provision(Database(settings, side))

@@ -1,5 +1,12 @@
 # R09 运维基础进度与接续
 
+## 2026-09-24 V34 独立增量（当前；下方旧章节为历史）
+
+- 作者树 `D:/acrylic-pda-worktrees/r09-v33-recovery` 的 `codex/r09-v33-recovery` 从干净 `e348c52dfc5280c29a81b09e52aee6ac0a16d556` 快进至 `codex/development` 已提交 `23ae8c492acf47e89875852d2573392fcf379f80`；验证时本批仅 `docs/parallel/R09/` 有未提交改动，最终提交/推送状态以 Git 和交接回报为准。`r09-ops` 未修改，无 R09 并发写者。
+- 作者最终离线 88 项/0 失败；V34 第二次新库的 Gradle integrationTest 10 项/0 失败、bootJar 成功；完整快照/空库恢复 101 表、239 组外键、2 个合成来源对象文件/1 集合/1 明细/1 `PARTIAL` 行，8 项可逆故障核验通过。精确路径、SHA、首次失败及复现见[V34专项记录](V34_RECOVERY_GUIDE.md)；无独立消费者、组合实库/HTTP/设备或部署验收。
+- 首次备份因旧审计查询缺 V34 TEMP 列触发 `AUDIT_SOURCE_SHAPE_MISMATCH`；失败 `.partial`、库和日志保留，鉴权停机。第二次采用**全新** lab 而非覆盖或重试旧失败；两库鉴权停机，19434/19435/18434/19330 无监听，共享 3306/PID 5448 未操作，重型槽已通知 R06 释放。
+- V34 仅校验保留字节/文件引用，不代表可信 VERIFY；R06 未提交 V35/V36/STOP/PAGE 非输入。共享写屏障/API/Worker/迁移/R07 账务与库外权威控制未改；`localDeletionAllowed=false`，不开放整单清理、不合 `main`、不部署。
+
 ## 2026-09-20 第二轮 V33 独立接续
 
 - 总调度授权在新工作树 `r09-v33-recovery` / 分支 `codex/r09-v33-recovery` 消费已提交业务基线 `9058137`，原 R09/C 暂停工作树与 V32 实验环境保持。
