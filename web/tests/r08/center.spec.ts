@@ -64,6 +64,93 @@ test('lost center acceptance reuses the original key and range after reload', as
   expect(acceptedSchema.parse(await replay.json()).data.id).toBe(id);
   await expect(page.getByRole('button', { name: '重试原申请' })).toHaveCount(0);
 });
+test('permission response after acceptance keeps original key until manual replay', async ({ page }) => {
+  await summary(page); let id = ''; let key = ''; let body = ''; let posts = 0;
+  await page.route('**/api/v1/exports?*', async route => {
+    if (route.request().method() !== 'POST') { await route.continue(); return; }
+    posts++; key = route.request().headers()['idempotency-key'] ?? ''; body = route.request().postData() ?? '';
+    const response = await route.fetch(); const accepted: unknown = await response.json();
+    id = acceptedSchema.parse(accepted).data.id;
+    await route.fulfill({ response, status: 403, json: { ...z.object({}).passthrough().parse(accepted),
+      code: 'PERMISSION_DENIED', message: '授权已变化' } });
+  });
+  await page.getByRole('button', { name: '导出汇总 Excel' }).click();
+  await expect(page.getByRole('button', { name: '重试原申请' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('button', { name: '重试原申请' })).toBeVisible();
+  expect(posts).toBe(1);
+  await page.unrouteAll({ behavior: 'wait' });
+  const response = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('/exports?'));
+  await page.getByRole('button', { name: '重试原申请' }).click(); const replay = await response;
+  expect(replay.request().headers()['idempotency-key']).toBe(key);
+  expect(replay.request().postData()).toBe(body);
+  expect(acceptedSchema.parse(await replay.json()).data.id).toBe(id);
+});
+test('explicitly discarding uncertain original request requires confirmation', async ({ page }) => {
+  await summary(page);
+  await page.route('**/api/v1/exports?*', async route => {
+    if (route.request().method() !== 'POST') { await route.continue(); return; }
+    const response = await route.fetch(); const accepted: unknown = await response.json();
+    await route.fulfill({ response, status: 404, json: { ...z.object({}).passthrough().parse(accepted),
+      code: 'WAREHOUSE_NOT_FOUND', message: '仓库授权已变化' } });
+  });
+  await page.getByRole('button', { name: '导出汇总 Excel' }).click();
+  await expect(page.getByRole('button', { name: '核对后放弃原请求' })).toBeVisible();
+  await page.getByRole('button', { name: '核对后放弃原请求' }).click();
+  await page.getByRole('button', { name: '继续保留' }).click();
+  await expect(page.getByRole('button', { name: '重试原申请' })).toBeVisible();
+  await page.getByRole('button', { name: '核对后放弃原请求' }).click();
+  await page.getByRole('button', { name: '确认放弃' }).click();
+  await expect(page.getByRole('button', { name: '重试原申请' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '导出汇总 Excel' })).toBeEnabled();
+});
+test('queue full explicitly rejects the attempt without retaining a pending key', async ({ page }) => {
+  await summary(page);
+  await page.route('**/api/v1/exports?*', async route => {
+    if (route.request().method() !== 'POST') { await route.continue(); return; }
+    await route.fulfill({ status: 429, json: { code: 'EXPORT_QUEUE_FULL', message: '队列已满', data: null,
+      requestId: 'queue-full-test', serverTime: new Date().toISOString(), serverRecoveryEpoch: '1', serviceMode: 'NORMAL' } });
+  });
+  await page.getByRole('button', { name: '导出汇总 Excel' }).click();
+  await expect(page.getByText(/本次申请明确未受理/)).toBeVisible();
+  await expect(page.getByRole('button', { name: '重试原申请' })).toHaveCount(0);
+});
+test('temporary status lookup failure keeps task active and resumes polling', async ({ page }) => {
+  test.setTimeout(45000);
+  await summary(page); let failures = 0;
+  await page.route('**/api/v1/exports/*?*', async route => {
+    if (route.request().method() !== 'GET' || failures++) { await route.continue(); return; }
+    const response = await route.fetch(); const result: unknown = await response.json();
+    await route.fulfill({ response, status: 503, json: { ...z.object({}).passthrough().parse(result),
+      code: 'STATUS_TEMPORARILY_UNAVAILABLE', message: '状态暂不可查' } });
+  });
+  const response = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('/exports?'));
+  await page.getByRole('button', { name: '导出汇总 Excel' }).click();
+  const job = acceptedSchema.parse(await (await response).json()).data;
+  const row = page.locator(`[data-export-id="${job.id}"]`);
+  await expect(page.getByText(/状态暂不可查/)).toBeVisible();
+  await expect(row.getByText('生成失败', { exact: true })).toHaveCount(0);
+  await expect(row.getByText('已生成', { exact: true })).toBeVisible({ timeout: 30000 });
+  await expect(page.getByText(/状态暂不可查/)).toHaveCount(0);
+});
+test('temporary task list failure keeps accepted task visible and polling', async ({ page }) => {
+  test.setTimeout(45000);
+  await summary(page); let failures = 0;
+  await page.route('**/api/v1/exports?*', async route => {
+    if (route.request().method() !== 'GET' || failures++) { await route.continue(); return; }
+    const response = await route.fetch(); const result: unknown = await response.json();
+    await route.fulfill({ response, status: 503, json: { ...z.object({}).passthrough().parse(result),
+      code: 'LIST_TEMPORARILY_UNAVAILABLE', message: '任务列表暂不可查' } });
+  });
+  const response = page.waitForResponse(r => r.request().method() === 'POST' && r.url().includes('/exports?'));
+  await page.getByRole('button', { name: '导出汇总 Excel' }).click();
+  const job = acceptedSchema.parse(await (await response).json()).data;
+  const row = page.locator(`[data-export-id="${job.id}"]`);
+  await expect(page.getByText(/任务列表暂不可查/)).toBeVisible();
+  await expect(row.getByText('生成失败', { exact: true })).toHaveCount(0);
+  await expect(row.getByText('已生成', { exact: true })).toBeVisible({ timeout: 30000 });
+  await expect(page.getByText(/任务列表暂不可查/)).toHaveCount(0);
+});
 test('center applies the selected format before listing tasks', async ({ page }) => {
   await page.locator('.center-filters .el-select').first().click();
   await page.getByRole('option', { name: 'PDF', exact: true }).click();

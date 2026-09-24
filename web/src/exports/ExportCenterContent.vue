@@ -7,13 +7,15 @@ import { useCenterRequests } from './useCenterRequests';
 import ExportSummaryPanel from './ExportSummaryPanel.vue';
 const props = defineProps<{ actor: string; warehouse: string }>();
 const { jobs, next, loading, loaded, error, downloading, format, status, load, accepted, download } = useCenterJobs(props.warehouse);
-const { busy, pending, error: actionError, create, retry, resume } = useCenterRequests(props, accepted);
+const { busy, pending, error: actionError, create, retry, resume, discard } = useCenterRequests(props, accepted);
 </script>
 <template>
   <el-alert v-if="actionError" :title="actionError" type="error" :closable="false" />
   <el-alert v-if="pending && !busy" title="原导出申请尚未确认，刷新或重新登录后仍可核对原请求。" type="warning" :closable="false">
     <p v-if="pending.action.kind === 'range'">{{ pending.action.range.fromDate }} 至 {{ pending.action.range.throughDate }} · {{ formatLabels[pending.action.format] }}</p>
+    <p v-else>原任务 {{ pending.action.id }} · 保留原重生成请求键</p>
     <el-button :loading="busy" @click="resume">重试原申请</el-button>
+    <el-button @click="discard">核对后放弃原请求</el-button>
   </el-alert>
   <ExportSummaryPanel :warehouse="warehouse" :disabled="busy || !!pending" @create="create" />
   <section aria-label="我的导出任务">

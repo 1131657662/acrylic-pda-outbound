@@ -1,5 +1,5 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { errorText, request } from '../api';
+import { ApiError, errorText, request } from '../api';
 import { activeJob, exportSchema, exportsSchema, type ExportFormat, type ExportJob } from './contracts';
 import { downloadExport } from './download';
 
@@ -8,9 +8,9 @@ export function useCenterJobs(warehouse: string) {
   const error = ref(''); const downloading = ref(''); const format = ref<ExportFormat | ''>(''); const status = ref('');
   const abort = new AbortController(); let generation = 0; let timer = 0;
   let applied = { format: '', status: '' };
-  function schedule(): void {
+  function schedule(delay = 2500): void {
     clearTimeout(timer);
-    if (!abort.signal.aborted && jobs.value.some(activeJob)) timer = window.setTimeout(() => { void poll(); }, 2500);
+    if (!abort.signal.aborted && jobs.value.some(activeJob)) timer = window.setTimeout(() => { void poll(); }, delay);
   }
   async function poll(): Promise<void> {
     const current = generation;
@@ -20,8 +20,13 @@ export function useCenterJobs(warehouse: string) {
         if (current !== generation || abort.signal.aborted) return;
         jobs.value = jobs.value.map(j => j.id === job.id ? updated : j).filter(j => !applied.status || j.status === applied.status);
       }
-      schedule();
-    } catch (cause) { if (!abort.signal.aborted && current === generation) error.value = errorText(cause); }
+      error.value = ''; schedule();
+    } catch (cause) {
+      if (!abort.signal.aborted && current === generation) {
+        error.value = errorText(cause);
+        if (!(cause instanceof ApiError && [401, 403, 404].includes(cause.status))) schedule(10000);
+      }
+    }
   }
   async function load(older = false): Promise<void> {
     if (older && (!next.value || loading.value)) return;
@@ -37,7 +42,12 @@ export function useCenterJobs(warehouse: string) {
       applied = filter;
       jobs.value = older ? [...jobs.value, ...result.items] : result.items;
       next.value = result.nextCursor; loaded.value = true; schedule();
-    } catch (cause) { if (!abort.signal.aborted && current === generation) error.value = errorText(cause); }
+    } catch (cause) {
+      if (!abort.signal.aborted && current === generation) {
+        error.value = errorText(cause);
+        if (!(cause instanceof ApiError && [401, 403, 404].includes(cause.status))) schedule(10000);
+      }
+    }
     finally { if (current === generation) loading.value = false; }
   }
   function accepted(job: ExportJob): void {

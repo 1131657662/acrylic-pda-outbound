@@ -16,6 +16,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest @AutoConfigureMockMvc
@@ -39,6 +40,23 @@ class R08AuthorizationRaceIT extends R08CenterFixture {
         assertThat(jobs.findByDedupeKey("r08:"+api.identity().user().id()+":"+key)).isEmpty();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM operation_event WHERE actor_id=? AND event_type='REPORT_EXPORT_RETRIED'",
                 Long.class,Ids.bytes(api.identity().user().id()))).isZero();
+    }
+    @ParameterizedTest @CsvSource({"session,401","role,403","warehouse,404"})
+    void committedRevocationAfterDownloadPrecheckReturnsNoFileOrAudit(String revoke,int expected) throws Exception {
+        UUID original=id(create(UUID.randomUUID().toString(),"XLSX"));generate(original);
+        var checked=new CountDownLatch(1);var resume=new CountDownLatch(1);interceptPrecheck(checked,resume);
+        try(var connection=dataSource.getConnection();var pool=Executors.newSingleThreadExecutor()) {
+            connection.setAutoCommit(false);revoke(connection,revoke);
+            var response=pool.submit(()->api.send(get("/api/v1/exports/"+original+"/file")));
+            try {
+                assertThat(checked.await(10,TimeUnit.SECONDS)).isTrue();connection.commit();
+            } finally { resume.countDown(); }
+            var result=response.get(15,TimeUnit.SECONDS).andExpect(status().is(expected)).andReturn();
+            assertThat(result.getResponse().getHeader("Content-Disposition")).isNull();
+            assertThat(result.getResponse().getContentAsString()).contains("\"code\"");
+        }
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM operation_event WHERE event_type='REPORT_EXPORT_DOWNLOADED' AND details->>'$.jobId'=?",
+                Long.class,original.toString())).isZero();
     }
     private void interceptPrecheck(CountDownLatch checked,CountDownLatch resume) {
         var first=new AtomicBoolean(true);
