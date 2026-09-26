@@ -27,7 +27,9 @@ server: { contract: 0.33.0, paths: 128, flyway: V41, migrations: 41 }
 - 合并单一基线（V1–V41、`recovery/`、`temporary/evidence/` 进入 development）→ `be2048e`（tag `baseline-20260926`）：[现状审计](history/PROJECT_REVIEW_2026-09-26.md)
 - 默认关闭的命令接线 + 服务模式启动告警 → `27729f7`：[接续记录](history/R06_DEFAULT_OFF_COMMAND_WIRING_2026-09-26.md)
 - 文档收敛（本页字段化 + 生成事实块 + 硬上限、旧当前区归档）→ `22c2215`
-- Android 正式签名身份（R06 起，PKCS12/RSA4096/30 年，证书 SHA-256 `96E9DE81…95B8`）+ release 打包链 + 更新通道白名单补 `0.33.0` → 本提交：[签名说明](PDA_SIGNING_GUIDE.md)
+- Android 正式签名身份（R06 起，PKCS12/RSA4096/30 年，证书 SHA-256 `96E9DE81…95B8`）+ release 打包链 + 更新通道白名单补 `0.33.0` → `5678e06`（事实块刷新 `a37d662`）：[签名说明](PDA_SIGNING_GUIDE.md)
+- 唯一未跟踪文件回收（32 个：30 提交 + 2 归档到工作区外）→ `d0fa14e` / `1ee7931` / `3587628`：[回收记录](history/UNIQUE_FILE_RESCUE_2026-09-27.md)
+- 三个未合并提交全部合入 development（`0b1094e`→`f196887`、`94305a7`→`1e98e44`、`f051535`→`8bb3e57`）；`R08AuthorizationRaceIT` **9 项全通过**、web 构建通过 → [合并记录](history/MERGE_BATCH_2026-09-27.md)
 - 合并态机器口径（`--rerun-tasks`，非业务验收）：服务端 103 XML/718 项 = 717 通过/1 既有符号链接条件 skip；Android 111 XML/444 项 = 440 通过/4 真实 HTTP 条件 skip；均 0 失败 0 错误。
 - 合并前的 R06/R09 子项结论与更早测试口径：见[开发进度](DEVELOPMENT_PROGRESS.md)索引与 `history/R06_*`、`history/R09_*`，不在本页复述历史数字。
 
@@ -54,6 +56,8 @@ server: { contract: 0.33.0, paths: 128, flyway: V41, migrations: 41 }
 - 2026-09-27 工作树清点（只读，未删除）：34 个工作树、33 个分支、112.9 GB；3 个树各有 1 个未合并提交（r08-export / r09-v33-recovery / sixth-wave-integration），5 个树含 32 个基线中不存在的未跟踪文件；发现 2 个**未注册检出**（`D:\acrylic-entry-verify`、`D:\acrylic-snapshots\…\workspace`）共用 `r06-e2a-migration` 的 gitdir。归档前须先取证，删除一律待批。
 - 2026-09-27 唯一文件回收（选项 A）：32 个文件经 `git log --all` 与对象库 blob 双重确认从未入库；30 个提交进基线（datetime-display 11 个 + 其 9 个已跟踪集成改动、R06 设计 6 个、R07 设计 13 个），2 个归档到工作区外 `E:\acrylic-archive-unique-20260927`（日志与可复现的 `.class`），另归档 2 份补丁与 entry-verify 的 2 个未跟踪文件；清单见 [回收记录](history/UNIQUE_FILE_RESCUE_2026-09-27.md)。验证：Android 451 项 0 失败、web typecheck 通过、恢复的 init 脚本实测通过。
 - 2026-09-27 `D:\acrylic-entry-verify` 726 个缺失文件结论：**刻意的部分副本，不是丢失**——缺失集中在 android/web/demo/contracts/tools/deploy 等无关模块（server 仅 2 个），磁盘上实存 1,241 个（server/src/main 488、server/src/test 418）；726/726 均可从 Git 取回（0 不可恢复）。
+- 2026-09-27 合并三提交（选项 B）：`0b1094e`→`f196887`（deploy + `.gitattributes`，仅覆盖 `deploy/test/*.sh`，合并后 0 项重新规范化）、`94305a7`→`1e98e44`（R09 V34 演练，17 文件全在 `docs/parallel/R09/`，README 取并集）、`f051535`→`8bb3e57`（R08 授权竞争修复）。验证：`R08AuthorizationRaceIT` 9 项全通过、`npm run build` 通过。两个环境发现：V35+ 建触发器需 `log_bin_trust_function_creators=1`（否则 Flyway 1419）；`renderer-home` 必须是当前源码同批 `installDist` 产物，否则作业 `EXPORT_RENDER_FAILED`。详见 [合并记录](history/MERGE_BATCH_2026-09-27.md)。
+- 2026-09-27 选项 C 前置：`r08-export` / `r09-v33-recovery` / `sixth-wave-integration` 三棵树已合并且工作区干净，**可进入删除候选**；删除仍待业主逐项批准。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。
