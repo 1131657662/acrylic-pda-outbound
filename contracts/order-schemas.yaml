@@ -45,6 +45,7 @@ Receipt:
   type: object
   required: [id, orderId, revision, rowVersion, status]
   properties:
+    temporaryCandidateCheck: {$ref: './order-temporary-candidates.yaml#/Check'}
     id: {type: string, format: uuid}
     orderId: {type: string, format: uuid}
     revision: {type: integer, minimum: 1}

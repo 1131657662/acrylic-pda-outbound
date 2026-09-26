@@ -166,6 +166,7 @@ CommandReceipt:
   type: object
   required: [receiptId, requestKey, orderId, action, result]
   properties:
+    temporaryCandidateCheck: {$ref: './order-temporary-candidates.yaml#/Check'}
     receiptId: {type: string, format: uuid}
     requestKey: {type: string}
     orderId: {type: string, format: uuid}

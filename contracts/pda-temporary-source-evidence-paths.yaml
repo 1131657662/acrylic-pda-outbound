@@ -1,0 +1,307 @@
+# Standalone E2a PDA intake contract. Root OpenAPI registration is in openapi.yaml.
+Raw:
+  post:
+    summary: 原人原机按固定对象ID流式上传原始材料
+    description: >-
+      要求pda:recover、当前原人员/设备/仓库/来源轮次、已存OPEN原键及恢复代次。
+      按声明长度有界流式接收并校验SHA-256，先耐久文件再在锁内重查身份/来源/OPEN并写入对象引用。
+      同对象ID、种类、来源和原字节重放幂等，异体返回409；丢回执只能重放原对象，不换ID。
+      返回通用Envelope内的存储确认，不是签名业务回执，不能据此开放任何能力或删除本地数据；
+      后续签名PAGE/STOP/VERIFY继续核验。只公开对象ID/摘要/长度，不暴露内部文件路径。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: '#/Warehouse'}
+      - {$ref: '#/Submission'}
+      - {$ref: '#/Round'}
+      - {$ref: '#/OpenOriginalKey'}
+      - {$ref: '#/Epoch'}
+      - {name: originalObjectId, in: query, required: true, schema: {type: string, format: uuid}}
+      - {name: kind, in: query, required: true, schema: {type: string, enum: [LOCAL_FROZEN_PAYLOAD, CAPTURE_RECORDS, AUDIT_RECORDS, AUDIT_ARCHIVE]}}
+      - {name: byteCount, in: query, required: true, schema: {type: integer, minimum: 1, maximum: 33554432}}
+      - {name: bytesSha256, in: query, required: true, schema: {type: string, pattern: '^[0-9a-f]{64}$'}}
+    requestBody:
+      required: true
+      content:
+        application/octet-stream:
+          schema: {type: string, format: binary, description: 原始不可变字节，最大32MiB}
+    responses:
+      '200':
+        description: 对象存储确认；外层requestId/serverTime可变，data固定，无签名能力
+        headers:
+          Cache-Control: {schema: {type: string, const: no-store}}
+          X-Content-Type-Options: {schema: {type: string, const: nosniff}}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/RawStored'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+RawStored:
+  type: object
+  additionalProperties: false
+  required: [status, warehouseId, submissionId, workRound, openOriginalKey, originalObjectId, kind, objectId, byteCount, bytesSha256, localDeletionAllowed]
+  properties:
+    status: {type: string, const: STORED}
+    warehouseId: {type: string, format: uuid}
+    submissionId: {type: string, format: uuid}
+    workRound: {type: integer, minimum: 1}
+    openOriginalKey: {type: string, format: uuid}
+    originalObjectId: {type: string, format: uuid}
+    kind: {type: string, enum: [LOCAL_FROZEN_PAYLOAD, CAPTURE_RECORDS, AUDIT_RECORDS, AUDIT_ARCHIVE]}
+    objectId: {type: string, format: uuid}
+    byteCount: {type: integer, minimum: 1, maximum: 33554432}
+    bytesSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    localDeletionAllowed: {type: boolean, const: false}
+ReceiptDetail:
+  get:
+    summary: 本人原机接收原键与当前只读评估
+    description: >-
+      要求当前pda:recover、原人员/设备/仓库及原来源轮次。核对已存请求/响应摘要、原身份和签名；
+      未配置历史key时原回执只作为UNVERIFIABLE_KEY非可信证据显示。currentEffect始终不可执行，
+      不重新签发、不执行VERIFY或任何业务动作。原回执字符串保持服务器持久UTF-8字节。
+    security: [{pdaBearer: []}]
+    parameters: [{$ref: '#/OriginalKeyPath'}, {$ref: '#/Warehouse'}, {$ref: '#/Submission'}, {$ref: '#/Round'}]
+    responses:
+      '200':
+        description: 原回执和独立当前评估；写能力始终关闭
+        headers:
+          Cache-Control: {schema: {type: string, const: no-store}}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/ReceiptView'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+ReceiptOriginal:
+  get:
+    summary: 已验签原机接收原回执字节
+    description: >-
+      与详情同一身份/来源和完整性核验，只在当前签名key可验证时返回原始UTF-8字节；
+      历史key不可验返回409，不把未验历史内容冒充可信原件。
+    security: [{pdaBearer: []}]
+    parameters: [{$ref: '#/OriginalKeyPath'}, {$ref: '#/Warehouse'}, {$ref: '#/Submission'}, {$ref: '#/Round'}]
+    responses:
+      '200':
+        description: 原始JSON字节，无业务Envelope或重序列化
+        headers:
+          Cache-Control: {schema: {type: string, const: no-store}}
+          X-Content-Type-Options: {schema: {type: string, const: nosniff}}
+        content:
+          application/json:
+            schema: {type: string, format: binary}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+ReceiptView:
+  type: object
+  additionalProperties: false
+  required: [originalResponseUtf8, originalResponseSha256, trustStatus, currentEffect]
+  properties:
+    originalResponseUtf8: {type: string, description: 已存原回执的UTF-8文本，非新签发}
+    originalResponseSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    trustStatus: {type: string, enum: [VERIFIED, UNVERIFIABLE_KEY]}
+    currentEffect: {type: object, description: 当前只读评估，applicable固定false、全部能力关闭}
+OriginalKeyPath:
+  name: originalKey
+  in: path
+  required: true
+  schema: {type: string, format: uuid}
+Open:
+  post:
+    summary: 接收原机 TEMP 来源证据 OPEN
+    description: >-
+      PDA受控恢复入口。要求pda:recover、当前同仓原人员/原设备及X-Server-Recovery-Epoch，
+      接收严格的OPEN规范JSON并返回服务器签名的原始JSON回执。回执不是通用Envelope，
+      必须按字节保存；同originalKey和同正文重试返回原回执，换正文冲突。只建立证据接收上下文，
+      不关联正式订单、不释放库存、不恢复扫码或放行。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: '#/Warehouse'}
+      - {$ref: '#/Submission'}
+      - {$ref: '#/Round'}
+      - {$ref: '#/OriginalKey'}
+      - {$ref: '#/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: '#/OpenRequest'}
+    responses:
+      '200': {$ref: '#/RawReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Page:
+  post:
+    summary: 接收原机 TEMP 来源证据 PAGE
+    description: >-
+      接收按pageNo顺序、前页哈希链和manifest绑定的规范PAGE。要求pda:recover、同一OPEN原键、
+      当前原人员/原设备及恢复代次。PAGE只写入服务器可重验的原始对象和接收回执，不表示证据完整、
+      不建立可信库存事实，也不开放关联或放行。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: '#/Warehouse'}
+      - {$ref: '#/Submission'}
+      - {$ref: '#/Round'}
+      - {$ref: '#/OriginalKey'}
+      - {$ref: '#/OpenOriginalKey'}
+      - {$ref: '#/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: '#/PageRequest'}
+    responses:
+      '200': {$ref: '#/RawReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Stop:
+  post:
+    summary: 接收原机 TEMP 来源证据 STOP
+    description: >-
+      接收并验签原机STOP证明及来源绑定。不可变文件先落盘，STOP对象与PARTIAL原回执
+      在同一数据库事务中提交；失败时已落盘孤儿文件不代表接收成功。PAGE/审计/捕获覆盖
+      与可信来源事实在后续VERIFY事务内重验，满足条件时才建立set；返回PARTIAL只表示
+      服务器完成当前安全边界内的
+      接收与重验，不代表原机耐久、历史keyring、逐包事实或可信VERIFY_COMPLETE已成立。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: '#/Warehouse'}
+      - {$ref: '#/Submission'}
+      - {$ref: '#/Round'}
+      - {$ref: '#/OriginalKey'}
+      - {$ref: '#/OpenOriginalKey'}
+      - {$ref: '#/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: '#/StopRequest'}
+    responses:
+      '200': {$ref: '#/RawReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Verify:
+  post:
+    summary: 接收原机 TEMP 来源证据 VERIFY
+    description: >-
+      依据OPEN、STOP、PAGE和服务器可重验事实生成不可变PARTIAL验证记录与回执。要求pda:recover、
+      当前同仓原人员/原设备、OPEN原键及STOP原键。当前实现不得将PARTIAL升级为可信完整验证，
+      不执行正式单关联、拒绝处置、库存释放、继续扫码或任何生产决定。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: '#/Warehouse'}
+      - {$ref: '#/Submission'}
+      - {$ref: '#/Round'}
+      - {$ref: '#/OriginalKey'}
+      - {$ref: '#/OpenOriginalKey'}
+      - {$ref: '#/StopOriginalKey'}
+      - {$ref: '#/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: '#/VerifyRequest'}
+    responses:
+      '200': {$ref: '#/RawReceipt'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+
+RawReceipt:
+  description: 原始规范JSON回执；服务端不包裹通用Envelope，必须按响应字节保存并禁止缓存
+  headers:
+    Cache-Control:
+      schema: {type: string, const: no-store}
+    X-Content-Type-Options:
+      schema: {type: string, const: nosniff}
+  content:
+    application/json:
+      schema:
+        type: object
+        additionalProperties: true
+        description: 服务器签名或不可变回执正文，具体字段按E2a协议版本解释
+
+OpenRequest:
+  type: object
+  additionalProperties: false
+  required: [operation, manifestId, manifestVersion, snapshotId, source, sourceId, submissionId, workRound]
+  properties:
+    operation: {type: string, const: OPEN}
+    manifestId: {type: string, minLength: 1}
+    manifestVersion: {type: integer, format: int64, minimum: 1}
+    snapshotId: {type: string, minLength: 1}
+    source: {type: string, const: TEMP}
+    sourceId: {type: string, format: uuid}
+    submissionId: {type: string, format: uuid}
+    workRound: {type: integer, format: int64, minimum: 1}
+
+PageRequest:
+  type: object
+  additionalProperties: false
+  required: [operation, openOriginalKey, pageCore, pageHash]
+  properties:
+    operation: {type: string, const: PAGE}
+    openOriginalKey: {type: string, format: uuid}
+    pageCore: {type: object}
+    pageHash: {type: string, pattern: '^[0-9a-f]{64}$'}
+
+StopRequest:
+  type: object
+  additionalProperties: false
+  required: [operation, openOriginalKey, manifestBytesHash, setHash, manifestCore, stopProof]
+  properties:
+    operation: {type: string, const: STOP}
+    openOriginalKey: {type: string, format: uuid}
+    manifestBytesHash: {type: string, pattern: '^[0-9a-f]{64}$'}
+    setHash: {type: string, pattern: '^[0-9a-f]{64}$'}
+    manifestCore: {type: object}
+    stopProof: {type: object}
+
+VerifyRequest:
+  type: object
+  additionalProperties: false
+  required: [operation, openOriginalKey, stopOriginalKey, manifestId, manifestVersion, setHash, verificationVersion, algorithmVersion]
+  properties:
+    operation: {type: string, const: VERIFY}
+    openOriginalKey: {type: string, format: uuid}
+    stopOriginalKey: {type: string, format: uuid}
+    manifestId: {type: string, minLength: 1}
+    manifestVersion: {type: integer, format: int64, minimum: 1}
+    setHash: {type: string, pattern: '^[0-9a-f]{64}$'}
+    verificationVersion: {type: integer, format: int64, minimum: 1}
+    algorithmVersion: {type: integer, format: int64, minimum: 1}
+
+Warehouse:
+  name: warehouseId
+  in: query
+  required: true
+  schema: {type: string, format: uuid}
+Submission:
+  name: submissionId
+  in: query
+  required: true
+  schema: {type: string, format: uuid}
+Round:
+  name: workRound
+  in: query
+  required: true
+  schema: {type: integer, format: int64, minimum: 1}
+OriginalKey:
+  name: originalKey
+  in: query
+  required: true
+  schema: {type: string, format: uuid}
+OpenOriginalKey:
+  name: openOriginalKey
+  in: query
+  required: true
+  schema: {type: string, format: uuid}
+StopOriginalKey:
+  name: stopOriginalKey
+  in: query
+  required: true
+  schema: {type: string, format: uuid}
+Epoch:
+  name: X-Server-Recovery-Epoch
+  in: header
+  required: true
+  schema: {type: string, pattern: '^(0|[1-9][0-9]{0,18})$'}

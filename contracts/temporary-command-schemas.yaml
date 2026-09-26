@@ -16,17 +16,20 @@ CurrentEffect:
   required: [evaluatedAt, evaluation, applicable, serverRecoveryEpoch, serviceMode, currentContext, reasons, capabilities]
   properties:
     evaluatedAt: {type: string, format: date-time}
-    evaluation: {type: string, const: UNKNOWN}
+    evaluation:
+      type: string
+      enum: [UNKNOWN, COMMITTED, CURRENT_CONTEXT_MATCHES, CONTEXT_CHANGED]
+      description: 合成回执为UNKNOWN；真实正常确认的历史成功为COMMITTED；短装批准只评估当前身份/来源/候选上下文。均不授予生产执行能力。
     applicable: {type: boolean, const: false}
     serverRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
     serviceMode: {type: string}
     currentContext:
       type: [object, 'null']
-      description: 当前来源/映射/轮次/决定/slot/正文事实快照；不可用为null。无业务决定、候选或E2证据适用性实现。
+      description: 当前来源/映射/轮次/决定/slot/正文事实快照；不可用为null。当前变化不能撤销原成功或修改原回执。
     reasons:
       type: array
       items: {type: string}
-      description: 完整列出已观察身份/权限/上下文变化，并始终列业务、候选、证据评估未实现；不能解释为放行资格。
+      description: 列出已观察身份/权限/来源/候选变化。合成回执仍列业务/候选未知；真实决定列生产操作关闭及E2证据评估未完成，成功另列ORIGINAL_SUCCESS_COMMITTED。不能解释为放行资格。
     capabilities: {$ref: '#/Capabilities'}
 Capabilities:
   type: object
