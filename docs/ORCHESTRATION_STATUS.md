@@ -19,14 +19,15 @@ server: { contract: 0.33.0, paths: 128, flyway: V41, migrations: 41 }
 
 ## 在途
 - 无在途重型任务、无第二写者。当前助手单写者；环境：共享 MySQL 3306 未动，隔离端口空闲，无对外监听服务。
-- 用户当次指令：文档收敛（三份文档 + 版本四元组脚本）与工作树清点（**只清点，不删除**）。
+- 用户当次指令：① Android 发布身份链（生成正式 keystore、接入 release 签名、注入更新公钥、验证并记录）进行中；④ 文档收敛已完成、工作树清点已完成（**只清点，未删除任何目录**）。
 - 写权：`codex/development` 单写者；服务端树 `r06-e2a-migration` 已合并（分支保留追溯），未归档、未删除。
 
 ## 已完成（每条一行：子项 → 证据路径 + 提交）
 - 冻结两树未提交成果 → `3c677ad` / `d16836b`（tag `freeze-20260926-pda-r06`、`freeze-20260926-server-r06e2a`）：[收敛前看板归档](history/ORCHESTRATION_STATE_before_status_convergence_2026-09-26.md)
 - 合并单一基线（V1–V41、`recovery/`、`temporary/evidence/` 进入 development）→ `be2048e`（tag `baseline-20260926`）：[现状审计](history/PROJECT_REVIEW_2026-09-26.md)
 - 默认关闭的命令接线 + 服务模式启动告警 → `27729f7`：[接续记录](history/R06_DEFAULT_OFF_COMMAND_WIRING_2026-09-26.md)
-- 文档收敛（本页字段化 + 生成事实块 + 硬上限、旧当前区归档）→ 本提交
+- 文档收敛（本页字段化 + 生成事实块 + 硬上限、旧当前区归档）→ `22c2215`
+- Android 正式签名身份（R06 起，PKCS12/RSA4096/30 年，证书 SHA-256 `96E9DE81…95B8`）+ release 打包链 + 更新通道白名单补 `0.33.0` → 本提交：[签名说明](PDA_SIGNING_GUIDE.md)
 - 合并态机器口径（`--rerun-tasks`，非业务验收）：服务端 103 XML/718 项 = 717 通过/1 既有符号链接条件 skip；Android 111 XML/444 项 = 440 通过/4 真实 HTTP 条件 skip；均 0 失败 0 错误。
 - 合并前的 R06/R09 子项结论与更早测试口径：见[开发进度](DEVELOPMENT_PROGRESS.md)索引与 `history/R06_*`、`history/R09_*`，不在本页复述历史数字。
 
@@ -49,6 +50,8 @@ server: { contract: 0.33.0, paths: 128, flyway: V41, migrations: 41 }
 - 2026-09-26 `27729f7` 默认关闭的命令接线（3 个 operation + POST 路由，受 `outbound.temporary.commands.enabled`）+ 服务模式启动告警；服务端全量 718 项 0 失败。
 - 2026-09-26 `be2048e` 单一基线合并：两树 16 个双侧改动逐条核对，无一方改动被静默丢弃。
 - 2026-09-26 冻结两树：`3c677ad`（主树 10 提交）/ `d16836b`（服务端树 6 提交），两个 freeze tag 已推远端。
+- 2026-09-27 发布身份链：生成正式 keystore（`.local/pda-signing/`，两份备份分别在 D: 与 E: 两块物理盘）、`signingConfigs` 接入 release、versionCode 20→21、`build_pda.ps1` 支持 `-BuildType` 并注入更新公钥、更新白名单补 `0.33.0`；release APK 经 `apksigner verify` 通过且签名摘要与 keystore 一致。
+- 2026-09-27 工作树清点（只读，未删除）：34 个工作树、33 个分支、112.9 GB；3 个树各有 1 个未合并提交（r08-export / r09-v33-recovery / sixth-wave-integration），5 个树含 32 个基线中不存在的未跟踪文件；发现 2 个**未注册检出**（`D:\acrylic-entry-verify`、`D:\acrylic-snapshots\…\workspace`）共用 `r06-e2a-migration` 的 gitdir。归档前须先取证，删除一律待批。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。

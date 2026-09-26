@@ -49,3 +49,8 @@ local.properties
 hs_err_pid*.log
 replay_pid*.log
 .codex-patch
+
+# Signing material and its passwords never enter Git
+signing.properties
+keystore.properties
+/local-signing/

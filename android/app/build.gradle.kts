@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -11,8 +13,8 @@ android {
         applicationId = "com.acrylic.outbound.pda"
         minSdk = 28
         targetSdk = 35
-        versionCode = providers.gradleProperty("pdaVersionCode").map(String::toInt).orElse(20).get()
-        versionName = providers.gradleProperty("pdaVersionName").orElse("0.15.0-r06-submission").get()
+        versionCode = providers.gradleProperty("pdaVersionCode").map(String::toInt).orElse(21).get()
+        versionName = providers.gradleProperty("pdaVersionName").orElse("0.16.0-r06-release").get()
         val serverUrl = providers.gradleProperty("pdaServerUrl").orElse("").get()
         val environment = providers.gradleProperty("pdaEnvironment").orElse("未配置服务环境").get()
         val updatePublicKey = providers.gradleProperty("pdaUpdatePublicKey").orElse("").get()
@@ -30,6 +32,25 @@ android {
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
+    // Release signing identity used from R06 onwards. The keystore and its passwords stay outside Git
+    // in .local/pda-signing/ (see docs/PDA_SIGNING_GUIDE.md); when the properties file is absent no
+    // release signing config is created, so debug/staging builds and tests still work on any machine.
+    val signingPropertiesFile = rootProject.file("../.local/pda-signing/signing.properties")
+    val signingProperties = Properties()
+    if (signingPropertiesFile.isFile) signingPropertiesFile.inputStream().use { signingProperties.load(it) }
+    val releaseKeystoreFile = signingProperties.getProperty("storeFile")
+        ?.let { signingPropertiesFile.parentFile.resolve(it) }
+    signingConfigs {
+        val keystore = releaseKeystoreFile
+        if (keystore != null && keystore.isFile) {
+            create("release") {
+                storeFile = keystore
+                storePassword = signingProperties.getProperty("storePassword")
+                keyAlias = signingProperties.getProperty("keyAlias")
+                keyPassword = signingProperties.getProperty("keyPassword")
+            }
+        }
+    }
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -37,6 +58,7 @@ android {
         }
         release {
             isMinifyEnabled = false
+            if (releaseKeystoreFile?.isFile == true) signingConfig = signingConfigs.getByName("release")
             buildConfigField("String", "PDA_UPDATE_CHANNEL", "\"production\"")
         }
         create("staging") {
