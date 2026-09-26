@@ -2,6 +2,15 @@
 
 <!-- CURRENT_STATE_START -->
 ## 当前有效状态（唯一接续入口）
+### 2026-09-26 工作树冻结：两树全部未提交成果已入库并推送（最新，优先于下方各条）
+- 触发：只读审计实测主树 HEAD `dccb73b`（09-24）的 `PdaDatabase` 仍为 **version 17**，工作树为 **27**（91 改 / 258 未跟踪）；服务端树 `568683c`（09-22）的 **V35–V41、整个 `recovery/` 与 `temporary/evidence/` 全部未提交**，主树无 `recovery` 包且 `RECOVERY_PENDING` 命中 0；`docs/history` 152 文件中仅 4 个在库，而看板引用 22 份。经用户拍板先冻结。
+- 冻结结果：主树 `D:/acrylic-pda-outbound` `codex/development` @ `3c677ad`（9 提交，tag `freeze-20260926-pda-r06`）；服务端树 `D:/acrylic-pda-worktrees/r06-e2a-migration` `codex/r06-e2a-migration` @ `d16836b`（6 提交，tag `freeze-20260926-server-r06e2a`）。两树 origin 一致（各 0/0），工作树各 **0** 项未提交，tag 已推远端。
+- 入库范围：Android Room18–27 及全部未跟踪源码/测试/schema（180 文件 44,534 行）、web 临时候选、服务端候选契约与 e2a 资源、部署 unit、品牌资源、治理文档、`docs/parallel` 69 文件、`docs/history` 149 文件；服务端树 376 文件（含 V35–V41）与 report/contracts/web/tools/docs。
+- 新增排除规则：`docs/out.xlsx`、`hs_err_pid*.log`、`replay_pid*.log`、`.codex-patch`；`.local/`、`outputs/`、`demo-artifacts/`、`docs/sku.txt` 原样保持本机不入库。
+- 冻结边界：**未改任何源码/配置语义**，未合并两树，未动 `main`、未部署、未跑服务端测试；Android 主机口径仍为 111 XML/444 项=440 通过/4 真实 HTTP 条件 skip/0 失败，APK `A8C60756811C0A0961E44D27203059640EE8E0CE4E3685DAA6F2ED43576EFC9E`。服务端树仅跑 `compileJava/compileTestJava`（不构成业务验收）。
+- 审计结论与依据见 [PROJECT_REVIEW_2026-09-26.md](history/PROJECT_REVIEW_2026-09-26.md)。下一步优先级：① 合成单一基线（两树提交层交集为 0，仅 4 个契约文件未提交对撞、`OrderTemporaryCandidate*` 一边有契约无实现）；② TEMP 确认/归档闭环 + 给 `RECOVERY_PENDING` 一个受审计恢复出口或启动 fail-fast；③ Android 发布身份链（`signingConfigs`、versionCode、更新公钥）；④ 文档收敛为三份并把版本四元组改为脚本生成；⑤ 冻结扩张 `recovery/`+`temporary/evidence/`。
+- 本节下方各条（含 R06 M2b-2b 验收、09-25 断点与 attempt 证据）仍为冻结前的历史结论，其版本/迁移口径以冻结提交为准。
+
 ### 2026-09-26 R06 M2b-2b 受控关联闸门＋指针切换已验；接关联后确认链
 
 - 2026-09-26 R06 M2b-2b（受控关联，两批合读）：[闸门验收](history/R06_CONTROLLED_LINK_ACCEPTANCE_2026-09-26.md)、[指针切换验收](history/R06_CONTROLLED_LINK_SWITCH_ACCEPTANCE_2026-09-26.md)。服务端树新增 `temporary/command/TemporaryLinkOperation.java`、`TemporaryLinkMapping.java`、`temporary/review/TemporaryLinkTarget.java` 与 V41；放行既有 `LINK`（`temporary_order:link`）：`expected.candidateContextSha256` 必须非空且与**锁内重算**的完整候选集合摘要逐字一致（否则 `TEMPORARY_MANUAL_CONFIRMATION_REQUIRED`/`COMMAND_CONTEXT_CHANGED`），候选 0 条/多于 1 条失败关闭（`TEMPORARY_LINK_TARGET_NOT_FOUND`/`TEMPORARY_LINK_DUPLICATES_UNRESOLVED`），唯一目标锁内重验空白 `READY`/无作业/库存与计划一致；同一事务写入映射 v+1（`CONTROLLED_LINK`）、`submission_scope` canonical/mapping_version、slot 改指与被取代 PDA_TEMP 单 `LINKED`。生产上下文仍无任何 `CommandOperation` bean，无自动关联路径。
