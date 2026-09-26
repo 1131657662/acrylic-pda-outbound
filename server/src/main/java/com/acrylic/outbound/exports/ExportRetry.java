@@ -40,7 +40,8 @@ public class ExportRetry {
         return queries.view(job);
     }
     private void validate(BackgroundJob original,Payload p,String epoch) {
-        if(!p.epoch().equals(epoch)) throw new BusinessException(409,"EXPORT_GENERATION_CHANGED","恢复代次已变化，请重新查询并生成文件");
+        if(!p.epoch().equals(epoch) || !epoch.equals(original.recoveryEpoch()))
+            throw new BusinessException(409,"EXPORT_GENERATION_CHANGED","恢复代次不同或原任务代次未知，请重新查询并生成文件");
         if(p.expiresAt().isAfter(Instant.now()) && original.status()!=BackgroundJob.Status.FAILED && original.status()!=BackgroundJob.Status.SUCCEEDED)
             throw new BusinessException(409,"EXPORT_NOT_RETRYABLE","原文件任务尚在处理，请等待结束后再试");
         if(!p.template().equals(p.format().template()))

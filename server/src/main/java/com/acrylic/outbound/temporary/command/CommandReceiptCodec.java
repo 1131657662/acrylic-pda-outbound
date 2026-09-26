@@ -13,12 +13,16 @@ public class CommandReceiptCodec {
     private final OfflineSigner signer;
     public CommandReceiptCodec(OfflineSigner signer) { this.signer=signer; }
     public Receipt sign(CommandWrite write) {
+        return sign(write,com.fasterxml.jackson.databind.node.NullNode.getInstance());
+    }
+    public Receipt sign(CommandWrite write,JsonNode decision) {
         var input=write.command();var unsigned=SubmissionJson.object().put("receiptVersion",1)
             .put("receiptId",write.receiptId().toString()).put("commandId",input.key()).put("routeScope",TemporaryProtocol.ROUTE_SCOPE)
-            .put("commandType",input.kind()).put("commandSha256",input.digest()).put("status","INTERNAL_TEST_ONLY")
+            .put("commandType",input.kind()).put("commandSha256",input.digest()).put("status",decision.isNull()?"INTERNAL_TEST_ONLY":"RECORDED")
             .putNull("businessDecision").put("recordedAt",write.recordedAt().toString()).put("eventId",write.eventId().toString())
             .put("resultingDecisionVersion",Long.toString(Math.addExact(write.context().version("decisionVersion"),1)));
         unsigned.set("originalContext",write.context().json());unsigned.set("actor",write.actor());
+        unsigned.set("businessDecision",decision.deepCopy());
         unsigned.set("expected",input.expected());unsigned.set("capabilities",capabilities());
         CommandReceiptShape.validate(unsigned);
         byte[] unsignedBytes=bytes(unsigned);

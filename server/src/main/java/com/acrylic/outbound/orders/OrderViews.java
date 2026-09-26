@@ -12,6 +12,11 @@ public final class OrderViews {
         String vehicleNo, String containerNo, String notes, String plannedTotal, String reason, String createdBy, String createdAt) { }
     public record Detail(Summary order, Revision plan, List<Line> lines) { }
     public record NumberedPage(List<Summary> items,long total,int page,int pageSize) { }
-    public record Receipt(String id, String orderId, int revision, String rowVersion, String status) { }
+    public record Receipt(String id, String orderId, int revision, String rowVersion, String status) {
+        @com.fasterxml.jackson.annotation.JsonProperty
+        public OrderTemporaryCandidateModels.Check temporaryCandidateCheck() {
+            return OrderTemporaryCandidateModels.Check.forOrder(orderId);
+        }
+    }
     public record Event(String id, String type, String actor, String details, String serverTime) { }
 }

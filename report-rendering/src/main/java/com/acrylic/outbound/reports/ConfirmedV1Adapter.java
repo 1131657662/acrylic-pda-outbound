@@ -32,7 +32,8 @@ public final class ConfirmedV1Adapter {
         ConfirmedV1Receipt.validate(input, totals, cutoff);
         var proof = new OrderSnapshot.SequenceProof(OrderSnapshot.SequenceKind.PERSISTED_ORDER_SEQUENCE,
                 required(input.sequenceReference()) + " / submission:" + result.submissionId());
-        return new OrderSnapshot(input.id(), input.number(), input.revision(), 1, "FORMAL_" + input.channel(),
+        String source = input.channel() == ConfirmedV1Input.Channel.TEMP_PDA ? "TEMP_PDA" : "FORMAL_" + input.channel();
+        return new OrderSnapshot(input.id(), input.number(), input.revision(), 1, source,
                 input.header(), input.header(), input.confirmedAt(), proof, input.products(), lines,
                 lines.stream().map(r -> new OrderSnapshot.EffectiveLine(r.dispatchId(), 1, r.weightGrams())).toList(),
                 List.of(), input.exceptions());

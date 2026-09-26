@@ -43,7 +43,7 @@ public class ExportRangeReader {
         return jdbc.query("""
             SELECT BIN_TO_UUID(o.id) FROM outbound_order o
               JOIN order_result_version r ON r.order_id=o.id AND r.result_version=1
-            WHERE o.warehouse_id=? AND o.source='WEB' AND o.status='COMPLETED'
+            WHERE o.warehouse_id=? AND o.source IN ('WEB','PDA_TEMP') AND o.status='COMPLETED'
               AND r.created_at>=? AND r.created_at<? AND r.created_at<=?
             ORDER BY r.created_at,o.id LIMIT 101
             """,(rs,n)->UUID.fromString(rs.getString(1)),Ids.bytes(warehouse),
@@ -53,7 +53,7 @@ public class ExportRangeReader {
     private ReportSnapshot combine(List<ReportSnapshot> snapshots,Range range,Instant cutoff) {
         var metadata=new ReportSnapshot.Metadata(UUID.randomUUID().toString(),"original-confirmed-v1",cutoff,cutoff,
                 range.fromDate(),range.throughDate(),ReportSnapshot.Basis.ORIGINAL_CONFIRMED,reader.provenance(),
-                "固定成员的正式订单原确认V1；不含后续更正、临时来源或未经核验的多设备来源",
+                "固定成员的订单原确认V1；TEMP须核原确认及原设备首轮事实；不含后续更正或未经核验的多设备来源",
                 "原确认时刻升序、订单UUID升序；单内按持久化order_scan_seq递增");
         var snapshot=new ReportSnapshot(metadata,snapshots.stream().flatMap(s->s.orders().stream()).toList());
         try { SnapshotValidator.validate(snapshot); }

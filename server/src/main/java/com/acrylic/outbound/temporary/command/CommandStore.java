@@ -20,6 +20,11 @@ public class CommandStore {
             """,Ids.bytes(actor),TemporaryProtocol.ROUTE_SCOPE,key);
         return rows.isEmpty()?null:new CommandRecord(rows.getFirst());
     }
+    public CommandRecord byReceipt(UUID receipt) {
+        var row=jdbc.queryForMap("SELECT BIN_TO_UUID(q.principal_id) principal,q.idempotency_key FROM temporary_command_receipt r "
+            + "JOIN api_idempotency_request q ON q.id=r.api_request_id WHERE r.id=?",Ids.bytes(receipt));
+        return find(UUID.fromString(row.get("principal").toString()),row.get("idempotency_key").toString());
+    }
     public void reserve(CommandWrite write) {
         jdbc.update("""
             INSERT INTO api_idempotency_request(id,principal_id,route_scope,idempotency_key,request_sha256,resource_id,created_at)
@@ -51,9 +56,9 @@ public class CommandStore {
     public void event(CommandWrite w,CommandReceiptCodec.Receipt r) {
         jdbc.update("""
             INSERT INTO temporary_decision_event(id,scope_id,resulting_decision_version,receipt_id,decision_kind,context_bytes,recorded_at)
-            VALUES(?,?,?,?,'INTERNAL_TEST_ONLY',?,?)
+            VALUES(?,?,?,?,?,?,?)
             """,Ids.bytes(w.eventId()),Ids.bytes(w.context().id("scopeId")),Math.addExact(w.context().version("decisionVersion"),1),
-            Ids.bytes(w.receiptId()),r.unsigned(),Timestamp.from(w.recordedAt()));
+            Ids.bytes(w.receiptId()),CommandDecision.kind(com.acrylic.outbound.submissions.SubmissionJson.parse(r.unsigned())),r.unsigned(),Timestamp.from(w.recordedAt()));
     }
     public Map<String,Object> event(UUID receipt) {
         var rows=jdbc.queryForList("SELECT * FROM temporary_decision_event WHERE receipt_id=?",Ids.bytes(receipt));
@@ -64,7 +69,7 @@ public class CommandStore {
         CommandErrors.integrity(rows.size()==1);return rows.getFirst();
     }
     public List<Map<String,Object>> audits(UUID receipt) {
-        return jdbc.queryForList("SELECT actor_id,details FROM operation_event WHERE entity_type='TEMPORARY_COMMAND' AND entity_id=? AND event_type='INTERNAL_TEST_ONLY'",
+        return jdbc.queryForList("SELECT actor_id,details,event_type FROM operation_event WHERE entity_type='TEMPORARY_COMMAND' AND entity_id=?",
             Ids.bytes(receipt));
     }
 }

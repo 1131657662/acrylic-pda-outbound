@@ -17,9 +17,12 @@ public class TemporaryReviewEligibility {
         this.jdbc=jdbc; this.store=store; this.identities=identities;
     }
     public ArrayNode current(TemporaryStore.Stored original, ServerState.State state) {
+        return current(original,state,Instant.now());
+    }
+    public ArrayNode current(TemporaryStore.Stored original, ServerState.State state,Instant evaluatedAt) {
         var issues=object().putArray("issues");
         add(issues,"TEMPORARY_ORDER_CONFIRMATION_REQUIRED",true);
-        add(issues,"TEMPORARY_AUTH_EXPIRED",!original.expiresAt().isAfter(Instant.now()));
+        add(issues,"TEMPORARY_AUTH_EXPIRED",!original.expiresAt().isAfter(evaluatedAt));
         add(issues,"TEMPORARY_ACTIVATION_UNACKNOWLEDGED",store.ack(original)==null);
         var user=jdbc.queryForObject("SELECT status,auth_version FROM app_user WHERE id=?",
             (rs,n)->new Version(rs.getString(1),rs.getString(2)),Ids.bytes(original.userId()));

@@ -19,13 +19,14 @@ public class ExportFacts {
               r.actual_count,r.weight_g,r.header_snapshot,r.created_at
             FROM outbound_order o LEFT JOIN order_result_version r ON r.order_id=o.id AND r.result_version=1
             WHERE o.warehouse_id=? AND o.id=?
-            """,(rs,n)->new Head(order,rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5),
+            """,(rs,n)->new Head(warehouse,order,rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5),
                 rs.getString(6),rs.getString(7),rs.getString(8)==null?null:parse(rs.getString(8)),
                 rs.getTimestamp(9)==null?null:rs.getTimestamp(9).toInstant()),Ids.bytes(warehouse),Ids.bytes(order));
         if(rows.isEmpty()) throw new BusinessException(404,"ORDER_NOT_FOUND","订单不存在或无权访问");
         var h=rows.getFirst();
-        check(h.source().equals("WEB") && h.status().equals("COMPLETED") && h.receipt()!=null,
-                "只支持已完成正式订单的原确认文件");
+        check(Set.of("WEB","PDA_TEMP").contains(h.source()) && h.status().equals("COMPLETED") && h.receipt()!=null,
+                "只支持已完成订单的原确认文件");
+        check((h.pdaSubmission()==null)!=(h.pcSubmission()==null),"原确认提交来源不唯一");
         check(Long.parseLong(h.count())<=5000,"单次原确认文件最多5000包");
         return h;
     }
@@ -57,7 +58,7 @@ public class ExportFacts {
     static void check(boolean valid,String message) {
         if(!valid) throw new BusinessException(409,"EXPORT_SOURCE_UNAVAILABLE",message);
     }
-    public record Head(UUID order,String number,String source,String status,String pdaSubmission,String pcSubmission,
+    public record Head(UUID warehouse,UUID order,String number,String source,String status,String pdaSubmission,String pcSubmission,
             String count,String weight,JsonNode receipt,Instant confirmedAt) {
         String submission() { return pdaSubmission!=null?pdaSubmission:pcSubmission; }
     }

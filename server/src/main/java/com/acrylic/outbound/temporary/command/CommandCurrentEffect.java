@@ -12,8 +12,9 @@ import org.springframework.stereotype.Component;
 public class CommandCurrentEffect {
     private final CommandFacts facts;private final ServerState state;private final CommandIdentity identities;
     private final CommandSyntheticEligibility eligibility;
-    public CommandCurrentEffect(CommandFacts facts,ServerState state,CommandIdentity identities,CommandSyntheticEligibility eligibility) {
-        this.facts=facts;this.state=state;this.identities=identities;this.eligibility=eligibility;
+    private final CommandDecisionEffect business;
+    public CommandCurrentEffect(CommandFacts facts,ServerState state,CommandIdentity identities,CommandSyntheticEligibility eligibility,CommandDecisionEffect business) {
+        this.facts=facts;this.state=state;this.identities=identities;this.eligibility=eligibility;this.business=business;
     }
     public JsonNode evaluate(CommandRecord row,CommandIdentity.Actor actor) {
         var original=SubmissionJson.parse(row.bytes("original_response_bytes"));var server=state.current();
@@ -33,13 +34,16 @@ public class CommandCurrentEffect {
         if(required==null)reasons.add("COMMAND_EXECUTION_NOT_IMPLEMENTED");
         else if(!actor.permissions().contains(required))reasons.add("EXECUTION_PERMISSION_MISSING");
         current(row,original,result,reasons);
-        reasons.addAll(List.of("BUSINESS_EVALUATION_NOT_IMPLEMENTED","CANDIDATE_EVALUATION_NOT_IMPLEMENTED","EVIDENCE_EVALUATION_NOT_IMPLEMENTED"));
+        if(original.path("businessDecision").isNull())
+            reasons.addAll(List.of("BUSINESS_EVALUATION_NOT_IMPLEMENTED","CANDIDATE_EVALUATION_NOT_IMPLEMENTED","EVIDENCE_EVALUATION_NOT_IMPLEMENTED"));
+        else business.complete(original,result,reasons);
         reasons.forEach(result.putArray("reasons")::add);result.set("capabilities",CommandReceiptCodec.capabilities());return result;
     }
     private void current(CommandRecord row,JsonNode original,ObjectNode result,List<String> reasons) {
         try {
             var now=facts.read(row.id("submission_id"));result.set("currentContext",now.json());var before=original.path("originalContext");
-            reasons.addAll(eligibility.reasons(now));
+            if(original.path("businessDecision").isNull())reasons.addAll(eligibility.reasons(now));
+            else business.observations(now,original,reasons);
             for(String field:List.of("canonicalOrderId","mappingVersion","currentSubmissionId","scopeRound","slotVersion",
                 "receivedPayloadSha256","declaredUploadSha256","planSha256","targetRevision"))
                 if(!Objects.equals(now.json().get(field),before.get(field)))reasons.add("CONTEXT_CHANGED:"+field);

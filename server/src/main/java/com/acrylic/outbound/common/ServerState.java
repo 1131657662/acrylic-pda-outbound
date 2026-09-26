@@ -2,6 +2,7 @@ package com.acrylic.outbound.common;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Component
 public class ServerState {
@@ -18,9 +19,17 @@ public class ServerState {
     }
 
     public void lockWritable(String expectedEpoch) {
+        validate(lockCurrentWritable(), expectedEpoch);
+    }
+
+    public State lockCurrentWritable() {
+        if (!TransactionSynchronizationManager.isActualTransactionActive()
+                || !TransactionSynchronizationManager.hasResource(jdbc.getDataSource()))
+            throw new IllegalStateException("Recovery write lock requires the caller's database transaction");
         State state = jdbc.queryForObject("SELECT recovery_epoch, service_mode FROM server_state WHERE id=1 FOR SHARE",
             (rs, row) -> new State(rs.getString(1), rs.getString(2)));
-        validate(state, expectedEpoch);
+        validate(state, state.epoch());
+        return state;
     }
 
     private void validate(State state, String expectedEpoch) {

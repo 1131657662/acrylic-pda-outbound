@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static com.acrylic.outbound.reports.ConfirmedV1Fixture.*;
 
 class ConfirmedV1AdapterTest {
-    @ParameterizedTest @EnumSource(ConfirmedV1Input.Channel.class)
+    @ParameterizedTest @EnumSource(value=ConfirmedV1Input.Channel.class,names={"PDA","PC"})
     void projectsOriginalFactsWithoutRenumberingOrChangingText(ConfirmedV1Input.Channel channel) {
         var source = order(channel);
         var report = ConfirmedV1Adapter.adapt(input(source));

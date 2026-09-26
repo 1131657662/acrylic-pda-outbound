@@ -19,6 +19,7 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-mysql'
     implementation 'com.github.ben-manes.caffeine:caffeine'
+    implementation 'net.java.dev.jna:jna-platform:5.17.0'
     runtimeOnly 'com.mysql:mysql-connector-j'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
@@ -38,4 +39,12 @@ tasks.register('integrationTest', Test) {
     classpath = sourceSets.test.runtimeClasspath
     include '**/*IT.class'
     shouldRunAfter test
+}
+
+tasks.register('recoveryControlClasspath') {
+    dependsOn testClasses
+    doLast {
+        def target = layout.buildDirectory.file('recovery-control-classpath.json').get().asFile
+        target.text = groovy.json.JsonOutput.toJson(sourceSets.test.runtimeClasspath.files.collect { it.absolutePath })
+    }
 }

@@ -17,7 +17,7 @@ public final class CommandReceiptShape {
         for(String key:List.of("receiptId","commandId","eventId"))uuid(receipt.get(key),false);
         for(String key:List.of("routeScope","commandType","status"))text(receipt.get(key));
         hash(receipt.get("commandSha256"),false);decimal(receipt.get("resultingDecisionVersion"),false,true);
-        require(receipt.get("businessDecision").isNull());instant(receipt.get("recordedAt"));
+        CommandDecision.validate(receipt);instant(receipt.get("recordedAt"));
         actor(receipt.get("actor"));context(receipt.get("originalContext"));
         require(receipt.get("expected").isObject() && receipt.get("capabilities").equals(CommandReceiptCodec.capabilities()));
     }

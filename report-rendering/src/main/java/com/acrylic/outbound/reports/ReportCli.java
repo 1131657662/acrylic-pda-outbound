@@ -6,6 +6,12 @@ import java.nio.file.*;
 /** No services, credentials or database required. Never overwrites an existing report. */
 public final class ReportCli {
     public static void main(String[] args) throws IOException {
+        if (args.length > 0 && args[0].equals("--supervised")) {
+            // The owner must attach this process to its OS container before allowing file/browser writes.
+            if (!java.util.Arrays.equals(System.in.readNBytes(6), "START\n".getBytes(java.nio.charset.StandardCharsets.US_ASCII)))
+                throw new IOException("Renderer supervision was not established");
+            args = java.util.Arrays.copyOfRange(args, 1, args.length);
+        }
         boolean confirmed = args.length == 4 && args[0].equals("--confirmed-v1");
         Values.require(args.length == 3 || confirmed, "用法: [--confirmed-v1] <snapshot.json> <xlsx|scan-xlsx|pdf> <output-file>");
         if (confirmed) args = java.util.Arrays.copyOfRange(args, 1, args.length);

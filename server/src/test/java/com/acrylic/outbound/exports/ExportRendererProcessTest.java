@@ -6,20 +6,34 @@ import java.util.concurrent.*;
 import java.util.jar.*;
 import javax.tools.ToolProvider;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.io.TempDir;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ExportRendererProcessTest {
-    @TempDir Path directory;
+    Path directory;
     private BackgroundJobExecution execution;private Path output;private ExportRendererProcess process;
     @BeforeEach void sleepingRenderer() throws Exception {
+        Path retained=Path.of("../.local/export-process-drain").toAbsolutePath().normalize();
+        Files.createDirectories(retained);directory=Files.createTempDirectory(retained,"case-");
         Path classes=directory.resolve("classes");Files.createDirectories(classes);Files.createDirectories(directory.resolve("lib"));
         Path source=directory.resolve("ReportCli.java");
         Files.writeString(source,"""
             package com.acrylic.outbound.reports;
             public class ReportCli {
                 public static void main(String[] args) throws Exception {
+                    if(args.length>0 && args[0].equals("--supervised")) {
+                        if(!java.util.Arrays.equals(System.in.readNBytes(6),"START\\n".getBytes()))throw new IllegalStateException("Not supervised");
+                        args=java.util.Arrays.copyOfRange(args,1,args.length);
+                    }
+                    if(args.length==1) {
+                        java.nio.file.Files.writeString(java.nio.file.Path.of("child-pid"),Long.toString(ProcessHandle.current().pid()));
+                        System.out.println("READY");System.out.flush();Thread.sleep(60000);return;
+                    }
+                    String executable=java.nio.file.Path.of(System.getProperty("java.home"),"bin","java").toString();
+                    Process child=new ProcessBuilder(executable,"-cp",System.getProperty("java.class.path"),
+                        "com.acrylic.outbound.reports.ReportCli","leaf").start();
+                    if(!new java.io.BufferedReader(new java.io.InputStreamReader(child.getInputStream())).readLine().equals("READY"))
+                        throw new IllegalStateException("Child did not start");
                     java.nio.file.Files.writeString(java.nio.file.Path.of("pid"),Long.toString(ProcessHandle.current().pid()));
                     Thread.sleep(60000);
                 }
@@ -35,9 +49,11 @@ class ExportRendererProcessTest {
     }
     private void render() throws Exception { process.render(execution,directory.resolve("snapshot.json"),output,ExportModels.Format.XLSX); }
     private void assertStopped() throws Exception {
-        long pid=Long.parseLong(Files.readString(directory.resolve("attempt/pid")));
-        var handle=ProcessHandle.of(pid);if(handle.isPresent()) handle.get().onExit().get(5,TimeUnit.SECONDS);
-        assertThat(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false)).isFalse();assertThat(output).doesNotExist();
+        for(String name:java.util.List.of("pid","child-pid")) {
+            long pid=Long.parseLong(Files.readString(directory.resolve("attempt/"+name)));
+            assertThat(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false)).as(name).isFalse();
+        }
+        assertThat(output).doesNotExist();
     }
     @Test void lostLeaseTerminatesRendererProcess() throws Exception {
         doThrow(new JobFailure("LEASE_LOST",false)).when(execution).renew();

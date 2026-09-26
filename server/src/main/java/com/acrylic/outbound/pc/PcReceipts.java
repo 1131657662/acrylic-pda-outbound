@@ -24,6 +24,8 @@ public class PcReceipts {
     public JsonNode save(Ticket ticket,MutationAccess.Context context,JsonNode result) {
         UUID id=Ids.next();var body=object().put("receiptId",id.toString()).put("requestKey",context.key())
             .put("orderId",ticket.payload().order().toString()).put("action",ticket.payload().action());body.set("result",result);
+        if(ticket.payload().action().equals("START"))body.set("temporaryCandidateCheck",parse(json.encode(
+            com.acrylic.outbound.orders.OrderTemporaryCandidateModels.Check.forOrder(ticket.payload().order().toString()))));
         jdbc.update("INSERT INTO pc_command_receipt VALUES(?,?,?,UTC_TIMESTAMP(3))",Ids.bytes(id),Ids.bytes(ticket.payload().order()),canonical(body));
         requests.record(ticket.key(),ticket.digest(),id);
         audit.append(new AuditWriter.Event(ticket.key().actor(),"PC_"+ticket.payload().action(),"ORDER",ticket.payload().order(),canonical(body)),context.requestId());

@@ -19,7 +19,8 @@ final class PdfHtml {
         html.append("</style><body>");
         html.append("<h1>装车单</h1><p>").append(escape(ReportText.identity(s))).append("</p>");
         html.append("<p>期间（Asia/Shanghai）：").append(s.metadata().fromDate()).append(" 至 ")
-                .append(s.metadata().throughDate()).append("；调整按原出库日归属，重量单位 kg。</p>");
+                .append(s.metadata().throughDate()).append(s.metadata().basis() == ReportSnapshot.Basis.ORIGINAL_CONFIRMED
+                        ? "；首次确认事实，重量单位 kg。</p>" : "；调整按原出库日归属，重量单位 kg。</p>");
         html.append("<p>来源：").append(escape(s.metadata().sourceDescription())).append("</p>");
         html.append("<p>订单排序依据：").append(escape(s.metadata().orderSortDescription())).append("</p>");
         if (s.orders().isEmpty()) html.append("<p class='empty'>筛选结果为空，无已确认出库记录。</p>");

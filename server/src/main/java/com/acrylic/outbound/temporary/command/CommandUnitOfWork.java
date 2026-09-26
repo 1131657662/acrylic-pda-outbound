@@ -29,17 +29,19 @@ public class CommandUnitOfWork {
         var operation=operation(input.kind()); // Never gate committed replay on today's implementation or permission.
         state.requireWritable(input.text("transportRecoveryEpoch"));CommandPermissions.requireWrite(actor.permissions(),input.kind());
         locks.source(hint);var context=facts.read(input.uuid("submissionId"));locks.sameHint(hint,context);
-        CommandExpected.validate(input,context,actor);
-        eligibility.require(context);
+        CommandExpected.validate(input,context,actor,operation.requiresCandidateContext());
+        if(!operation.recordsDecision())eligibility.require(context);
         var write=new CommandWrite(Ids.next(),Ids.next(),Ids.next(),Instant.now().truncatedTo(ChronoUnit.MILLIS),
             input,context,identities.snapshot(actor,input.kind()));
-        store.reserve(write);store.advance(write);operation.apply(context);
-        var receipt=codec.sign(write);store.receipt(write,receipt);store.event(write,receipt);audit(write,receipt,requestId);
+        store.reserve(write);store.advance(write);var decision=operation.execute(write);
+        if(operation.recordsDecision()==decision.isNull())throw new IllegalStateException("Operation decision contract mismatch");
+        var receipt=decision.isNull()?codec.sign(write):codec.sign(write,decision);
+        store.receipt(write,receipt);store.event(write,receipt);audit(write,receipt,requestId);
         return replay.existing(actor,input);
     }
     private CommandOperation operation(String kind) {
-        // Only synthetic test participants exist in this batch, and only these bounded expectations are supported.
-        if(!Set.of("NORMAL_CONFIRM","SHORT_APPROVE").contains(kind))throw CommandErrors.unsupported();
+        // Production has no registered operations; isolated assemblies support only these decisions.
+        if(!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK").contains(kind))throw CommandErrors.unsupported();
         var found=operations.stream().filter(o->o.commandType().equals(kind)).toList();
         if(found.isEmpty())throw CommandErrors.unsupported();
         if(found.size()!=1)throw new IllegalStateException("Ambiguous command operation");return found.getFirst();
@@ -47,6 +49,6 @@ public class CommandUnitOfWork {
     private void audit(CommandWrite write,CommandReceiptCodec.Receipt receipt,String requestId) {
         var details=SubmissionJson.object().put("commandSha256",write.command().digest()).put("originalResponseSha256",receipt.originalSha256());
         audit.append(new AuditWriter.Event(UUID.fromString(write.actor().path("principalId").asText()),
-            "INTERNAL_TEST_ONLY","TEMPORARY_COMMAND",write.receiptId(),details.toString()),requestId);
+            CommandDecision.eventType(SubmissionJson.parse(receipt.unsigned())),"TEMPORARY_COMMAND",write.receiptId(),details.toString()),requestId);
     }
 }
