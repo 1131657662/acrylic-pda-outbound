@@ -52,6 +52,8 @@ server: { contract: 0.33.0, paths: 128, flyway: V41, migrations: 41 }
 - 2026-09-26 冻结两树：`3c677ad`（主树 10 提交）/ `d16836b`（服务端树 6 提交），两个 freeze tag 已推远端。
 - 2026-09-27 发布身份链：生成正式 keystore（`.local/pda-signing/`，两份备份分别在 D: 与 E: 两块物理盘）、`signingConfigs` 接入 release、versionCode 20→21、`build_pda.ps1` 支持 `-BuildType` 并注入更新公钥、更新白名单补 `0.33.0`；release APK 经 `apksigner verify` 通过且签名摘要与 keystore 一致。
 - 2026-09-27 工作树清点（只读，未删除）：34 个工作树、33 个分支、112.9 GB；3 个树各有 1 个未合并提交（r08-export / r09-v33-recovery / sixth-wave-integration），5 个树含 32 个基线中不存在的未跟踪文件；发现 2 个**未注册检出**（`D:\acrylic-entry-verify`、`D:\acrylic-snapshots\…\workspace`）共用 `r06-e2a-migration` 的 gitdir。归档前须先取证，删除一律待批。
+- 2026-09-27 唯一文件回收（选项 A）：32 个文件经 `git log --all` 与对象库 blob 双重确认从未入库；30 个提交进基线（datetime-display 11 个 + 其 9 个已跟踪集成改动、R06 设计 6 个、R07 设计 13 个），2 个归档到工作区外 `E:\acrylic-archive-unique-20260927`（日志与可复现的 `.class`），另归档 2 份补丁与 entry-verify 的 2 个未跟踪文件；清单见 [回收记录](history/UNIQUE_FILE_RESCUE_2026-09-27.md)。验证：Android 451 项 0 失败、web typecheck 通过、恢复的 init 脚本实测通过。
+- 2026-09-27 `D:\acrylic-entry-verify` 726 个缺失文件结论：**刻意的部分副本，不是丢失**——缺失集中在 android/web/demo/contracts/tools/deploy 等无关模块（server 仅 2 个），磁盘上实存 1,241 个（server/src/main 488、server/src/test 418）；726/726 均可从 Git 取回（0 不可恢复）。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。
