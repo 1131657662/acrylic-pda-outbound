@@ -18,9 +18,9 @@ server: { contract: 0.33.0, paths: 128, flyway: V41, migrations: 41 }
 历史结论见[历史索引](history/README.md)；验收索引见[开发进度](DEVELOPMENT_PROGRESS.md)；范围与完成标准见[路线](DEVELOPMENT_ROADMAP.md)与[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)。
 
 ## 在途
-- 无在途重型任务、无第二写者。当前助手单写者；环境：共享 MySQL 3306 未动，隔离端口空闲，无对外监听服务。
-- 用户当次指令：① Android 发布身份链（生成正式 keystore、接入 release 签名、注入更新公钥、验证并记录）进行中；④ 文档收敛已完成、工作树清点已完成（**只清点，未删除任何目录**）。
-- 写权：`codex/development` 单写者；服务端树 `r06-e2a-migration` 已合并（分支保留追溯），未归档、未删除。
+- **进行中：M2b-4b 隔离端 link→confirm 真实 HTTP 验证（e2a 路线）**。已完成：守卫星树 `D:/acrylic-pda-worktrees/r06-e2a-migration` 经空闲核对（工作区 0 项、无锁、19329/19330 无监听、无在跑构建；109/111/112/114 的未闭合 marker 是 2026-09-26 21:2x 的历史失败证据，保留不动）后，`checkout --detach ea4d166`——**HEAD 现为 detached ea4d166，分支 `codex/r06-e2a-migration` 未动（仍 d16836b），29 GB `.local`（含 19329 datadir）完好**。**待做**：写真实 HTTP 的 link→confirm 驱动与 IT（复用 `E2aCrossSourceHttp` 的 Bearer/pda_session 会话方式与 `E2aCrossSourceHttpSetup.session()` 造会话；状态准备复用 `TemporaryConfirmationFixture`；两条被测 POST 走 `/api/v1/pda/temporary-commands`，真服需带 `outbound.temporary.commands.enabled=true`；失败路径断言调用既有 `TemporaryConfirmationChecks.reject`，不重写）。**尚无 attempt 号与测试数**。
+- 用户当次指令：M2b-4b（服务端放宽已完成 `c975dfc`；Web 复核页写操作与 Android LINK 映射安装待做）；① 发布身份链已完成；④ 文档收敛与工作树清点已完成（**只清点，未删除任何目录**）；C 清单放着不动。
+- 写权：`codex/development` 单写者；服务端树 `r06-e2a-migration` 现为 detached `ea4d166`（仅用于本次验证，分支未动），未归档、未删除。
 
 ## 已完成（每条一行：子项 → 证据路径 + 提交）
 - 冻结两树未提交成果 → `3c677ad` / `d16836b`（tag `freeze-20260926-pda-r06`、`freeze-20260926-server-r06e2a`）：[收敛前看板归档](history/ORCHESTRATION_STATE_before_status_convergence_2026-09-26.md)
