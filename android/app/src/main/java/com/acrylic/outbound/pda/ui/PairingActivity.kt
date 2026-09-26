@@ -11,6 +11,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.acrylic.outbound.pda.BuildConfig
+import com.acrylic.outbound.pda.display.DisplayTime
 import com.acrylic.outbound.pda.databinding.ActivityPairingBinding
 import com.acrylic.outbound.pda.pairing.PairingUi
 import com.acrylic.outbound.pda.pairing.PairingViewModel
@@ -38,7 +39,7 @@ class PairingActivity : ComponentActivity() {
         binding.environment.text = "${BuildConfig.PDA_ENVIRONMENT}\n${ui.saved?.optString("server") ?: BuildConfig.PDA_SERVER_URL.ifBlank { "服务地址尚未配置，请联系管理员配置安装包" }}"
         binding.pairingStatus.text = if (ui.error.isNotEmpty()) ui.error else statusText(status, ui.bound, operation)
         binding.pairingCode.text = if (status in setOf("WAITING", "PENDING")) result!!.getString("shortCode").chunked(4).joinToString(" ") else ""
-        binding.expiry.text = if (status in setOf("WAITING", "PENDING")) "有效至 ${java.time.Instant.parse(result!!.getString("expiresAt")).atZone(java.time.ZoneId.systemDefault()).toLocalTime().withNano(0)}" else ""
+        binding.expiry.text = if (status in setOf("WAITING", "PENDING")) "有效至 ${DisplayTime.formatDateTime(result!!.getString("expiresAt"))}" else ""
         val approval = result?.optJSONObject("approval")
         binding.proposedIdentity.text = if (approval == null) "请管理员在同一后台的设备管理中输入登记码。" else
             "仓库：${approval.getString("warehouseName")}\n设备：${approval.getString("name")}\n编号：${approval.getString("deviceCode") }"

@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.acrylic.outbound.pda.BuildConfig
 import com.acrylic.outbound.pda.PdaApplication
 import com.acrylic.outbound.pda.databinding.ActivityPdaUpdateBinding
+import com.acrylic.outbound.pda.display.DisplayTime
 import com.acrylic.outbound.pda.update.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CancellationException
@@ -63,7 +64,7 @@ class PdaUpdateActivity : ComponentActivity() {
 
     private fun restorePending() {
         val state = app.updates.savedState() ?: return
-        binding.lastCheck.text = if (state.checkedAt > 0) "上次检查：${java.text.DateFormat.getDateTimeInstance().format(java.util.Date(state.checkedAt))}" else "尚未完成更新检查"
+        binding.lastCheck.text = if (state.checkedAt > 0) "上次检查：${DisplayTime.formatEpochMillis(state.checkedAt)}" else "尚未完成更新检查"
         runCatching { UpdateManifestVerifier(BuildConfig.PDA_UPDATE_PUBLIC_KEY).verify(SignedUpdateManifest.parse(state.manifestJson)) }.onSuccess { found ->
             payload = found; renderRelease(found)
             if (state.state == "READY_TO_INSTALL") showInstall(found)
@@ -87,7 +88,7 @@ class PdaUpdateActivity : ComponentActivity() {
                 binding.status.text = "当前已是最新版本；本次检查已完成"
             }
         }
-        binding.lastCheck.text = "上次检查：${java.text.DateFormat.getDateTimeInstance().format(java.util.Date())}"
+        binding.lastCheck.text = "上次检查：${DisplayTime.formatEpochMillis(System.currentTimeMillis())}"
     }
 
     private fun download() = execute {
@@ -140,7 +141,7 @@ class PdaUpdateActivity : ComponentActivity() {
     }
 
     private fun renderRelease(found: UpdatePayload) {
-        binding.release.text = "可用版本：${found.versionName}（${found.versionCode}）\n大小：${found.sizeBytes / 1024} KB\n发布时间：${found.publishedAt}"
+        binding.release.text = "可用版本：${found.versionName}（${found.versionCode}）\n大小：${found.sizeBytes / 1024} KB\n发布时间：${DisplayTime.formatDateTime(found.publishedAt)}"
         binding.notes.text = "更新说明：${found.releaseNotes}\n兼容范围：Android ${found.minAndroidApi}+，服务端 ${found.serverCompatibility}"
         binding.download.visibility = View.VISIBLE; binding.install.visibility = View.GONE
     }

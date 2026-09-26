@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { formatDateTime } from '../shared/date-time';
 import { request, ApiError, errorText, currentRecoveryEpoch } from '../api';
 import { useSessionStore } from '../session';
 import { continuationSchema, continuationApprovalSchema, continuationLabels } from './continuation-contracts';
@@ -54,7 +55,7 @@ async function confirm(): Promise<void> {
 <template>
   <div>
     <p v-if="recall.continuation"><strong>{{ continuationLabels[recall.continuation.status] }}</strong> · 第 {{ recall.continuation.workRound }} 轮 · 下一个输入序号 {{ recall.continuation.nextOrderScanSeq }}</p>
-    <p v-if="recall.continuation?.approval" class="muted">新资格截止 {{ recall.continuation.approval.expiresAt }}，原 PDA 须联网核验并激活后续扫。</p>
+    <p v-if="recall.continuation?.approval" class="muted">新资格截止 {{ formatDateTime(recall.continuation.approval.expiresAt) }}，原 PDA 须联网核验并激活后续扫。</p>
     <template v-if="recall.continuation?.dispositions.length">
       <p>续作已批准减少 {{ removed }} 包，原车继续保留 {{ scans.length - removed }} 包。减少行的原扫码记录保留，库存处置须等待完整替换批次接收。</p>
       <el-table :data="recall.continuation.dispositions" max-height="280"><el-table-column prop="barcode" label="已核验原包" min-width="150" />

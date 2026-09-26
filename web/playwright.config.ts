@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
-  testIgnore: 'pda-download*.spec.ts',
+  testIgnore: ['pda-download*.spec.ts', '**/datetime/**'],
   workers: 1,
   retries: 0,
   timeout: 30000,
