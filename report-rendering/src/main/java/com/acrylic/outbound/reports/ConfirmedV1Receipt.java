@@ -16,10 +16,10 @@ final class ConfirmedV1Receipt {
         require(textAt(receipt, "resultVersion").equals("1"), "receipt is not version 1");
         var total = products.values().stream().reduce(ConfirmedV1Totals.Total.ZERO, ConfirmedV1Totals.Total::add);
         Objects.requireNonNull(order.channel(), "channel");
-        String weightField = order.channel() == ConfirmedV1Input.Channel.PDA ? "actualWeightGrams" : "weightGrams";
+        String weightField = order.channel() == ConfirmedV1Input.Channel.PC ? "weightGrams" : "actualWeightGrams";
         ConfirmedV1Totals.match(total, textAt(receipt, "actualCount"), textAt(receipt, weightField));
         require(!order.dispatches().isEmpty(), "confirmed order has no dispatches");
-        if (order.channel() == ConfirmedV1Input.Channel.PDA) {
+        if (order.channel() != ConfirmedV1Input.Channel.PC) {
             pdaBoundary(order, receipt, cutoff);
             pda(order, receipt, products);
         } else pc(order, receipt);
@@ -27,9 +27,7 @@ final class ConfirmedV1Receipt {
 
     private static void pda(ConfirmedV1Input.Order order, JsonNode receipt, Map<String, ConfirmedV1Totals.Total> products) {
         require(!receipt.has("channel"), "PDA receipt unexpectedly declares another channel");
-        var source = receipt.path("source");
-        require(textAt(source, "kind").equals("FORMAL") && textAt(source, "sourceOrderId").equals(order.id()),
-                "PDA receipt source is not this formal order");
+        source(order, receipt);
         require(textAt(receipt, "orderStatus").equals("COMPLETED"), "PDA order is not completed");
         require(textAt(receipt, "orderNo").equals(order.number()), "PDA receipt order number differs");
         var lines = order.dispatches();
@@ -49,6 +47,19 @@ final class ConfirmedV1Receipt {
             require(Set.of("BROADCAST", "MANUAL").contains(line.inputSource()), "PDA input source invalid");
             require(Set.of("DEVICE_UNVERIFIED", "MISSING").contains(line.timeQuality()), "PDA clock trust must not be invented");
         }
+    }
+
+    private static void source(ConfirmedV1Input.Order order, JsonNode receipt) {
+        var source = receipt.path("source");
+        if (order.channel() == ConfirmedV1Input.Channel.TEMP_PDA) {
+            require(source.size() == 3 && textAt(source, "kind").equals("TEMP"), "TEMP source fields differ");
+            String creator = textAt(source, "creatorDeviceId"), client = textAt(source, "clientOrderId");
+            require(UUID.fromString(creator).toString().equals(creator) && UUID.fromString(client).toString().equals(client),
+                    "TEMP source identity invalid");
+            require(creator.equals(textAt(receipt, "freezeDeviceId")) && textAt(receipt, "workRound").equals("1"),
+                    "TEMP adapter only accepts original-device first round");
+        } else require(textAt(source, "kind").equals("FORMAL") && textAt(source, "sourceOrderId").equals(order.id()),
+                "PDA receipt source is not this formal order");
     }
 
     private static void pdaBoundary(ConfirmedV1Input.Order order, JsonNode receipt, Instant cutoff) {

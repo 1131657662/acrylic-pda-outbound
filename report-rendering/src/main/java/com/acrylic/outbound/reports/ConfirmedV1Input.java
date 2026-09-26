@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 /** Module-owned projection of fixed v1 facts, not a server API or a database query. */
 public record ConfirmedV1Input(ReportSnapshot.Metadata metadata, List<Order> orders) {
     public ConfirmedV1Input { orders = List.copyOf(orders); }
-    public enum Channel { PDA, PC }
+    public enum Channel { PDA, PC, TEMP_PDA }
 
     public record Order(String id, String number, long revision, OrderSnapshot.Header header,
             Instant confirmedAt, Channel channel, String sequenceReference,
