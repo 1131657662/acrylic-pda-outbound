@@ -22,7 +22,7 @@ watch(() => [route.query.fromDate, route.query.throughDate], () => {
 <template>
   <section aria-label="跨订单原确认汇总" class="summary-section">
     <h2>跨订单原确认汇总</h2>
-    <p class="muted">按北京时间原出库日查询，含正式订单首次确认结果，不含后续更正。每次最多31天、100单、5000包。</p>
+    <p class="muted">按北京时间原出库日查询，含正式订单及已核验临时来源的首次确认结果，不含后续更正。每次最多31天、100单、5000包。</p>
     <form class="summary-filters" @submit.prevent="search">
       <label>开始日期<el-input v-model="range.fromDate" type="date" aria-label="开始日期" :disabled="loading || disabled" /></label>
       <label>结束日期<el-input v-model="range.throughDate" type="date" aria-label="结束日期" :disabled="loading || disabled" /></label>
@@ -40,7 +40,7 @@ watch(() => [route.query.fromDate, route.query.throughDate], () => {
         <el-button :disabled="disabled || changed || loading || summary.actualCount > 1000" @click="emit('create', 'PDF', summary.range)">导出汇总 PDF</el-button>
       </div>
       <p class="muted">文件按申请时的完整范围固定成员和版本，可能与查询时不同；PDF最多1000包。扫码记录 Excel 仍从单订单下载。</p>
-      <el-empty v-if="!summary.orderCount" description="该期间暂无已完成正式订单" />
+      <el-empty v-if="!summary.orderCount" description="该期间暂无已完成订单" />
       <template v-else>
         <h3>产品汇总</h3>
         <el-table :data="summary.products" max-height="360">
