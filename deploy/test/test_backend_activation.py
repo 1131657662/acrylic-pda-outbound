@@ -59,11 +59,11 @@ class BackendActivationTest(unittest.TestCase):
         text = text.replace('/run/lock/acrylic-outbound-test-backup.lock', str(self.base / 'backup.lock'))
         script.write_text(text)
         hashes = {name: hashlib.sha256((self.release / name).read_bytes()).hexdigest() for name in REQUIRED}
-        manifest = dict(release=self.release.name, environment='independent-test', contract='0.20.0',
-                        flyway=28, artifactHashes=hashes, serverSha256=hashes['server.jar'])
+        manifest = dict(release=self.release.name, environment='independent-test', contract='0.30.0',
+                        flyway=34, artifactHashes=hashes, serverSha256=hashes['server.jar'])
         (self.release / 'manifest.json').write_text(json.dumps(manifest))
 
-    def activate(self, failure='', schema='28'):
+    def activate(self, failure='', schema='34'):
         env = dict(os.environ, BASH_ENV=str(self.stub), ACTIVATION_TEST_LOG=str(self.log),
                    ACTIVATION_FAIL=failure, ACTIVATION_SCHEMA=schema)
         result = subprocess.run(['bash', str(self.release / 'deploy/activate_backend.sh'), str(self.release)],
@@ -92,7 +92,7 @@ class BackendActivationTest(unittest.TestCase):
         self.assertEqual(os.readlink(self.base / 'current'), '/previous-unmodified-release')
 
     def test_wrong_schema_rejected_before_service_changes(self):
-        self.assertNotEqual(self.activate(schema='27').returncode, 0)
+        self.assertNotEqual(self.activate(schema='33').returncode, 0)
         self.assertEqual(self.events, [])
 
     def test_unit_install_failure_leaves_writers_stopped(self):
