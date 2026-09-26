@@ -30,11 +30,13 @@ server: { contract: 0.33.0, paths: 128, flyway: V41, migrations: 41 }
 - Android 正式签名身份（R06 起，PKCS12/RSA4096/30 年，证书 SHA-256 `96E9DE81…95B8`）+ release 打包链 + 更新通道白名单补 `0.33.0` → `5678e06`（事实块刷新 `a37d662`）：[签名说明](PDA_SIGNING_GUIDE.md)
 - 唯一未跟踪文件回收（32 个：30 提交 + 2 归档到工作区外）→ `d0fa14e` / `1ee7931` / `3587628`：[回收记录](history/UNIQUE_FILE_RESCUE_2026-09-27.md)
 - 三个未合并提交全部合入 development（`0b1094e`→`f196887`、`94305a7`→`1e98e44`、`f051535`→`8bb3e57`）；`R08AuthorizationRaceIT` **9 项全通过**、web 构建通过 → [合并记录](history/MERGE_BATCH_2026-09-27.md)
+- M2b-4b 服务端最小缺口：临时单确认现接受**受控关联来源**（v1 未动 / v2+ 且 origin=`CONTROLLED_LINK` 两种可确认状态；确认与记账落点经 `Head.order()` 自动指向关联后的正式单；关联后的候选闸门由"必须 0 条"改为"恰好就是被关联目标，第二条仍阻断"）→ 本提交；单测 718 项 0 失败，**尚未在隔离非空 MySQL/真实 HTTP 上证 link→confirm**
+- 工作树与本地证据归档候选清单（只清点、未删除；13 棵可安全删 ≈1.0 GB / 18 棵需先取证 ≈47.6 GB / 快照与签名等建议保留）→ 本提交：[归档候选清单](history/WORKTREE_ARCHIVE_CANDIDATES_2026-09-27.md)
 - 合并态机器口径（`--rerun-tasks`，非业务验收）：服务端 103 XML/718 项 = 717 通过/1 既有符号链接条件 skip；Android 111 XML/444 项 = 440 通过/4 真实 HTTP 条件 skip；均 0 失败 0 错误。
 - 合并前的 R06/R09 子项结论与更早测试口径：见[开发进度](DEVELOPMENT_PROGRESS.md)索引与 `history/R06_*`、`history/R09_*`，不在本页复述历史数字。
 
 ## 未验与阻断（每条一行：项 → 缺什么 → 后果）
-- 七类生产决定 handler/POST → 代码已接线但**默认关闭**，开启需业主明确授权 + 契约同步发布 + Web 复核页写操作 + Android `LINK` 映射安装（M2b-4b 未实现）+ 隔离非空 MySQL/真实 HTTP 证据 → 临时单不能确认出库。
+- 七类生产决定 handler/POST → 代码已接线但**默认关闭**；服务端已支持关联后确认（M2b-4b 服务端侧），但开启仍需业主明确授权 + 契约同步发布 + Web 复核页写操作（能发起 LINK/NORMAL_CONFIRM）+ Android `LINK` 映射安装 + 隔离非空 MySQL/真实 HTTP 证据 → 临时单仍不能确认出库。
 - TEMP 归档 → `SubmissionArchiveService.java:25` 硬拒绝；接线需拆事务边界并放宽 `archive-schemas.yaml` 的 `archiveVersion/assignmentId/additionalProperties` → 临时单不能归档出报表。
 - 恢复出口 → 生产无任何路径置 `RECOVERY_PENDING`（只能人工 SQL 造成）；`RecoveryNormalRegistration` 无 bean/路由且 `baseline` 无自动来源 → 该状态只能靠 R09 运维链或人工 SQL 解除。
 - Android 发布身份 → 无 `signingConfigs`、versionCode 仍 20、构建脚本未注入更新公钥 → 现场只能 USB 覆盖安装，App 内升级不可用。
