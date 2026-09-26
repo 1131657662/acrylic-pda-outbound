@@ -41,5 +41,11 @@ local.properties
 # Original business samples and internal server inventory stay local
 /docs/sku.txt
 /docs/out.txt
+/docs/out.xlsx
 /demo/src/main/assets/sku.txt
 /docs/服务器信息与软件资产清单-*.md
+
+# Local crash dumps and agent scratch artifacts stay local
+hs_err_pid*.log
+replay_pid*.log
+.codex-patch
