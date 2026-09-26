@@ -24,7 +24,7 @@ class TemporarySubmissionMigrationTest {
             formal.scan(); val frozen = SubmissionFreeze(formal.store) { formal.now }.freeze(formal.assignment, "迁移保留")
             TemporaryWorkFixture(folder.newFolder(), formal.db).use { it.start(); it.scan() }
             val before = rows(formal); rebuild(formal, before); formal.db = PdaDatabase.open(formal.context)
-            assertEquals(17, formal.db.openHelper.readableDatabase.version)
+            assertEquals(27, formal.db.openHelper.readableDatabase.version)
             assertTrue(before.size > 25); assertEquals(normalize(before), normalize(rows(formal)))
             formal.db.openHelper.readableDatabase.query("SELECT COUNT(*) FROM temporary_guard").use { it.moveToFirst(); assertEquals(1, it.getInt(0)) }
             assertEquals(frozen, formal.db.submissions().get(frozen.id)); assertNotNull(formal.db.scans().guard(formal.barcodes[0]))

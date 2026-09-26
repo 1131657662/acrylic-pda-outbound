@@ -25,6 +25,12 @@ class TemporarySubmissionTest {
     }
     private fun connection(f: TemporaryWorkFixture, call: (TemporaryConnection.Call) -> JSONObject) = object : TemporaryConnection by f.fixture {
         override fun call(request: TemporaryConnection.Call) = call(request)
+        override fun original(request: TemporaryConnection.Original): ByteArray {
+            val result = call(TemporaryConnection.Call(request.path, request.expected,
+                request.body?.let { JSONObject(it.toString(Charsets.UTF_8)) }, epoch = request.epoch))
+            return JSONObject().put("code", "OK").put("data", result).put("serviceMode", "NORMAL")
+                .put("serverRecoveryEpoch", request.epoch).toString().toByteArray()
+        }
     }
     @Test fun lostResponseQueriesOriginalIdAfterRoomReopenWithoutSendingNewBody() = runBlocking<Unit>(Dispatchers.IO) {
         TemporaryWorkFixture(folder.root).use { f ->

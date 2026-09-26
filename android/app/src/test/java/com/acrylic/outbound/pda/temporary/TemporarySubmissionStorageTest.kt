@@ -26,6 +26,12 @@ class TemporarySubmissionStorageTest {
             f.reopen(); assertEquals(local, f.db.temporarySubmissions().get(local.id))
             val bytes = ByteArrayOutputStream(); var manifest: JSONObject? = null; var chunks = 0
             val connection = object : TemporaryConnection by f.fixture {
+                override fun original(request: TemporaryConnection.Original): ByteArray {
+                    val data = call(TemporaryConnection.Call(request.path, request.expected,
+                        request.body?.let { JSONObject(it.toString(Charsets.UTF_8)) }, epoch = request.epoch))
+                    return JSONObject().put("code", "OK").put("data", data).put("serviceMode", "NORMAL")
+                        .put("serverRecoveryEpoch", request.epoch).toString().toByteArray()
+                }
                 override fun call(request: TemporaryConnection.Call): JSONObject {
                     when {
                         request.path.endsWith("/upload") -> manifest = request.body
@@ -36,7 +42,8 @@ class TemporarySubmissionStorageTest {
                     return JSONObject().put("status", "RECEIVING")
                 }
             }
-            TemporarySubmissionTransport(connection, checkNotNull(f.fixture.auth)).send(local)
+            val expected = checkNotNull(f.fixture.auth)
+            TemporarySubmissionTransport(connection, expected, TemporarySubmissionResponses(f.db, connection, expected, local)).send(local)
             assertEquals(local.sha256, manifest!!.getString("payloadSha256")); assertEquals(chunks.toString(), manifest!!.getString("chunkCount"))
             assertEquals(frozen.clientOrderId, manifest!!.getJSONObject("source").getString("clientOrderId"))
             assertTrue(manifest!!.isNull("assignmentId")); assertTrue(chunks > 4)

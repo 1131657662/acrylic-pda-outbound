@@ -2,6 +2,9 @@ package com.acrylic.outbound.pda.network
 
 import android.content.Context
 import com.acrylic.outbound.pda.security.*
+import com.acrylic.outbound.pda.evidence.E2aStopProof
+import com.acrylic.outbound.pda.evidence.LocalDraftStop
+import com.acrylic.outbound.pda.evidence.LocalDraftStopProof
 import org.json.JSONObject
 
 class PdaSession(private val context: Context, val settings: ConnectionSettings,
@@ -9,11 +12,46 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
     private val recovery: com.acrylic.outbound.pda.sync.RecoveryProtection,
     private val changed: () -> Unit = {}) {
     private val requests = SessionRequests(vault::read)
+    @Volatile private var cachedNetwork: Pair<String, PdaNetwork>? = null
     fun saved(): JSONObject? = vault.read()
     fun publicKey(): String = keys.publicKey(settings.device.isBlank()).also { settings.verifyKey(it) }
-    fun network() = PdaNetwork(settings.server) { envelope ->
-        // A damaged login vault must still allow reauthentication; Room retains the recovery barrier.
-        recovery.observe(envelope, runCatching { saved()?.optString("serverRecoveryEpoch") }.getOrNull())
+    fun localDraftStopKey(): String {
+        val session = requireSession()
+        check(settings.device.isNotBlank() && settings.device == session.getString("deviceId"))
+        return keys.publicKey(false).also(settings::verifyKey)
+    }
+    fun signLocalDraftStop(stop: LocalDraftStop): LocalDraftStopProof.Signed {
+        val session = requireSession(); val core = LocalDraftStopProof.core(stop)
+        check(settings.device == core.getString("creatorDeviceId") &&
+            session.getString("deviceId") == core.getString("creatorDeviceId") &&
+            session.getString("userId") == core.getString("originalOperatorId") &&
+            session.getString("warehouseId") == core.getString("warehouseId") &&
+            session.getString("serverRecoveryEpoch") == core.getLong("sourceRecoveryEpoch").toString())
+        val publicKey = keys.publicKey(false).also(settings::verifyKey)
+        val signed = LocalDraftStopProof.sign(stop, publicKey, keys::sign)
+        SessionIdentity.requireSame(session, saved())
+        check(settings.device == core.getString("creatorDeviceId")); settings.verifyKey(publicKey)
+        return signed
+    }
+    fun stopProof(facts: E2aStopProof.Facts): E2aStopProof.Signed {
+        val session = requireSession()
+        check(settings.device == facts.freezeDeviceId && session.getString("deviceId") == facts.freezeDeviceId &&
+            session.getString("userId") == facts.originalOperatorId && session.getString("warehouseId") == facts.warehouseId &&
+            session.getString("serverRecoveryEpoch") == facts.sourceRecoveryEpoch.toString())
+        val publicKey = keys.publicKey(false).also(settings::verifyKey)
+        val signed = E2aStopProof.Signed(publicKey, E2aStopProof.sign(facts, publicKey, keys::sign))
+        // Freeze owns the Room transaction; do not acquire the network/session mutex in reverse order.
+        SessionIdentity.requireSame(session, saved())
+        check(settings.device == facts.freezeDeviceId)
+        settings.verifyKey(publicKey)
+        return signed
+    }
+    @Synchronized fun network(): PdaNetwork {
+        val address = settings.server.trimEnd('/') + "/"
+        cachedNetwork?.takeIf { it.first == address }?.let { return it.second }
+        return PdaNetwork(address) { envelope ->
+            recovery.observe(envelope, runCatching { saved()?.optString("serverRecoveryEpoch") }.getOrNull())
+        }.also { cachedNetwork = address to it }
     }
 
     fun login(username: String, password: String) = requests.run {
@@ -46,6 +84,19 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
     fun call(path: String, body: JSONObject? = null, epoch: String? = null, raw: ByteArray? = null,
         extraHeaders: Map<String, String> = emptyMap(), expected: JSONObject? = null): JSONObject =
         requests.run(expected ?: requireSession()) { execute(path, body, epoch, raw, extraHeaders) }
+
+    data class Original(val path: String, val body: ByteArray?, val epoch: String, val raw: ByteArray? = null)
+    fun original(request: Original, expected: JSONObject): ByteArray = requests.run(expected) {
+        val result = try { network().original(request.path, request.body, headers(epoch = request.epoch), request.raw) }
+        catch (error: ApiFailure) {
+            if (error.code != "AUTH_EXPIRED") throw error
+            refresh()
+            SessionIdentity.requireSame(expected, saved())
+            network().original(request.path, request.body, headers(epoch = request.epoch), request.raw)
+        }
+        SessionIdentity.requireSame(expected, saved())
+        result
+    }
 
     private fun execute(path: String, body: JSONObject?, epoch: String?, raw: ByteArray?,
         extraHeaders: Map<String, String>): JSONObject {
@@ -91,7 +142,7 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
         if (epoch != null) put("X-Server-Recovery-Epoch", epoch)
     }
     fun logout() = requests.run {
-        try { call("pda/auth/logout", JSONObject()) } finally { recovery.transaction { vault.clear() }; changed() }
+        try { call("pda/auth/logout", JSONObject()) } finally { saveLogout(); changed() }
     }
     fun now(): java.time.Instant {
         val saved = requireSession()
@@ -104,5 +155,13 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
         session.put("timeAnchor", TrustedTime.anchor(envelope.getString("serverTime"), started))
         save(session)
     }
-    private fun save(session: JSONObject) = recovery.transaction { vault.save(session) }
+    private fun save(session: JSONObject) {
+        // Commit automatic-transfer revocation before the separately durable encrypted session changes.
+        recovery.sessionChanged(vault.read(), session)
+        recovery.transaction { vault.save(session) }
+    }
+    private fun saveLogout() {
+        recovery.sessionChanged(vault.read(), null)
+        recovery.transaction { vault.clear() }
+    }
 }

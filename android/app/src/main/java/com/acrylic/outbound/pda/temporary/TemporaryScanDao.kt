@@ -6,6 +6,11 @@ import com.acrylic.outbound.pda.work.ScanProductTotal
 
 @Dao
 interface TemporaryScanDao {
+    @Query("SELECT COUNT(*) FROM temporary_scan s INNER JOIN temporary_capture c ON c.id=s.captureId WHERE c.originDeviceId=:device")
+    fun deviceScanCount(device: String): Long
+    @Query("""SELECT s.* FROM temporary_scan s INNER JOIN temporary_capture c ON c.id=s.captureId
+        WHERE c.originDeviceId=:device AND c.deviceCaptureSeq>:after AND c.deviceCaptureSeq<=:through""")
+    fun deviceScans(device: String, after: Long, through: Long): List<TemporaryScan>
     @Insert fun insertCapture(row: TemporaryCapture)
     @Update fun updateCapture(row: TemporaryCapture)
     @Query("SELECT * FROM temporary_capture WHERE id=:id") fun capture(id: String): TemporaryCapture?
@@ -33,6 +38,10 @@ interface TemporaryScanDao {
     @Query("DELETE FROM temporary_guard WHERE captureId=:id") fun release(id: String): Int
     @Insert fun insertEvent(row: TemporaryEvent)
     @Query("SELECT * FROM temporary_event WHERE clientOrderId=:id ORDER BY localSeq") fun events(id: String): List<TemporaryEvent>
+    @Query("SELECT * FROM temporary_event WHERE id=:id") fun event(id: String): TemporaryEvent?
+    @Query("SELECT COUNT(*) FROM temporary_event WHERE clientOrderId=:id AND type='STOP'") fun stopCount(id: String): Int
+    @Query("SELECT COUNT(*) FROM temporary_event WHERE clientOrderId=:id AND type='LOCAL_EVIDENCE_STOP'")
+    fun localStopCount(id: String): Int
     @Query("SELECT MIN(localSeq) FROM temporary_event WHERE originDeviceId=:device AND localSeq>:after")
     fun nextAudit(device: String, after: Long): Long?
     @Query("""SELECT e.*,d.creatorDeviceId,d.authorizationId,d.operatorId AS sourceOperatorId
@@ -40,5 +49,7 @@ interface TemporaryScanDao {
         WHERE e.originDeviceId=:device AND e.localSeq>:after ORDER BY e.localSeq LIMIT :limit""")
     fun audit(device: String, after: Long, limit: Int): List<TemporaryAuditRecord>
     @Query("SELECT * FROM temporary_capture WHERE clientOrderId=:id ORDER BY orderScanSeq") fun captures(id: String): List<TemporaryCapture>
+    @Query("SELECT * FROM temporary_capture WHERE originDeviceId=:device AND deviceCaptureSeq>:after ORDER BY deviceCaptureSeq LIMIT 128")
+    fun deviceCaptures(device: String, after: Long): List<TemporaryCapture>
     @Query("SELECT * FROM temporary_scan WHERE clientOrderId=:id ORDER BY orderScanSeq") fun allScans(id: String): List<TemporaryScan>
 }

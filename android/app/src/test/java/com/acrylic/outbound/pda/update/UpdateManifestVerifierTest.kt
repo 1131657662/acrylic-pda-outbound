@@ -55,6 +55,12 @@ class UpdateManifestVerifierTest {
         }
     }
 
+    @Test fun verifiedTestServerCompatibilityIsAccepted() {
+        val payload = UpdatePayload.parse(payloadJson().put("serverCompatibility", "0.30.0").toString())
+
+        UpdateCompatibility(payload.packageName, "staging", 21, 28).check(payload)
+    }
+
     @Test fun sourceOutsideVerifiedUpgradeRangeIsRejected() {
         val payload = UpdatePayload.parse(payloadJson().toString())
         assertThrows(IllegalStateException::class.java) {

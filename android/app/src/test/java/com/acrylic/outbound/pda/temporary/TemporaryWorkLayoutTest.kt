@@ -31,7 +31,7 @@ class TemporaryWorkLayoutTest {
             TemporaryWorkRenderer(b).render(TemporaryWorkUi(ready = true, blocked = "资格已到期，原记录保留"), "")
             measure(b.root)
             assertTrue(b.vehicle.text.contains("临时")); assertTrue(b.message.text.contains("不得放行"))
-            assertFalse(b.closeOrder.isEnabled); assertEquals(View.GONE, b.recall.visibility)
+            assertFalse(b.closeOrder.isEnabled); assertEquals(View.VISIBLE, b.recall.visibility); assertFalse(b.recall.isEnabled)
             assertTrue(b.confirm.height >= 48)
         }
     }

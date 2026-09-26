@@ -33,9 +33,12 @@
                 android:minHeight="56dp" android:text="临时作业资料" android:visibility="gone" />
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
                 <Button android:id="@+id/localSection" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="本机任务" />
+                <Button android:id="@+id/historySection" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="历史完成" />
                 <Button android:id="@+id/availableSection" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="待领取" />
                 <ImageButton android:id="@+id/refresh" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_popup_sync" android:contentDescription="联网刷新" />
             </LinearLayout>
+            <Button android:id="@+id/abnormalSection" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:minHeight="48dp" android:text="领取异常与拒绝记录" />
         </LinearLayout>
         <TextView android:id="@+id/identity" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:paddingTop="8dp" />
         <LinearLayout android:id="@+id/cards" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />

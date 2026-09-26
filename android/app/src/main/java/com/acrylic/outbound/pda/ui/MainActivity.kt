@@ -38,6 +38,8 @@ class MainActivity : ComponentActivity() {
         }
         binding.refresh.setOnClickListener { model.refresh() }
         binding.localSection.setOnClickListener { model.selectSection("LOCAL") }
+        binding.historySection.setOnClickListener { model.selectSection("HISTORY") }
+        binding.abnormalSection.setOnClickListener { model.selectSection("ABNORMAL") }
         binding.availableSection.setOnClickListener { model.selectSection("AVAILABLE") }
         binding.loadMore.setOnClickListener { model.loadMore() }
         binding.pairing.setOnClickListener { startActivity(android.content.Intent(this, PairingActivity::class.java)) }
@@ -63,14 +65,18 @@ class MainActivity : ComponentActivity() {
         binding.cards.visibility = if (loggedIn) View.VISIBLE else View.GONE
         binding.identity.text = (if (!loggedIn) "本机资料保留，请登录" else "当前人员：${state.username}") + state.deviceLabel
         listOf(binding.login, binding.username, binding.password, binding.refresh,
-            binding.localSection, binding.availableSection, binding.loadMore).forEach { it.isEnabled = !state.busy }
+            binding.localSection, binding.historySection, binding.abnormalSection, binding.availableSection, binding.loadMore).forEach { it.isEnabled = !state.busy }
         binding.localSection.isSelected = state.section == "LOCAL"
+        binding.historySection.isSelected = state.section == "HISTORY"
+        binding.abnormalSection.isSelected = state.section == "ABNORMAL"
         binding.availableSection.isSelected = state.section == "AVAILABLE"
         binding.availableSection.visibility = if (state.formalOrders) View.VISIBLE else View.GONE
         binding.temporaryPreparation.visibility = if (state.temporaryVisible) View.VISIBLE else View.GONE
         binding.temporaryPreparation.isEnabled = !state.busy
         binding.loadMore.visibility = if (loggedIn && ((state.section == "AVAILABLE" && state.availableHasMore) ||
-            (state.section == "LOCAL" && state.assignedHasMore))) View.VISIBLE else View.GONE
+            (state.section in setOf("LOCAL", "HISTORY") && state.localHasMore) ||
+            (state.section == "LOCAL" && state.assignedHasMore) ||
+            (state.section == "ABNORMAL" && state.abnormalHasMore))) View.VISIBLE else View.GONE
         if (loggedIn) cards.render(state)
         binding.root.post { binding.root.scrollTo(0, scrollPosition) }
     }

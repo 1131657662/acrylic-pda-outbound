@@ -26,7 +26,7 @@ class AuditArchiveMigrationTest {
             f.db.audit().save(AuditCheckpoint("1", device, 1, "original pending audit"))
             f.db.archives().insert(SubmissionArchive(frozen.id, "1", frozen.sha256, "receipt hash", "original proof", "original key", 123L))
             val before = rows(f); rebuildThirteen(f, before); f.db = PdaDatabase.open(f.context)
-            assertEquals(17, f.db.openHelper.readableDatabase.version); assertEquals(before, rows(f))
+            assertEquals(27, f.db.openHelper.readableDatabase.version); assertEquals(before, rows(f))
             assertEquals(frozen, f.db.submissions().get(frozen.id)); assertTrue(f.db.auditArchives().rows("1", device).isEmpty())
             f.db.openHelper.readableDatabase.query("PRAGMA foreign_key_check").use { assertFalse(it.moveToFirst()) }
         }

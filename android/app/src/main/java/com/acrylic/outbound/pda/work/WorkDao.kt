@@ -5,6 +5,7 @@ import androidx.room.*
 @Dao
 interface WorkDao {
     @Query("SELECT * FROM work_order WHERE assignmentId=:id") fun order(id: String): WorkOrder?
+    @Query("SELECT state FROM work_order WHERE assignmentId=:id") fun state(id: String): String?
     @Query("SELECT * FROM work_line WHERE assignmentId=:id ORDER BY deliveryCode") fun lines(id: String): List<WorkLine>
     @Query("SELECT * FROM work_line WHERE assignmentId=:id AND deliveryCode=:code") fun line(id: String, code: String): WorkLine?
     @Query("SELECT * FROM work_device WHERE deviceId=:id") fun device(id: String): WorkDevice?

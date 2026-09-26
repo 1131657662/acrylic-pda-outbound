@@ -42,6 +42,9 @@ class TemporaryWorkActivity : ComponentActivity() {
     }
     private fun actions() {
         binding.back.setOnClickListener { leave() }
+        binding.recall.setOnClickListener {
+            suspendInput(); startActivity(Intent(this, LocalDraftEvidenceActivity::class.java).putExtra("clientOrderId", id)); finish()
+        }
         binding.closeOrder.setOnClickListener {
             suspendInput(); startActivity(Intent(this, TemporarySubmissionActivity::class.java).putExtra("clientOrderId", id)); finish()
         }

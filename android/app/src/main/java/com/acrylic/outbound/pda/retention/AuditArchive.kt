@@ -11,6 +11,9 @@ data class AuditArchive(val recoveryEpoch: String, val originDeviceId: String, v
 
 @Dao
 interface AuditArchiveDao {
+    @Query("""SELECT * FROM local_audit_archive WHERE originDeviceId=:device AND proofJson IS NOT NULL
+        AND CAST(recoveryEpoch AS INTEGER)<=:epoch ORDER BY CAST(recoveryEpoch AS INTEGER),afterSeq LIMIT 4097""")
+    fun completed(device: String, epoch: Long): List<AuditArchive>
     @Query("SELECT * FROM local_audit_archive WHERE recoveryEpoch=:epoch AND originDeviceId=:device ORDER BY afterSeq LIMIT 1025")
     fun rows(epoch: String, device: String): List<AuditArchive>
     @Query("SELECT * FROM local_audit_archive WHERE recoveryEpoch=:epoch AND originDeviceId=:device AND afterSeq=:after")

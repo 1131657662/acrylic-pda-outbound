@@ -50,7 +50,21 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
         unitTests.all {
+            it.inputs.property("e2aAndroidHttpPrivate", System.getenv("E2A_ANDROID_HTTP_PRIVATE").orEmpty())
+            it.inputs.property("temporarySuccessHttpPrivate", System.getenv("TEMP_SUCCESS_HTTP_PRIVATE").orEmpty())
+            it.inputs.property("temporaryArchiveHttpPrivate", System.getenv("TEMP_ARCHIVE_HTTP_PRIVATE").orEmpty())
+            it.inputs.property("draftEvidenceHttpPrivate", System.getenv("DRAFT_EVIDENCE_HTTP_PRIVATE").orEmpty())
+            val archiveFixture = rootProject.file("../server/build/pda-temporary-archive-fixture.json")
+            if (archiveFixture.exists()) it.inputs.file(archiveFixture)
+            it.systemProperty("pda.temporaryArchiveFixture", archiveFixture.absolutePath)
+            val successFixture = rootProject.file("../server/build/pda-temporary-success-fixture.json")
+            if (successFixture.exists()) it.inputs.file(successFixture)
+            it.systemProperty("pda.temporarySuccessFixture", successFixture.absolutePath)
             it.inputs.file(rootProject.file("../server/build/pda-contract-fixture.json"))
+            it.inputs.file(rootProject.file("../server/src/test/resources/e2a/e2a-v1-empty-set-vector.json"))
+            it.systemProperty("pda.e2aVector", rootProject.file("../server/src/test/resources/e2a/e2a-v1-empty-set-vector.json").absolutePath)
+            it.inputs.file(rootProject.file("../server/src/test/resources/e2a/e2a-intake-http-vector.json"))
+            it.systemProperty("pda.e2aIntakeVector", rootProject.file("../server/src/test/resources/e2a/e2a-intake-http-vector.json").absolutePath)
             it.inputs.file(rootProject.file("../server/build/pda-temporary-contract-fixture.json"))
             it.inputs.file(rootProject.file("../server/build/pda-temporary-audit-fixture.json"))
             it.inputs.file(rootProject.file("../server/build/pda-temporary-submission-fixture.json"))

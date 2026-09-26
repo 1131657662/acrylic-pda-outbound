@@ -2,6 +2,10 @@ package com.acrylic.outbound.pda.retention
 
 import com.acrylic.outbound.pda.data.LocalRecoveryControl
 import com.acrylic.outbound.pda.network.ApiFailure
+import com.acrylic.outbound.pda.sync.SyncRetry
+import com.acrylic.outbound.pda.sync.SyncOutcome
+import com.acrylic.outbound.pda.sync.SyncRun
+import com.acrylic.outbound.pda.update.UpdateGate
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import org.junit.*
@@ -29,6 +33,29 @@ class SubmissionArchiveTest {
             assertTrue(f.repository.refresh().contains("已保留")); assertNull(f.saved()); assertEquals(f.local, f.db.submissions().get(f.local.id))
             f.reopen(); f.respond = { f.proof }; f.repository.refresh()
             assertNotNull(f.saved()); assertEquals(2, f.calls)
+        }
+    }
+    @Test fun backgroundTransportFailurePropagatesForRetryWithoutChangingForegroundMessage() = runBlocking<Unit>(Dispatchers.IO) {
+        ArchiveFixture().use { fixture ->
+            fixture.respond = { throw IOException("模拟确认响应丢失") }
+            assertThrows(IOException::class.java) { fixture.repository.refreshBackground(SyncRun()) }
+            assertEquals(30L, SyncRetry.decide(listOf(SyncOutcome(error = IOException("offline"))), 0).delaySeconds)
+            assertTrue(fixture.repository.refresh().contains("原记录已保留"))
+            assertNull(fixture.saved())
+        }
+    }
+    @Test fun backgroundBusyAndUnsupportedEndpointRemainDistinct() = runBlocking<Unit>(Dispatchers.IO) {
+        ArchiveFixture().use { fixture ->
+            UpdateGate.enterBusiness().use {
+                assertThrows(UpdateGate.Busy::class.java) {
+                    fixture.repository.refreshBackground(SyncRun(background = true))
+                }
+            }
+            fixture.respond = { throw ApiFailure("NOT_FOUND", "无接口", httpStatus = 404) }
+            val result = fixture.repository.refreshBackground(SyncRun())
+            assertFalse(result.supported)
+            assertEquals(21600L, SyncRetry.decide(listOf(SyncOutcome(result)), 0).delaySeconds)
+            assertNull(fixture.saved())
         }
     }
     @Test fun unsignedResponseChangesNeverPersistConfirmation() = runBlocking<Unit>(Dispatchers.IO) {

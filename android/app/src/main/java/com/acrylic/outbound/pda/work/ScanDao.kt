@@ -4,6 +4,11 @@ import androidx.room.*
 
 @Dao
 interface ScanDao {
+    @Query("SELECT COUNT(*) FROM work_scan s INNER JOIN work_capture c ON c.id=s.captureId WHERE c.originDeviceId=:device")
+    fun deviceCount(device: String): Long
+    @Query("""SELECT s.* FROM work_scan s INNER JOIN work_capture c ON c.id=s.captureId
+        WHERE c.originDeviceId=:device AND c.deviceCaptureSeq>:after AND c.deviceCaptureSeq<=:through""")
+    fun devicePage(device: String, after: Long, through: Long): List<WorkScan>
     @Insert fun insert(row: WorkScan)
     @Insert fun insertGuard(row: WorkGuard)
     @Query("SELECT * FROM work_guard WHERE barcode=:barcode") fun guard(barcode: String): WorkGuard?

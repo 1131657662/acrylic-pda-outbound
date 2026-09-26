@@ -25,6 +25,8 @@ class TemporaryWorkStore(val db: PdaDatabase, val connection: TemporaryConnectio
         val draft = checkNotNull(db.temporaryDrafts().get(id)); val catalog = source(id)
         access.check(checkNotNull(expectedSession))
         identity(draft, catalog)
+        if (db.localDraftStops().get(id) != null || db.temporaryScans().localStopCount(id) != 0)
+            check(draft.state == "EVIDENCE_STOPPED") { "停止证据与本机状态冲突，请保留原资料" }
         if (draft.planSha256.isNotEmpty() || draft.state == "SCANNING")
             check(draft.planSha256 == TemporaryPlanDigest.digest(draft, db.temporaryDrafts().lines(id))) { "原临时计划摘要不一致，请停扫并保留资料" }
         if (requireTime) TemporaryVerifier.time(catalog.manifest, connection.now())
@@ -47,6 +49,16 @@ class TemporaryWorkStore(val db: PdaDatabase, val connection: TemporaryConnectio
         val device = checkNotNull(db.work().device(draft.creatorDeviceId)); val time = sample()
         db.temporaryScans().insertEvent(TemporaryEvent(UUID.randomUUID().toString(), draft.clientOrderId, capture,
             draft.creatorDeviceId, draft.operatorId, device.nextEventSeq, type, detail, time.wall, time.elapsed, time.boot))
+        db.work().updateDevice(device.copy(nextEventSeq = Math.addExact(device.nextEventSeq, 1)))
+        return device.nextEventSeq
+    }
+    fun stopEvent(draft: TemporaryDraft, eventId: String, submissionId: String): Long {
+        check(db.inTransaction() && draft.state == "FROZEN")
+        val device = checkNotNull(db.work().device(draft.creatorDeviceId))
+        val time = sample()
+        db.temporaryScans().insertEvent(TemporaryEvent(eventId, draft.clientOrderId, null,
+            draft.creatorDeviceId, draft.operatorId, device.nextEventSeq, "STOP", submissionId,
+            time.wall, time.elapsed, time.boot))
         db.work().updateDevice(device.copy(nextEventSeq = Math.addExact(device.nextEventSeq, 1)))
         return device.nextEventSeq
     }

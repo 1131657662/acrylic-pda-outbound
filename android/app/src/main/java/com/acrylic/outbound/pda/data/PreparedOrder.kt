@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "prepared_order", indices = [Index(value = ["orderId"], unique = true)])
+@Entity(tableName = "prepared_order", indices = [Index(value = ["orderId"], unique = true), Index(value = ["activatedAt", "assignmentId"])])
 data class PreparedOrder(
     @PrimaryKey val assignmentId: String,
     val orderId: String,

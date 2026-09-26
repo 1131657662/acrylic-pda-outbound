@@ -2,17 +2,20 @@ package com.acrylic.outbound.pda.sync
 
 import com.acrylic.outbound.pda.network.*
 import com.acrylic.outbound.pda.retention.AuditArchiveRepository
+import com.acrylic.outbound.pda.retention.SubmissionArchiveRepository
 import org.json.JSONObject
 import java.util.concurrent.CancellationException
 
 class BackgroundSync(private val orders: SyncRepository, private val barcodes: BarcodeRepository,
     private val audit: AuditRepository, private val archives: AuditArchiveRepository,
+    private val submissions: SubmissionArchiveRepository,
     private val current: () -> JSONObject) {
     fun run(control: SyncRun): List<SyncOutcome> {
         val auth = JSONObject(current().toString())
         return listOf<() -> SyncResult>(
             { orders.syncOrders(run = control) }, { barcodes.syncBarcodes(run = control) },
-            { syncAudit(control) }
+            { syncAudit(control) },
+            { submissions.refreshBackground(control) }
         ).map { action ->
             try { control.identity(auth, current); SyncOutcome(result = action()) }
             catch (cancelled: CancellationException) { throw cancelled }

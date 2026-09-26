@@ -1,6 +1,7 @@
 package com.acrylic.outbound.pda.temporary
 
 import com.acrylic.outbound.pda.security.JwtVerifier
+import com.acrylic.outbound.pda.evidence.LocalE2aStopRepository
 import com.acrylic.outbound.pda.submission.SubmissionJson
 import com.acrylic.outbound.pda.update.UpdateGate
 import org.json.*
@@ -24,6 +25,7 @@ class TemporaryFreeze(private val store: TemporaryWorkStore) {
             check(payload.toByteArray(Charsets.UTF_8).size <= 32 * 1024 * 1024) { "冻结正文超过32MiB，请保留资料联系主管" }
             TemporarySubmission(submission, id, payload, JwtVerifier.sha(payload.toByteArray(Charsets.UTF_8))).also {
                 store.db.temporarySubmissions().insert(it); store.db.temporaryDrafts().update(draft.copy(state = "FROZEN"))
+                LocalE2aStopRepository(store).createAtFreeze(draft.copy(state = "FROZEN"), it)
             }
         })
     }

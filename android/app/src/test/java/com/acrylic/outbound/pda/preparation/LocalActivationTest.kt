@@ -72,9 +72,9 @@ class LocalActivationTest {
     @Test fun uncertainClaimKeepsOriginalBodyAndKeyAcrossRestart() = io {
         val intent = ClaimIntent("order", "user", "device", "original-key", "original-body", "1")
         db.preparations().insertIntent(intent); db.close(); db = PdaDatabase.open(context)
-        assertEquals(intent, db.preparations().intent("order"))
+        assertEquals(intent, db.preparations().intent("order", intent.userId, intent.deviceId))
         db.preparations().resolveIntent("order", "other-user", "device")
-        assertEquals(intent, db.preparations().intent("order"))
+        assertEquals(intent, db.preparations().intent("order", intent.userId, intent.deviceId))
     }
     private fun io(block: () -> Unit) = runBlocking<Unit>(Dispatchers.IO) { block() }
 }

@@ -28,7 +28,9 @@ class TemporaryWorkRenderer(private val binding: ActivityWorkBinding) {
         controls(state)
     }
     private fun controls(state: TemporaryWorkUi) {
-        binding.recall.visibility = View.GONE
+        binding.recall.visibility = View.VISIBLE
+        binding.recall.text = if (state.draft?.state == "EVIDENCE_STOPPED") "查看原件保全 / 补传" else "停止并保全本单原件"
+        binding.recall.isEnabled = state.draft?.state in setOf("SCANNING", "EVIDENCE_STOPPED")
         binding.closeOrder.text = "核对并结单上传 · 不得放行"
         binding.closeOrder.isEnabled = state.draft?.state == "SCANNING" && state.queued == 0 && state.candidate == null && state.total.count > 0
         binding.validate.isEnabled = state.ready

@@ -12,6 +12,8 @@ import java.util.UUID
 class PreparationRepository(private val context: Context, private val db: PdaDatabase, val session: PdaSession) {
     data class RemotePage(val items: List<JSONObject>, val nextCursor: String?)
     fun local(): List<PreparedOrder> = db.preparations().orders()
+    fun localPage(history: Boolean, offset: Int, limit: Int = 20): List<PreparedOrder> =
+        db.preparations().ordersPage(history, limit, offset)
     fun pending(): List<ClaimIntent> {
         val auth = session.saved() ?: return emptyList()
         return db.preparations().pending(auth.getString("userId"), auth.getString("deviceId"))
@@ -44,9 +46,25 @@ class PreparationRepository(private val context: Context, private val db: PdaDat
 
     fun claim(order: JSONObject, area: String): JSONObject {
         val auth = session.requireSession(); val id = order.getString("id")
-        val intent = db.preparations().intent(id) ?: ClaimIntent(id, auth.getString("userId"), auth.getString("deviceId"), UUID.randomUUID().toString(),
-            JSONObject().put("expectedVersion", order.getString("rowVersion")).put("areaNote", area).toString(), auth.getString("serverRecoveryEpoch"))
-            .also { db.preparations().insertIntent(it) }
+        val user = auth.getString("userId"); val device = auth.getString("deviceId")
+        val previous = db.preparations().intent(id, user, device)
+        if (previous?.status != "REJECTED" && previous != null) return retryClaim(previous)
+        val preview = session.call("pda/orders/$id/claim-preview")
+        check(preview.getString("status") == "READY" && preview.getString("id") == id) { "订单已变化，请刷新核对" }
+        val version = preview.getString("rowVersion")
+        check(version == order.getString("rowVersion") && preview.getString("orderNo") == order.getString("orderNo") &&
+            preview.getString("vehicleNo") == order.getString("vehicleNo")) { "订单已变化，请刷新后重新核对车号与订单号" }
+        check(session.requireSession().getString("serverRecoveryEpoch") == auth.getString("serverRecoveryEpoch")) {
+            "服务器恢复代次已变化，请重新刷新" }
+        if (previous != null) {
+            val oldVersion = JSONObject(previous.body).getString("expectedVersion")
+            check(version != oldVersion && previous.recoveryEpoch == auth.getString("serverRecoveryEpoch")) {
+                "原领取已被拒绝，尚未核实到同一恢复代次的新版本，请联系主管核对" }
+        }
+        val intent = ClaimIntent(id, user, device, UUID.randomUUID().toString(),
+            JSONObject().put("expectedVersion", version).put("areaNote", area).toString(), auth.getString("serverRecoveryEpoch"))
+        if (previous == null) db.preparations().insertIntent(intent)
+        else db.preparations().replaceRejected(previous, intent, System.currentTimeMillis())
         return retryClaim(intent)
     }
 
@@ -58,7 +76,7 @@ class PreparationRepository(private val context: Context, private val db: PdaDat
         // Refresh authentication before sending the persisted write; a lost response keeps the intent intact.
         session.call("pda/devices/me")
         com.acrylic.outbound.pda.sync.RecoveryProtection(db).requireNormal()
-        db.preparations().markIntent(intent.orderId, "UNKNOWN", null)
+        db.preparations().markIntent(intent.orderId, intent.userId, intent.deviceId, intent.key, "UNKNOWN", null)
         return try {
             val envelope = session.network().request("pda/orders/${intent.orderId}/assignments", JSONObject(intent.body),
                 session.headers(epoch = intent.recoveryEpoch) + ("Idempotency-Key" to intent.key))
@@ -66,7 +84,7 @@ class PreparationRepository(private val context: Context, private val db: PdaDat
         } catch (failure: ApiFailure) {
             if (failure.code in setOf("ORDER_ASSIGNED", "ORDER_VERSION_CONFLICT", "ORDER_STATE_CONFLICT",
                     "ORDER_RECOVERY_REQUIRED", "ORDER_BASELINE_CHANGED")) {
-                db.preparations().markIntent(intent.orderId, "REJECTED", failure.message)
+                db.preparations().markIntent(intent.orderId, intent.userId, intent.deviceId, intent.key, "REJECTED", failure.message)
             }
             throw failure
         }
@@ -84,7 +102,10 @@ class PreparationRepository(private val context: Context, private val db: PdaDat
             progress("校验完成，正在保存本机资料")
             val order = LocalActivation(db).activate(VerifiedPackage(assignment, receipt, key, session.requireSession(), payloads, session.now()))
             progress("资料已保存，正在确认下载")
-            acknowledge(order)
+            try { acknowledge(order) } catch (error: Exception) {
+                if (error is kotlinx.coroutines.CancellationException) throw error
+                progress("本机资料已保存，下载确认未完成；请在本机任务重试确认")
+            }
             return db.preparations().order(id)!!
         } finally { temporary.deleteRecursively() }
     }

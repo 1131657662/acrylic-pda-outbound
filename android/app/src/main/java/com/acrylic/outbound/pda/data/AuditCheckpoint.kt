@@ -20,6 +20,14 @@ interface AuditDao {
         SELECT localSeq FROM work_event WHERE originDeviceId=:device AND localSeq>:after AND localSeq<=:through
         UNION ALL SELECT localSeq FROM temporary_event WHERE originDeviceId=:device AND localSeq>:after AND localSeq<=:through)""")
     fun coverage(device: String, after: Long, through: Long): Long
+    @Query("""SELECT localSeq FROM work_event WHERE originDeviceId=:device AND localSeq>:after
+        UNION ALL SELECT localSeq FROM temporary_event WHERE originDeviceId=:device AND localSeq>:after
+        ORDER BY localSeq LIMIT :limit""")
+    fun eventSequences(device: String, after: Long, limit: Int = 256): List<Long>
+    @Query("""SELECT deviceCaptureSeq FROM work_capture WHERE originDeviceId=:device AND deviceCaptureSeq>:after
+        UNION ALL SELECT deviceCaptureSeq FROM temporary_capture WHERE originDeviceId=:device AND deviceCaptureSeq>:after
+        ORDER BY deviceCaptureSeq LIMIT :limit""")
+    fun captureSequences(device: String, after: Long, limit: Int = 256): List<Long>
 }
 
 object AuditMigration : Migration(10, 11) {

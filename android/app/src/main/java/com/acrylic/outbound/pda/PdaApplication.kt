@@ -35,6 +35,10 @@ open class PdaApplication : Application(), androidx.work.Configuration.Provider 
     val workSound by lazy { WorkSound(this) }
     fun temporaryStore() = com.acrylic.outbound.pda.temporary.TemporaryWorkStore(database,
         com.acrylic.outbound.pda.temporary.TemporarySession(session)) { TrustedTime.sample(this) }
+    val e2aRecovery by lazy { com.acrylic.outbound.pda.evidence.LocalE2aRecoveryRepository(::temporaryStore) {
+        auditSync.syncAudit(it)
+    } }
+    val localDraftRecovery by lazy { com.acrylic.outbound.pda.evidence.LocalDraftRecoveryRepository(::temporaryStore) }
     val temporaryWork by lazy { com.acrylic.outbound.pda.temporary.TemporaryEngine(temporaryStore()) { workSound.play(it) } }
     val temporarySubmissions by lazy { com.acrylic.outbound.pda.temporary.TemporarySubmissionRepository(database,
         com.acrylic.outbound.pda.temporary.TemporarySession(session)) }
@@ -50,7 +54,7 @@ open class PdaApplication : Application(), androidx.work.Configuration.Provider 
     val auditSync by lazy { com.acrylic.outbound.pda.sync.AuditRepository(database, session) }
     val archives by lazy { com.acrylic.outbound.pda.retention.SubmissionArchiveRepository(database, session) }
     val auditArchives by lazy { com.acrylic.outbound.pda.retention.AuditArchiveRepository(database, session) }
-    val backgroundSync by lazy { com.acrylic.outbound.pda.sync.BackgroundSync(sync, barcodeSync, auditSync, auditArchives, session::requireSession) }
+    val backgroundSync by lazy { com.acrylic.outbound.pda.sync.BackgroundSync(sync, barcodeSync, auditSync, auditArchives, archives, session::requireSession) }
     val retention by lazy { com.acrylic.outbound.pda.retention.RetentionCleaner(database,
         { session.requireSession().getString("serverRecoveryEpoch") }, session::now) }
     val updates by lazy { PdaUpdateClient(this, session.settings, database) { work.state.value } }

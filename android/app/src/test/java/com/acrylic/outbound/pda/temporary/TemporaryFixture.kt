@@ -10,6 +10,10 @@ import java.time.Instant
 import java.util.*
 
 class TemporaryFixture(val root: File, borrowed: PdaDatabase? = null, contract: JSONObject? = null) : TemporaryConnection, AutoCloseable {
+    val stopSigner by lazy { com.acrylic.outbound.pda.evidence.E2aTestDeviceSigner() }
+    override fun localDraftStopKey() = stopSigner.publicKey()
+    override fun signLocalDraftStop(stop: com.acrylic.outbound.pda.evidence.LocalDraftStop) = stopSigner.sign(stop)
+    override fun stopProof(facts: com.acrylic.outbound.pda.evidence.E2aStopProof.Facts) = stopSigner.sign(facts)
     val context: Context = ApplicationProvider.getApplicationContext()
     private val ownsDatabase = borrowed == null
     var db: PdaDatabase = borrowed ?: run { context.deleteDatabase("outbound-pda.db"); PdaDatabase.open(context) }
@@ -27,6 +31,7 @@ class TemporaryFixture(val root: File, borrowed: PdaDatabase? = null, contract: 
     var ack: JSONObject = fixture.getJSONObject("activationReceipt")
     val repository get() = TemporaryRepository(db, this, File(root, "downloads"))
     override fun current() = auth
+    override fun original(request: TemporaryConnection.Original): ByteArray = error("Unexpected original request: ${request.path}")
     override fun now() = time
     override fun call(request: TemporaryConnection.Call): JSONObject {
         calls.add(request); beforeCall(request)

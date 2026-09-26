@@ -10,6 +10,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.acrylic.outbound.pda.PdaApplication
 import com.acrylic.outbound.pda.data.PreparedOrder
 import com.acrylic.outbound.pda.data.ClaimIntent
+import com.acrylic.outbound.pda.data.ClaimIntentHistory
 import com.acrylic.outbound.pda.databinding.OrderCardBinding
 import kotlinx.coroutines.cancel
 import org.json.JSONObject
@@ -49,17 +50,46 @@ class OrderCardsTest {
         OrderCards(parent, model).render(PreparationUi(local = listOf(LocalCard(prepared, "资料已就绪")), username = "operator"))
         val card = OrderCardBinding.bind(parent.getChildAt(0))
         assertEquals("本机 · 车号 苏A-测试车", card.title.text.toString())
-        assertTrue(card.details.text.toString().startsWith("订单号 $number\n资料已就绪\n"))
+        assertTrue(card.details.text.toString().startsWith("订单号 $number\n已准备 · 待作业 · 资料已就绪\n"))
+    }
+
+    @Test fun completedAndReviewCardsShowDifferentEvidenceStatusAndOtherOperatorCannotWork() {
+        val detail = JSONObject().put("order", remote("OB01a0bcbae6c37d5788c45bdbfb646e62"))
+            .put("plan", remote("OB01a0bcbae6c37d5788c45bdbfb646e62"))
+        val prepared = PreparedOrder("assignment", "order", "user", "device", "bundle", "sha", "{}", "{}",
+            JSONObject().put("order", detail).toString(), "{}", "signature", "2026-09-20T00:00:00Z", 2, "2026-09-20T00:00:00Z")
+        val parent = LinearLayout(ApplicationProvider.getApplicationContext<TestApp>())
+        val cards = OrderCards(parent, model)
+        cards.render(PreparationUi(section = "HISTORY", local = listOf(LocalCard(prepared, "已确认", submissionState = "SYNCED", originalOperator = true))))
+        assertTrue(OrderCardBinding.bind(parent.getChildAt(0)).details.text.contains("历史完成 · 已验签回执"))
+        cards.render(PreparationUi(local = listOf(LocalCard(prepared, "待核对", submissionState = "REVIEW_REQUIRED", originalOperator = false))))
+        val review = OrderCardBinding.bind(parent.getChildAt(0))
+        assertTrue(review.details.text.contains("待主管审核 · 不可放行"))
+        assertEquals("须原操作员登录", review.work.text.toString())
+        assertFalse(review.work.isEnabled)
+    }
+
+    @Test fun archivedRejectionShowsReasonAndTimeWithoutOriginalKeyOrBody() {
+        val parent = LinearLayout(ApplicationProvider.getApplicationContext<TestApp>())
+        val row = ClaimIntentHistory("private-key", "original-order-id", "user", "device", "private-body", "1", "REJECTED", "版本冲突", 123L)
+        OrderCards(parent, model).render(PreparationUi(section = "ABNORMAL", rejectedHistory = listOf(row)))
+        val card = OrderCardBinding.bind(parent.getChildAt(0))
+        assertTrue(card.details.text.contains("版本冲突"))
+        assertTrue(card.details.text.contains("归档时间"))
+        assertFalse(card.details.text.contains("private-key"))
+        assertFalse(card.details.text.contains("private-body"))
     }
 
     @Test fun pendingAndUnpreparedCardsDoNotLabelInternalIdAsAnOrderNumber() {
         val parent = LinearLayout(ApplicationProvider.getApplicationContext<TestApp>())
         val pending = ClaimIntent("original-order-id", "user", "device", "key", "body", "1")
         val assigned = JSONObject().put("orderId", "assigned-order-id").put("offlineToken", JSONObject.NULL)
+            .put("orderNo", "FH202609230001").put("vehicleNo", "苏A-测试车").put("plannedTotal", "2")
             .put("operatorName", "原人员").put("expiresAt", "2026-09-22T00:00:00Z")
         OrderCards(parent, model).render(PreparationUi(pending = listOf(pending), assigned = listOf(assigned)))
         assertTrue(OrderCardBinding.bind(parent.getChildAt(0)).details.text.startsWith("订单标识 original-order-id\n"))
-        assertTrue(OrderCardBinding.bind(parent.getChildAt(1)).details.text.startsWith("订单标识 assigned-order-id\n"))
+        assertTrue(OrderCardBinding.bind(parent.getChildAt(1)).details.text.startsWith("订单号 FH202609230001\n计划 2 包"))
+        assertTrue(OrderCardBinding.bind(parent.getChildAt(1)).title.text.contains("苏A-测试车"))
     }
 
     @Test fun claimConfirmationShowsFullOrderNumberAndVehicle() {

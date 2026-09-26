@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream
 
 @Dao
 abstract class SubmissionDao {
+    @Query("SELECT state FROM local_submission WHERE assignmentId=:id AND currentMarker=1")
+    abstract fun currentState(id: String): String?
     // Large frozen evidence stays in the same durable row; bounded BLOB reads avoid CursorWindow limits.
     @Transaction open fun get(id: String): LocalSubmission? {
         val head = header(id) ?: return null

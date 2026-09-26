@@ -32,7 +32,7 @@ class WorkMigrationTest {
         try {
             assertEquals("signature", db.preparations().order("a")!!.signedManifest)
             assertEquals(15501, db.preparations().bale("a", "003A0000001")!!.weightGrams)
-            assertEquals("original-key", db.preparations().intent("pending-order")!!.key)
+            assertEquals("original-key", db.preparations().intent("pending-order", "u", "d")!!.key)
             assertNull(db.work().order("a"))
             db.openHelper.writableDatabase.query("PRAGMA foreign_key_check").use { assertFalse(it.moveToFirst()) }
             db.openHelper.writableDatabase.query("PRAGMA synchronous").use { assertTrue(it.moveToFirst()); assertEquals(2, it.getInt(0)) }

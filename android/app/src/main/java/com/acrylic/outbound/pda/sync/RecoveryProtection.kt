@@ -5,6 +5,9 @@ import org.json.JSONObject
 
 /** A new login, a NORMAL response or a downloaded baseline must never clear reconciliation. */
 class RecoveryProtection(private val db: PdaDatabase) {
+    internal fun sessionChanged(previous: JSONObject?, current: JSONObject?) = transaction {
+        com.acrylic.outbound.pda.evidence.LocalDraftQueueGuard(db).sessionChanged(previous, current)
+    }
     /** Shares Room's short commit boundary with sync; never wraps a network request. */
     internal fun <T> transaction(action: () -> T): T = db.runInTransaction(java.util.concurrent.Callable(action))
     fun observe(envelope: JSONObject, previousEpoch: String? = null) {

@@ -31,7 +31,7 @@ abstract class TemporarySubmissionDao {
     abstract fun progress(id: String, state: String, receipt: String?, error: String, retry: Boolean)
     @Query("UPDATE temporary_submission SET autoRetry=1 WHERE id=:id AND state NOT IN ('SYNCED','ABORTED','REJECTED')") abstract fun queue(id: String)
     @Query("UPDATE temporary_submission SET abortReason=:reason WHERE id=:id AND abortReason IS NULL") abstract fun abortIntent(id: String, reason: String)
-    @Query("SELECT COUNT(*) FROM temporary_submission WHERE state IN ('RESULT_UNKNOWN','ACTION_REQUIRED') OR (abortReason IS NOT NULL AND state!='ABORTED')") abstract fun unknownCount(): Int
+    @Query("SELECT COUNT(*) FROM temporary_submission WHERE state IN ('RESULT_UNKNOWN','ACTION_REQUIRED') OR (abortReason IS NOT NULL AND state NOT IN ('ABORTED','SYNCED'))") abstract fun unknownCount(): Int
 }
 
 object TemporarySubmissionMigration : Migration(16, 17) {

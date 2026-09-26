@@ -13,7 +13,7 @@ class TemporaryUploadWorker(context: Context, params: WorkerParameters) : Corout
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val app = applicationContext as PdaApplication; val id = inputData.getString("submissionId") ?: return@withContext Result.failure()
         val local = app.database.temporarySubmissions().get(id) ?: return@withContext Result.success()
-        if (!local.autoRetry || local.state == "ABORTED") return@withContext Result.success()
+        if (!local.autoRetry || local.state in setOf("ABORTED", "SYNCED")) return@withContext Result.success()
         val manager = app.getSystemService(ConnectivityManager::class.java)
         if (manager.getNetworkCapabilities(manager.activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) != true) return@withContext Result.retry()
         try {

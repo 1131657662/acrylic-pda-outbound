@@ -32,6 +32,13 @@ class TemporaryDraftActivity : ComponentActivity() {
         binding.back.setOnClickListener { leave() }
         binding.add.setOnClickListener { add() }
         binding.save.setOnClickListener { save(false) }; binding.start.setOnClickListener { save(true) }
+        (binding.start.parent as LinearLayout).addView(Button(this).apply {
+            text = "停止并保全已保存草稿"
+            setOnClickListener {
+                if (!model.state.value.busy && model.state.value.draft != null)
+                    startActivity(Intent(this@TemporaryDraftActivity, LocalDraftEvidenceActivity::class.java).putExtra("clientOrderId", model.id))
+            }
+        })
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) { override fun handleOnBackPressed() = leave() })
         lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { model.state.collect(::render) } }
     }
@@ -51,8 +58,9 @@ class TemporaryDraftActivity : ComponentActivity() {
         listOf(binding.vehicle, binding.container, binding.reason, binding.product, binding.count, binding.add, binding.start).forEach { it.isEnabled = enabled }
         binding.save.isEnabled = !state.busy; binding.back.isEnabled = !state.busy
         binding.save.text = if (state.draft == null) "恢复原草稿" else "保存草稿"
-        if (!state.busy && state.draft?.state in setOf("SCANNING", "FROZEN") && !opened) {
-            opened = true; startActivity(Intent(this, if (state.draft?.state == "FROZEN") TemporarySubmissionActivity::class.java else TemporaryWorkActivity::class.java).putExtra("clientOrderId", model.id)); finish()
+        if (!state.busy && state.draft?.state in setOf("SCANNING", "FROZEN", "EVIDENCE_STOPPED") && !opened) {
+            val target = when (state.draft?.state) { "FROZEN" -> TemporarySubmissionActivity::class.java; "EVIDENCE_STOPPED" -> LocalDraftEvidenceActivity::class.java; else -> TemporaryWorkActivity::class.java }
+            opened = true; startActivity(Intent(this, target).putExtra("clientOrderId", model.id)); finish()
         }
     }
     private fun add() {
