@@ -1,0 +1,24 @@
+<!-- CURRENT_STATE_START -->
+## 当前有效状态（唯一接续入口）
+### 2026-09-25 Room27 产品队列已验；接非零候选独立消费
+
+- 本次范围/写权：01a0d8fa-e979-7883-aba7-9bbafa3e0728 当前单助手接续两树开发及隔离验证。实查旧开发01a0d612与管理01a0d8e5为idle，其余相关旧任务notLoaded；不唤醒旧任务，不派子代理。Room27已验，转入主树Python消费者及服务端树隔离向量/IT；两树同一写者。旧看板已归档 before_product_review 和 before_nonzero_candidates 两份。
+- Git：主树 D:/acrylic-pda-outbound，codex/development @ dccb73b10acbb63020beb3cf827b3b4580d3ed1c；服务端树 D:/acrylic-pda-worktrees/r06-e2a-migration，codex/r06-e2a-migration @ 568683c1a1f8257ad0596a654c6b3558c767ed95。origin 均 https://github.com/1131657662/acrylic-pda-outbound.git。两树未最终整合，本次无提交/推送/main/发布/部署。
+- 全部未提交/未跟踪路径及管理改动范围：[本次路径快照](history/MANAGEMENT_REFRESH_2026-09-25_WORKTREE_STATUS.md)；旧清单/原文完整归档。主树包含 Android Room18–27、R06、R08/R09 等既有改动；服务端沿 V37。本次不清理源码、docs/out.xlsx、.codex-patch、失败库或日志。
+- 当前代码：PdaDatabase version=27/code20；同写者停止、Room27持久队列、产品入口已完成本批自审/修复/复验。[Room27验收](history/R06_DRAFT_PRODUCT_ACCEPTANCE_2026-09-25.md)。坏回执入队/页面错误启用/身份未持久暂停已修；会话前先提交撤权；暂停不被进度重新启用。
+- 当次最新：最终111XML/444项=440pass、4专用HTTPskip，0failure/error；APK及lint通过，0error/fatal、189warning（较Room26新增Activity3项明确保留）。非空Room26→27保留原键/请求/回执、不造自动队列；页面核验失败禁用；扫码先保存再停止和存储失败不签名通过。
+- 当次独立MySQL/HTTP：attempt59非空V34 seed→V37、服务端IT1/1、Android1/1无skip；实际TemporaryEngine停止→Room27队列→13原请求，OPEN/ITEM/VERIFY各丢1回执，重开同键、1次签名、不重复POST；换人后切回仍暂停，服务端重启/坏文件/不可变约束通过。58为最终自审补强前输入，不能替代59。
+- 下一断点：非零候选独立消费者先从原始DB投影重建完整候选、排序/指纹/实际HTTP分页及短装批准回执；普通确认仍拒未排除候选，不臆造排除权限。其后其他未提交来源/归档历史信任、关联/高轮次/处置续作及R07–R09。
+- 最近已验基线（历史引用）：[Room26 验收](history/R06_DRAFT_TRANSFER_ACCEPTANCE_2026-09-25.md)。原请求集合耐久、先 GET 原键、仅专用404同键POST、RAW透传、原响应先存后验、重开不补键/不重签。Android424=420pass/4HTTPskip，APK/lint通过（0错误/186既有warning，code20/Room26）；不得算作 Room27 当次通过。
+- 历史独立/组合：attempt57 独立非空 V34→V37 MySQL，服务端IT1/1、Android真实HTTP1/1；OPEN/ITEM/VERIFY各提交后丢一次回执，Room重开同键恢复、只签一次、不重复POST、原响应一致，含服务端重启/恢复模式/坏文件/DB约束。Android→Java 为独立语言消费；作者/自审均同一助手，无独立人员。准备身份/库存为合成 MockMvc，不代表现场身份、Keystore或生产接收。服务端全577为前项历史报告。
+- 更早已验按范围引用：来源事实；Room20/21原请求/STOP/ABORT；确认记账/独立短装；Room22/23成功归档/真实冻结；Room24停止、Room25签名/原件结构闭合。R08 attempt53 TEMP原确认导出不是多设备净结果；R09 attempt47混合归档/11故障不是完整恢复。[证据索引](DEVELOPMENT_PROGRESS.md)。
+- 已知失败/限制：原任务429/中断不是业务验收完成。历史Mockito编译、attempt55 RESTORING约束失败及修复经过保留；管理Python写入失败保留原档。本次统计命令一次语法错误已修正，未影响资料。未以当前定向通过抹去旧失败。
+- 当次口径：作者/自审均当前助手；Android→Java真实HTTP为独立语言消费，身份准备/设备签名合成，非现场/Keystore。4HTTP条件skip不能算全链通过；本批仅草稿HTTP，另3条链保持历史。没有新Web/Chrome/模拟器/真机/部署。产品最终全套后至59无源码/fixture漂移。
+- 证据：本次[归档说明/manifest](history/management-2026-09-25-before-refresh/README.md)；61项XML及日志副本 outputs/management-refresh-20260925-01a0d8e5/。Room26原证据 outputs/r06-e2a-takeover-20260925-01a0d612/*draft-transfer*，manifest SHA256 a9c006f519b94e83d192700120b54dbff2191e4b9ef6ec43609733a73e6fac11，APK SHA256 a339c78f524b28d6bef73fa3088daafd58533c188bd4d81387c23d4a57abc3ab。
+- 当次证据：outputs/r06-product-20260925-01a0d8fa/；两树before/final路径快照，Android最终488文件manifest SHA256 e2a9e0707dff5de13fd6b8b6940ca0e38c77f7a6de632d41290cc8a18608c1a1，APK SHA256 15ee10c18eeeacd695592608d33ca03e032f624717ec380c2ca3be2b40c50590；XML/log/摘要保留，private不复制。
+- 环境/重型槽：58/59已认证shutdown，实查无java/gradle/adb/emulator，19330/19434/19435/19436无监听；共享3306 PID5448、父4412未动。下一独立run从60核目录分配，不复用/覆盖失败库、密钥或凭据。
+- R06未完：其他未提交来源可信业务事实及归档历史信任；非零候选独立消费者、排除/关联/mapping2+、高轮次、拒绝/实物处置/续作。排除/拒绝等未定业务政策不可臆定。原件收存只证明 ORIGINALS_STORED，businessFactsStatus=NOT_EVALUATED，不创建S/K、不释放、不恢复扫码、不授确认/删除。
+- R07–R09未完：PDA交接/更正调整及净结果；R08多设备/后续净结果；共享恢复控制/fence、截点外FH/历史keyring、RPO/RTO、异地防覆盖、V36/V37完整恢复语义/灾后重建；两树最终整合及相应回归。完成标准见[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)。
+- 后延未验：独立人员、真实PDA/Keystore、OS死亡/断电/外网、长时/五年等待、原生Excel显示打印、现场/生产权限审批。R05 code20/Room17关键未验和R09限制保留；七类生产决定handler/POST/放行/关闭及TEMP生产归档不开放，localDeletionAllowed=false。
+- 接续与结束条件：沿既有R01–R09目标完成所有可独立开发、自审、隔离验证事项；不把本文整理或61项定向通过当总目标完成。只在逐项实现/验证、必要整合回归和后延清单齐备后结束；新提示见[可复制接续提示](REMAINING_DEVELOPMENT_PLAN.md#可复制接续提示)。
+<!-- CURRENT_STATE_END -->

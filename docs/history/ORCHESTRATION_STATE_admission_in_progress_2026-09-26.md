@@ -1,0 +1,54 @@
+# 项目当前状态
+
+<!-- CURRENT_STATE_START -->
+## 当前有效状态（唯一接续入口）
+### 2026-09-26 R09关闭意图与V39已验；接全应用共享入口
+
+- 本次范围/写权：01a0d8fa-e979-7883-aba7-9bbafa3e0728 当前单助手接续两树开发及隔离验证。实查旧开发01a0d612与管理01a0d8e5为notLoaded，其他相关旧任务notLoaded/systemError；不唤醒旧任务，不派子代理。Room27/非零候选/草稿归档信任/其他未提交来源事实已验，R09库外控制记录本地模块已验，接共享恢复写屏障；两树同一写者。旧看板已归档 before_product_review 和 before_nonzero_candidates 两份。
+- Git：主树 D:/acrylic-pda-outbound，codex/development @ dccb73b10acbb63020beb3cf827b3b4580d3ed1c；服务端树 D:/acrylic-pda-worktrees/r06-e2a-migration，codex/r06-e2a-migration @ 568683c1a1f8257ad0596a654c6b3558c767ed95。origin 均 https://github.com/1131657662/acrylic-pda-outbound.git。两树未最终整合，本次无提交/推送/main/发布/部署。
+- 全部未提交/未跟踪路径及管理改动范围：[本次路径快照](history/MANAGEMENT_REFRESH_2026-09-25_WORKTREE_STATUS.md)；旧清单/原文完整归档。主树包含 Android Room18–27、R06、R08/R09 等既有改动；服务端新增 V38 Job原代次。本次不清理源码、docs/out.xlsx、.codex-patch、失败库或日志。
+- 当前代码：PdaDatabase version=27/code20；同写者停止、Room27持久队列、产品入口已完成本批自审/修复/复验。[Room27验收](history/R06_DRAFT_PRODUCT_ACCEPTANCE_2026-09-25.md)。坏回执入队/页面错误启用/身份未持久暂停已修；会话前先提交撤权；暂停不被进度重新启用。
+- 当次最新：最终111XML/444项=440pass、4专用HTTPskip，0failure/error；APK及lint通过，0error/fatal、189warning（较Room26新增Activity3项明确保留）。非空Room26→27保留原键/请求/回执、不造自动队列；页面核验失败禁用；扫码先保存再停止和存储失败不签名通过。
+- 当次独立MySQL/HTTP：attempt59非空V34 seed→V37、服务端IT1/1、Android1/1无skip；实际TemporaryEngine停止→Room27队列→13原请求，OPEN/ITEM/VERIFY各丢1回执，重开同键、1次签名、不重复POST；换人后切回仍暂停，服务端重启/坏文件/不可变约束通过。58为最终自审补强前输入，不能替代59。
+- 本阶段收口：[非零候选验收](history/R06_NONZERO_CANDIDATE_ACCEPTANCE_2026-09-25.md)。attempt61非空V34→V37、IT1/1、Python54/54无skip；21候选五页实际HTTP，从含跨仓/TEMP的30条原始DB投影独立筛选，完整上下文/指纹/游标及非零短装批准已验，普通确认仍拒未排除候选。完整服务端577=576pass/1符号链接条件skip，0失败。
+- 草稿归档本阶段：[验收](history/R06_DRAFT_ARCHIVE_TRUST_ACCEPTANCE_2026-09-25.md)。attempt63真实Android审计上传/归档→停止14原请求（含1归档）、三次丢回执恢复；服务端换钥重启+配置历史钥、坏归档/快照文件拒绝。IT1/1及Android1/1无skip；服务端583pass/1skip，Android440pass/4HTTPskip，APK/lint任务通过（0错误/189warning，APK源码未变UP-TO-DATE）。
+- 本阶段收口：[其他未提交来源验收](history/R06_UNSUBMITTED_SOURCE_ACCEPTANCE_2026-09-25.md)。attempt67非空V34→V37+真实HTTP IT1/1无skip；原授权/签名准备/库存/连续审计和待确认状态核验，已提交归属冲突不降级；只有当前TEMP包占K。完整服务端614=613pass/1符号链接条件skip，0失败。64/65 fixture约束失败保留，66仅补强前输入。
+- 下一断点：用户已继续，原目标管理仍blocked但当前任务active，不重建目标。按[全入口实施标准](parallel/R09/APPLICATION_ADMISSION.md)先接连接生命周期，再实现NORMAL双侧证据及API/Session/Worker/文件入口；不能以永久关闭stub算完成。当前无在途重型任务；实查只有共享3306 PID5448/父4412，19330/19434–19436空闲，旧任务无活动写者。两树完整接续快照 outputs/r06-product-20260925-01a0d8fa/admission-start-main/server-status.txt及.diff；428/381个dirty路径，较关闭意图快照仅新增全入口盘点文档。下一独立MySQL run83，先查目录/监听。
+- R09本阶段：[本地控制验收](history/R09_LOCAL_CONTROL_ACCEPTANCE_2026-09-26.md)，新增29/29无skip；完整R09 114=103pass/11专用恢复环境skip、0失败。原键/CAS/真实子进程锁与四类崩溃点、损坏/回退/外部checkpoint已验。ordinaryWritesAllowed=false、localDeletionAllowed=false，尚未共享接入/生产释放。
+- R09证据：outputs/r06-product-20260925-01a0d8fa/control-*；96文件manifest SHA256 e3ebe8ff8f902e6cc808047b099c49abcfe4d30a446b2cffc2ec264cb47b7805，两树control-final-main/server-status.txt。首次响应顺序失败和缺PyMySQL导入失败保留；专用venv固定依赖复验。本阶段无Java/Android变更，未跑MySQL/HTTP/APK/lint，不拼接历史为本批通过。
+- R09最新：[Job代次屏障验收](history/R09_JOB_FENCE_ACCEPTANCE_2026-09-26.md)。V38保留旧Job原资料/未知代次不回填；实例/Job双代次+恢复锁先于Job。attempt72非空MySQL专项1/1及Job回归23/23无skip、HTTP拒写/重启；attempt71真实导出Java1/1+浏览器1/1。完整服务端619=618pass/1符号链接skip，0失败；无Android变更/本批APK-lint。
+- R09最新证据：outputs/r06-product-20260925-01a0d8fa/job-fence-*，938文件manifest SHA256 3e2d06ac56a7d2f860ee8c38bf94b21bb7582656ab2e136288f2589c62f967d6；两树完整job-fence-final-main/server-status.txt。68/69/70补强前证据保留；库外控制与DB投影尚未接入，不能据本批开放业务恢复。
+- 最近已验基线（历史引用）：[Room26 验收](history/R06_DRAFT_TRANSFER_ACCEPTANCE_2026-09-25.md)。原请求集合耐久、先 GET 原键、仅专用404同键POST、RAW透传、原响应先存后验、重开不补键/不重签。Android424=420pass/4HTTPskip，APK/lint通过（0错误/186既有warning，code20/Room26）；不得算作 Room27 当次通过。
+- 历史独立/组合：attempt57 独立非空 V34→V37 MySQL，服务端IT1/1、Android真实HTTP1/1；OPEN/ITEM/VERIFY各提交后丢一次回执，Room重开同键恢复、只签一次、不重复POST、原响应一致，含服务端重启/恢复模式/坏文件/DB约束。Android→Java 为独立语言消费；作者/自审均同一助手，无独立人员。准备身份/库存为合成 MockMvc，不代表现场身份、Keystore或生产接收。服务端全577为前项历史报告。
+- 更早已验按范围引用：来源事实；Room20/21原请求/STOP/ABORT；确认记账/独立短装；Room22/23成功归档/真实冻结；Room24停止、Room25签名/原件结构闭合。R08 attempt53 TEMP原确认导出不是多设备净结果；R09 attempt47混合归档/11故障不是完整恢复。[证据索引](DEVELOPMENT_PROGRESS.md)。
+- 已知失败/限制：原任务429/中断不是业务验收完成。历史Mockito编译、attempt55 RESTORING约束失败及修复经过保留；管理Python写入失败保留原档。本次统计命令一次语法错误已修正，未影响资料。未以当前定向通过抹去旧失败。
+- 当次口径：作者/自审均当前助手；Android→Java真实HTTP为独立语言消费，身份准备/设备签名合成，非现场/Keystore。4HTTP条件skip不能算全链通过；本批仅草稿HTTP，另3条链保持历史。没有新Web/Chrome/模拟器/真机/部署。产品最终全套后至59无源码/fixture漂移。
+- 证据：本次[归档说明/manifest](history/management-2026-09-25-before-refresh/README.md)；61项XML及日志副本 outputs/management-refresh-20260925-01a0d8e5/。Room26原证据 outputs/r06-e2a-takeover-20260925-01a0d612/*draft-transfer*，manifest SHA256 a9c006f519b94e83d192700120b54dbff2191e4b9ef6ec43609733a73e6fac11，APK SHA256 a339c78f524b28d6bef73fa3088daafd58533c188bd4d81387c23d4a57abc3ab。
+- 当次证据：outputs/r06-product-20260925-01a0d8fa/；两树before/final路径快照，Android最终488文件manifest SHA256 e2a9e0707dff5de13fd6b8b6940ca0e38c77f7a6de632d41290cc8a18608c1a1，APK SHA256 15ee10c18eeeacd695592608d33ca03e032f624717ec380c2ca3be2b40c50590；XML/log/摘要保留，private不复制。
+- 非零候选证据：outputs/r06-product-20260925-01a0d8fa/candidate-*；949文件manifest SHA256 4e2103d9ecc62280a86b117a1c103df4c6bbf84f91ae20682aeb9c0a3a7b4102；两树全部路径candidate-main/server-status.txt，当前管理文件随后追加。Room27旧服务端manifest缺build.gradle已如实补记，不倒填历史。
+- 归档证据：outputs/r06-product-20260925-01a0d8fa/archive-*，1359文件manifest SHA256 39e091687e8d8a7c862f59ca34630641d2626bc01af50308252d9b9a3423c236；全套后无漂移。attempt62测试连接漏恢复代次observe失败，已修并保留失败资料。
+- 当前证据：同目录unsubmitted-*，1344文件manifest SHA256 e5e47bbc876e2c200fc39589ce6e19216f2f2151aba1ca21fe6963d02de77c14；两树完整路径unsubmitted-main/server-status.txt。Java客户端/合成身份，非独立人员/跨语言；本阶段无Android源码变化，未重跑APK/lint，不以历史代本批。
+- 最新子项：[Java消费者验收](history/R09_JAVA_CONTROL_ACCEPTANCE_2026-09-26.md)。35定向通过；服务端654=653pass/1符号链接skip；Python114=103pass/11专用恢复skip；Windows/Linux各16真实Python原件→Java/双向进程锁，无skip。规范Unicode、全链/外锚点、整体回退、半指针、坏锁/硬链接、嵌套/线程、释放/kill恢复均验。Java未接生产，DB/HTTP/APK未在此子项运行。
+- 最新证据：control-java-*，957文件manifest SHA256 574491a195a92461e8d4067d17d49721b1c02ea1ca097a0e2157a17b60326d27；两树完整diff/status快照。Windows01参数Unicode失败、Linux01私有JRE链接9失败、旧404均保留；最终windows03/linux03通过，Linux原件tar另存。旧任务notLoaded且单写者，命令/文件工具可用；旧当前区已归档before_shared_gate。Linux私有JRE位于/var/tmp/acrylic-r09-jre-087YiL，未改系统Java。
+- 最新子项：[文件进程退出验收](history/R09_PROCESS_DRAIN_ACCEPTANCE_2026-09-26.md)：停止/超时/丢租约等待已观察renderer及子进程退出，不能确认则禁新导出。5定向通过，完整656=655pass/1skip及bootJar；attempt73非空V34→V38真实HTTP导出1/1和浏览器1/1，无skip。首次fixture编译与启动路径比较失败保留，73沿原实例复验完成。
+- 排空证据：process-drain-*；858文件manifest SHA256 1c2b5c52a8430c639a653b4fbb332aa31ac8ec34fa01d2eb882725d202c2e865，JAR SHA256 535da2fb7937e79fe60206bba958c2d7fc3695490d35e04b1cbdfbbfd2972d53。完整租约/未观察孤儿/共享DB门禁仍未完成，不能用本次已追踪进程通过代替；下步按SHARED_GATE_IMPLEMENTATION接。
+- 最新子项：[写者租约验收](history/R09_WRITER_LEASE_ACCEPTANCE_2026-09-26.md)。Java41、Python33专项、Windows/Linux各25真实跨进程无skip；完整Python118=107pass/11skip，服务端666=665pass/1skip及JAR。永久锁身份绑定/按文件身份引用计数、旧authority只读，未授NORMAL或共享接入。failed focused01/python02/windows03保留。
+- 租约证据：writer-lease-*、两树writer-lease-final-main/server-status.txt与source-manifest；Linux原件tar保留。本层未跑MySQL/HTTP/Android；下一步真实事务及数据库回滚/提交竞争，不能拿attempt74替代。
+- 环境/重型槽：58–82均认证shutdown，当前无在途重型；19330/19434/19435/19436无监听，共享3306 PID5448/父4412未动。下一新独立run83先核目录/监听；不覆盖原库、失败库和凭据。
+- 容器当前输入：Windows原生Job+stdin先归组后写入；9定向通过，report监督入口通过，attempt74非空MySQL/HTTP Java1及浏览器1通过；Linux隔离用户systemd/cgroup停止与主进程死亡2项通过，未部署。完整windows-job-full-01服务端660=659pass/1符号链接skip；report初两轮缺Chromium路径失败保留，修正本机执行环境后full03为124/124无skip。详见[容器验收](history/R09_PROCESS_CONTAINMENT_ACCEPTANCE_2026-09-26.md)。
+- 容器证据：1031项containment-source-manifest.json SHA256 ab8a6135999ec552544a15760dc1097e8b61d54aec548748a2865e2a102b0ef9；JAR SHA256 3951b0f3290b3e46c1e696127262da593971efa6ad37e93b2c6443981bee87dc，完整路径containment-final-main/server-status.txt。Linux原件tar保留，无活动测试unit。没有生产部署/Android变更；完整共享门禁及事务排空仍未完成。
+- 实查完整路径快照：outputs/r06-product-20260925-01a0d8fa/containment-resume-main/server-status.txt；HEAD/分支/远端未变，旧任务无活跃写者。目标API仍blocked但当前任务active，未重建目标。
+- 事务阶段已验：RecoveryLeasedTransaction/RecoveryTransactionLease固定实例快照、先租约后DB，提交/回滚回调清理后放锁；UNKNOWN保留租约/毒化，禁止外层及独立内层挂起。服务端671=670pass/1符号链接skip及JAR。75真实MySQL暴露提交异常转换分支，失败库/XML保留；76/77已通过事务与HTTP，78为补强内层挂起后的最终输入，IT1/1及浏览器1/1无skip；真实MySQL提交/回滚/UNKNOWN持锁、旧实例与外层/内层拒绝通过，JVM退出后连接/事务0/0才重试原命令。详见[事务租约验收](history/R09_LEASED_TRANSACTION_ACCEPTANCE_2026-09-26.md)。
+- 事务证据：leased-transaction-*；982项manifest SHA256 a52f152ff4f00f573c14e4054b4acbfb6ebb5e22c9fb8b1cd04698a2745feba1，JAR a8deb85ad201e72f227be5b2b3dc4b4da139447e78224ca16aec5f873e44c7e9；完整两树路径leased-transaction-final-main/server-status.txt。未注册API/Spring门禁bean；真实HTTP为兼容回归，DB投影/全部入口仍待续，不能等同完整共享门禁。
+- 租约manifest补记：973项SHA256 fd15311443b74908c3bfb6aae961691d630d043e95d0e969a91f423fd560e28c，JAR0aa56b3d42a92de240bd4a7db1124add52590521f684b254eecaf65b645ea839。生成脚本探测不存在的server/gradle.lockfile报错后明确未包含该不存在路径，不声称已有依赖锁文件；原manifest未改。
+- DB投影已验：[V39验收](history/R09_CLOSED_PROJECTION_ACCEPTANCE_2026-09-26.md)。安装/UUID数字映射/全链追加投影不可改删，原事实不回填；自审修复只读末版遗漏中间缺口。服务端671=670pass/1skip及JAR；最终attempt80非空V38→V39、Python原件→Java→MySQL四阶段/并发/错库/回退/坏映射/回滚/溢出，原业务表/文件字节不变；IT1+浏览器1无skip，退出后连接/事务0。79为补强前输入保留。
+- 投影证据：closed-projection-*；1004项manifest SHA256 b12daed8d0a48f407a9ab9d69645bea4117bcec9d0a15f033ed057e0dbcb08f5；JAR c0f6472fc2232c608873f43d14f9482f4f084b7e9f64dc63efc6aa897991a652。两树完整路径/差异closed-projection-final-main/server-status.txt与.diff。原资料留80本机；未注册API/生产bean，HTTP仅兼容回归。关闭意图后续见下条验收，不倒填V39历史证据。
+- 关闭意图已验：[v2验收](history/R09_CLOSING_INTENT_ACCEPTANCE_2026-09-26.md)。先耐久原意图再排空，拒新Java租约，旧协议只读；675单测pass/1skip、Python114pass/11专用skip，Windows/Linux各31真实进程无skip。最终82非空MySQL真实事务排空/投影/HTTP+浏览器1+1，退出后连接/事务0，UNKNOWN原键恢复仍关闭。初轮错误码、fixture、Windows路径、Linux共享class重编译及81旧回退夹具失败均保留。
+- 关闭意图证据：closing-intent-*；1010项manifest SHA256 29dc77669fef902753b1d229d7323497e5fed2d1d75851ce2c8b881072d98adb，JAR 47d83a7ab5f2c3de85557fd1387863cb31f3ca48171c5209e7c4f3d520a5d0e2；固定class快照及Linux原件tar已保存。全应用API/Session/Worker/Flyway/文件接线与NORMAL仍未完，HTTP仅兼容回归。
+- R06未完：其他TEMP完整计划、跨来源续作审计；排除/关联/mapping2+、高轮次、拒绝/实物处置/续作。排除/拒绝等未定业务政策不可臆定。草稿原件收存仍只证明 ORIGINALS_STORED，businessFactsStatus=NOT_EVALUATED，不创建S/K、不释放、不恢复扫码、不授确认/删除。
+- R07–R09未完：PDA交接/更正调整及净结果；R08多设备/后续净结果；共享恢复控制/fence、截点外FH/历史keyring、RPO/RTO、异地防覆盖、V36/V37完整恢复语义/灾后重建；两树最终整合及相应回归。完成标准见[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)。
+- 后延未验：独立人员、真实PDA/Keystore、OS死亡/断电/外网、长时/五年等待、原生Excel显示打印、现场/生产权限审批。R05 code20/Room17关键未验和R09限制保留；七类生产决定handler/POST/放行/关闭及TEMP生产归档不开放，localDeletionAllowed=false。
+- 接续与结束条件：沿既有R01–R09目标完成所有可独立开发、自审、隔离验证事项；不把本文整理或61项定向通过当总目标完成。只在逐项实现/验证、必要整合回归和后延清单齐备后结束；新提示见[可复制接续提示](REMAINING_DEVELOPMENT_PLAN.md#可复制接续提示)。
+<!-- CURRENT_STATE_END -->
+
+历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。

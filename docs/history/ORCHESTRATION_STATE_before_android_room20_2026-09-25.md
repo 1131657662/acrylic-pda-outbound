@@ -1,0 +1,17 @@
+<!-- CURRENT_STATE_START -->
+## 当前有效状态（唯一接续入口）
+### 2026-09-25 当前会话接管：R06/E2a 跨来源事实与真实 HTTP 子项通过；前九步目标 active
+
+- 目标/写权：会话 `01a0d612-1e51-78c2-9eca-f15671339987` 接管 R01–R09 所有可独立开发/审查/隔离验证事项。旧任务已核为 idle/interrupted/notLoaded，接手无 Java/Gradle 或项目监听，文件哈希复核无外部在途改动。当前助手是两树业务/隔离环境唯一写者，不恢复总调度、旧代理或新建树。
+- Git：主树 `D:/acrylic-pda-outbound`，`codex/development` @ `dccb73b10acbb63020beb3cf827b3b4580d3ed1c`；服务端树 `D:/acrylic-pda-worktrees/r06-e2a-migration`，`codex/r06-e2a-migration` @ `568683c1a1f8257ad0596a654c6b3558c767ed95`。两树 origin 均为 GitHub 1131657662/acrylic-pda-outbound。未提交路径见 `docs/history/R06_E2A_CROSS_SOURCE_WORKTREE_STATUS_2026-09-25.md`；接管 122/156 文件，所有原改动保留。没有提交、推送、合并、标签或部署；out.xlsx/崩溃日志不删除/暂存。
+- 继承事实：看板原 Mockito 红测已由旧会话修复并迁入 CrossSourceTest，实际有 481 项单测和跨来源负例；继承实库 attempt1 卡在 13 位测试条码，不将旧看板当当前源码。旧红测/463/481 证据均保留，详验收记录。
+- 服务端作者/自审：全设备 CAPTURE 前缀与本 TEMP 数量已分开，他源必须匹配同设备同仓 submitted_capture 及原正文；缺失/伪造/跨仓/遗漏/重复拒绝。他源明细可入 set，但只本 TEMP 扫码进入 B/K 校验与窄占用。本轮修复测试条码/快照明细夹具，以及真实 HTTP 暴露的 VERIFY 初始公钥读取缺少事务导致 500（现在在只读事务内读取，写事务仍重验）。
+- 当次作者验证：首次聚焦 35/35；事务修复后聚焦 43/43；最终服务端全套 75 XML/481 项、0 失败/错误、1 Windows symlink 跳过。证据 `outputs/r06-e2a-takeover-20260925-01a0d612/`，不是旧 463 项结果。git diff --check 通过。
+- 独立环境/组合：服务端 `.local/e2a-cross-20260925-4` 非空 V34→V36 独立 MySQL，binlog 保持开启；SQL 缺失/伪造/跨仓及不占他源 K 验证通过。真实 HTTP OPEN/PAGE/STOP/VERIFY、原键重放/GET 原字节、伪造拒绝后无 set/K、同键异体拒绝通过；IT 1/1，15 份响应原件。RAW 由内部原语准备，合成身份/签名；无独立审查者、Android→服务端或真机结果。
+- 失败保留：cross attempt1 继承条码超长；attempt2 缺快照外键；attempt3 VERIFY 事务遗漏 HTTP500；分别保留原独立目录/日志/XML，不重置删除。attempt4 最终通过不掩盖这些失败；旧 binlog/SUPER1419 与 attempt6 历史仍可追溯。
+- Android 继承作者结果：主树 Room19 保存全设备 FORMAL+TEMP AUDIT/CAPTURE/SCAN、冻结正文、已有签名 AUDIT_ARCHIVE/历史公钥原件；旧全套 77 XML/311 项通过，本轮未改/未重测。PAGE/manifest/root、RAW 请求/原键耐久、STOP 原机签名及网络保守续传仍待开发；APK/模拟器/真机未验。
+- 环境/重型槽：跨来源子项收口时 19330/19434/19435 无监听、Java/Gradle 无在途，槽空闲；各独立 MySQL 已身份核对后认证 shutdown。共享 3306/PID5448 未操作，原库/现网不触碰。
+- 限制：PARTIAL 不等于成功回执或可放行；localDeletionAllowed=false。七类生产决定 handler/POST/关闭能力保持关闭；R05 code20/Room17、真实历史 keyring 部署、现场/设备/人工/长时/审批与 R09 恢复限制逐项未验。R06 与前九步均未完成，不能声明上线。
+- 下一断点：沿主树 Room19 实现 PAGE/manifest/root、RAW 原请求/原键耐久，STOP 原机签名及 OPEN→PAGE→STOP→VERIFY 丢回执与重启保守续传；再 R06 确认/处置/成功回执，随后核对推进 R07–R09，不重复 R01–R05 已有有效子项。
+- 验收明细：`docs/history/R06_E2A_CROSS_SOURCE_ACCEPTANCE_2026-09-25.md`；被替换当前区原文：`docs/history/ORCHESTRATION_STATE_before_cross_source_acceptance_2026-09-25.md`。本区仅当前事实；旧树规则入口已在上一会话整理，本轮未改规则。
+<!-- CURRENT_STATE_END -->

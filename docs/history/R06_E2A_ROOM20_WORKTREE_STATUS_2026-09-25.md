@@ -1,0 +1,305 @@
+# R06/E2a Room20 收口未提交路径
+
+主树 codex/development @ dccb73b10acbb63020beb3cf827b3b4580d3ed1c
+
+ M AGENTS.md
+ M android/app/build.gradle.kts
+ M android/app/src/main/java/com/acrylic/outbound/pda/PdaApplication.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/data/AuditCheckpoint.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/data/ClaimIntent.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/data/PdaDatabase.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/data/PreparationDao.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/data/PreparedOrder.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/network/PdaHttp.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/network/PdaSession.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/preparation/PreparationRepository.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/retention/AuditArchive.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/retention/SubmissionArchiveRepository.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/submission/SubmissionDao.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/sync/BackgroundSync.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/sync/SyncWorker.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/temporary/TemporaryConnection.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/temporary/TemporaryFreeze.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/temporary/TemporaryScanDao.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/temporary/TemporaryWorkStore.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/ui/MainActivity.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/ui/OrderCards.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/ui/PreparationViewModel.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/update/UpdateManifestVerifier.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/work/CaptureDao.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/work/ScanDao.kt
+ M android/app/src/main/java/com/acrylic/outbound/pda/work/WorkDao.kt
+ M android/app/src/main/res/layout/activity_main.xml
+ M android/app/src/test/java/com/acrylic/outbound/pda/preparation/LocalActivationTest.kt
+ M android/app/src/test/java/com/acrylic/outbound/pda/retention/AuditArchiveMigrationTest.kt
+ M android/app/src/test/java/com/acrylic/outbound/pda/retention/RetentionEvidenceTest.kt
+ M android/app/src/test/java/com/acrylic/outbound/pda/retention/SubmissionArchiveMigrationTest.kt
+ M android/app/src/test/java/com/acrylic/outbound/pda/retention/SubmissionArchiveTest.kt
+ M android/app/src/test/java/com/acrylic/outbound/pda/temporary/TemporaryFixture.kt
+ M android/app/src/test/java/com/acrylic/outbound/pda/temporary/TemporaryMigrationTest.kt
+ M android/app/src/test/java/com/acrylic/outbound/pda/temporary/TemporarySubmissionMigrationTest.kt
+ M android/app/src/test/java/com/acrylic/outbound/pda/temporary/TemporaryWorkMigrationTest.kt
+ M android/app/src/test/java/com/acrylic/outbound/pda/ui/OrderCardsTest.kt
+ M android/app/src/test/java/com/acrylic/outbound/pda/update/UpdateManifestVerifierTest.kt
+ M android/app/src/test/java/com/acrylic/outbound/pda/work/WorkMigrationTest.kt
+ M contracts/openapi.yaml
+ M docs/DEVELOPMENT_PROGRESS.md
+ M docs/DEVELOPMENT_ROADMAP.md
+ M docs/GIT_WORKFLOW.md
+ M docs/ORCHESTRATION_STATUS.md
+ M docs/REMAINING_DEVELOPMENT_PLAN.md
+ M docs/design-system.md
+ M docs/history/README.md
+ M docs/web-page-template.md
+ M server/src/main/java/com/acrylic/outbound/pda/AssignmentStore.java
+ M server/src/main/java/com/acrylic/outbound/pda/PdaOrdersController.java
+ M server/src/test/java/com/acrylic/outbound/inventory/PdaAssignmentIT.java
+?? android/app/hs_err_pid1492.log
+?? android/app/hs_err_pid2292.log
+?? android/app/schemas/com.acrylic.outbound.pda.data.PdaDatabase/18.json
+?? android/app/schemas/com.acrylic.outbound.pda.data.PdaDatabase/19.json
+?? android/app/schemas/com.acrylic.outbound.pda.data.PdaDatabase/20.json
+?? android/app/src/main/java/com/acrylic/outbound/pda/data/ClaimIntentHistory.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/E2aDeviceCoverage.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/E2aItemValidation.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/E2aRequestDigest.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/E2aSnapshotReferences.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/E2aStopProof.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/E2aTransferRequests.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/E2aWire.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/LocalE2aArchiveSnapshot.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/LocalE2aObject.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/LocalE2aObjectDao.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/LocalE2aSnapshot.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/LocalE2aStop.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/LocalE2aStopRepository.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/LocalE2aTransfer.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/LocalE2aTransferBuilder.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/LocalE2aTransferMigration.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/evidence/LocalE2aTransferRepository.kt
+?? android/app/src/main/java/com/acrylic/outbound/pda/ui/PreparationUi.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/data/ClaimIntentHistoryTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/data/LocalTaskPagingTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/evidence/E2aDeviceCoverageTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/evidence/E2aStopProofTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/evidence/E2aTestDeviceSigner.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/evidence/E2aWireTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/evidence/LocalE2aArchiveSnapshotTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/evidence/LocalE2aRawStorageTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/evidence/LocalE2aSignatureTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/evidence/LocalE2aSnapshotTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/evidence/LocalE2aStopMigrationTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/evidence/LocalE2aStopTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/evidence/LocalE2aTransferMigrationTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/evidence/LocalE2aTransferTest.kt
+?? android/app/src/test/java/com/acrylic/outbound/pda/network/PdaNetworkFailureTest.kt
+?? assets/brand/xianxu-login-preview.png
+?? assets/brand/xianxu-logo-preview-32.png
+?? assets/brand/xianxu-logo-preview.png
+?? docs/PDA_ORDER_FLOW_ISSUES_2026-09-23.md
+?? docs/PDA_TEST_RELEASE_CODE22_2026-09-23.md
+?? docs/history/ORCHESTRATION_STATE_before_android_archive_snapshot_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_android_coverage_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_android_room20_2026-09-25.md
+?? docs/history/ORCHESTRATION_STATE_before_android_snapshot_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_android_transfer_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_android_wire_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_archive_coverage_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_audit_endpoint_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_audit_prefix_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_cross_source_acceptance_2026-09-25.md
+?? docs/history/ORCHESTRATION_STATE_before_direct_key_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_e2a_attempt6_2026-09-23.md
+?? docs/history/ORCHESTRATION_STATE_before_e2a_attempt8_2026-09-23.md
+?? docs/history/ORCHESTRATION_STATE_before_e2a_independent_review_2026-09-23.md
+?? docs/history/ORCHESTRATION_STATE_before_e2a_intake_read_2026-09-23.md
+?? docs/history/ORCHESTRATION_STATE_before_e2a_intake_recovery_2026-09-23.md
+?? docs/history/ORCHESTRATION_STATE_before_e2a_item_stage_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_e2a_open_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_e2a_page_read_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_e2a_page_write_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_e2a_trigger_decision_2026-09-23.md
+?? docs/history/ORCHESTRATION_STATE_before_e2a_trigger_preflight_2026-09-23.md
+?? docs/history/ORCHESTRATION_STATE_before_history_archive_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_k_writer_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_keyring_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_page_closure_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_paired_key_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_raw_closure_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_room19_stop_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_session_handoff_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_source_read_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_stop_compat_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_stop_key_writer_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_stop_parser_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_stop_persistence_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_stop_preflight_2026-09-24.md
+?? docs/history/ORCHESTRATION_STATE_before_v36_dynamic_2026-09-24.md
+?? docs/history/R06_E2A_ANDROID_WIRE_STATUS_2026-09-24.md
+?? docs/history/R06_E2A_CROSS_SOURCE_ACCEPTANCE_2026-09-25.md
+?? docs/history/R06_E2A_CROSS_SOURCE_WORKTREE_STATUS_2026-09-25.md
+?? docs/history/R06_E2A_ROOM19_STATUS_2026-09-24.md
+?? docs/history/R06_E2A_SESSION_HANDOFF_STATUS_2026-09-24.md
+?? docs/history/R06_E2A_WORKTREE_STATUS_2026-09-24.md
+?? docs/out.xlsx
+?? docs/superpowers/specs/2026-09-23-pda-order-flow-repair-design.md
+?? server/src/test/resources/e2a/e2a-v1-empty-set-vector.json
+
+服务端树 codex/r06-e2a-migration @ 568683c1a1f8257ad0596a654c6b3558c767ed95
+
+ M AGENTS.md
+ M android/app/build.gradle.kts
+ M android/app/src/main/java/com/acrylic/outbound/pda/data/AuditCheckpoint.kt
+ M contracts/IMPLEMENTED_API.md
+ M contracts/openapi.yaml
+ M docs/parallel/R06_E2A/CONTRACT.md
+ M docs/parallel/R06_E2A/INTERFACE_CARD.md
+ M docs/parallel/R06_E2A_MIGRATION/ACCEPTANCE_STAGES.md
+ M docs/parallel/R06_E2A_MIGRATION/README.md
+ M server/src/main/java/com/acrylic/outbound/pda/OfflineSigner.java
+ M server/src/main/java/com/acrylic/outbound/submissions/SubmissionArchiveProofs.java
+ M server/src/main/java/com/acrylic/outbound/temporary/command/CommandSignature.java
+ M server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceProof.java
+ M server/src/main/java/com/acrylic/outbound/temporary/protocol/E2aProtocol.java
+ M server/src/main/resources/application.yml
+ M server/src/test/java/com/acrylic/outbound/e2averify/E2aMigrationEnvironment.java
+ M server/src/test/java/com/acrylic/outbound/e2averify/E2aMigrationEnvironmentTest.java
+ M server/src/test/java/com/acrylic/outbound/e2averify/E2aMigrationExecutionIT.java
+ M server/src/test/java/com/acrylic/outbound/e2averify/E2aMigrationRunner.java
+ M server/src/test/java/com/acrylic/outbound/e2averify/E2aMigrationSnapshot.java
+ M server/src/test/java/com/acrylic/outbound/e2averify/E2aMysqlLauncher.java
+ M server/src/test/java/com/acrylic/outbound/e2averify/E2aV34BaseFixture.java
+ M server/src/test/java/com/acrylic/outbound/e2averify/E2aV34Seed.java
+?? .codex-patch
+?? contracts/pda-temporary-source-evidence-paths.yaml
+?? docs/history/AGENTS_R06_E2A_MIGRATION_before_trim_2026-09-24.md
+?? docs/parallel/R06_E2A_MIGRATION/PROCESS_LIFECYCLE_DESIGN.md
+?? docs/parallel/R06_E2A_MIGRATION/TRIGGER_DEPLOYMENT_DECISION.md
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeAuditArchives.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeAuditCoverage.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeAuditPrefix.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeBusinessFacts.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeCaptureCoverage.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeController.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeDeviceKeys.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeEvidenceLocks.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeFacts.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeFiles.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeIdentity.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeObjectFiles.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeOpen.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeOpenService.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeOtherFacts.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePage.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageClosure.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageItemWriter.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageItems.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageObjects.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageReceipts.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageService.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeRawObjectService.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeRawObjects.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReadController.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReadIntegrity.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReadService.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReadStore.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReceiptCodec.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReceipts.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeRecovery.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReplay.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReservations.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeSetWriter.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeSourceRecord.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeStop.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeStopLookup.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeStopObjects.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeStopReceipts.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeStopService.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeTransactions.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeVerificationStore.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeVerify.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeVerifyPreflight.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeVerifyReceipts.java
+?? server/src/main/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeVerifyService.java
+?? server/src/main/java/com/acrylic/outbound/temporary/protocol/E2aPageItem.java
+?? server/src/main/resources/db/migration/V36__source_evidence_page_item_stage.sql
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aCrossSourceChecks.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aCrossSourceFixture.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aCrossSourceHttp.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aCrossSourceHttpChecks.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aCrossSourceHttpIT.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aCrossSourceHttpSetup.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aCrossSourceProfile.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aCrossSourceWire.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aMysqlBootstrap.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aMysqlBootstrapTest.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aMysqlCleanup.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aMysqlCleanupTest.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aMysqlLauncherTest.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aMysqlProcessIdentity.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aMysqlProcessIdentityTest.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aMysqlTriggerPreflight.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aMysqlTriggerPreflightTest.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aV34EvidenceBindingTest.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aV36AuditArchiveIT.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aV36AuditPrefixIT.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aV36DeviceKeyIT.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aV36MigrationIT.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aV36PageWriterChecks.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aV36PairedKeyIT.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aV36StageChecks.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aV36StopWriterChecks.java
+?? server/src/test/java/com/acrylic/outbound/e2averify/E2aV36StopWriterIT.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/OfflineSignerHistoryTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeArchivePageTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeAuditArchivesSignatureTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeAuditArchivesTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeAuditCoverageTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeAuditPageTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeAuditPrefixTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeBoundTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeBusinessFactsLockOrderTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeBusinessFactsTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeCaptureCoverageTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeControllerTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeCrossSourceTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeDeviceKeysTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeEvidenceLocksTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeFactsTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeFilesTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeObjectFilesTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeOpenLookupTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeOpenServiceTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeOpenTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageClosureTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageItemWriterTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageItemsTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageObjectsTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageReceiptCodecTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageReceiptsTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageServiceTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakePageTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeRawObjectServiceTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeRawObjectsTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReadControllerTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReadServiceTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReadStoreTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReceiptCodecTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReceiptsTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeRecoveryTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReplayTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeReservationsTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeSetWriterTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeSourceRecordTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeStopObjectsTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeStopReceiptCodecTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeStopReceiptsTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeStopServiceTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeStopTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeTransactionTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeVerifyPreflightTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/evidence/SourceEvidenceIntakeVerifyTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/protocol/E2aPageItemTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/protocol/E2aProtocolLimitsTest.java
+?? server/src/test/java/com/acrylic/outbound/temporary/protocol/E2aV36MigrationTest.java
+?? tools/e2a-cross-source-verify.ps1
