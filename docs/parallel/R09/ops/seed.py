@@ -29,7 +29,7 @@ def environment(db):
     env.update(OUTBOUND_DB_URL=f'jdbc:mysql://127.0.0.1:{db.port}/{db.name}?connectionTimeZone=UTC',
                OUTBOUND_DB_USER=f'r09_{db.side}', OUTBOUND_DB_PASSWORD=config['password'],
                OUTBOUND_MIGRATE='true', OUTBOUND_COOKIE_SECURE='false', OUTBOUND_BIND='127.0.0.1',
-               OUTBOUND_PORT='18309', OUTBOUND_STORAGE=str(db.root / 'files'),
+               OUTBOUND_PORT=str(db.settings.get('api_port', 18309)), OUTBOUND_STORAGE=str(db.root / 'files'),
                OUTBOUND_AUTH_SIGNING_PRIVATE_KEY=str(db.root / 'config/private.pk8'),
                OUTBOUND_AUTH_SIGNING_PUBLIC_KEY=str(db.root / 'config/public.der'))
     return env

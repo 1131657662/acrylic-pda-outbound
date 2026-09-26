@@ -29,7 +29,7 @@ def provenance(db, version):
         ON s.id=e.id OR (s.origin_device_id=e.origin_device_id AND s.local_seq=e.local_seq)
         WHERE s.record_sha256<>e.record_sha256;'''
     require(db.query(query) == '0', 'AUDIT_SUBMITTED_EVENT_CONFLICT')
-    if version in ('32', '33'):
+    if version in ('32', '33', '34'):
         temporary_provenance(db)
 
 
