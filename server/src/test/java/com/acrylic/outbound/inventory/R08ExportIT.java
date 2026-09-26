@@ -135,7 +135,7 @@ class R08ExportIT {
         assertThat(order.products()).hasSize(3);assertThat(order.originalLines()).hasSize(1);assertThat(order.exceptions()).hasSize(1);
         assertThat(order.originalLines().getFirst().orderScanSeq()).isEqualTo(2);generated(result);
     }
-    @Test void pdaScanRecordsFreezeChineseNameAndOriginalCaptureTime() throws Exception {
+    @Test void pdaScanRecordsFreezeOperatorNameAndOriginalCaptureTime() throws Exception {
         var fixture=new SubmissionFixture(api,jdbc,false,false);fixture.submit();
         byte[] operator=Ids.bytes(UUID.fromString(fixture.tokens.get("userId").asText()));
         jdbc.update("UPDATE app_user SET display_name=? WHERE id=?","刘  颖",operator);
@@ -165,12 +165,29 @@ class R08ExportIT {
         assertThat(bytes).startsWith((byte)'P',(byte)'K');
         Files.write(Path.of(System.getenv("OUTBOUND_STORAGE"),"verified-pc-scan.xlsx"),bytes);
     }
-    @Test void missingChineseNameRejectsScanExportBeforeTaskCreation() throws Exception {
+    @Test void placeholderOperatorNameRejectsScanExportBeforeTaskCreation() throws Exception {
         var fixture=new SubmissionFixture(api,jdbc,false,false);fixture.submit();
-        jdbc.update("UPDATE app_user SET display_name='operator-123' WHERE id=?",Ids.bytes(UUID.fromString(fixture.tokens.get("userId").asText())));
+        byte[] operator=Ids.bytes(UUID.fromString(fixture.tokens.get("userId").asText()));
+        String account=jdbc.queryForObject("SELECT username FROM app_user WHERE id=?",String.class,operator);
+        for(String name:List.of("","   ","原人员ID:"+fixture.tokens.get("userId").asText(),fixture.tokens.get("userId").asText(),account))
+            rejectScanExport(fixture,name,operator);
+        assertThat(api.data(get("/api/v1/orders/"+fixture.order+"/exports")).get("items")).isEmpty();
+    }
+    private void rejectScanExport(SubmissionFixture fixture,String name,byte[] operator) throws Exception {
+        jdbc.update("UPDATE app_user SET display_name=? WHERE id=?",name,operator);
         api.send(post("/api/v1/orders/"+fixture.order+"/exports").header("Idempotency-Key",UUID.randomUUID().toString())
                 .contentType("application/json").content("{\"format\":\"SCAN_XLSX\",\"basis\":\"ORIGINAL_CONFIRMED\"}"))
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("EXPORT_OPERATOR_NAME_UNAVAILABLE"));
-        assertThat(api.data(get("/api/v1/orders/"+fixture.order+"/exports")).get("items")).isEmpty();
+    }
+    @Test void asciiOperatorNameIsAcceptedForScanExport() throws Exception {
+        var fixture=new SubmissionFixture(api,jdbc,false,false);fixture.submit();
+        jdbc.update("UPDATE app_user SET display_name='test_pda01' WHERE id=?",
+                Ids.bytes(UUID.fromString(fixture.tokens.get("userId").asText())));
+        var result=create(fixture.order,"SCAN_XLSX",UUID.randomUUID().toString());
+        var payload=queries.payload(jobs.find(UUID.fromString(result.get("id").asText())).orElseThrow());
+        assertThat(payload.template()).isEqualTo("r08-scan-records-1");
+        assertThat(SnapshotJson.read(files.snapshot(payload.snapshotHash())).orders().getFirst().originalLines())
+                .extracting(l->l.operatorName()).containsOnly("test_pda01");
+        generated(result);
     }
 }

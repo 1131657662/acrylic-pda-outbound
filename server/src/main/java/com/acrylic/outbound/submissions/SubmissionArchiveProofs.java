@@ -23,8 +23,10 @@ public class SubmissionArchiveProofs {
         try {
             String token=text(value,field);require(token.length()<=1048576,"签名过大");
             var parts=token.split("\\.",-1);require(parts.length==3,"签名格式无效");
-            var decoder=Base64.getUrlDecoder();var header=parse(decoder.decode(parts[0]));var key=signer.publicKey();
-            require(text(header,"alg").equals("RS256") && text(header,"typ").equals("JWT") && text(header,"kid").equals(key.keyId()),"签名公钥不匹配");
+            var decoder=Base64.getUrlDecoder();var header=parse(decoder.decode(parts[0]));
+            String kid=text(header,"kid");var key=signer.publicKeyFor(kid);
+            require(key!=null && text(header,"alg").equals("RS256") && text(header,"typ").equals("JWT")
+                && kid.equals(key.keyId()) && "RS256".equals(key.algorithm()),"签名公钥不匹配");
             var publicKey=KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(key.publicKey())));
             var verifier=Signature.getInstance("SHA256withRSA");verifier.initVerify(publicKey);
             verifier.update((parts[0]+"."+parts[1]).getBytes(StandardCharsets.US_ASCII));require(verifier.verify(decoder.decode(parts[2])),"签名无效");

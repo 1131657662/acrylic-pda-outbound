@@ -9,5 +9,6 @@ final class CommandErrors {
     static BusinessException conflict() { return new BusinessException(409,"IDEMPOTENCY_CONTENT_MISMATCH","同一原键对应不同命令，请保留原意图"); }
     static BusinessException stale() { return new BusinessException(409,"COMMAND_CONTEXT_CHANGED","原上下文已变化，请核对原意图"); }
     static BusinessException unsupported() { return new BusinessException(409,"COMMAND_EXECUTION_NOT_IMPLEMENTED","此命令决定尚未开放"); }
+    static BusinessException confirmationRequired() { return new BusinessException(409,"TEMPORARY_MANUAL_CONFIRMATION_REQUIRED","缺少人工核对候选的绑定，系统不会自动判定或自动关联"); }
     static void integrity(boolean valid) { if(!valid)throw corrupt(); }
 }

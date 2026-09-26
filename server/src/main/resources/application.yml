@@ -38,6 +38,7 @@ outbound:
   signing:
     private-key: ${OUTBOUND_AUTH_SIGNING_PRIVATE_KEY:}
     public-key: ${OUTBOUND_AUTH_SIGNING_PUBLIC_KEY:}
+    historical-public-keys: ${OUTBOUND_AUTH_SIGNING_HISTORICAL_PUBLIC_KEYS:}
   storage: ${OUTBOUND_STORAGE:./private-files}
   bootstrap:
     enabled: false

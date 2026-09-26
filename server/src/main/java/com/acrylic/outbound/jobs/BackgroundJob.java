@@ -17,7 +17,8 @@ public record BackgroundJob(
     Instant leaseUntil,
     String lastError,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    String recoveryEpoch
 ) {
     public enum Status { PENDING, RUNNING, RETRY, SUCCEEDED, FAILED }
 }

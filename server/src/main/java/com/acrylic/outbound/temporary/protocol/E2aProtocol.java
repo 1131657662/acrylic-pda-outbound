@@ -24,11 +24,16 @@ public final class E2aProtocol {
         fields(core, Set.of("manifestId","manifestVersion","snapshotId","pageNo","pageCount","isFinal","itemCount","byteCount","prevPageHash","items"));
         text(core,"manifestId"); positive(core,"manifestVersion"); text(core,"snapshotId");
         positive(core,"pageNo"); positive(core,"pageCount"); positiveOrZero(core,"itemCount"); positiveOrZero(core,"byteCount");
+        require(core.path("pageCount").asLong()<=4096,"PAGE_COUNT_LIMIT");
         require(core.path("isFinal").isBoolean(),"PAGE_FINAL_TYPE");
         require(core.path("pageNo").asLong()<=core.path("pageCount").asLong(),"PAGE_NO_RANGE");
         require(core.path("isFinal").asBoolean()==(core.path("pageNo").asLong()==core.path("pageCount").asLong()),"PAGE_FINAL_MISMATCH");
         require(core.path("prevPageHash").isNull() || core.path("prevPageHash").asText().matches("[0-9a-f]{64}"),"PAGE_PREV_HASH");
+        require(core.path("prevPageHash").isNull()==(core.path("pageNo").asLong()==1),"PAGE_PREV_LINK");
         require(core.path("items").isArray(),"PAGE_ITEMS_TYPE");
+        require(core.path("items").size()==core.path("itemCount").asLong(),"PAGE_ITEM_COUNT");
+        E2aPageItem.parseAll(core.path("items"),core.path("byteCount").asLong());
+        ProtocolJson.canonical(core);
     }
     public static Hashes manifestHashes(ObjectNode core) {
         validateManifestCore(core);
@@ -100,7 +105,14 @@ public final class E2aProtocol {
     private static void hashField(JsonNode value,String key){ require(value.path(key).isTextual() && value.path(key).asText().matches("[0-9a-f]{64}"),key+"_HASH"); }
     private static void validateManifestCore(ObjectNode core) {
         fields(core,Set.of("schemaVersion","manifestId","manifestVersion","snapshotId","source","sourceId","submissionId","workRound","pageCount","entryCount","byteCount","pages","endPageNo"));
-        require(exactInt(core.path("schemaVersion"))==1,"MANIFEST_SCHEMA"); text(core,"manifestId"); positive(core,"manifestVersion"); text(core,"snapshotId"); text(core,"source"); text(core,"sourceId"); text(core,"submissionId"); positive(core,"workRound"); positive(core,"pageCount"); positiveOrZero(core,"entryCount"); positiveOrZero(core,"byteCount"); positive(core,"endPageNo"); require(core.path("endPageNo").asLong()==core.path("pageCount").asLong(),"MANIFEST_END"); require(core.path("pages").isArray() && core.path("pages").size()==core.path("pageCount").asInt(),"MANIFEST_PAGES");
+        require(exactInt(core.path("schemaVersion"))==1,"MANIFEST_SCHEMA");
+        text(core,"manifestId");positive(core,"manifestVersion");text(core,"snapshotId");
+        text(core,"source");text(core,"sourceId");text(core,"submissionId");positive(core,"workRound");
+        positive(core,"pageCount");positiveOrZero(core,"entryCount");positiveOrZero(core,"byteCount");positive(core,"endPageNo");
+        require(core.path("pageCount").asLong()<=4096,"MANIFEST_PAGE_LIMIT");
+        require(core.path("byteCount").asLong()<=134217728,"MANIFEST_BYTES_LIMIT");
+        require(core.path("endPageNo").asLong()==core.path("pageCount").asLong(),"MANIFEST_END");
+        require(core.path("pages").isArray() && core.path("pages").size()==core.path("pageCount").asInt(),"MANIFEST_PAGES");
         long prior=0; for(JsonNode page:core.path("pages")){ fields(page,Set.of("pageNo","pageHash")); positive(page,"pageNo"); require(page.path("pageNo").asLong()==++prior,"MANIFEST_PAGE_ORDER"); require(page.path("pageHash").asText().matches("[0-9a-f]{64}"),"MANIFEST_PAGE_HASH"); }
     }
     private static void fields(JsonNode value,Set<String> expected){ require(value!=null && value.isObject(),"FIELDS"); Set<String> actual=new java.util.HashSet<>(); value.fieldNames().forEachRemaining(actual::add); require(actual.equals(expected),"FIELDS"); }

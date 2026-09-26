@@ -27,7 +27,7 @@ public class ExportJobQueries {
     }
     public View view(BackgroundJob job) {
         var p=payload(job);var a=p.artifact();boolean expired=!p.expiresAt().isAfter(Instant.now());
-        boolean old=!p.epoch().equals(state.current().epoch());
+        boolean old=!p.epoch().equals(state.current().epoch()) || !p.epoch().equals(job.recoveryEpoch());
         return new View(job.id(),p.orderNo(),p.format(),p.basis(),1,p.revision(),old?"INVALIDATED":expired?"EXPIRED":job.status().name(),
                 job.attemptCount(),job.lastError(),job.createdAt(),p.expiresAt(),p.originalDay(),p.snapshotId(),
                 a==null?null:a.sha256(),a==null?null:a.bytes(),!old && !expired && a!=null && job.status()==BackgroundJob.Status.SUCCEEDED,
@@ -53,7 +53,7 @@ public class ExportJobQueries {
         if(filter.status()!=null) {
             if(!Set.of("PENDING","RUNNING","RETRY","SUCCEEDED","FAILED","EXPIRED","INVALIDATED").contains(filter.status()))
                 throw new BusinessException(400,"EXPORT_STATUS_INVALID","文件任务状态无效");
-            sql+=" AND CASE WHEN payload->>'$.epoch'<>? THEN 'INVALIDATED' WHEN CAST(REPLACE(REPLACE(payload->>'$.expiresAt','T',' '),'Z','') AS DATETIME(6))<=UTC_TIMESTAMP(6) THEN 'EXPIRED' ELSE status END=?";
+            sql+=" AND CASE WHEN recovery_epoch IS NULL OR CAST(recovery_epoch AS CHAR)<>payload->>'$.epoch' OR payload->>'$.epoch'<>? THEN 'INVALIDATED' WHEN CAST(REPLACE(REPLACE(payload->>'$.expiresAt','T',' '),'Z','') AS DATETIME(6))<=UTC_TIMESTAMP(6) THEN 'EXPIRED' ELSE status END=?";
             args.add(state.current().epoch());args.add(filter.status());
         }
         if(filter.before()!=null) {
@@ -67,7 +67,8 @@ public class ExportJobQueries {
     public void checkCapacity(UUID actor) {
         Long active=jdbc.queryForObject("""
             SELECT COUNT(*) FROM background_job WHERE job_type=? AND payload->>'$.scope.actor'=?
-              AND payload->>'$.epoch'=? AND created_at>UTC_TIMESTAMP(3)-INTERVAL 7 DAY AND status IN ('PENDING','RUNNING','RETRY')
+              AND payload->>'$.epoch'=? AND CAST(recovery_epoch AS CHAR)=payload->>'$.epoch'
+              AND created_at>UTC_TIMESTAMP(3)-INTERVAL 7 DAY AND status IN ('PENDING','RUNNING','RETRY')
             """,Long.class,TYPE,actor.toString(),state.current().epoch());
         if(active!=null && active>=5) throw new BusinessException(429,"EXPORT_QUEUE_FULL","最多同时生成5个文件，请等待已有任务结束");
     }

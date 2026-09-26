@@ -11,14 +11,17 @@ public final class E2aMigrationEnvironment {
     private static final Path EXPECTED_WORKSPACE = Path.of("D:/acrylic-pda-worktrees/r06-e2a-migration");
     public static final String HOST = "127.0.0.1";
     public static final int PORT = 19329;
-    public static final String DATABASE = "acrylic_outbound_e2a_migrate_20260921";
-    public static final String USER = "e2a_migrate_20260921";
-    public static final Path DATA_DIR = Path.of(".local/mysql19329/data");
-    public static final Path STORAGE_DIR = Path.of(".local/private-files");
-    public static final Path SIGNING_DIR = Path.of(".local/signing");
+    public static final String DATABASE = "acrylic_outbound_e2a_migrate_20260923h";
+    public static final String USER = "e2a_migrate_20260923h";
+    public static final Path DATA_DIR = Path.of(".local/mysql19329-attempt8/data");
+    public static final Path STORAGE_DIR = Path.of(".local/private-files-attempt8");
+    public static final Path SIGNING_DIR = Path.of(".local/signing-attempt8");
+    public static final Path PRIVATE_DIR = Path.of(".local/launcher-private-attempt8");
+    public static final Path LAUNCH_MARKER = Path.of(".local/e2a-launcher-attempt8-started.marker");
+    public static final Path TARGET_MARKER = Path.of(".local/e2a-target35-attempt8.marker");
     public static final String URL = "jdbc:mysql://127.0.0.1:" + PORT + "/" + DATABASE
         + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-    public static final Path EVIDENCE_DIR = Path.of(".local/evidence-e2a");
+    public static final Path EVIDENCE_DIR = Path.of(".local/evidence-e2a-attempt8");
 
     private E2aMigrationEnvironment() { }
 
@@ -36,6 +39,10 @@ public final class E2aMigrationEnvironment {
         requireUnderWorkspace(actualWorkspace, DATA_DIR, "datadir");
         requireUnderWorkspace(actualWorkspace, STORAGE_DIR, "storage");
         requireUnderWorkspace(actualWorkspace, SIGNING_DIR, "signing");
+        requireUnderWorkspace(actualWorkspace, PRIVATE_DIR, "private");
+        requireUnderWorkspace(actualWorkspace, EVIDENCE_DIR, "evidence");
+        requireUnderWorkspace(actualWorkspace, LAUNCH_MARKER, "launch marker");
+        requireUnderWorkspace(actualWorkspace, TARGET_MARKER, "target marker");
         if (!"true".equals(env.get("E2A_MIGRATION_VERIFY"))
                 || !"true".equals(env.get("OUTBOUND_MIGRATE"))
                 || !URL.equals(env.get("OUTBOUND_DB_URL"))

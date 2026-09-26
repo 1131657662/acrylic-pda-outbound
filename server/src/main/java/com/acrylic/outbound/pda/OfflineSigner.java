@@ -7,15 +7,22 @@ import java.nio.file.*;
 import java.security.*;
 import java.security.spec.*;
 import java.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class OfflineSigner {
-    private final String privatePath;private final String publicPath;private final JsonText json;
+    private final String privatePath;private final String publicPath;private final String historicalPublicKeys;private final JsonText json;
     private volatile Keys keys;
+    private volatile Map<String,PublicKeyView> history;
+    @Autowired
     public OfflineSigner(@Value("${outbound.signing.private-key:}") String privatePath,
-        @Value("${outbound.signing.public-key:}") String publicPath,JsonText json) { this.privatePath=privatePath;this.publicPath=publicPath;this.json=json; }
+        @Value("${outbound.signing.public-key:}") String publicPath,
+        @Value("${outbound.signing.historical-public-keys:}") String historicalPublicKeys,JsonText json) {
+        this.privatePath=privatePath;this.publicPath=publicPath;this.historicalPublicKeys=historicalPublicKeys;this.json=json;
+    }
+    public OfflineSigner(String privatePath,String publicPath,JsonText json) { this(privatePath,publicPath,"",json); }
     public Signed sign(Object claims) {
         var key=keys();String header=encode(json.encode(Map.of("alg","RS256","typ","JWT","kid",key.id())));
         String payload=header+"."+encode(json.encode(claims));
@@ -25,6 +32,31 @@ public class OfflineSigner {
         } catch(GeneralSecurityException error) { throw new IllegalStateException("Offline signature failed",error); }
     }
     public PublicKeyView publicKey() { var key=keys();return new PublicKeyView(key.id(),"RS256",Base64.getEncoder().encodeToString(key.publicKey().getEncoded())); }
+    public PublicKeyView publicKeyFor(String keyId) {
+        var current=publicKey();
+        if(current.keyId().equals(keyId)) return current;
+        return historical().get(keyId);
+    }
+    private synchronized Map<String,PublicKeyView> historical() {
+        if(history!=null) return history;
+        var loaded=new HashMap<String,PublicKeyView>();
+        try {
+            for(String entry:historicalPublicKeys.split(",")) {
+                if(entry.isBlank()) continue;
+                byte[] der=Files.readAllBytes(Path.of(entry.trim()));
+                var key=KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(der));
+                if(!(key instanceof java.security.interfaces.RSAPublicKey rsa) || rsa.getModulus().bitLength()<2048
+                    || rsa.getPublicExponent().compareTo(java.math.BigInteger.ONE)<=0 || !rsa.getPublicExponent().testBit(0))
+                    throw new InvalidKeyException();
+                String encoded=Base64.getEncoder().encodeToString(key.getEncoded());
+                String id="offline-"+DeviceCrypto.sha(encoded).substring(0,32);
+                if(loaded.putIfAbsent(id,new PublicKeyView(id,"RS256",encoded))!=null) throw new InvalidKeyException();
+            }
+        } catch(java.io.IOException | GeneralSecurityException | RuntimeException error) {
+            throw new BusinessException(503,"SIGNING_KEY_UNAVAILABLE","历史签名公钥配置不可用");
+        }
+        history=Map.copyOf(loaded);return history;
+    }
     private synchronized Keys keys() {
         if(keys!=null) return keys;
         if(privatePath.isBlank() || publicPath.isBlank()) throw new BusinessException(503,"SIGNING_KEY_UNAVAILABLE","离线签名密钥未配置，暂不能领取订单");

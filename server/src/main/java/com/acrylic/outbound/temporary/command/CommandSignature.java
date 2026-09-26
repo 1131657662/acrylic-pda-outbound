@@ -15,7 +15,7 @@ public class CommandSignature {
     private final OfflineSigner signer;
     public CommandSignature(OfflineSigner signer) { this.signer=signer; }
     public void verify(String token,String storedKid,JsonNode unsigned) {
-        try { verify(token,storedKid,unsigned,signer.publicKey()); }
+        try { verify(token,storedKid,unsigned,signer.publicKeyFor(storedKid)); }
         catch(GeneralSecurityException | RuntimeException failure) { throw CommandErrors.corrupt(); }
     }
     public static void verify(String token,String storedKid,JsonNode unsigned,OfflineSigner.PublicKeyView key) throws GeneralSecurityException {

@@ -81,4 +81,26 @@ class E2aMigrationEnvironmentTest {
         assertThatThrownBy(() -> E2aMigrationEnvironment.requireExact(env, true, WORKSPACE))
             .isInstanceOf(IllegalStateException.class);
     }
+
+    @Test
+    void rejectsPriorAttemptDatabasesAndAccounts() {
+        for (String suffix : new String[]{"20260921", "20260923b", "20260923c", "20260923d", "20260923e", "20260923f", "20260923g"}) {
+            var env = valid();
+            env.put("OUTBOUND_DB_URL", E2aMigrationEnvironment.URL.replace(E2aMigrationEnvironment.DATABASE,
+                "acrylic_outbound_e2a_migrate_" + suffix));
+            env.put("OUTBOUND_DB_USER", "e2a_migrate_" + suffix);
+            assertThatThrownBy(() -> E2aMigrationEnvironment.requireExact(env, true, WORKSPACE))
+                .isInstanceOf(IllegalStateException.class);
+        }
+    }
+
+    @Test
+    void rejectsPriorAttemptDataDirectories() {
+        for (String path : new String[]{".local/mysql19329/data", ".local/mysql19329-attempt2/data", ".local/mysql19329-attempt3/data", ".local/mysql19329-attempt4/data", ".local/mysql19329-attempt5/data", ".local/mysql19329-attempt6/data", ".local/mysql19329-attempt7/data"}) {
+            var env = valid();
+            env.put("OUTBOUND_DATADIR", WORKSPACE.resolve(path).toString());
+            assertThatThrownBy(() -> E2aMigrationEnvironment.requireExact(env, true, WORKSPACE))
+                .isInstanceOf(IllegalStateException.class);
+        }
+    }
 }

@@ -16,9 +16,18 @@ public final class CommandExpected {
         result.put("userAuthVersion",userVersion);UNIMPLEMENTED.forEach(result::putNull);return result;
     }
     static void validate(CommandInput input,CommandContext facts,CommandIdentity.Actor actor) {
-        if(!Set.of("NORMAL_CONFIRM","SHORT_APPROVE").contains(input.kind()))throw CommandErrors.unsupported();
-        for(String key:UNIMPLEMENTED)if(!input.expected().get(key).isNull())throw CommandErrors.unsupported();
-        if(!current(facts,actor.authVersion()).equals(input.expected()))throw CommandErrors.stale();
+        validate(input,facts,actor,false);
+    }
+    static void validate(CommandInput input,CommandContext facts,CommandIdentity.Actor actor,boolean candidateContext) {
+        if(!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK").contains(input.kind()))throw CommandErrors.unsupported();
+        for(String key:UNIMPLEMENTED)if(!(candidateContext && key.equals("candidateContextSha256")) && !input.expected().get(key).isNull())throw CommandErrors.unsupported();
+        var expected=current(facts,actor.authVersion());
+        if(candidateContext) {
+            // No human-reviewed candidate binding means no decision, and never an automatic one.
+            if(!input.expected().path("candidateContextSha256").isTextual())throw CommandErrors.confirmationRequired();
+            expected.set("candidateContextSha256",input.expected().get("candidateContextSha256"));
+        }
+        if(!expected.equals(input.expected()))throw CommandErrors.stale();
         var body=input.body();var context=facts.json();
         for(String key:List.of("warehouseId","submissionId","workRound","authorizationId","freezeDeviceId","sourceRecoveryEpoch"))
             if(!body.get(key).equals(context.get(key)))throw CommandErrors.stale();

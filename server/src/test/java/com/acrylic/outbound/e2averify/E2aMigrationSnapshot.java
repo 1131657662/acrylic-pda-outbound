@@ -60,7 +60,7 @@ public final class E2aMigrationSnapshot {
 
     private void save(String name, StandardOpenOption option) throws Exception {
         if (!name.matches("[a-z0-9-]+\\.json")) throw new IllegalArgumentException("Invalid snapshot name");
-        Path evidence = workspace.resolve(".local/evidence-e2a").normalize();
+        Path evidence = workspace.resolve(E2aMigrationEnvironment.EVIDENCE_DIR).normalize();
         requireContained(evidence, "evidence");
         Files.createDirectories(evidence);
         Files.writeString(evidence.resolve(name), JSON.writerWithDefaultPrettyPrinter().writeValueAsString(capture()), option);

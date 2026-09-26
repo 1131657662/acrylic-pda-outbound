@@ -12,8 +12,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class CommandReceiptIntegrity {
     private final CommandSignature signatures;private final CommandStore store;private final CommandHistoricalIdentity history;
-    public CommandReceiptIntegrity(CommandSignature signatures,CommandStore store,CommandHistoricalIdentity history) {
-        this.signatures=signatures;this.store=store;this.history=history;
+    private final CommandBusinessIntegrity business;
+    public CommandReceiptIntegrity(CommandSignature signatures,CommandStore store,CommandHistoricalIdentity history,CommandBusinessIntegrity business) {
+        this.signatures=signatures;this.store=store;this.history=history;this.business=business;
     }
     public JsonNode verify(CommandRecord r) {
         try { return checked(r); }
@@ -33,14 +34,14 @@ public class CommandReceiptIntegrity {
         CommandReceiptShape.validate(unsigned);
         CommandErrors.integrity(TemporaryProtocol.unsignedReceiptSha256(CommandReceiptCodec.bytes(unsigned)).equals(r.text("unsigned_receipt_sha256")));
         signatures.verify(r.text("signed_receipt"),r.text("signature_key_id"),unsigned);
-        header(r,command,unsigned);context(r,command,unsigned);history.verify(unsigned);closure(r,unsigned);return unsigned;
+        header(r,command,unsigned);context(r,command,unsigned);history.verify(unsigned);closure(r,unsigned);business.verify(unsigned);
+        approval(unsigned);return unsigned;
     }
     private void header(CommandRecord r,CommandInput command,JsonNode receipt) {
         CommandErrors.integrity(receipt.path("receiptId").asText().equals(r.id("id").toString())
             && receipt.path("commandId").asText().equals(command.key()) && receipt.path("commandType").asText().equals(command.kind())
             && receipt.path("routeScope").asText().equals(TemporaryProtocol.ROUTE_SCOPE) && receipt.path("commandSha256").asText().equals(command.digest())
-            && receipt.path("recordedAt").asText().equals(r.recordedAt().toString()) && receipt.path("status").asText().equals("INTERNAL_TEST_ONLY")
-            && receipt.has("businessDecision") && receipt.get("businessDecision").isNull() && receipt.path("capabilities").equals(CommandReceiptCodec.capabilities()));
+            && receipt.path("recordedAt").asText().equals(r.recordedAt().toString()) && receipt.path("capabilities").equals(CommandReceiptCodec.capabilities()));
         var actor=receipt.path("actor");
         CommandErrors.integrity(actor.path("principalId").asText().equals(r.id("principal_id").toString())
             && actor.path("userAuthVersion").equals(command.expected().get("userAuthVersion")) && receipt.path("expected").equals(command.expected()));
@@ -70,18 +71,33 @@ public class CommandReceiptIntegrity {
             && Objects.equals(c.path("canonicalOrderId").isNull()?null:UUID.fromString(c.path("canonicalOrderId").asText()),mapping.id("canonical_order_id"))
             && c.path("mappingVersion").asText().equals(mapping.text("mapping_version"))
             && c.get("mappingOrderId").equals(c.get("canonicalOrderId")));
-        CommandErrors.integrity(CommandExpected.current(new CommandContext(c),receipt.path("actor").path("userAuthVersion").asText()).equals(command.expected()));
+        var expected=CommandExpected.current(new CommandContext(c),receipt.path("actor").path("userAuthVersion").asText());
+        if(!receipt.path("businessDecision").isNull())expected.set("candidateContextSha256",receipt.path("businessDecision").path("candidates").get("contextSha256"));
+        CommandErrors.integrity(expected.equals(command.expected()));
     }
     private void closure(CommandRecord r,JsonNode receipt) {
         var event=new CommandRecord(store.event(r.id("id")));byte[] unsigned=CommandReceiptCodec.bytes(receipt);
         CommandErrors.integrity(event.id("scope_id").equals(r.id("scope_id")) && event.id("id").toString().equals(receipt.path("eventId").asText())
-            && event.text("decision_kind").equals("INTERNAL_TEST_ONLY") && event.text("resulting_decision_version").equals(receipt.path("resultingDecisionVersion").asText())
+            && event.text("decision_kind").equals(CommandDecision.kind(receipt)) && event.text("resulting_decision_version").equals(receipt.path("resultingDecisionVersion").asText())
             && Long.parseLong(event.text("resulting_decision_version"))==Math.addExact(receipt.path("originalContext").path("decisionVersion").asLong(),1)
             && Arrays.equals(unsigned,event.bytes("context_bytes")) && event.recordedAt().equals(r.recordedAt()));
         var audits=store.audits(r.id("id"));CommandErrors.integrity(audits.size()==1);
         var audit=audits.getFirst();var details=SubmissionJson.parse(audit.get("details").toString());
-        CommandErrors.integrity(Arrays.equals((byte[])audit.get("actor_id"),Ids.bytes(r.id("principal_id")))
+        CommandErrors.integrity(CommandDecision.eventType(receipt).equals(audit.get("event_type")) && Arrays.equals((byte[])audit.get("actor_id"),Ids.bytes(r.id("principal_id")))
             && details.path("originalResponseSha256").asText().equals(r.text("original_response_sha256"))
             && details.path("commandSha256").asText().equals(r.text("command_sha256")));
+    }
+    private void approval(JsonNode receipt) {
+        var decision=receipt.path("businessDecision");if(decision.isNull() || decision.path("shortApprovalReceiptId").isNull())return;
+        var linked=store.byReceipt(UUID.fromString(decision.path("shortApprovalReceiptId").asText()));
+        CommandErrors.integrity("SHORT_APPROVE".equals(linked.text("command_type")));
+        var approved=verify(linked);CommandErrors.integrity(CommandDecision.kind(approved).equals("SHORT_APPROVE")
+            && approved.path("resultingDecisionVersion").equals(receipt.path("originalContext").path("decisionVersion"))
+            && linked.text("original_response_sha256").equals(decision.path("shortApprovalSha256").asText())
+            && approved.path("businessDecision").path("candidates").equals(decision.path("candidates"))
+            && !java.time.Instant.parse(approved.path("recordedAt").asText()).isAfter(java.time.Instant.parse(receipt.path("recordedAt").asText())));
+        for(String key:List.of("scopeId","submissionId","canonicalOrderId","mappingVersion","currentSubmissionId","scopeRound",
+            "slotVersion","targetRevision","receivedPayloadSha256","declaredUploadSha256","planSha256"))
+            CommandErrors.integrity(approved.path("originalContext").get(key).equals(receipt.path("originalContext").get(key)));
     }
 }

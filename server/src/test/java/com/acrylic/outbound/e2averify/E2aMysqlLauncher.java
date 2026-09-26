@@ -11,7 +11,7 @@ import java.nio.file.LinkOption;
 
 /** Opt-in launcher for only the assigned MySQL 19329 instance. */
 public final class E2aMysqlLauncher {
-    private static final Path MYSQLD = Path.of("C:/Program Files/MySQL/MySQL Server 8.0/bin/mysqld.exe");
+    static final Path MYSQLD = Path.of("C:/Program Files/MySQL/MySQL Server 8.0/bin/mysqld.exe");
     private static final Path MYSQLADMIN = Path.of("C:/Program Files/MySQL/MySQL Server 8.0/bin/mysqladmin.exe");
     private E2aMysqlLauncher() { }
 
@@ -38,34 +38,51 @@ public final class E2aMysqlLauncher {
             failure = error;
             throw error;
         } finally {
-            if (failure != null && process.isAlive()) {
-                process.destroy();
-                try {
-                    if (!process.waitFor(10, TimeUnit.SECONDS)) {
-                        process.destroyForcibly();
-                        if (!process.waitFor(10, TimeUnit.SECONDS)) failure.addSuppressed(new IllegalStateException("MySQL initialization process remained after forced cleanup"));
-                    }
-                }
-                catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); failure.addSuppressed(interrupted); process.destroyForcibly(); }
-            }
+            if (failure != null && process.isAlive()) cleanupInitialization(process, failure, TimeUnit.SECONDS.toNanos(10));
         }
     }
 
-    public static Process startServer(Map<String, String> env, Path workspace) throws IOException {
+    static void cleanupInitialization(Process process, Throwable failure, long waitNanos) {
+        boolean interrupted = Thread.interrupted() || failure instanceof InterruptedException;
+        try {
+            process.destroy();
+            for (int phase = 0; phase < 2 && process.isAlive(); phase++) {
+                long deadline = System.nanoTime() + waitNanos;
+                while (process.isAlive()) {
+                    long remaining = deadline - System.nanoTime();
+                    if (remaining <= 0) break;
+                    try { process.waitFor(remaining, TimeUnit.NANOSECONDS); }
+                    catch (InterruptedException error) { interrupted = true; failure.addSuppressed(error); }
+                }
+                if (phase == 0 && process.isAlive()) process.destroyForcibly();
+            }
+            if (process.isAlive()) failure.addSuppressed(new IllegalStateException("MySQL initialization process remained after forced cleanup"));
+        } finally {
+            if (interrupted) Thread.currentThread().interrupt();
+        }
+    }
+
+    public static Process startServer(Map<String, String> env, Path workspace, Path initFile) throws IOException {
         E2aMigrationEnvironment.requireExact(env, isPortFree(), workspace);
         requireInitializedDataDir(workspace);
         requireTool(MYSQLD);
+        Path expected = workspace.resolve(E2aMigrationEnvironment.PRIVATE_DIR).resolve("bootstrap-account.sql").toAbsolutePath().normalize();
+        if (!initFile.toAbsolutePath().normalize().equals(expected) || !Files.isRegularFile(expected) || Files.isSymbolicLink(expected)) {
+            throw new IllegalStateException("Refusing unexpected MySQL init file");
+        }
         Path data = workspace.resolve(E2aMigrationEnvironment.DATA_DIR).toAbsolutePath().normalize();
         List<String> command = List.of(MYSQLD.toString(), "--no-defaults", "--datadir=" + data,
             "--port=" + E2aMigrationEnvironment.PORT, "--bind-address=127.0.0.1",
-            "--mysqlx=OFF", "--skip-name-resolve", "--skip-networking=false", "--skip-grant-tables=false");
+            "--mysqlx=OFF", "--skip-name-resolve", "--skip-networking=false", "--skip-grant-tables=false",
+            "--log-bin-trust-function-creators=ON",
+            "--init-file=" + expected.toString().replace('\\', '/'));
         Path log = privateArtifact(workspace, "mysql-server-" + UUID.randomUUID() + ".log");
         Process process = new ProcessBuilder(command).directory(workspace.toFile()).redirectErrorStream(true).redirectOutput(log.toFile()).start();
         return process;
     }
 
     public static void shutdown(Process process, Path workspace, String user, String password) throws IOException, InterruptedException {
-        if (process == null || !process.isAlive()) return;
+        if (process == null) return;
         if (!workspace.toAbsolutePath().normalize().equals(Path.of("D:/acrylic-pda-worktrees/r06-e2a-migration").toAbsolutePath().normalize())) {
             throw new IllegalStateException("Unexpected shutdown workspace");
         }
@@ -85,7 +102,7 @@ public final class E2aMysqlLauncher {
         if (admin.exitValue() != 0) {
             throw new IllegalStateException("mysqladmin shutdown failed: " + admin.exitValue());
         }
-        if (!process.waitFor(30, TimeUnit.SECONDS)) throw new IllegalStateException("MySQL process did not exit after authenticated shutdown");
+        if (process.isAlive() && !process.waitFor(30, TimeUnit.SECONDS)) throw new IllegalStateException("MySQL process did not exit after authenticated shutdown");
         if (process.isAlive()) throw new IllegalStateException("MySQL process did not exit");
         if (!isPortFree()) throw new IllegalStateException("19329 listener remains after authenticated shutdown");
     }
@@ -97,30 +114,9 @@ public final class E2aMysqlLauncher {
         } catch (java.io.IOException expected) { return true; }
     }
 
-    static void verifyProcessDataDir(Process process, Path data) {
-        if (!process.isAlive()) {
-            throw new IllegalStateException("MySQL process/datadir identity check failed");
-        }
-        long pid = process.pid();
-        try {
-            Process probe = new ProcessBuilder("powershell", "-NoProfile", "-Command",
-                "(Get-CimInstance Win32_Process -Filter 'ProcessId=" + pid + "').CommandLine")
-                .redirectErrorStream(true).start();
-            if (!probe.waitFor(5, TimeUnit.SECONDS)) throw new IllegalStateException("PID probe timed out");
-            String commandLine = new String(probe.getInputStream().readAllBytes());
-            String expected = data.toString().replace('\\', '/');
-            String normalized = commandLine.replace('\\', '/');
-            if (!normalized.contains("mysqld.exe") || !normalized.contains(expected) || !normalized.contains("--port=" + E2aMigrationEnvironment.PORT)) {
-                throw new IllegalStateException("MySQL PID/datadir/port mismatch");
-            }
-        } catch (IOException | InterruptedException error) {
-            throw new IllegalStateException("PID identity probe failed", error);
-        }
-    }
-
     private static void requireNewDataDir(Path workspace) {
         Path data = workspace.resolve(E2aMigrationEnvironment.DATA_DIR).normalize();
-        if (!data.startsWith(workspace.toAbsolutePath().normalize()) || Files.exists(data.resolve("ibdata1"))) {
+        if (!data.startsWith(workspace.toAbsolutePath().normalize()) || Files.exists(data, LinkOption.NOFOLLOW_LINKS)) {
             throw new IllegalStateException("Refusing old or outside E2a datadir");
         }
     }
@@ -137,7 +133,7 @@ public final class E2aMysqlLauncher {
     }
 
     static Path privateArtifact(Path workspace, String name) throws IOException {
-        Path root = workspace.resolve(".local/launcher-private").toAbsolutePath().normalize();
+        Path root = workspace.resolve(E2aMigrationEnvironment.PRIVATE_DIR).toAbsolutePath().normalize();
         if (!root.startsWith(workspace.toAbsolutePath().normalize())) throw new IllegalStateException("Private artifact escapes workspace");
         rejectLink(root, workspace);
         Files.createDirectories(root);
@@ -160,14 +156,23 @@ public final class E2aMysqlLauncher {
         if (parent != null && !parent.equals(workspace) && !parent.equals(workspace.getRoot())) rejectLink(parent, workspace);
     }
 
-    private static void restrictToCurrentUser(Path root) throws IOException, InterruptedException {
+    static void restrictToCurrentUser(Path root) throws IOException, InterruptedException {
         String literal = root.toString().replace("'", "''");
         String command = "$p='" + literal + "'; $u=[Security.Principal.WindowsIdentity]::GetCurrent().Name; "
-            + "$a=Get-Acl -LiteralPath $p; $a.SetAccessRuleProtection($true,$false); "
+            + "$a=Get-Acl -LiteralPath $p; if ($a.AreAccessRulesProtected -and $a.Owner -eq $u -and $a.Access.Count -eq 1 -and "
+            + "$a.Access[0].IdentityReference.Value -eq $u -and $a.Access[0].AccessControlType -eq 'Allow' -and "
+            + "$a.Access[0].FileSystemRights -eq [Security.AccessControl.FileSystemRights]::FullControl) { exit 0 }; "
+            + "$a.SetAccessRuleProtection($true,$false); "
             + "$r=New-Object Security.AccessControl.FileSystemAccessRule($u,'FullControl','ContainerInherit,ObjectInherit','None','Allow'); "
             + "$a.SetAccessRule($r); Set-Acl -LiteralPath $p -AclObject $a";
-        Process acl = new ProcessBuilder("powershell", "-NoProfile", "-Command", command).redirectErrorStream(true).start();
+        Process acl = powershell(command).redirectErrorStream(true).start();
         if (!acl.waitFor(5, TimeUnit.SECONDS) || acl.exitValue() != 0) throw new IllegalStateException("Cannot restrict launcher-private ACL");
+    }
+
+    static ProcessBuilder powershell(String command) {
+        var builder = new ProcessBuilder("powershell", "-NoProfile", "-Command", command);
+        builder.environment().remove("PSModulePath");
+        return builder;
     }
 
     static void awaitReady(Process process) throws IOException, InterruptedException {
