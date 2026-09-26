@@ -2,14 +2,17 @@
 
 <!-- CURRENT_STATE_START -->
 ## 当前有效状态（唯一接续入口）
-### 2026-09-26 工作树冻结：两树全部未提交成果已入库并推送（最新，优先于下方各条）
-- 触发：只读审计实测主树 HEAD `dccb73b`（09-24）的 `PdaDatabase` 仍为 **version 17**，工作树为 **27**（91 改 / 258 未跟踪）；服务端树 `568683c`（09-22）的 **V35–V41、整个 `recovery/` 与 `temporary/evidence/` 全部未提交**，主树无 `recovery` 包且 `RECOVERY_PENDING` 命中 0；`docs/history` 152 文件中仅 4 个在库，而看板引用 22 份。经用户拍板先冻结。
-- 冻结结果：主树 `D:/acrylic-pda-outbound` `codex/development` @ `3c677ad`（9 提交，tag `freeze-20260926-pda-r06`）；服务端树 `D:/acrylic-pda-worktrees/r06-e2a-migration` `codex/r06-e2a-migration` @ `d16836b`（6 提交，tag `freeze-20260926-server-r06e2a`）。两树 origin 一致（各 0/0），工作树各 **0** 项未提交，tag 已推远端。
-- 入库范围：Android Room18–27 及全部未跟踪源码/测试/schema（180 文件 44,534 行）、web 临时候选、服务端候选契约与 e2a 资源、部署 unit、品牌资源、治理文档、`docs/parallel` 69 文件、`docs/history` 149 文件；服务端树 376 文件（含 V35–V41）与 report/contracts/web/tools/docs。
-- 新增排除规则：`docs/out.xlsx`、`hs_err_pid*.log`、`replay_pid*.log`、`.codex-patch`；`.local/`、`outputs/`、`demo-artifacts/`、`docs/sku.txt` 原样保持本机不入库。
-- 冻结边界：**未改任何源码/配置语义**，未合并两树，未动 `main`、未部署、未跑服务端测试；Android 主机口径仍为 111 XML/444 项=440 通过/4 真实 HTTP 条件 skip/0 失败，APK `A8C60756811C0A0961E44D27203059640EE8E0CE4E3685DAA6F2ED43576EFC9E`。服务端树仅跑 `compileJava/compileTestJava`（不构成业务验收）。
-- 审计结论与依据见 [PROJECT_REVIEW_2026-09-26.md](history/PROJECT_REVIEW_2026-09-26.md)。下一步优先级：① 合成单一基线（两树提交层交集为 0，仅 4 个契约文件未提交对撞、`OrderTemporaryCandidate*` 一边有契约无实现）；② TEMP 确认/归档闭环 + 给 `RECOVERY_PENDING` 一个受审计恢复出口或启动 fail-fast；③ Android 发布身份链（`signingConfigs`、versionCode、更新公钥）；④ 文档收敛为三份并把版本四元组改为脚本生成；⑤ 冻结扩张 `recovery/`+`temporary/evidence/`。
-- 本节下方各条（含 R06 M2b-2b 验收、09-25 断点与 attempt 证据）仍为冻结前的历史结论，其版本/迁移口径以冻结提交为准。
+### 2026-09-26 单一基线已合成：先冻结两树，再把 `codex/r06-e2a-migration` 合入 `codex/development`（最新，优先于下方各条）
+- 触发：只读审计实测主树 `dccb73b`（09-24）的 `PdaDatabase` 仍为 **version 17**、工作树为 **27**（91 改 / 258 未跟踪）；服务端树 `568683c`（09-22）的 **V35–V41、整个 `recovery/`（32 文件）与 `temporary/evidence/`（65 文件）全部未提交**；主树无 `recovery` 包且 `RECOVERY_PENDING` 命中 0；`docs/history` 152 文件中仅 4 个在库而看板引用 22 份。经用户拍板先冻结再合成。
+- 冻结：主树 `codex/development` @ `3c677ad`（9 提交，tag `freeze-20260926-pda-r06`）；服务端树 `codex/r06-e2a-migration` @ `d16836b`（6 提交，tag `freeze-20260926-server-r06e2a`）。两树工作树各 **0** 项未提交，tag 均已推远端。入库 Android Room18–27 与全部未跟踪源码/测试/schema（180 文件 44,534 行）、服务端 376 文件（含 V35–V41）、`docs/parallel` 69 文件、`docs/history` 149 文件。
+- 合并：`codex/development` @ **`be2048e`**（`--no-ff`，双亲 `8e1923d` + `d16836b`），tag **`baseline-20260926`**，已推 origin。冲突仅 2 个：`AGENTS.md` 取主树现行规则（服务端 7 行旧工作树入口废弃，其 113 行原文随合并进入 `docs/history/AGENTS_R06_E2A_MIGRATION_before_trim_2026-09-24.md`）；`contracts/openapi.yaml` 取主树标题（保留"纤序"品牌）+ 服务端 `version 0.33.0` 与 description（主树版为其子集），**128 个 path 全部保留**。
+- 合并机械核对：两侧都改过的文件仅 **16** 个（12 个逐字节相同、1 个两侧改同一行内容相同、3 个为上述两文件与 `COMMAND_EVIDENCE_CONTRACT.md` 的自动合并）。以 `7a30523` 为基线逐文件比对：主树改动被覆盖的例外只有 `contracts/openapi.yaml` 与 `docs/parallel/R06_M2B/COMMAND_EVIDENCE_CONTRACT.md`（均为有意叠加，后者为 base+主树 09-25 注记+服务端 09-26 M2b-2b 增量）；服务端例外只有 `AGENTS.md`/`openapi.yaml`/`COMMAND_EVIDENCE_CONTRACT.md`/`web/src/orders/OrderDetailPage.vue`（后者两侧改的是同一行且内容相同）。**无任一方改动被静默丢弃。**
+- 顺带闭合：`OrderTemporaryCandidate*` 原"一边有契约无实现、一边有实现无契约"在合并后闭环——契约 + Java 4 类与测试（来自服务端树）+ Web UI 与 hooks（来自主树），路由 `/api/v1/orders/{id}/temporary-candidates` 与 openapi `/orders/{id}/temporary-candidates` 对齐。
+- 合并态验证（`--rerun-tasks`，非业务验收）：服务端 `-p server test` **102 XML/714 项 = 713 通过/1 既有符号链接条件 skip/0 失败/0 错误**，exit 0；Android `-p android :app:testDebugUnitTest` **111 XML/444 项 = 440 通过/4 真实 HTTP 条件 skip/0 失败/0 错误**，exit 0。**未跑**：服务端 136 个 IT（需隔离 MySQL）、真机/模拟器/adb、lint、部署；APK 未在本批重建。
+- 单一基线事实：migrations **41 个（V1–V41）**、`PdaDatabase` **version 27**、服务端主代码 **447 文件**、`docs/history` **154 文件**、主树工作树 0 项未提交。服务端树 `D:/acrylic-pda-worktrees/r06-e2a-migration` 已被合并，其分支保留用于追溯，**尚未归档或删除**。
+- 排除规则新增：`docs/out.xlsx`、`hs_err_pid*.log`、`replay_pid*.log`、`.codex-patch`（保留本机、不入库）。
+- 审计结论与依据见 [PROJECT_REVIEW_2026-09-26.md](history/PROJECT_REVIEW_2026-09-26.md)。下一步优先级：① TEMP 确认/归档闭环 + 给 `RECOVERY_PENDING` 一个受审计恢复出口或启动 fail-fast；② Android 发布身份链（`signingConfigs`、versionCode、更新公钥）；③ 文档收敛为三份并把版本四元组改为脚本生成；④ 冻结扩张 `recovery/`+`temporary/evidence/`；⑤ 其余 32 个工作树与 >110 GB 本地证据的清点归档。
+- 本节下方各条（含 R06 M2b-2b 验收、09-25 断点与 attempt 证据）为**合并前**的历史结论，其版本/迁移口径以 `be2048e` 为准。
 
 ### 2026-09-26 R06 M2b-2b 受控关联闸门＋指针切换已验；接关联后确认链
 
