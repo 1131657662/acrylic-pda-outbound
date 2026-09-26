@@ -6,10 +6,10 @@
 ```yaml
 date: 2026-09-27
 branch: codex/development
-head: 27729f7
-dirty_entries: 13
+head: 5678e06
+dirty_entries: 0
 worktrees: 34
-android: { name: 0.15.0-r06-submission, code: 20, room: 27 }
+android: { name: 0.16.0-r06-release, code: 21, room: 27 }
 server: { contract: 0.33.0, paths: 128, flyway: V41, migrations: 41 }
 ```
 <!-- FACTS_END -->
