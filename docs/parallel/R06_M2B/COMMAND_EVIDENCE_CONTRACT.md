@@ -120,6 +120,14 @@ PDA先验签原source/from/to/mappingVersion/原S/round/hash/目标revision，�
 
 **成功TEMP后补建/发布正式同趟单的反向候选提示最迟M2b-4b开放前完成。** R06提供成功与待审来源查询契约；总调度指定单一共享订单执行者接入OrderService.create/revise、OrderReleaseService.publish及PC嵌套发布。提示供人工核对，原成功事实不改、不重新关联；无作业重复正式单可依既有权限取消，有实际作业或出库则保留两边证据进入R07。未授权的新自动阻断、按车号合并规则不在本设计中。
 
+**2026-09-26 M2b-2b 增量（人工确认闸门与 LINK 决定，本批已实现并在隔离非空 MySQL 验证）：**
+
+- 命令形状不变（无新字段、不改 hash 域）：`LINK` 使用既有 `expected.candidateContextSha256` 承载人工核对绑定，`reason` 必填非空，权限 `temporary_order:link`。
+- 该值必须等于 `TemporaryDecisionCandidates.snapshot(warehouse,submission,body).contextSha256`（与 M2b-1/M2b-4a 同一算法，本批未改定义），并在写事务内经**锁内重算**后逐字比较；缺失/非文本 → `TEMPORARY_MANUAL_CONFIRMATION_REQUIRED`（`CommandExpected`），不一致 → `COMMAND_CONTEXT_CHANGED`。
+- 完整候选集合 0 条 → `TEMPORARY_LINK_TARGET_NOT_FOUND`；多于 1 条 → `TEMPORARY_LINK_DUPLICATES_UNRESOLVED`（失败关闭，逐单排除属未实现的 M2b-2a）；恰好 1 条时该条即目标，并在锁内以 `TemporaryLinkTarget.lockAndVerify` 重验：同仓 `source='WEB'`、`READY`、`current_revision/row_version` 与核对一致、无 assignment/PC 作业/提交/result、库存版本一致、计划行完全一致（否则 `TEMPORARY_LINK_TARGET_CHANGED/_HAS_WORK/_INVENTORY_DIFFERS/_PLAN_DIFFERS`），短装来源再拒 `TEMPORARY_LINK_SHORT_SHIPMENT_UNRESOLVED`。
+- 决定形状复用既有固定字段集：`kind=LINK`、`candidates`=锁内重算的完整候选集合、`products`=来源计划、`submissionReceipt`=`{applyState,targetOrderId,targetOrderNo,targetRevision,targetRowVersion,sourceCanonicalOrderId,sourceMappingVersion,candidateContextSha256}`，本批 `applyState` 固定 `NOT_APPLIED`；`CommandBusinessIntegrity` 只按不可变事实闭合（候选 `authentic`、映射 v 与 canonical 引用、目标同仓 `WEB`）。
+- **指针切换已在同一事务内实现（同日第二批）**：`TemporaryLinkMapping.install` 追加映射 v+1（`origin='CONTROLLED_LINK'`，V41 扩展该列检查约束且不改数据）、`submission_scope.canonical_order_id/mapping_version`、`order_submission_slot` 改指（`slot_version+1`，条件更新要求原值）、被取代 PDA_TEMP 单置 `LINKED`；四条条件更新任一不命中 1 行即整体回滚。决定 `submissionReceipt.applyState=APPLIED` 并带 `mappingId/mappingVersion`；`CommandBusinessIntegrity` 只按不可变映射行（新行 origin/版本/canonical/scope、上一版 canonical = `sourceCanonicalOrderId`）闭合；`CommandDecisionEffect` 给出 `LINK_IN_FORCE`，新映射取代报 `LINK_SUPERSEDED_BY_NEW_MAPPING`，已复核候选**范围**（政策版本/起止/条数）变化报 `CANDIDATE_CONTEXT_CHANGED:<字段>`（已生效关联自身造成的 canonical/mapping/slot 变化与读取会话差异不判失效）。**仍未实现**：候选排除台账、关联后对正式单的确认/成功链（M2b-4b）、Android 映射安装、完整锁图与并发；生产上下文仍无 `CommandOperation` bean。验收与伪证见主树 `docs/history/R06_CONTROLLED_LINK_SWITCH_ACCEPTANCE_2026-09-26.md`。
+
 ## 8. 与R09控制/证据契约的接点
 
 依据[R09控制提案](../R09/RECOVERY_CONTROL_CONTRACT.md)和[R09证据提案](../R09/RECOVERY_EVIDENCE_CONTRACT.md)。本轮双方核对：R09的V33工作只扩展隔离副本备份/恢复核验，不新增灾后字段或正式恢复API；最终工具覆盖以R09自身交付为准，不借用V32通过记录。

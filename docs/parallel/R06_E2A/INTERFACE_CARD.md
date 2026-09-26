@@ -27,6 +27,35 @@ integers outside the safe range. Hash input is the UTF-8 canonical bytes.
 `prevPageHash`, and ordered item references. `pageHash` is derived and is never
 written into `pageCore`.
 
+Each v1 item reference has exactly `itemKind`, `originalRecordId`,
+`objectKind`, `originalObjectId`, `itemBytesSha256`, `byteCount`,
+`originalDeviceSeq`, `recordSha256`, `recordStatus`, `baleId`,
+`originalCycle`, and `captureId`. The two IDs identify one original record and
+one separately uploaded immutable raw object; one raw object is referenced by
+at most one item in a source round. `itemKind` is one of V34's
+`CAPTURE/SCAN/AUDIT/STOP/ARCHIVE`, while `objectKind` is one of
+`LOCAL_FROZEN_PAYLOAD/CAPTURE_RECORDS/AUDIT_RECORDS/AUDIT_ARCHIVE`.
+`itemBytesSha256` and `byteCount` must match the raw object's original bytes;
+For an `ARCHIVE/AUDIT_ARCHIVE` item, the raw bytes are the canonical server-signed
+audit archive proof, `originalDeviceSeq` is its `throughSeq`, and
+`recordSha256` is SHA-256 of the canonical proof including `signedArchive`.
+Because the archive table has no UUID, its `originalRecordId` is the UUIDv3
+name of UTF-8 `acrylic-pda-audit-archive/{originDeviceId}/{recoveryEpoch}/{afterSeq}`
+(Java `UUID.nameUUIDFromBytes`, lowercase canonical UUID). This binds the
+original database key, not an arbitrary client UUID or just a mutable proof
+digest. Its signed proof must also match the original server archive row and
+durable payload file; every event must match the server device sequence.
+`recordSha256`, device sequence, status, and scan fields remain claims until
+independently checked against those bytes and server facts. SCAN requires
+canonical `baleId`, positive `originalCycle`, and canonical `captureId`;
+all three are null for other kinds. IDs are lowercase canonical UUIDs,
+hashes lowercase 64-digit hex, integers JSON-safe, and `recordStatus` is
+nonblank printable text of at most 40 UTF-16 code units. Within a page,
+`(itemKind, originalRecordId)` and `originalObjectId` are unique;
+`itemCount` is the number of references and `byteCount` their exact summed
+raw lengths, capped at 128 MiB. PAGE acceptance remains `PARTIAL` and never
+trusts a record or grants occupancy solely from a claimed reference.
+
 `manifestCore` contains manifest identity, source/round, page count, ordered
 page roots, entry/byte totals and `endPageNo`. It excludes `setHash`,
 `manifestBytesHash`, STOP, signatures and verification. `manifestBytesHash` and
@@ -36,6 +65,14 @@ respective domain prefix.
 `STOP_PROOF.core` binds source identity, source/round, original operator,
 device/epoch, stop event/high-watermark/audit sequence and the derived
 manifest/set hashes. The EC signature covers only `domain || canonical(core)`.
+
+The internal STOP parser accepts exactly `operation=STOP`, `openOriginalKey`,
+`manifestCore`, derived `manifestBytesHash`, derived `setHash`, and `stopProof`.
+It requires a server-selected trusted P-256 public key, the original OPEN
+manifest/snapshot/source identity, and current server-observed operator,
+device, warehouse and recovery epoch. It only validates and returns canonical
+bytes; it does not register a device key, assert uploaded page completeness,
+insert a STOP object/set, establish trusted item facts, or release stock.
 
 The internal wire shape is fixed as follows: IDs (`warehouseId`, `sourceId`,
 `submissionId`, operator/device/event and manifest IDs) are non-empty JSON
@@ -93,5 +130,17 @@ fields before treating the result as trusted.
 
 Reject mixed manifests, duplicate or out-of-order pages, incorrect previous
 hashes, hash cycles, unknown historical keys, EC actor/device/epoch mismatch,
-and RSA receipts re-signed with mismatched facts. This card intentionally does
-not define controller/POST behavior.
+and RSA receipts re-signed with mismatched facts. The wire rules above are independent of controllers; the RAW transport binding follows.
+## RAW HTTP transport (2026-09-25)
+
+`POST /api/v1/pda/temporary-source-evidence/raw` consumes `application/octet-stream`.
+Query: `warehouseId`, `submissionId`, `workRound`, `openOriginalKey`, `originalObjectId`,
+`kind`, `byteCount`, `bytesSha256`; bearer plus `X-Server-Recovery-Epoch` are required.
+The body is the original immutable object bytes, streamed with a 32 MiB object limit.
+Same bound original ID/kind/bytes replay returns the same stored object metadata;
+different bytes conflict. Missing OPEN, changed actor/source/warehouse/round/recovery epoch,
+invalid size/hash or truncated/long body fails closed. No raw object read endpoint is required:
+a lost storage acknowledgement is recovered by replaying the exact original bytes and ID.
+The response is an ordinary API envelope containing `STORED` metadata and
+`localDeletionAllowed=false`, with no internal file path or signed business receipt.
+Clients must still verify the separately signed PAGE/STOP/VERIFY receipts.
