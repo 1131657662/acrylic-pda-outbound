@@ -1,0 +1,71 @@
+Check:
+  type: object
+  required: [path, advisoryOnly]
+  properties:
+    path: {type: string, description: 相对 /api/v1 的当前候选查询入口；回执本身不冻结候选事实}
+    advisoryOnly: {const: true}
+Item:
+  type: object
+  required: [submissionId, orderId, orderNo, status, vehicleNo, containerNo, plannedTotal, actualCount, receivedAt, sameVehicle, overlappingProducts]
+  properties:
+    submissionId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    orderNo: {type: string}
+    status: {enum: [SUCCEEDED, REVIEW_REQUIRED]}
+    vehicleNo: {type: string}
+    containerNo: {type: string}
+    plannedTotal: {type: string, pattern: '^[0-9]+$'}
+    actualCount: {type: string, pattern: '^[0-9]+$'}
+    receivedAt: {type: string, format: date-time}
+    sameVehicle: {type: boolean}
+    overlappingProducts: {type: boolean}
+Response:
+  type: object
+  required: [orderId, revision, orderVersion, range, checkedAt, candidates, hasFormalWork, advisoryOnly, releaseAllowed]
+  properties:
+    orderId: {type: string, format: uuid}
+    revision: {type: integer, minimum: 1}
+    orderVersion: {type: string}
+    range:
+      type: object
+      required: [fromDate, throughDate]
+      properties:
+        fromDate: {type: string, format: date}
+        throughDate: {type: string, format: date}
+    checkedAt: {type: string, format: date-time}
+    candidates:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items: {type: array, maxItems: 20, items: {$ref: '#/Item'}}
+        total: {type: integer, minimum: 0}
+        page: {type: integer, minimum: 1}
+        pageSize: {const: 20}
+    hasFormalWork: {type: boolean, description: 已有正式assignment、PC作业、FORMAL来源或结果，不能据此执行取消或更正}
+    advisoryOnly: {const: true}
+    releaseAllowed: {const: false}
+Path:
+  get:
+    summary: 正式订单反向查询成功或待审TEMP候选，仅供人工核对
+    description: 要求order:read及同仓授权。按原TEMP首映射PDA_TEMP订单与当前计划、正文接收日期、车号二进制精确相同或产品ID交集匹配。默认正式建单北京时间前后7天，可用完整日期范围调整，含首尾最多366天。单次RR快照，跨页为重新查询，候选变化可重排；不是排除证明、自动阻断、关联或放行。回执查询入口稳定，原幂等回执不混入动态候选。旧PC回执可能无入口，页面仍可独立读取。
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+      - {name: warehouseId, in: query, required: true, schema: {type: string, format: uuid}}
+      - {name: fromDate, in: query, schema: {type: string, format: date}}
+      - {name: throughDate, in: query, schema: {type: string, format: date}}
+      - {name: page, in: query, schema: {type: integer, minimum: 1, maximum: 1000000, default: 1}}
+    responses:
+      '200':
+        description: 同仓信息性候选，空列表只表示所选条件未匹配；未知业务重复结论仍须人工核对
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ./schemas.yaml#/Envelope
+                - properties:
+                    data: {$ref: '#/Response'}
+      default:
+        description: 401未登录/撤权，403无order:read，404未知或异仓，400日期/页码错误，409非WEB正式订单
+        content:
+          application/json:
+            schema: {$ref: './schemas.yaml#/Envelope'}

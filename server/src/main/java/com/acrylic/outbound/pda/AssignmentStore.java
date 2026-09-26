@@ -13,8 +13,11 @@ public class AssignmentStore {
         SELECT BIN_TO_UUID(a.id),BIN_TO_UUID(a.order_id),a.revision,BIN_TO_UUID(a.device_id),d.device_code,
           BIN_TO_UUID(a.operator_id),u.display_name,a.epoch,a.recovery_epoch,BIN_TO_UUID(a.inventory_snapshot_id),
           a.plan_sha256,a.inventory_sha256,a.start_order_scan_seq,a.allocation_version,a.status,a.area_note,
-          o.issued_at,o.expires_at,a.download_ack_at,o.signed_token,BIN_TO_UUID(o.id),o.authorization_sequence
+          o.issued_at,o.expires_at,a.download_ack_at,o.signed_token,BIN_TO_UUID(o.id),o.authorization_sequence,
+          base.order_no,fixed.vehicle_no,fixed.planned_total
         FROM order_assignment a INNER JOIN device d ON d.id=a.device_id INNER JOIN app_user u ON u.id=a.operator_id
+        INNER JOIN outbound_order base ON base.id=a.order_id AND base.warehouse_id=a.warehouse_id
+        INNER JOIN order_revision fixed ON fixed.order_id=a.order_id AND fixed.revision=a.revision
         INNER JOIN offline_authorization o ON o.assignment_id=a.id AND o.authorization_sequence=(
           SELECT MAX(current_authorization.authorization_sequence) FROM offline_authorization current_authorization
           WHERE current_authorization.assignment_id=a.id)
@@ -23,8 +26,11 @@ public class AssignmentStore {
         SELECT BIN_TO_UUID(a.id),BIN_TO_UUID(a.order_id),a.revision,BIN_TO_UUID(a.device_id),d.device_code,
           BIN_TO_UUID(a.operator_id),u.display_name,a.epoch,a.recovery_epoch,BIN_TO_UUID(a.inventory_snapshot_id),
           a.plan_sha256,a.inventory_sha256,a.start_order_scan_seq,a.allocation_version,a.status,a.area_note,
-          o.issued_at,o.expires_at,a.download_ack_at,o.signed_token,BIN_TO_UUID(o.id),o.authorization_sequence
+          o.issued_at,o.expires_at,a.download_ack_at,o.signed_token,BIN_TO_UUID(o.id),o.authorization_sequence,
+          base.order_no,fixed.vehicle_no,fixed.planned_total
         FROM order_assignment a INNER JOIN device d ON d.id=a.device_id INNER JOIN app_user u ON u.id=a.operator_id
+        INNER JOIN outbound_order base ON base.id=a.order_id AND base.warehouse_id=a.warehouse_id
+        INNER JOIN order_revision fixed ON fixed.order_id=a.order_id AND fixed.revision=a.revision
         INNER JOIN offline_authorization o ON o.assignment_id=a.id
         WHERE o.id=?
         """;
@@ -110,7 +116,8 @@ public class AssignmentStore {
         return new View(rs.getString(1),rs.getString(2),rs.getInt(3),rs.getString(4),rs.getString(5),rs.getString(6),rs.getString(7),
             rs.getString(8),rs.getString(9),rs.getString(10),rs.getString(11),rs.getString(12),rs.getString(13),rs.getString(14),rs.getString(15),
             rs.getString(16),rs.getTimestamp(17).toInstant().toString(),rs.getTimestamp(18).toInstant().toString(),
-            ack==null?null:ack.toInstant().toString(),rs.getString(20),rs.getString(21),rs.getString(22));
+            ack==null?null:ack.toInstant().toString(),rs.getString(20),rs.getString(21),rs.getString(22),
+            rs.getString(23),rs.getString(24),rs.getString(25));
     }
     public record Publication(String id,String snapshotId,String policyId,String recoveryEpoch,String snapshotJson,String inventorySha,
         String mappingRevision,String policyVersion,boolean autoDeduct) { }
@@ -121,13 +128,14 @@ public class AssignmentStore {
     public record View(String id,String orderId,int revision,String deviceId,String deviceCode,String operatorId,String operatorName,
         String epoch,String serverRecoveryEpoch,String inventorySnapshotId,String planSha256,String inventorySha256,
         String startOrderScanSeq,String allocationVersion,String status,String areaNote,String issuedAt,String expiresAt,
-        String downloadAckAt,String offlineToken,String offlineAuthorizationId,String authorizationSequence) {
+        String downloadAckAt,String offlineToken,String offlineAuthorizationId,String authorizationSequence,
+        String orderNo,String vehicleNo,String plannedTotal) {
         public View forOperator(UUID user) {
             if(operatorId.equals(user.toString())) return this;
             // The device still needs to show the held order, but another person cannot recover its credential.
             return new View(id,orderId,revision,deviceId,deviceCode,operatorId,operatorName,epoch,serverRecoveryEpoch,
                 inventorySnapshotId,planSha256,inventorySha256,startOrderScanSeq,allocationVersion,status,areaNote,
-                issuedAt,expiresAt,downloadAckAt,null,offlineAuthorizationId,authorizationSequence);
+                issuedAt,expiresAt,downloadAckAt,null,offlineAuthorizationId,authorizationSequence,orderNo,vehicleNo,plannedTotal);
         }
     }
 }

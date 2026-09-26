@@ -27,6 +27,21 @@ class PdaAssignmentIT {
         web=new PublicationDriver(mvc,json,IdentityFixture.create(jdbc,passwords,"WAREHOUSE_ADMIN"));pda=new PdaTestDriver(web);
         order=pda.readyOrder();device=pda.register();tokens=pda.login(device);
     }
+    @Test void claimPreviewAndAssignmentUseThePublishedOrderIdentity() throws Exception {
+        var preview=pda.data(get("/api/v1/pda/orders/"+order+"/claim-preview"),tokens);
+        var assignment=pda.data(pda.claim(order,UUID.randomUUID().toString()),tokens);
+        assertThat(preview.get("status").asText()).isEqualTo("READY");
+        assertThat(assignment.get("orderNo")).isEqualTo(preview.get("orderNo"));
+        assertThat(assignment.get("vehicleNo")).isEqualTo(preview.get("vehicleNo"));
+        assertThat(assignment.get("plannedTotal")).isEqualTo(preview.get("plannedTotal"));
+        pda.send(get("/api/v1/pda/orders/"+order+"/claim-preview"),tokens)
+            .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("ORDER_STATE_CONFLICT"));
+    }
+    @Test void foreignWarehouseCannotReadClaimPreview() throws Exception {
+        var outsider=new PdaTestDriver(new PublicationDriver(mvc,json,IdentityFixture.create(jdbc,passwords,"WAREHOUSE_ADMIN")));
+        var foreign=outsider.login(outsider.register());
+        outsider.send(get("/api/v1/pda/orders/"+order+"/claim-preview"),foreign).andExpect(status().isNotFound());
+    }
     @Test void lostClaimResponseRecoversIdenticalCredentialWithoutExtending48Hours() throws Exception {
         String key=UUID.randomUUID().toString();var original=pda.data(pda.claim(order,key),tokens);var relogin=pda.login(device);
         assertThat(pda.data(pda.claim(order,key),relogin)).isEqualTo(original);

@@ -19,6 +19,12 @@ public class PdaOrdersController {
     public ApiEnvelope<?> available(@RequestParam(defaultValue="") String cursor,@RequestParam(defaultValue="50") int limit,HttpServletRequest request) {
         return responses.ok(orders.list(access.require("pda:assign").warehouseId(),new OrderQueries.Filter("READY","",cursor,limit)),request);
     }
+    @GetMapping("/orders/{id}/claim-preview") @Transactional(readOnly=true)
+    public ApiEnvelope<?> preview(@PathVariable UUID id,HttpServletRequest request) {
+        var order=orders.head(access.require("pda:assign").warehouseId(),id);
+        if(!order.status().equals("READY")) throw new BusinessException(409,"ORDER_STATE_CONFLICT","订单已不在待领取状态，请刷新核对");
+        return responses.ok(order,request);
+    }
     @PostMapping("/orders/{id}/assignments") public ApiEnvelope<?> claim(@PathVariable UUID id,@Valid @RequestBody AssignmentService.Command body,
         @RequestHeader("Idempotency-Key") String key,@RequestHeader("X-Server-Recovery-Epoch") String epoch,HttpServletRequest request) {
         return responses.ok(service.claim(new AssignmentService.Context(epoch,key,(String)request.getAttribute("requestId")),id,body),request);
