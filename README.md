@@ -1,3 +1,5 @@
+> **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](docs/ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
+
 # 纤序·腈纶包离线出库管理系统
 
 当前开发进度：R06-C稳定临时草稿、多产品计划、本机扫码/全机防重及受控新一轮准备已完成源码/主机验证，下一步R06-D上传与独立确认。Android0.13.0-r06-local-work/code18/Room16，后端业务仍0.23/V30；250项Android主机、15项MySQL/MockMvc及构建/lint通过，实际HTTP/设备待验。详见[交付记录](docs/R06_LOCAL_WORK_GUIDE.md)及[当前进度](docs/DEVELOPMENT_PROGRESS.md)。临时上传/确认尚未开放，不能放行；通用审计补传保留在首条TEMP前等待R06-D。源码在`codex/development`，现网仍0.18/V23/code16，以下R05描述保留当轮版本边界。

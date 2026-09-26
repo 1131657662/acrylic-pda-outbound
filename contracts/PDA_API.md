@@ -1,3 +1,5 @@
+> **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](../docs/ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
+
 # 设备身份、资料准备与正式订单首轮提交
 
 当前契约0.25.0（2026-09-20），Android0.15.0-r06-submission/code20/Room17接入TEMP冻结、原批次查询/上传、分块恢复及签名取消，见[交付说明](../docs/R06_TEMPORARY_SUBMISSION_GUIDE.md)。新增`POST /pda/temporary-orders/submissions`；超过1MiB复用`/pda/submissions/{id}/upload`、`chunks/{index}`及`finalize`，最多32MiB。控制头固定`source={kind:TEMP,creatorDeviceId,clientOrderId}`、`authorizationId`、`freezeDeviceId`、`workRound="1"`、`sourceRecoveryEpoch`，`assignmentId/continuationId`明确为null。完整正文包含原多产品计划/摘要、TEMP采集、保存事实及冻结事件；不补写正式assignment。

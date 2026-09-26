@@ -19,7 +19,7 @@
 
 - 完成标准与接续：[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)（R06 处置/续作及成功回执链、R07 交接更正两行）。
 - M2/M2b 分批范围与前置条件：[M2b 实施准备](R06_M2B_IMPLEMENTATION_PLAN.md)。
-- 当前唯一进度与写权：看板 [当前有效状态](ORCHESTRATION_STATUS.md#当前有效状态唯一接续入口)。
+- 当前唯一进度与写权：看板 [当前有效状态](ORCHESTRATION_STATUS.md)。
 
 ## 2. 政策对 M2 实施范围的约束（不是完成结论）
 

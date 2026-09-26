@@ -1,7 +1,9 @@
+> **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
+
 # 十步开发路线
 
 <!-- CURRENT_ENTRY_START -->
-当前执行位置、Git和验证只读[看板当前区](ORCHESTRATION_STATUS.md#当前有效状态唯一接续入口)。本页保存用户确认的R01–R10范围，具体完成标准及接续提示见[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)，已有验收见[进度索引](DEVELOPMENT_PROGRESS.md)。
+当前执行位置、Git和验证只读[看板当前区](ORCHESTRATION_STATUS.md)。本页保存用户确认的R01–R10范围，具体完成标准及接续提示见[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)，已有验收见[进度索引](DEVELOPMENT_PROGRESS.md)。
 <!-- CURRENT_ENTRY_END -->
 
 ## 十步执行路线

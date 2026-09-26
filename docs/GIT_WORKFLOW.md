@@ -1,6 +1,8 @@
+> **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
+
 # 仓库、分支与版本管理
 
-当前 SHA、工作树和交付状态见[看板当前区](ORCHESTRATION_STATUS.md#当前有效状态唯一接续入口)，协作规则见[AGENTS.md](../AGENTS.md)。本页只保存长期 Git、备份和发布约定；旧角色和调度历史见[归档](history/management-2026-09-25-before-refresh/README.md)。
+当前 SHA、工作树和交付状态见[看板当前区](ORCHESTRATION_STATUS.md)，协作规则见[AGENTS.md](../AGENTS.md)。本页只保存长期 Git、备份和发布约定；旧角色和调度历史见[归档](history/management-2026-09-25-before-refresh/README.md)。
 
 ## 分支与授权
 

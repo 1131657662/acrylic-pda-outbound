@@ -1,3 +1,5 @@
+> **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](../docs/ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
+
 # 正式PDA：资料准备、扫码、召回与受控续作
 
 2026-09-20 R06-D当前：TEMP/正式事件共用连续补传、签名归档与召回全设备覆盖，固定原TEMP资格；Android0.14.0-r06-audit/code19/Room16，需0.24后端，详见[审计接续](../docs/R06_TEMPORARY_AUDIT_GUIDE.md)。261项主机、构建/lint通过，APK未安装；临时单冻结/提交及独立确认仍待继续，审计补传不代表放行。主机测试新增输入`server/build/pda-temporary-audit-fixture.json`，由隔离库`TemporaryAuditContractFixtureIT`生成真实后端签名（另需既有临时准备及正式流程夹具）；全部夹具保持ignored，不进入APK。下列版本和TEMP补传暂停描述为历史记录。
