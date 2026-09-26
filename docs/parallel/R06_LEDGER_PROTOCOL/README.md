@@ -1,5 +1,11 @@
 # 第六轮 C1b 实际回执独立消费者
 
+> 2026-09-25后续：非零候选独立消费已扩展到21候选五页实际HTTP、完整上下文/游标/指纹重建及非零短装批准，attempt61 Python54/54。见[验收](../../history/R06_NONZERO_CANDIDATE_ACCEPTANCE_2026-09-25.md)。仍限首映射/首轮，普通确认拒绝未排除候选，生产能力保持关闭。
+
+> 2026-09-25：新增真实内部决定消费者 `decision_consumer.py`；首映射/首轮/零候选的 NORMAL_CONFIRM、SHORT_APPROVE 和批准引用闭包在独立非空MySQL/真实HTTP attempt43中通过，Python46/46。详见[本次验收](../../history/R06_RECORDED_DECISION_CONSUMER_ACCEPTANCE_2026-09-25.md)。下文为旧骨架历史，旧固定版本的有效验收见[FINAL_REVIEW](FINAL_REVIEW.md)，其manifest与向量保持原样。新消费者无生产写权限或放行能力。
+
+复现当前内部消费者：服务端树运行 `tools/e2a-cross-source-verify.ps1 -Run <未使用编号> -DecisionProtocol`；工具检查端口、独占新目录并认证shutdown。只消费保留向量时，显式设置 `R06_DECISION_VECTORS` 为该次 `decision-vectors.json`，主树运行 `C:/Python314/python.exe -W error::ResourceWarning -m unittest discover -s docs/parallel/R06_LEDGER_PROTOCOL -p "test_decision*.py" -v`。无变量时真实决定测试明确skip；不能把skip或保留向量离线消费写成新实库/HTTP验证。
+
 W3 独立树 `codex/r06-ledger-protocol`，开发基线 `82a2e13cac306f877ed5e2c887970adf3d8e57f0`。当前是适配骨架与审查材料，**尚无固定生产提交、编译或动态测试结果**。代码暂对应 W1 已确认的候选 codec wire；源码固定后再运行并记录实际结果。
 
 [验收矩阵](REVIEW_MATRIX.md) 和 [最小卡早审](IMPLEMENTATION_REVIEW.md) 定义边界。[可信样本](trusted_facts.py) 独立规定 Web/PDA 的 actor、原来源、原操作员、权限和版本，不从 Java 运行结果反推预期。四组正向样本覆盖无正文、仅 declared 无 received、已接收正文及短装合成命令；正常理由为空。它们只是传给 codec 的合成服务器上下文，不是真实数据库授权或业务决定。

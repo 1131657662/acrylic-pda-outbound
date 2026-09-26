@@ -9,6 +9,8 @@ from safety import OpsError, read_json
 def arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
+    from control_cli import arguments as control_arguments
+    control_arguments(commands)
     setup = commands.add_parser('setup')
     setup.add_argument('--mysql-bin', required=True)
     for name in ('seed', 'seed-v33', 'backup', 'restore', 'stop', 'api-probe', 'worker-probe', 'jobs', 'v28-faults', 'r06-faults', 'v33-faults', 'metadata-probe'):
@@ -28,6 +30,9 @@ def arguments():
 
 
 def execute(args):
+    if args.command.startswith('control-'):
+        from control_cli import execute as control_execute
+        return control_execute(args)
     if args.command == 'verify-r02':
         from r02_audit import verify_r02
         return {'status': 'PASS', **verify_r02(args.backup)}

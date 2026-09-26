@@ -15,12 +15,12 @@ class ArchiveProofTests(unittest.TestCase):
     def setUpClass(cls):
         cls.private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
-    def proof(self, **changes):
+    def proof(self, audience='acrylic-pda-archive', **changes):
         value = {'archiveVersion': 1, 'localDeletionAllowed': False, 'storagePolicy': 'SERVER_DURABLE_FILES_V1',
                  'archivedAt': '2024-02-29T00:00:00Z', 'retainUntil': '2029-02-28T00:00:00Z', **changes}
         encode = lambda item: base64.urlsafe_b64encode(canonical(item).encode()).rstrip(b'=').decode()
         head = encode({'alg': 'RS256', 'typ': 'JWT', 'kid': 'synthetic'})
-        body = encode({'iss': 'acrylic-outbound', 'aud': 'acrylic-pda-archive', 'archive': value})
+        body = encode({'iss': 'acrylic-outbound', 'aud': audience, 'archive': value})
         signature = self.private.sign((head + '.' + body).encode(), padding.PKCS1v15(), hashes.SHA256())
         value['signedArchive'] = head + '.' + body + '.' + base64.urlsafe_b64encode(signature).rstrip(b'=').decode()
         return value
@@ -30,6 +30,25 @@ class ArchiveProofTests(unittest.TestCase):
 
     def test_valid_leap_day_retention_and_original_signature(self):
         self.verify(self.proof())
+
+    def test_v2_allowed_only_for_submission_archive(self):
+        self.verify(self.proof(archiveVersion=2))
+        with self.assertRaisesRegex(OpsError, 'ARCHIVE_VERSION_UNSUPPORTED'):
+            self.verify(self.proof(archiveVersion=2, audience='acrylic-pda-audit-archive'), 'acrylic-pda-audit-archive')
+        for version in (True, '2', 3):
+            with self.subTest(version=version), self.assertRaisesRegex(OpsError, 'ARCHIVE_VERSION_UNSUPPORTED'):
+                self.verify(self.proof(archiveVersion=version))
+
+    def test_boolean_cannot_replace_signed_integer(self):
+        value = self.proof(archiveVersion=1)
+        value['archiveVersion'] = True
+        with self.assertRaisesRegex(OpsError, 'ARCHIVE_BODY_MISMATCH'):
+            self.verify(value)
+
+    def test_noninteger_json_numbers_are_rejected_on_parse(self):
+        for value in ('1.0', 'NaN', 'Infinity', '9007199254740992'):
+            with self.subTest(value=value), self.assertRaisesRegex(OpsError, 'ARCHIVE_UNSUPPORTED_JSON_VALUE'):
+                parse('{"value":' + value + '}')
 
     def test_unsigned_change_wrong_audience_and_corrupt_signature(self):
         value = self.proof()

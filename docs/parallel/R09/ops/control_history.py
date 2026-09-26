@@ -1,0 +1,84 @@
+"""Read the entire immutable chain, exact pointer and caller's trusted anchor."""
+from control_disk import read
+from control_paths import checked
+from control_format import fields, version, uuid, revision, checksum
+from control_model import verify, checkpoint
+from safety import require
+
+
+def history_name(number):
+    return f'{number:018d}.json'
+
+
+def history(root):
+    directory = checked(root / 'history')
+    require(directory.is_dir(), 'CONTROL_HISTORY_MISSING')
+    paths = sorted(directory.iterdir())
+    require(len(paths) <= 100000, 'CONTROL_HISTORY_LIMIT')
+    records, ids = [], set()
+    for number, path in enumerate(paths, 1):
+        require(path.name == history_name(number), 'CONTROL_HISTORY_GAP')
+        value = verify(read(path), records[-1] if records else None)
+        require(value['command']['commandId'] not in ids, 'CONTROL_COMMAND_REUSED')
+        ids.add(value['command']['commandId'])
+        records.append(value)
+    return records
+
+
+def anchor(value, records):
+    fields(value, 'formatVersion installationId revision recordSha256')
+    version(value['formatVersion'])
+    uuid(value['installationId'])
+    checksum(value['recordSha256'])
+    number = revision(value['revision'])
+    require(1 <= number <= len(records), 'CONTROL_CHECKPOINT_ROLLBACK')
+    require(value == checkpoint(records[number - 1]), 'CONTROL_CHECKPOINT_MISMATCH')
+    return number
+
+
+def current(root, records):
+    path = root / 'current.json'
+    if not path.exists():
+        require(len(records) <= 1, 'CONTROL_POINTER_MISSING')
+        return 0
+    number = anchor(read(path), records)
+    require(len(records) - number <= 1, 'CONTROL_POINTER_ROLLBACK')
+    return number
+
+
+def layout(root, records, number):
+    allowed = {'identity.json', 'coordinator.lock', 'history', 'current.json'}
+    from control_writers import validate
+    if validate(root, read(root / 'identity.json')):
+        allowed.update(('writers.json', 'writers.lock'))
+        if read(root / 'writers.json')['formatVersion'] == 2:
+            from control_intents import inspect
+            _, marker, latest, _ = inspect(root, records, complete=False)
+            allowed.update(('intents', 'admission.json'))
+            if marker != latest:
+                allowed.add('admission-' + latest['intentSha256'] + '.pending')
+    pending = None if number == len(records) else checkpoint(records[-1])
+    if pending:
+        staged = 'pointer-' + pending['recordSha256'] + '.pending'
+        allowed.add(staged)
+        if (root / staged).exists():
+            require(read(root / staged) == pending, 'CONTROL_PARTIAL_POINTER')
+    require(all(path.name in allowed for path in root.iterdir()), 'CONTROL_UNKNOWN_ARTIFACT')
+
+
+def load(location, trusted_checkpoint=None):
+    identity = read(location.root / 'identity.json')
+    fields(identity, 'formatVersion installationId restoreRoots initialCommandSha256')
+    version(identity['formatVersion'])
+    checksum(identity['initialCommandSha256'])
+    expected = {**location.identity(), 'initialCommandSha256': identity['initialCommandSha256']}
+    require(identity == expected, 'CONTROL_INSTALLATION_MISMATCH')
+    records = history(location.root)
+    if records:
+        require(records[0]['commandSha256'] == identity['initialCommandSha256'], 'CONTROL_BOOTSTRAP_MISMATCH')
+        require(records[0]['installationId'] == location.installation_id, 'CONTROL_INSTALLATION_MISMATCH')
+    if trusted_checkpoint is not None:
+        anchor(trusted_checkpoint, records)
+    number = current(location.root, records)
+    layout(location.root, records, number)
+    return records, number, identity

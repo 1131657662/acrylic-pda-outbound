@@ -1,5 +1,7 @@
 # 已确认首版快照适配
 
+2026-09-25 当前结论：TEMP_PDA首轮mapping1原确认已适配，核原签名BLOB/提交/快照并保留原TEMP顺序；报表123项、服务端493通过/1skip、attempt53真实HTTP/Chrome及12文件回读通过。此为原确认，不代表后续净结果、多设备或完整R08完成。无总调度/子代理、无生产部署；下方旧日期记录仅历史。详[验收](../../history/R08_TEMPORARY_EXPORT_ACCEPTANCE_2026-09-25.md)及[当前看板](../../ORCHESTRATION_STATUS.md)。
+
 2026-09-20，依赖核对基线：`codex/development` 的 `32ff90f`。R08工作树仍从 `2369392076083a5a4f59d8ea3d6edebe5067a03f` 起步，没有合入或复制其他任务代码。
 
 ## 实现范围

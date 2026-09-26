@@ -19,7 +19,9 @@ def unique_object(pairs):
 
 
 def parse(value):
-    return json.loads(value, object_pairs_hook=unique_object)
+    result = json.loads(value, object_pairs_hook=unique_object)
+    canonical(result)
+    return result
 
 
 def canonical(value):
@@ -53,8 +55,9 @@ def verify_proof(proof, keys, audience):
     except InvalidSignature:
         raise OpsError('ARCHIVE_SIGNATURE_INVALID') from None
     require(claims.get('iss') == 'acrylic-outbound' and claims.get('aud') == audience, 'ARCHIVE_CONTEXT_MISMATCH')
-    require(claims.get('archive') == {k: v for k, v in proof.items() if k != 'signedArchive'}, 'ARCHIVE_BODY_MISMATCH')
-    require(type(proof['archiveVersion']) is int and proof['archiveVersion'] == 1, 'ARCHIVE_VERSION_UNSUPPORTED')
+    require(canonical(claims.get('archive')) == canonical({k: v for k, v in proof.items() if k != 'signedArchive'}), 'ARCHIVE_BODY_MISMATCH')
+    allowed = (1, 2) if audience == 'acrylic-pda-archive' else (1,)
+    require(type(proof['archiveVersion']) is int and proof['archiveVersion'] in allowed, 'ARCHIVE_VERSION_UNSUPPORTED')
     require(proof['localDeletionAllowed'] is False, 'ARCHIVE_DELETION_NOT_ALLOWED')
     require(proof['storagePolicy'] == 'SERVER_DURABLE_FILES_V1', 'ARCHIVE_STORAGE_POLICY_UNSUPPORTED')
     at = instant(proof['archivedAt'])

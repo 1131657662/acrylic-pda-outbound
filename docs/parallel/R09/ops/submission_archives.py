@@ -1,5 +1,5 @@
 """Validate V27 archive index, signature, original receipt and frozen submission."""
-from archive_proofs import parse, content, verify_proof, instant
+from archive_proofs import parse, canonical, content, verify_proof, instant
 from receipts import verify_receipt
 from safety import require
 
@@ -16,6 +16,7 @@ QUERY = '''SELECT BIN_TO_UUID(a.submission_id),a.recovery_epoch,a.payload_sha256
 def verify_archives(db, files, keys):
     rows = db.query(QUERY).splitlines()
     require(len(rows) == int(db.query('SELECT COUNT(*) FROM submission_archive;')), 'ARCHIVE_SOURCE_MISSING')
+    temporary, commands = 0, 0
     for line in rows:
         row = line.split('\t')
         proof = parse(bytes.fromhex(row[6]))
@@ -23,17 +24,25 @@ def verify_archives(db, files, keys):
         verify_index(row, proof)
         body = content(files, row[2], proof['payloadBytes'])
         receipt = content(files, row[3], proof['receiptBytes'])
-        require(receipt == parse(bytes.fromhex(row[7])), 'ARCHIVE_ORIGINAL_RECEIPT_MISMATCH')
+        require(canonical(receipt) == canonical(parse(bytes.fromhex(row[7]))), 'ARCHIVE_ORIGINAL_RECEIPT_MISMATCH')
         verify_receipt(receipt, keys)
         require(receipt['submissionId'] == row[0] and receipt['status'] == row[8] == 'SUCCEEDED', 'ARCHIVE_TERMINAL_MISMATCH')
         require(receipt['payloadSha256'] == row[2] == row[16], 'ARCHIVE_PAYLOAD_MISMATCH')
         require(int(proof['payloadBytes']) == int(row[17]), 'ARCHIVE_PAYLOAD_SIZE_MISMATCH')
         require(proof['completedAt'] == receipt['completedAt'], 'ARCHIVE_COMPLETION_MISMATCH')
         require(instant(proof['archivedAt']) >= instant(proof['completedAt']), 'ARCHIVE_COMPLETION_MISMATCH')
-        require(body['source']['sourceOrderId'] == proof['orderId'], 'ARCHIVE_FROZEN_SOURCE_MISMATCH')
-        for name in ('submissionId', 'assignmentId', 'freezeDeviceId', 'workRound', 'sourceRecoveryEpoch'):
-            require(body[name] == proof[name], 'ARCHIVE_FROZEN_SOURCE_MISMATCH')
-    return {'submission_archives_verified': len(rows), 'submission_archive_file_references': 2 * len(rows)}
+        if proof['archiveVersion'] == 2:
+            from temporary_archives import verify_temporary
+            commands += verify_temporary(db, files, {'proof': proof, 'body': body, 'receipt': receipt, 'row': row, 'keys': keys})
+            temporary += 1
+        else:
+            require(body['source']['sourceOrderId'] == proof['orderId'], 'ARCHIVE_FROZEN_SOURCE_MISMATCH')
+            for name in ('submissionId', 'assignmentId', 'freezeDeviceId', 'workRound', 'sourceRecoveryEpoch'):
+                require(body[name] == proof[name], 'ARCHIVE_FROZEN_SOURCE_MISMATCH')
+    result = {'submission_archives_verified': len(rows), 'submission_archive_file_references': 2 * len(rows) + temporary}
+    if temporary:
+        result.update(temporary_archives_verified=temporary, temporary_archive_commands_verified=commands)
+    return result
 
 
 def verify_index(row, proof):
@@ -42,6 +51,8 @@ def verify_index(row, proof):
         require(str(proof[name]) == value, 'ARCHIVE_INDEX_MISMATCH')
     for name, value in zip(('archivedAt', 'retainUntil'), row[4:6]):
         require(instant(proof[name]) == instant(value + '+00:00'), 'ARCHIVE_INDEX_MISMATCH')
+    if proof['archiveVersion'] == 2:
+        return  # TEMP source fields are checked against their separate original-source query.
     names = ('orderId', 'assignmentId', 'warehouseId', 'operatorId', 'freezeDeviceId', 'workRound', 'sourceRecoveryEpoch')
     for name, value in zip(names, row[9:16]):
         require(str(proof[name]) == value, 'ARCHIVE_SOURCE_MISMATCH')
