@@ -24,8 +24,10 @@ public class TemporaryConfirmationSource {
     public Value read(CommandContext context) {
         var head=submissions.required(context.id("submissionId"));submissions.current(head);
         if(head.control().temporary()==null || head.order()==null || !head.status().equals("REVIEW_REQUIRED")
-            || head.control().round()!=1 || !"1".equals(context.text("mappingVersion")))throw CommandErrors.stale();
-        target(head);
+            || head.control().round()!=1)throw CommandErrors.stale();
+        long mappingVersion=context.version("mappingVersion");
+        boolean linked=confirmableSource(context,mappingVersion);
+        target(head,linked);
         var hash=submissions.payloadHash(head.control().id());if(hash==null)throw CommandErrors.stale();
         var body=parse(files.read(hash));equal(sha(body),hash,"原受理正文损坏");
         equal(SubmissionControl.read(uuid(body,"submissionId"),body),head.control(),"原控制与正文不符");
@@ -34,14 +36,36 @@ public class TemporaryConfirmationSource {
         if(!issues.isEmpty())throw new BusinessException(409,issues.getFirst(),"原资格或当前身份条件不满足，保留待审及占用");
         require(!value.scans().isEmpty(),"整单零包不能确认出库");
         equal(context.text("targetRevision"),text(body,"orderRevision"),"目标计划版本已变化");
-        return new Value(head,body,value);
+        return new Value(head,body,value,linked);
     }
-    private void target(SubmissionStore.Head head) {
+    /**
+     * A temporary source is confirmable in exactly two states: its untouched v1 mapping, or a v2+ mapping
+     * installed by the controlled link. Any other origin (or a missing/foreign mapping row) stays stale, so
+     * a version bump by anything but the reviewed link can never make a source confirmable.
+     */
+    private boolean confirmableSource(CommandContext context,long mappingVersion) {
+        if(mappingVersion<1)throw CommandErrors.stale();
+        var origins=jdbc.queryForList("""
+            SELECT m.origin FROM submission_scope c JOIN temporary_source_mapping m
+              ON m.scope_id=c.id AND m.mapping_version=c.mapping_version
+            WHERE c.id=? AND m.canonical_order_id=c.canonical_order_id
+            """,String.class,Ids.bytes(context.id("scopeId")));
+        if(origins.size()!=1)throw CommandErrors.stale();
+        boolean controlled="CONTROLLED_LINK".equals(origins.getFirst());
+        if(mappingVersion==1) { if(controlled)throw CommandErrors.stale(); return false; }
+        if(!controlled)throw CommandErrors.stale();
+        return true;
+    }
+    private void target(SubmissionStore.Head head,boolean linked) {
+        // v1: the scope canonical is still the PDA_TEMP order awaiting review.
+        // linked: the link moved the canonical (and the slot) to the reviewed formal order, which is still
+        // blank and without a result; anything else means the target changed after the link.
         int matches=jdbc.queryForObject("""
             SELECT COUNT(*) FROM outbound_order o JOIN order_submission_slot l ON l.order_id=o.id
-            WHERE o.id=? AND o.warehouse_id=? AND o.source='PDA_TEMP' AND o.status='REVIEW_REQUIRED'
-              AND o.current_result_version IS NULL AND l.current_submission_id=? AND l.phase='FROZEN'
-            """,Integer.class,Ids.bytes(head.order()),Ids.bytes(head.warehouse()),Ids.bytes(head.control().id()));
+            WHERE o.id=? AND o.warehouse_id=? AND o.source=? AND o.status=? AND o.current_result_version IS NULL
+              AND l.current_submission_id=? AND l.phase='FROZEN'
+            """,Integer.class,Ids.bytes(head.order()),Ids.bytes(head.warehouse()),linked?"WEB":"PDA_TEMP",
+            linked?"READY":"REVIEW_REQUIRED",Ids.bytes(head.control().id()));
         if(matches!=1)throw CommandErrors.stale();
     }
     public java.util.List<String> reasons(TemporaryStore.Stored authorization) {
@@ -53,5 +77,5 @@ public class TemporaryConfirmationSource {
         }
         return java.util.List.copyOf(result);
     }
-    public record Value(SubmissionStore.Head head,JsonNode body,SubmissionSnapshot.Validated snapshot) { }
+    public record Value(SubmissionStore.Head head,JsonNode body,SubmissionSnapshot.Validated snapshot,boolean linked) { }
 }

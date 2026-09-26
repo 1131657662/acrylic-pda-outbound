@@ -35,8 +35,13 @@ final class SubmissionAccountingPolicy {
             JOIN submission_payload v ON v.submission_id=s.id
             JOIN outbound_order o ON o.id=c.canonical_order_id AND o.warehouse_id=c.warehouse_id
             WHERE s.id=? AND s.status='REVIEW_REQUIRED' AND s.work_round=1 AND c.work_round=s.work_round
-              AND c.current_submission_id=s.id AND c.source_order_id IS NULL AND c.mapping_version=1
-              AND o.id=? AND o.source='PDA_TEMP' AND o.status='REVIEW_REQUIRED' AND o.current_result_version IS NULL
+              AND c.current_submission_id=s.id AND c.source_order_id IS NULL
+              AND o.id=? AND o.current_result_version IS NULL
+              AND ((c.mapping_version=1 AND o.source='PDA_TEMP' AND o.status='REVIEW_REQUIRED')
+                OR (c.mapping_version>1 AND o.source='WEB' AND o.status='READY'
+                    AND EXISTS(SELECT 1 FROM temporary_source_mapping m WHERE m.scope_id=c.id
+                      AND m.mapping_version=c.mapping_version AND m.canonical_order_id=o.id
+                      AND m.origin='CONTROLLED_LINK')))
               AND a.id=? AND a.warehouse_id=c.warehouse_id AND a.warehouse_id=?
               AND a.device_id=c.creator_device_id AND a.device_id=s.freeze_device_id AND a.device_id=?
               AND a.user_id=s.operator_id AND a.user_id=? AND a.recovery_epoch=s.source_recovery_epoch

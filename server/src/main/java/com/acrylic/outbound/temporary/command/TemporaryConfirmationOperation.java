@@ -30,8 +30,19 @@ public final class TemporaryConfirmationOperation implements CommandOperation {
             if(actor.equals(h.actor()))throw new BusinessException(403,"SHORT_SHIPMENT_SELF_APPROVAL_FORBIDDEN","短装须由另一有权主管批准");
             return decision;
         }
-        if(!candidates.path("total").asText().equals("0"))
+        if(source.linked()) {
+            // After a controlled link the human already reviewed exactly one formal target, so that candidate
+            // is the bound target rather than a suspicion; a second matching order still blocks the confirm.
+            var reviewed=dependencies.candidates().reviewed(h.warehouse(),h.control().id(),source.body());
+            long total=Long.parseLong(reviewed.snapshot().path("total").asText());
+            boolean singleTarget=reviewed.heads().size()==1 && reviewed.heads().getFirst().id().equals(h.order().toString());
+            if(total!=1 || !singleTarget)
+                throw new BusinessException(409,"TEMPORARY_DUPLICATES_UNRESOLVED",total==0
+                    ?"已关联目标不在当前候选集合中，不能确认"
+                    :"完整候选集合存在多条疑似重复正式单，必须逐单人工核对后才能确认");
+        } else if(!candidates.path("total").asText().equals("0")) {
             throw new BusinessException(409,"TEMPORARY_DUPLICATES_UNRESOLVED","完整候选集合尚待独立核对，不能确认");
+        }
         if(source.snapshot().shortShipment())dependencies.approvals().bind(write,decision);
         var issues=dependencies.stock().reserve(h,source.snapshot());
         if(!issues.isEmpty())throw new BusinessException(409,"TEMPORARY_STOCK_CONFLICT","库存或原包周期冲突，不能确认");
