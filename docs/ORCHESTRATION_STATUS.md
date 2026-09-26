@@ -14,6 +14,13 @@
 - 审计结论与依据见 [PROJECT_REVIEW_2026-09-26.md](history/PROJECT_REVIEW_2026-09-26.md)。下一步优先级：① TEMP 确认/归档闭环 + 给 `RECOVERY_PENDING` 一个受审计恢复出口或启动 fail-fast；② Android 发布身份链（`signingConfigs`、versionCode、更新公钥）；③ 文档收敛为三份并把版本四元组改为脚本生成；④ 冻结扩张 `recovery/`+`temporary/evidence/`；⑤ 其余 32 个工作树与 >110 GB 本地证据的清点归档。
 - 本节下方各条（含 R06 M2b-2b 验收、09-25 断点与 attempt 证据）为**合并前**的历史结论，其版本/迁移口径以 `be2048e` 为准。
 
+### 2026-09-26 默认关闭的命令接线 + 服务模式启动告警（未开放任何生产能力，最新）
+- 按业主当批选择（"接线但默认关闭"）：新增 `TemporaryCommandConfiguration`（`@ConditionalOnProperty(outbound.temporary.commands.enabled)`，按 kind 注册 `NORMAL_CONFIRM`/`SHORT_APPROVE`/`LINK` 三个 `CommandOperation`）与 `TemporaryCommandController`（`POST /api/v1/temporary-commands`、`POST /api/v1/pda/temporary-commands`，同一开关）。未配置时**无 bean、无路由**，任何 kind 仍返回 `409 COMMAND_EXECUTION_NOT_IMPLEMENTED`；回执 `capabilities` 五个字段仍恒 false；契约保持 0.33.0/128 路径（有意不发布 POST 路径，避免"契约已开、实现未开"）。
+- 新增 `common/ServiceModeStartupNotice`：启动读 `server_state`，非 `NORMAL` 记 ERROR（说明写入将 503、恢复只能走 R09 控制链），读取失败仅记 WARN；**不写库、不改模式、不使启动失败**。
+- 证据：`TemporaryCommandConfigurationTest` 4/4 通过（默认无 bean/无路由、开启后三个 kind 各一、三者均保留人工候选绑定闸门）；服务端全量 `-p server test --rerun-tasks` **103 XML/718 项 = 717 通过/1 既有符号链接条件 skip/0 失败/0 错误**（合并态基线 714 项，本批 +4）。**未做**：隔离非空 MySQL、真实 HTTP 开启态、Web/Android 客户端、APK/lint、真机、部署；"默认关闭"为单元级证明 + 生产 `application.yml` 无该配置键，未在运行服务上实测 404/409。
+- **本批未接线**（各有硬理由，详见[接续记录](history/R06_DEFAULT_OFF_COMMAND_WIRING_2026-09-26.md)）：TEMP 归档未放行（`SubmissionArchiveService.java:25` 仍硬拒绝；接线需把 TEMP 分支移出 `@Transactional` 并同步 `archive-schemas.yaml` 的 `archiveVersion/assignmentId/additionalProperties`）；恢复登记路由未接线（`RecoveryNormalRegistration` 要求外部控制权威 + 写者租约 + 投影终态 `RELEASE_READY`，且 `baseline` 无自动来源，只加一条路由解不开门）。
+- 开启前置（授权前必读）：业主对七类生产决定 handler/POST 的**明确授权**（内部测试不构成依据）+ Web 复核页写操作 + Android `LINK` 映射安装（M2b-4b，未实现）+ 契约同步发布 + 隔离非空 MySQL 与真实 HTTP 开启态证据。`localDeletionAllowed=false`、TEMP 生产归档边界与 `main`/部署边界均未变。
+
 ### 2026-09-26 R06 M2b-2b 受控关联闸门＋指针切换已验；接关联后确认链
 
 - 2026-09-26 R06 M2b-2b（受控关联，两批合读）：[闸门验收](history/R06_CONTROLLED_LINK_ACCEPTANCE_2026-09-26.md)、[指针切换验收](history/R06_CONTROLLED_LINK_SWITCH_ACCEPTANCE_2026-09-26.md)。服务端树新增 `temporary/command/TemporaryLinkOperation.java`、`TemporaryLinkMapping.java`、`temporary/review/TemporaryLinkTarget.java` 与 V41；放行既有 `LINK`（`temporary_order:link`）：`expected.candidateContextSha256` 必须非空且与**锁内重算**的完整候选集合摘要逐字一致（否则 `TEMPORARY_MANUAL_CONFIRMATION_REQUIRED`/`COMMAND_CONTEXT_CHANGED`），候选 0 条/多于 1 条失败关闭（`TEMPORARY_LINK_TARGET_NOT_FOUND`/`TEMPORARY_LINK_DUPLICATES_UNRESOLVED`），唯一目标锁内重验空白 `READY`/无作业/库存与计划一致；同一事务写入映射 v+1（`CONTROLLED_LINK`）、`submission_scope` canonical/mapping_version、slot 改指与被取代 PDA_TEMP 单 `LINKED`。生产上下文仍无任何 `CommandOperation` bean，无自动关联路径。
