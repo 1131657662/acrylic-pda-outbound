@@ -21,6 +21,7 @@ import OrderStatus from './OrderStatus.vue';
 import OrderPlan from './OrderPlan.vue';
 import PcOrderLink from '../pc/PcOrderLink.vue';
 import OrderExports from '../exports/OrderExports.vue';
+import OrderTemporaryCandidates from './OrderTemporaryCandidates.vue';
 const route = useRoute(); const router = useRouter(); const session = useSessionStore();
 const detail = ref<Detail | null>(null); const preflight = ref<Preflight | null>(null); const busy = ref(false);
 const error = ref(''); const checkError = ref(''); const receivedAt = ref('');
@@ -103,8 +104,9 @@ onBeforeUnmount(() => { generation++; });
     <template v-else>
       <div class="detail-meta"><div><span>计划合计</span><strong class="numeric">{{ countLabel(detail.plan.plannedTotal) }} 包</strong></div><div><span>当前计划</span><strong>V{{ detail.plan.revision }}</strong></div><div><span>创建来源</span><strong>{{ detail.order.source === 'PDA_TEMP' ? 'PDA 临时单' : '管理工作台' }}</strong></div></div>
       <div class="result-summary"><span>{{ detail.order.createdBy }} · 创建于 {{ localTime(detail.order.createdAt) }}</span><span>数据读取于 {{ localTime(receivedAt) }}</span></div>
+      <OrderTemporaryCandidates v-if="detail.order.source === 'WEB'" :key="`${session.warehouseId}-${detail.order.id}-${detail.order.rowVersion}-${receivedAt}`" :warehouse="session.warehouseId" :order="detail.order.id" :revision="detail.order.revision" :version="detail.order.rowVersion" />
       <el-tabs v-model="tab" class="detail-tabs">
-        <el-tab-pane v-if="detail.order.status === 'COMPLETED' && detail.order.source === 'WEB'" label="原确认文件" name="exports">
+        <el-tab-pane v-if="detail.order.status === 'COMPLETED' && ['WEB', 'PDA_TEMP'].includes(detail.order.source)" label="原确认文件" name="exports">
           <OrderExports v-if="tab === 'exports' && session.identity" :key="`${session.identity.id}-${session.warehouseId}-${detail.order.id}`" :actor="session.identity.id" :warehouse="session.warehouseId" :order="detail.order.id" />
         </el-tab-pane>
         <el-tab-pane label="产品计划" name="plan"><OrderPlan :detail="detail" :preflight="preflight" :check-error="checkError" @retry="load" /></el-tab-pane>

@@ -17,6 +17,7 @@ import PcCandidates from './PcCandidates.vue';
 import PcRecords from './PcRecords.vue';
 import PcSummary from './PcSummary.vue';
 import PcActionDialog, { type DialogKind } from './PcActionDialog.vue';
+import OrderTemporaryCandidates from '../orders/OrderTemporaryCandidates.vue';
 const props = defineProps<{ order: string; warehouse: string; user: string }>();
 const session = useSessionStore(); const route = useRoute(); const router = useRouter(); const writer = crypto.randomUUID();
 const detail = ref<Detail | null>(null); const view = ref<PcView | null>(null); const policy = ref<Policy | null>(null);
@@ -66,6 +67,7 @@ onBeforeUnmount(() => { generation++; window.removeEventListener('focus', focus)
     <el-alert v-if="storageError" :title="storageError" type="error" :closable="false"><el-button @click="reload">重试浏览器存储</el-button></el-alert>
     <el-alert v-if="pending" :title="`${actionNames[pending.action]}结果待核对，原请求已保留。`" type="warning" :closable="false"><el-button :loading="busy" @click="recoverOriginal">恢复原PC请求</el-button></el-alert>
     <p v-if="notice && !error && !pending" class="pc-success" role="status">{{ notice }}</p>
+    <OrderTemporaryCandidates v-if="!loading && detail?.order.source === 'WEB'" :key="`${warehouse}-${order}-${detail.order.rowVersion}`" :warehouse="warehouse" :order="order" :revision="detail.order.revision" :version="detail.order.rowVersion" />
     <FeedbackState v-if="!view || !detail" :loading="loading" :error="!!readError" :title="loading ? '正在读取PC作业' : '暂时无法查看此订单'" :action="loading ? undefined : '重新查询'" @action="load" />
     <template v-else-if="!view.work">
       <section class="panel"><h2>开始前核对</h2><p>本单计划 {{ detail.plan.plannedTotal }} 包。确认开始后，作业记录保存在后台，返回或关闭浏览器不会释放订单。</p><el-table :data="detail.lines"><el-table-column prop="deliveryCode" label="发货代码" /><el-table-column prop="model" label="产品型号" /><el-table-column prop="plannedCount" label="计划包数" /></el-table>

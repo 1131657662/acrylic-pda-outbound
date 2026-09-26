@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { baselineSchema, pageSchema } from '../inventory/master-contracts';
+import { temporaryCandidateCheckSchema } from './temporary-candidates';
 
 export const orderSchema = z.object({ id: z.string().uuid(), orderNo: z.string(), source: z.string(), status: z.string(),
   revision: z.number().int(), rowVersion: z.string(), vehicleNo: z.string(), containerNo: z.string(), plannedTotal: z.string(),
@@ -16,7 +17,7 @@ export const productSchema = z.object({ deliveryCode: z.string(), mappingId: z.s
   name: z.string(), enabled: z.boolean(), mappingVersion: z.string(), snapshotCount: z.number(), candidateCount: z.number() });
 export const optionsSchema = z.object({ baseline: baselineSchema, products: pageSchema(productSchema) });
 export const receiptSchema = z.object({ id: z.string().uuid(), orderId: z.string().uuid(), revision: z.number().int(),
-  rowVersion: z.string(), status: z.string() });
+  rowVersion: z.string(), status: z.string(), temporaryCandidateCheck: temporaryCandidateCheckSchema.optional() });
 export const preflightSchema = z.object({ orderVersion: z.string(), baseline: baselineSchema, checksPassed: z.boolean(),
   dispatchAvailable: z.boolean(), blockers: z.array(z.object({ code: z.string(), message: z.string() })),
   lines: z.array(z.object({ deliveryCode: z.string(), plannedCount: z.number(), mappingValid: z.boolean(),
