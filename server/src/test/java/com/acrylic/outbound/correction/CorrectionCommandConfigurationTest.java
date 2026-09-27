@@ -23,6 +23,6 @@ class CorrectionCommandConfigurationTest {
     @Test void enablingTheSwitchRegistersOnlyTheImplementedOperations() {
         runner.withPropertyValues("outbound.corrections.commands.enabled=true").run(context ->
             assertThat(context.getBeanNamesForType(CorrectionCommand.Operation.class))
-                .as("WITHDRAW stays unregistered until its step lands").hasSize(2));
+                .as("CREATE, APPROVE and WITHDRAW are the implemented kinds").hasSize(3));
     }
 }

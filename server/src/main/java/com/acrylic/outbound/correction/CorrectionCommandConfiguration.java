@@ -28,4 +28,9 @@ public class CorrectionCommandConfiguration {
     CorrectionCommand.Operation correctionApprove(CorrectionStore store) {
         return new CorrectionOperations.Approve(store);
     }
+
+    @Bean
+    CorrectionCommand.Operation correctionWithdraw(CorrectionStore store) {
+        return new CorrectionOperations.Withdraw(store);
+    }
 }

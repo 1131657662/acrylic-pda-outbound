@@ -244,4 +244,31 @@ public class CorrectionStore {
         return jdbc.update("UPDATE correction_document SET status='EFFECTIVE',effective_result_version=?,"
             + " row_version=row_version+1 WHERE id=? AND status='APPROVED'",version,Ids.bytes(documentId));
     }
+
+    // ---------------------------------------------------------------- A1 withdraw: entry-by-entry rollback
+
+    /** The correction_ledger entries this document wrote: the rows a withdrawal must reverse one by one (§7.2). */
+    public List<Map<String,Object>> ledgerEntries(UUID documentId) {
+        return jdbc.queryForList("""
+            SELECT BIN_TO_UUID(l.id) entry_id,BIN_TO_UUID(l.dispatch_id) dispatch_id,BIN_TO_UUID(l.bale_id) bale_id,
+              BIN_TO_UUID(l.correction_line_id) line_id,l.entry_kind,l.quantity_delta,l.weight_delta_g,l.business_key
+            FROM correction_ledger l JOIN correction_line c ON c.id=l.correction_line_id
+            WHERE c.document_id=? ORDER BY l.created_at,l.id
+            """,Ids.bytes(documentId));
+    }
+
+    /** The version's per-dispatch effective values: what a withdrawal rolls back and what it must conflict-check. */
+    public List<Map<String,Object>> effectiveScan(UUID orderId,long version) {
+        return jdbc.queryForList("""
+            SELECT BIN_TO_UUID(dispatch_id) dispatch_id,is_effective,CAST(effective_weight_g AS CHAR) effective_weight_g,
+              IFNULL(BIN_TO_UUID(latest_correction_line_id),'null') latest_correction_line_id
+            FROM order_effective_scan WHERE order_id=? AND result_version=? ORDER BY dispatch_id
+            """,Ids.bytes(orderId),version);
+    }
+
+    /** §7.2 keeps the original approval receipt; the withdrawing actor is carried by the audit event and the receipt. */
+    public int withdrawDocument(UUID documentId) {
+        return jdbc.update("UPDATE correction_document SET status='WITHDRAWN',row_version=row_version+1"
+            + " WHERE id=? AND status='EFFECTIVE'",Ids.bytes(documentId));
+    }
 }

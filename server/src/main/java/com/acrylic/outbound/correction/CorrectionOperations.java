@@ -259,4 +259,124 @@ public final class CorrectionOperations {
             return decision;
         }
     }
+
+    /**
+     * WITHDRAW (P-R07-08, 误批撤销): the original approver rolls a mistakenly approved correction back, and the rollback
+     * is <b>entry by entry</b> - every {@code correction_ledger} row this document wrote gets a new row that points at
+     * it through {@code reverses_entry_id} with exactly opposite deltas, and a new result version is published from the
+     * reversed totals. Nothing is rewritten or deleted, so the original approval and the reversal both stay on record.
+     *
+     * <p>The design fixes the participants ("原审批人发起 → 申请人确认") but not the confirmation mechanism: no column, no
+     * pending status and no second endpoint exist for it. The initiation half is implemented here and the decision
+     * carries {@code requesterConfirmation=POLICY_UNDEFINED}; the confirmation step is recorded as an open policy item
+     * rather than invented.
+     */
+    public static final class Withdraw implements CorrectionCommand.Operation {
+        private final CorrectionStore store;
+        public Withdraw(CorrectionStore store) { this.store=store; }
+
+        @Override public String commandType() { return "WITHDRAW"; }
+
+        @Override public JsonNode execute(CorrectionCommand.Write write) {
+            UUID documentId=write.documentId();
+            if(documentId==null) throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","撤销必须指定更正单");
+            var facts=write.anchor();
+            if(!"EFFECTIVE".equals(facts.path("status").asText())) throw CorrectionCommand.stale();
+            String actor=write.actor().path("principalId").asText();
+            if(!actor.equals(facts.path("approvedBy").asText())) throw CorrectionCommand.denied();
+            UUID orderId=write.orderId();
+            var current=store.lockCurrentVersion(orderId);
+            long previous=Long.parseLong(String.valueOf(current.get("result_version")));
+            long version=previous+1;
+            if(store.resultVersionExists(orderId,version)!=0) throw CorrectionCommand.stale();
+            var entries=store.ledgerEntries(documentId);
+            if(entries.isEmpty())
+                throw new BusinessException(409,"CORRECTION_LEDGER_CONFLICT","该更正文档没有可回退的账务行");
+            Map<String,Map<String,Object>> scan=new LinkedHashMap<>();
+            for(var row:store.effectiveScan(orderId,previous)) scan.put(String.valueOf(row.get("dispatch_id")),row);
+            var lines=store.lines(documentId);
+            Map<String,Map<String,Object>> reverted=new LinkedHashMap<>();
+            for(var line:lines) {
+                String dispatchText=line.get("dispatch_id")==null?null:String.valueOf(line.get("dispatch_id"));
+                if(dispatchText==null) continue;
+                var row=scan.get(dispatchText);
+                // The effect must still be exactly what this document set; otherwise something else moved the order in
+                // between and a per-entry rollback would silently clobber it (design §5: CORRECTION_LEDGER_CONFLICT).
+                boolean effective=row!=null && asBoolean(row.get("is_effective"));
+                long weight=row==null?0:Long.parseLong(String.valueOf(row.get("effective_weight_g")));
+                if(row==null || effective!=(long)((Number)line.get("target_count")).longValue()>0
+                    || weight!=((Number)line.get("target_weight_g")).longValue())
+                    throw new BusinessException(409,"CORRECTION_LEDGER_CONFLICT","该明细的状态已被其他更正改变，不能整单回退");
+                reverted.put(dispatchText,line);
+            }
+            var reversed=com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+            long countDelta=0,weightDelta=0;
+            for(var entry:entries) {
+                int quantity=((Number)entry.get("quantity_delta")).intValue();
+                long weight=((Number)entry.get("weight_delta_g")).longValue();
+                countDelta-=quantity;weightDelta-=weight;
+                String original=String.valueOf(entry.get("entry_id"));
+                String businessKey="WD:"+documentId+":"+original;
+                store.insertCorrectionLedger(Ids.next(),UUID.fromString(String.valueOf(entry.get("dispatch_id"))),
+                    UUID.fromString(String.valueOf(entry.get("bale_id"))),
+                    entry.get("line_id")==null?null:UUID.fromString(String.valueOf(entry.get("line_id"))),
+                    String.valueOf(entry.get("entry_kind")),-quantity,-weight,UUID.fromString(original),
+                    businessKey,write.recordedAt());
+                reversed.add(com.acrylic.outbound.submissions.SubmissionJson.object()
+                    .put("reversesEntryId",original).put("businessKey",businessKey)
+                    .put("quantityDelta",Integer.toString(-quantity)).put("weightDeltaG",Long.toString(-weight)));
+            }
+            long effectiveCount=Long.parseLong(String.valueOf(current.get("actual_count")))+countDelta;
+            long effectiveWeight=Long.parseLong(String.valueOf(current.get("weight_g")))+weightDelta;
+            if(effectiveCount<0 || effectiveWeight<0)
+                throw new BusinessException(409,"CORRECTION_CONTEXT_CHANGED","回退后结果不得为负");
+            String originalSubmission=String.valueOf(current.get("original_submission_id"));
+            store.insertResultVersion(orderId,version,"null".equals(originalSubmission)?null
+                    :UUID.fromString(originalSubmission),documentId,effectiveCount,effectiveWeight,
+                asBoolean(current.get("inventory_deducted")),String.valueOf(current.get("header_snapshot")),
+                write.recordedAt());
+            Map<String,long[]> perDelivery=new LinkedHashMap<>();
+            for(var dispatch:store.dispatchesForUpdate(orderId)) {
+                String dispatchText=String.valueOf(dispatch.get("dispatch_id"));
+                var line=reverted.get(dispatchText);
+                long count,weight;UUID lineId;
+                if(line!=null) {
+                    count=((Number)line.get("before_count")).longValue();
+                    weight=((Number)line.get("before_weight_g")).longValue();
+                    lineId=UUID.fromString(String.valueOf(line.get("line_id")));
+                } else {
+                    var row=scan.get(dispatchText);
+                    count=row!=null && asBoolean(row.get("is_effective"))?1:0;
+                    weight=row==null?0:Long.parseLong(String.valueOf(row.get("effective_weight_g")));
+                    String previousLine=row==null?null:String.valueOf(row.get("latest_correction_line_id"));
+                    lineId=previousLine==null || "null".equals(previousLine)?null:UUID.fromString(previousLine);
+                }
+                store.insertEffectiveScan(orderId,version,UUID.fromString(dispatchText),
+                    UUID.fromString(String.valueOf(dispatch.get("capture_id"))),
+                    Long.parseLong(String.valueOf(dispatch.get("scan_seq"))),count>0,Math.max(weight,0),lineId);
+                long[] aggregate=perDelivery.getOrDefault(String.valueOf(dispatch.get("delivery_code")),new long[2]);
+                if(count>0) { aggregate[0]++;aggregate[1]+=Math.max(weight,0); }
+                perDelivery.put(String.valueOf(dispatch.get("delivery_code")),aggregate);
+            }
+            for(var entry:perDelivery.entrySet())
+                store.insertEffectiveLine(orderId,version,entry.getKey(),entry.getValue()[0],entry.getValue()[1]);
+            store.moveCurrentPointer(orderId,version,write.recordedAt());
+            if(store.withdrawDocument(documentId)!=1) throw CorrectionCommand.stale();
+            var decision=com.acrylic.outbound.submissions.SubmissionJson.object()
+                .put("documentId",documentId.toString()).put("status","WITHDRAWN")
+                .put("orderId",orderId.toString()).put("resultVersion",Long.toString(version))
+                .put("effectiveCount",Long.toString(effectiveCount)).put("effectiveWeightG",Long.toString(effectiveWeight))
+                .put("reversedEntryCount",Integer.toString(entries.size()))
+                .put("requesterConfirmation","POLICY_UNDEFINED");
+            decision.set("reversedEntries",reversed);
+            return decision;
+        }
+
+        /** MySQL BOOLEAN arrives as Boolean or as a tinyint Number depending on the column mapping. */
+        private static boolean asBoolean(Object value) {
+            if(value instanceof Boolean flag) return flag;
+            if(value instanceof Number number) return number.intValue()!=0;
+            return Boolean.parseBoolean(String.valueOf(value));
+        }
+    }
 }

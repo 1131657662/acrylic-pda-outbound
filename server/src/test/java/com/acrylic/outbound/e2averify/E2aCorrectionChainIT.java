@@ -190,8 +190,58 @@ class E2aCorrectionChainIT {
                 .append(codeOf(again.body())).append(" (期望 409 CONTEXT_CHANGED)\n");
             assertThat(again.statusCode()).isEqualTo(409);
             assertThat(codeOf(again.body())).isEqualTo("CORRECTION_CONTEXT_CHANGED");
+
+            // (g) WITHDRAW (P-R07-08): the original approver rolls the mistake back entry by entry.
+            var withdraw = withdrawBody(order, documentId, documentSha256, "EFFECTIVE");
+            var withdrawn = post(token, withdraw);
+            notes.append("⑩WITHDRAW（原审批人）-> ").append(withdrawn.statusCode()).append(' ')
+                .append(shortBody(withdrawn.body())).append('\n');
+            assertThat(withdrawn.statusCode()).as(shortBody(withdrawn.body())).isEqualTo(200);
+            var withdrawal = SubmissionJson.parse(withdrawn.body()).path("businessDecision");
+            assertThat(withdrawal.path("status").asText()).isEqualTo("WITHDRAWN");
+            assertThat(withdrawal.path("resultVersion").asText()).isEqualTo("3");
+            assertThat(withdrawal.path("requesterConfirmation").asText())
+                .as("the confirmation mechanism is not defined by the design; recorded, not invented")
+                .isEqualTo("POLICY_UNDEFINED");
+            assertThat(withdrawal.path("effectiveCount").asText()).isEqualTo(order.resultCount());
+            assertThat(withdrawal.path("effectiveWeightG").asText()).isEqualTo(order.resultWeight());
+            assertThat(jdbc.queryForObject("SELECT status FROM correction_document WHERE id=UUID_TO_BIN(?)",
+                String.class, documentId)).isEqualTo("WITHDRAWN");
+            assertThat(jdbc.queryForObject("SELECT CAST(current_result_version AS CHAR) FROM outbound_order"
+                + " WHERE id=UUID_TO_BIN(?)", String.class, order.orderId())).isEqualTo("3");
+            assertThat(jdbc.queryForObject("SELECT CAST(result_version AS CHAR) FROM order_current_result"
+                + " WHERE order_id=UUID_TO_BIN(?)", String.class, order.orderId())).isEqualTo("3");
+            // The reversal invariant: every forward entry has exactly one opposite entry pointing back at it.
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_ledger rev JOIN correction_ledger fwd"
+                + " ON rev.reverses_entry_id=fwd.id WHERE fwd.business_key LIKE 'CORR:%'"
+                + " AND rev.quantity_delta=-fwd.quantity_delta AND rev.weight_delta_g=-fwd.weight_delta_g"
+                + " AND rev.business_key LIKE 'WD:%'", Integer.class))
+                .as("reverses_entry_id is unique and the deltas are exactly opposite")
+                .isEqualTo(order.dispatchIds().size());
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_ledger WHERE reverses_entry_id IS NOT NULL",
+                Integer.class)).isEqualTo(order.dispatchIds().size());
+            // Nothing was rewritten: the forward entries and the effects are still there.
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_ledger WHERE business_key LIKE 'CORR:%'",
+                Integer.class)).isEqualTo(order.dispatchIds().size());
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_effect", Integer.class))
+                .as("one effect per line, ever (UNIQUE(line_id)) - the rollback lives in the ledger")
+                .isEqualTo(order.dispatchIds().size());
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM order_effective_scan WHERE order_id=UUID_TO_BIN(?)"
+                + " AND result_version=3 AND is_effective=1", Integer.class, order.orderId()))
+                .as("the packages are effective again").isEqualTo(order.dispatchIds().size());
+            assertThat(jdbc.queryForObject("SELECT IFNULL(SUM(actual_count),-1) FROM order_effective_line"
+                + " WHERE order_id=UUID_TO_BIN(?) AND result_version=3", Integer.class, order.orderId()))
+                .as("effective lines are back to the pre-correction aggregate").isEqualTo(order.dispatchIds().size());
+            assertThat(post(token, withdraw).body()).as("WITHDRAW replay returns the stored original")
+                .isEqualTo(withdrawn.body());
+            // (h) a second withdrawal under a fresh key is refused: the document is no longer EFFECTIVE.
+            var twice = post(token, freshKey(withdrawBody(order, documentId, documentSha256, "EFFECTIVE")));
+            notes.append("⑪重复撤销 -> ").append(twice.statusCode()).append(' ').append(codeOf(twice.body()))
+                .append(" (期望 409 CONTEXT_CHANGED)\n");
+            assertThat(twice.statusCode()).isEqualTo(409);
+            assertThat(codeOf(twice.body())).isEqualTo("CORRECTION_CONTEXT_CHANGED");
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM operation_event WHERE entity_type='CORRECTION_COMMAND'",
-                Integer.class)).as("one audit event per accepted receipt").isEqualTo(2);
+                Integer.class)).as("one audit event per accepted receipt").isEqualTo(3);
         }
         Files.writeString(profile.attempt.resolve("correction-chain.txt"), notes.toString());
         Files.writeString(profile.attempt.resolve("test-completed.marker"), notes.toString());
@@ -245,6 +295,16 @@ class E2aCorrectionChainIT {
                 .put("targetCount", targetCount).put("targetWeightG", targetWeight));
         body.set("expected", expected);
         return body;
+    }
+
+    /** WITHDRAW anchors on the same frozen digest, the current status and the approver who is undoing it. */
+    private ObjectNode withdrawBody(Order order, String documentId, String documentSha256, String status) {
+        var expected = SubmissionJson.object().put("documentId", documentId).put("documentSha256", documentSha256)
+            .put("status", status).put("expectedResultVersion", order.resultVersion()).put("userAuthVersion", "1");
+        return (ObjectNode) SubmissionJson.object().put("commandVersion", 1).put("commandType", "WITHDRAW")
+            .put("commandId", UUID.randomUUID().toString()).put("transportRecoveryEpoch", "1")
+            .put("warehouseId", order.warehouseId()).put("documentId", documentId)
+            .put("reason", "误批撤销").set("expected", expected);
     }
 
     /** A copy of a command body under a fresh original key, for the "same intent, new key" counterexamples. */
