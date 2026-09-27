@@ -36,6 +36,33 @@ Warehouse:
   in: query
   required: true
   schema: {type: string, format: uuid}
+SubmissionId:
+  name: submissionId
+  in: query
+  required: true
+  schema: {type: string, format: uuid}
+WebFacts:
+  get:
+    summary: 读取本次临时命令所需的前置事实（只读）
+    description: 仅返回客户端必须逐字回显的expected与六个绑定标量及原来源身份，供人工核对后构造命令体。不授予任何能力：不创建回执、不做决定、不放行，capabilities五项仍全false；命令POST在默认配置下仍不存在（404）。限本仓且限temporary_order:confirm或temporary_order:link持有人；输出随原上下文变化，不缓存承诺。
+    security: [{webSession: []}]
+    parameters: [{$ref: '#/Warehouse'}, {$ref: '#/SubmissionId'}]
+    responses: {$ref: '#/FactsResponses'}
+FactsResponses:
+  '200':
+    description: 前置事实（expected、warehouseId、submissionId、workRound、authorizationId、freezeDeviceId、sourceRecoveryEpoch、source）
+    content:
+      application/json:
+        schema:
+          allOf:
+            - {$ref: './schemas.yaml#/Envelope'}
+            - type: object
+              properties:
+                data: {$ref: './temporary-command-facts-schemas.yaml#/Facts'}
+  '400': {$ref: './openapi.yaml#/components/responses/Error'}
+  '401': {$ref: './openapi.yaml#/components/responses/Error'}
+  '404': {$ref: './openapi.yaml#/components/responses/Error'}
+  '409': {$ref: './openapi.yaml#/components/responses/Error'}
 DetailResponses:
   '200':
     description: 原回执与本次只读评估，当前适用性固定UNKNOWN且无写能力

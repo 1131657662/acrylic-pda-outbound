@@ -1,0 +1,49 @@
+Facts:
+  type: object
+  additionalProperties: false
+  required: [expected, warehouseId, submissionId, workRound, authorizationId, freezeDeviceId, sourceRecoveryEpoch, source]
+  properties:
+    expected:
+      type: object
+      additionalProperties: false
+      description: 命令体必须逐字回显的服务端前置事实；任一不符即COMMAND_CONTEXT_CHANGED。此对象不授予任何执行能力。
+      required: [canonicalOrderId, mappingVersion, currentSubmissionId, scopeRound, slotVersion, decisionVersion,
+        receivedPayloadSha256, declaredUploadSha256, planSha256, targetRevision, userAuthVersion, candidateContextSha256,
+        evidenceSetId, evidenceSetSha256, verificationId, verificationVersion, verificationAlgorithmVersion,
+        dispositionManifestSha256, dispositionManifestVersion, retainedManifestSha256, retainedManifestVersion]
+      properties:
+        canonicalOrderId: {type: [string, 'null'], format: uuid, description: 当前来源规范单；临时单未关联时是PDA临时单，关联后是正式单}
+        mappingVersion: {type: [string, 'null'], pattern: '^[0-9]+$'}
+        currentSubmissionId: {type: [string, 'null'], format: uuid}
+        scopeRound: {type: [string, 'null'], pattern: '^[1-9][0-9]*$'}
+        slotVersion: {type: [string, 'null'], pattern: '^[1-9][0-9]*$'}
+        decisionVersion: {type: [string, 'null'], pattern: '^[0-9]+$'}
+        receivedPayloadSha256: {type: [string, 'null'], pattern: '^[a-f0-9]{64}$'}
+        declaredUploadSha256: {type: [string, 'null'], pattern: '^[a-f0-9]{64}$'}
+        planSha256: {type: [string, 'null'], pattern: '^[a-f0-9]{64}$'}
+        targetRevision: {type: [string, 'null'], pattern: '^[1-9][0-9]*$'}
+        userAuthVersion: {type: string, pattern: '^[1-9][0-9]*$'}
+        candidateContextSha256: {type: 'null', description: 由人工核对的候选接口单独提供，必须与本对象一并回显'}
+        evidenceSetId: {type: 'null'}
+        evidenceSetSha256: {type: 'null'}
+        verificationId: {type: 'null'}
+        verificationVersion: {type: 'null'}
+        verificationAlgorithmVersion: {type: 'null'}
+        dispositionManifestSha256: {type: 'null'}
+        dispositionManifestVersion: {type: 'null'}
+        retainedManifestSha256: {type: 'null'}
+        retainedManifestVersion: {type: 'null'}
+    warehouseId: {type: string, format: uuid}
+    submissionId: {type: string, format: uuid}
+    workRound: {type: string, pattern: '^[1-9][0-9]*$'}
+    authorizationId: {type: string, format: uuid}
+    freezeDeviceId: {type: string, format: uuid}
+    sourceRecoveryEpoch: {type: string, pattern: '^[0-9]+$'}
+    source:
+      type: object
+      additionalProperties: false
+      required: [kind, creatorDeviceId, clientOrderId]
+      properties:
+        kind: {type: string, const: TEMP}
+        creatorDeviceId: {type: string, format: uuid}
+        clientOrderId: {type: string, format: uuid}
