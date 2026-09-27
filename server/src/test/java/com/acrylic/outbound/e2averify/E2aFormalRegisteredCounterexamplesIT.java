@@ -61,8 +61,9 @@ class E2aFormalRegisteredCounterexamplesIT {
         UUID outsider = user(jdbc, warehouse, false);
 
         UUID scope = UUID.randomUUID(); UUID submission = UUID.randomUUID();
-        jdbc.update("INSERT INTO submission_scope(id,warehouse_id,source_order_id,canonical_order_id,work_round,current_submission_id) VALUES(?,?,?,?,1,NULL)",
-            Ids.bytes(scope),Ids.bytes(warehouse),Ids.bytes(order),Ids.bytes(order));
+        // FORMAL shape per ck_submission_scope_source: source_order_id set, canonical_order_id MUST stay NULL.
+        jdbc.update("INSERT INTO submission_scope(id,warehouse_id,source_order_id,work_round,current_submission_id) VALUES(?,?,?,1,NULL)",
+            Ids.bytes(scope),Ids.bytes(warehouse),Ids.bytes(order));
         jdbc.update("INSERT INTO submission(id,scope_id,assignment_id,freeze_device_id,operator_id,work_round,"
             + "source_recovery_epoch,status,issues_json,receipt_text,created_at,updated_at) "
             + "VALUES(?,?,?,?,?,1,?,'REGISTERED',NULL,NULL,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))",
