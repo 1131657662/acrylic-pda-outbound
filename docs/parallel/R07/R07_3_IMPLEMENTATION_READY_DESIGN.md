@@ -319,4 +319,50 @@ bean，命令一律 `CORRECTION_COMMAND_NOT_OPEN`** —— 故建议把「servic
     **在当前 schema 无来源**（无 stock_state / 无 ledger 版本列）⇒ 与步骤 4-5 的账务/结果版本一并补；
   - APPROVE 目前**不产生 effect**（决定里显式标注），生效体与结果版本属步骤 4-5。
 
+## 20. 第 2+3 片（步骤 4-5）：effect / 更正账务 / 结果版本 v+1 / 逐包快照 / 指针（2026-09-27，`f551d1f`，attempt **211** 绿）
+
+**为什么合并交付**（本片最重要的实况发现）：`correction_effect` 带
+`FOREIGN KEY(order_id,result_version) → order_result_version`，即 effect 行**必须先有版本行**；而"先有版本行"就是步骤 5。
+故步骤 4 与步骤 5 在本 schema 下**结构上不可拆**（拆开只能得到半截、无版本可引用的 effect）——按第二节边界 6 记录冲突、
+按实况调整，两步合并为一片。
+
+### 20.1 三条设计 vs 实况冲突（均按实况调整，未改任何既有行为）
+| # | 设计假设 | 实况 | 调整（只放宽/只新增） |
+| --- | --- | --- | --- |
+| 1 | 步骤 4 与 5 可分开 | `correction_effect` FK 指向 `order_result_version` | 合并交付 |
+| 2 | `order_result_version` 有 `original_submission_id`/`source_correction_id`；`order_effective_scan` 存在 | 只有 `submission_id NOT NULL UNIQUE`（V9）；无 scan 表 | V46：补两列 + 回填 v1 + 放开 `submission_id NOT NULL`（UNIQUE 允许多 NULL）+ 新建 `order_effective_scan` |
+| 3 | 版本可由更正驱动 | V15 `ck_result_channel` 要求版本必属 PDA **或** PC 提交 | V46：**放宽**为三分支，第三支＝`submission_id IS NULL AND pc_submission_id IS NULL AND source_correction_id IS NOT NULL`（不收紧任何原先合法的行） |
+
+### 20.2 实现（全部在 APPROVE 的同一事务内 —— 设计 §3「审批即生效」）
+`CorrectionStore` 增：`lines` / `lockCurrentVersion`（`FOR UPDATE`，§3 锁顺序：文档→订单→版本→dispatch 升序）/
+`resultVersionExists` / `insertResultVersion` / `dispatchesForUpdate` / `insertEffectiveScan` / `insertEffectiveLine` /
+`insertEffect` / `insertCorrectionLedger` / `moveCurrentPointer` / `effectDocument`。内核：非 CREATE 分支在文档锁后补订单锁。
+APPROVE 生效体顺序：锁当前版本 → 重验 `expectedResultVersion` → **先插 v+1 版本行**（0 包/0g 由 V43 放宽的 CHECK 允许）→
+逐行 `correction_effect`（UNIQUE(line_id)；delta 一律取自**冻结的** before/target，不信请求）→ 逐行 `correction_ledger`
+（计数量变化 → `REVERSAL`；仅重量差 → `WEIGHT_DIFF` 且 `reverses_entry_id` 为 NULL，不占反向唯一位；`business_key` 唯一）
+→ 逐包 `order_effective_scan`（**覆盖全部原 dispatch，含本次归零的行**）→ 按 `delivery_code` 汇总 `order_effective_line`
+→ 同步 `outbound_order.current_result_version` 与 `order_current_result` → 文档 `EFFECTIVE` + `effective_result_version`。
+
+### 20.3 证据（attempt 211，`classes=1 tests=1 failures=0 errors=0 skipped=0`）
+①关闭 404 ②无效会话 401 ③CREATE 200 ④before 值=服务端事实且回放一致 ⑤目标等于 before → 409 ⑥撤销审批码 → 403
+⑦APPROVE 200 → **EFFECTIVE**；v2 行 `actual_count=0 / weight_g=0 / submission_id IS NULL / source_correction_id=文档`；
+**两个指针都=2**（`outbound_order.current_result_version` 与 `order_current_result`）；`correction_effect` 每行 `count_delta=-1`
+且 `weight_delta_g<0`；`correction_ledger` 两行 `REVERSAL`、`business_key` 全不同；`order_effective_scan` 覆盖 2 个 dispatch
+且 `is_effective=0 / effective_weight_g=0`；`order_effective_line` 汇总为 0 ⑧拿旧 v1 预期再提交更正 → 409
+⑨重复审批 → 409。**「全单退货 0 包/0g 生效」由此闭环**（设计 §13 补充条件 3）。
+失败证据（逐条保留）：204/205（effect 早于版本行 → FK 500）、206（`Unknown column original_submission_id`：IT 只迁到 45）、
+207（同类未先插版本）、208（`inventory_deducted` 映射为 Boolean 而非 Number → 500）、209（`ck_result_channel` 违约）、
+210（断言写反：首次更正的 REVERSAL delta 是自身的 -1 且 `reverses_entry_id` 为 NULL）。
+
+### 20.4 未验边界（本片之后仍缺）
+- **WITHDRAW 未实现**；**周期重开（步骤 6）、差异案件（步骤 7）、通知/发件箱（步骤 8）全未做**；
+- `reverses_entry_id` 的"指向**另一条更正账务**且 delta 完全相反"这条不变量**未被触发**（首次更正反向的是原出库事实，
+  不是更正行）；待 WITHDRAW 或第二次更正时验证；
+- **HEADER_CORRECTION** 未真正处理头部快照（只写了 effect 行，未改 `header_snapshot`）；
+- 未处理"同一订单多份文档并发"的争用实测（锁顺序已按 §3 实现，但未做并发压测）；
+- V46 放宽 `ck_result_channel` 与放开 `submission_id NOT NULL` 属**共享表**调整：R05/R06/R08 的既有路径未改、
+  全量单测 720/0/0/1 通过，但**未跑全量 IT 回归**（尤其 R05 PC 手工出库与 R08 导出）；
+- 未部署、契约登记未发布。
+
+
 
