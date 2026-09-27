@@ -140,10 +140,22 @@ CREATE DATABASE $database CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs;
 CREATE USER IF NOT EXISTS '$user'@'127.0.0.1' IDENTIFIED BY '$password';
 ALTER USER '$user'@'127.0.0.1' IDENTIFIED BY '$password';
 GRANT ALL PRIVILEGES ON $database.* TO '$user'@'127.0.0.1';
+/* 锁竞争取证：E2aJobFenceHttpIT 等用 performance_schema.data_lock_waits/locks 证明不以 sleep 猜并发，
+   隔离账号默认无权读 performance_schema，故只读授权（不授予任何业务库额外权限）。 */
+GRANT SELECT ON performance_schema.* TO '$user'@'127.0.0.1';
 FLUSH PRIVILEGES;
 "@
-$sql | & $mysql --no-defaults '-h127.0.0.1' "-P$Port" -uroot
+# 用 cmd 的输入重定向执行 SQL 文件：PowerShell 管道/here-string 喂 mysql.exe 时后半段 SQL（GRANT）会被静默
+# 丢弃且退出码仍为 0（实测 393/395）；`mysql -e "source …"` 又对含空格路径不友好（实测 394）。
+$provisionSql = Join-Path $attempt 'provision.sql'
+[System.IO.File]::WriteAllText($provisionSql, $sql, $utf8)
+$provisionCmd = '"{0}" --no-defaults -h127.0.0.1 -P{1} -uroot < "{2}"' -f $mysql, $Port, $provisionSql
+$provisionOut = & cmd.exe /c $provisionCmd 2>&1
 Assert-Zero 'database/user provisioning'
+$provisionOut | ForEach-Object { Write-Host "  $_" }
+$grantProbe = & $mysql --no-defaults '-h127.0.0.1' "-P$Port" "-u$user" "-p$password" -N -B -e "SELECT COUNT(*) FROM performance_schema.data_lock_waits;" 2>&1
+if ($LASTEXITCODE -ne 0) { Fail 'performance_schema grant' ($grantProbe -join "`n") }
+Write-Host "  performance_schema readable: $($grantProbe -join '|')"
 
 # ---------------------------------------------------------------- 6) persist password, verify as the new user
 [System.IO.File]::WriteAllText($passwordFile, $password + "`n", $utf8)
