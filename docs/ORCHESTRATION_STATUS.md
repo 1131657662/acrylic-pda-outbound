@@ -39,10 +39,10 @@ server: { contract: 0.36.0, paths: 131, flyway: V42, migrations: 42 }
 - 合并前的 R06/R09 子项结论与更早测试口径：见[开发进度](DEVELOPMENT_PROGRESS.md)索引与 `history/R06_*`、`history/R09_*`，不在本页复述历史数字。
 
 ## 未验与阻断（每条一行：项 → 缺什么 → 后果）
-- 七类生产决定 handler/POST → 代码已接线但**默认关闭**；服务端已支持关联后确认、Web 复核页已具备写操作、资格标志已按条件计算，但开启仍需业主明确授权 + 契约同步发布 + Android `LINK` 映射安装 + **Web 会话 POST 的真实 HTTP 证据（A3 仅部分验证：真浏览器 POST 403 未查清）** → 临时单仍不能确认出库。
+- 七类生产决定 handler/POST → 代码已接线但**默认关闭**；服务端已支持关联后确认、Web 复核页已具备写操作、资格标志已按条件计算，但开启仍需业主明确授权 + 契约同步发布 + **Web 会话 POST 的真实 HTTP 证据（A3 仅部分验证：真浏览器 POST 403 未查清）**；Android `LINK` 映射安装**客户端已实现**（真 HTTP 未验） → 临时单仍不能确认出库。
 - TEMP 归档 → `SubmissionArchiveService.java:25` 硬拒绝；接线需拆事务边界并放宽 `archive-schemas.yaml` 的 `archiveVersion/assignmentId/additionalProperties` → 临时单不能归档出报表。
 - 恢复出口 → 生产无任何路径置 `RECOVERY_PENDING`（只能人工 SQL 造成）；`RecoveryNormalRegistration` 无 bean/路由且 `baseline` 无自动来源 → 该状态只能靠 R09 运维链或人工 SQL 解除。
-- Android 发布身份 → 无 `signingConfigs`、versionCode 仍 20、构建脚本未注入更新公钥 → 现场只能 USB 覆盖安装，App 内升级不可用。
+- Android 发布身份 → **签名链已完成**（见已完成区与事实块）；仍缺的是**现场**：真机安装、App 内升级实测、正式发布/部署授权 → 不能声称现场升级可用。
 - 现场与人工 → 真机/Keystore、独立人员、长时与五年留存、外网与异地、生产审批均未验；R05 code20/Room17 历史关键未验、原资料与旧 BCD、R09 现场限制继续单列 → 不能声称上线就绪。
 - 服务端 136 个 IT（需隔离 MySQL）、Android lint/仪器化测试、部署 → 本批未运行。
 
