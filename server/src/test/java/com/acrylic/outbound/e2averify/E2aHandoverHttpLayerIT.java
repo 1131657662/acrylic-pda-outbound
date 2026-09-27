@@ -56,7 +56,11 @@ class E2aHandoverHttpLayerIT {
 
         // (b) switch ON: 401 without a session, 403 without the permission, business path with it.
         try (var on = E2aCrossSourceHttpIT.start(profile, "--outbound.handover.commands.enabled=true")) {
+            // The CSRF filter runs before authentication, so a token-less POST is denied with 403 and never reaches the
+            // 401 entry point. Fetch a token (which /auth/csrf issues to an anonymous session) and only then is "no
+            // session" observable as 401 - the check the IT means to make.
             var anonymous = new Session(on.getBean(JdbcTemplate.class));
+            anonymous.csrf();
             int noSession = anonymous.postHandover("{}");
             notes.append("②开关开启+无会话 -> ").append(noSession).append(" (期望 401)\n");
             assertThat(noSession).as("② no session").isEqualTo(401);

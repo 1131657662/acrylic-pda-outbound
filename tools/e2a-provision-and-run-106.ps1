@@ -148,6 +148,12 @@ Write-Host "== 7) run E2aTemporaryLinkConfirmIT =="
 $env:E2A_CROSS_VERIFY = 'true'
 $env:E2A_CROSS_RUN = "$Run"
 $env:E2A_CROSS_PASSWORD = $password
+# A3/CSRF root cause (2026-09-27): application.yml defaults server.servlet.session.cookie.secure to true
+# (`${OUTBOUND_COOKIE_SECURE:true}`). This harness serves PLAIN HTTP, and a Secure cookie is not sent back over http,
+# so every request arrived without its session: /auth/csrf issued a token for a session the next POST could not
+# present, the CSRF filter rejected it and the Web login answered 403 ACCESS_DENIED (attempts 150, 194-196, 237).
+# Production keeps the secure default; the isolated harness opts out explicitly for the lifetime of this process.
+$env:OUTBOUND_COOKIE_SECURE = 'false'
 Push-Location $Workspace
 $runStartedAt = Get-Date
 try {
