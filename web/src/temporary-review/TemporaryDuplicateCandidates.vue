@@ -23,7 +23,8 @@ const { data, from, through, busy, error, index, changed, search, next, previous
       <p role="status">完整查询范围：{{ data.range.fromDate }} 至 {{ data.range.throughDate }}，同仓正式单共 {{ data.total }} 个候选；当前第 {{ index + 1 }} 页，本页 {{ data.items.length }} 个，每页最多 20 个。</p>
       <p>读取于 {{ localTime(data.checkedAt) }}。翻页时若候选或原批次变化，须重新查询；未看完全部页不等于完成重复核对。</p>
       <p v-if="!data.items.length">本次范围未找到符合信号的候选，不代表不存在重复，也不授予确认或放行权限。</p>
-      <TemporaryDuplicateCandidate v-for="candidate in data.items" :key="candidate.order.id" :candidate="candidate" />
+      <TemporaryDuplicateCandidate v-for="candidate in data.items" :key="candidate.order.id" :candidate="candidate"
+        :submission-id="submissionId" :warehouse-id="warehouseId" :context-sha256="data.contextSha256" />
       <nav class="order-pagination" aria-label="重复候选分页">
         <el-button :disabled="busy || changed || index === 0" @click="previous">上一页</el-button>
         <el-button :disabled="busy || changed || !data.hasMore" @click="next">下一页</el-button>

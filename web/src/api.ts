@@ -43,6 +43,31 @@ export function currentRecoveryEpoch(): string {
   return recoveryEpoch;
 }
 
+/**
+ * POST that returns the server's own JSON body instead of the standard envelope. The temporary command
+ * endpoint answers with the stored original receipt bytes, so it cannot go through {@link request}. A 404
+ * means the command surface is switched off, which is a normal state and is reported as such.
+ */
+export async function postRaw<T>(path: string, body: unknown, schema: z.ZodType<T>): Promise<T> {
+  if (connection.state === 'expired' && !path.startsWith('/auth/')) throw new ApiError(401, 'UNAUTHENTICATED', '请重新登录后核对原操作结果。');
+  const headers = new Headers({ 'Content-Type': 'application/json' });
+  const csrf = csrfSchema.parse((await read('/auth/csrf', {})).data);
+  headers.set(csrf.headerName, csrf.token);
+  if (recoveryEpoch) headers.set('X-Server-Recovery-Epoch', recoveryEpoch);
+  let response: Response;
+  try { response = await fetch(`/api/v1${path}`, { method: 'POST', body: JSON.stringify(body), headers, credentials: 'same-origin' }); }
+  catch (cause) { connection.state = 'unreachable'; throw cause; }
+  const payload: unknown = await response.json();
+  if (!response.ok) {
+    if (response.status === 404) throw new ApiError(404, 'COMMAND_SURFACE_CLOSED', '该功能尚未开放。');
+    const parsed = envelope.parse(payload);
+    connectionResponse(response.status, parsed.serviceMode);
+    throw new ApiError(response.status, parsed.code, `${parsed.message}（请求 ${parsed.requestId}）`);
+  }
+  connectionResponse(response.status, '');
+  return schema.parse(payload);
+}
+
 export function errorText(error: unknown): string {
   if (error instanceof ApiError) return error.message;
   if (error instanceof TypeError) return '连接失败，请检查网络后重试。原提交不会自动重复发送。';

@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { localTime } from '../orders/contracts';
 import { duplicateReason, type DuplicateCandidate } from './duplicate-contracts';
-defineProps<{ candidate: DuplicateCandidate }>();
+import TemporaryCommandAction from './TemporaryCommandAction.vue';
+const props = defineProps<{ candidate: DuplicateCandidate; submissionId: string; warehouseId: string; contextSha256: string }>();
+function unavailableReason(): string {
+  if (props.candidate.blockers.length) {
+    return `当前候选存在不可关联条件（${props.candidate.blockers.map(duplicateReason).join('、')}），不能发起人工关联。`;
+  }
+  return '服务端当前标记该候选不可关联：人工关联尚未开放，须先由业主授权并同步契约。';
+}
 </script>
 <template>
   <article class="panel">
@@ -19,5 +26,9 @@ defineProps<{ candidate: DuplicateCandidate }>();
       <p>正式订单 {{ candidate.order.id }} · 计划记录 {{ candidate.order.revisionId }}</p>
       <p>库存 {{ candidate.order.inventorySnapshotId }} · 映射版本 {{ candidate.order.mappingRevision }}</p>
     </details>
+    <TemporaryCommandAction kind="LINK" :submission-id="submissionId" :warehouse-id="warehouseId"
+      :candidate-context-sha256="contextSha256" :available="candidate.linkAvailable" :unavailable-reason="unavailableReason()"
+      label="人工关联到该正式单" reason-required
+      hint="关联会在同一事务内把本临时批次的规范单改指该正式单、写入映射版本+1，并迁移仍处于预留状态的占用行。请先核对车号、产品与计划包数完全一致。" />
   </article>
 </template>

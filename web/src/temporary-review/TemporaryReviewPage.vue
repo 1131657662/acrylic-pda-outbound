@@ -11,6 +11,7 @@ import { kilograms, submissionLabel } from '../orders/submission-contracts';
 import { issueLabel, temporaryReviewSchema, type TemporaryReview } from './contracts';
 import TemporaryReviewScans from './TemporaryReviewScans.vue';
 import TemporaryDuplicateCandidates from './TemporaryDuplicateCandidates.vue';
+import TemporaryCommandAction from './TemporaryCommandAction.vue';
 const session = useSessionStore(); const route = useRoute(); const router = useRouter();
 const detail = ref<TemporaryReview | null>(null); const busy = ref(false); const error = ref('');
 const id = computed(() => typeof route.params.id === 'string' ? route.params.id : '');
@@ -66,6 +67,14 @@ onBeforeUnmount(() => { generation++; });
         <details><summary>上传时登记的待核对事项</summary><ul><li v-for="issue in detail.receivedIssues" :key="issue.code">{{ issueLabel(issue.code) }}（{{ issue.count }} 项）</li></ul></details>
       </section>
       <TemporaryDuplicateCandidates :key="`${detail.submissionId}:${detail.checkedAt}`" :submission-id="detail.submissionId" :warehouse-id="session.warehouseId" />
+      <section class="panel">
+        <h2>正常确认出库</h2>
+        <p class="muted">本页只发起人工决定；服务端会按当前上下文重新核验资格、占用与候选绑定。命令开关未启用时提交返回"功能未开放"，不会产生任何记账或放行。</p>
+        <TemporaryCommandAction kind="NORMAL_CONFIRM" :submission-id="detail.submissionId" :warehouse-id="session.warehouseId"
+          :available="detail.writeConfirmationAvailable"
+          unavailable-reason="服务端当前未开放临时出库确认（writeConfirmationAvailable=false），须先由业主授权并同步契约。"
+          label="确认临时出库" hint="确认会在最终规范单上记账、完成槽位并派发；普通确认理由可留空。" />
+      </section>
       <TemporaryReviewScans :submission-id="detail.submissionId" :warehouse-id="session.warehouseId" />
       <section class="panel"><details class="file-proof"><summary>原来源与批次凭据</summary>
         <p>原临时单：{{ detail.source.clientOrderId }} · 原设备：{{ detail.source.creatorDeviceId }}</p>
