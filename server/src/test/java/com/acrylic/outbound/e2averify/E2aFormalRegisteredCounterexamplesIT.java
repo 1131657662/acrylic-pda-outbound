@@ -33,7 +33,7 @@ class E2aFormalRegisteredCounterexamplesIT {
         Files.createFile(profile.attempt.resolve("test-started.marker"));
         profile.migrate(jdbc, "34"); E2aV34Seed.seed(jdbc, profile.attempt.resolve("storage"));
         profile.migrate(jdbc, "42"); E2aCrossSourceHttpSetup.signing(profile.attempt);
-        profile.migrate(jdbc, "43");
+        profile.migrate(jdbc, "44");
         try (var context = E2aCrossSourceHttpIT.start(profile, "--outbound.handover.commands.enabled=true")) {
             runCounterexamples(context, profile.attempt);
         }
