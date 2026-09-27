@@ -31,6 +31,7 @@ public class TemporaryConfirmationSource {
         var hash=submissions.payloadHash(head.control().id());if(hash==null)throw CommandErrors.stale();
         var body=parse(files.read(hash));equal(sha(body),hash,"原受理正文损坏");
         equal(SubmissionControl.read(uuid(body,"submissionId"),body),head.control(),"原控制与正文不符");
+        if(linked)requireReviewedPlan(head,body);
         var plan=plans.validate(head,body);evidence.validate(head,plan,body);var value=snapshots.validate(plan,body);
         var issues=reasons(plan.authorization());
         if(!issues.isEmpty())throw new BusinessException(409,issues.getFirst(),"原资格或当前身份条件不满足，保留待审及占用");
@@ -55,6 +56,27 @@ public class TemporaryConfirmationSource {
         if(mappingVersion==1) { if(controlled)throw CommandErrors.stale(); return false; }
         if(!controlled)throw CommandErrors.stale();
         return true;
+    }
+    /**
+     * The linked formal order must still carry exactly the plan the reviewer bound, so an in-place edit under
+     * the same revision cannot slip through the confirmation. This mirrors what the link itself verified.
+     */
+    private void requireReviewedPlan(SubmissionStore.Head head,JsonNode body) {
+        var expected=new java.util.HashSet<String>();
+        TemporaryDecisionCandidates.products(body).forEach(line->expected.add(lineKey(line.path("deliveryCode").asText(),
+            line.path("productId").asText(),line.path("model").asText(),line.path("name").asText(),line.path("plannedCount").asText())));
+        var actual=new java.util.HashSet<String>();
+        jdbc.query("""
+            SELECT l.delivery_code,BIN_TO_UUID(l.product_id),l.model_snapshot,l.name_snapshot,CAST(l.planned_count AS CHAR)
+            FROM order_line l JOIN order_revision r ON r.id=l.revision_id
+            WHERE r.order_id=? AND r.revision=(SELECT current_revision FROM outbound_order WHERE id=?)
+            """,(rs,n)->actual.add(lineKey(rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5))),
+            Ids.bytes(head.order()),Ids.bytes(head.order()));
+        if(!expected.equals(actual))
+            throw new BusinessException(409,"TEMPORARY_LINK_TARGET_PLAN_DIFFERS","目标正式单计划与原临时计划不一致，请重新核对候选");
+    }
+    private static String lineKey(String deliveryCode,String productId,String model,String name,String plannedCount) {
+        return deliveryCode+"|"+productId+"|"+model+"|"+name+"|"+plannedCount;
     }
     private void target(SubmissionStore.Head head,boolean linked) {
         // v1: the scope canonical is still the PDA_TEMP order awaiting review.

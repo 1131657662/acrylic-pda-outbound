@@ -37,7 +37,15 @@ final class CommandDecision {
         }
         if(kind.equals("SHORT_APPROVE"))require(decision.path("submissionReceipt").isNull() && decision.path("shortApprovalReceiptId").isNull() && decision.path("shortApprovalSha256").isNull());
         else {
-            require(decision.path("submissionReceipt").isObject() && candidates.path("total").asText().equals("0"));
+            // A normal confirmation is recorded either from an untouched source (no duplicate candidate may
+            // exist) or from a controlled-linked source, where the reviewed candidate set is exactly the bound
+            // target. The snapshot carries no head list, so the identity binding is not proven here: it is
+            // enforced at execution time by the candidate-context comparison, and at verification by
+            // CommandBusinessIntegrity.success (the receipt orderId must equal the recorded canonical order and
+            // the result row must hang off that same order). Any other total stays rejected.
+            long total=candidates.path("total").asLong(-1);
+            require(decision.path("submissionReceipt").isObject()
+                && (total==0 || (total==1 && decision.path("submissionReceipt").path("orderId").isTextual())));
             if(decision.path("shortApprovalReceiptId").isNull())require(decision.path("shortApprovalSha256").isNull());
             else { require(UUID.fromString(decision.path("shortApprovalReceiptId").asText()).toString().equals(decision.path("shortApprovalReceiptId").asText())); hash(decision.path("shortApprovalSha256")); }
         }
