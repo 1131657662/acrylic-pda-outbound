@@ -26,9 +26,11 @@ public class HandoverStore {
             SELECT JSON_OBJECT('scopeId',BIN_TO_UUID(c.id),'warehouseId',BIN_TO_UUID(c.warehouse_id),
               'canonicalOrderId',BIN_TO_UUID(c.canonical_order_id),'mappingVersion',CAST(c.mapping_version AS CHAR),
               'fromWorkRound',CAST(c.work_round AS CHAR),'currentSubmissionId',BIN_TO_UUID(c.current_submission_id),
-              'submissionStatus',s.status,'sourceKind','FORMAL')
+              'submissionStatus',s.status,
+              'sourceKind',IF(c.source_order_id IS NULL,'TEMP','FORMAL'))
             FROM submission_scope c LEFT JOIN submission s ON s.id=c.current_submission_id
-            WHERE c.id=? AND c.source_order_id IS NULL AND c.canonical_order_id IS NOT NULL
+            WHERE c.id=? AND c.canonical_order_id IS NOT NULL
+              AND (c.source_order_id IS NULL OR c.source_order_id=c.canonical_order_id)
             """,String.class,Ids.bytes(scopeId));
         if (rows.size()!=1) throw HandoverCommand.missing();
         return SubmissionJson.parse(rows.getFirst());
