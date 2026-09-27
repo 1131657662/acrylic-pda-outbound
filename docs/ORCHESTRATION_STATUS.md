@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-27
 branch: codex/development
-head: 864e2de
-dirty_entries: 5
+head: 7448c91
+dirty_entries: 1
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 27 }
 server: { contract: 0.34.0, paths: 129, flyway: V41, migrations: 41 }
@@ -18,7 +18,8 @@ server: { contract: 0.34.0, paths: 129, flyway: V41, migrations: 41 }
 历史结论见[历史索引](history/README.md)；验收索引见[开发进度](DEVELOPMENT_PROGRESS.md)；范围与完成标准见[路线](DEVELOPMENT_ROADMAP.md)与[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)。
 
 ## 在途
-- **M2b-4b 隔离端 link→confirm 真实 HTTP 验证（e2a 路线）已收口**。已完成：守卫星树 `D:/acrylic-pda-worktrees/r06-e2a-migration` 经空闲核对（工作区 0 项、无锁、19329/19330 无监听、无在跑构建；109/111/112/114 的未闭合 marker 是 2026-09-26 21:2x 的历史失败证据，保留不动）后，`checkout --detach ea4d166`——**HEAD 现为 detached ea4d166，分支 `codex/r06-e2a-migration` 未动（仍 d16836b），29 GB `.local`（含 19329 datadir）完好**。**已完成**：attempt 120 与 123 在隔离非空 MySQL + 真实 HTTP 上全绿（LINK 200 → NORMAL_CONFIRM 200、四项落点断言、反例 409 后改回计划放行），证据见"已完成"区；反例与驱动为新增测试，未开生产开关。
+- **R06 M2b-4b 客户端一半**：A1 命令前置事实只读面 `4be09e2`、A2 Web 复核页写操作 `94c74b4` 已完成；A3（隔离真实 HTTP 的 Web 会话链路）**部分验证**——无会话 401、Web 登录 200、`GET /temporary-commands/facts` 200 且 A1 设计断言全过；但 LINK/NORMAL_CONFIRM 的 Web 会话 POST 在**真浏览器**下同样 403 `ACCESS_DENIED`（疑登录后会话轮换使登录前 CSRF 令牌失效），按 2 轮上限停止，差异记为**开关开放时另验**。服务端资格判定 `7448c91` 已完成，开关仍默认关闭。守卫星树 `r06-e2a-migration` 现为 detached `ea4d166`（分支未动、29 GB `.local` 完好）。
+- 下一步：切 **R07**（更正/审批/附件的原机可用段先做；故障换机段依赖 R09 恢复接口后做）；Android `LINK` 映射安装待做。
 - 用户当次指令：M2b-4b（服务端放宽已完成 `c975dfc`；Web 复核页写操作与 Android LINK 映射安装待做）；① 发布身份链已完成；④ 文档收敛与工作树清点已完成（**只清点，未删除任何目录**）；C 清单放着不动。
 - 写权：`codex/development` 单写者；服务端树 `r06-e2a-migration` 现为 detached `ea4d166`（仅用于本次验证，分支未动），未归档、未删除。
 
@@ -33,11 +34,12 @@ server: { contract: 0.34.0, paths: 129, flyway: V41, migrations: 41 }
 - **M2b-4b 服务端部分已收口**（守卫放宽 `c975dfc`；占用行迁移 `ee60155`；形状修复与计划比对 `70fde3b`；真实 HTTP 反例 `73767cb`）。实测：隔离非空 MySQL（19330，`log_bin=1`、`log_bin_trust_function_creators=1`）+ 真实 HTTP（19434）attempt **120** 与 **123** 均 `tests=1 failures=0 errors=0 skipped=0`——LINK 200 → NORMAL_CONFIRM 200，结果版本/`current_result_version`/槽位/占用/派发/决策版本/重放幂等逐条通过；反例（关联后改目标计划 → 409 `TEMPORARY_LINK_TARGET_PLAN_DIFFERS`，且改回计划后放行）通过。
 - **`c975dfc` 的"效果落点不需要改"已被实测推翻**（净结论）：①占用行 `bale_commitment.order_id` 是首次预留时固化的历史行，`Head.order()` 管不到 → 必须随受控关联在同一事务内迁移该提交的 `REVIEW_RESERVED` 行；②回执形状契约 `CommandDecision.validate` 把 v1 的"零候选"假设写死，关联后候选恰为 1 → 必须接受已关联且绑定同一目标的 `total==1`（换目标/多候选仍拒）。**仍成立**：结果版本/记账/槽位/订单事件/`current_result_version` 确由 `Head.order()` 驱动并落在关联后的正式单。即：两处必须随受控关联一起改，否则链条走不通。审计沿用该 LINK 命令既有账本回执与单一审计事件（`CommandReceiptIntegrity.closure` 要求每张回执恰好一条审计）。
 - 工作树与本地证据归档候选清单（只清点、未删除；13 棵可安全删 ≈1.0 GB / 18 棵需先取证 ≈47.6 GB / 快照与签名等建议保留）→ 本提交：[归档候选清单](history/WORKTREE_ARCHIVE_CANDIDATES_2026-09-27.md)
+- **R06 Web 写操作客户端与服务端资格判定**：A1 只读事实面 `4be09e2`（契约 0.34.0 / paths 129，新增 `temporary-command-facts-schemas.yaml`）、A2 复核页写操作 `94c74b4`、A3 浏览器驱动与 A2 候选摘要缺陷修复 `d39abbb`（`requiresCandidateContext()` 对 NORMAL_CONFIRM 也为 true，原实现传 null 必被拒）、资格判定 `7448c91`（`linkAvailable`=开关启用且 blockers 空；`writeAvailable`=开关启用且有可关联候选；`writeConfirmationAvailable`=开关启用且 currentIssues 空；`releaseAllowed` 与 capabilities 五项不动）。验证：web `typecheck` 0 / `build` 0；服务端全量 718 项 = 717 通过 / 1 既有 flake（`ExportRendererProcessTest` 单独重跑 BUILD SUCCESSFUL）/ 1 既有条件 skip / 0 error。
 - 合并态机器口径（`--rerun-tasks`，非业务验收）：服务端 103 XML/718 项 = 717 通过/1 既有符号链接条件 skip；Android 111 XML/444 项 = 440 通过/4 真实 HTTP 条件 skip；均 0 失败 0 错误。
 - 合并前的 R06/R09 子项结论与更早测试口径：见[开发进度](DEVELOPMENT_PROGRESS.md)索引与 `history/R06_*`、`history/R09_*`，不在本页复述历史数字。
 
 ## 未验与阻断（每条一行：项 → 缺什么 → 后果）
-- 七类生产决定 handler/POST → 代码已接线但**默认关闭**；服务端已支持关联后确认（M2b-4b 服务端侧），但开启仍需业主明确授权 + 契约同步发布 + Web 复核页写操作（能发起 LINK/NORMAL_CONFIRM）+ Android `LINK` 映射安装 + 隔离非空 MySQL/真实 HTTP 证据 → 临时单仍不能确认出库。
+- 七类生产决定 handler/POST → 代码已接线但**默认关闭**；服务端已支持关联后确认、Web 复核页已具备写操作、资格标志已按条件计算，但开启仍需业主明确授权 + 契约同步发布 + Android `LINK` 映射安装 + **Web 会话 POST 的真实 HTTP 证据（A3 仅部分验证：真浏览器 POST 403 未查清）** → 临时单仍不能确认出库。
 - TEMP 归档 → `SubmissionArchiveService.java:25` 硬拒绝；接线需拆事务边界并放宽 `archive-schemas.yaml` 的 `archiveVersion/assignmentId/additionalProperties` → 临时单不能归档出报表。
 - 恢复出口 → 生产无任何路径置 `RECOVERY_PENDING`（只能人工 SQL 造成）；`RecoveryNormalRegistration` 无 bean/路由且 `baseline` 无自动来源 → 该状态只能靠 R09 运维链或人工 SQL 解除。
 - Android 发布身份 → 无 `signingConfigs`、versionCode 仍 20、构建脚本未注入更新公钥 → 现场只能 USB 覆盖安装，App 内升级不可用。
