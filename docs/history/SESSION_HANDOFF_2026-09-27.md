@@ -39,7 +39,7 @@
 4. **R07-1**：14 条断言 0 条有结论（1 条触达审批门后被夹具幂等构造阻断）；`order:handover` 权限缺口已由 V44 修复；
 5. **Web CSRF（A3）**：已知问题未解（真浏览器 403 ACCESS_DENIED）；
 6. **生产边界**：七类命令开关默认关闭；**TEMP 归档前门已改为默认关闭开关** `outbound.temporary.archive.enabled`（默认 false，`2a3acce`/`a91572e`）；看板未声明能力开放；
-7. 已知 flake：`ExportRendererProcessTest.interruptionTerminatesRendererProcess`（仅全量并行跑失败）。
+7. 已知 flake：`ExportRendererProcessTest.interruptionTerminatesRendererProcess` — **已收口 ✅**（`9480a21`：pid 文件「存在即完成」握手竞态 → 原子发布 + 等非空内容；隔离单类 3/0/0/0、12 路 CPU 负载 3/0/0/0、全量 718/0/0/1；机制 A/B 反证 12998→0）。
 
 ## f. 下一项决策待办（交业主）
-① TEMP 归档**已收口**（attempt 176/178 绿，开关默认关闭）；② 已知 flake 修复（1 轮）；③ 136 IT 分批覆盖；④ Android L4 独立任务；⑤ R07 项（需明确指示）。
+① TEMP 归档**已收口**（attempt 176/178 绿，开关默认关闭）；② 已知 flake **已收口**（`9480a21`）；③ **建议下一项：136 IT 分批覆盖**（flake 已清，批次报告不再被假失败污染）；④ Android L4 独立任务；⑤ R07 项（需明确指示，勿自动切）。

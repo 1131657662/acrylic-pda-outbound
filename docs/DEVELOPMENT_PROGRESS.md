@@ -59,4 +59,4 @@
 2026-09-25管理整理只归档原文、核对测试报告并更新入口，没有新增业务验收。原文与SHA校验见[归档说明](history/management-2026-09-25-before-refresh/README.md)。
 
 | R06 发布前必须解决项：全量服务端 IT **从未成功跑过**（未知状态） | attempt 168 首次全量跑批（R02 构造器，隔离 MySQL）：`classes=172 tests=767 failures=722 errors=0 skipped=45`；失败由 `One-shot attempt already used`(28) 与 `ApplicationContext failure threshold exceeded`（级联，占绝大多数）主导 → **不可解读为产品缺陷，也不能视为通过**。发布前必须改为分批覆盖并取得一次可解读的全量结果。 |
-| 已知 flake：`ExportRendererProcessTest.interruptionTerminatesRendererProcess` | 仅在全量并行跑时失败（`NumberFormatException: For input string: ""`），隔离单跑通过；本会话已遇到第二次 → 记录为**已知 flake**，后续不再重复分析（发布前若要消除，需固定渲染器进程的 stdout 读取时机）。 |
+| `ExportRendererProcessTest` pid 握手 flake 修复（`9480a21`） | 根因＝fixture 用 `Files.writeString` 发布 `attempt/pid`（该 API 先建**空文件**再写），测试旧逻辑只判 `Files.exists` 就 `Long.parseLong(Files.readString(...))` → 负载下命中空窗，`NumberFormatException: For input string: ""`；非 stdout 时机、非并行共享资源（全仓无 JUnit 并行配置）。修法：原子发布（`.tmp` + `ATOMIC_MOVE`）＋等「非空可解析」内容。验证：隔离单类 3/0/0/0、12 路 CPU 负载单类 3/0/0/0（15.6s→26.3s）、全量 718/0/0/1 既有条件 skip；机制 A/B 反证 12998→0。**未复现原始失败本身**（概率性）。详见[欠债清单](history/R06_DEBT_LIST_2026-09-27.md)。 |
