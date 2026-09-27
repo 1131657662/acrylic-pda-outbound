@@ -60,16 +60,16 @@ public final class TemporaryCommandWebHttpChecks {
 
         csrf();
         loginBody=new String(login(supervisor.username()).body(),StandardCharsets.UTF_8);
-        System.out.println("A3-DIAG [after login] jar="+cookies+" csrfHeader="+csrfHeader+" tokenLen="+csrfToken.length());
-        System.out.println("A3-DIAG "+sessionRows(f,"after login"));
-        System.out.println("A3-DIAG "+sessionRows(f,"after csrf refresh"));
+        System.out.println("WEB-FIXTURE [after login] jar="+cookies+" csrfHeader="+csrfHeader+" tokenLen="+csrfToken.length());
+        System.out.println("WEB-FIXTURE "+sessionRows(f,"after login"));
+        System.out.println("WEB-FIXTURE "+sessionRows(f,"after csrf refresh"));
 
         // 1) A1 facts surface: it must return exactly the echoable field set the command body needs.
         var facts = data(get(factsUrl(warehouse,submission)),200,"facts#1");
         var keys = new TreeSet<String>();facts.fieldNames().forEachRemaining(keys::add);
         assertThat(keys).containsExactlyInAnyOrder("expected","warehouseId","submissionId","workRound","authorizationId",
             "freezeDeviceId","sourceRecoveryEpoch","source");
-        System.out.println("A3-DIAG [facts#1] "+facts);
+        System.out.println("WEB-FIXTURE [facts#1] "+facts);
         var expectedKeys = new TreeSet<String>();facts.path("expected").fieldNames().forEachRemaining(expectedKeys::add);
         assertThat(expectedKeys).containsExactlyInAnyOrderElementsOf(EXPECTED_KEYS);
         assertThat(facts.path("expected").path("userAuthVersion").asText()).isEqualTo(supervisor.authVersion()+"");
@@ -80,7 +80,7 @@ public final class TemporaryCommandWebHttpChecks {
 
         // 2) LINK over the real Web session, echoing the facts verbatim.
         var linkBody=command("LINK",facts,candidateDigest(f,warehouse,submission),"人工核对候选后确认受控关联");
-        System.out.println("A3-DIAG [link] body="+SubmissionJson.canonical(linkBody));
+        System.out.println("WEB-FIXTURE [link] body="+SubmissionJson.canonical(linkBody));
         var linkReceipt = receipt(post("/temporary-commands",linkBody));
         assertThat(linkReceipt.path("status").asText()).isEqualTo("RECORDED");
         assertThat(linkReceipt.path("commandType").asText()).isEqualTo("LINK");
@@ -142,7 +142,7 @@ public final class TemporaryCommandWebHttpChecks {
             .read(facts.json().path("receivedPayloadSha256").asText()));
         String digest=f.bean(com.acrylic.outbound.temporary.review.TemporaryDecisionCandidates.class)
             .snapshot(facts.id("warehouseId"),UUID.fromString(submission),body).path("contextSha256").asText();
-        System.out.println("A3-DIAG [candidateDigest] reviewPage="+page.path("contextSha256").asText()
+        System.out.println("WEB-FIXTURE [candidateDigest] reviewPage="+page.path("contextSha256").asText()
             +" serverSnapshot="+digest+" total="+page.path("total").asText());
         return digest;
     }
@@ -179,12 +179,12 @@ public final class TemporaryCommandWebHttpChecks {
             + " jarAfterLogin=" + cookies;
         loginExchange = "[login] status=" + response.statusCode() + " headers=" + response.headers().map()
             + " setCookie=" + response.headers().allValues("Set-Cookie") + " jarBefore=" + cookies;
-        System.out.println("A3-DIAG " + loginExchange);
+        System.out.println("WEB-FIXTURE " + loginExchange);
         // Session-fixation protection rotates the session at login, so the pre-login CSRF token no longer matches the
         // session this client now presents: every later command would be answered 403 while the session is valid.
         csrf();
         loginExchange = loginExchange + " jarAfterCsrf=" + cookies;
-        System.out.println("A3-DIAG " + loginExchange);
+        System.out.println("WEB-FIXTURE " + loginExchange);
         return response;
     }
     /** A3 残余②: the session this client presents must be the one the server authenticated, so every read keeps
@@ -214,7 +214,7 @@ public final class TemporaryCommandWebHttpChecks {
             int split=header.indexOf('=');
             if(split>0)cookies.put(header.substring(0,split).trim(),header.substring(split+1,header.indexOf(';')>0?header.indexOf(';'):header.length()).trim());
         });
-        System.out.println("A3-DIAG [wire] "+request.method()+" "+request.uri().getPath()
+        System.out.println("WEB-FIXTURE [wire] "+request.method()+" "+request.uri().getPath()
             +" sentCookie="+request.headers().firstValue("Cookie").orElse("(none)")
             +" -> status="+response.statusCode()+" setCookie="+response.headers().allValues("Set-Cookie"));
         return response;
