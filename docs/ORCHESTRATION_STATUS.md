@@ -39,7 +39,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V45, migrations: 45 }
 - 更早的 R06/R09 子项结论与测试口径：见[开发进度](DEVELOPMENT_PROGRESS.md)与 `history/R06_*`、`history/R09_*`。
 
 ## 未验与阻断（每条一行：项 → 缺什么 → 后果）
-- 七类生产决定 handler/POST → 代码已接线但**默认关闭**；开启需业主授权 + 契约同步发布 + **Web 会话 POST 的真实 HTTP 证据（A3 部分验证：真浏览器 403 未查清）**；Android `LINK` 映射安装**已升 L4**（attempts 185/187 真服双绿） → 临时单仍不能确认出库。
+- 七类生产决定 handler/POST → 代码已接线但**默认关闭**；开启需业主授权 + 契约同步发布 + **A3 真浏览器 403 未查清**；Android `LINK` 映射安装**已升 L4**（attempts 185/187） → 临时单仍不能确认出库。
 - TEMP 归档 → 生产侧已接线（`9a6a001`/`859edce`/`5d91f9d`）并加**默认关闭**开关 `outbound.temporary.archive.enabled`（默认 false；`2a3acce`/`a91572e`）：关闭态生产面＝历史硬拒绝（409 `TEMPORARY_CONFIRMATION_REQUIRED`），开启态走已接线 TEMP 分派。**已验**：attempt 176（关闭态端到端，库内归档 1 行/派发 2 条）与 178（关/开两场景：409 无归档行 / 200 签名 v2 回执 + 恰 1 行 + 重放稳定）。**未验**：开关开启属运维授权，生产未声明能力开放；`localDeletionAllowed=false`。
 - 恢复出口 → 生产无任何路径置 `RECOVERY_PENDING`；`RecoveryNormalRegistration` 无 bean/路由、`baseline` 无自动来源 → 只能靠 R09 运维链或人工 SQL 解除。
 - Android 发布身份 → **签名链已完成**；仍缺**现场**：真机安装、App 内升级实测、发布/部署授权 → 不能声称现场升级可用。
