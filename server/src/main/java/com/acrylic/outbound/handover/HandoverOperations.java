@@ -25,12 +25,15 @@ final class HandoverOperations {
             String submissionStatus=anchor.path("submissionStatus").asText("");
             if (submissionStatus.equals("SUCCEEDED")) throw new com.acrylic.outbound.common.BusinessException(
                 409,"HANDOVER_ALREADY_SUCCEEDED","原批次已成功出库，请走更正入口，不能换机续扫");
-            // Original result dimension: only an explicitly terminable submission may later activate.
+            // Original result dimension. The stored vocabulary is REGISTERED/RECEIVING/REVIEW_REQUIRED/REJECTED/
+            // ABORTED/SUCCEEDED: REGISTERED can only mean "registered and never frozen" (a frozen batch moves the
+            // submission to RECEIVING or later), so it is the legitimate NONE_VERIFIED case.
             String originalResult=switch (submissionStatus) {
                 case "ABORTED" -> "ABORTED";
                 case "REJECTED" -> "REJECTED";
-                case "REVIEW_REQUIRED","RECEIVING","REVIEWING" -> "NONTERMINAL";
-                case "DRAFT","PENDING" -> "NONE_VERIFIED";
+                case "SUCCEEDED" -> "SUCCEEDED";
+                case "REGISTERED" -> "NONE_VERIFIED";
+                case "RECEIVING","REVIEW_REQUIRED" -> "NONTERMINAL";
                 default -> "UNKNOWN";
             };
             int fromRound=Integer.parseInt(anchor.path("fromWorkRound").asText());
