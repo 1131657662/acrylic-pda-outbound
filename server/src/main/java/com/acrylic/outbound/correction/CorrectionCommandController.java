@@ -13,10 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Correction command entry point. It only exists when {@code outbound.corrections.commands.enabled=true}; with the
  * default configuration the route is absent (404) and no correction document can be created, approved or withdrawn.
- * Authentication is the Web session (or a PDA Bearer); the signed receipt keeps every capability false.
+ *
+ * <p>The Web path is the design's §5 route; the PDA alias mirrors the R06 command surface
+ * ({@code TemporaryCommandController}), whose PDA chain disables CSRF so a device can execute it with a Bearer. The
+ * signed receipt keeps every capability false.
  */
 @RestController
-@RequestMapping("/api/v1/corrections")
+@RequestMapping({"/api/v1/corrections", "/api/v1/pda/corrections"})
 @ConditionalOnProperty(prefix="outbound.corrections.commands",name="enabled",havingValue="true")
 public class CorrectionCommandController {
     private final CorrectionCommandService service;

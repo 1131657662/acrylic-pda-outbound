@@ -42,6 +42,12 @@ public final class CorrectionOperations {
             long expectedVersion=write.anchor().path("currentResultVersion").asLong();
             Instant shipment=shipmentTime(write.anchor());
             UUID documentId=Ids.next();
+            // The document row must exist before its lines: correction_line.document_id is a real foreign key.
+            String digest=write.command().digest();
+            store.insertDocument(documentId,UUID.fromString(write.actor().path("warehouseId").asText()),
+                write.orderId(),type,expectedVersion,reason,digest,"SUBMITTED",
+                write.anchor().path("sourceRecoveryEpoch").asLong(1),
+                UUID.fromString(write.actor().path("principalId").asText()),write.recordedAt());
             List<ObjectNode> decided=new ArrayList<>();
             int lineNo=1;
             for(var line:lines) {
@@ -74,11 +80,6 @@ public final class CorrectionOperations {
                     .put("businessOccurredAt",occurred.toString()));
                 lineNo++;
             }
-            String digest=write.command().digest();
-            store.insertDocument(documentId,UUID.fromString(write.actor().path("warehouseId").asText()),
-                write.orderId(),type,expectedVersion,reason,digest,"SUBMITTED",
-                write.anchor().path("sourceRecoveryEpoch").asLong(1),
-                UUID.fromString(write.actor().path("principalId").asText()),write.recordedAt());
             var decision=com.acrylic.outbound.submissions.SubmissionJson.object()
                 .put("documentId",documentId.toString()).put("documentSha256",digest).put("status","SUBMITTED")
                 .put("type",type).put("orderId",write.orderId().toString())
