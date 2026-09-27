@@ -19,7 +19,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 
 ## 在途
 - **R06 M2b-4b 客户端一半**：A1 命令前置事实只读面 `4be09e2`、A2 Web 复核页写操作 `94c74b4` 已完成；A3（隔离真实 HTTP 的 Web 会话链路）**部分验证**——无会话 401、Web 登录 200、`GET /temporary-commands/facts` 200 且 A1 设计断言全过；但 LINK/NORMAL_CONFIRM 的 Web 会话 POST 在**真浏览器**下同样 403 `ACCESS_DENIED`（疑登录后会话轮换使登录前 CSRF 令牌失效），按 2 轮上限停止，差异记为**开关开放时另验**。服务端资格判定 `7448c91` 已完成，开关仍默认关闭。守卫星树 `r06-e2a-migration` 现为 detached `ea4d166`（分支未动、29 GB `.local` 完好）。
-- 下一步：**R06 欠债收口**（TEMP 归档：等业主在「夹具断言改正向」与「给归档前门加默认关闭开关」之间决策）；**R07 需用户明确指示才动**；Android `LINK` 映射安装待做。
+- 下一步：**R06 欠债收口**（TEMP 归档已收口：默认关闭开关 + 关/开两场景已验；转欠债清单其余项）；**R07 需用户明确指示才动**；Android `LINK` 映射安装待做。
 - 用户当次指令：M2b-4b（服务端放宽已完成 `c975dfc`；Web 复核页写操作与 Android LINK 映射安装待做）；① 发布身份链已完成；④ 文档收敛与工作树清点已完成（**只清点，未删除任何目录**）；C 清单放着不动。
 - 写权：`codex/development` 单写者；服务端树 `r06-e2a-migration` 现为 detached `ea4d166`（仅用于本次验证，分支未动），未归档、未删除。
 
@@ -34,13 +34,13 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 - **M2b-4b 服务端部分已收口**（守卫放宽 `c975dfc`；占用行迁移 `ee60155`；形状修复与计划比对 `70fde3b`；真实 HTTP 反例 `73767cb`）。实测：隔离非空 MySQL（19330，`log_bin=1`、`log_bin_trust_function_creators=1`）+ 真实 HTTP（19434）attempt **120** 与 **123** 均 `tests=1 failures=0 errors=0 skipped=0`——LINK 200 → NORMAL_CONFIRM 200，结果版本/`current_result_version`/槽位/占用/派发/决策版本/重放幂等逐条通过；反例（关联后改目标计划 → 409 `TEMPORARY_LINK_TARGET_PLAN_DIFFERS`，且改回计划后放行）通过。
 - **`c975dfc` 的"效果落点不需要改"已被实测推翻**（净结论）：①占用行 `bale_commitment.order_id` 是首次预留时固化的历史行，`Head.order()` 管不到 → 必须随受控关联在同一事务内迁移该提交的 `REVIEW_RESERVED` 行；②回执形状契约 `CommandDecision.validate` 把 v1 的"零候选"假设写死，关联后候选恰为 1 → 必须接受已关联且绑定同一目标的 `total==1`（换目标/多候选仍拒）。**仍成立**：结果版本/记账/槽位/订单事件/`current_result_version` 确由 `Head.order()` 驱动并落在关联后的正式单。即：两处必须随受控关联一起改，否则链条走不通。审计沿用该 LINK 命令既有账本回执与单一审计事件（`CommandReceiptIntegrity.closure` 要求每张回执恰好一条审计）。
 - 工作树与本地证据归档候选清单（只清点、未删除；13 棵可安全删 ≈1.0 GB / 18 棵需先取证 ≈47.6 GB / 快照与签名等建议保留）→ 本提交：[归档候选清单](history/WORKTREE_ARCHIVE_CANDIDATES_2026-09-27.md)
-- **R06 Web 写操作客户端与服务端资格判定**：A1 只读事实面 `4be09e2`（契约 0.34.0 / paths 129，新增 `temporary-command-facts-schemas.yaml`）、A2 复核页写操作 `94c74b4`、A3 浏览器驱动与 A2 候选摘要缺陷修复 `d39abbb`（`requiresCandidateContext()` 对 NORMAL_CONFIRM 也为 true，原实现传 null 必被拒）、资格判定 `7448c91`（`linkAvailable`=开关启用且 blockers 空；`writeAvailable`=开关启用且有可关联候选；`writeConfirmationAvailable`=开关启用且 currentIssues 空；`releaseAllowed` 与 capabilities 五项不动）。验证：web `typecheck` 0 / `build` 0；服务端全量 718 项 = 717 通过 / 1 既有 flake（`ExportRendererProcessTest` 单独重跑 BUILD SUCCESSFUL）/ 1 既有条件 skip / 0 error。
+- **R06 Web 写操作客户端与服务端资格判定**：A1 只读事实面 `4be09e2`（契约 0.34.0 / paths 129，新增 `temporary-command-facts-schemas.yaml`）、A2 复核页写操作 `94c74b4`、A3 浏览器驱动与 A2 候选摘要缺陷修复 `d39abbb`（`requiresCandidateContext()` 对 NORMAL_CONFIRM 也为 true，原实现传 null 必被拒）、资格判定 `7448c91`（`linkAvailable`=开关启用且 blockers 空；`writeAvailable`=开关启用且有可关联候选；`writeConfirmationAvailable`=开关启用且 currentIssues 空；`releaseAllowed` 与 capabilities 五项不动）。验证：web `typecheck` 0 / `build` 0；服务端全量 718 项 = 717 通过 / 1 既有 flake（隔离重跑 BUILD SUCCESSFUL）/ 1 既有条件 skip。
 - 合并态机器口径（`--rerun-tasks`，非业务验收）：服务端 103 XML/718 项 = 717 通过/1 既有符号链接条件 skip；Android 111 XML/444 项 = 440 通过/4 真实 HTTP 条件 skip；均 0 失败 0 错误。
 - 合并前的 R06/R09 子项结论与更早测试口径：见[开发进度](DEVELOPMENT_PROGRESS.md)索引与 `history/R06_*`、`history/R09_*`，不在本页复述历史数字。
 
 ## 未验与阻断（每条一行：项 → 缺什么 → 后果）
 - 七类生产决定 handler/POST → 代码已接线但**默认关闭**；服务端已支持关联后确认、Web 复核页已具备写操作、资格标志已按条件计算，但开启仍需业主明确授权 + 契约同步发布 + **Web 会话 POST 的真实 HTTP 证据（A3 仅部分验证：真浏览器 POST 403 未查清）**；Android `LINK` 映射安装**客户端已实现**（真 HTTP 未验） → 临时单仍不能确认出库。
-- TEMP 归档 → 生产侧装配与分派已接线（`9a6a001` @Bean + `859edce` 分派 + `5d91f9d` 契约放宽；生产 `POST …/archive-confirmation` 对 TEMP **无开关**直入 TEMP 分支）但**验收未达成**：attempt 172 的真实根因是夹具路径守卫 `[1-9][0-9]?` 拒绝三位 attempt 号（已修 `dd54c8a`，仅测试/夹具）；attempt 174 越过后停在夹具**过时预期**——`TemporaryArchiveHttpTest.kt:70` 仍断言生产前门 `TEMPORARY_CONFIRMATION_REQUIRED`，实测 200；库内已证 2 条 TEMP 归档（`archiveVersion=2`、各有内核 event + 恰好一条 audit、各 2 条派发记录） → 待业主决定：断言改正向验收，或给归档前门加默认关闭开关。
+- TEMP 归档 → 生产侧装配/分派/契约已接线（`9a6a001`/`859edce`/`5d91f9d`），并按项目纪律加**默认关闭**开关 `outbound.temporary.archive.enabled`（默认 **false**；`2a3acce` + 关闭态自持事务 `a91572e`）：关闭态生产面＝历史硬拒绝（形状→PDA/epoch 准入→行锁→409 `TEMPORARY_CONFIRMATION_REQUIRED`），开启态走已接线 TEMP 分派。**已验**：attempt 176 `E2aTemporaryArchiveIT` 绿（关闭态端到端，库内 `submission_archive=1`/`dispatch_record=2`）、attempt 178 `E2aTemporaryArchiveSwitchIT` 关/开两场景绿（409 无归档行 / 200 签名 v2 回执 + 恰 1 行 + 重放稳定）。**未验**：开关开启属运维授权，生产未声明能力开放；`localDeletionAllowed=false`。
 - 恢复出口 → 生产无任何路径置 `RECOVERY_PENDING`（只能人工 SQL 造成）；`RecoveryNormalRegistration` 无 bean/路由且 `baseline` 无自动来源 → 该状态只能靠 R09 运维链或人工 SQL 解除。
 - Android 发布身份 → **签名链已完成**（见已完成区与事实块）；仍缺的是**现场**：真机安装、App 内升级实测、正式发布/部署授权 → 不能声称现场升级可用。
 - 现场与人工 → 真机/Keystore、独立人员、长时与五年留存、外网与异地、生产审批均未验；R05 code20/Room17 历史关键未验、原资料与旧 BCD、R09 现场限制继续单列 → 不能声称上线就绪。
@@ -59,12 +59,13 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 - 2026-09-26 `be2048e` 单一基线合并：两树 16 个双侧改动逐条核对，无一方改动被静默丢弃。
 - 2026-09-26 冻结两树：`3c677ad`（主树 10 提交）/ `d16836b`（服务端树 6 提交），两个 freeze tag 已推远端。
 - 2026-09-27 发布身份链：生成正式 keystore（`.local/pda-signing/`，两份备份分别在 D: 与 E: 两块物理盘）、`signingConfigs` 接入 release、versionCode 20→21、`build_pda.ps1` 支持 `-BuildType` 并注入更新公钥、更新白名单补 `0.33.0`；release APK 经 `apksigner verify` 通过且签名摘要与 keystore 一致。
-- 2026-09-27 工作树清点（只读，未删除）：34 个工作树、33 个分支、112.9 GB；3 个树各有 1 个未合并提交（r08-export / r09-v33-recovery / sixth-wave-integration），5 个树含 32 个基线中不存在的未跟踪文件；发现 2 个**未注册检出**（`D:\acrylic-entry-verify`、`D:\acrylic-snapshots\…\workspace`）共用 `r06-e2a-migration` 的 gitdir。归档前须先取证，删除一律待批。
+- 2026-09-27 工作树清点（只读，未删除）：34 个工作树、33 个分支、112.9 GB；发现 2 个**未注册检出**（`D:\acrylic-entry-verify`、`D:\acrylic-snapshots\…\workspace`）共用 `r06-e2a-migration` 的 gitdir。归档前须先取证，删除一律待批。
 - 2026-09-27 唯一文件回收（选项 A）：32 个文件经 `git log --all` 与对象库 blob 双重确认从未入库，30 个提交进基线（datetime-display / R06 设计 / R07 设计），2 个归档到工作区外 `E:\acrylic-archive-unique-20260927`；清单见 [回收记录](history/UNIQUE_FILE_RESCUE_2026-09-27.md)。验证：Android 451 项 0 失败、web typecheck 通过。
-- 2026-09-27 `D:\acrylic-entry-verify` 726 个缺失文件结论：**刻意的部分副本，不是丢失**——缺失集中在 android/web/demo/contracts/tools/deploy 等无关模块（server 仅 2 个），磁盘上实存 1,241 个（server/src/main 488、server/src/test 418）；726/726 均可从 Git 取回（0 不可恢复）。
-- 2026-09-27 合并三提交（选项 B）：`0b1094e`→`f196887`（deploy + `.gitattributes`，仅覆盖 `deploy/test/*.sh`，合并后 0 项重新规范化）、`94305a7`→`1e98e44`（R09 V34 演练，17 文件全在 `docs/parallel/R09/`，README 取并集）、`f051535`→`8bb3e57`（R08 授权竞争修复）。验证：`R08AuthorizationRaceIT` 9 项全通过、`npm run build` 通过。两个环境发现：V35+ 建触发器需 `log_bin_trust_function_creators=1`（否则 Flyway 1419）；`renderer-home` 必须是当前源码同批 `installDist` 产物，否则作业 `EXPORT_RENDER_FAILED`。详见 [合并记录](history/MERGE_BATCH_2026-09-27.md)。
+- 2026-09-27 `D:\acrylic-entry-verify` 726 个缺失文件＝**刻意的部分副本，不是丢失**（集中在 android/web/demo/contracts/tools/deploy 等无关模块，server 仅 2 个）；726/726 均可从 Git 取回。
+- 2026-09-27 合并三提交（选项 B）：`0b1094e`→`f196887`、`94305a7`→`1e98e44`、`f051535`→`8bb3e57`。验证：`R08AuthorizationRaceIT` 9 项全通过、`npm run build` 通过。两个环境发现：V35+ 建触发器需 `log_bin_trust_function_creators=1`（否则 Flyway 1419）；`renderer-home` 必须是当前源码同批 `installDist` 产物，否则作业 `EXPORT_RENDER_FAILED`。详见 [合并记录](history/MERGE_BATCH_2026-09-27.md)。
 - 2026-09-27 选项 C 前置：`r08-export` / `r09-v33-recovery` / `sixth-wave-integration` 三棵树已合并且工作区干净，**可进入删除候选**；删除仍待业主逐项批准。
 - 2026-09-27 TEMP 归档 attempt 174（`dd54c8a` 修 7 处 attempt 号守卫，仅测试/夹具）+ 看板 head 与 R07 口径修正（`00a17e9`）；attempt 172 的 closure 归因被证伪（把 `corruptIndex` 的故意反例日志当成根因）。详见 [R06 欠债清单](history/R06_DEBT_LIST_2026-09-27.md)。
+- 2026-09-27 TEMP 归档收口（业主选 B＝保持「新能力默认关闭」纪律）：`2a3acce` 加 `outbound.temporary.archive.enabled`（默认 false）+ `a91572e` 修关闭态 500（`IdentityWriteGuard` 为 MANDATORY，无事务调 `access.pda`）；attempt 175 红→176 绿（`E2aTemporaryArchiveIT`，验收达成）、177 红（自测重放断言过严）→178 绿（新增 `E2aTemporaryArchiveSwitchIT` 关/开两场景）；attempt 号守卫已全仓扫描无遗漏。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。
