@@ -121,3 +121,14 @@
 1. V43 用 `information_schema` **动态查约束名**来放宽 CHECK（按 `CHECK_CLAUSE LIKE` 匹配内容，比按名字稳）——R06 的 V41 也用过同类手法；**若将来在别的 MySQL 实例跑不通，优先检查约束名/子句匹配**（大小写、版本差异、`CHECK_CLAUSE` 文本格式）。
 2. **Flyway SQL 文件里用 `@变量 + PREPARE/EXECUTE` 动态 SQL 是脆弱模式**：无法被静态检查、报错定位差、跨版本行为不稳。
 3. **步骤 2 之后评估**：是否改为**显式命名约束**（建表时即 `CONSTRAINT ck_xxx CHECK(...)`，放宽时按名字 `DROP CHECK ck_xxx`），从而彻底去掉动态 SQL。当前 V4 的既有约束是内联未命名，故本步骤只能动态匹配。
+## 12. 步骤 1 验证的第 2 个卡点（结构级，交回决策）
+
+attempt 157：`tests=1 failures=1 errors=0 skipped=0`。
+- 已修：IT 的 `order_assignment` 查询把 `BIN_TO_UUID(assignment_id)` 改为 `BIN_TO_UUID(id)`——该表主键是 `id`，**没有 `assignment_id` 列**（`assignment_id` 是 `submission` 的外键列）。修后该查询通过，失败点前移。
+- **新卡点（结构级，非语法）**：验证"CHECK 放宽后 0 包/0g 能落库"需要新建一条 scope+submission，而 `INSERT INTO submission_scope(source_order_id,canonical_order_id,...)` 被 **`Check constraint 'ck_submission_scope_source' is violated`** 拒绝——**这正是 R03 attempt 149 记录的第 5 道 FORMAL 前置**，当时已判定"不碰 FORMAL 夹具、留独立排期"。
+
+**结论**：步骤 1 的 4 条断言里，第 3/4 条（数据保留、新表为空）与"迁移可应用"已由 attempt 156/157 证实；第 1 条（0/0 与 >0 双向落库）阻断于 FORMAL 级约束，**不是步骤 1 能独立解决的**。
+
+**两条可选路线（交回决策，本轮未执行）**：
+- **A'（推荐，不碰夹具）**：把第 1 条降为**定义级证据**——断言 `order_result_version` 上不再存在 `>0` 的 `actual_count/weight_g` CHECK，且新约束子句为 `>= 0`；同时用 seed 里**既有 v1 行**证明 `>0` 仍可落库。"0 能落库"则等 FORMAL 夹具独立排期后补功能级证据（并如实标注该差异）。
+- **B'**：先解 `ck_submission_scope_source`（读其定义、构造满足它的来源），属 FORMAL 夹具范畴，**超出步骤 1 边界**。

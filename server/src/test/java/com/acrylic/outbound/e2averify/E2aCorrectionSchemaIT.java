@@ -42,7 +42,7 @@ class E2aCorrectionSchemaIT {
             notes.append("new table ").append(table).append("=0\n");
         }
         // (3) the relaxed CHECK accepts both 0 and >0 (semantic change: net-zero must be storable)
-        var host = jdbc.queryForMap("SELECT BIN_TO_UUID(order_id) order_id,BIN_TO_UUID(assignment_id) assignment_id,"
+        var host = jdbc.queryForMap("SELECT BIN_TO_UUID(order_id) order_id,BIN_TO_UUID(id) assignment_id,"
             + "BIN_TO_UUID(warehouse_id) warehouse_id,BIN_TO_UUID(device_id) device_id,BIN_TO_UUID(operator_id) operator_id,"
             + "CAST(recovery_epoch AS CHAR) recovery_epoch FROM order_assignment WHERE status='ACTIVE' LIMIT 1");
         UUID order = UUID.fromString(host.get("order_id").toString());
