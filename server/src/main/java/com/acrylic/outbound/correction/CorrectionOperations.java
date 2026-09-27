@@ -194,6 +194,7 @@ public final class CorrectionOperations {
             Map<String,Map<String,Object>> changed=new LinkedHashMap<>();
             var effects=com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
             var ledgerKeys=com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+            var reopenedCycles=com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
             for(var line:lines) {
                 UUID lineId=UUID.fromString(String.valueOf(line.get("line_id")));
                 String dispatchText=line.get("dispatch_id")==null?null:String.valueOf(line.get("dispatch_id"));
@@ -217,6 +218,20 @@ public final class CorrectionOperations {
                         (int)lineCountDelta,lineWeightDelta,null,businessKey,write.recordedAt());
                     ledgerKeys.add(businessKey);
                     changed.put(dispatchText,line);
+                    // Step 6: cancelling a dispatch reopens the bale's scan cycle exactly once. A reopening is not
+                    // availability - the snapshot below stays is_effective=false for this dispatch.
+                    if("DISPATCH_CANCELLATION".equals(type)) {
+                        int cycleBefore=dispatch.path("dispatchCycle").asInt();
+                        if(store.cycleReopeningExists(dispatchId))
+                            throw new BusinessException(409,"CYCLE_REOPENING_EXISTS","该派发周期已重开过");
+                        String evidence=line.get("evidence_sha256")==null?null:String.valueOf(line.get("evidence_sha256"));
+                        if(evidence==null || evidence.isBlank()) throw CorrectionCommand.evidenceRequired();
+                        store.insertCycleReopening(Ids.next(),dispatchId,lineId,cycleBefore,cycleBefore+1,evidence,
+                            version,store.recoveryEpoch(),write.recordedAt());
+                        reopenedCycles.add(com.acrylic.outbound.submissions.SubmissionJson.object()
+                            .put("dispatchId",dispatchText).put("cycleBefore",Integer.toString(cycleBefore))
+                            .put("cycleAfter",Integer.toString(cycleBefore+1)));
+                    }
                 }
                 effects.add(com.acrylic.outbound.submissions.SubmissionJson.object()
                     .put("lineId",lineId.toString()).put("dispatchId",dispatchText)
@@ -256,6 +271,7 @@ public final class CorrectionOperations {
                 .put("effectiveCount",Long.toString(effectiveCount)).put("effectiveWeightG",Long.toString(effectiveWeight))
                 .put("scanCoverage",Integer.toString(dispatches.size()));
             decision.set("effects",effects);decision.set("ledgerKeys",ledgerKeys);
+            decision.set("reopenedCycles",reopenedCycles);
             return decision;
         }
     }

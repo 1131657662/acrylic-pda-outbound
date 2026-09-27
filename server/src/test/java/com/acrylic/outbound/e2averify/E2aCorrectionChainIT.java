@@ -240,8 +240,49 @@ class E2aCorrectionChainIT {
                 .append(" (期望 409 CONTEXT_CHANGED)\n");
             assertThat(twice.statusCode()).isEqualTo(409);
             assertThat(codeOf(twice.body())).isEqualTo("CORRECTION_CONTEXT_CHANGED");
+
+            // (i) A2 step 6: cancelling a dispatch reopens its cycle exactly once, and a reopening is not availability.
+            String cancelled = order.dispatchIds().getFirst();
+            var cancelCreate = post(token, lineBody(jdbc, order, "DISPATCH_CANCELLATION", "3", List.of(cancelled), "0", "0", true));
+            assertThat(cancelCreate.statusCode()).as(shortBody(cancelCreate.body())).isEqualTo(200);
+            var cancelDecision = SubmissionJson.parse(cancelCreate.body()).path("businessDecision");
+            var cancelApprove = post(token, approveBody(order, cancelDecision.path("documentId").asText(),
+                cancelDecision.path("documentSha256").asText(), "SUBMITTED", "3"));
+            notes.append("⑫DISPATCH_CANCELLATION APPROVE -> ").append(cancelApprove.statusCode()).append(' ')
+                .append(shortBody(cancelApprove.body())).append('\n');
+            assertThat(cancelApprove.statusCode()).as(shortBody(cancelApprove.body())).isEqualTo(200);
+            var cancelEffect = SubmissionJson.parse(cancelApprove.body()).path("businessDecision");
+            assertThat(cancelEffect.path("resultVersion").asText()).isEqualTo("4");
+            assertThat(cancelEffect.path("reopenedCycles")).hasSize(1);
+            assertThat(jdbc.queryForMap("SELECT CAST(cycle_before AS CHAR) cb,CAST(cycle_after AS CHAR) ca,"
+                + "evidence_sha256,CAST(state_version AS CHAR) sv,CAST(issued_recovery_epoch AS CHAR) ep"
+                + " FROM cycle_reopening WHERE original_dispatch_id=UUID_TO_BIN(?)", cancelled))
+                .satisfies(row -> {
+                    assertThat(Long.parseLong(String.valueOf(row.get("ca"))))
+                        .as("cycle_after = cycle_before + 1").isEqualTo(Long.parseLong(String.valueOf(row.get("cb"))) + 1);
+                    assertThat(String.valueOf(row.get("evidence_sha256"))).isEqualTo("a".repeat(64));
+                    assertThat(String.valueOf(row.get("sv"))).isEqualTo("4");
+                    assertThat(Long.parseLong(String.valueOf(row.get("ep")))).isPositive();
+                });
+            assertThat(jdbc.queryForObject("SELECT is_effective FROM order_effective_scan WHERE order_id=UUID_TO_BIN(?)"
+                + " AND result_version=4 AND dispatch_id=UUID_TO_BIN(?)", Boolean.class, order.orderId(), cancelled))
+                .as("a reopened cycle is not availability").isFalse();
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM order_effective_scan WHERE order_id=UUID_TO_BIN(?)"
+                + " AND result_version=4 AND is_effective=1", Integer.class, order.orderId()))
+                .isEqualTo(order.dispatchIds().size() - 1);
+            // (j) the same dispatch cannot be reopened twice: CYCLE_REOPENING_EXISTS.
+            var againCancel = post(token, lineBody(jdbc, order, "DISPATCH_CANCELLATION", "4", List.of(cancelled), "0", "500", true));
+            assertThat(againCancel.statusCode()).as(shortBody(againCancel.body())).isEqualTo(200);
+            var againDecision = SubmissionJson.parse(againCancel.body()).path("businessDecision");
+            var reopenTwice = post(token, approveBody(order, againDecision.path("documentId").asText(),
+                againDecision.path("documentSha256").asText(), "SUBMITTED", "4"));
+            notes.append("⑬再次重开同一 dispatch -> ").append(reopenTwice.statusCode()).append(' ')
+                .append(codeOf(reopenTwice.body())).append(" (期望 409 CYCLE_REOPENING_EXISTS)\n");
+            assertThat(reopenTwice.statusCode()).isEqualTo(409);
+            assertThat(codeOf(reopenTwice.body())).isEqualTo("CYCLE_REOPENING_EXISTS");
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM cycle_reopening", Integer.class)).isEqualTo(1);
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM operation_event WHERE entity_type='CORRECTION_COMMAND'",
-                Integer.class)).as("one audit event per accepted receipt").isEqualTo(3);
+                Integer.class)).as("one audit event per accepted receipt (the refused ones write none)").isEqualTo(6);
         }
         Files.writeString(profile.attempt.resolve("correction-chain.txt"), notes.toString());
         Files.writeString(profile.attempt.resolve("test-completed.marker"), notes.toString());
@@ -281,6 +322,35 @@ class E2aCorrectionChainIT {
             .put("currentResultEffectiveCount", order.resultCount())
             .put("currentResultEffectiveWeightG", order.resultWeight())
             .put("userAuthVersion", authVersion);
+    }
+
+    /**
+     * A CREATE body for one type over an explicit dispatch subset at an explicit version. The order facts are stable
+     * across this chain (the withdrawal returns them to the pre-correction values), so the expected block is built
+     * from the freshly read row rather than from a stale copy.
+     */
+    private ObjectNode lineBody(JdbcTemplate jdbc, Order order, String type, String currentVersion,
+        List<String> dispatchIds, String targetCount, String targetWeight, boolean withEvidence) {
+        var facts = jdbc.queryForMap("SELECT CAST(actual_count AS CHAR) c,CAST(weight_g AS CHAR) w"
+            + " FROM order_result_version WHERE order_id=UUID_TO_BIN(?) AND result_version=?",
+            order.orderId(), Long.parseLong(currentVersion));
+        var expected = SubmissionJson.object().put("orderId", order.orderId())
+            .put("currentResultVersion", currentVersion)
+            .put("currentResultEffectiveCount", String.valueOf(facts.get("c")))
+            .put("currentResultEffectiveWeightG", String.valueOf(facts.get("w"))).put("userAuthVersion", "1");
+        var body = (ObjectNode) SubmissionJson.object().put("commandVersion", 1).put("commandType", "CREATE")
+            .put("commandId", UUID.randomUUID().toString()).put("transportRecoveryEpoch", "1")
+            .put("warehouseId", order.warehouseId()).put("orderId", order.orderId()).put("type", type)
+            .put("reason", "取消派发并重开周期");
+        var lines = body.putArray("lines");
+        for (String dispatchId : dispatchIds) {
+            var line = SubmissionJson.object().put("dispatchId", dispatchId)
+                .put("targetCount", targetCount).put("targetWeightG", targetWeight);
+            if (withEvidence) line.put("evidenceId", UUID.randomUUID().toString()).put("evidenceSha256", "a".repeat(64));
+            lines.add(line);
+        }
+        body.set("expected", expected);
+        return body;
     }
 
     /** One WEIGHT_CORRECTION line per dispatch; the design's return-to-zero shape unless targets are overridden. */

@@ -72,21 +72,52 @@ public class CorrectionStore {
 
     /**
      * Server-side recompute of one line's "before" values. There is no {@code order_effective_scan} table in this
-     * repository (design §2 assumed one; it belongs to the result-version step 5), so the current effective values are
-     * read from the facts that exist today: the original dispatch plus its ledger row when it has one. This is exact
-     * while the order is still on its first result version, which is the only state a first correction can start from.
+     * repository (design §2 assumed one; step 5 added it), so the current effective values are read from the scan
+     * snapshot of the order's current version when that version has one, and only otherwise from the original dispatch
+     * plus its ledger row. Without this preference a second correction on an already corrected dispatch would compute
+     * its "before" side from v1 and silently offer a wrong delta.
      */
     public JsonNode dispatchFacts(UUID orderId,UUID dispatchId) {
         var rows=jdbc.queryForList("""
-            SELECT JSON_OBJECT('dispatchId',BIN_TO_UUID(d.id),'baleId',BIN_TO_UUID(d.bale_id),
-              'deliveryCode',d.delivery_code,'dispatchCycle',CAST(d.dispatch_cycle AS CHAR),
-              'confirmedAt',DATE_FORMAT(d.confirmed_at,'%Y-%m-%dT%H:%i:%s.%fZ'),
-              'count',CAST(IFNULL((SELECT -SUM(l.quantity_delta) FROM inventory_ledger l WHERE l.dispatch_id=d.id),1) AS CHAR),
-              'weightG',CAST(IFNULL((SELECT -SUM(l.weight_delta_g) FROM inventory_ledger l WHERE l.dispatch_id=d.id),d.weight_g) AS CHAR))
-            FROM dispatch_record d WHERE d.id=? AND d.order_id=?
-            """,String.class,Ids.bytes(dispatchId),Ids.bytes(orderId));
+            SELECT s.is_effective,CAST(s.effective_weight_g AS CHAR) effective_weight_g,
+              BIN_TO_UUID(d.id) dispatch_id,BIN_TO_UUID(d.bale_id) bale_id,d.delivery_code,
+              CAST(d.dispatch_cycle AS CHAR) dispatch_cycle,DATE_FORMAT(d.confirmed_at,'%Y-%m-%dT%H:%i:%s.%fZ') confirmed_at
+            FROM dispatch_record d JOIN outbound_order o ON o.id=d.order_id
+            LEFT JOIN order_effective_scan s ON s.order_id=d.order_id
+              AND s.result_version=o.current_result_version AND s.dispatch_id=d.id
+            WHERE d.id=? AND d.order_id=?
+            """,Ids.bytes(dispatchId),Ids.bytes(orderId));
         if (rows.size()!=1) throw CorrectionCommand.missing();
-        return SubmissionJson.parse(rows.getFirst());
+        var row=rows.getFirst();
+        boolean fromScan=row.get("is_effective")!=null;
+        long count=fromScan?(asBoolean(row.get("is_effective"))?1L:0L):ledgerCount(dispatchId);
+        long weight=fromScan?Long.parseLong(String.valueOf(row.get("effective_weight_g"))):ledgerWeight(dispatchId);
+        return SubmissionJson.object()
+            .put("dispatchId",String.valueOf(row.get("dispatch_id")))
+            .put("baleId",String.valueOf(row.get("bale_id")))
+            .put("deliveryCode",String.valueOf(row.get("delivery_code")))
+            .put("dispatchCycle",String.valueOf(row.get("dispatch_cycle")))
+            .put("confirmedAt",String.valueOf(row.get("confirmed_at")))
+            .put("count",Long.toString(count)).put("weightG",Long.toString(weight));
+    }
+
+    private long ledgerCount(UUID dispatchId) {
+        Long value=jdbc.queryForObject("SELECT IFNULL(-SUM(quantity_delta),1) FROM inventory_ledger WHERE dispatch_id=?",
+            Long.class,Ids.bytes(dispatchId));
+        return value==null?1:value;
+    }
+
+    private long ledgerWeight(UUID dispatchId) {
+        Long value=jdbc.queryForObject("SELECT IFNULL(-SUM(weight_delta_g),"
+            + "(SELECT weight_g FROM dispatch_record WHERE id=?)) FROM inventory_ledger WHERE dispatch_id=?",
+            Long.class,Ids.bytes(dispatchId),Ids.bytes(dispatchId));
+        return value==null?0:value;
+    }
+
+    private static boolean asBoolean(Object value) {
+        if(value instanceof Boolean flag) return flag;
+        if(value instanceof Number number) return number.intValue()!=0;
+        return Boolean.parseBoolean(String.valueOf(value));
     }
 
     public void insertDocument(UUID id,UUID warehouse,UUID order,String type,long expectedResultVersion,String reason,
@@ -151,7 +182,7 @@ public class CorrectionStore {
     public List<Map<String,Object>> lines(UUID documentId) {
         return jdbc.queryForList("""
             SELECT BIN_TO_UUID(id) line_id,BIN_TO_UUID(dispatch_id) dispatch_id,line_no,
-              before_count,before_weight_g,target_count,target_weight_g,business_occurred_at
+              before_count,before_weight_g,target_count,target_weight_g,business_occurred_at,evidence_sha256
             FROM correction_line WHERE document_id=? ORDER BY line_no
             """,Ids.bytes(documentId));
     }
@@ -270,5 +301,29 @@ public class CorrectionStore {
     public int withdrawDocument(UUID documentId) {
         return jdbc.update("UPDATE correction_document SET status='WITHDRAWN',row_version=row_version+1"
             + " WHERE id=? AND status='EFFECTIVE'",Ids.bytes(documentId));
+    }
+
+    // ---------------------------------------------------------------- A2 cycle reopening (step 6)
+
+    /** §3 locks server_state first; the reopening records the epoch it was issued under. */
+    public long recoveryEpoch() {
+        Long epoch=jdbc.queryForObject("SELECT recovery_epoch FROM server_state WHERE id=1",Long.class);
+        return epoch==null?0:epoch;
+    }
+
+    public boolean cycleReopeningExists(UUID originalDispatchId) {
+        Integer found=jdbc.queryForObject("SELECT COUNT(*) FROM cycle_reopening WHERE original_dispatch_id=?",
+            Integer.class,Ids.bytes(originalDispatchId));
+        return found!=null && found>0;
+    }
+
+    /** One reopening per original dispatch (UNIQUE); cycle_after = cycle_before + 1 is enforced by CHECK as well. */
+    public void insertCycleReopening(UUID id,UUID originalDispatchId,UUID lineId,int cycleBefore,int cycleAfter,
+        String evidenceSha256,long stateVersion,long issuedRecoveryEpoch,Instant now) {
+        jdbc.update("""
+            INSERT INTO cycle_reopening(id,original_dispatch_id,correction_line_id,cycle_before,cycle_after,
+              evidence_sha256,state_version,issued_recovery_epoch,created_at) VALUES(?,?,?,?,?,?,?,?,?)
+            """,Ids.bytes(id),Ids.bytes(originalDispatchId),Ids.bytes(lineId),cycleBefore,cycleAfter,
+            evidenceSha256,stateVersion,issuedRecoveryEpoch,Timestamp.from(now));
     }
 }
