@@ -51,7 +51,8 @@ import com.acrylic.outbound.pda.evidence.LocalDraftQueueMigration
     TemporarySuccessResponse::class, TemporarySuccessEvidence::class, TemporaryArchiveRequest::class,
     TemporaryArchiveResponse::class, TemporaryArchiveEvidence::class,
     LocalDraftStop::class, LocalDraftStopItem::class, LocalDraftStopSignature::class,
-    LocalDraftTransfer::class, LocalDraftRequest::class, LocalDraftReceipt::class, LocalDraftQueue::class], version = 27, exportSchema = true)
+    LocalDraftTransfer::class, LocalDraftRequest::class, LocalDraftReceipt::class, LocalDraftQueue::class,
+    LocalSourceBinding::class], version = 28, exportSchema = true)
 abstract class PdaDatabase : RoomDatabase() {
     abstract fun preparations(): PreparationDao
     abstract fun work(): WorkDao
@@ -81,6 +82,7 @@ abstract class PdaDatabase : RoomDatabase() {
     abstract fun localDraftStopSignatures(): LocalDraftStopSignatureDao
     abstract fun localDraftTransfers(): LocalDraftTransferDao
     abstract fun localDraftQueue(): LocalDraftQueueDao
+    abstract fun sourceBindings(): LocalSourceBindingDao
 
     companion object {
         fun open(context: Context): PdaDatabase = Room.databaseBuilder(context, PdaDatabase::class.java, "outbound-pda.db")
@@ -92,6 +94,7 @@ abstract class PdaDatabase : RoomDatabase() {
             .addMigrations(LocalDraftStopSignatureMigration)
             .addMigrations(LocalDraftTransferMigration)
             .addMigrations(LocalDraftQueueMigration)
+            .addMigrations(LocalSourceBindingMigration)
             .addCallback(object : Callback() {
                 override fun onOpen(db: SupportSQLiteDatabase) {
                     db.query("PRAGMA synchronous").use { check(it.moveToFirst() && it.getInt(0) == 2) { "本地数据库耐久配置不正确" } }
