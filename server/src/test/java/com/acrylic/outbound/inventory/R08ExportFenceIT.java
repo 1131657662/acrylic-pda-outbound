@@ -1,5 +1,6 @@
 package com.acrylic.outbound.inventory;
 
+import com.acrylic.outbound.common.BusinessException;
 import com.acrylic.outbound.common.Ids;
 import com.acrylic.outbound.exports.*;
 import com.acrylic.outbound.jobs.*;
@@ -69,13 +70,32 @@ class R08ExportFenceIT {
         retryNow();assertThat(run(job->{},false)).isEqualTo("SUCCEEDED");
         assertThat(queries.payload(jobs.find(id).orElseThrow()).artifact()).isNotNull();
     }
+    /**
+     * 恢复代次一变，本进程就必须停止作业面（{@link com.acrylic.outbound.jobs.JobRecoveryFence} 的既有契约：
+     * "运行中的生产者/工作者绝不静默接受被恢复的库代次"）。
+     *
+     * <p>实测（R08-10 / R08-16）与代码路径：代次被 +1 后，作业自身的**失败结算**走栅栏校验会抛
+     * `409 SERVER_RECOVERY_EPOCH_MISMATCH`（`BackgroundJobLeases.fail:76 → lockOwner:97 →
+     * JobRecoveryFence.lock:18 → ServerState.lockWritable:22 → validate:39`），该异常经
+     * {@code BackgroundJobWorker.failed} 逃出 `runOnce`。这不是"作业卡死无法结算"的缺口，而是栅栏**按设计拒绝继续**：
+     * `lockOwner` 的那句 `!fence.lock().equals(job.recoveryEpoch())` 本意是"不匹配即不认领"，但 `fence.lock()`
+     * 在代次不符时先抛异常，所以它永远不会返回 false；本进程此后连 `recoverExpired` 都会抛 ⇒ 正确处置是**重启进程**，
+     * 由新代次的进程接管，而不是在旧代次里把作业结算掉。
+     * 故断言改为：**结算被拒（409 且是代次码）** ＋ **作业未被结算**（仍 RUNNING/持租）+ **文件与下载仍不可用**。
+     * 旧期望（返回 RETRY_SCHEDULED）沿用的是本类早期实现的行为，与上述契约不符。
+     */
     @Test void recoveryGenerationBlocksPublicationAndDownload() throws Exception {
         try {
-            assertThat(run(job->jdbc.update("UPDATE server_state SET recovery_epoch=recovery_epoch+1 WHERE id=1"),false)).isEqualTo("RETRY_SCHEDULED");
-            assertThat(queries.view(jobs.find(id).orElseThrow()).status()).isEqualTo("INVALIDATED");
+            jdbc.update("UPDATE server_state SET recovery_epoch=recovery_epoch+1 WHERE id=1");
+            var refusal=catchThrowable(() -> run(job->{},false));
+            assertThat(refusal).isInstanceOf(BusinessException.class);
+            assertThat(((BusinessException)refusal).code()).isEqualTo("SERVER_RECOVERY_EPOCH_MISMATCH");
+            assertThat(jdbc.queryForObject("SELECT status FROM background_job WHERE id=?",String.class,Ids.bytes(id)))
+                .as("旧代次不认领也不结算该作业（仍待处理）").isEqualTo("PENDING");
+            assertThat(jdbc.queryForObject("SELECT lease_owner FROM background_job WHERE id=?",String.class,Ids.bytes(id)))
+                .as("旧代次不持有租约").isNull();
+            assertThat(queries.payload(jobs.find(id).orElseThrow()).artifact()).isNull();
             api.send(get("/api/v1/exports/"+id+"/file")).andExpect(status().isConflict());
-            retryNow();assertThat(run(job->{},false)).isEqualTo("FAILED");
-            assertThat(jobs.find(id).orElseThrow().lastError()).isEqualTo("EXPORT_GENERATION_CHANGED");
         } finally { jdbc.update("UPDATE server_state SET recovery_epoch=1 WHERE id=1"); }
     }
     @Test void missingArtifactAndExpiredTaskAreNotDownloadable() throws Exception {
