@@ -27,9 +27,10 @@
 - 实测约束：**无 `order_effective_scan` 表**（§2 假设，属步骤 5）⇒ before 值由 dispatch+ledger 推出；
   **Web 会话 POST 被 403 挡住**（已知 A3 CSRF/会话问题，未硬做）⇒ 按 R06 做法用 PDA 别名 +
   已验证 PDA Bearer 通道。
-**下一步**＝**步骤 4-5 开局**：`correction_effect` 唯一 + `correction_ledger` 追加 + 完整反向 `reverses_entry_id` 唯一
-（步骤 4）→ `order_result_version` v+1 + 逐包有效快照 + current 指针（步骤 5）。注意「全单退货 0 包/0g」的真实业务链
-在此才闭环（§13 补充条件 3），且 **APPROVE 尚未实现**（文档停在 SUBMITTED）。
+**下一步**＝**WITHDRAW** 或 **步骤 6-8**（周期重开 / 差异案件 / 通知发件箱）。注意：APPROVE 现已**同事务完成生效**
+（effect + 更正账务 + 结果版本 v+1 + 逐包快照 + 双指针），文档终态是 `EFFECTIVE` 而非 `APPROVED`；
+`reverses_entry_id`「指向另一条更正账务且 delta 完全相反」的不变量**尚未被触发**（首次更正反向的是原出库事实），
+它应由 WITHDRAW 或第二次更正来验证；HEADER_CORRECTION 尚未真正重算头快照。
 
 ## c. attempt 号分配（避免混乱）
 - **168** 全量 IT 跑批（结论：跑批模式不兼容）；**169** 未用；**170** 归档 IT（装配问题）；**171** Android LINK L4（**未运行**）；
