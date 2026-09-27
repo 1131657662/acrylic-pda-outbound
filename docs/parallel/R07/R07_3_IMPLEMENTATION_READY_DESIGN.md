@@ -93,3 +93,23 @@
 9. **R08 只读**：结果版本/有效视图接口（日期固定 SHIPMENT_DATE_NET，MOVEMENT_DATE 后置）。
 
 > 验证粒度（沿用本会话确立的约定）：**核心**（effect/账务/结果版本/周期/并发幂等）→ 必须端到端（真实 MySQL + 真实 HTTP）；**辅助**（查询/展示/契约登记）→ 编译 + 全量单测。
+
+## 10. 实现第 1 轮实测发现（**阻塞步骤 1，必须先决策**）
+
+在写迁移前核对既有 schema，发现本设计 §2 的两处假设**不成立**，且既有约束**与更正账务直接冲突**：
+
+| 既有对象（`V4__inventory_snapshots_and_mappings.sql`） | 原文约束 | 冲突 |
+| --- | --- | --- |
+| `inventory_ledger` | `dispatch_id BINARY(16) NOT NULL **UNIQUE**` | 一个 dispatch 只允许一条流水；更正需要**多条**（原扣 + 重量差额 + 完整反向） |
+| `inventory_ledger` | `CHECK(quantity_delta=-1)`、`CHECK(weight_delta_g<0)` | 完整反行为 `+1` / `+weight` |
+| `order_result_version` | 已存在；`CHECK(actual_count>0)`、`CHECK(weight_g>0)` | 全单退货后 `0 包/0g` **必须合法** |
+| `order_effective_line` | 已存在；PK `(order_id,result_version,delivery_code)`，CHECK ≥0 | ✅ 直接复用（设计里的 `product_ref` 即 `delivery_code`） |
+
+**两条路线（需业主/技术决策，我建议 A）**：
+
+- **A（推荐）不动 V4 已验证面**：保留 `inventory_ledger` 作为"原政策事实"表（`dispatch_id` UNIQUE、原 CHECK 全部不动），**新增 `correction_ledger`**（`correction_line_id`、`reverses_entry_id` 可空且唯一、`entry_kind ∈ {REVERSAL, WEIGHT_DIFF, MANUAL_DEDUCT}`、delta 可正可负、`business_key` 唯一）。"当前实际账务"= 两表并按 `dispatch_id` 串联；结果版本仍可用既有 `order_result_version`（但需放宽两个 CHECK 至 ≥0，**这是唯一需要改既有表的一处**）。
+- **B 就地放宽**：ALTER 掉 `inventory_ledger.dispatch_id` 的 UNIQUE 与两条 CHECK，让一张表承担全部流水。改动小，但**改动 R05 已验证的账务不变量**，回归面大（需重跑 R05 相关测试与 IT）。
+
+**若选 A**，步骤 1（迁移）实际内容变为：新增 `correction_document`、`correction_line`、`correction_effect`、`correction_ledger`、`cycle_reopening`、`inventory_reconciliation`、`orders.current_result_version`（列或指针表）+ **放宽 `order_result_version` 两条 CHECK 至 ≥0**，并说明为何不动 `inventory_ledger`。
+
+**纪律遵守**：本轮**未写任何迁移代码**（避免按错误假设建表）；步骤 1 待路线确定后开工。
