@@ -173,13 +173,16 @@ if ($xml.Count -eq 0) {
     Write-Host "markers: started=$started completed=False attempt=$attempt"
     exit 2
 }
-$tests=0;$failures=0;$errors=0;$skipped=0
+# Counters must NOT be called $tests/$Test etc.: PowerShell variable names are case-insensitive, and -Tests is a
+# [string] parameter, so a $tests counter silently degrades to string concatenation and the RESULT line reported
+# "01" for one class / "0111" for three (verified 2026-09-27). The *Count names cannot collide with any parameter.
+$testCount=0;$failureCount=0;$errorCount=0;$skipCount=0
 foreach ($x in $xml) {
     $d = [xml][System.IO.File]::ReadAllText($x.FullName, (New-Object System.Text.UTF8Encoding($false)))
-    $tests += [int]$d.testsuite.tests; $failures += [int]$d.testsuite.failures
-    $errors += [int]$d.testsuite.errors; $skipped += [int]$d.testsuite.skipped
+    $testCount += [int]$d.testsuite.tests; $failureCount += [int]$d.testsuite.failures
+    $errorCount += [int]$d.testsuite.errors; $skipCount += [int]$d.testsuite.skipped
 }
-Write-Host ("RESULT attempt={0} classes={1} tests={2} failures={3} errors={4} skipped={5}" -f $Run, $xml.Count, $tests, $failures, $errors, $skipped)
+Write-Host ("RESULT attempt={0} classes={1} tests={2} failures={3} errors={4} skipped={5}" -f $Run, $xml.Count, $testCount, $failureCount, $errorCount, $skipCount)
 $xml | ForEach-Object {
     $d = [xml][System.IO.File]::ReadAllText($_.FullName, (New-Object System.Text.UTF8Encoding($false)))
     $d.testsuite.testcase | ForEach-Object {
