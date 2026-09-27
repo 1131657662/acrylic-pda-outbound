@@ -30,6 +30,8 @@ import static org.assertj.core.api.Assertions.*;
 class E2aHandoverHttpLayerIT {
     private static final String BASE = "http://127.0.0.1:19434/api/v1";
     private static final String HANDOVER = "order:handover";
+    /** The probe users must hold a real credential, otherwise the web login never succeeds. */
+    private static final String HASH = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(12).encode("Test-password-123");
 
     @Test void handoverRouteIsInterceptedAtTheHttpLayer() throws Exception {
         var profile = new E2aCrossSourceProfile(); var jdbc = profile.connect();
@@ -88,8 +90,8 @@ class E2aHandoverHttpLayerIT {
 
     private String user(JdbcTemplate jdbc, String warehouse, boolean handover) {
         UUID id = Ids.next();
-        jdbc.update("INSERT INTO app_user(id,username,display_name,password_hash,created_at) VALUES(?,?,?,'x',UTC_TIMESTAMP(3))",
-            Ids.bytes(id), "httplayer-" + id, "HTTP 层探测人员");
+        jdbc.update("INSERT INTO app_user(id,username,display_name,password_hash,created_at) VALUES(?,?,?,?,UTC_TIMESTAMP(3))",
+            Ids.bytes(id), "httplayer-" + id, "HTTP 层探测人员", HASH);
         jdbc.update("INSERT INTO user_warehouse VALUES(?,?)", Ids.bytes(id), Ids.bytes(UUID.fromString(warehouse)));
         if (handover) {
             UUID role = Ids.next();
