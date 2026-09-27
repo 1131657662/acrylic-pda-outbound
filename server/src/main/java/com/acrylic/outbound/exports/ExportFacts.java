@@ -13,6 +13,15 @@ import static com.acrylic.outbound.submissions.SubmissionJson.parse;
 public class ExportFacts {
     private final JdbcTemplate jdbc;
     public ExportFacts(JdbcTemplate jdbc) { this.jdbc=jdbc; }
+    /**
+     * R08 子项 C：该提交是否源自 TEMP。TEMP 的 {@code submission_scope} 没有 {@code source_order_id}
+     * （FORMAL 必有，见 {@code ck_submission_scope_source}），据此可区分"TEMP 受理正文"与"正式 PDA 正文"；
+     * 两者正文形状不同（TEMP 没有 {@code source.sourceOrderId}），导出读取器必须据此选路。
+     */
+    public boolean tempOrigin(String submission) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM submission s JOIN submission_scope c ON c.id=s.scope_id "
+            + "WHERE s.id=? AND c.source_order_id IS NULL",Integer.class,Ids.bytes(UUID.fromString(submission)))==1;
+    }
     public Head head(UUID warehouse, UUID order) {
         var rows=jdbc.query("""
             SELECT o.order_no,o.source,o.status,BIN_TO_UUID(r.submission_id),BIN_TO_UUID(r.pc_submission_id),

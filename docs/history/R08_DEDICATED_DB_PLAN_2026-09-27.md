@@ -163,6 +163,38 @@ R08 的源码**已并入 `codex/development`**（R08 独立分支 `codex/r08-exp
 命中则复用 `TemporaryExportSource` 生成同一 `ReportSnapshot`（首版 ORIGINAL_CONFIRMED 口径不变）。
 **预计不需要新开关、不需要新接口**，但确实要改 `exports` 包的生产代码 ⇒ 需授权。
 
+## 六、子项 C **已实现** ✅（v16，提交见下，attempt 383 绿）
+
+授权后按上述最小面落地，**只改 `exports` 包两处 + 一处选路**，既有 WEB/PDA 路径一字未动：
+
+1. `ExportFacts.tempOrigin(submission)`（新增，只读）：`submission_scope.source_order_id IS NULL` ⇒ 该提交源自 TEMP
+   （FORMAL 必有 `source_order_id`）。
+2. `ExportSnapshotReader.read` 选路：`source='PDA_TEMP'` 走原路；**新增**"结果版本行的提交源自 TEMP"也走
+   `TemporaryExportSource`；其余 `pdaSubmission!=null` 走原 `PdaExportSource`、否则原 `PcExportSource`（两路未改）。
+3. `TemporaryExportEvidence:46`：原来要求 `originalContext.mappingVersion == "1"`，而 **R06 受控关联后的确认
+   必然是 v2+** ⇒ 合法导出被挡在门外。改为 `Set.of("1","2").contains(...)`（仍然锚定
+   仓库/规范单/原操作人/回执一致），即"两种合法形态都接受、版本号不再当唯一性条件"。
+
+**证据**：
+- **先探针、后实现**：探针版（只在守卫星树打补丁）attempt 382 就返回 `200` + 完整 job（`snapshotId` 已生成）
+  ⇒ 证明缺口**恰好是这两处**，没有更大面。
+- 正式实现 **attempt 383**：`E2aTemporaryCommandWebHttpIT` `tests=1 failures=0 errors=0 skipped=0`；
+  TEMP 链尾导出拿到 `{"format":"XLSX","basis":"ORIGINAL_CONFIRMED","resultVersion":1,"revision":1,
+  "snapshotId":"f913d65c-…","status":"PENDING","orderNo":"FH-WEB-0001"}` ⇒ 入口受理 + 首版快照落地。
+- **不破坏既有**：既有 `source='PDA_TEMP'`、`pdaSubmission!=null`(正式 PDA)、`PC` 三条路径的条件表达式一字未改
+  （新增分支排在最前两条之后，只截获"WEB 但提交源自 TEMP"这一种），并用 R08 导出族回归复验：
+
+| run | 类 | 结果 |
+| --- | --- | --- |
+| R08-19 | `R08ExportIT`（XLSX/PDF/SCAN_XLSX 全格式落地） | **14/14 绿** |
+| R08-20 | `R08ExportFenceIT` | **4/4 绿** |
+| R08-21 | `R08SummaryIT`（跨订单汇总导出） | **6/6 绿** |
+| R08-22 | `R08RetryIT`（导出重试） | **7/7 绿** |
+
+⇒ 既有正式订单导出（PC/PDA/汇总/重试/栅栏）**全部保持绿**。
+
+
+
 
 
 ## 五、未验与边界

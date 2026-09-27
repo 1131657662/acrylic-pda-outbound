@@ -43,3 +43,7 @@
 ## 归档：v10 变更日志（v15 为腾出上限移出，原文未改）
 
 - 2026-09-27 v10 换会话固化：看板压缩 7990→5596 字符（13 条旧日志按日期归档，余量 2404）；**R06 开发+回归基本完成**（v7-v9 累计 95 类 IT 在 V48 上跑过，修复真 bug `36d2368`，共享面健康）；未完成＝A3 残余①②、约 80 个非 e2a 类、三族专用库、政策 P1-P7、七类开关授权。
+
+## 归档：v14 变更日志（v16 为腾出上限移出，原文未改）
+
+- 2026-09-27 v14：**A2 口径已修 ✅**（`dcaf7ad`，attempt 377 绿）：候选接口新增只读 `commandContextSha256`，Web 全线改用它 ⇒ 开关一开不再必然 409；facts 面仍 `null`、capabilities 仍恒 false；契约**草案** 0.36.0→0.37.0（未发布）+ typecheck 0。**R08 专用库构造器跑批 ✅**（`9e448d7`）：**8 类 47 项 = 46 通过 / 1 失败**（Export 14/14、PreviewSeed 1/1、ClockBoundary 2/2、CenterPagination 4/4、Retry 7/7、Summary 6/6、AuthorizationRace 9/9）。**待专项（未判定真 bug）**：`R08ExportFenceIT.recoveryGenerationBlocksPublicationAndDownload` 两次独立复现红（`BackgroundJobLeases.fail:76→JobRecoveryFence.lock:18→ServerState.validate:39` 抛 409 逃逸）；**已按指令停下报告，未改生产代码/断言**。环境前提三条已记档（renderer-home / sample-data / 库名逐字匹配守卫 ⇒ 一类一 attempt）。（[R08 方案](history/R08_DEDICATED_DB_PLAN_2026-09-27.md)）

@@ -117,19 +117,22 @@ public final class TemporaryCommandWebHttpChecks {
         assertThat(longValue(f,"SELECT d.decision_version FROM temporary_decision_state d JOIN submission s ON s.scope_id=d.scope_id WHERE s.id=UUID_TO_BIN(?)",submission)).isEqualTo(2);
         assertThat(longValue(f,"SELECT COUNT(*) FROM temporary_command_receipt WHERE submission_id=UUID_TO_BIN(?)",submission)).isEqualTo(2);
 
-        // 5) R08 子项 C 探针：TEMP 确认后的目标是一张 WEB 正式单（source='WEB' + COMPLETED + 结果版本 1），
-        // 正式订单导出入口确实**受理**它；但结果版本行的 submission_id 指向**原 TEMP 提交**，导出因此走
-        // PdaExportSource，而 TEMP 受理正文没有正式 PDA 正文的 source.sourceOrderId ⇒ 目前以 INVALID_SUBMISSION 拒绝。
-        // 本断言把该**已定位的阻塞点**钉住（子项 C 落地后这里会变红，届时改为断言 200 + 快照内容）。
+        // 5) R08 子项 C：TEMP 确认后的目标是一张 WEB 正式单（source='WEB' + COMPLETED + 结果版本 1），
+        // 但其结果版本行的提交是**原 TEMP 受理正文**。导出读取器据此选路走 TEMP 读取器（既有 WEB/PDA 路径不变），
+        // 于是正式订单导出入口能直接受理 TEMP 来源单，口径仍为首版 ORIGINAL_CONFIRMED。
         assertThat(string(f,"SELECT source FROM outbound_order WHERE id=UUID_TO_BIN(?)",target)).isEqualTo("WEB");
-        var refusal=postExport(target,warehouse);
-        System.out.println("WEB-FIXTURE [temp->export] "+SubmissionJson.canonical(refusal));
-        assertThat(refusal.path("code").asText()).as("TEMP 来源导出面尚未接入（R08 子项 C 待实现）")
-            .isEqualTo("INVALID_SUBMISSION");
-        assertThat(refusal.path("message").asText()).contains("sourceOrderId");
+        var exportJob=postExport(target,warehouse);
+        System.out.println("WEB-FIXTURE [temp->export] "+SubmissionJson.canonical(exportJob));
+        assertThat(exportJob.path("format").asText()).isEqualTo("XLSX");
+        assertThat(exportJob.path("basis").asText()).isEqualTo("ORIGINAL_CONFIRMED");
+        assertThat(exportJob.path("orderId").asText()).isEqualTo(target);
+        assertThat(exportJob.path("status").asText()).isIn("PENDING","RUNNING","SUCCEEDED");
+        // 首版快照已落地且取自 TEMP 来源：快照里的成员/明细就是本 TEMP 批次，且文件标记 TEST_SAMPLE。
+        assertThat(longValue(f,"SELECT COUNT(*) FROM background_job WHERE id=UUID_TO_BIN(?) AND payload->>'$.snapshotId' IS NOT NULL",
+            exportJob.path("id").asText())).isEqualTo(1);
     }
 
-    /** 用已认证的 Web 会话对 TEMP 确认后的目标正式单发起一次首版导出，返回错误/成功信封（不跑 worker）。 */
+    /** 用已认证的 Web 会话对 TEMP 确认后的目标正式单发起一次首版导出，返回信封 data（不跑 worker）。 */
     private JsonNode postExport(String order,String warehouse) throws Exception {
         String body="{\"format\":\"XLSX\",\"basis\":\"ORIGINAL_CONFIRMED\"}";
         var response=send(request("/orders/"+order+"/exports?"+query(warehouse))
@@ -137,7 +140,9 @@ public final class TemporaryCommandWebHttpChecks {
             .header("Idempotency-Key",UUID.randomUUID().toString())
             .header("X-Server-Recovery-Epoch",epoch.isEmpty()?"1":epoch)
             .POST(HttpRequest.BodyPublishers.ofString(body,StandardCharsets.UTF_8)).build());
-        return SubmissionJson.parse(response.body());
+        assertThat(response.statusCode()).as("TEMP 来源单导出受理: "+new String(response.body(),StandardCharsets.UTF_8))
+            .isEqualTo(200);
+        return data(response,200,"export");
     }
 
     private ObjectNode command(String kind,JsonNode facts,String candidateSha,String reason) throws Exception {

@@ -5,6 +5,7 @@ import com.acrylic.outbound.submissions.*;
 import com.acrylic.outbound.temporary.command.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -43,7 +44,10 @@ public class TemporaryExportEvidence {
         check(ids.size()==1,"TEMP原确认不唯一");var record=commands.byReceipt(UUID.fromString(ids.getFirst()));
         var decision=integrity.verify(record);var context=decision.path("originalContext");
         check(!Instant.parse(text(decision,"recordedAt")).isAfter(cutoff),"TEMP原确认晚于截点");
-        check(text(context,"mappingVersion").equals("1")
+        // R08 子项 C：TEMP 确认有两种合法形态 —— 未关联的 v1 映射，以及 R06 受控关联后 v2+ 的映射。
+        // 二者都以同一句判定锚定"本单就是该 TEMP 批次的确认目标"；版本号本身不再当作唯一性条件
+        // （关联后的确认 context.mappingVersion=2，旧的 ==1 断言会把合法导出挡在门外）。
+        check(Set.of("1","2").contains(text(context,"mappingVersion"))
                 && uuid(context,"warehouseId").equals(target.warehouse()) && uuid(context,"canonicalOrderId").equals(target.order())
                 && uuid(context,"originalOperatorId").equals(head.actor()),"TEMP原映射或身份不符");
         check(decision.at("/businessDecision/submissionReceipt").equals(target.receipt())

@@ -21,7 +21,11 @@ public class ExportSnapshotReader {
         if(format==ExportModels.Format.PDF && Long.parseLong(head.count())>1000)
             throw new BusinessException(409,"EXPORT_LIMIT_EXCEEDED","单次PDF最多1000包，请使用Excel");
         boolean scanRecords=format==ExportModels.Format.SCAN_XLSX;
+        // R08 子项 C：既有两条路径一字不动，只新增一种情况 —— 结果版本行的提交其实源自 TEMP
+        // （source='WEB' 但提交是 TEMP 受理正文，例如 R06 受控关联 + 确认后的正式单）。TEMP 正文与正式 PDA
+        // 正文字段形状不同，走 PdaExportSource 只会得到 INVALID_SUBMISSION（缺少 source.sourceOrderId）。
         var order=head.source().equals("PDA_TEMP")?temporary.read(head,scanRecords,cutoff):
+                head.pdaSubmission()!=null&&facts.tempOrigin(head.pdaSubmission())?temporary.read(head,scanRecords,cutoff):
                 head.pdaSubmission()!=null?pda.read(head,scanRecords):pc.read(head);
         var day=head.confirmedAt().atZone(ZoneId.of("Asia/Shanghai")).toLocalDate();
         var metadata=new ReportSnapshot.Metadata(UUID.randomUUID().toString(),"result:1/revision:"+order.revision(),cutoff,cutoff,
