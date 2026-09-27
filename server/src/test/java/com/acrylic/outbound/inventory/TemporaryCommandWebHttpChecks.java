@@ -32,7 +32,10 @@ public final class TemporaryCommandWebHttpChecks {
 
     private final WebApplicationContext context;
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
-    private String csrfHeader;private String csrfToken;private String epoch = "";private String loginBody = "";private boolean loggedIn;
+    private String csrfHeader;private String csrfToken;private String epoch = "";private String loginBody = "";
+    /** A3 残余②: the login exchange kept verbatim. {@code loginBody} alone was overwritten by the CSRF refresh that
+     *  follows the rotation, so the one response that publishes the authenticated session never reached the report. */
+    private String loginExchange = "(login not attempted)";
     private final Map<String,String> cookies = new LinkedHashMap<>();
 
     private TemporaryCommandWebHttpChecks(WebApplicationContext context) { this.context = context; }
@@ -56,13 +59,17 @@ public final class TemporaryCommandWebHttpChecks {
             .as("facts without a session").isEqualTo(401);
 
         csrf();
-        loginBody=new String(login(supervisor.username()).body(),StandardCharsets.UTF_8);loggedIn=true;
+        loginBody=new String(login(supervisor.username()).body(),StandardCharsets.UTF_8);
+        System.out.println("A3-DIAG [after login] jar="+cookies+" csrfHeader="+csrfHeader+" tokenLen="+csrfToken.length());
+        System.out.println("A3-DIAG "+sessionRows(f,"after login"));
+        System.out.println("A3-DIAG "+sessionRows(f,"after csrf refresh"));
 
         // 1) A1 facts surface: it must return exactly the echoable field set the command body needs.
         var facts = data(get(factsUrl(warehouse,submission)),200,"facts#1");
         var keys = new TreeSet<String>();facts.fieldNames().forEachRemaining(keys::add);
         assertThat(keys).containsExactlyInAnyOrder("expected","warehouseId","submissionId","workRound","authorizationId",
             "freezeDeviceId","sourceRecoveryEpoch","source");
+        System.out.println("A3-DIAG [facts#1] "+facts);
         var expectedKeys = new TreeSet<String>();facts.path("expected").fieldNames().forEachRemaining(expectedKeys::add);
         assertThat(expectedKeys).containsExactlyInAnyOrderElementsOf(EXPECTED_KEYS);
         assertThat(facts.path("expected").path("userAuthVersion").asText()).isEqualTo(supervisor.authVersion()+"");
@@ -72,8 +79,9 @@ public final class TemporaryCommandWebHttpChecks {
         assertThat(facts.path("warehouseId").asText()).isEqualTo(warehouse);
 
         // 2) LINK over the real Web session, echoing the facts verbatim.
-        var linkReceipt = receipt(post("/temporary-commands",command("LINK",facts,candidateDigest(warehouse,submission),
-            "人工核对候选后确认受控关联")));
+        var linkBody=command("LINK",facts,candidateDigest(f,warehouse,submission),"人工核对候选后确认受控关联");
+        System.out.println("A3-DIAG [link] body="+SubmissionJson.canonical(linkBody));
+        var linkReceipt = receipt(post("/temporary-commands",linkBody));
         assertThat(linkReceipt.path("status").asText()).isEqualTo("RECORDED");
         assertThat(linkReceipt.path("commandType").asText()).isEqualTo("LINK");
         assertThat(canonical(f)).isEqualTo(target);
@@ -86,7 +94,7 @@ public final class TemporaryCommandWebHttpChecks {
         assertThat(afterLink.path("expected").path("mappingVersion").asText()).isEqualTo("2");
         assertThat(afterLink.path("expected").path("canonicalOrderId").asText()).isEqualTo(target);
         var confirmReceipt = receipt(post("/temporary-commands",command("NORMAL_CONFIRM",afterLink,
-            candidateDigest(warehouse,submission),"人工核对无误后确认临时出库")));
+            candidateDigest(f,warehouse,submission),"人工核对无误后确认临时出库")));
         assertThat(confirmReceipt.path("status").asText()).isEqualTo("RECORDED");
         assertThat(confirmReceipt.path("commandType").asText()).isEqualTo("NORMAL_CONFIRM");
         for(String key:List.of("writeConfirmationAvailable","releaseAllowed","stockReleased","mayResumeScanning","localDeletionAllowed"))
@@ -120,10 +128,23 @@ public final class TemporaryCommandWebHttpChecks {
         return body;
     }
 
-    private String candidateDigest(String warehouse,String submission) throws Exception {
+    /**
+     * The candidate-set digest the command must echo. It comes from the server's own review-default snapshot
+     * ({@code TemporaryDecisionCandidates}, the same bean the archive/link drivers and {@code TemporaryLinkOperation}
+     * recompute under the locked target), never from the review page's {@code contextSha256}: that one is
+     * {@code TemporaryDuplicateService} hashed over a different context and can never pass the comparison.
+     */
+    private String candidateDigest(TemporaryConfirmationFixture f,String warehouse,String submission) throws Exception {
         var page=data(get(BASE+"/temporary-reviews/"+submission+"/duplicate-candidates?"+query(warehouse)),200,"candidates");
         assertThat(page.path("total").asInt()).isEqualTo(1);
-        return page.path("contextSha256").asText();
+        var facts=f.bean(com.acrylic.outbound.temporary.command.CommandFacts.class).read(UUID.fromString(submission));
+        var body=SubmissionJson.parse(f.bean(com.acrylic.outbound.submissions.SubmissionFiles.class)
+            .read(facts.json().path("receivedPayloadSha256").asText()));
+        String digest=f.bean(com.acrylic.outbound.temporary.review.TemporaryDecisionCandidates.class)
+            .snapshot(facts.id("warehouseId"),UUID.fromString(submission),body).path("contextSha256").asText();
+        System.out.println("A3-DIAG [candidateDigest] reviewPage="+page.path("contextSha256").asText()
+            +" serverSnapshot="+digest+" total="+page.path("total").asText());
+        return digest;
     }
 
     private String factsUrl(String warehouse,String submission) {
@@ -132,13 +153,16 @@ public final class TemporaryCommandWebHttpChecks {
     private String query(String warehouse) { return "warehouseId="+URLEncoder.encode(warehouse,StandardCharsets.UTF_8); }
 
     private void csrf() throws Exception {
-        String keep=loggedIn&&cookies.containsKey("OUTBOUND_SESSION")?cookies.get("OUTBOUND_SESSION"):null;
-        var response=send(HttpRequest.newBuilder(URI.create(BASE+"/auth/csrf")).GET().build());
+        // A3 残余② root cause: this call used HttpRequest.newBuilder(...) instead of request(...), so the CSRF
+        // request carried no Cookie. The server answered with a brand-new anonymous session and send() stored it,
+        // throwing away the session that login had just authenticated (its PRINCIPAL_NAME row stayed in
+        // SPRING_SESSION while the client presented the anonymous one). Later facts/commands were then answered
+        // 401 UNAUTHENTICATED no matter how often the token was refreshed. Carry the session on the token fetch too.
+        var response=send(request("/auth/csrf").GET().build());
         assertThat(response.statusCode()).isEqualTo(200);
         var envelope=SubmissionJson.parse(response.body());
         epoch=envelope.path("serverRecoveryEpoch").asText(epoch);
         csrfHeader=envelope.at("/data/headerName").asText();csrfToken=envelope.at("/data/token").asText();
-        if(keep!=null)cookies.put("OUTBOUND_SESSION",keep);
         assertThat(csrfHeader).isNotEmpty();assertThat(csrfToken).isNotEmpty();
     }
     private HttpResponse<byte[]> login(String username) throws Exception {
@@ -153,8 +177,18 @@ public final class TemporaryCommandWebHttpChecks {
         // is answered 401/403 no matter how often the CSRF token is refreshed.
         loginBody = " loginSetCookie=" + response.headers().allValues("Set-Cookie")
             + " jarAfterLogin=" + cookies;
+        loginExchange = "[login] status=" + response.statusCode() + " headers=" + response.headers().map()
+            + " setCookie=" + response.headers().allValues("Set-Cookie") + " jarBefore=" + cookies;
+        System.out.println("A3-DIAG " + loginExchange);
+        // Session-fixation protection rotates the session at login, so the pre-login CSRF token no longer matches the
+        // session this client now presents: every later command would be answered 403 while the session is valid.
+        csrf();
+        loginExchange = loginExchange + " jarAfterCsrf=" + cookies;
+        System.out.println("A3-DIAG " + loginExchange);
         return response;
     }
+    /** A3 残余②: the session this client presents must be the one the server authenticated, so every read keeps
+     *  carrying the jar; there is no refresh-and-retry fallback that could hide a lost session behind a green assert. */
     private HttpResponse<byte[]> get(String url) throws Exception { return send(request(url).GET().build()); }
     private byte[] post(String path,ObjectNode body) throws Exception {
         var response=postOnce(path,body);
@@ -180,7 +214,19 @@ public final class TemporaryCommandWebHttpChecks {
             int split=header.indexOf('=');
             if(split>0)cookies.put(header.substring(0,split).trim(),header.substring(split+1,header.indexOf(';')>0?header.indexOf(';'):header.length()).trim());
         });
+        System.out.println("A3-DIAG [wire] "+request.method()+" "+request.uri().getPath()
+            +" sentCookie="+request.headers().firstValue("Cookie").orElse("(none)")
+            +" -> status="+response.statusCode()+" setCookie="+response.headers().allValues("Set-Cookie"));
         return response;
+    }
+    /** A3 残余②: what the session repository actually holds while the client presents the rotated cookie. */
+    private String sessionRows(TemporaryConfirmationFixture f,String when) {
+        try {
+            var rows=f.jdbc.queryForList("SELECT SESSION_ID,PRINCIPAL_NAME,LAST_ACCESS_TIME FROM SPRING_SESSION");
+            return "[spring_session " + when + "] count=" + rows.size() + " " + rows;
+        } catch(Exception failure) {
+            return "[spring_session " + when + "] query failed: " + failure;
+        }
     }
     private JsonNode data(HttpResponse<byte[]> response,int status) { return data(response,status,"read"); }
     private JsonNode data(HttpResponse<byte[]> response,int status,String what) {

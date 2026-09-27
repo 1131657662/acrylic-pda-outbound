@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-27
 branch: codex/development
-head: 17534d3
-dirty_entries: 3
+head: 2e77633
+dirty_entries: 4
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.36.0, paths: 131, flyway: V48, migrations: 48 }
@@ -39,7 +39,8 @@ server: { contract: 0.36.0, paths: 131, flyway: V48, migrations: 48 }
 - 更早的 R06/R09 子项结论与测试口径：见[开发进度](DEVELOPMENT_PROGRESS.md)与 `history/R06_*`、`history/R09_*`。
 
 ## 未验与阻断（每条一行：项 → 缺什么 → 后果）
-- 七类生产决定 handler/POST → 代码已接线但**默认关闭**；开启需业主授权 + 契约同步发布 + **A3 CSRF 根因已定位并测试侧修复（`0d14ba8`）；残余夹具项待专项**；Android `LINK` 映射安装**已升 L4**（attempts 185/187） → 临时单仍不能确认出库。
+- 七类生产决定 handler/POST → 代码已接线但**默认关闭**；开启需业主授权 + 契约同步发布 + **A3 CSRF 根因已定位并测试侧修复（`0d14ba8`）；残余② R06 Web 命令夹具已收口 ✅（attempts 363/364 绿，见变更日志）**；残余① R07-1 ③/④ 待专项；Android `LINK` 映射安装**已升 L4**（attempts 185/187） → 临时单仍不能确认出库。
+- **【新】Web 复核页写操作（A2）取错候选口径** → `TemporaryDuplicateCandidate.vue:30` / `TemporaryReviewPage.vue:73`（NORMAL_CONFIRM 走 `useTemporaryCommand.ts:50-57` fetch 分支）把**复核页** `contextSha256`（`TemporaryDuplicateService` 口径）当命令的 `candidateContextSha256`；命令侧 `CommandExpected.validate` / `TemporaryLinkOperation:41` 只认 `TemporaryDecisionCandidates.snapshot` 口径 → 开关一开 A2 的 LINK/NORMAL_CONFIRM **稳定 409 `COMMAND_CONTEXT_CHANGED`**。**静态确认、未实测、未修**（本轮禁改 web） → 详见 [A3 记录 §6.3](history/A3_CSRF_ROOT_CAUSE_2026-09-27.md)
 - TEMP 归档 → 生产侧已接线（`9a6a001`/`859edce`/`5d91f9d`）并加**默认关闭**开关 `outbound.temporary.archive.enabled`（默认 false；`2a3acce`/`a91572e`）：关闭态生产面＝历史硬拒绝（409 `TEMPORARY_CONFIRMATION_REQUIRED`），开启态走已接线 TEMP 分派。**已验**：attempt 176（关闭态端到端，库内归档 1 行/派发 2 条）与 178（关/开两场景：409 无归档行 / 200 签名 v2 回执 + 恰 1 行 + 重放稳定）。**未验**：开关开启属运维授权，生产未声明能力开放；`localDeletionAllowed=false`。
 - 恢复出口 → 生产无任何路径置 `RECOVERY_PENDING`；`RecoveryNormalRegistration` 无 bean/路由、`baseline` 无自动来源 → 只能靠 R09 运维链或人工 SQL 解除。
 - Android 发布身份 → **签名链已完成**；仍缺**现场**：真机安装、App 内升级实测、发布/部署授权 → 不能声称现场升级可用。
@@ -55,6 +56,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V48, migrations: 48 }
 
 ## 变更日志（滚动，只留最近 20 行）
 - 2026-09-27 v7-v9：**V43-V48 未破坏共享面**（290）；R07-3 Web 路由已验（292）；**非 e2a 回归面解锁**（临时密钥 + `-NonE2a`）：已跑 **56 类**（53 通过 / 3 类需专用环境），并**发现+修复本会话真回归**（FORMAL 归档确认自调用绕过事务→500，`36d2368`／316 复验全绿）；v9 高风险 23 类 = 21 绿 / 2 环境守卫、**无新 bug**；A3 残余 ①②待专项（②诊断已锐化）。A3 CSRF 根因：会话 Cookie 默认 `secure=true` 与 harness 明文 HTTP 冲突（生产默认不改，harness 置 false）→ `E2aHandoverHttpLayerIT` ①② 转绿（284/285）；残余=两处夹具基础设施（待专项）。R07-1 夹具卡点解除（幂等探测改重放原 REQUEST）→ 反例①②③④+3 幂等已验／283。历史：A 组共享表回归（14 类：10 通过 / 4 历史失败，均在不应用 V46/V47 的库）+ **最新 schema 回归 IT**／**256**；B 组（窗口权威来源 / 附件三档限额 / HEADER 补丁）与 C 组（撤销两阶段 + V48 模型）／**255**；契约草案未发布、默认关闭、未部署。
+- 2026-09-27 v11：**A3 残余② 收口 ✅**——R06 Web 命令夹具（`E2aTemporaryCommandWebHttpIT`）attempts **363/364** 均 `1/0/0/0` 绿、`test-completed` 已写。诊断先落地（登录响应此前被后续 CSRF 刷新覆盖 ⇒ 从不进报告，现改逐请求 `[wire]` + `SPRING_SESSION` 对拍）；**第一层根因＝`csrf()` 用 `HttpRequest.newBuilder` 绕过带 Cookie 的 `request(...)` ⇒ 令牌请求无 Cookie ⇒ 匿名会话顶掉登录轮换出的已认证会话（401）**；**第二层＝候选摘要两套口径**（复核页 `contextSha256` ≠ `TemporaryDecisionCandidates.snapshot` 的命令口径）⇒ LINK 稳定 409。**新发现（静态确认、未修）**：Web 复核页写操作 A2 用的是**错口径** ⇒ 开关一开必 409（[A3 记录 §6.3](history/A3_CSRF_ROOT_CAUSE_2026-09-27.md)）。硬边界：开关未开、生产代码/配置默认值未改、守卫星树两处探针已回滚（主树 `A3-DIAG` 0 条）。
 - 2026-09-27 v10 换会话固化：看板压缩 7990→5596 字符（13 条旧日志按日期归档，余量 2404）；**R06 开发+回归基本完成**（v7-v9 累计 95 类 IT 在 V48 上跑过，修复真 bug `36d2368`，共享面健康）；未完成＝A3 残余①②、约 80 个非 e2a 类、三族专用库、政策 P1-P7、七类开关授权。
 <!-- CURRENT_STATE_END -->
 
