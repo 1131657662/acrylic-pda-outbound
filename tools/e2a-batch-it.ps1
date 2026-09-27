@@ -41,6 +41,14 @@ if ([string]::IsNullOrWhiteSpace($Constructor)) {
 }
 if (-not (Test-Path -LiteralPath $Constructor)) { throw "constructor not found: $Constructor" }
 
+# `powershell -File <script> -Classes A,B,C` hands the whole comma list over as ONE string argument, while an
+# in-session `& .\script.ps1 -Classes A,B,C` binds it as an array. Split every element on commas so both call
+# styles work.
+$Classes = @($Classes | ForEach-Object { "$_".Split(',') } |
+    ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+if ($Classes.Count -eq 0) { throw 'no class names given' }
+Write-Host "classes ($($Classes.Count)): $($Classes -join ', ')"
+
 $ErrorActionPreference = 'Continue'
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $batchDir = Join-Path $ReportRoot ("batch-$stamp-start$StartRun")
