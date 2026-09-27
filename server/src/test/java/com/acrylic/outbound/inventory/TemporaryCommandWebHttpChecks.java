@@ -148,13 +148,18 @@ public final class TemporaryCommandWebHttpChecks {
             .header("Content-Type","application/x-www-form-urlencoded").header(csrfHeader,csrfToken)
             .POST(HttpRequest.BodyPublishers.ofString(form,StandardCharsets.UTF_8)).build());
         assertThat(response.statusCode()).as("web login: "+new String(response.body(),StandardCharsets.UTF_8)).isEqualTo(200);
+        // Diagnostic (A3 残余②): the login response is where session-fixation protection publishes the rotated session
+        // cookie. If this list is empty the client can never present the authenticated session, and every later command
+        // is answered 401/403 no matter how often the CSRF token is refreshed.
+        loginBody = " loginSetCookie=" + response.headers().allValues("Set-Cookie")
+            + " jarAfterLogin=" + cookies;
         return response;
     }
     private HttpResponse<byte[]> get(String url) throws Exception { return send(request(url).GET().build()); }
     private byte[] post(String path,ObjectNode body) throws Exception {
         var response=postOnce(path,body);
         if(response.statusCode()==403) { csrf(); response=postOnce(path,body); }
-        assertThat(response.statusCode()).as("POST "+path+": "+new String(response.body(),StandardCharsets.UTF_8)).isEqualTo(200);
+        assertThat(response.statusCode()).as("POST "+path+": "+new String(response.body(),StandardCharsets.UTF_8)+loginBody).isEqualTo(200);
         return response.body();
     }
     private HttpResponse<byte[]> postOnce(String path,ObjectNode body) throws Exception {

@@ -103,3 +103,14 @@ D10＝经查 `order_current_result` **无生产读方**，权威指针是 `outbo
   （39 e2a + 33 非 e2a）。
 - **剩余盲区**：R08（8 类）与身份锁族（约 6 类）需专用库/账号（独立工程，未逐波配置）；其余约 103 个非 e2a 类未跑；
   并发/压力类未抽样。
+
+---
+
+## v9：高风险非 e2a 类回归（2026-09-27，attempts 329-354）
+
+- **筛法**：以「读被 V43-V48 动过的表」（order_result_version / submission / submission_scope / order_effective_* / correction_* / handover_* / order_current_result / order_sync_outbox）为准，在非 e2a IT 与其共享夹具里检索，排除已跑 33 类 ⇒ 得 23 类高风险清单。
+- **结果**：批1（12 类）= 10 绿 + 2 类 ledgerverify 环境守卫；批2（11 类）= **全绿**（65 项 0 失败）⇒ **21 绿 / 2 环境 / 无新 bug**。
+- **累计**：非 e2a **56 类**（53 通过 / 3 需专用环境）+ e2a 39 类 = **本会话在最新 schema 上跑过 95 个 IT 类**。
+- **需专用环境三族**（独立工程，未逐波配置）：R08（8）、身份锁（约 6）、ledgerverify（11）。
+- **A3 残余**：① 本轮未开工（诊断已在 v6/v7 记录）；② 诊断锐化但未修——登录 200/uthenticated:true 后 POST **403**，刷新令牌后变 **401** ⇒ 两次都携带**匿名**会话 ⇒ **登录轮换出的会话 Cookie 未进客户端 jar**（修点在夹具 Cookie 捕获；半成品已回退，仅保留诊断拼接）。
+
