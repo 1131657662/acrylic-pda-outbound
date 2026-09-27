@@ -1,0 +1,171 @@
+#requires -Version 5.1
+<#
+.SYNOPSIS
+  One-shot provisioning + run of the M2b-4b real-HTTP verification (e2a attempt 106).
+
+.DESCRIPTION
+  Steps, each with an explicit exit-code check (fail fast, raw error printed):
+    1. kill every mysqld owning/writing port 19330
+    2. mysqld --initialize-insecure into the attempt datadir
+    3. start mysqld on 127.0.0.1:19330 with --log-bin-trust-function-creators=ON (no --skip-networking)
+    4. wait for readiness by a REAL connection: mysql -uroot with no password must answer SELECT 1
+    5. create the empty database, the user and its grants
+    6. generate a 64-hex password, store it in the attempt directory, export it for the run
+    7. run integrationTest --tests '*E2aTemporaryLinkConfirmIT' in the guarded worktree
+
+  Readiness never uses `mysqladmin ping`: that command exits 0 even when the server answers
+  ER_ACCESS_DENIED, which previously produced a false "ready".
+
+  Re-run policy: idempotent while the attempt is unused. If the harness one-shot marker
+  (test-started.marker) already exists, the script refuses to run and tells you to use a new number.
+
+.EXAMPLE
+  powershell -NoProfile -ExecutionPolicy Bypass -File tools/e2a-provision-and-run-106.ps1
+#>
+[CmdletBinding()]
+param(
+    [int]$Run = 106,
+    [string]$Workspace = 'D:\acrylic-pda-worktrees\r06-e2a-migration',
+    [string]$MySqlBase = 'C:\Program Files\MySQL\MySQL Server 8.0',
+    [int]$Port = 19330,
+    [switch]$ProvisionOnly
+)
+
+$ErrorActionPreference = 'Continue'
+$utf8 = New-Object System.Text.UTF8Encoding($false)
+$attempt = Join-Path $Workspace (".local/e2a-cross-20260925-$Run")
+$data = Join-Path $attempt 'data'
+$log = Join-Path $attempt 'mysqld.log'
+$initLog = Join-Path $attempt 'initialize.log'
+$passwordFile = Join-Path $attempt 'run-password.txt'
+$runLog = Join-Path $attempt 'integration-test.log'
+$database = "acrylic_e2a_cross_20260925_$Run"
+$user = "e2a_cross_20260925_$Run"
+$mysqld = Join-Path $MySqlBase 'bin/mysqld.exe'
+$mysql = Join-Path $MySqlBase 'bin/mysql.exe'
+
+function Fail([string]$step, [string]$detail) {
+    Write-Host "FAILED at: $step" -ForegroundColor Red
+    if ($detail) { Write-Host $detail -ForegroundColor Red }
+    exit 1
+}
+function Assert-Zero([string]$step) {
+    if ($LASTEXITCODE -ne 0) { Fail $step "exit code $LASTEXITCODE" }
+}
+function Show-Log([string]$path, [int]$lines = 12) {
+    if (Test-Path -LiteralPath $path) {
+        Write-Host "--- $path (last $lines) ---"
+        [System.IO.File]::ReadAllText($path, $utf8) -split "`n" | Select-Object -Last $lines | ForEach-Object { Write-Host $_ }
+    }
+}
+
+if (-not (Test-Path -LiteralPath $mysqld)) { Fail 'locate mysqld' "not found: $mysqld" }
+New-Item -ItemType Directory -Force -Path $attempt, (Join-Path $attempt 'private'), (Join-Path $attempt 'storage') | Out-Null
+if (Test-Path -LiteralPath (Join-Path $attempt 'test-started.marker')) {
+    Fail 're-run guard' "attempt $Run is already used (test-started.marker exists). Use a new -Run number."
+}
+
+# ---------------------------------------------------------------- 1) kill port 19330 owners
+Write-Host "== 1) stop any mysqld on port $Port =="
+$owners = @(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -eq $Port } | Select-Object -ExpandProperty OwningProcess -Unique)
+foreach ($owner in $owners) {
+    $process = Get-Process -Id $owner -ErrorAction SilentlyContinue
+    Write-Host "port owner pid=$owner name=$($process.ProcessName)"
+    if ($process -and $process.ProcessName -eq 'mysqld') { Stop-Process -Id $owner -Force -ErrorAction SilentlyContinue }
+}
+Get-CimInstance Win32_Process -Filter "Name='mysqld.exe'" -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandLine -and $_.CommandLine -match [regex]::Escape($attempt) } |
+    ForEach-Object { Write-Host "stopping stray pid=$($_.ProcessId)"; Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+$freed = $false
+foreach ($i in 1..40) {
+    Start-Sleep -Milliseconds 500
+    if (@(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -eq $Port }).Count -eq 0) { $freed = $true; break }
+}
+if (-not $freed) { Fail 'free port' "port $Port is still listening" }
+
+# ---------------------------------------------------------------- 2) initialize datadir
+Write-Host "== 2) initialize datadir =="
+if (-not (Test-Path -LiteralPath $data)) {
+    & $mysqld --no-defaults --initialize-insecure "--basedir=$MySqlBase" "--datadir=$data" "--log-error=$initLog" 2>&1 |
+        Tee-Object -FilePath (Join-Path $attempt 'initialize.stdout.log')
+    if ($LASTEXITCODE -ne 0) { Show-Log $initLog 15; Fail 'mysqld --initialize-insecure' "exit code $LASTEXITCODE" }
+    Write-Host "datadir initialized: $data"
+} else {
+    Write-Host "datadir already present: $data (reusing)"
+}
+if (-not (Test-Path -LiteralPath (Join-Path $data 'mysql'))) { Fail 'datadir check' "no mysql schema directory under $data" }
+
+# ---------------------------------------------------------------- 3) start server
+Write-Host "== 3) start mysqld on 127.0.0.1:$Port =="
+Start-Process -FilePath $mysqld -WindowStyle Hidden -ArgumentList @(
+    '--no-defaults', "--basedir=`"$MySqlBase`"", "--datadir=`"$data`"", '--bind-address=127.0.0.1',
+    "--port=$Port", "--log-error=`"$log`"", '--mysqlx=OFF', '--log-bin-trust-function-creators=ON') | Out-Null
+
+# ---------------------------------------------------------------- 4) readiness by a real connection
+Write-Host "== 4) wait for a real root connection (no password) =="
+$ready = $false
+foreach ($i in 1..90) {
+    Start-Sleep -Seconds 1
+    $probe = & $mysql --no-defaults '-h127.0.0.1' "-P$Port" -uroot --connect-timeout=3 -e 'SELECT 1' 2>&1
+    if ($LASTEXITCODE -eq 0) { $ready = $true; break }
+}
+if (-not $ready) { Show-Log $log 15; Fail 'server readiness' "root with no password cannot run SELECT 1 (last probe: $probe)" }
+Write-Host "server ready"
+
+# ---------------------------------------------------------------- 5) password + grants
+Write-Host "== 5) create database, user and grants =="
+$password = -join (1..64 | ForEach-Object { '0123456789abcdef'[(Get-Random -Maximum 16)] })
+$sql = @"
+DROP DATABASE IF EXISTS $database;
+CREATE DATABASE $database CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs;
+CREATE USER IF NOT EXISTS '$user'@'127.0.0.1' IDENTIFIED BY '$password';
+ALTER USER '$user'@'127.0.0.1' IDENTIFIED BY '$password';
+GRANT ALL PRIVILEGES ON $database.* TO '$user'@'127.0.0.1';
+FLUSH PRIVILEGES;
+"@
+$sql | & $mysql --no-defaults '-h127.0.0.1' "-P$Port" -uroot
+Assert-Zero 'database/user provisioning'
+
+# ---------------------------------------------------------------- 6) persist password, verify as the new user
+[System.IO.File]::WriteAllText($passwordFile, $password + "`n", $utf8)
+Write-Host "password written to $passwordFile (not printed)"
+$check = & $mysql --no-defaults '-h127.0.0.1' "-P$Port" "-u$user" "-p$password" $database -e 'SELECT @@port,@@log_bin,@@log_bin_trust_function_creators,DATABASE(),CURRENT_USER();' 2>&1
+if ($LASTEXITCODE -ne 0) { Fail 'verify new user' ($check -join "`n") }
+$check | ForEach-Object { Write-Host "  $_" }
+$tables = @(& $mysql --no-defaults '-h127.0.0.1' "-P$Port" "-u$user" "-p$password" $database -N -B -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='$database';" 2>$null)
+if ($LASTEXITCODE -ne 0) { Fail 'verify empty schema' 'table count query failed' }
+$tableCount = ($tables | Where-Object { $_ -match '^\d+$' } | Select-Object -Last 1)
+if ($tableCount -ne '0') { Fail 'verify empty schema' "expected 0 tables, found '$tableCount' (raw: $($tables -join '|'))" }
+if ($ProvisionOnly) { Write-Host "provision-only: server left running on $Port"; exit 0 }
+
+# ---------------------------------------------------------------- 7) run the real-HTTP IT
+Write-Host "== 7) run E2aTemporaryLinkConfirmIT =="
+$env:E2A_CROSS_VERIFY = 'true'
+$env:E2A_CROSS_RUN = "$Run"
+$env:E2A_CROSS_PASSWORD = $password
+Push-Location $Workspace
+try {
+    & (Join-Path $Workspace 'gradlew.bat') -p server integrationTest --tests '*E2aTemporaryLinkConfirmIT' --console=plain 2>&1 |
+        Tee-Object -FilePath $runLog
+    $gradleExit = $LASTEXITCODE
+} finally {
+    Pop-Location
+}
+Write-Host "gradle exit=$gradleExit"
+
+# ---------------------------------------------------------------- results
+$resultsDir = Join-Path $Workspace 'server/build/test-results/integrationTest'
+$xml = @(Get-ChildItem $resultsDir -Filter '*E2aTemporaryLinkConfirmIT.xml' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1)
+if ($xml.Count -eq 0) { Fail 'collect results' "no XML for E2aTemporaryLinkConfirmIT under $resultsDir" }
+$doc = [xml](Get-Content -LiteralPath $xml[0].FullName -Raw)
+Write-Host ("RESULT attempt={0} tests={1} failures={2} errors={3} skipped={4} time={5}s" -f $Run, $doc.testsuite.tests, $doc.testsuite.failures, $doc.testsuite.errors, $doc.testsuite.skipped, $doc.testsuite.time)
+$doc.testsuite.testcase | ForEach-Object {
+    $state = if ($_.failure) { 'FAIL' } elseif ($_.error) { 'ERROR' } elseif ($_.skipped) { 'SKIP' } else { 'pass' }
+    Write-Host ("  [{0}] {1}" -f $state, $_.name)
+    if ($_.failure) { Write-Host ($_.failure.message -split "`n" | Select-Object -First 5 | Out-String) }
+    if ($_.error) { Write-Host ($_.error.message -split "`n" | Select-Object -First 5 | Out-String) }
+}
+$started = Test-Path -LiteralPath (Join-Path $attempt 'test-started.marker')
+$completed = Test-Path -LiteralPath (Join-Path $attempt 'test-completed.marker')
+Write-Host "markers: started=$started completed=$completed attempt=$attempt"
+if ($gradleExit -ne 0) { exit $gradleExit }
