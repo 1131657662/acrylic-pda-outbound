@@ -1,7 +1,7 @@
 Summary:
   get:
     summary: 按北京时间日期查询正式订单原确认汇总
-    description: 当前order:read和仓库授权。只读一致性快照，限WEB正式已完成订单原确认V1；不含TEMP、更正净结果、未核验多设备来源。范围含首尾日，超过31天、逆序或年份越界返回400 EXPORT_RANGE_INVALID；最多100单、5000包，超限409 EXPORT_LIMIT_EXCEEDED，不截断。空范围返回零合计；原确认时刻、订单UUID升序，产品按原代码/名称/型号分组，重量为整数克字符串。查询结果不预占后续文件申请的成员。
+    description: 当前order:read和仓库授权。只读一致性快照，限WEB正式已完成订单原确认V1（含由TEMP批次经R06受控关联并确认后正式化的订单；未关联的TEMP_PDA临时单不在汇总内，其单订单导出走TEMP路径）；不含更正净结果、未核验多设备来源。范围含首尾日，超过31天、逆序或年份越界返回400 EXPORT_RANGE_INVALID；最多100单、5000包，超限409 EXPORT_LIMIT_EXCEEDED，不截断。空范围返回零合计；原确认时刻、订单UUID升序，产品按原代码/名称/型号分组，重量为整数克字符串。查询结果不预占后续文件申请的成员。
     parameters:
       - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
       - name: fromDate
