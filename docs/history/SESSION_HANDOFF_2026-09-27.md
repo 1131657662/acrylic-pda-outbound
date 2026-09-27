@@ -60,3 +60,14 @@ D10＝经查 `order_current_result` **无生产读方**，权威指针是 `outbo
 
 ## f. 下一项决策待办（交业主）
 ① **R07-3 下一步（建议）**：步骤 4-5 开局——`correction_effect` 唯一 + `correction_ledger` 追加 + 完整反向唯一（步骤 4）→ `order_result_version` v+1 + 逐包有效快照 + current 指针（步骤 5）；**并补 APPROVE**（否则文档无法离开 SUBMITTED）；② R06 发布准备期项（波次 IT 专用库、七类开关授权、A3 CSRF）；③ R07-1 的 14 条断言（**已冻结为部分验证**：`scopeFacts` 一行修已在 `ef21fb1` 完成、FORMAL 路径 attempt 160-165 已证可达，卡点是**夹具幂等语义**，不是缺授权）。
+---
+
+## R07-1 状态更新（2026-09-27，指令 v5，提交 `3d37497`，attempt 283 绿）
+
+- **从「冻结为部分验证」→「部分已验（服务层）」**：14 条断言里 **8 反例中的 ①②③④** 与 **3 条幂等**已实测通过
+  （①`HANDOVER_STOP_NOT_PROVEN` ②③`HANDOVER_INTEGRITY_INCOMPLETE` ④`PERMISSION_DENIED`；
+  幂等①同键同文回原回执、②同键异文 `IDEMPOTENCY_CONTENT_MISMATCH`、③丢响应按原键恢复）。
+- **原卡点性质已澄清**：不是生产语义，而是**夹具构造**——幂等探测对同一 scope 二次 REQUEST，撞
+  `UNIQUE uk_handover_scope_open(scope_id, open_flag)`（V42，同一来源只允许一个开案）。修法＝重放原 REQUEST（同键同字节）。
+- **仍未验**：⑤–⑧ 反例（需额外夹具）、3 真并发、2 原子性、**HTTP 层**拦截（`E2aHandoverHttpLayerIT` 被 Web 登录/A3 CSRF 挡住）。
+- **接续建议**：若继续 R07-1，先做 ⑤–⑧（夹具扩展）或先把 A3 CSRF 专项查清以解 HTTP 层；**不要**再把它当作"冻结不可动"。

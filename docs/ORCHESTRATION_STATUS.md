@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-27
 branch: codex/development
-head: 0f15739
-dirty_entries: 4
+head: 3d37497
+dirty_entries: 5
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.36.0, paths: 131, flyway: V48, migrations: 48 }
@@ -46,7 +46,8 @@ server: { contract: 0.36.0, paths: 131, flyway: V48, migrations: 48 }
 - 现场与人工 → 真机/Keystore、独立人员、长时留存、外网与异地、生产审批均未验；R05 code20/Room17 历史关键未验、原资料与旧 BCD、R09 现场限制继续单列 → 不能声称上线就绪。
 - 服务端 IT 分批 → 入口 `tools/e2a-batch-it.ps1`（每类一 attempt + 聚合 + 分类；`f34c886`）：181–184 四类全绿；**波次 IT 仍缺专用库**。
 
-- R07-3 更正 → **✅ 已收口（能力默认关闭，未发布）**；D9/D10 裁决=接受缺口。历史：：`cf14bf5`／199 内核+CREATE、`71cea4b`／203 APPROVE、`f551d1f`／211 步骤 4-5、`ce3ad51`／212 撤销、`c2d5518`／215 周期重开、`013a705`／**223 差异案件**、`2ca2c14`／**227 发件箱**、`98ba1fc`／**255 全链 + 256 最新 schema 回归**（3 天窗口权威来源、附件三档限额、HEADER 快照补丁、撤销两阶段）。收口见 [R07_3_ACCEPTANCE](history/R07_3_ACCEPTANCE_2026-09-27.md)。**已收口（能力默认关闭）**：D9/D10 均裁决为**接受缺口**（`original_submission_id` 回填范围＝COALESCE 兜底；`order_current_result` 经查**无生产读方**、权威指针是 `outbound_order.current_result_version`）。剩余仅**政策**（撤销期限/拒绝权、SoD、§3 三项审批前置来源、案件驱动条件、重开触发类型、契约形态与事件命名）与**现场/发布**（全量 IT、Web 路由 A3 CSRF、契约未发布、未部署）。
+- R07-1 交接命令层 → **部分已验（服务层）**：反例①②③④ + 3 幂等已验（attempt **283**／`3d37497`）；原"冻结卡点"＝夹具构造（幂等探测二次 REQUEST 撞 `uk_handover_scope_open`）已解除；**未验**：⑤–⑧ 反例、3 真并发、2 原子性、HTTP 层拦截（Web 登录/A3 CSRF 挡住）。
+- R07-3 更正 → **✅ 已收口（能力默认关闭，未发布）**：步骤 1-8 + 两阶段撤销 + B 组三项（窗口权威来源/附件三档限额/HEADER 补丁）+ 共享表回归（attempts 255/256）；D9/D10 裁决＝**接受缺口**（D10 经查无生产读方）。剩余＝政策项与现场/发布项，见 [收口文档](history/R07_3_ACCEPTANCE_2026-09-27.md)。
 ## 越界提醒（不变）
 - `localDeletionAllowed=false`；七类生产决定 handler/POST/放行/证据写入/关闭能力**不得因内部测试通过而开放**；TEMP 生产归档边界不变。
 - 不合 `main`、不发布/部署、不操作原库现网，除非用户明确授权且证据满足范围；项目交接不等于生产授权。
@@ -66,7 +67,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V48, migrations: 48 }
 - 2026-09-27 TEMP 归档 attempt 174（`dd54c8a` 修 7 处 attempt 号守卫，仅测试/夹具）+ 看板 head 与 R07 口径修正（`00a17e9`）；attempt 172 的 closure 归因被证伪（把 `corruptIndex` 的故意反例日志当成根因）。详见 [R06 欠债清单](history/R06_DEBT_LIST_2026-09-27.md)。
 - 2026-09-27 TEMP 归档收口（选 B＝新能力默认关闭）：`2a3acce` 加 `outbound.temporary.archive.enabled`（默认 false）+ `a91572e` 修关闭态 500（`IdentityWriteGuard` MANDATORY）；attempt 176 绿（验收达成）、178 绿（关/开两场景）；attempt 号守卫扫描无遗漏。
 - 2026-09-27 Android LINK L4（选④）：`2bf2507` 三件套 → attempts **185/187** 双绿 `server=1/0/0/0`/`android=1/0/0/0`，L3→**L4**；`java.net.http` 不在 Android classpath→OkHttp；构造器补 `--rerun-tasks`。
-- 2026-09-27 R07-3 收口：D9/D10 裁决=接受缺口（D10 经查无生产读方）；A 组共享表回归（14 类：10 通过 / 4 历史失败，均在不应用 V46/V47 的库）+ **最新 schema 回归 IT**／**256**；B 组（窗口权威来源 / 附件三档限额 / HEADER 补丁）与 C 组（撤销两阶段 + V48 模型）／**255**；契约草案未发布、默认关闭、未部署。
+- 2026-09-27 R07-3 收口：D9/D10 裁决=接受缺口；R07-1 夹具卡点解除（幂等探测改重放原 REQUEST）→ 反例①②③④+3 幂等已验／283。历史：A 组共享表回归（14 类：10 通过 / 4 历史失败，均在不应用 V46/V47 的库）+ **最新 schema 回归 IT**／**256**；B 组（窗口权威来源 / 附件三档限额 / HEADER 补丁）与 C 组（撤销两阶段 + V48 模型）／**255**；契约草案未发布、默认关闭、未部署。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。

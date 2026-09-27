@@ -50,3 +50,27 @@
 ## 5. 结构性事实（供排期参考，不在本批解决）
 
 R06 端到端用了九轮（attempt 115–123 才跑通 TEMP 的 link→confirm），R07 FORMAL 夹具累计五轮未成。**端到端验证成本被系统性低估**——这不是能力问题，而是排期问题；在某个时点需要重新评估端到端粒度与"验证基础设施"是否单列时间盒。
+
+---
+
+## 夹具卡点解除（2026-09-27，指令 v5，提交 `3d37497`，attempt 283 绿）
+
+**原记录（本文件上文）**：R07-1 冻结为部分验证，卡在夹具幂等语义（attempt 165：`原键提交结果不可确认`）。
+
+**根因（读栈 + DDL + IT 后确认，非推测）**：该报文来自 `HandoverCommandService` 的 DuplicateKeyException 分支
+（409 `HANDOVER_RESULT_UNKNOWN`）；触发者是**夹具构造**：幂等探测另造 `commandId` 并**对同一 scope 二次 REQUEST**，
+而 `V42__handover_case_model.sql` 有 `UNIQUE KEY uk_handover_scope_open (scope_id, open_flag)`
+（同一来源同时只允许一个开案，结案后 `open_flag` 置 NULL）⇒ 二次 REQUEST 撞唯一键，
+内核按"新原键 + 查不到原回执"拒绝。**这与"原键幂等"无关**（原键幂等＝同一原键重放）。
+
+**修（只改断言构造，未改夹具语义，未动生产代码）**：三条幂等断言改为**重放原始 REQUEST**（同 commandId 同字节）；
+②的允许码表补上内核实际使用的 `IDEMPOTENCY_CONTENT_MISMATCH`。
+
+**结果（attempt 283，`classes=1 tests=1 failures=0 errors=0 skipped=0`；层级＝服务层）**：
+①未停止→`HANDOVER_STOP_NOT_PROVEN`；②未决输入未归零→`HANDOVER_INTEGRITY_INCOMPLETE`；
+③缺审计→`HANDOVER_INTEGRITY_INCOMPLETE`；④非主管审批→`PERMISSION_DENIED`；
+幂等①同键同文→原回执一致；幂等②同键异文→`IDEMPOTENCY_CONTENT_MISMATCH`；幂等③丢响应按原键恢复→原回执。
+尾部同时通过：case 状态与 row_version 未变、该 case 恰 1 条回执。
+
+**未验（不因本次通过而消失）**：⑤–⑧ 反例、3 真并发、2 原子性；**HTTP 层拦截**（`E2aHandoverHttpLayerIT` 仍被
+Web 登录/A3 CSRF 问题挡住，其 `-1` 即登录未成功）。
