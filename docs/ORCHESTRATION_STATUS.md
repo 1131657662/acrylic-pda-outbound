@@ -30,7 +30,8 @@ server: { contract: 0.33.0, paths: 128, flyway: V41, migrations: 41 }
 - Android 正式签名身份（R06 起，PKCS12/RSA4096/30 年，证书 SHA-256 `96E9DE81…95B8`）+ release 打包链 + 更新通道白名单补 `0.33.0` → `5678e06`（事实块刷新 `a37d662`）：[签名说明](PDA_SIGNING_GUIDE.md)
 - 唯一未跟踪文件回收（32 个：30 提交 + 2 归档到工作区外）→ `d0fa14e` / `1ee7931` / `3587628`：[回收记录](history/UNIQUE_FILE_RESCUE_2026-09-27.md)
 - 三个未合并提交全部合入 development（`0b1094e`→`f196887`、`94305a7`→`1e98e44`、`f051535`→`8bb3e57`）；`R08AuthorizationRaceIT` **9 项全通过**、web 构建通过 → [合并记录](history/MERGE_BATCH_2026-09-27.md)
-- M2b-4b 服务端最小缺口：临时单确认现接受**受控关联来源**（v1 未动 / v2+ 且 origin=`CONTROLLED_LINK` 两种可确认状态；确认与记账落点经 `Head.order()` 自动指向关联后的正式单；关联后的候选闸门由"必须 0 条"改为"恰好就是被关联目标，第二条仍阻断"）→ 本提交；单测 718 项 0 失败，**尚未在隔离非空 MySQL/真实 HTTP 上证 link→confirm**
+- M2b-4b 服务端守卫放宽（`c975dfc`）：临时单确认接受**受控关联来源**（v1 未动 / v2+ 且 origin=`CONTROLLED_LINK`；候选闸门由"必须 0 条"改为"恰好是被关联目标"）。**该批"效果落点不需要改"的结论已被实测部分推翻**：attempt 115（真实非空 MySQL + 真实 HTTP，LINK POST 200 通过）在 NORMAL_CONFIRM 上返回 `409 BALE_COMMITMENT_CONFLICT`——占用行 `bale_commitment.order_id` 是首次写入时固化的，关联后仍指向旧 PDA_TEMP 单。
+- 该缺陷已在关联事务内修复（`TemporaryLinkMapping.install` 补定向迁移：仅 `state='REVIEW_RESERVED'` 且 `order_id=旧 canonical` 的本提交占用行改指新 canonical；审计沿用该 LINK 命令既有的账本回执与单一审计事件，因为 `CommandReceiptIntegrity.closure` 要求每张回执恰好一条审计）。attempt 116 重跑：失败点前移为 `409 COMMAND_RECEIPT_INTEGRITY_FAILURE` → **第二个更深缺陷**：确认自身会改写被关联正式单的状态/结果，而被关联后的候选摘要含这些活字段，导致该回执在同事务末尾重放校验时不再可核验。
 - 工作树与本地证据归档候选清单（只清点、未删除；13 棵可安全删 ≈1.0 GB / 18 棵需先取证 ≈47.6 GB / 快照与签名等建议保留）→ 本提交：[归档候选清单](history/WORKTREE_ARCHIVE_CANDIDATES_2026-09-27.md)
 - 合并态机器口径（`--rerun-tasks`，非业务验收）：服务端 103 XML/718 项 = 717 通过/1 既有符号链接条件 skip；Android 111 XML/444 项 = 440 通过/4 真实 HTTP 条件 skip；均 0 失败 0 错误。
 - 合并前的 R06/R09 子项结论与更早测试口径：见[开发进度](DEVELOPMENT_PROGRESS.md)索引与 `history/R06_*`、`history/R09_*`，不在本页复述历史数字。
