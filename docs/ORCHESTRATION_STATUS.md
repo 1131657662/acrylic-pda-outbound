@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-09-27
 branch: codex/development
-head: fc2972a
+head: 71ebe44
 dirty_entries: 0
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
@@ -19,7 +19,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 
 ## 在途
 - **R06 M2b-4b 客户端一半**：A1 命令前置事实只读面 `4be09e2`、A2 Web 复核页写操作 `94c74b4` 已完成；A3（隔离真实 HTTP 的 Web 会话链路）**部分验证**——无会话 401、Web 登录 200、`GET /temporary-commands/facts` 200 且 A1 设计断言全过；但 LINK/NORMAL_CONFIRM 的 Web 会话 POST 在**真浏览器**下同样 403 `ACCESS_DENIED`（疑登录后会话轮换使登录前 CSRF 令牌失效），按 2 轮上限停止，差异记为**开关开放时另验**。服务端资格判定 `7448c91` 已完成，开关仍默认关闭。守卫星树 `r06-e2a-migration` 现为 detached `ea4d166`（分支未动、29 GB `.local` 完好）。
-- 下一步：切 **R07**（更正/审批/附件的原机可用段先做；故障换机段依赖 R09 恢复接口后做）；Android `LINK` 映射安装待做。
+- 下一步：**R06 欠债收口**（TEMP 归档夹具重写）；**R07 需用户明确指示才动**（更正/审批/附件的原机可用段先做，故障换机段依赖 R09 恢复接口）；Android `LINK` 映射安装待做。
 - 用户当次指令：M2b-4b（服务端放宽已完成 `c975dfc`；Web 复核页写操作与 Android LINK 映射安装待做）；① 发布身份链已完成；④ 文档收敛与工作树清点已完成（**只清点，未删除任何目录**）；C 清单放着不动。
 - 写权：`codex/development` 单写者；服务端树 `r06-e2a-migration` 现为 detached `ea4d166`（仅用于本次验证，分支未动），未归档、未删除。
 
