@@ -49,7 +49,9 @@ $androidCode = Get-Match $gradle 'pdaVersionCode"\)\.map\(String::toInt\)\.orEls
 $androidName = Get-Match $gradle 'pdaVersionName"\)\.orElse\("([^"]+)"\)' 'Android versionName'
 
 $database = Read-Text (Join-Path $RepoRoot 'android/app/src/main/java/com/acrylic/outbound/pda/data/PdaDatabase.kt')
-$roomVersion = Get-Match $database 'version\s*=\s*(\d+)' 'Room version'
+# @Database may reference the shared constant (PDA_DATABASE_VERSION); resolve either form from the same file.
+$roomLiteral = [regex]::Match($database, 'version\s*=\s*(\d+)')
+if ($roomLiteral.Success) { $roomVersion = $roomLiteral.Groups[1].Value } else { $roomVersion = Get-Match $database 'PDA_DATABASE_VERSION\s*=\s*(\d+)' 'Room version (via PDA_DATABASE_VERSION)' }
 
 $migrations = @(Get-ChildItem (Join-Path $RepoRoot 'server/src/main/resources/db/migration') -Filter 'V*__*.sql')
 $migrationNumbers = @($migrations | ForEach-Object { if ($_.Name -match '^V(\d+)__') { [int]$Matches[1] } } | Sort-Object)
