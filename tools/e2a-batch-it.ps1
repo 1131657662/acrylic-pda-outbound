@@ -29,10 +29,17 @@ param(
     [Parameter(Mandatory=$true)][string[]]$Classes,
     [Parameter(Mandatory=$true)][int]$StartRun,
     [string]$Workspace = 'D:\acrylic-pda-worktrees\r06-e2a-migration',
-    [string]$Constructor = (Join-Path $PSScriptRoot 'e2a-provision-and-run-106.ps1'),
+    # Do NOT default this to (Join-Path $PSScriptRoot ...): under Windows PowerShell 5.1 $PSScriptRoot is empty while
+    # parameter defaults are evaluated, so the script dies before running. Resolved below instead.
+    [string]$Constructor = '',
     [string]$ReportRoot = 'D:\acrylic-pda-outbound\.local\it-batches',
     [switch]$KeepServerRunning
 )
+
+if ([string]::IsNullOrWhiteSpace($Constructor)) {
+    $Constructor = Join-Path $PSScriptRoot 'e2a-provision-and-run-106.ps1'
+}
+if (-not (Test-Path -LiteralPath $Constructor)) { throw "constructor not found: $Constructor" }
 
 $ErrorActionPreference = 'Continue'
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
