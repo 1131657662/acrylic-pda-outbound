@@ -18,6 +18,7 @@ public class SubmissionArchiveService {
     private final SubmissionArchiveEvidence evidence;private final SubmissionArchiveProofs proofs;
     private final com.acrylic.outbound.temporary.TemporaryArchiveService temporary;
     private final TransactionTemplate closedTemporary;
+    private final TransactionTemplate formalConfirmation;
     private final boolean temporaryArchiveEnabled;
     public SubmissionArchiveService(SubmissionAccess access,SubmissionStore submissions,SubmissionArchiveStore archives,
         SubmissionArchiveEvidence evidence,SubmissionArchiveProofs proofs,
@@ -27,6 +28,10 @@ public class SubmissionArchiveService {
         this.temporary=temporary;this.temporaryArchiveEnabled=temporaryArchiveEnabled;
         closedTemporary=new TransactionTemplate(manager);
         closedTemporary.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+        // The formal branch keeps its @Transactional, but the dispatch below calls it on `this`, which bypasses the
+        // proxy: without this template no transaction exists and IdentityWriteGuard (MANDATORY) answers 500.
+        formalConfirmation=new TransactionTemplate(manager);
+        formalConfirmation.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
     }
     /**
      * Dispatch entry point. It is deliberately <b>not</b> transactional: a TEMP confirmation delegates to the
@@ -43,7 +48,7 @@ public class SubmissionArchiveService {
      */
     public JsonNode confirm(UUID id,String epoch,JsonNode request) {
         var head=submissions.required(id);
-        if(head.control().temporary()==null) return confirmFormal(id,epoch,request);
+        if(head.control().temporary()==null) return formalConfirmation.execute(status -> confirmFormal(id,epoch,request));
         if(temporaryArchiveEnabled) return temporary.confirm(id,epoch,request);
         return closedTemporary.execute(status->rejectTemporaryClosed(head,epoch,request));
     }

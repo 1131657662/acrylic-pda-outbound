@@ -33,6 +33,8 @@ param(
     # parameter defaults are evaluated, so the script dies before running. Resolved below instead.
     [string]$Constructor = '',
     [string]$ReportRoot = 'D:\acrylic-pda-outbound\.local\it-batches',
+    # Extra switches forwarded verbatim to the constructor, e.g. @('-NonE2a') to batch non-e2a ITs.
+    [string[]]$ExtraConstructorArgs = @(),
     [switch]$KeepServerRunning
 )
 
@@ -92,6 +94,8 @@ foreach ($className in $Classes) {
     $constructorArgs = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $Constructor,
         '-Run', "$runNumber", '-Tests', "*$className", '-Workspace', $Workspace)
     if ($KeepServerRunning) { $constructorArgs += '-KeepServerRunning' }
+    # Passthrough so the same batch entry can drive the -NonE2a mode (non-e2a @SpringBootTest ITs) as well.
+    foreach ($extra in $ExtraConstructorArgs) { if (-not [string]::IsNullOrWhiteSpace($extra)) { $constructorArgs += $extra } }
     & powershell @constructorArgs 2>&1 | Tee-Object -FilePath $log |
         Select-String -Pattern 'RESULT|markers|\[pass\]|\[FAIL\]|\[ERROR\]|\[SKIP\]|teardown' |
         ForEach-Object { Write-Host "  $($_.Line)" }

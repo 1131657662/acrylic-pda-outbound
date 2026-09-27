@@ -34,6 +34,8 @@ param(
     # need the isolated database exported and the app allowed to migrate it. Off by default: the verified e2a path keeps
     # its manual per-IT migration targets untouched.
     [switch]$NonE2a,
+    # Throwaway offline signing key pair for -NonE2a (gitignored; never production material).
+    [string]$SigningDir = 'D:\acrylic-pda-outbound\.local\it-keys',
     # Reusable constructor (R02): by default the isolated MySQL is stopped again once the run is reported, so one
     # command means "start empty DB -> run the chosen gated IT (which starts the real server and drives real HTTP)
     # -> report -> stop". Pass -KeepServerRunning to inspect the instance afterwards.
@@ -164,6 +166,17 @@ if ($NonE2a) {
     $env:OUTBOUND_DB_USER = $user
     $env:OUTBOUND_DB_PASSWORD = $password
     $env:OUTBOUND_MIGRATE = 'true'
+    # Non-e2a ITs never call E2aCrossSourceHttpSetup.signing, so they need the offline signing key pair the e2a path
+    # generates per attempt. A throwaway pair lives in the gitignored .local/it-keys (never committed, never production).
+    $env:OUTBOUND_AUTH_SIGNING_PRIVATE_KEY = Join-Path $SigningDir 'server-private.der'
+    $env:OUTBOUND_AUTH_SIGNING_PUBLIC_KEY = Join-Path $SigningDir 'server-public.der'
+    # File-writing ITs (archive, exports, evidence) need a storage root per attempt; the e2a helper passes it explicitly
+    # and non-e2a ITs would otherwise fall back to ./private-files relative to the gradle working directory.
+    $env:OUTBOUND_STORAGE = Join-Path $attempt 'storage'
+    New-Item -ItemType Directory -Force -Path $env:OUTBOUND_STORAGE | Out-Null
+    if (-not (Test-Path -LiteralPath $env:OUTBOUND_AUTH_SIGNING_PRIVATE_KEY)) {
+        Fail 'signing key' "missing $($env:OUTBOUND_AUTH_SIGNING_PRIVATE_KEY); generate with .local/it-keys/GenKeys.java"
+    }
 }
 Push-Location $Workspace
 $runStartedAt = Get-Date
