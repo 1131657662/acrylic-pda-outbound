@@ -472,11 +472,15 @@ APPROVE 生效体顺序：锁当前版本 → 重验 `expectedResultVersion` →
 8. **共享表回归**：A 组跑了 14 个 e2a IT（10 通过 / 4 历史失败，见 §28），并新增"最新 schema 重跑 R06 链"的定向回归；
    仍未跑**全量 175 个 IT**；
 9. 契约未发布；未部署；`localDeletionAllowed=false`。
-10. **A 组暴露的两处真实缺口（新，已记录未修）**：
-    a. `order_result_version.original_submission_id` 由 V46 回填**只覆盖迁移时已存在的行**；此后由 R05/R06 写入器创建的 v1 行该列为
-       NULL。修它需要改 R05/R06 已验证写入器（越界）或加触发器/默认值 ⇒ 待决策；本服务自身写的版本已用 `COALESCE` 兜底。
-    b. `order_current_result`（V43 的额外指针表）**只有更正路径会写**；R05/R06 确认的订单在那里没有行，两张指针表覆盖不一致
-       ⇒ 待决策（同 a 的三种选项，或后续迁移里裁掉冗余表）。
+10. **A 组暴露的两处真实缺口 —— 已裁决（2026-09-27，业主指令 v4）：两处都选"接受缺口"，均不改 R05/R06 写入器**
+    a. `order_result_version.original_submission_id`：V46 回填只覆盖迁移时已存在的行，此后 R05/R06 写入的 v1 行该列为 NULL。
+       **裁决＝接受缺口**：服务自身写入已 `COALESCE(original_submission_id, submission_id, pc_submission_id)` 兜底，
+       功能不受影响；改已验证写入器/加触发器属"为语义完美而触及已验证面"，风险大于收益。
+    b. `order_current_result`：**用途核查后确认无生产读方**（唯一写方＝更正路径 `moveCurrentPointer`；读方仅三处测试），
+       生产唯一指针是 `outbound_order.current_result_version`（写方 R06 `SubmissionAccounting`／R05 `PcAccounting`／更正路径；
+       读方 `CorrectionStore`／`SubmissionAccountingPolicy`／`TemporaryConfirmationSource`）⇒ **裁决＝接受"只有更正路径写"**，
+       该表降级为**观察项**（将来若要收敛可独立迁移裁掉，不属本批）。
+    详见收口文档 §九。
 
 ## 26. B 组：三项技术政策项（2026-09-27，`98ba1fc`，attempt **255** 绿）
 
