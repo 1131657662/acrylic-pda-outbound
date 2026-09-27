@@ -298,3 +298,25 @@ bean，命令一律 `CORRECTION_COMMAND_NOT_OPEN`** —— 故建议把「servic
 - 契约登记（`§9.2`）仍未做：按「默认关闭不发布未开能力」纪律待能力开放时同步发布；
 - 未跑全量 IT、未部署；`CORRECTION_*` 中除目标未变/上下文/权限/未开放外的码仍未触发。
 
+## 19. 第 1 片 APPROVE（2026-09-27，`71cea4b`，attempt **203** 绿）
+
+- **实现**：`CorrectionOperations.Approve` —— 审批门 `correction:approve`（内核 `requiresApproval` + `actor.mayApprove`，
+  V45 已注册并绑 `WAREHOUSE_ADMIN`）；文档行锁下 `SUBMITTED→APPROVED`（`UPDATE … WHERE status='SUBMITTED'` 且要求恰 1 行，
+  与 expected 的 `status` 检查互为双保险）；决定含 `approvedBy/approvedAt/documentSha256/expectedResultVersion`，
+  并**显式标注 `effect=DEFERRED_TO_STEP_4`**——§3 的生效体属步骤 4-5，中间态可见而非隐含。
+  `CorrectionStore.approveDocument`（带状态谓词的 UPDATE + `row_version+1`）；Configuration 注册第二个 Operation
+  （WITHDRAW 仍未注册，开关打开也 `CORRECTION_COMMAND_NOT_OPEN`）。
+- **实测缺陷（已修）**：`documentFacts` 未返回 `warehouseId` ⇒ 内核仓库校验先失败，APPROVE 得到 404 而非到达审批门。
+- **证据（attempt 203，`classes=1 tests=1 failures=0 errors=0 skipped=0`）**：
+  ①关闭 404 ②无效会话 401 ③CREATE 200 ④行 before 值=服务端事实且回放一致 ⑤目标等于 before → 409
+  ⑥**撤销 `correction:approve` 后 → 403 `CORRECTION_PERMISSION_DENIED` 且状态不变** ⑦恢复后 APPROVE 200 → `APPROVED`、
+  `approved_by` 落库、回放字节一致 ⑧新原键 + 旧 expected 重复审批 → 409 `CORRECTION_CONTEXT_CHANGED`；审计事件恰 2 条。
+- **失败证据（保留）**：200（缺 warehouseId → 404）、201（IT 传空 expectedResultVersion → 409）、
+  202（该 actor 经 `WAREHOUSE_ADMIN` 已持审批码 ⇒ 403 断言不成立，改为"先撤销后断言、再恢复"）。
+- **未验/待决策**：
+  - **审批人与申请人是否必须分离**：§3/§7 均未写明 ⇒ 未自行定义（待业主政策决策）；
+  - §3 的 `expectedLedgerVersion / expectedStockVersion(或 SnapshotId) / expectedDispatchCycle` 三项审批前置
+    **在当前 schema 无来源**（无 stock_state / 无 ledger 版本列）⇒ 与步骤 4-5 的账务/结果版本一并补；
+  - APPROVE 目前**不产生 effect**（决定里显式标注），生效体与结果版本属步骤 4-5。
+
+
