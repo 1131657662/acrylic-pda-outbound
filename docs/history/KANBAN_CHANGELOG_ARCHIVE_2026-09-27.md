@@ -23,3 +23,7 @@
 - 2026-09-27 TEMP 归档 attempt 174（`dd54c8a` 修 7 处 attempt 号守卫，仅测试/夹具）+ 看板 head 与 R07 口径修正（`00a17e9`）；attempt 172 的 closure 归因被证伪（把 `corruptIndex` 的故意反例日志当成根因）。详见 [R06 欠债清单](history/R06_DEBT_LIST_2026-09-27.md)。
 - 2026-09-27 TEMP 归档收口（选 B＝新能力默认关闭）：`2a3acce` 加 `outbound.temporary.archive.enabled`（默认 false）+ `a91572e` 修关闭态 500（`IdentityWriteGuard` MANDATORY）；attempt 176 绿（验收达成）、178 绿（关/开两场景）；attempt 号守卫扫描无遗漏。
 - 2026-09-27 Android LINK L4（选④）：`2bf2507` 三件套 → attempts **185/187** 双绿 `server=1/0/0/0`/`android=1/0/0/0`，L3→**L4**；`java.net.http` 不在 Android classpath→OkHttp；构造器补 `--rerun-tasks`。
+
+## 归档：v7-v9 变更日志（v13 为腾出上限移出，原文未改）
+
+- 2026-09-27 v7-v9：**V43-V48 未破坏共享面**（290）；R07-3 Web 路由已验（292）；**非 e2a 回归面解锁**（临时密钥 + `-NonE2a`）：已跑 **56 类**（53 通过 / 3 类需专用环境），并**发现+修复本会话真回归**（FORMAL 归档确认自调用绕过事务→500，`36d2368`／316 复验全绿）；v9 高风险 23 类 = 21 绿 / 2 环境守卫、**无新 bug**；A3 残余 ①②待专项（②诊断已锐化）。A3 CSRF 根因：会话 Cookie 默认 `secure=true` 与 harness 明文 HTTP 冲突（生产默认不改，harness 置 false）→ `E2aHandoverHttpLayerIT` ①② 转绿（284/285）；残余=两处夹具基础设施（待专项）。R07-1 夹具卡点解除（幂等探测改重放原 REQUEST）→ 反例①②③④+3 幂等已验／283。历史：A 组共享表回归（14 类：10 通过 / 4 历史失败，均在不应用 V46/V47 的库）+ **最新 schema 回归 IT**／**256**；B 组（窗口权威来源 / 附件三档限额 / HEADER 补丁）与 C 组（撤销两阶段 + V48 模型）／**255**；契约草案未发布、默认关闭、未部署。
