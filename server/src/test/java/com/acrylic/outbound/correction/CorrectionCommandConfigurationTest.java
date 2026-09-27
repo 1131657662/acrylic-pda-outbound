@@ -20,9 +20,9 @@ class CorrectionCommandConfigurationTest {
         runner.run(context -> assertThat(context.getBeanNamesForType(CorrectionCommand.Operation.class)).isEmpty());
     }
 
-    @Test void enablingTheSwitchRegistersOnlyTheImplementedCreate() {
+    @Test void enablingTheSwitchRegistersOnlyTheImplementedOperations() {
         runner.withPropertyValues("outbound.corrections.commands.enabled=true").run(context ->
             assertThat(context.getBeanNamesForType(CorrectionCommand.Operation.class))
-                .as("APPROVE/WITHDRAW stay unregistered until their steps land").hasSize(1));
+                .as("WITHDRAW stays unregistered until its step lands").hasSize(2));
     }
 }

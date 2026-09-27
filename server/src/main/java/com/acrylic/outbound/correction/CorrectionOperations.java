@@ -121,4 +121,34 @@ public final class CorrectionOperations {
             return text==null || text.isBlank()?fallback:Long.parseLong(text);
         }
     }
+
+    /**
+     * APPROVE: the supervisor gate ({@code correction:approve}) plus SUBMITTED -&gt; APPROVED under the document row lock.
+     *
+     * <p>Design §3 makes approval the point where the effect is applied inside one transaction; that body arrives with
+     * steps 4-5. Until then an approved document carries {@code effect=DEFERRED_TO_STEP_4} in its decision, so this
+     * intermediate state is visible rather than implied.
+     */
+    public static final class Approve implements CorrectionCommand.Operation {
+        private final CorrectionStore store;
+        public Approve(CorrectionStore store) { this.store=store; }
+
+        @Override public String commandType() { return "APPROVE"; }
+
+        @Override public JsonNode execute(CorrectionCommand.Write write) {
+            UUID documentId=write.documentId();
+            if(documentId==null) throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","审批必须指定更正单");
+            var facts=write.anchor();
+            if(!"SUBMITTED".equals(facts.path("status").asText())) throw CorrectionCommand.stale();
+            String approvedBy=write.actor().path("principalId").asText();
+            if(store.approveDocument(documentId,UUID.fromString(approvedBy),write.recordedAt())!=1)
+                throw CorrectionCommand.stale();
+            return com.acrylic.outbound.submissions.SubmissionJson.object()
+                .put("documentId",documentId.toString()).put("status","APPROVED")
+                .put("approvedBy",approvedBy).put("approvedAt",write.recordedAt().toString())
+                .put("documentSha256",facts.path("documentSha256").asText())
+                .put("expectedResultVersion",facts.path("expectedResultVersion").asText())
+                .put("effect","DEFERRED_TO_STEP_4");
+        }
+    }
 }

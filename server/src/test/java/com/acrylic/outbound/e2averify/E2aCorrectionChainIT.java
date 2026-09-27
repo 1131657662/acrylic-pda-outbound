@@ -20,20 +20,19 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * R07-3 step 2 wrap-up + step 3 opening over real HTTP and a real MySQL: the switch is the whole boundary (absent
- * route with the default, open route when enabled) and CREATE freezes a SUBMITTED document whose line "before"
- * values are recomputed server-side rather than trusted from the client.
+ * R07-3 correction command chain over real HTTP and a real MySQL, on the verified R06 PDA channel
+ * ({@code /api/v1/pda/corrections}, Bearer session, CSRF disabled for that prefix).
  *
- * <p>Transport: the verified R06 PDA channel ({@code /api/v1/pda/corrections}, Bearer session), whose chain disables
- * CSRF. The Web route {@code /api/v1/corrections} exists as well but a Web-session POST is blocked by the project's
- * known CSRF/session issue (see the A3 note); that boundary is reported, not forced here.
+ * <p>Covered so far: the switch boundary (absent route by default), CREATE (document + lines with server-recomputed
+ * "before" values, replay, unchanged-target counterexample) and APPROVE (supervisor gate, SUBMITTED -&gt; APPROVED,
+ * replay, double-approval refusal). Effects, the result version and the ledger arrive with steps 4-5.
  *
  * <p>The confirmed order comes from the already-verified R06 chain ({@link TemporaryLinkConfirmHttpChecks}), which
  * leaves dispatch records with ledger rows - exactly the state a first correction starts from. Nothing in the R06 or
  * R07-1 surface is modified; this IT only reads their result.
  */
 @EnabledIfEnvironmentVariable(named = "E2A_CROSS_VERIFY", matches = "true")
-class E2aCorrectionCreateIT {
+class E2aCorrectionChainIT {
     private static final String ROUTE = "http://127.0.0.1:19434/api/v1/pda/corrections";
     private static final String BEFORE_COUNT = "CAST(IFNULL((SELECT -SUM(l.quantity_delta) FROM inventory_ledger l"
         + " WHERE l.dispatch_id=d.id),1) AS CHAR)";
@@ -41,7 +40,7 @@ class E2aCorrectionCreateIT {
         + " WHERE l.dispatch_id=d.id),d.weight_g) AS CHAR)";
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
 
-    @Test void correctionCreateIsClosedByDefaultAndFreezesServerRecomputedLinesWhenEnabled() throws Exception {
+    @Test void correctionChainIsClosedByDefaultAndFreezesThenApprovesWithServerRecomputedLines() throws Exception {
         var profile = new E2aCrossSourceProfile(); var jdbc = profile.connect();
         Files.createFile(profile.attempt.resolve("test-started.marker"));
         profile.migrate(jdbc, "34"); E2aV34Seed.seed(jdbc, profile.attempt.resolve("storage"));
@@ -50,28 +49,27 @@ class E2aCorrectionCreateIT {
         assertThat(order.dispatchIds()).as("the R06 chain must leave dispatches to correct").isNotEmpty();
         var notes = new StringBuilder("验证层级=真服 19434 + 真 HTTP（PDA 通道）+ 真 MySQL\n");
         var token = mintSession(jdbc, order);
-        grantCorrect(jdbc, order.operatorId());
+        grant(jdbc, order.operatorId(), "outbound:correct");
         var expected = expectedBlock(order, "1");
-        var body = createBody(order, expected, "0", "0");
+        var create = createBody(order, expected, "0", "0");
 
         // (a) default switch: the correction route is not assembled at all.
         try (var closed = E2aCrossSourceHttpIT.start(profile)) {
             assertThat(closed.getBeanNamesForType(CorrectionCommandController.class))
                 .as("no correction route by default").isEmpty();
-            int status = post(token, body).statusCode();
+            int status = post(token, create).statusCode();
             notes.append("①开关关闭 -> ").append(status).append(" (期望 404)\n");
             assertThat(status).as("① switch off must be an absent route").isEqualTo(404);
         }
-        // (b) enabled: CREATE is open and freezes the document.
+        // (b) enabled: CREATE then APPROVE.
         try (var open = E2aCrossSourceHttpIT.start(profile, "--outbound.corrections.commands.enabled=true")) {
             assertThat(open.getBeanNamesForType(CorrectionCommandController.class)).hasSize(1);
-            var anonymous = post(DeviceCrypto.secret(), body).statusCode();
+            int anonymous = post(DeviceCrypto.secret(), create).statusCode();
             notes.append("②开关开启+无效会话 -> ").append(anonymous).append(" (期望 401)\n");
             assertThat(anonymous).as("② no session").isEqualTo(401);
 
-            var response = post(token, body);
-            notes.append("③开关开启+有效会话 -> ").append(response.statusCode()).append(' ')
-                .append(shortBody(response.body())).append('\n');
+            var response = post(token, create);
+            notes.append("③CREATE -> ").append(response.statusCode()).append(' ').append(shortBody(response.body())).append('\n');
             assertThat(response.statusCode()).as(shortBody(response.body())).isEqualTo(200);
             var receipt = SubmissionJson.parse(response.body());
             assertThat(receipt.path("status").asText()).isEqualTo("RECORDED");
@@ -81,13 +79,11 @@ class E2aCorrectionCreateIT {
                 assertThat(receipt.path("capabilities").path(key).asBoolean()).as(key).isFalse();
             var decision = receipt.path("businessDecision");
             String documentId = decision.path("documentId").asText();
-            notes.append("④CREATE -> document=").append(documentId).append(" status=")
-                .append(decision.path("status").asText()).append(" lines=").append(decision.path("lineCount").asInt()).append('\n');
+            String documentSha256 = decision.path("documentSha256").asText();
             assertThat(decision.path("status").asText()).isEqualTo("SUBMITTED");
             assertThat(decision.path("lineCount").asInt()).isEqualTo(order.dispatchIds().size());
             assertThat(jdbc.queryForObject("SELECT status FROM correction_document WHERE id=UUID_TO_BIN(?)",
                 String.class, documentId)).isEqualTo("SUBMITTED");
-            // The "before" side must equal the server's own facts, not whatever the client claimed.
             for (var line : decision.path("lines")) {
                 String dispatchId = line.path("dispatchId").asText();
                 assertThat(line.path("beforeCount").asText()).isEqualTo(before(jdbc, dispatchId, BEFORE_COUNT));
@@ -96,26 +92,71 @@ class E2aCorrectionCreateIT {
             }
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_line WHERE document_id=UUID_TO_BIN(?)",
                 Integer.class, documentId)).isEqualTo(order.dispatchIds().size());
-            notes.append("⑤服务端重算 before 值逐行等于 dispatch/ledger 事实：PASS\n");
-            // (c) the same original key replays the stored bytes and adds no second document.
-            assertThat(post(token, body).body()).as("replay returns the stored original").isEqualTo(response.body());
+            assertThat(post(token, create).body()).as("CREATE replay returns the stored original").isEqualTo(response.body());
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_document", Integer.class)).isEqualTo(1);
-            notes.append("⑥同键同文回放字节一致、未新增文档：PASS\n");
-            // (d) counterexample: a target equal to the server's before-value is refused, never silently accepted.
+            notes.append("④CREATE 断言：文档 SUBMITTED、before 值等于服务端事实、回放一致：PASS\n");
+
             String firstDispatch = order.dispatchIds().getFirst();
             var refused = post(token, createBody(order, expectedBlock(order, "1"),
                 before(jdbc, firstDispatch, BEFORE_COUNT), before(jdbc, firstDispatch, BEFORE_WEIGHT)));
-            String code = SubmissionJson.parse(refused.body()).path("code").asText();
-            notes.append("⑦目标值等于 before -> ").append(refused.statusCode()).append(' ').append(code)
-                .append(" (期望 409 CORRECTION_LINE_TARGET_UNCHANGED)\n");
+            notes.append("⑤目标值等于 before -> ").append(refused.statusCode()).append(' ')
+                .append(SubmissionJson.parse(refused.body()).path("code").asText()).append(" (期望 409 TARGET_UNCHANGED)\n");
             assertThat(refused.statusCode()).isEqualTo(409);
-            assertThat(code).isEqualTo("CORRECTION_LINE_TARGET_UNCHANGED");
+            assertThat(SubmissionJson.parse(refused.body()).path("code").asText())
+                .isEqualTo("CORRECTION_LINE_TARGET_UNCHANGED");
+
+            // (c) The supervisor gate must really deny: V45 binds correction:approve to WAREHOUSE_ADMIN, so this actor
+            // already holds it. Revoke exactly his bindings, prove 403, then restore them byte-for-byte.
+            var approve = approveBody(order, documentId, documentSha256, "SUBMITTED", order.resultVersion());
+            var supervisorRoles = jdbc.queryForList("SELECT BIN_TO_UUID(rp.role_id) FROM role_permission rp"
+                + " JOIN permission p ON p.id=rp.permission_id JOIN user_role ur ON ur.role_id=rp.role_id"
+                + " WHERE ur.user_id=? AND p.code='correction:approve'", String.class, Ids.bytes(order.operatorId()));
+            assertThat(supervisorRoles).as("V45 must bind correction:approve to this actor's role").isNotEmpty();
+            jdbc.update("DELETE rp FROM role_permission rp JOIN permission p ON p.id=rp.permission_id"
+                + " JOIN user_role ur ON ur.role_id=rp.role_id WHERE ur.user_id=? AND p.code='correction:approve'",
+                Ids.bytes(order.operatorId()));
+            var denied = post(token, approve);
+            notes.append("⑥APPROVE（撤销 correction:approve 后）-> ").append(denied.statusCode()).append(' ')
+                .append(SubmissionJson.parse(denied.body()).path("code").asText()).append(" (期望 403)\n");
+            assertThat(denied.statusCode()).isEqualTo(403);
+            assertThat(SubmissionJson.parse(denied.body()).path("code").asText()).isEqualTo("CORRECTION_PERMISSION_DENIED");
+            assertThat(jdbc.queryForObject("SELECT status FROM correction_document WHERE id=UUID_TO_BIN(?)",
+                String.class, documentId)).as("a denied approval changes nothing").isEqualTo("SUBMITTED");
+            for (String role : supervisorRoles)
+                jdbc.update("INSERT INTO role_permission VALUES(?,(SELECT id FROM permission WHERE code='correction:approve'))",
+                    Ids.bytes(UUID.fromString(role)));
+
+            // (d) with the supervisor code the document moves to APPROVED, and replay is byte-identical.
+            var approved = post(token, approve);
+            notes.append("⑦APPROVE（有 correction:approve）-> ").append(approved.statusCode()).append(' ')
+                .append(shortBody(approved.body())).append('\n');
+            assertThat(approved.statusCode()).as(shortBody(approved.body())).isEqualTo(200);
+            var approvedReceipt = SubmissionJson.parse(approved.body());
+            assertThat(approvedReceipt.path("commandType").asText()).isEqualTo("APPROVE");
+            assertThat(approvedReceipt.path("businessDecision").path("status").asText()).isEqualTo("APPROVED");
+            assertThat(approvedReceipt.path("businessDecision").path("effect").asText())
+                .as("steps 4-5 land the effect; the intermediate state is explicit").isEqualTo("DEFERRED_TO_STEP_4");
+            assertThat(jdbc.queryForObject("SELECT status FROM correction_document WHERE id=UUID_TO_BIN(?)",
+                String.class, documentId)).isEqualTo("APPROVED");
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_document WHERE approved_by IS NOT NULL",
+                Integer.class)).isEqualTo(1);
+            assertThat(post(token, approve).body()).as("APPROVE replay returns the stored original")
+                .isEqualTo(approved.body());
+            // (e) a second approval under a fresh key must be refused by the expected-context check.
+            var again = post(token, approveBody(order, documentId, documentSha256, "SUBMITTED",
+                order.resultVersion()));
+            notes.append("⑧重复审批（新原键、旧 expected）-> ").append(again.statusCode()).append(' ')
+                .append(codeOf(again.body())).append(" (期望 409 CONTEXT_CHANGED)\n");
+            assertThat(again.statusCode()).isEqualTo(409);
+            assertThat(codeOf(again.body())).isEqualTo("CORRECTION_CONTEXT_CHANGED");
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM operation_event WHERE entity_type='CORRECTION_COMMAND'",
+                Integer.class)).as("one audit event per accepted receipt").isEqualTo(2);
         }
-        Files.writeString(profile.attempt.resolve("correction-create.txt"), notes.toString());
+        Files.writeString(profile.attempt.resolve("correction-chain.txt"), notes.toString());
         Files.writeString(profile.attempt.resolve("test-completed.marker"), notes.toString());
     }
 
-    /** Runs the verified R06 chain, then collects what a CREATE needs: order, dispatches, operator, device. */
+    /** Runs the verified R06 chain, then collects what a correction needs: order, dispatches, operator, device. */
     private Order confirmedOrder(E2aCrossSourceProfile profile, JdbcTemplate jdbc) throws Exception {
         try (var context = E2aCrossSourceHttpIT.start(profile, "--outbound.temporary.commands.enabled=true")) {
             TemporaryLinkConfirmHttpChecks.verify((WebApplicationContext) context);
@@ -165,6 +206,17 @@ class E2aCorrectionCreateIT {
         return body;
     }
 
+    /** APPROVE anchors on the frozen document digest and its current status, never on the client's word alone. */
+    private ObjectNode approveBody(Order order, String documentId, String documentSha256, String status,
+        String expectedResultVersion) {
+        var expected = SubmissionJson.object().put("documentId", documentId).put("documentSha256", documentSha256)
+            .put("status", status).put("expectedResultVersion", expectedResultVersion).put("userAuthVersion", "1");
+        return (ObjectNode) SubmissionJson.object().put("commandVersion", 1).put("commandType", "APPROVE")
+            .put("commandId", UUID.randomUUID().toString()).put("transportRecoveryEpoch", "1")
+            .put("warehouseId", order.warehouseId()).put("documentId", documentId)
+            .put("reason", "主管核对后批准").set("expected", expected);
+    }
+
     private String mintSession(JdbcTemplate jdbc, Order order) {
         String token = DeviceCrypto.secret();
         jdbc.update("""
@@ -177,12 +229,16 @@ class E2aCorrectionCreateIT {
         return token;
     }
 
-    /** V45 registers outbound:correct; this binds it to the acting user, as the R06 checks do for LINK. */
-    private void grantCorrect(JdbcTemplate jdbc, UUID actor) {
-        UUID role = Ids.next();
-        jdbc.update("INSERT INTO role VALUES(?,?,?)", Ids.bytes(role), "CR_" + role.toString().substring(24), "隔离更正权限");
-        jdbc.update("INSERT INTO role_permission SELECT ?,id FROM permission WHERE code='outbound:correct'", Ids.bytes(role));
-        jdbc.update("INSERT INTO user_role VALUES(?,?)", Ids.bytes(actor), Ids.bytes(role));
+    /** V45 registers both correction codes; this binds one of them to the acting user. */
+    private void grant(JdbcTemplate jdbc, UUID actor, String permission) {
+        var roles = jdbc.queryForList("SELECT BIN_TO_UUID(r.id) id FROM role r JOIN user_role ur ON ur.role_id=r.id"
+            + " WHERE ur.user_id=? AND r.code LIKE 'CR_%'", String.class, Ids.bytes(actor));
+        UUID role = roles.isEmpty() ? Ids.next() : UUID.fromString(roles.getFirst());
+        if (roles.isEmpty()) {
+            jdbc.update("INSERT INTO role VALUES(?,?,?)", Ids.bytes(role), "CR_" + role.toString().substring(24), "隔离更正权限");
+            jdbc.update("INSERT INTO user_role VALUES(?,?)", Ids.bytes(actor), Ids.bytes(role));
+        }
+        jdbc.update("INSERT INTO role_permission SELECT ?,id FROM permission WHERE code=?", Ids.bytes(role), permission);
     }
 
     private HttpResponse<byte[]> post(String token, JsonNode command) throws Exception {
@@ -193,6 +249,8 @@ class E2aCorrectionCreateIT {
             .build();
         return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
     }
+
+    private static String codeOf(byte[] body) { return SubmissionJson.parse(body).path("code").asText(); }
 
     private static String shortBody(byte[] body) {
         String text = body == null ? "" : new String(body, StandardCharsets.UTF_8).replaceAll("\\s+", " ");

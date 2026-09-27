@@ -23,4 +23,9 @@ public class CorrectionCommandConfiguration {
     CorrectionCommand.Operation correctionCreate(CorrectionStore store) {
         return new CorrectionOperations.Create(store);
     }
+
+    @Bean
+    CorrectionCommand.Operation correctionApprove(CorrectionStore store) {
+        return new CorrectionOperations.Approve(store);
+    }
 }

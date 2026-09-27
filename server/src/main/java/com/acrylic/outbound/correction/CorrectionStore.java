@@ -99,6 +99,18 @@ public class CorrectionStore {
             status,sourceRecoveryEpoch,Ids.bytes(requestedBy),Timestamp.from(now));
     }
 
+    /**
+     * SUBMITTED -> APPROVED under the row lock the kernel already holds. The status predicate makes a second approval
+     * of the same document a no-op at the database level as well, so the kernel's expected-context check and this
+     * guard agree. Returns the number of rows changed (must be 1).
+     */
+    public int approveDocument(UUID documentId,UUID approvedBy,Instant approvedAt) {
+        return jdbc.update("""
+            UPDATE correction_document SET status='APPROVED',approved_by=?,approved_at=?,row_version=row_version+1
+            WHERE id=? AND status='SUBMITTED'
+            """,Ids.bytes(approvedBy),Timestamp.from(approvedAt),Ids.bytes(documentId));
+    }
+
     public void insertLine(UUID id,UUID document,int lineNo,UUID dispatchId,UUID baleId,String deliveryCode,
         long beforeCount,long beforeWeight,long targetCount,long targetWeight,UUID evidenceId,String evidenceSha256,
         Instant occurredAt) {
@@ -114,7 +126,8 @@ public class CorrectionStore {
     /** Facts an APPROVE or WITHDRAW anchors on: the frozen document digest and its expected result version. */
     public JsonNode documentFacts(UUID documentId) {
         var rows=jdbc.queryForList("""
-            SELECT JSON_OBJECT('documentId',BIN_TO_UUID(id),'orderId',BIN_TO_UUID(order_id),'type',type,'status',status,
+            SELECT JSON_OBJECT('documentId',BIN_TO_UUID(id),'orderId',BIN_TO_UUID(order_id),
+              'warehouseId',BIN_TO_UUID(warehouse_id),'type',type,'status',status,
               'documentSha256',document_sha256,'expectedResultVersion',CAST(expected_result_version AS CHAR),
               'documentVersion',CAST(row_version AS CHAR),
               'approvedBy',IFNULL(BIN_TO_UUID(approved_by),'null'),'requestedBy',BIN_TO_UUID(requested_by))
