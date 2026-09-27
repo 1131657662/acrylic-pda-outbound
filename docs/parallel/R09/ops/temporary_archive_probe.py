@@ -15,7 +15,7 @@ class ArchiveProbeDatabase:
     def __init__(self, attempt, side):
         import re
         self.attempt = Path(attempt).resolve()
-        require(self.attempt.parent == ROOT.resolve() and re.fullmatch('e2a-cross-20260925-[1-9][0-9]?', self.attempt.name), 'ARCHIVE_PROBE_PATH')
+        require(self.attempt.parent == ROOT.resolve() and re.fullmatch('e2a-cross-20260925-[1-9][0-9]{0,2}', self.attempt.name), 'ARCHIVE_PROBE_PATH')
         require(side in ('source', 'restore'), 'ARCHIVE_PROBE_SIDE')
         run = self.attempt.name.rsplit('-', 1)[1]
         self.name = 'acrylic_e2a_cross_20260925_' + run + ('_restore' if side == 'restore' else '')

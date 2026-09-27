@@ -29,7 +29,7 @@ class E2aRealHttpRecoveryTest {
         assumeTrue("Requires the protected one-shot nonempty MySQL runner", !path.isNullOrBlank())
         val inputFile = File(checkNotNull(path)).canonicalFile
         check(inputFile.path.replace('\\', '/').matches(Regex(
-            "D:/acrylic-pda-worktrees/r06-e2a-migration/\\.local/e2a-cross-20260925-[1-9][0-9]?/private/android-http-input\\.json")))
+            "D:/acrylic-pda-worktrees/r06-e2a-migration/\\.local/e2a-cross-20260925-[1-9][0-9]{0,2}/private/android-http-input\\.json")))
         val input = JSONObject(inputFile.readText())
         check(input.getString("fixturePurpose") == "SYNTHETIC_ANDROID_ROOM_REAL_HTTP")
         TemporaryWorkFixture(folder.root, contract = input).use { work ->
