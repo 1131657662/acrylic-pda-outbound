@@ -405,6 +405,67 @@ APPROVE 生效体顺序：锁当前版本 → 重验 `expectedResultVersion` →
 - **未验**：`CYCLE_REOPENED` 的**发件箱事件**（属 A4/步骤 8）；重开后的**重新扫描**（PDA 端重扫 → cycle+1 落库）
   不在本 IT 范围；`PHYSICAL_RETURN` 是否需要重开待确认。
 
+## 23. A3 步骤 7 差异案件（2026-09-27，`013a705`，attempt **223** 绿）
+
+- **实现**：`CorrectionReconciliations.Open` / `.Advance` —— 差异案件命令走**同一命令面与同一开关**（不新增生产开关；
+  §5 的独立路径属契约阶段决策，见契约草案）。状态机 `OPEN→EVIDENCE_PENDING→REVIEW_READY→RESOLVED`，
+  `blocked=true` + 原因从任何非终态 → `BLOCKED`；RESOLVED 必须带结论；终态再推进 → 409；迁移用带状态谓词的 UPDATE。
+  权限 `inventory:reconcile`（**V47 随本步登记**并绑 WAREHOUSE_ADMIN —— 按 R07-1 的教训，权限码必须与能力同批登记，
+  否则就是"审批门权限码从未注册"那类陷阱）。
+- **「处理结论不等于该包可用」**：案件任何迁移都不写结果版本/effect/账务/快照（IT 断言版本指针与有效包数不变）。
+- **内核扩展**：KINDS 增至五种；`Locks.caseRow`；`Expected.forCaseOpen`/`forCase`；`requiresApproval()` 改为只对
+  APPROVE/WITHDRAW 生效（案件无审批门）。V47 另**只放宽**两处只对文档命令成立的约束：回执 `order_id` NOT NULL→NULL、
+  回执 `command_type` CHECK 由三种命令放宽到五种（约束名由 information_schema 自定位，不写死自动生成名）。
+- **证据（attempt 223）**：⑭OPEN 200 且库内 OPEN；⑮三次推进依次 EVIDENCE_PENDING/REVIEW_READY/RESOLVED（结论落库、
+  `row_version=4`）；⑯已结案再推进 → 409；⑰第二案 blocked=true → BLOCKED（无原因 400）；全程 `current_result_version`
+  与 v4 有效包数不变；审计 12 条（12 次成功命令）。
+- **未验（政策缺口，未自行发明）**：**什么业务情形开案**、**每次迁移需要什么证据**、**什么算冲突** 设计都未写明
+  ⇒ 本片只实现"机器"本身，驱动条件待政策；案件与更正文档/订单的关联列（`source_correction_id`/`command_receipt_id`）
+  暂未写入。
+- 失败证据（5 红，逐条定位）：216（V47 权限 UUID 与既有 id 冲突）、217/219/221（命令面无订单形态的空值假设：
+  回执签名 orderId、回执落库 orderId 相继 NPE）、222（V45 回执 `command_type` CHECK 只允许三种文档命令）。
+
+## 24. A4 步骤 8 状态发件箱（2026-09-27，`2ca2c14`，attempt **227** 绿）
+
+- **实现**：生效与撤销在写完结果版本与指针后各发一条 `order_sync_outbox`：重开过周期 → `CYCLE_REOPENED`（设计点名），
+  否则 `CORRECTION_EFFECTIVE`；撤销 → `CORRECTION_WITHDRAWN`（后两者为本片命名，待 B1 契约阶段统一）。行保持未发布
+  （`published_seq IS NULL`）由既有同步流消费；payload 载 documentId / resultVersion / 有效包数与重量 / 重开明细。
+- **实测冲突（设计 vs 实况）**：`order_sync_outbox` 的唯一键是 `(recovery_epoch, order_id, entity_version)`，
+  而该版本空间**与 R05/R06 的订单事件共用**——直接用结果版本会与确认链已写的行冲突（attempt 224/225 的首次 APPROVE
+  即以 409 `CORRECTION_RESULT_UNKNOWN` 失败）。改为**取该订单该 epoch 的下一个空闲状态版本**（持订单锁故不竞争），
+  结果版本的对应关系放进 payload。
+- **证据（attempt 227）**：该订单共 4 条发件箱行，R06 的 `SUBMISSION_COMPLETED` 未被扰动；三条更正事件按
+  `entity_version` 升序为 CORRECTION_EFFECTIVE(resultVersion=2)、CORRECTION_WITHDRAWN(3)、CYCLE_REOPENED(4)；
+  全部 `published_seq IS NULL`；差异案件不产生发件箱行。
+- **未验**：同步流的实际投递/消费（属既有 R05/R06 通道，本片只写行）；事件名定稿；payload 的消费方契约。
+
+## 25. R07-3 状态总表（按 §9 步骤；证据等级见下）
+
+| # | 项 | 状态 | 证据（attempt / 提交） | 等级 |
+| --- | --- | --- | --- | --- |
+| 1 | 迁移与约束（表/权限码/放宽 CHECK） | ✅ 收口 | 190（`cf14bf5`）、45/46/47 | 端到端（真 MySQL） |
+| 2 | 命令内核（service/controller/config，默认关闭） | ✅ | 199（`71cafc3`） | 真 HTTP + 真 MySQL |
+| 3 | CREATE（文档+行，目标值服务端重算） | ✅ | 199/211/223/227 | 真 HTTP + 真 MySQL |
+| 4 | effect + 更正账务（逐笔、反向不变量） | ✅ | 211/212 | 真 HTTP + 真 MySQL |
+| 5 | 结果版本 v+1 + 逐包快照 + 双指针（0 包/0g 闭环） | ✅ | 211/212 | 真 HTTP + 真 MySQL |
+| 6 | 周期重开（一次性、重开≠可用） | ✅ | 215（`c2d5518`） | 真 HTTP + 真 MySQL |
+| 7 | 差异案件状态机（+BLOCKED） | ✅ | 223（`013a705`） | 真 HTTP + 真 MySQL |
+| 8 | 状态发件箱（未发布行） | ✅ | 227（`2ca2c14`） | 真 HTTP + 真 MySQL |
+| — | WITHDRAW 误批撤销（逐笔回退；**确认半程未实现**） | 🟡 部分 | 212（`ce3ad51`） | 真 HTTP + 真 MySQL（发起半程） |
+
+**未验清单（不得当作已完成）**
+1. **申请人确认机制**（P-R07-08 后半程）：无数据模型、无待确认状态、无第二端点 —— 政策未定，实现未做；
+2. **HEADER_CORRECTION** 未真正重算头部快照（只写 effect 行）；
+3. **附件限额**（P-R07-09 10MB/50MB/5 个）与**凭据内容核验**未实现（只做"实物类型必填"）；
+4. **3 天窗口的权威时点来源**未确认（暂用当前结果版本 `created_at`）；
+5. **Web 路由** `/api/v1/corrections` 未经真 HTTP 验证（A3 CSRF/会话问题，仅 PDA 通道已验证）；
+6. **非原审批人发起撤销 → 403** 未在 IT 中触发（需第二主体/PDA 配对）；
+7. **并发争用**（同单多文档、并发撤销/审批）未压测——锁顺序按 §3 实现但未实证；
+8. **V46/V47 共享表调整未跑全量 IT 回归**（`order_result_version`、`correction_command_receipt`）；
+9. **契约未发布**（`docs/parallel/R07/R07_3_CONTRACT_DRAFT.yaml` 为准备稿）；
+10. 未部署；`localDeletionAllowed=false`；五个能力位恒 false。
+
+
 
 
 

@@ -6,11 +6,11 @@
 ```yaml
 date: 2026-09-27
 branch: codex/development
-head: f551d1f
-dirty_entries: 3
+head: 2ca2c14
+dirty_entries: 6
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
-server: { contract: 0.36.0, paths: 131, flyway: V46, migrations: 46 }
+server: { contract: 0.36.0, paths: 131, flyway: V47, migrations: 47 }
 ```
 <!-- FACTS_END -->
 
@@ -46,7 +46,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V46, migrations: 46 }
 - 现场与人工 → 真机/Keystore、独立人员、长时留存、外网与异地、生产审批均未验；R05 code20/Room17 历史关键未验、原资料与旧 BCD、R09 现场限制继续单列 → 不能声称上线就绪。
 - 服务端 IT 分批 → 入口 `tools/e2a-batch-it.ps1`（每类一 attempt + 聚合 + 分类；`f34c886`）：181–184 四类全绿；**波次 IT 仍缺专用库**。
 
-- R07-3 更正 → 步骤 1 收口（`cf14bf5`）＋步骤 2/3（`71cafc3`／199 绿）＋APPROVE（`71cea4b`／203）+步骤 4-5（`f551d1f`／**211 绿**）＋WITHDRAW（`ce3ad51`／**212 绿**：逐笔回退 + `reverses_entry_id` 反向不变量）＋周期重开（`c2d5518`／**215 绿**：一次性、重开≠可用）；**未验**：申请人确认机制（政策缺口）、非审批人 403 未触发、差异案件/发件箱（步骤 7-8）、头部更正快照、V46 共享表未跑全量 IT 回归。
+- R07-3 更正 → **代码面已收口（步骤 1-8 + 撤销发起半程，全部真 HTTP+真 MySQL 验证）**：`cf14bf5`／199 内核+CREATE、`71cea4b`／203 APPROVE、`f551d1f`／211 步骤 4-5、`ce3ad51`／**212 逐笔回退反向不变量**、`c2d5518`／**215 周期重开**、`013a705`／**223 差异案件**、`2ca2c14`／**227 发件箱**；收口见 [R07_3_ACCEPTANCE](history/R07_3_ACCEPTANCE_2026-09-27.md)。**未验/待决策**：申请人确认机制、SoD、三项审批前置来源、3 天窗口口径、案件驱动条件、重开触发类型、契约形态、**V46/V47 共享表全量 IT 回归**、并发、Web 路由 A3 CSRF、未部署。
 ## 越界提醒（不变）
 - `localDeletionAllowed=false`；七类生产决定 handler/POST/放行/证据写入/关闭能力**不得因内部测试通过而开放**；TEMP 生产归档边界不变。
 - 不合 `main`、不发布/部署、不操作原库现网，除非用户明确授权且证据满足范围；项目交接不等于生产授权。
@@ -69,7 +69,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V46, migrations: 46 }
 - 2026-09-27 IT 分批评估 attempt 179（`*E2aTemporaryArchive*IT` 3 类 / 1 attempt）：1 通过 2 红，均 `One-shot attempt already used`（结构性，非产品）；构造器 `tests` 计数与 `-Tests` 同名失真（复现 `0111`）→ 需先封装分批入口。
 - 2026-09-27 分批入口封装（选 A）：`f34c886` 修构造器 `tests` 计数；新增 `tools/e2a-batch-it.ps1`（每类一 attempt + XML 聚合 + 分类 + `entryIssues`）；runs **181–184** 四类全绿；波次 IT 仍需专用库。
 - 2026-09-27 Android LINK L4（选④）：`2bf2507` 三件套 → attempts **185/187** 双绿 `server=1/0/0/0`/`android=1/0/0/0`，L3→**L4**；`java.net.http` 不在 Android classpath→OkHttp；构造器补 `--rerun-tasks`。
-- 2026-09-27 R07-3：`cf14bf5` 步骤 1／190；`22e9b81` V45／192；`71cafc3`+`3c3e297` 内核 + CREATE／199；`71cea4b` APPROVE／203；`f551d1f` 步骤 4-5／211（V46；v2=0 包/0g、双指针、effect/账务/快照）；`ce3ad51` WITHDRAW／**212**（逐笔回退 + 反向不变量）；`c2d5518` 周期重开／**215**（一次性、重开≠可用）。
+- 2026-09-27 R07-3（代码面收口）：步骤 1-8 + 撤销发起半程全部实现并逐项验证——190/192/199/203/211/212/215/**223**（差异案件状态机）/**227**（状态发件箱）；收口文档 + 契约草案（未发布）已出；全部默认关闭、未部署。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。

@@ -1,0 +1,117 @@
+# R07-3 更正命令面 —— 契约草案（**未发布**）
+#
+# 状态：准备稿。**不得**并入 `contracts/openapi.yaml`，直到下面「发布前置」全部满足——
+# 看板事实块的 contract/paths 由 `contracts/openapi.yaml` 推导，提前并入等于对外声明一个尚未开放的能力。
+#
+# 与设计 §5 的差异（需在契约阶段确认）：
+#   §5 草案按动作分路径（`/corrections`、`/corrections/{id}/approve`、`/corrections/{id}/withdraw`）；
+#   R06 已实现并验证的命令面约定是**单端点 + 正文 commandType**（`/temporary-commands` 的 LINK/NORMAL_CONFIRM 形态）。
+#   本实现沿用后者（PDA 别名 + 单端点），并在正文里用 commandType 区分五种命令。此项属契约决策。
+#
+# 发布前置（全绿才可并入）：
+#   1) `outbound.corrections.commands.enabled=true` 的**运维授权**（业主），且能力声明与开关同步；
+#   2) Web 路由 `/api/v1/corrections` 的真 HTTP 证据（当前被 A3 CSRF/会话问题挡住，仅 PDA 通道已验证）；
+#   3) 申请人确认机制（P-R07-08 的确认半程）政策确定并实现；
+#   4) `contracts/openapi.yaml` 版本号由维护者按事实块统一分配后递增；
+#   5) 本文件的路径与 schema 通过 `tools/version_facts.ps1 -Check` 的一致性校验（并入后）。
+
+openapi: 3.1.0
+info:
+  title: R07-3 更正命令面（草案，未发布）
+  version: 0.0.0-draft
+paths:
+  /api/v1/corrections:
+    post:
+      summary: 更正命令（单端点 + 正文 commandType）
+      description: |
+        与 PDA 别名 `/api/v1/pda/corrections` 同一控制器；默认关闭时该路径不存在（404）。
+        原键幂等：同一 commandId + 同一规范化正文回放存储的原始字节；正文不同 → 409。
+      security: [{ bearerPda: [] }, { webSession: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/CorrectionCreate'
+                - $ref: '#/components/schemas/CorrectionApprove'
+                - $ref: '#/components/schemas/CorrectionWithdraw'
+                - $ref: '#/components/schemas/ReconcileOpen'
+                - $ref: '#/components/schemas/ReconcileAdvance'
+      responses:
+        '200': { description: 签名回执（原字节，原键重放时逐字节一致） }
+        '400': { description: CORRECTION_EVIDENCE_REQUIRED / INVALID_CORRECTION_COMMAND / ATTACHMENT_LIMIT_EXCEEDED }
+        '401': { description: 会话缺失或失效 }
+        '403': { description: CORRECTION_PERMISSION_DENIED（缺 outbound:correct / correction:approve / inventory:reconcile） }
+        '404': { description: 开关关闭（路径未装配）、订单/文档/案件不存在 }
+        '409': { description: |
+            CORRECTION_CONTEXT_CHANGED、CORRECTION_LINE_TARGET_UNCHANGED、CORRECTION_WINDOW_EXCEEDED、
+            CORRECTION_LEDGER_CONFLICT、CYCLE_REOPENING_EXISTS、CORRECTION_ALREADY_EFFECTIVE、
+            CORRECTION_RESULT_UNKNOWN }
+components:
+  securitySchemes:
+    bearerPda: { type: http, scheme: bearer, description: PDA 会话令牌（该前缀关闭 CSRF） }
+    webSession: { type: apiKey, in: cookie, name: OUTBOUND_SESSION, description: Web 会话 + CSRF 头 }
+  schemas:
+    Receipt:
+      type: object
+      required: [receiptVersion, receiptId, commandId, routeScope, commandType, commandSha256, status, recordedAt,
+                 eventId, documentId, orderId, context, actor, businessDecision, expected, capabilities, signedReceipt]
+      properties:
+        status: { const: RECORDED }
+        capabilities:
+          description: 五个能力位恒为 false（更正绝不放行、绝不释放库存、绝不删除本地数据）
+          type: object
+          properties:
+            writeConfirmationAvailable: { const: false }
+            releaseAllowed: { const: false }
+            mayResumeScanning: { const: false }
+            stockReleased: { const: false }
+            localDeletionAllowed: { const: false }
+    CorrectionCreate:
+      type: object
+      required: [commandVersion, commandType, commandId, transportRecoveryEpoch, warehouseId, orderId, type, reason,
+                 lines, expected]
+      properties:
+        commandType: { const: CREATE }
+        type: { enum: [PHYSICAL_RETURN, DISPATCH_CANCELLATION, WEIGHT_CORRECTION, HEADER_CORRECTION] }
+        lines:
+          description: 逐行目标值；before 侧由服务端从当前版本事实重算，客户端只能提目标
+          type: array
+          minItems: 1
+          maxItems: 200
+          items:
+            type: object
+            properties:
+              dispatchId: { type: string, format: uuid }
+              targetCount: { type: string }
+              targetWeightG: { type: string }
+              evidenceId: { type: string, format: uuid, description: 实物类型必填 }
+              evidenceSha256: { type: string, description: 实物类型必填 }
+        expected:
+          description: 乐观并发：orderId + currentResultVersion + 有效包数/重量 + userAuthVersion
+          type: object
+    CorrectionApprove:
+      description: 主管门（correction:approve）；同一事务内生效——结果版本 v+1、effect、更正账务、逐包快照、指针、发件箱
+      type: object
+      properties: { commandType: { const: APPROVE }, documentId: { type: string, format: uuid } }
+    CorrectionWithdraw:
+      description: |
+        误批撤销（P-R07-08）：仅原审批人可发起；账务**逐笔回退**（reverses_entry_id 指向原行、delta 完全相反）。
+        ⚠️ 设计的「申请人确认」机制尚未定义（无列、无待确认状态、无第二端点）——**确认半程未实现**。
+      type: object
+      properties: { commandType: { const: WITHDRAW }, documentId: { type: string, format: uuid } }
+    ReconcileOpen:
+      description: 差异案件（步骤 7）；不产生任何库存/结果写入
+      type: object
+      properties:
+        commandType: { const: RECONCILE_OPEN }
+        kind: { enum: [MISSING_PACKAGE, WEIGHT_MISMATCH, CYCLE_CONFLICT, OTHER] }
+    ReconcileAdvance:
+      description: OPEN→EVIDENCE_PENDING→REVIEW_READY→RESOLVED；blocked=true + 原因 → BLOCKED；终态不可再推进
+      type: object
+      properties:
+        commandType: { const: RECONCILE_ADVANCE }
+        caseId: { type: string, format: uuid }
+        conclusion: { type: string, description: 结案必填 }
+        blocked: { type: boolean }
