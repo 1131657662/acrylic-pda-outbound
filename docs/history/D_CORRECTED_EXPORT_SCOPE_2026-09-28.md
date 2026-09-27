@@ -96,3 +96,59 @@ check((h.pdaSubmission()==null)!=(h.pcSubmission()==null), "原确认提交来�
 - 未实测"用 `order_effective_scan` 组装一个 v>1 快照"的可行性（未写读取器）；
 - 未核对 `correction_document` 的检索面是否足以支撑"按订单+版本"取更正凭据（未写 SQL）；
 - 未评估渲染模板对净结果口径的改动量（只标注了它需要动）。
+
+---
+
+## 七、业主批准方案 C 后的实测：**`report-rendering` 隐藏成本已确认，按约定停下报告**（同日）
+
+业主批准方案 C（先做单订单 v>1 净结果导出），并给出停止条件：
+"如果发现 report-rendering 改动比预期大（比如要改多个模板/多处枚举消费点）→ 停下报告"。
+
+### 7.1 实测：**确实比预期大**，而且不止"枚举 + 模板"
+
+| 位置 | 实测内容 | 影响 |
+| --- | --- | --- |
+| `ReportSnapshot.Basis` | 枚举 `{ORIGINAL_CONFIRMED, CURRENT_EFFECTIVE}` | 加 `CORRECTED` 只是第一步 |
+| `ConfirmedV1Adapter:11` | **硬门**：`require(basis == ORIGINAL_CONFIRMED, "confirmed-v1 only accepts ORIGINAL_CONFIRMED…")` | 不是分支，是**直接拒绝** |
+| `ConfirmedV1Adapter:29` + `:36` | **`require(result.version() == 1)`** 且 `OrderSnapshot(..., 1, ...)` 写死 | **整数硬编码** ⇒ v>1 必然失败 |
+| `PdfHtml:22` / `ReportText:6` | 按 basis 选"原确认"文案 | 两处文案分支 |
+| `SnapshotValidator:47` | `if (basis == ORIGINAL_CONFIRMED) require(resultVersion==1 && adjustments.isEmpty())` | 非原确认 basis 不校验版本（有空间），但也不校验更正形状 |
+| `ScanRecordExcelRenderer:17` | 要求 basis == ORIGINAL_CONFIRMED | 扫码模板与更正口径的关系需定 |
+| `AdjustmentValidator` / `Adjustment` | 有调整（adjustments）装配与校验 | 更正净结果是否带"调整凭据"行需定 |
+
+**关键**：`ConfirmedV1Adapter` 是**原确认 v1 专用适配器**（类注释原话：
+`Reconciles original confirmations only; never infers a current result or a correction`）。
+要渲染更正净结果，**必需新增一个更正适配器**（取实际版本号、无 `submissionId` 校验、有效行来自该版本快照、
+并定调整凭据/合计口径）＋其自带测试；
+"改 `ConfirmedV1Adapter` 让它接受 v>1"等于**改动 R08 已验证面**（硬边界不允许）。
+⇒ 这是 `report-rendering` **模块内的新代码 + 新测试**，不是"枚举加值 + 模板支持"。
+
+### 7.2 另一处阻塞：服务端请求面是**正则硬编码**
+
+`ExportModels.Command:11`：`@Pattern(regexp="ORIGINAL_CONFIRMED") String basis`
+⇒ 传 `CORRECTED` 会被 **Bean Validation** 直接拦下。要支持就得改这个**已发布契约对应的请求约束**。
+
+### 7.3 判定：**停下报告**（正是业主给的停止条件）
+
+- 触发条件："report-rendering 改动比预期大 → 停下报告（跨模块，可能需要单独评估）"——**已确认触发**；
+- 实际成本＝`report-rendering` **新适配器 + 测试**（跨模块）＋服务端请求面正则（契约面）；
+- **本轮未写任何 v>1 导出代码**，未改 `report-rendering`、未改 `ExportModels`。
+
+### 7.4 下一步建议（供业主挑）
+
+**建议 7.4-A（拆三片，最小可验证）**
+1. **片 1（服务端只读，不渲染）**：`CorrectionExportSource` + `ExportFacts` 版本化，只产出**内存快照并落库**
+   （`ExportFiles.store` 写 JSON）；IT 断言快照 JSON 的版本号/有效行/合计与库内 v>1 事实逐条一致。
+   ⇒ **不碰 `report-rendering`、不碰请求面正则**。
+2. **片 2（渲染）**：单独实现"更正适配器"（新文件 + 自带测试），此时才动 `report-rendering`。
+3. **片 3（请求面）**：`basis` 正则放宽 + 请求参数 + 契约草案；**需业主授权触碰契约**。
+
+**建议 7.4-B**：若希望一次做完，请把"`report-rendering` 新适配器"与"请求面正则"明确写进授权范围，
+并同时裁定 §7.5 的 3 个语义。
+
+### 7.5 仍待裁定的语义（不是实现细节）
+
+1. **更正净结果文件是否带"调整凭据"行**（`adjustments`）——现仅在原确认 basis 下要求为空；模板有该页签。
+2. **跨订单汇总按哪个版本**（口径 C 已定"两个都出"，但汇总的成员/合计口径未定）。
+3. **命令完整性按哪个版本**（`CommandBusinessIntegrity:81` 现按 `result_version=1` 核对）。
+
