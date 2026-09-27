@@ -14,21 +14,34 @@ public class SubmissionArchiveService {
     private final SubmissionAccess access;private final SubmissionStore submissions;private final SubmissionArchiveStore archives;
     private final SubmissionArchiveEvidence evidence;private final SubmissionArchiveProofs proofs;
     private final com.acrylic.outbound.temporary.TemporaryArchiveService temporary;
+    private final boolean temporaryArchiveEnabled;
     public SubmissionArchiveService(SubmissionAccess access,SubmissionStore submissions,SubmissionArchiveStore archives,
         SubmissionArchiveEvidence evidence,SubmissionArchiveProofs proofs,
-        com.acrylic.outbound.temporary.TemporaryArchiveService temporary) {
+        com.acrylic.outbound.temporary.TemporaryArchiveService temporary,
+        @org.springframework.beans.factory.annotation.Value("${outbound.temporary.archive.enabled:false}") boolean temporaryArchiveEnabled) {
         this.access=access;this.submissions=submissions;this.archives=archives;this.evidence=evidence;this.proofs=proofs;
-        this.temporary=temporary;
+        this.temporary=temporary;this.temporaryArchiveEnabled=temporaryArchiveEnabled;
     }
     /**
      * Dispatch entry point. It is deliberately <b>not</b> transactional: a TEMP confirmation delegates to the
      * injected {@link com.acrylic.outbound.temporary.TemporaryArchiveService}, which owns the outer commit boundary
      * and therefore must be called while no transaction is active. FORMAL confirmations keep the original path.
+     *
+     * <p>TEMP confirmation stays closed unless the operator sets {@code outbound.temporary.archive.enabled=true}.
+     * With the default (false) the production face is the former hard rejection: the request shape and the PDA/epoch
+     * admission are still enforced, and only then {@code 409 TEMPORARY_CONFIRMATION_REQUIRED} is returned — nothing is
+     * archived, no row lock is held (the call always ends in a refusal) and no new information is exposed. Registering
+     * the assembly and this dispatch does not by itself open the capability, mirroring
+     * {@code outbound.temporary.commands.enabled} and {@code outbound.handover.commands.enabled}.
      */
     public JsonNode confirm(UUID id,String epoch,JsonNode request) {
         var head=submissions.required(id);
-        if(head.control().temporary()!=null) return temporary.confirm(id,epoch,request);
-        return confirmFormal(id,epoch,request);
+        if(head.control().temporary()==null) return confirmFormal(id,epoch,request);
+        if(temporaryArchiveEnabled) return temporary.confirm(id,epoch,request);
+        require(request.isObject() && request.size()==2 && text(request,"payloadSha256").matches("[a-f0-9]{64}") &&
+            text(request,"receiptSha256").matches("[a-f0-9]{64}"),"归档确认须提供原正文与完整回执的规范摘要");
+        access.pda(head.control(),epoch,true);
+        throw new com.acrylic.outbound.common.BusinessException(409,"TEMPORARY_CONFIRMATION_REQUIRED","临时单独立确认及归档尚未开放，保留原记录");
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode confirmFormal(UUID id,String epoch,JsonNode request) {

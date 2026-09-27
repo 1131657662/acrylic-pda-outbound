@@ -18,8 +18,9 @@ import org.springframework.transaction.PlatformTransactionManager;
  * there is resolved from the context, so nothing test-specific has to be moved.
  *
  * <p>The service keeps owning its outer commit boundary (it refuses to run inside an active transaction); this class
- * only makes it injectable. Registering the bean does not by itself open any production route: callers stay gated by
- * the temporary command switch, which is off by default.
+ * only makes it injectable. Registering the bean does not by itself open any production route: the TEMP branch of
+ * {@code SubmissionArchiveService.confirm} stays gated by {@code outbound.temporary.archive.enabled}, which is off by
+ * default (and the temporary command switch does not cover the archive route).
  */
 @Configuration
 public class TemporaryArchiveConfiguration {
