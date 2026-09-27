@@ -1,4 +1,5 @@
 package com.acrylic.outbound.pda.temporary
+import com.acrylic.outbound.pda.data.PDA_DATABASE_VERSION
 
 import android.content.ContentValues
 import android.database.DatabaseUtils
@@ -24,7 +25,7 @@ class TemporaryWorkMigrationTest {
             formal.scan(); val frozen = SubmissionFreeze(formal.store) { formal.now }.freeze(formal.assignment, "迁移保留")
             TemporaryFixture(folder.newFolder(), formal.db).use { it.repository.prepare {} }
             val before = rows(formal); rebuild(formal, before); formal.db = PdaDatabase.open(formal.context)
-            assertEquals(27, formal.db.openHelper.readableDatabase.version)
+            assertEquals(PDA_DATABASE_VERSION, formal.db.openHelper.readableDatabase.version)
             assertEquals(25, before.size); assertEquals(normalize(before), normalize(rows(formal)))
             assertEquals(frozen, formal.db.submissions().get(frozen.id)); assertNotNull(formal.db.scans().guard(formal.barcodes[0]))
             TemporaryFixture(folder.newFolder(), formal.db).use { f ->

@@ -1,4 +1,5 @@
 package com.acrylic.outbound.pda.evidence
+import com.acrylic.outbound.pda.data.PDA_DATABASE_VERSION
 
 import com.acrylic.outbound.pda.temporary.TemporaryWorkFixture
 import com.acrylic.outbound.pda.sync.SyncRun
@@ -28,7 +29,7 @@ class LocalDraftQueueMigrationTest {
             val requests = wire.all(); val receipt = f.db.localDraftTransfers().receipt(requests.first().originalKey)!!
             val signature = f.db.localDraftStopSignatures().get(f.id); val events = f.db.temporaryScans().events(f.id)
             downgrade(f); f.fixture.stopSigner.unavailable = true; f.reopen()
-            assertEquals(27, f.db.openHelper.readableDatabase.version); assertNull(f.db.localDraftQueue().get(f.id))
+            assertEquals(PDA_DATABASE_VERSION, f.db.openHelper.readableDatabase.version); assertNull(f.db.localDraftQueue().get(f.id))
             assertEquals(stop, LocalDraftStopRepository(f.store).read(f.id)); assertEquals(signature, f.db.localDraftStopSignatures().get(f.id))
             assertEquals(plan, LocalDraftTransferRepository(f.store).read(f.id)); assertEquals(requests, wire.all())
             val restored = f.db.localDraftTransfers().receipt(receipt.originalKey)!!

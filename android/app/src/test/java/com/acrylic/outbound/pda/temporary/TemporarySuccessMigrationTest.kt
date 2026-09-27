@@ -1,4 +1,5 @@
 package com.acrylic.outbound.pda.temporary
+import com.acrylic.outbound.pda.data.PDA_DATABASE_VERSION
 
 import com.acrylic.outbound.pda.evidence.*
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,7 @@ class TemporarySuccessMigrationTest {
             val stop = f.db.localE2aStops().get(f.id)
             f.db.localE2aReceipts().insert(LocalE2aReceipt(requests.first().originalKey, "RAW", "原回执".toByteArray()))
             downgrade(f); f.reopen()
-            assertEquals(27, f.db.openHelper.readableDatabase.version)
+            assertEquals(PDA_DATABASE_VERSION, f.db.openHelper.readableDatabase.version)
             assertEquals(frozen, f.db.temporarySubmissions().get(frozen.id))
             assertEquals(guard, f.db.temporaryScans().guard(f.barcodes[0])); assertEquals(stop, f.db.localE2aStops().get(f.id))
             assertEquals(requests, E2aRequestSequence(f.db, transfer).all().toList())

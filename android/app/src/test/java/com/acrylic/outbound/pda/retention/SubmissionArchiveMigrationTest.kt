@@ -1,4 +1,5 @@
 package com.acrylic.outbound.pda.retention
+import com.acrylic.outbound.pda.data.PDA_DATABASE_VERSION
 
 import android.content.ContentValues
 import android.database.DatabaseUtils
@@ -25,7 +26,7 @@ class SubmissionArchiveMigrationTest {
             f.db.audit().save(AuditCheckpoint("1", f.session.getString("deviceId"), 1, "original pending audit"))
             val retention = RetentionFixture(f.db); retention.state("ORDER"); retention.order(); retention.cleaner.clean()
             val before = rows(f); rebuildTwelve(f, before); f.db = PdaDatabase.open(f.context)
-            assertEquals(27, f.db.openHelper.readableDatabase.version); assertEquals(before, rows(f))
+            assertEquals(PDA_DATABASE_VERSION, f.db.openHelper.readableDatabase.version); assertEquals(before, rows(f))
             assertNull(f.db.archives().get(frozen.id, "1")); assertEquals(frozen, f.db.submissions().get(frozen.id))
             f.db.openHelper.readableDatabase.query("PRAGMA foreign_key_check").use { assertFalse(it.moveToFirst()) }
         }

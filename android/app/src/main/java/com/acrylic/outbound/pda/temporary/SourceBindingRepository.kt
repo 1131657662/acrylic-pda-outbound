@@ -69,7 +69,9 @@ class SourceBindingRepository internal constructor(
                 }
             }
             installedTotal += installed
-            next = data.optString("nextCursor", "")
+            // A JSON null cursor means "no more pages"; optString would hand back the literal "null".
+            val rawCursor = data.opt("nextCursor")
+            next = if (rawCursor == null || rawCursor == JSONObject.NULL) "" else rawCursor.toString()
             if (next.isEmpty()) {
                 return SyncResult(if (installedTotal > 0) "已安装 $installedTotal 条来源绑定" else "来源绑定无变化")
             }

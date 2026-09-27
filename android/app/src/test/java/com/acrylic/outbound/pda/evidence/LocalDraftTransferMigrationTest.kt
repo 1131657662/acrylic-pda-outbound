@@ -1,4 +1,5 @@
 package com.acrylic.outbound.pda.evidence
+import com.acrylic.outbound.pda.data.PDA_DATABASE_VERSION
 
 import com.acrylic.outbound.pda.temporary.TemporaryWorkFixture
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,7 @@ class LocalDraftTransferMigrationTest {
                 db.execSQL("DROP TABLE local_draft_queue"); db.execSQL("DROP TABLE local_draft_receipt"); db.execSQL("DROP TABLE local_draft_request"); db.execSQL("DROP TABLE local_draft_transfer")
                 db.execSQL("UPDATE room_master_table SET identity_hash=? WHERE id=42", arrayOf(schema.getString("identityHash"))); db.version = 25
             }
-            f.fixture.stopSigner.unavailable = true; f.reopen(); assertEquals(27, f.db.openHelper.readableDatabase.version)
+            f.fixture.stopSigner.unavailable = true; f.reopen(); assertEquals(PDA_DATABASE_VERSION, f.db.openHelper.readableDatabase.version)
             assertEquals(stopped, LocalDraftStopRepository(f.store).read(f.id)); assertEquals(signature, f.db.localDraftStopSignatures().get(f.id))
             assertEquals(events, f.db.temporaryScans().events(f.id)); assertEquals(0L, f.db.localDraftTransfers().count(f.id))
             assertNull(f.db.localDraftTransfers().get(f.id)); assertThrows(IllegalStateException::class.java) { LocalDraftTransferRepository(f.store).read(f.id) }

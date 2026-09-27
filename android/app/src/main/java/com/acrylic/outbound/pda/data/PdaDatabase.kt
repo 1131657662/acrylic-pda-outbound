@@ -40,6 +40,9 @@ import com.acrylic.outbound.pda.evidence.LocalDraftQueue
 import com.acrylic.outbound.pda.evidence.LocalDraftQueueDao
 import com.acrylic.outbound.pda.evidence.LocalDraftQueueMigration
 
+/** The single source of truth for the Room schema version; migration tests must assert against this, not a literal. */
+const val PDA_DATABASE_VERSION = 28
+
 @Database(entities = [PreparedOrder::class, PreparedBale::class, ClaimIntent::class, WorkOrder::class,
     WorkLine::class, WorkDevice::class, WorkCapture::class, WorkScan::class, WorkGuard::class, WorkEvent::class, LocalSubmission::class, LocalRecall::class, LocalContinuation::class, LocalDisposition::class,
     LocalSyncState::class, LocalCloudOrder::class, LocalRecoveryControl::class, LocalCloudBarcode::class, AuditCheckpoint::class,
@@ -52,7 +55,7 @@ import com.acrylic.outbound.pda.evidence.LocalDraftQueueMigration
     TemporaryArchiveResponse::class, TemporaryArchiveEvidence::class,
     LocalDraftStop::class, LocalDraftStopItem::class, LocalDraftStopSignature::class,
     LocalDraftTransfer::class, LocalDraftRequest::class, LocalDraftReceipt::class, LocalDraftQueue::class,
-    LocalSourceBinding::class], version = 28, exportSchema = true)
+    LocalSourceBinding::class], version = PDA_DATABASE_VERSION, exportSchema = true)
 abstract class PdaDatabase : RoomDatabase() {
     abstract fun preparations(): PreparationDao
     abstract fun work(): WorkDao

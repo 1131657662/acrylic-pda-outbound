@@ -1,4 +1,5 @@
 package com.acrylic.outbound.pda.temporary
+import com.acrylic.outbound.pda.data.PDA_DATABASE_VERSION
 
 import android.content.ContentValues
 import android.database.DatabaseUtils
@@ -28,7 +29,7 @@ class TemporaryMigrationTest {
             f.db.archives().insert(SubmissionArchive(frozen.id, "1", frozen.sha256, "receipt hash", "original proof", "original key", 123L))
             f.db.sync().saveRecovery(LocalRecoveryControl(observedServerEpoch = "1", mode = "NORMAL"))
             val before = rows(f); rebuildFourteen(f, before); f.db = PdaDatabase.open(f.context)
-            assertEquals(27, f.db.openHelper.readableDatabase.version); assertEquals(before, rows(f))
+            assertEquals(PDA_DATABASE_VERSION, f.db.openHelper.readableDatabase.version); assertEquals(before, rows(f))
             TemporaryFixture(folder.newFolder(), f.db).use { temporary -> temporary.repository.prepare {} }
             assertEquals(before, rows(f)); assertEquals(frozen, f.db.submissions().get(frozen.id))
             assertNotNull(f.db.scans().guard(f.barcodes[0]))

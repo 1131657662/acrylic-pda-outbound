@@ -1,4 +1,5 @@
 package com.acrylic.outbound.pda.evidence
+import com.acrylic.outbound.pda.data.PDA_DATABASE_VERSION
 
 import com.acrylic.outbound.pda.temporary.TemporaryFreeze
 import com.acrylic.outbound.pda.temporary.TemporaryWorkFixture
@@ -29,7 +30,7 @@ class LocalE2aTransferMigrationTest {
             val original = checkNotNull(f.db.localE2aObjects().frozen(f.id, frozen.id))
             downgradeFixture(f)
             f.reopen()
-            assertEquals(27, f.db.openHelper.readableDatabase.version)
+            assertEquals(PDA_DATABASE_VERSION, f.db.openHelper.readableDatabase.version)
             assertEquals(frozen, f.db.temporarySubmissions().forOrder(f.id))
             assertEquals(stop, LocalE2aStopRepository(f.store).record(f.id))
             val restored = checkNotNull(f.db.localE2aObjects().frozen(f.id, frozen.id))

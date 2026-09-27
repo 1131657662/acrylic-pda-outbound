@@ -9,13 +9,16 @@ import java.util.concurrent.CancellationException
 class BackgroundSync(private val orders: SyncRepository, private val barcodes: BarcodeRepository,
     private val audit: AuditRepository, private val archives: AuditArchiveRepository,
     private val submissions: SubmissionArchiveRepository,
+    private val bindings: com.acrylic.outbound.pda.temporary.SourceBindingRepository,
     private val current: () -> JSONObject) {
     fun run(control: SyncRun): List<SyncOutcome> {
         val auth = JSONObject(current().toString())
         return listOf<() -> SyncResult>(
             { orders.syncOrders(run = control) }, { barcodes.syncBarcodes(run = control) },
             { syncAudit(control) },
-            { submissions.refreshBackground(control) }
+            { submissions.refreshBackground(control) },
+            // A controlled link changes the canonical order on the server; the device only learns it here.
+            { bindings.installBindings(run = control) }
         ).map { action ->
             try { control.identity(auth, current); SyncOutcome(result = action()) }
             catch (cancelled: CancellationException) { throw cancelled }

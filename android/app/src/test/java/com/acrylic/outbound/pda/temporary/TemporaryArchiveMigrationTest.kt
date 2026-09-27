@@ -1,4 +1,5 @@
 package com.acrylic.outbound.pda.temporary
+import com.acrylic.outbound.pda.data.PDA_DATABASE_VERSION
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -30,7 +31,7 @@ class TemporaryArchiveMigrationTest {
                 db.execSQL("DROP TABLE temporary_archive_evidence"); db.execSQL("DROP TABLE temporary_archive_response"); db.execSQL("DROP TABLE temporary_archive_request")
                 db.execSQL("UPDATE room_master_table SET identity_hash=? WHERE id=42", arrayOf(schema.getString("identityHash"))); db.version = 22
             }
-            f.reopen(); assertEquals(27, f.db.openHelper.readableDatabase.version)
+            f.reopen(); assertEquals(PDA_DATABASE_VERSION, f.db.openHelper.readableDatabase.version)
             assertEquals(accepted, f.db.temporarySuccess().evidence(f.local.id))
             assertArrayEquals(f.bytes, f.db.temporarySuccess().response(f.local.id, hash)!!.responseBytes)
             assertNotNull(f.repository.read(f.local.id, f.key))

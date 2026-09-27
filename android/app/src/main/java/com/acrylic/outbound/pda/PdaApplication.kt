@@ -54,7 +54,8 @@ open class PdaApplication : Application(), androidx.work.Configuration.Provider 
     val auditSync by lazy { com.acrylic.outbound.pda.sync.AuditRepository(database, session) }
     val archives by lazy { com.acrylic.outbound.pda.retention.SubmissionArchiveRepository(database, session) }
     val auditArchives by lazy { com.acrylic.outbound.pda.retention.AuditArchiveRepository(database, session) }
-    val backgroundSync by lazy { com.acrylic.outbound.pda.sync.BackgroundSync(sync, barcodeSync, auditSync, auditArchives, archives, session::requireSession) }
+    val sourceBindings by lazy { com.acrylic.outbound.pda.temporary.SourceBindingRepository(database, session) }
+    val backgroundSync by lazy { com.acrylic.outbound.pda.sync.BackgroundSync(sync, barcodeSync, auditSync, auditArchives, archives, sourceBindings, session::requireSession) }
     val retention by lazy { com.acrylic.outbound.pda.retention.RetentionCleaner(database,
         { session.requireSession().getString("serverRecoveryEpoch") }, session::now) }
     val updates by lazy { PdaUpdateClient(this, session.settings, database) { work.state.value } }

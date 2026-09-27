@@ -1,4 +1,5 @@
 package com.acrylic.outbound.pda.evidence
+import com.acrylic.outbound.pda.data.PDA_DATABASE_VERSION
 
 import android.content.ContentValues
 import android.database.DatabaseUtils
@@ -37,7 +38,7 @@ class LocalE2aStopMigrationTest {
                 val before = rows(formal.db)
                 rebuild(formal, before)
                 formal.db = PdaDatabase.open(formal.context)
-                assertEquals(27, formal.db.openHelper.readableDatabase.version)
+                assertEquals(PDA_DATABASE_VERSION, formal.db.openHelper.readableDatabase.version)
                 assertEquals(before, rows(formal.db))
                 assertEquals(saved, formal.db.temporarySubmissions().forOrder(temporary.id))
                 assertNull(formal.db.localE2aStops().get(temporary.id))

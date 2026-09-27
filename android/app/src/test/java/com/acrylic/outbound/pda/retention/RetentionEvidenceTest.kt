@@ -1,4 +1,5 @@
 package com.acrylic.outbound.pda.retention
+import com.acrylic.outbound.pda.data.PDA_DATABASE_VERSION
 
 import android.content.ContentValues
 import android.database.DatabaseUtils
@@ -55,7 +56,7 @@ class RetentionEvidenceTest {
             val before = rows(work)
             rebuildEleven(work, before)
             work.db = PdaDatabase.open(work.context)
-            assertEquals(27, work.db.openHelper.readableDatabase.version)
+            assertEquals(PDA_DATABASE_VERSION, work.db.openHelper.readableDatabase.version)
             assertEquals(before, rows(work))
             work.db.openHelper.readableDatabase.query("SELECT COUNT(*) FROM local_retained_baseline").use {
                 assertTrue(it.moveToFirst()); assertEquals(0, it.getInt(0))

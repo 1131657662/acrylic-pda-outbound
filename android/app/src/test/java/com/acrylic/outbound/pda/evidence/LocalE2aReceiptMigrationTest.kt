@@ -1,4 +1,5 @@
 package com.acrylic.outbound.pda.evidence
+import com.acrylic.outbound.pda.data.PDA_DATABASE_VERSION
 
 import com.acrylic.outbound.pda.temporary.*
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +36,7 @@ class LocalE2aReceiptMigrationTest {
                 db.version = 20
             }
             f.reopen()
-            assertEquals(27, f.db.openHelper.readableDatabase.version)
+            assertEquals(PDA_DATABASE_VERSION, f.db.openHelper.readableDatabase.version)
             assertEquals(plan, LocalE2aTransferRepository(f.store).record(f.id))
             assertEquals(requests, E2aRequestSequence(f.db, plan).all().toList())
             assertNull(f.db.localE2aReceipts().queue(f.id))

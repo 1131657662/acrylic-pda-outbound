@@ -1,4 +1,5 @@
 package com.acrylic.outbound.pda.evidence
+import com.acrylic.outbound.pda.data.PDA_DATABASE_VERSION
 
 import com.acrylic.outbound.pda.temporary.TemporaryWorkFixture
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +35,7 @@ class LocalDraftStopMigrationTest {
                 db.version = 24
             }
             f.reopen()
-            assertEquals(27, f.db.openHelper.readableDatabase.version)
+            assertEquals(PDA_DATABASE_VERSION, f.db.openHelper.readableDatabase.version)
             assertEquals(stop, f.db.localDraftStops().get(f.id)); assertEquals(stop.recordCount, f.db.localDraftStops().count(f.id))
             assertEquals(draft, f.db.temporaryDrafts().get(f.id)); assertEquals(events, f.db.temporaryScans().events(f.id))
             assertEquals(input, f.db.temporaryScans().capture(input.id)); assertNull(f.db.localDraftStopSignatures().get(f.id))
@@ -60,7 +61,7 @@ class LocalDraftStopMigrationTest {
                 db.version = 23
             }
             f.reopen()
-            assertEquals(27, f.db.openHelper.readableDatabase.version)
+            assertEquals(PDA_DATABASE_VERSION, f.db.openHelper.readableDatabase.version)
             assertEquals(draft, f.db.temporaryDrafts().get(f.id)); assertEquals(input, f.db.temporaryScans().capture(input.id))
             assertEquals(events, f.db.temporaryScans().events(f.id)); assertEquals(device, f.db.work().device(f.catalog.request.deviceId))
             assertNull(f.db.localDraftStops().get(f.id)); assertEquals(0L, f.db.localDraftStops().count(f.id))
