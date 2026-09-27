@@ -162,7 +162,7 @@ Write-Host "gradle exit=$gradleExit"
 $resultsDir = Join-Path $Workspace 'server/build/test-results/integrationTest'
 $xml = @(Get-ChildItem $resultsDir -Filter ("*" + ($Tests -replace '\*','') + ".xml") -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1)
 if ($xml.Count -eq 0) { Fail 'collect results' "no XML for $Tests under $resultsDir" }
-$doc = [xml](Get-Content -LiteralPath $xml[0].FullName -Raw)
+$doc = [xml][System.IO.File]::ReadAllText($xml[0].FullName, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ("RESULT attempt={0} tests={1} failures={2} errors={3} skipped={4} time={5}s" -f $Run, $doc.testsuite.tests, $doc.testsuite.failures, $doc.testsuite.errors, $doc.testsuite.skipped, $doc.testsuite.time)
 $doc.testsuite.testcase | ForEach-Object {
     $state = if ($_.failure) { 'FAIL' } elseif ($_.error) { 'ERROR' } elseif ($_.skipped) { 'SKIP' } else { 'pass' }
