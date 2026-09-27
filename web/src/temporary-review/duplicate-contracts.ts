@@ -16,12 +16,12 @@ export const duplicateCandidateSchema = z.object({
   products: z.array(product), signals: z.array(z.enum(['SAME_VEHICLE', 'SHARED_PRODUCT'])), blockers: z.array(z.enum([
     'TARGET_NOT_READY', 'PDA_WORK_EXISTS', 'PC_WORK_EXISTS', 'SUBMISSION_EXISTS', 'RESULT_EXISTS', 'PLAN_DIFFERS',
     'INVENTORY_VERSION_DIFFERS', 'SOURCE_NOT_PENDING',
-  ])), linkAvailable: z.literal(false),
+  ])), linkAvailable: z.boolean(),
 });
 export const duplicatePageSchema = z.object({ context, range: z.object({ fromDate: z.iso.date(), throughDate: z.iso.date() }),
   checkedAt: z.iso.datetime(), contextSha256: hash, candidateSetSha256: hash, total: z.number().int().nonnegative().safe(),
   items: z.array(duplicateCandidateSchema).max(200), nextCursor: z.string().nullable(), hasMore: z.boolean(),
-  writeAvailable: z.literal(false), releaseAllowed: z.literal(false) });
+  writeAvailable: z.boolean(), releaseAllowed: z.literal(false) });
 export type DuplicatePage = z.infer<typeof duplicatePageSchema>;
 export type DuplicateCandidate = z.infer<typeof duplicateCandidateSchema>;
 

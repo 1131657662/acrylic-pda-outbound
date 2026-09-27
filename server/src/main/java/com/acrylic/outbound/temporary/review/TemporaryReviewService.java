@@ -16,10 +16,12 @@ public class TemporaryReviewService {
     private final Access access;private final SubmissionStore submissions;private final SubmissionFiles files;
     private final TemporaryStore authorizations;private final TemporaryReviewQueries queries;
     private final TemporaryReviewEligibility eligibility;private final TemporaryReviewStock stock;private final ServerState state;
+    private final boolean commandsEnabled;
     public TemporaryReviewService(Access access,SubmissionStore submissions,SubmissionFiles files,TemporaryStore authorizations,
-        TemporaryReviewQueries queries,TemporaryReviewEligibility eligibility,TemporaryReviewStock stock,ServerState state) {
+        TemporaryReviewQueries queries,TemporaryReviewEligibility eligibility,TemporaryReviewStock stock,ServerState state,
+        @org.springframework.beans.factory.annotation.Value("${outbound.temporary.commands.enabled:false}") boolean commandsEnabled) {
         this.access=access;this.submissions=submissions;this.files=files;this.authorizations=authorizations;
-        this.queries=queries;this.eligibility=eligibility;this.stock=stock;this.state=state;
+        this.queries=queries;this.eligibility=eligibility;this.stock=stock;this.state=state;this.commandsEnabled=commandsEnabled;
     }
     public Page<TemporaryReviewQueries.Item> list(UUID warehouse,String cursor,int limit) {
         access.require("temporary_order:confirm",warehouse);return queries.current(warehouse,cursor,limit);
@@ -41,7 +43,10 @@ public class TemporaryReviewService {
         boolean shortShipment=false;for(var p:result.path("products")) shortShipment|=p.path("shortCount").asLong()>0;
         TemporaryReviewEligibility.add(issues,"SHORT_SHIPMENT_APPROVAL_REQUIRED",shortShipment);
         stock.issues(evidence.body(),id).forEach((code,count)->issues.add(object().put("code",code).put("count",count.toString())));
-        result.set("currentIssues",issues);return result;
+        result.set("currentIssues",issues);
+        // The confirmation may be offered only when the command surface is on and nothing is left to resolve.
+        result.put("writeConfirmationAvailable",commandsEnabled && issues.isEmpty());
+        return result;
     }
     public Page<JsonNode> scans(UUID id,UUID warehouse,String cursor,int limit) {
         access.require("temporary_order:confirm",warehouse);Page.checkedLimit(limit);var evidence=read(id,warehouse);
