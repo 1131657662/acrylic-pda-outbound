@@ -25,6 +25,7 @@
 [CmdletBinding()]
 param(
     [int]$Run = 106,
+    [string]$Tests = '*E2aTemporaryLinkConfirmIT',
     [string]$Workspace = 'D:\acrylic-pda-worktrees\r06-e2a-migration',
     [string]$MySqlBase = 'C:\Program Files\MySQL\MySQL Server 8.0',
     [int]$Port = 19330,
@@ -145,7 +146,7 @@ $env:E2A_CROSS_RUN = "$Run"
 $env:E2A_CROSS_PASSWORD = $password
 Push-Location $Workspace
 try {
-    & (Join-Path $Workspace 'gradlew.bat') -p server integrationTest --tests '*E2aTemporaryLinkConfirmIT' --console=plain 2>&1 |
+    & (Join-Path $Workspace 'gradlew.bat') -p server integrationTest --tests $Tests --console=plain 2>&1 |
         Tee-Object -FilePath $runLog
     $gradleExit = $LASTEXITCODE
 } finally {
@@ -155,8 +156,8 @@ Write-Host "gradle exit=$gradleExit"
 
 # ---------------------------------------------------------------- results
 $resultsDir = Join-Path $Workspace 'server/build/test-results/integrationTest'
-$xml = @(Get-ChildItem $resultsDir -Filter '*E2aTemporaryLinkConfirmIT.xml' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1)
-if ($xml.Count -eq 0) { Fail 'collect results' "no XML for E2aTemporaryLinkConfirmIT under $resultsDir" }
+$xml = @(Get-ChildItem $resultsDir -Filter ("*" + ($Tests -replace '\*','') + ".xml") -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1)
+if ($xml.Count -eq 0) { Fail 'collect results' "no XML for $Tests under $resultsDir" }
 $doc = [xml](Get-Content -LiteralPath $xml[0].FullName -Raw)
 Write-Host ("RESULT attempt={0} tests={1} failures={2} errors={3} skipped={4} time={5}s" -f $Run, $doc.testsuite.tests, $doc.testsuite.failures, $doc.testsuite.errors, $doc.testsuite.skipped, $doc.testsuite.time)
 $doc.testsuite.testcase | ForEach-Object {

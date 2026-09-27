@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { ApiError, currentRecoveryEpoch, errorText, postRaw, request } from '../api';
 import { commandFactsSchema, commandReceiptSchema, type CommandFacts, type CommandKind, type CommandReceipt } from './command-contracts';
+import { duplicatePageSchema } from './duplicate-contracts';
 
 function newCommandId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
@@ -41,17 +42,32 @@ export function useTemporaryCommand(scope: () => { submissionId: string; warehou
     finally { busy.value = false; }
   }
 
+  /**
+   * Both command kinds require the reviewed candidate context digest (the server refuses any decision that
+   * does not carry one). Prefer the digest of the page the human actually reviewed; otherwise read it from the
+   * candidate endpoint so a confirmation is never sent with an empty binding.
+   */
+  async function candidateContext(kind: CommandKind, provided?: string | null): Promise<string> {
+    if (provided) return provided;
+    const current = scope();
+    const params = new URLSearchParams({ warehouseId: current.warehouseId, limit: '1' });
+    const page = await request(`/temporary-reviews/${current.submissionId}/duplicate-candidates?${params}`, duplicatePageSchema);
+    if (!page.contextSha256) throw new Error(`${kind === 'LINK' ? '关联' : '确认'}前必须先完成候选核对。`);
+    return page.contextSha256;
+  }
+
   async function execute(kind: CommandKind, options: { reason?: string; candidateContextSha256?: string | null } = {}): Promise<void> {
     busy.value = true; error.value = '';
     try {
       const current = facts.value ?? await fetchFacts();
+      const context = await candidateContext(kind, options.candidateContextSha256);
       const body = {
         commandVersion: 1, commandType: kind, commandId: keyOf(kind), transportRecoveryEpoch: currentRecoveryEpoch(),
         reason: options.reason ?? '',
         warehouseId: current.warehouseId, submissionId: current.submissionId, workRound: current.workRound,
         authorizationId: current.authorizationId, freezeDeviceId: current.freezeDeviceId,
         sourceRecoveryEpoch: current.sourceRecoveryEpoch, source: { ...current.source },
-        expected: { ...current.expected, candidateContextSha256: kind === 'LINK' ? options.candidateContextSha256 ?? null : null },
+        expected: { ...current.expected, candidateContextSha256: context },
       };
       receipt.value = await postRaw('/temporary-commands', body, commandReceiptSchema);
       keys.delete(kind); facts.value = null;
