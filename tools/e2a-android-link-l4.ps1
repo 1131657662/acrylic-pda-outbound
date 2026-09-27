@@ -79,6 +79,11 @@ while ((Get-Date) -lt $handshakeDeadline) {
 }
 if (-not $handshakeReady) {
     Write-Host "the handshake file never appeared (serverExited=$($server.HasExited))"
+    $serverLogText = if (Test-Path -LiteralPath $serverOut) { Get-Content -LiteralPath $serverOut -Raw } else { '' }
+    if ($serverLogText -match 'UP-TO-DATE|NOT-EXECUTED') {
+        Write-Host "hint: the integrationTest task was UP-TO-DATE, so nothing ran. The constructor now passes --rerun-tasks;"
+        Write-Host "      if this message still appears, a different input made the task skip (inspect the log above)."
+    }
     New-Item -ItemType File -Force -Path $stopFile | Out-Null
     Show-Tail $serverOut 25
     Show-Tail $serverErr 15

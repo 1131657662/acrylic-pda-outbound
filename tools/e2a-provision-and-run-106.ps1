@@ -154,7 +154,10 @@ try {
     # Full-suite mode: an empty/-ALL $Tests runs every IT. Passing a glob through PowerShell is unsafe
     # (it glob-expands and Gradle then sees a bogus filter such as ".git"), so omit --tests entirely.
     $testArgs = if ([string]::IsNullOrWhiteSpace($Tests) -or $Tests -in @('*','ALL')) { @() } else { @('--tests', $Tests) }
-    & (Join-Path $Workspace 'gradlew.bat') -p server integrationTest @testArgs --console=plain 2>&1 |
+    # --rerun-tasks is required: a repeated run with the SAME --tests filter is UP-TO-DATE for Gradle, so the task is
+    # skipped and the attempt silently produces no XML at all (observed 2026-09-27, attempt 186). With the filter in
+    # place only the named tests execute, so forcing the task cannot widen the run.
+    & (Join-Path $Workspace 'gradlew.bat') -p server integrationTest @testArgs --rerun-tasks --console=plain 2>&1 |
         Tee-Object -FilePath $runLog
     $gradleExit = $LASTEXITCODE
 } finally {
