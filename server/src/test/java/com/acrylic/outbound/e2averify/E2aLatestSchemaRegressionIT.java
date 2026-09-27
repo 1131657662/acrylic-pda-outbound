@@ -26,8 +26,16 @@ class E2aLatestSchemaRegressionIT {
         profile.migrate(jdbc, "34"); E2aV34Seed.seed(jdbc, profile.attempt.resolve("storage"));
         profile.migrate(jdbc, "42"); E2aCrossSourceHttpSetup.signing(profile.attempt);
         profile.migrate(jdbc, "48");
-        var notes = new StringBuilder("A 组回归：R06 链在 V48 schema 上重跑\n");
-        try (var context = E2aCrossSourceHttpIT.start(profile, "--outbound.temporary.commands.enabled=true")) {
+        var notes = new StringBuilder("A 组回归：R06 链 + R08 导出读取器在最新 schema 上重跑\n");
+        // The export reader (ExportFacts / ExportRangeReader) is the other consumer of order_result_version
+        // (header_snapshot); the export fixtures need the renderer and its browsers, exactly as E2aTemporaryExportIT
+        // passes them. cookie.secure=false is repeated here so the IT is self-contained outside this harness.
+        java.nio.file.Path renderer=java.nio.file.Path.of("../report-rendering/build/install/acrylic-report-rendering")
+            .toAbsolutePath().normalize();
+        try (var context = E2aCrossSourceHttpIT.start(profile, "--outbound.temporary.commands.enabled=true",
+                "--outbound.exports.sample-data=true", "--server.servlet.session.cookie.secure=false",
+                "--outbound.exports.renderer-home="+renderer,
+                "--outbound.exports.browsers=D:/acrylic-pda-worktrees/r08-export/report-rendering/build/browsers")) {
             // The correction capability must still be absent with its own default switch off.
             assertThat(context.getBeanNamesForType(CorrectionCommandController.class))
                 .as("更正路由默认不装配").isEmpty();
@@ -75,6 +83,21 @@ class E2aLatestSchemaRegressionIT {
                 .isInstanceOf(org.springframework.dao.DataAccessException.class)
                 .hasMessageContaining("ck_result_channel");
             notes.append("②共享表不变量逐条核对完成：v1 渠道/回填、双指针一致、scan 与回执表空、放宽列可空、渠道 CHECK 仍生效\n");
+        }
+        // (6) R08 导出读取器（读 order_result_version.header_snapshot）在新 schema 上跑一遍——这是
+        //     "读 order_result_version 的类"里唯一能在 V48 上验证的通道（其余 e2a IT 都把库钉在 V44 及以前）。
+        //     它要求命令面为默认关闭态（fixture 断言无 CommandOperation bean），故用第二个上下文，DB 仍是最新 schema。
+        try (var exportContext = E2aCrossSourceHttpIT.start(profile, "--outbound.exports.sample-data=true",
+                "--server.servlet.session.cookie.secure=false",
+                "--outbound.exports.renderer-home="+renderer,
+                "--outbound.exports.browsers=D:/acrylic-pda-worktrees/r08-export/report-rendering/build/browsers")) {
+            assertThat(exportContext.getBeanNamesForType(CorrectionCommandController.class))
+                .as("导出上下文仍是默认关闭态").isEmpty();
+            new com.acrylic.outbound.inventory.TemporaryExportChecks((WebApplicationContext) exportContext)
+                .verify(profile.attempt.resolve("exports-verified"));
+            assertThat(java.nio.file.Files.list(profile.attempt.resolve("exports-verified")).count())
+                .as("导出链在新 schema 上产出了产物").isPositive();
+            notes.append("③R08 导出读取器在 V48 上跑通并产出产物\n");
         }
         Files.writeString(profile.attempt.resolve("latest-schema-regression.txt"), notes.toString());
         Files.writeString(profile.attempt.resolve("test-completed.marker"), notes.toString());
