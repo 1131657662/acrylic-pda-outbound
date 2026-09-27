@@ -13,10 +13,24 @@
 #   2) ~~Web 路由 `/api/v1/corrections` 的真 HTTP 证据~~ **已具备**（2026-09-27，attempt 292：Web 会话 + CSRF + Cookie
 #      往返下 ①开关关闭 404 ②形状错误 400 `INVALID_CORRECTION_COMMAND` ③未知订单 404 `CORRECTION_DOCUMENT_NOT_FOUND`）；
 #      根因（会话 Cookie 默认 `Secure` 与明文 HTTP 冲突）已在 harness 侧显式 `OUTBOUND_COOKIE_SECURE=false` 解决，生产默认未改；
-#   3) 申请人确认机制（P-R07-08 的确认半程）——**已实现**（V48 + WITHDRAW/WITHDRAW_CONFIRM）；
-#      仍缺：待确认是否有期限、申请人可否拒绝（政策项）；
+#   3) 申请人确认机制（P-R07-08 的确认半程）——**已实现**（V48 + WITHDRAW/WITHDRAW_CONFIRM，attempts 255/256）；
+#      仍缺：待确认是否有期限、申请人可否拒绝、拒绝后单据去向（政策项，见 §政策待决）；
 #   4) `contracts/openapi.yaml` 版本号由维护者按事实块统一分配后递增；
 #   5) 本文件的路径与 schema 通过 `tools/version_facts.ps1 -Check` 的一致性校验（并入后）。
+#
+# 草案自审（2026-09-28，自主运行 v11 / D1）：逐条与实现核对（`CorrectionCommand.KINDS`、
+# `CorrectionOperations`、`CorrectionReconciliations`、`CorrectionCommand` 的限额与窗口常量）——
+#   - 命令类型：实现为 **6 种** `CREATE / APPROVE / WITHDRAW / WITHDRAW_CONFIRM / RECONCILE_OPEN / RECONCILE_ADVANCE`；
+#     本草案原先只列 5 种且把「确认半程」标为未实现 ⇒ **本轮已补齐 WITHDRAW_CONFIRM 并更正状态**。
+#   - 限额与窗口与实现一致：附件单文件 10MB / 单条 5 个 / 单次 50MB（`CorrectionCommand:50`、
+#     `CorrectionOperations:122`）；补录窗口 3 天（`CorrectionCommand:47`）。
+#   - 权限：`outbound:correct` / `correction:approve` / `inventory:reconcile` 与实现一致；
+#     WITHDRAW/WITHDRAW_CONFIRM 另有「原审批人 / 申请人」身份断言（`CorrectionOperations.Withdraw`/`WithdrawConfirm`）。
+#
+# §政策待决（不阻塞草案完善，阻塞发布后的行为定义）：
+#   - 撤销是否有期限、申请人可否拒绝、拒绝/超期后单据是撤回还是作废；
+#   - SoD（同一人可否既创建又批准）与 §3 三项审批前置来源；
+#   - 契约形态（单端点+commandType 已由实现选定，见下方「与设计 §5 的差异」）。
 #
 # 已知「已实现但故意未发布」的路由（同一纪律：能力默认关闭 ⇒ 不发布）——并入时需一并处理：
 #   - /api/v1/pda/corrections            （R07-3 PDA 别名，本文件即其草案）
@@ -45,6 +59,7 @@ paths:
                 - $ref: '#/components/schemas/CorrectionCreate'
                 - $ref: '#/components/schemas/CorrectionApprove'
                 - $ref: '#/components/schemas/CorrectionWithdraw'
+                - $ref: '#/components/schemas/CorrectionWithdrawConfirm'
                 - $ref: '#/components/schemas/ReconcileOpen'
                 - $ref: '#/components/schemas/ReconcileAdvance'
       responses:
@@ -114,10 +129,20 @@ components:
       properties: { commandType: { const: APPROVE }, documentId: { type: string, format: uuid } }
     CorrectionWithdraw:
       description: |
-        误批撤销（P-R07-08）：仅原审批人可发起；账务**逐笔回退**（reverses_entry_id 指向原行、delta 完全相反）。
-        ⚠️ 设计的「申请人确认」机制尚未定义（无列、无待确认状态、无第二端点）——**确认半程未实现**。
+        误批撤销的**第一步**（P-R07-08）：仅原审批人可发起；document 进入 `WITHDRAW_PENDING`，
+        此时**账务尚未回退**（误批仍在生效），等待申请人确认。
       type: object
       properties: { commandType: { const: WITHDRAW }, documentId: { type: string, format: uuid } }
+    CorrectionWithdrawConfirm:
+      description: |
+        误批撤销的**第二步**（P-R07-08 确认半程，V48 已实现）：仅**申请人**（`requestedBy`）可确认；
+        确认后账务**逐笔回退**——该文档写过的每一行 `correction_ledger` 新增一行经 `reverses_entry_id`
+        指向原行、delta 完全相反，并按回退后合计发布**新的结果版本**；原批准、撤销请求与确认全部留痕，
+        不重写、不删除。前置状态必须为 `WITHDRAW_PENDING`，否则 409 `CORRECTION_CONTEXT_CHANGED`；
+        若期间有其它更正改变了明细状态，逐笔回退会静默覆盖 ⇒ 409 `CORRECTION_LEDGER_CONFLICT`。
+        政策未定：本步是否有期限、申请人可否拒绝（拒绝后单据去向）——见文件头「§政策待决」。
+      type: object
+      properties: { commandType: { const: WITHDRAW_CONFIRM }, documentId: { type: string, format: uuid } }
     ReconcileOpen:
       description: 差异案件（步骤 7）；不产生任何库存/结果写入
       type: object
