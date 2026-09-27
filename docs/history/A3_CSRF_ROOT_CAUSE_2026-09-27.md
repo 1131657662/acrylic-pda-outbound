@@ -143,10 +143,28 @@ server:
   `useTemporaryCommand.ts:50-57` 的 fetch 分支，取的**仍是** `page.contextSha256`（同一个错口径，两条路都不对）。
 - 后果：开关一旦打开，A2 的 LINK / NORMAL_CONFIRM 都会**稳定 409 `COMMAND_CONTEXT_CHANGED`**（实测同源症状见 6.2）。
 
-**状态**：本轮**只定性、不修改**（硬边界）。记为**新债**，将来独立修；
-**建议修法**（不动契约字段类型）：让**服务端**把命令口径摘要发出来——在 `/temporary-commands/facts`
-（或候选接口）补一个命令口径字段，客户端一律回显服务端给的值，禁止页面复用自己那套 `contextSha256`。
-**未验边界**：① 该缺陷**未经真 HTTP 实测**（开关默认关闭，无法端到端复现 409）；② 未确认 Android/PC 端是否也取错口径。
+**状态**：本轮**只定性、不修改**（硬边界）。v13 进一步查明：**修它必须先改"已声明契约"** ⇒ 按指令硬边界**停下报告**，未改任何代码。见 **6.5**。
+
+### 6.5 A2 修复的授权判定：**必须改已声明契约 ⇒ 停下报告**（v13，未改任何代码）
+
+**为什么"补发摘要"不能直接做（三处都是 `additionalProperties: false` 的已声明面）**：
+
+| 候选方案 | 契约阻碍 |
+| --- | --- |
+| a. facts 面**新增**字段 | `temporary-command-paths.yaml:47` 明文承诺只返回"expected + 六个绑定标量 + 原来源身份"；`FactsResponses` 直接 `$ref` 到 `Facts`，而 `Facts` 是 `additionalProperties: false`（`temporary-command-facts-schemas.yaml:3`）⇒ 新增字段＝改已声明契约 |
+| b. 候选接口**新增**字段 | `temporary-duplicate-schemas.yaml:1-20` **未**设 `additionalProperties:false`，但 `required` 列全 ⇒ 新增也会改动该已声明响应形状；且 `temporary-duplicate-paths.yaml:15` 明文"不写决定、排除、关联、占用、记账或回执" |
+| c. 复用现有字段 | 候选接口 `candidateSetSha256`（`temporary-duplicate-schemas.yaml:14`）**是死字段**（`TemporaryDuplicateService.read:32` 传的是 `snapshot.fingerprint()`，即候选集指纹，不是命令口径摘要）；`contextSha256` 已被**游标绑定**使用（`temporary-duplicate-paths.yaml:11`），改其含义会破坏分页协议 ⇒ 两者都不能复用 |
+
+**现状核实（本轮实测/静态）**：命令口径摘要（`TemporaryDecisionCandidates.snapshot().contextSha256`）**在 HTTP 面没有任何承载字段**；
+服务端只把它用于**比较**（`CommandExpected.validate`、`TemporaryLinkOperation:41`），从不外发。
+`Facts` 里的 `candidateContextSha256: {type: 'null'}` 是既有设计（保证客户端逐字回显）。
+
+**结论**：让 Web 端拿到正确口径**必然要动契约**（任选 a/b 之一，且需同步契约版本与路径描述），
+而本轮硬边界是"**不发布契约**"、"若需要改契约字段 → 停下报告" ⇒ **本轮未改一行代码**，按指令停下。
+**建议（待业主书面授权后执行，最小面）**：选 **b**（契约自己就写着"由人工核对的候选接口单独提供"），
+在候选接口响应加一个命令口径字段（如 `commandContextSha256`）＋同步该路径描述与契约版本；
+或选 a 但须同时修改 facts 的"只返回…"描述。**两条路都不放行任何能力、`candidateContextSha256` 仍为 `null`、`linkAvailable/releaseAllowed` 仍恒 false。**
+
 
 
 ### 6.4 本轮证据与边界
