@@ -30,6 +30,10 @@ param(
     [string]$MySqlBase = 'C:\Program Files\MySQL\MySQL Server 8.0',
     [int]$Port = 19330,
     [switch]$ProvisionOnly,
+    # Non-e2a ITs (@SpringBootTest + MockMvc) resolve the app's own datasource instead of E2aCrossSourceProfile, so they
+    # need the isolated database exported and the app allowed to migrate it. Off by default: the verified e2a path keeps
+    # its manual per-IT migration targets untouched.
+    [switch]$NonE2a,
     # Reusable constructor (R02): by default the isolated MySQL is stopped again once the run is reported, so one
     # command means "start empty DB -> run the chosen gated IT (which starts the real server and drives real HTTP)
     # -> report -> stop". Pass -KeepServerRunning to inspect the instance afterwards.
@@ -154,6 +158,13 @@ $env:E2A_CROSS_PASSWORD = $password
 # present, the CSRF filter rejected it and the Web login answered 403 ACCESS_DENIED (attempts 150, 194-196, 237).
 # Production keeps the secure default; the isolated harness opts out explicitly for the lifetime of this process.
 $env:OUTBOUND_COOKIE_SECURE = 'false'
+if ($NonE2a) {
+    # See the -NonE2a switch: hand the isolated database to the application context itself.
+    $env:OUTBOUND_DB_URL = "jdbc:mysql://127.0.0.1:$Port/$database"
+    $env:OUTBOUND_DB_USER = $user
+    $env:OUTBOUND_DB_PASSWORD = $password
+    $env:OUTBOUND_MIGRATE = 'true'
+}
 Push-Location $Workspace
 $runStartedAt = Get-Date
 try {
