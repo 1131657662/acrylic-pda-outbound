@@ -46,6 +46,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V42, migrations: 42 }
 - 现场与人工 → 真机/Keystore、独立人员、长时与五年留存、外网与异地、生产审批均未验；R05 code20/Room17 历史关键未验、原资料与旧 BCD、R09 现场限制继续单列 → 不能声称上线就绪。
 - 服务端 136 个 IT（需隔离 MySQL）、Android lint/仪器化测试、部署 → 本批未运行。
 
+- R07-3 更正 → **实现前设计已产出**（`docs/parallel/R07/R07_3_IMPLEMENTATION_READY_DESIGN.md`：数据模型/锁序/结果版本/契约草案/复用点/下一轮清单）；**零实现**，契约未发布。
 ## 越界提醒（不变）
 - `localDeletionAllowed=false`；七类生产决定 handler/POST/放行/证据写入/关闭能力**不得因内部测试通过而开放**；TEMP 生产归档边界不变。
 - 不合 `main`、不发布/部署、不操作原库现网，除非用户明确授权且证据满足范围；项目交接不等于生产授权。
