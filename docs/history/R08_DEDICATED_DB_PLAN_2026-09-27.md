@@ -106,10 +106,31 @@ R08 的源码**已并入 `codex/development`**（R08 独立分支 `codex/r08-exp
 
 | run | 类 | 结果 |
 | --- | --- | --- |
-| R08-2 | `R08ExportIT` | **14/14 通过**（含 XLSX/PDF/SCAN_XLSX 落地、幂等回放、越权、篡改、并发同键） |
+| R08-2 | `R08ExportIT` | **14/14 通过**（XLSX/PDF/SCAN_XLSX 落地、幂等回放、越权、篡改、并发同键） |
 | R08-4 | `R08PreviewSeedIT` | **1/1 通过**（合成正式单种子链可用） |
-| R08-4 | `R08ExportFenceIT` | 3/4（`recoveryGenerationBlocksPublicationAndDownload` 因同库被前一类改过代次而红） |
-| R08-4 | 其余 5 类 | 同库复用导致 `<clinit>` 守卫失败（环境，非产品） |
+| R08-10 / 16 | `R08ExportFenceIT` | **3/4**：`recoveryGenerationBlocksPublicationAndDownload` **两次独立复现红**（见下） |
+| R08-11 | `R08ClockBoundaryIT` | **2/2 通过** |
+| R08-12 | `R08CenterPaginationIT` | **4/4 通过** |
+| R08-13 | `R08RetryIT` | **7/7 通过** |
+| R08-14 | `R08SummaryIT` | **6/6 通过** |
+| R08-15 | `R08AuthorizationRaceIT` | **9/9 通过** |
+
+合计：**8 类 47 项 = 46 通过 / 1 失败 / 0 错误**（R08-4 那次批量 29 项红已由"一类一库"消除，属环境构造问题）。
+
+### 待专项：`R08ExportFenceIT.recoveryGenerationBlocksPublicationAndDownload`（**已确认可复现，未判定为产品缺陷**）
+
+- **现象**：`com.acrylic.outbound.common.BusinessException: 服务器恢复代次已变化，请刷新后重试`（`ServerState:39`）
+  从 `assertThat(run(...))` 的辅助方法**逃逸**（该测试 helper 未捕获），发生在 `run(job->UPDATE server_state SET
+  recovery_epoch=recovery_epoch+1 ...)` 之后的失败记录路径上。
+- **代码路径**：`BackgroundJobLeases.fail:76` → `lockOwner:97` → `JobRecoveryFence.lock:18` →
+  `ServerState.lockWritable:22` → `validate:39`。即：数据库代次已被本次 job 自己 +1 后，
+  **失败结算（`fail`）走栅栏校验时抛 409**，而不是像 `lockOwner` 的返回值语义那样"不匹配即 STALE"。
+- **判定状态：未定**（不排除这是"栅栏按设计拒绝"、而测试期望沿用了旧实现）。**本轮按指令停在这里报告**，
+  未改任何生产代码、未弱化任何断言、未改 R08 守卫。
+- **下一步建议**：由熟悉 R05 任务内核的一方裁定 `fail()` 在代次不匹配时应"返回 STALE"还是"抛 409"；
+  若判为测试期望过时，则修测试；若判为缺口，则属**真 bug**（job 可能卡在 RUNNING、失败无法结算）。
+  两次失败日志与 XML 均保留（R08-10 / R08-16 attempt 目录）。
+
 
 
 ## 五、未验与边界
