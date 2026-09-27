@@ -44,8 +44,8 @@ class E2aFormalRegisteredSourceIT {
         UUID submission = UUID.randomUUID();
         UUID scope = UUID.randomUUID();
         assertThat(jdbc.update("""
-            INSERT INTO submission_scope(id,warehouse_id,source_order_id,work_round,current_submission_id)
-            VALUES(?,?,?,1,NULL)
+            INSERT INTO submission_scope(id,warehouse_id,source_order_id,canonical_order_id,work_round,current_submission_id)
+            VALUES(?,?,?,?,1,NULL)
             """, com.acrylic.outbound.common.Ids.bytes(scope), com.acrylic.outbound.common.Ids.bytes(warehouse),
             com.acrylic.outbound.common.Ids.bytes(order))).as("scope insert").isEqualTo(1);
         assertThat(jdbc.update("""
