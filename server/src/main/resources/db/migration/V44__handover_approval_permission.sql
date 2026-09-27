@@ -8,6 +8,6 @@
 --
 -- 绑定角色：沿用 WAREHOUSE_ADMIN（与 order:resume / order:recall / order:dispose 等审批类权限的既有做法一致），
 -- 不新建角色，避免扩大授权面。
-INSERT INTO permission VALUES(UUID_TO_BIN('01994300-0000-7000-8000-000000000043'),'order:handover','审批已出库交接（原机可用/更正前置）');
+INSERT INTO permission VALUES(UUID_TO_BIN('01994300-0000-7000-8000-00000000ff01'),'order:handover','审批已出库交接（原机可用/更正前置）');
 INSERT INTO role_permission SELECT r.id,p.id FROM role r CROSS JOIN permission p
     WHERE r.code='WAREHOUSE_ADMIN' AND p.code='order:handover';
