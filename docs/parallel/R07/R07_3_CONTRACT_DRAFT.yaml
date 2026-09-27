@@ -46,14 +46,22 @@ paths:
                 - $ref: '#/components/schemas/ReconcileAdvance'
       responses:
         '200': { description: 签名回执（原字节，原键重放时逐字节一致） }
-        '400': { description: CORRECTION_EVIDENCE_REQUIRED / INVALID_CORRECTION_COMMAND / ATTACHMENT_LIMIT_EXCEEDED }
+        '400': { description: |
+            CORRECTION_EVIDENCE_REQUIRED、ATTACHMENT_LIMIT_EXCEEDED（单文件 10MB / 单条 5 个 / 单次 50MB）、
+            INVALID_CORRECTION_COMMAND（含表头补丁：未知键/服务端持有键/非标量/空操作）、INVALID_REQUEST_ID }
         '401': { description: 会话缺失或失效 }
-        '403': { description: CORRECTION_PERMISSION_DENIED（缺 outbound:correct / correction:approve / inventory:reconcile） }
-        '404': { description: 开关关闭（路径未装配）、订单/文档/案件不存在 }
+        '403': { description: CORRECTION_PERMISSION_DENIED（缺 outbound:correct / correction:approve / inventory:reconcile，
+            或非原审批人发起撤销、非申请人确认撤销） }
+        '404': { description: |
+            CORRECTION_COMMAND_NOT_OPEN（开关关闭：路径未装配）、CORRECTION_DOCUMENT_NOT_FOUND（单/订单/案件不存在或跨仓） }
         '409': { description: |
             CORRECTION_CONTEXT_CHANGED、CORRECTION_LINE_TARGET_UNCHANGED、CORRECTION_WINDOW_EXCEEDED、
-            CORRECTION_LEDGER_CONFLICT、CYCLE_REOPENING_EXISTS、CORRECTION_ALREADY_EFFECTIVE、
-            CORRECTION_RESULT_UNKNOWN }
+            CORRECTION_LEDGER_CONFLICT、CYCLE_REOPENING_EXISTS、CORRECTION_RESULT_UNKNOWN、
+            IDEMPOTENCY_CONTENT_MISMATCH（同原键异正文）、CORRECTION_RECEIPT_SHAPE、
+            CORRECTION_RECEIPT_INTEGRITY_FAILURE }
+        # 说明（2026-09-27 扫描）：CORRECTION_ALREADY_EFFECTIVE 已在 §5 草案中命名，但当前实现用
+        # expected 的 status 检查 + 状态谓词 UPDATE 挡住了重复生效路径，该码**可达性为零**；
+        # 若契约阶段要求它对客户端可辨，需要在生效路径上显式区分"已生效"与"上下文变化"。
 components:
   securitySchemes:
     bearerPda: { type: http, scheme: bearer, description: PDA 会话令牌（该前缀关闭 CSRF） }
