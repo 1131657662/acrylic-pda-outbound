@@ -123,32 +123,140 @@ public final class CorrectionOperations {
     }
 
     /**
-     * APPROVE: the supervisor gate ({@code correction:approve}) plus SUBMITTED -&gt; APPROVED under the document row lock.
+     * APPROVE: the supervisor gate ({@code correction:approve}), SUBMITTED -&gt; APPROVED, and - in the same transaction
+     * as design §3 requires - the effect, the correction ledger, the next result version, the per-dispatch effective
+     * snapshot and the published pointer, ending at status EFFECTIVE.
      *
-     * <p>Design §3 makes approval the point where the effect is applied inside one transaction; that body arrives with
-     * steps 4-5. Until then an approved document carries {@code effect=DEFERRED_TO_STEP_4} in its decision, so this
-     * intermediate state is visible rather than implied.
+     * <p>Every delta comes from the line's frozen before/target pair, never from the request. The new version carries
+     * no submission of its own ({@code original_submission_id} keeps v1's), which is why V46 had to relax
+     * {@code submission_id NOT NULL} (see the migration header for that recorded conflict).
      */
     public static final class Approve implements CorrectionCommand.Operation {
+        private static final Map<String,String> ACTIONS=Map.of("PHYSICAL_RETURN","RETURN",
+            "DISPATCH_CANCELLATION","CANCEL_DISPATCH","WEIGHT_CORRECTION","WEIGHT","HEADER_CORRECTION","HEADER");
+
         private final CorrectionStore store;
         public Approve(CorrectionStore store) { this.store=store; }
 
         @Override public String commandType() { return "APPROVE"; }
+
+        /** MySQL BOOLEAN arrives as Boolean or as a tinyint Number depending on the column mapping. */
+        private static boolean asBoolean(Object value) {
+            if(value instanceof Boolean flag) return flag;
+            if(value instanceof Number number) return number.intValue()!=0;
+            return Boolean.parseBoolean(String.valueOf(value));
+        }
+
+        /** MySQL DATETIME(3) arrives as Timestamp or LocalDateTime depending on the connector mapping; both are UTC. */
+        private static Instant occurredAt(Object value) {
+            if(value instanceof java.sql.Timestamp stamp) return stamp.toInstant();
+            if(value instanceof java.time.LocalDateTime local) return local.toInstant(java.time.ZoneOffset.UTC);
+            if(value instanceof Instant instant) return instant;
+            throw new BusinessException(500,"INVALID_CORRECTION_COMMAND","业务时间不可解析");
+        }
 
         @Override public JsonNode execute(CorrectionCommand.Write write) {
             UUID documentId=write.documentId();
             if(documentId==null) throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","审批必须指定更正单");
             var facts=write.anchor();
             if(!"SUBMITTED".equals(facts.path("status").asText())) throw CorrectionCommand.stale();
+            UUID orderId=write.orderId();
+            String type=facts.path("type").asText();
             String approvedBy=write.actor().path("principalId").asText();
             if(store.approveDocument(documentId,UUID.fromString(approvedBy),write.recordedAt())!=1)
                 throw CorrectionCommand.stale();
-            return com.acrylic.outbound.submissions.SubmissionJson.object()
-                .put("documentId",documentId.toString()).put("status","APPROVED")
+
+            // The order lock is held by the kernel by now; this re-reads the version under it (§3 lock order).
+            var current=store.lockCurrentVersion(orderId);
+            long expected=Long.parseLong(facts.path("expectedResultVersion").asText());
+            if(Long.parseLong(String.valueOf(current.get("result_version")))!=expected) throw CorrectionCommand.stale();
+            long version=expected+1;
+            if(store.resultVersionExists(orderId,version)!=0) throw CorrectionCommand.stale();
+
+            var lines=store.lines(documentId);
+            long countDelta=0,weightDelta=0;
+            for(var line:lines) {
+                countDelta+=((Number)line.get("target_count")).longValue()-((Number)line.get("before_count")).longValue();
+                weightDelta+=((Number)line.get("target_weight_g")).longValue()-((Number)line.get("before_weight_g")).longValue();
+            }
+            long effectiveCount=Long.parseLong(String.valueOf(current.get("actual_count")))+countDelta;
+            long effectiveWeight=Long.parseLong(String.valueOf(current.get("weight_g")))+weightDelta;
+            if(effectiveCount<0 || effectiveWeight<0)
+                throw new BusinessException(409,"CORRECTION_CONTEXT_CHANGED","更正后结果不得为负");
+            // The version row must exist before anything references it: correction_effect and the scan snapshot both
+            // carry a real foreign key to (order_id, result_version).
+            String originalSubmission=String.valueOf(current.get("original_submission_id"));
+            store.insertResultVersion(orderId,version,"null".equals(originalSubmission)?null
+                    :UUID.fromString(originalSubmission),documentId,effectiveCount,effectiveWeight,
+                asBoolean(current.get("inventory_deducted")),String.valueOf(current.get("header_snapshot")),
+                write.recordedAt());
+            var dispatches=store.dispatchesForUpdate(orderId);
+            Map<String,Map<String,Object>> changed=new LinkedHashMap<>();
+            var effects=com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+            var ledgerKeys=com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+            for(var line:lines) {
+                UUID lineId=UUID.fromString(String.valueOf(line.get("line_id")));
+                String dispatchText=line.get("dispatch_id")==null?null:String.valueOf(line.get("dispatch_id"));
+                long beforeCount=((Number)line.get("before_count")).longValue();
+                long beforeWeight=((Number)line.get("before_weight_g")).longValue();
+                long targetCount=((Number)line.get("target_count")).longValue();
+                long targetWeight=((Number)line.get("target_weight_g")).longValue();
+                long lineCountDelta=targetCount-beforeCount,lineWeightDelta=targetWeight-beforeWeight;
+                UUID dispatchId=dispatchText==null?null:UUID.fromString(dispatchText);
+                Instant occurred=occurredAt(line.get("business_occurred_at"));
+                store.insertEffect(Ids.next(),lineId,orderId,version,dispatchId,
+                    ACTIONS.getOrDefault(type,"WEIGHT"),lineCountDelta,lineWeightDelta,occurred,write.recordedAt());
+                if(dispatchId!=null) {
+                    var dispatch=store.dispatchFacts(orderId,dispatchId);
+                    // A count reversal references the entry it reverses; a weight-only difference must not occupy that
+                    // unique slot (design §2), so it is written as WEIGHT_DIFF with no reverse reference.
+                    boolean reversal=lineCountDelta!=0;
+                    String businessKey="CORR:"+lineId+":"+(reversal?"REV":"WD");
+                    store.insertCorrectionLedger(Ids.next(),dispatchId,
+                        UUID.fromString(dispatch.path("baleId").asText()),lineId,reversal?"REVERSAL":"WEIGHT_DIFF",
+                        (int)lineCountDelta,lineWeightDelta,null,businessKey,write.recordedAt());
+                    ledgerKeys.add(businessKey);
+                    changed.put(dispatchText,line);
+                }
+                effects.add(com.acrylic.outbound.submissions.SubmissionJson.object()
+                    .put("lineId",lineId.toString()).put("dispatchId",dispatchText)
+                    .put("countDelta",Long.toString(lineCountDelta)).put("weightDeltaG",Long.toString(lineWeightDelta)));
+            }
+            // The snapshot covers every original dispatch, including the ones this correction zeroed.
+            Map<String,long[]> perDelivery=new LinkedHashMap<>();
+            for(var dispatch:dispatches) {
+                String dispatchText=String.valueOf(dispatch.get("dispatch_id"));
+                var line=changed.get(dispatchText);
+                long count,weight;
+                if(line!=null) {
+                    count=((Number)line.get("target_count")).longValue();
+                    weight=((Number)line.get("target_weight_g")).longValue();
+                } else {
+                    var facts0=store.dispatchFacts(orderId,UUID.fromString(dispatchText));
+                    count=facts0.path("count").asLong();weight=facts0.path("weightG").asLong();
+                }
+                store.insertEffectiveScan(orderId,version,UUID.fromString(dispatchText),
+                    UUID.fromString(String.valueOf(dispatch.get("capture_id"))),
+                    Long.parseLong(String.valueOf(dispatch.get("scan_seq"))),count>0,Math.max(weight,0),
+                    line==null?null:UUID.fromString(String.valueOf(line.get("line_id"))));
+                long[] aggregate=perDelivery.getOrDefault(String.valueOf(dispatch.get("delivery_code")),new long[2]);
+                if(count>0) { aggregate[0]++;aggregate[1]+=Math.max(weight,0); }
+                perDelivery.put(String.valueOf(dispatch.get("delivery_code")),aggregate);
+            }
+            for(var entry:perDelivery.entrySet())
+                store.insertEffectiveLine(orderId,version,entry.getKey(),entry.getValue()[0],entry.getValue()[1]);
+            store.moveCurrentPointer(orderId,version,write.recordedAt());
+            if(store.effectDocument(documentId,version)!=1) throw CorrectionCommand.stale();
+            var decision=com.acrylic.outbound.submissions.SubmissionJson.object()
+                .put("documentId",documentId.toString()).put("status","EFFECTIVE")
                 .put("approvedBy",approvedBy).put("approvedAt",write.recordedAt().toString())
                 .put("documentSha256",facts.path("documentSha256").asText())
-                .put("expectedResultVersion",facts.path("expectedResultVersion").asText())
-                .put("effect","DEFERRED_TO_STEP_4");
+                .put("orderId",orderId.toString())
+                .put("previousResultVersion",Long.toString(expected)).put("resultVersion",Long.toString(version))
+                .put("effectiveCount",Long.toString(effectiveCount)).put("effectiveWeightG",Long.toString(effectiveWeight))
+                .put("scanCoverage",Integer.toString(dispatches.size()));
+            decision.set("effects",effects);decision.set("ledgerKeys",ledgerKeys);
+            return decision;
         }
     }
 }

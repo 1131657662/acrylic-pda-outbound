@@ -75,6 +75,8 @@ public class CorrectionCommandService {
         } else {
             documentId=input.uuid("documentId");locks.document(documentId);
             anchor=store.documentFacts(documentId);orderId=UUID.fromString(anchor.path("orderId").asText());
+            // §3 lock order: the document (taken above), then the order whose result the effect will move.
+            locks.order(orderId);
         }
         if (!anchor.path("warehouseId").asText().equals(actor.warehouse().toString())) throw CorrectionCommand.missing();
         var current=input.kind().equals("CREATE")

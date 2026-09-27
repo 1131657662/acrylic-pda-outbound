@@ -44,7 +44,7 @@ class E2aCorrectionChainIT {
         var profile = new E2aCrossSourceProfile(); var jdbc = profile.connect();
         Files.createFile(profile.attempt.resolve("test-started.marker"));
         profile.migrate(jdbc, "34"); E2aV34Seed.seed(jdbc, profile.attempt.resolve("storage"));
-        profile.migrate(jdbc, "45"); E2aCrossSourceHttpSetup.signing(profile.attempt);
+        profile.migrate(jdbc, "46"); E2aCrossSourceHttpSetup.signing(profile.attempt);
         var order = confirmedOrder(profile, jdbc);
         assertThat(order.dispatchIds()).as("the R06 chain must leave dispatches to correct").isNotEmpty();
         var notes = new StringBuilder("验证层级=真服 19434 + 真 HTTP（PDA 通道）+ 真 MySQL\n");
@@ -126,26 +126,67 @@ class E2aCorrectionChainIT {
                 jdbc.update("INSERT INTO role_permission VALUES(?,(SELECT id FROM permission WHERE code='correction:approve'))",
                     Ids.bytes(UUID.fromString(role)));
 
-            // (d) with the supervisor code the document moves to APPROVED, and replay is byte-identical.
+            // (d) with the supervisor code the document is approved and effected in one transaction (§3).
             var approved = post(token, approve);
             notes.append("⑦APPROVE（有 correction:approve）-> ").append(approved.statusCode()).append(' ')
                 .append(shortBody(approved.body())).append('\n');
             assertThat(approved.statusCode()).as(shortBody(approved.body())).isEqualTo(200);
             var approvedReceipt = SubmissionJson.parse(approved.body());
+            var effect = approvedReceipt.path("businessDecision");
             assertThat(approvedReceipt.path("commandType").asText()).isEqualTo("APPROVE");
-            assertThat(approvedReceipt.path("businessDecision").path("status").asText()).isEqualTo("APPROVED");
-            assertThat(approvedReceipt.path("businessDecision").path("effect").asText())
-                .as("steps 4-5 land the effect; the intermediate state is explicit").isEqualTo("DEFERRED_TO_STEP_4");
+            assertThat(effect.path("status").asText()).isEqualTo("EFFECTIVE");
+            assertThat(effect.path("previousResultVersion").asText()).isEqualTo("1");
+            assertThat(effect.path("resultVersion").asText()).isEqualTo("2");
+            assertThat(effect.path("effectiveCount").asText()).isEqualTo("0");
+            assertThat(effect.path("effectiveWeightG").asText()).isEqualTo("0");
+            assertThat(effect.path("scanCoverage").asInt()).isEqualTo(order.dispatchIds().size());
             assertThat(jdbc.queryForObject("SELECT status FROM correction_document WHERE id=UUID_TO_BIN(?)",
-                String.class, documentId)).isEqualTo("APPROVED");
+                String.class, documentId)).isEqualTo("EFFECTIVE");
+            assertThat(jdbc.queryForObject("SELECT CAST(effective_result_version AS CHAR) FROM correction_document"
+                + " WHERE id=UUID_TO_BIN(?)", String.class, documentId)).isEqualTo("2");
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_document WHERE approved_by IS NOT NULL",
                 Integer.class)).isEqualTo(1);
+            // steps 4-5: the new version, the pointer, the effects, the correction ledger and the scan snapshot.
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM order_result_version WHERE order_id=UUID_TO_BIN(?)"
+                + " AND result_version=2 AND actual_count=0 AND weight_g=0 AND submission_id IS NULL"
+                + " AND source_correction_id=UUID_TO_BIN(?) AND original_submission_id IS NOT NULL",
+                Integer.class, order.orderId(), documentId))
+                .as("v2 is a correction-driven version: 0 包/0g, no submission of its own, linked to the document")
+                .isEqualTo(1);
+            assertThat(jdbc.queryForObject("SELECT CAST(current_result_version AS CHAR) FROM outbound_order"
+                + " WHERE id=UUID_TO_BIN(?)", String.class, order.orderId())).isEqualTo("2");
+            assertThat(jdbc.queryForObject("SELECT CAST(result_version AS CHAR) FROM order_current_result"
+                + " WHERE order_id=UUID_TO_BIN(?)", String.class, order.orderId())).isEqualTo("2");
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_effect WHERE order_id=UUID_TO_BIN(?)"
+                + " AND result_version=2 AND count_delta=-1 AND weight_delta_g<0",
+                Integer.class, order.orderId())).as("one effect per line, deltas from the frozen line")
+                .isEqualTo(order.dispatchIds().size());
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_ledger WHERE entry_kind='REVERSAL'"
+                + " AND quantity_delta=-1 AND weight_delta_g<0 AND reverses_entry_id IS NULL"
+                + " AND business_key LIKE 'CORR:%:REV'", Integer.class))
+                .as("a count reversal carries the correction's own delta; a first correction reverses no earlier entry")
+                .isEqualTo(order.dispatchIds().size());
+            assertThat(jdbc.queryForObject("SELECT COUNT(DISTINCT business_key) FROM correction_ledger",
+                Integer.class)).isEqualTo(order.dispatchIds().size());
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM order_effective_scan WHERE order_id=UUID_TO_BIN(?)"
+                + " AND result_version=2 AND is_effective=0 AND effective_weight_g=0",
+                Integer.class, order.orderId())).as("the snapshot covers every original dispatch, zeroed ones included")
+                .isEqualTo(order.dispatchIds().size());
+            assertThat(jdbc.queryForObject("SELECT IFNULL(SUM(actual_count),-1) FROM order_effective_line"
+                + " WHERE order_id=UUID_TO_BIN(?) AND result_version=2", Integer.class, order.orderId()))
+                .as("effective lines are the scan aggregate, so 0/0 as well").isZero();
             assertThat(post(token, approve).body()).as("APPROVE replay returns the stored original")
                 .isEqualTo(approved.body());
-            // (e) a second approval under a fresh key must be refused by the expected-context check.
+            // (e) a second correction on the moved order must not be accepted against the old version.
+            var stale = post(token, freshKey(createBody(order, expectedBlock(order, "1"), "0", "0")));
+            notes.append("⑧再次更正（仍按 v1 预期）-> ").append(stale.statusCode()).append(' ')
+                .append(codeOf(stale.body())).append(" (期望 409 CONTEXT_CHANGED)\n");
+            assertThat(stale.statusCode()).isEqualTo(409);
+            assertThat(codeOf(stale.body())).isEqualTo("CORRECTION_CONTEXT_CHANGED");
+            // (f) and a repeated approval under a fresh key is refused the same way.
             var again = post(token, approveBody(order, documentId, documentSha256, "SUBMITTED",
                 order.resultVersion()));
-            notes.append("⑧重复审批（新原键、旧 expected）-> ").append(again.statusCode()).append(' ')
+            notes.append("⑨重复审批（新原键、旧 expected）-> ").append(again.statusCode()).append(' ')
                 .append(codeOf(again.body())).append(" (期望 409 CONTEXT_CHANGED)\n");
             assertThat(again.statusCode()).isEqualTo(409);
             assertThat(codeOf(again.body())).isEqualTo("CORRECTION_CONTEXT_CHANGED");
@@ -204,6 +245,13 @@ class E2aCorrectionChainIT {
                 .put("targetCount", targetCount).put("targetWeightG", targetWeight));
         body.set("expected", expected);
         return body;
+    }
+
+    /** A copy of a command body under a fresh original key, for the "same intent, new key" counterexamples. */
+    private ObjectNode freshKey(ObjectNode body) {
+        var copy = body.deepCopy();
+        copy.put("commandId", UUID.randomUUID().toString());
+        return copy;
     }
 
     /** APPROVE anchors on the frozen document digest and its current status, never on the client's word alone. */
