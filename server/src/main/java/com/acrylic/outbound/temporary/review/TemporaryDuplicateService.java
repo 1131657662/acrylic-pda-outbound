@@ -1,7 +1,9 @@
 package com.acrylic.outbound.temporary.review;
 
 import com.acrylic.outbound.common.*;
+import com.acrylic.outbound.submissions.SubmissionFiles;
 import com.acrylic.outbound.submissions.SubmissionJson;
+import com.acrylic.outbound.temporary.command.CommandFacts;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
 import java.util.*;
@@ -12,10 +14,14 @@ import static com.acrylic.outbound.temporary.review.TemporaryDuplicateModels.*;
 @Service
 public class TemporaryDuplicateService {
     private final TemporaryReviewService reviews;private final TemporaryDuplicateQueries queries;private final JsonText json;
+    private final TemporaryDecisionCandidates candidates;private final CommandFacts facts;
+    private final SubmissionFiles files;
     private final boolean commandsEnabled;
     public TemporaryDuplicateService(TemporaryReviewService reviews,TemporaryDuplicateQueries queries,JsonText json,
+        TemporaryDecisionCandidates candidates,CommandFacts facts,SubmissionFiles files,
         @org.springframework.beans.factory.annotation.Value("${outbound.temporary.commands.enabled:false}") boolean commandsEnabled) {
-        this.reviews=reviews;this.queries=queries;this.json=json;this.commandsEnabled=commandsEnabled;
+        this.reviews=reviews;this.queries=queries;this.json=json;this.candidates=candidates;this.facts=facts;
+        this.files=files;this.commandsEnabled=commandsEnabled;
     }
     @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)
     public Response read(UUID submission,UUID warehouse,Filter filter) {
@@ -29,7 +35,27 @@ public class TemporaryDuplicateService {
         // A write is offered only when the command surface is on and at least one candidate can actually be
         // linked. Release stays closed: it is a separate production capability and never follows from this flag.
         boolean writeAvailable=commandsEnabled && items.stream().anyMatch(Candidate::linkAvailable);
-        return new Response(context,range,Instant.now(),hash,snapshot.fingerprint(),snapshot.total(),items,next,more,writeAvailable,false);
+        return new Response(context,range,Instant.now(),hash,snapshot.fingerprint(),commandContext(submission),
+            snapshot.total(),items,next,more,writeAvailable,false);
+    }
+    /**
+     * 命令口径的候选上下文摘要：与 {@code /temporary-commands} 命令体 {@code expected.candidateContextSha256}
+     * 由**同一套服务端默认候选查询**（{@link TemporaryDecisionCandidates#snapshot}）产生，客户端必须原样回显。
+     * 它只是把该取值显式发给客户端（此前 HTTP 面没有任何读取来源，Web 复核页只能错用本页自己的 contextSha256）；
+     * 不授予任何能力，也不改变 linkAvailable/writeAvailable/releaseAllowed 恒 false 的口径。
+     * 只有本批次仍是可读的待确认来源时才有值；否则返回 null，客户端据此拒绝发起命令。
+     */
+    private String commandContext(UUID submission) {
+        try {
+            var hint=facts.read(submission);
+            String payload=hint.text("receivedPayloadSha256");
+            if(payload==null) return null;
+            var body=SubmissionJson.parse(files.read(payload));
+            return candidates.snapshot(hint.id("warehouseId"),submission,body).path("contextSha256").asText();
+        } catch(RuntimeException unavailable) {
+            // 不是命令面：读取失败只让本字段为空（客户端不得据此发命令），页面其余只读内容照常。
+            return null;
+        }
     }
     private JsonNode context(JsonNode detail) {
         var context=SubmissionJson.object();

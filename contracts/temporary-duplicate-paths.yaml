@@ -12,6 +12,9 @@ Candidates:
       期间候选新增、发布/修订或原上下文变化返回409 TEMPORARY_DUPLICATE_CONTEXT_CHANGED，要求重新查询。
       非法游标400 INVALID_CURSOR；非TEMP、正文前ABORT或异仓对象404 TEMPORARY_REVIEW_NOT_FOUND。
       正文齐全的历史TEMP可读取但SOURCE_NOT_PENDING阻止将其视为可关联来源。
+      响应另含 commandContextSha256（命令口径候选上下文摘要，取自与服务端命令同一套默认候选查询）；
+      它只是把命令体 expected.candidateContextSha256 需要的取值显式发给客户端（契约见 temporary-command-facts-schemas.yaml 对该字段"由人工核对的候选接口单独提供"的设计）。
+      取值为 null 时不得据此发起命令；本字段不改变 blockers 语义，也不使 linkAvailable/writeAvailable/releaseAllowed 变为 true（恒 false）。
       blockers只列本次已知不满足条件，空集合不证明全部写条件满足；linkAvailable/writeAvailable/releaseAllowed恒false。
       未检出候选不代表无重复，范围外可能仍有候选；不写决定、排除、关联、占用、记账或回执。
     security: [{webSession: []}]

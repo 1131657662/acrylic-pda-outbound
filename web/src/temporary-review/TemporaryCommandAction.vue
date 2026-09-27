@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { commandKindLabel, commandStatusLabel, type CommandKind } from './command-contracts';
 import { useTemporaryCommand } from './useTemporaryCommand';
-const props = defineProps<{ kind: CommandKind; submissionId: string; warehouseId: string; candidateContextSha256?: string;
+const props = defineProps<{ kind: CommandKind; submissionId: string; warehouseId: string; candidateContextSha256?: string | null;
   available: boolean; unavailableReason: string; label: string; hint: string; reasonRequired?: boolean }>();
 const { busy, error, receipt, closed, loadFacts, execute, startOver } = useTemporaryCommand(
   () => ({ submissionId: props.submissionId, warehouseId: props.warehouseId }));

@@ -12,6 +12,12 @@ Response:
     checkedAt: {type: string, format: date-time}
     contextSha256: {$ref: '#/Hash'}
     candidateSetSha256: {$ref: '#/Hash'}
+    commandContextSha256:
+      type: [string, 'null']
+      pattern: '^[a-f0-9]{64}$'
+      description: 命令口径候选上下文摘要；与 /temporary-commands 命令体 expected.candidateContextSha256 必须逐字一致（同一服务端默认候选查询所得）。
+        本字段是只读取值来源：不构成候选核对完成、不放行关联/确认，也不改变 linkAvailable/writeAvailable/releaseAllowed 恒 false。
+        只有本批次仍是待确认来源且原正文可读时才给出；否则为 null，此时不得据本页发起命令。
     total: {type: integer, minimum: 0}
     items: {type: array, maxItems: 200, items: {$ref: '#/Candidate'}}
     nextCursor: {type: [string, 'null'], maxLength: 400}

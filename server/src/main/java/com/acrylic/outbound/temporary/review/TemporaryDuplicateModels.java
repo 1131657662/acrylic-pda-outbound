@@ -29,5 +29,6 @@ public final class TemporaryDuplicateModels {
     public record Candidate(Head order,List<Product> products,List<String> signals,List<String> blockers,boolean linkAvailable) { }
     public record Snapshot(long total,String fingerprint) { }
     public record Response(JsonNode context,Range range,Instant checkedAt,String contextSha256,String candidateSetSha256,
-        long total,List<Candidate> items,String nextCursor,boolean hasMore,boolean writeAvailable,boolean releaseAllowed) { }
+        String commandContextSha256,long total,List<Candidate> items,String nextCursor,boolean hasMore,boolean writeAvailable,
+        boolean releaseAllowed) { }
 }

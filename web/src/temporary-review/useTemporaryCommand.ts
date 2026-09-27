@@ -43,17 +43,18 @@ export function useTemporaryCommand(scope: () => { submissionId: string; warehou
   }
 
   /**
-   * Both command kinds require the reviewed candidate context digest (the server refuses any decision that
-   * does not carry one). Prefer the digest of the page the human actually reviewed; otherwise read it from the
-   * candidate endpoint so a confirmation is never sent with an empty binding.
+   * Both command kinds require the server's <em>command-caliber</em> candidate context digest (the server refuses
+   * any decision that does not carry it). Prefer the value the review page already read; otherwise read it from the
+   * candidate endpoint. It must be `commandContextSha256` and never the page's own `contextSha256`: the latter is a
+   * different digest (review context incl. permission version/receivedAt) and can never pass CommandExpected.validate.
    */
   async function candidateContext(kind: CommandKind, provided?: string | null): Promise<string> {
     if (provided) return provided;
     const current = scope();
     const params = new URLSearchParams({ warehouseId: current.warehouseId, limit: '1' });
     const page = await request(`/temporary-reviews/${current.submissionId}/duplicate-candidates?${params}`, duplicatePageSchema);
-    if (!page.contextSha256) throw new Error(`${kind === 'LINK' ? '关联' : '确认'}前必须先完成候选核对。`);
-    return page.contextSha256;
+    if (!page.commandContextSha256) throw new Error(`${kind === 'LINK' ? '关联' : '确认'}前必须先完成候选核对。`);
+    return page.commandContextSha256;
   }
 
   async function execute(kind: CommandKind, options: { reason?: string; candidateContextSha256?: string | null } = {}): Promise<void> {

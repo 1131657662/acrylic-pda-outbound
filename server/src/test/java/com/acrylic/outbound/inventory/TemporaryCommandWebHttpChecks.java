@@ -129,10 +129,10 @@ public final class TemporaryCommandWebHttpChecks {
     }
 
     /**
-     * The candidate-set digest the command must echo. It comes from the server's own review-default snapshot
-     * ({@code TemporaryDecisionCandidates}, the same bean the archive/link drivers and {@code TemporaryLinkOperation}
-     * recompute under the locked target), never from the review page's {@code contextSha256}: that one is
-     * {@code TemporaryDuplicateService} hashed over a different context and can never pass the comparison.
+     * The candidate-set digest the command must echo. A2 fix (v14): the value now comes from the **HTTP** candidate
+     * endpoint's {@code commandContextSha256}; the locally computed server snapshot is kept only as a cross-check that
+     * the published value really is the command caliber (that equality is the whole point of the fix). The review
+     * page's own {@code contextSha256} is a different digest and must never be used to build a command.
      */
     private String candidateDigest(TemporaryConfirmationFixture f,String warehouse,String submission) throws Exception {
         var page=data(get(BASE+"/temporary-reviews/"+submission+"/duplicate-candidates?"+query(warehouse)),200,"candidates");
@@ -140,11 +140,13 @@ public final class TemporaryCommandWebHttpChecks {
         var facts=f.bean(com.acrylic.outbound.temporary.command.CommandFacts.class).read(UUID.fromString(submission));
         var body=SubmissionJson.parse(f.bean(com.acrylic.outbound.submissions.SubmissionFiles.class)
             .read(facts.json().path("receivedPayloadSha256").asText()));
-        String digest=f.bean(com.acrylic.outbound.temporary.review.TemporaryDecisionCandidates.class)
+        String snapshot=f.bean(com.acrylic.outbound.temporary.review.TemporaryDecisionCandidates.class)
             .snapshot(facts.id("warehouseId"),UUID.fromString(submission),body).path("contextSha256").asText();
-        System.out.println("WEB-FIXTURE [candidateDigest] reviewPage="+page.path("contextSha256").asText()
-            +" serverSnapshot="+digest+" total="+page.path("total").asText());
-        return digest;
+        String published=page.path("commandContextSha256").asText(null);
+        System.out.println("WEB-FIXTURE [candidateDigest] reviewPageContext="+page.path("contextSha256").asText()
+            +" publishedCommand="+published+" serverSnapshot="+snapshot);
+        assertThat(published).as("候选接口必须发布命令口径摘要（A2 修复）").isEqualTo(snapshot);
+        return published;
     }
 
     private String factsUrl(String warehouse,String submission) {

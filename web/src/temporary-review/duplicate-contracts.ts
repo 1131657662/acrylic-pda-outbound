@@ -19,9 +19,9 @@ export const duplicateCandidateSchema = z.object({
   ])), linkAvailable: z.boolean(),
 });
 export const duplicatePageSchema = z.object({ context, range: z.object({ fromDate: z.iso.date(), throughDate: z.iso.date() }),
-  checkedAt: z.iso.datetime(), contextSha256: hash, candidateSetSha256: hash, total: z.number().int().nonnegative().safe(),
-  items: z.array(duplicateCandidateSchema).max(200), nextCursor: z.string().nullable(), hasMore: z.boolean(),
-  writeAvailable: z.boolean(), releaseAllowed: z.literal(false) });
+  checkedAt: z.iso.datetime(), contextSha256: hash, candidateSetSha256: hash, commandContextSha256: hash.nullable(),
+  total: z.number().int().nonnegative().safe(), items: z.array(duplicateCandidateSchema).max(200), nextCursor: z.string().nullable(),
+  hasMore: z.boolean(), writeAvailable: z.boolean(), releaseAllowed: z.literal(false) });
 export type DuplicatePage = z.infer<typeof duplicatePageSchema>;
 export type DuplicateCandidate = z.infer<typeof duplicateCandidateSchema>;
 
