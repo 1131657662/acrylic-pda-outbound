@@ -149,8 +149,12 @@ $env:E2A_CROSS_VERIFY = 'true'
 $env:E2A_CROSS_RUN = "$Run"
 $env:E2A_CROSS_PASSWORD = $password
 Push-Location $Workspace
+$runStartedAt = Get-Date
 try {
-    & (Join-Path $Workspace 'gradlew.bat') -p server integrationTest --tests $Tests --console=plain 2>&1 |
+    # Full-suite mode: an empty/-ALL $Tests runs every IT. Passing a glob through PowerShell is unsafe
+    # (it glob-expands and Gradle then sees a bogus filter such as ".git"), so omit --tests entirely.
+    $testArgs = if ([string]::IsNullOrWhiteSpace($Tests) -or $Tests -in @('*','ALL')) { @() } else { @('--tests', $Tests) }
+    & (Join-Path $Workspace 'gradlew.bat') -p server integrationTest @testArgs --console=plain 2>&1 |
         Tee-Object -FilePath $runLog
     $gradleExit = $LASTEXITCODE
 } finally {
@@ -160,15 +164,30 @@ Write-Host "gradle exit=$gradleExit"
 
 # ---------------------------------------------------------------- results
 $resultsDir = Join-Path $Workspace 'server/build/test-results/integrationTest'
-$xml = @(Get-ChildItem $resultsDir -Filter ("*" + ($Tests -replace '\*','') + ".xml") -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1)
-if ($xml.Count -eq 0) { Fail 'collect results' "no XML for $Tests under $resultsDir" }
-$doc = [xml][System.IO.File]::ReadAllText($xml[0].FullName, (New-Object System.Text.UTF8Encoding($false)))
-Write-Host ("RESULT attempt={0} tests={1} failures={2} errors={3} skipped={4} time={5}s" -f $Run, $doc.testsuite.tests, $doc.testsuite.failures, $doc.testsuite.errors, $doc.testsuite.skipped, $doc.testsuite.time)
-$doc.testsuite.testcase | ForEach-Object {
-    $state = if ($_.failure) { 'FAIL' } elseif ($_.error) { 'ERROR' } elseif ($_.skipped) { 'SKIP' } else { 'pass' }
-    Write-Host ("  [{0}] {1}" -f $state, $_.name)
-    if ($_.failure) { Write-Host ($_.failure.message -split "`n" | Select-Object -First 5 | Out-String) }
-    if ($_.error) { Write-Host ($_.error.message -split "`n" | Select-Object -First 5 | Out-String) }
+# Aggregate every XML produced by THIS run; if this run produced none, say so — never print a previous run's file.
+$xml = @(Get-ChildItem $resultsDir -Filter 'TEST-*.xml' -ErrorAction SilentlyContinue |
+    Where-Object { $_.LastWriteTime -ge $runStartedAt })
+if ($xml.Count -eq 0) {
+    Write-Host "RESULT attempt=$Run NOT-EXECUTED (this run produced no XML under $resultsDir)"
+    $started = Test-Path -LiteralPath (Join-Path $attempt 'test-started.marker')
+    Write-Host "markers: started=$started completed=False attempt=$attempt"
+    exit 2
+}
+$tests=0;$failures=0;$errors=0;$skipped=0
+foreach ($x in $xml) {
+    $d = [xml][System.IO.File]::ReadAllText($x.FullName, (New-Object System.Text.UTF8Encoding($false)))
+    $tests += [int]$d.testsuite.tests; $failures += [int]$d.testsuite.failures
+    $errors += [int]$d.testsuite.errors; $skipped += [int]$d.testsuite.skipped
+}
+Write-Host ("RESULT attempt={0} classes={1} tests={2} failures={3} errors={4} skipped={5}" -f $Run, $xml.Count, $tests, $failures, $errors, $skipped)
+$xml | ForEach-Object {
+    $d = [xml][System.IO.File]::ReadAllText($_.FullName, (New-Object System.Text.UTF8Encoding($false)))
+    $d.testsuite.testcase | ForEach-Object {
+        $state = if ($_.failure) { 'FAIL' } elseif ($_.error) { 'ERROR' } elseif ($_.skipped) { 'SKIP' } else { 'pass' }
+        Write-Host ("  [{0}] {1}.{2}" -f $state, $d.testsuite.name, $_.name)
+        if ($_.failure) { Write-Host ($_.failure.message -split "`n" | Select-Object -First 3 | Out-String) }
+        if ($_.error) { Write-Host ($_.error.message -split "`n" | Select-Object -First 3 | Out-String) }
+    }
 }
 $started = Test-Path -LiteralPath (Join-Path $attempt 'test-started.marker')
 $completed = Test-Path -LiteralPath (Join-Path $attempt 'test-completed.marker')
