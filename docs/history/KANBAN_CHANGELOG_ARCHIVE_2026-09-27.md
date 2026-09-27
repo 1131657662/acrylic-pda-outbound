@@ -31,3 +31,15 @@
 ## 归档：v13 变更日志（v14 为腾出上限移出，原文未改）
 
 - 2026-09-27 v13：**A2 口径修复＝停下报告（须先改已声明契约）；R08 专用库方案已评估**。A2 三处阻碍：facts 面新增字段违背 `temporary-command-paths.yaml:47` 明文承诺且 `Facts` 为 `additionalProperties:false`；候选接口新增改动其已声明形状；`candidateSetSha256` 是**死字段**（`TemporaryDuplicateService.read:32` 实际传 `snapshot.fingerprint()`）、`contextSha256` 已被**游标绑定** ⇒ 命令口径摘要在 HTTP 面**无承载字段**，修它必须动契约 ⇒ 按硬边界**未改一行代码**（[A3 §6.5](history/A3_CSRF_ROOT_CAUSE_2026-09-27.md)）。R08：源码**已在主线**（`exports/`、`web/src/exports/`、`report-rendering/` 已构建），8 类 IT ≈ 39 测试点，**只缺专用库坐标**（守卫只认 `127.0.0.1:23308/acrylic_r08_it`）；方案＝构造器参数化 + `-NonE2a` 通道（自迁移 V48）+ 透传渲染器路径，**不改守卫/生产代码**，估 1 轮打通；**首子项建议＝在 V48 上跑 8 类**（[R08 专用库方案](history/R08_DEDICATED_DB_PLAN_2026-09-27.md)）。**均未开工。**
+
+## 归档：v12 变更日志（v15 为腾出上限移出，原文未改）
+
+- 2026-09-27 v12：**A3 残余① 收口 ✅ + A2 口径定性**。① `E2aHandoverHttpLayerIT` attempt **374 绿**（`1/0/0/0`）：夹具两个原因＝请求体全零锚点（业务层先 404、权限门触达不到）＋只迁 V42 而 `order:handover` 由 V44 才注册（授予静默插 0 行，162 老陷阱）；修法＝真实 FORMAL 来源＋迁 V44＋完整 expected。实测 ①404 ②401 ③**403 PERMISSION_DENIED**（非 CSRF）④**200 案件建立** ⑤resume-only APPROVE→409（过 approval 门）⑥handover-only REQUEST→409（过权限门）。**A2 口径＝命令面完整性缺陷**（契约 `temporary-command-facts-schemas.yaml:26` 早写明"由候选接口提供"，但该接口给的是另一套摘要 ⇒ HTTP 客户端无可用来源）⇒ 可独立修、不需开关授权、不改字段类型，本轮**只定性未修**。**待裁决**：内核权限门接受 `order:handover||order:resume`，按命令拆分未实现。硬边界：生产代码/配置未改、开关未开、探针已清。
+
+## 归档：v11 变更日志（v15 为腾出上限移出，原文未改）
+
+- 2026-09-27 v11：**A3 残余② 收口 ✅**——`E2aTemporaryCommandWebHttpIT` attempts **363/364** 均 `1/0/0/0` 绿。诊断先落地（登录响应此前被后续 CSRF 刷新覆盖⇒从不进报告，改逐请求 `[wire]` + `SPRING_SESSION` 对拍）；**第一层根因＝`csrf()` 用 `HttpRequest.newBuilder` 绕过带 Cookie 的 `request(...)`⇒令牌请求无 Cookie⇒匿名会话顶掉登录轮换出的已认证会话（401）**；**第二层＝候选摘要两套口径**（复核页 `contextSha256` ≠ `TemporaryDecisionCandidates.snapshot` 命令口径）⇒LINK 稳定 409（后经 v12 定性为命令面缺陷）。硬边界：开关未开、生产代码/配置默认值未改、守卫星树探针已回滚（主树 `A3-DIAG` 0 条）。
+
+## 归档：v10 变更日志（v15 为腾出上限移出，原文未改）
+
+- 2026-09-27 v10 换会话固化：看板压缩 7990→5596 字符（13 条旧日志按日期归档，余量 2404）；**R06 开发+回归基本完成**（v7-v9 累计 95 类 IT 在 V48 上跑过，修复真 bug `36d2368`，共享面健康）；未完成＝A3 残余①②、约 80 个非 e2a 类、三族专用库、政策 P1-P7、七类开关授权。

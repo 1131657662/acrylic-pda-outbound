@@ -46,6 +46,8 @@ public final class TemporaryCommandWebHttpChecks {
         var f = new TemporaryConfirmationFixture(context,false);
         SessionUser supervisor = f.supervisor();
         grant(f,supervisor,"temporary_order:link");
+        // R08 子项 C 探针：导出入口要求 order:read（ExportController:24），TEMP 确认后目标正是 WEB 正式单。
+        grant(f,supervisor,"order:read");
         String warehouse = f.source.f.web.identity().warehouse().toString();
         String submission = f.source.id();
         f.jdbc.update("UPDATE outbound_order SET created_at=DATE_SUB(created_at,INTERVAL 30 DAY) "
@@ -114,6 +116,28 @@ public final class TemporaryCommandWebHttpChecks {
         assertThat(string(f,"SELECT status FROM submission WHERE id=UUID_TO_BIN(?)",submission)).isEqualTo("SUCCEEDED");
         assertThat(longValue(f,"SELECT d.decision_version FROM temporary_decision_state d JOIN submission s ON s.scope_id=d.scope_id WHERE s.id=UUID_TO_BIN(?)",submission)).isEqualTo(2);
         assertThat(longValue(f,"SELECT COUNT(*) FROM temporary_command_receipt WHERE submission_id=UUID_TO_BIN(?)",submission)).isEqualTo(2);
+
+        // 5) R08 子项 C 探针：TEMP 确认后的目标是一张 WEB 正式单（source='WEB' + COMPLETED + 结果版本 1），
+        // 正式订单导出入口确实**受理**它；但结果版本行的 submission_id 指向**原 TEMP 提交**，导出因此走
+        // PdaExportSource，而 TEMP 受理正文没有正式 PDA 正文的 source.sourceOrderId ⇒ 目前以 INVALID_SUBMISSION 拒绝。
+        // 本断言把该**已定位的阻塞点**钉住（子项 C 落地后这里会变红，届时改为断言 200 + 快照内容）。
+        assertThat(string(f,"SELECT source FROM outbound_order WHERE id=UUID_TO_BIN(?)",target)).isEqualTo("WEB");
+        var refusal=postExport(target,warehouse);
+        System.out.println("WEB-FIXTURE [temp->export] "+SubmissionJson.canonical(refusal));
+        assertThat(refusal.path("code").asText()).as("TEMP 来源导出面尚未接入（R08 子项 C 待实现）")
+            .isEqualTo("INVALID_SUBMISSION");
+        assertThat(refusal.path("message").asText()).contains("sourceOrderId");
+    }
+
+    /** 用已认证的 Web 会话对 TEMP 确认后的目标正式单发起一次首版导出，返回错误/成功信封（不跑 worker）。 */
+    private JsonNode postExport(String order,String warehouse) throws Exception {
+        String body="{\"format\":\"XLSX\",\"basis\":\"ORIGINAL_CONFIRMED\"}";
+        var response=send(request("/orders/"+order+"/exports?"+query(warehouse))
+            .header("Content-Type","application/json").header(csrfHeader,csrfToken)
+            .header("Idempotency-Key",UUID.randomUUID().toString())
+            .header("X-Server-Recovery-Epoch",epoch.isEmpty()?"1":epoch)
+            .POST(HttpRequest.BodyPublishers.ofString(body,StandardCharsets.UTF_8)).build());
+        return SubmissionJson.parse(response.body());
     }
 
     private ObjectNode command(String kind,JsonNode facts,String candidateSha,String reason) throws Exception {

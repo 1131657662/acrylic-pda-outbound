@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-27
 branch: codex/development
-head: 8137790
-dirty_entries: 0
+head: 8de3223
+dirty_entries: 4
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
@@ -57,11 +57,12 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 
 ## 变更日志（滚动，只留最近 20 行）
 - 2026-09-27 v7-v9（原文已归档）：V43-V48 未破坏共享面（290）；R07-3 Web 路由（292）；非 e2a 回归面解锁（临时密钥 + `-NonE2a`）共 56 类（53 通过/3 需专用环境）并**修复本会话真回归**（`36d2368`）；v9 高风险 23 类=21 绿/2 环境守卫。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-27 v15：**R08ExportFenceIT 判定＝测试期望过时 ✅（run 18 4/4 绿；R08 至此 8 类 47/47）**：代次由**测试自己**在 job handler 里 +1；`BackgroundJobWorker.failed→BackgroundJobLeases.fail:76→lockOwner:97→JobRecoveryFence.lock:18→ServerState.validate:39` **先抛 409** ⇒ `lockOwner` 的"不匹配即不认领"永不返回 false、`fail()` 的 STALE 分支不可达，连 `recoverExpired` 也抛 ⇒ 契约本就是"绝不静默接受被恢复的代次"，处置＝重启进程；已按实测语义改断言（**未改生产代码**，`8de3223`）。**R08 子项 C 阻塞点已定位，停下报告**：TEMP 确认后的目标是**普通 WEB 正式单**（入口受理），但结果版本行的 `submission_id` 指向原 TEMP 提交 ⇒ 导出走 `PdaExportSource`、因 TEMP 正文无 `source.sourceOrderId` 报 **400 INVALID_SUBMISSION**（attempts 378/379）⇒ C 缺一条"TEMP 来源导出面"（复用只服务 `PDA_TEMP` 的 `TemporaryExportSource` 三件套），属**新实现**、需授权，**未改代码**。
 - 2026-09-27 v14：**A2 口径已修 ✅**（`dcaf7ad`，attempt 377 绿）：候选接口新增只读 `commandContextSha256`，Web 全线改用它 ⇒ 开关一开不再必然 409；facts 面仍 `null`、capabilities 仍恒 false；契约**草案** 0.36.0→0.37.0（未发布）+ typecheck 0。**R08 专用库构造器跑批 ✅**（`9e448d7`）：**8 类 47 项 = 46 通过 / 1 失败**（Export 14/14、PreviewSeed 1/1、ClockBoundary 2/2、CenterPagination 4/4、Retry 7/7、Summary 6/6、AuthorizationRace 9/9）。**待专项（未判定真 bug）**：`R08ExportFenceIT.recoveryGenerationBlocksPublicationAndDownload` 两次独立复现红（`BackgroundJobLeases.fail:76→JobRecoveryFence.lock:18→ServerState.validate:39` 抛 409 逃逸）；**已按指令停下报告，未改生产代码/断言**。环境前提三条已记档（renderer-home / sample-data / 库名逐字匹配守卫 ⇒ 一类一 attempt）。（[R08 方案](history/R08_DEDICATED_DB_PLAN_2026-09-27.md)）
 - 2026-09-27 v13（原文已归档）：A2 口径修复经查**必须先改已声明契约** ⇒ 按硬边界停下报告（未改代码）；同轮完成 R08 专用库方案评估（源码已在主线、只缺库坐标）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-27 v12：**A3 残余① 收口 ✅ + A2 口径定性**。① `E2aHandoverHttpLayerIT` attempt **374 绿**（`1/0/0/0`）：夹具两个原因＝请求体全零锚点（业务层先 404、权限门触达不到）＋只迁 V42 而 `order:handover` 由 V44 才注册（授予静默插 0 行，162 老陷阱）；修法＝真实 FORMAL 来源＋迁 V44＋完整 expected。实测 ①404 ②401 ③**403 PERMISSION_DENIED**（非 CSRF）④**200 案件建立** ⑤resume-only APPROVE→409（过 approval 门）⑥handover-only REQUEST→409（过权限门）。**A2 口径＝命令面完整性缺陷**（契约 `temporary-command-facts-schemas.yaml:26` 早写明"由候选接口提供"，但该接口给的是另一套摘要 ⇒ HTTP 客户端无可用来源）⇒ 可独立修、不需开关授权、不改字段类型，本轮**只定性未修**。**待裁决**：内核权限门接受 `order:handover||order:resume`，按命令拆分未实现。硬边界：生产代码/配置未改、开关未开、探针已清。
-- 2026-09-27 v11：**A3 残余② 收口 ✅**——`E2aTemporaryCommandWebHttpIT` attempts **363/364** 均 `1/0/0/0` 绿。诊断先落地（登录响应此前被后续 CSRF 刷新覆盖⇒从不进报告，改逐请求 `[wire]` + `SPRING_SESSION` 对拍）；**第一层根因＝`csrf()` 用 `HttpRequest.newBuilder` 绕过带 Cookie 的 `request(...)`⇒令牌请求无 Cookie⇒匿名会话顶掉登录轮换出的已认证会话（401）**；**第二层＝候选摘要两套口径**（复核页 `contextSha256` ≠ `TemporaryDecisionCandidates.snapshot` 命令口径）⇒LINK 稳定 409（后经 v12 定性为命令面缺陷）。硬边界：开关未开、生产代码/配置默认值未改、守卫星树探针已回滚（主树 `A3-DIAG` 0 条）。
-- 2026-09-27 v10 换会话固化：看板压缩 7990→5596 字符（13 条旧日志按日期归档，余量 2404）；**R06 开发+回归基本完成**（v7-v9 累计 95 类 IT 在 V48 上跑过，修复真 bug `36d2368`，共享面健康）；未完成＝A3 残余①②、约 80 个非 e2a 类、三族专用库、政策 P1-P7、七类开关授权。
+- 2026-09-27 v12（原文已归档）：A3 残余① 收口 ✅（`E2aHandoverHttpLayerIT` attempt 374 绿：真实 FORMAL 来源＋迁 V44＋完整 expected；③403 PERMISSION_DENIED ④200 案件建立）＋ A2 口径定性为命令面完整性缺陷。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-27 v11（原文已归档）：A3 残余② 收口 ✅（`E2aTemporaryCommandWebHttpIT` attempts 363/364 绿）——csrf() 不带 Cookie ⇒ 匿名会话顶掉已认证会话（401）＋候选摘要两套口径（409）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-27 v10（原文已归档）：换会话固化——看板压缩 7990→5596 字符；R06 开发+回归基本完成；原文见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。

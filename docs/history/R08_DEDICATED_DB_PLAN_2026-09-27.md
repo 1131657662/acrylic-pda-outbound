@@ -117,19 +117,51 @@ R08 的源码**已并入 `codex/development`**（R08 独立分支 `codex/r08-exp
 
 合计：**8 类 47 项 = 46 通过 / 1 失败 / 0 错误**（R08-4 那次批量 29 项红已由"一类一库"消除，属环境构造问题）。
 
-### 待专项：`R08ExportFenceIT.recoveryGenerationBlocksPublicationAndDownload`（**已确认可复现，未判定为产品缺陷**）
+### 待专项：`R08ExportFenceIT.recoveryGenerationBlocksPublicationAndDownload` —— **已判定：测试期望过时（非产品缺陷）** ✅
 
-- **现象**：`com.acrylic.outbound.common.BusinessException: 服务器恢复代次已变化，请刷新后重试`（`ServerState:39`）
-  从 `assertThat(run(...))` 的辅助方法**逃逸**（该测试 helper 未捕获），发生在 `run(job->UPDATE server_state SET
-  recovery_epoch=recovery_epoch+1 ...)` 之后的失败记录路径上。
-- **代码路径**：`BackgroundJobLeases.fail:76` → `lockOwner:97` → `JobRecoveryFence.lock:18` →
-  `ServerState.lockWritable:22` → `validate:39`。即：数据库代次已被本次 job 自己 +1 后，
-  **失败结算（`fail`）走栅栏校验时抛 409**，而不是像 `lockOwner` 的返回值语义那样"不匹配即 STALE"。
-- **判定状态：未定**（不排除这是"栅栏按设计拒绝"、而测试期望沿用了旧实现）。**本轮按指令停在这里报告**，
-  未改任何生产代码、未弱化任何断言、未改 R08 守卫。
-- **下一步建议**：由熟悉 R05 任务内核的一方裁定 `fail()` 在代次不匹配时应"返回 STALE"还是"抛 409"；
-  若判为测试期望过时，则修测试；若判为缺口，则属**真 bug**（job 可能卡在 RUNNING、失败无法结算）。
-  两次失败日志与 XML 均保留（R08-10 / R08-16 attempt 目录）。
+- **现象**：`BusinessException: 服务器恢复代次已变化，请刷新后重试`（`ServerState:39`）从测试 helper 逃逸。
+- **谁 +1 了代次**：**测试自己**（在 job handler 的 `afterRender` 里执行
+  `UPDATE server_state SET recovery_epoch=recovery_epoch+1`），即"本进程内在跑作业时把库代次改掉"这种人为构造。
+- **代码路径与语义（R05 内核）**：`BackgroundJobWorker.execute` 捕获 handler 异常 → `failed()` →
+  `BackgroundJobLeases.fail:76` → `lockOwner:97` → `JobRecoveryFence.lock:18` → `ServerState.lockWritable:22` → `validate:39`。
+  `lockOwner` 写的是 `!fence.lock().equals(job.recoveryEpoch())`（本意"不匹配即不认领"），但 **`fence.lock()`
+  在代次不符时先抛 409**，所以它永远返回不了 false、`fail()` 的 `Outcome.STALE` 分支对"代次不符"不可达。
+  代次一变，本进程连 `recoverExpired`（同样先 `fence.lock()`）都会抛 ⇒ **整个作业面停止**。
+- **判定理由**：`JobRecoveryFence` 的既有契约就是"运行中的生产者/工作者**绝不静默接受**被恢复的库代次"
+  ⇒ 正确处置是**重启进程**、由新代次的进程接管，而不是在旧代次里把作业结算掉。旧断言
+  （期望 `RETRY_SCHEDULED` / 作业 `INVALIDATED` / `lastError=EXPORT_GENERATION_CHANGED`）沿用的是本类早期实现的行为，
+  与该契约不符 ⇒ **测试期望过时**。
+- **处置（已做，**未改任何生产代码**）**：改为断言实测语义 —— 结算被拒（`BusinessException` 且
+  `code=SERVER_RECOVERY_EPOCH_MISMATCH`）、旧代次**既不认领也不结算**（作业仍 `PENDING`、无租约）、无产物、下载 409。
+- **验证**：`R08ExportFenceIT` **run 18 = 4/4 绿**（`tests=4 failures=0 errors=0 skipped=0`）；
+  此前 run 10 / 16 两次红均为此过时期望。**R08 全量至此 8 类 47 项 = 47 通过 / 0 失败。**
+
+## 五、子项 C（TEMP 来源接入导出）——**首轮实测已定位阻塞点，停下报告**（v15）
+
+**假设（先证伪/证实，不先写码）**：TEMP 经 R06 受控关联 + 确认后，目标变成一张**普通 WEB 正式单**
+（`source='WEB'`、`status='COMPLETED'`、`order_result_version.result_version=1`），而正式订单导出入口
+`ExportFacts.head` 只要求 `source ∈ {WEB, PDA_TEMP}` + `COMPLETED` + 有回执 ⇒ **入口理应直接受理**，
+可能根本不需要"TEMP 专属导出面"。
+
+**实测（attempts 378 / 379，在既有 `E2aTemporaryCommandWebHttpIT` 的真实 TEMP→LINK→NORMAL_CONFIRM 链尾加一步导出）**：
+1. 378：`503 EXPORT_UNAVAILABLE` —— 只是渲染器未配置（`OUTBOUND_EXPORTS_RENDERER_HOME`，与 R08 同一环境前提）。
+2. 379（配好渲染器后）：**`400 INVALID_SUBMISSION 缺少字符串字段：sourceOrderId`** ⇒ **入口受理了，但快照构造失败**。
+
+**阻塞点（已定位）**：`ExportFacts.head` 对一个"由 TEMP 关联/确认产生的 WEB 单"判出
+`pdaSubmission != null`（该单的结果版本行 `submission_id` = 原 TEMP 提交）⇒ `ExportSnapshotReader` 走
+`PdaExportSource.read`，而后者按**正式 PDA 正文**的形状校验（`PdaExportSource:29`
+要求 `source.sourceOrderId == 目标单`、`SubmissionControl:12/18` 同源假定），**TEMP 受理正文没有这些字段**
+⇒ `INVALID_SUBMISSION`。
+
+**结论**：**C 不是"已接通、只差验证"，而是缺一条"TEMP 来源导出面"**（或让导出读取器识别"该提交源自 TEMP"并改走
+已存在的 `TemporaryExportSource`/`TemporaryExportEvidence`/`TemporaryExportPlan` 三件套——它们目前**只**服务
+`source='PDA_TEMP'` 的临时单导出）。这属于**新实现**，按硬边界（不改 R05/R06/R07 已验证业务代码、不新增开关）
+**停下报告，未改任何代码**。
+
+**最小实现建议（待授权）**：在 `ExportSnapshotReader.read` 的选路处增加"该结果版本来源是 TEMP 提交"的判定
+（例如按 `submission_scope.source_order_id IS NULL` / `temporary_authorization_id IS NOT NULL` 识别），
+命中则复用 `TemporaryExportSource` 生成同一 `ReportSnapshot`（首版 ORIGINAL_CONFIRMED 口径不变）。
+**预计不需要新开关、不需要新接口**，但确实要改 `exports` 包的生产代码 ⇒ 需授权。
 
 
 
