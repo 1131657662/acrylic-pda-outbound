@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 595fbc0
-dirty_entries: 5
+head: 17ee508
+dirty_entries: 1
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
@@ -57,14 +57,10 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 
 ## 变更日志（滚动，只留最近 20 行）
 - 2026-09-27 v7-v9（原文已归档）：V43-V48 未破坏共享面（290）；R07-3 Web 路由（292）；非 e2a 回归面解锁（临时密钥 + `-NonE2a`）共 56 类（53 通过/3 需专用环境）并**修复本会话真回归**（`36d2368`）；v9 高风险 23 类=21 绿/2 环境守卫。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-28 v18 自主运行：**A1 收口 ✅**（TEMP 渲染验证接通：e2a harness 新增 `-CoordinatesOnly`（只给库坐标不预迁移）＋渲染器透传；新 IT `E2aTemporaryExportRenderIT` 用"同一 attempt 库＋真服 19434＋可注入 bean"跑通 **attempt 390**：XLSX 13965B / SCAN_XLSX 4400B / PDF 360092B 真生成，openpyxl 回读订单汇总 `FH-WEB-0001`/来源 `TEMP_PDA`/结果版本1/2.0 包/**601.5kg**、产品 003→300.5 + 571→301.0、扫码明细 2 行、扫码 Excel 单表 2 行 ⇒ **内容正确**）。**A2 收口 ✅**：重启后新代次接管**已由既有** `JobFenceChecks.restartedOldJob` 覆盖，跑出绿证据 **attempt 401**（`E2aJobFenceHttpIT` 1/0/0/0）；取证前修掉 harness 两处断言级缺陷（piped SQL 静默截断致 GRANT 丢失、隔离账号无权读 `performance_schema`，另统一 CRLF）。**A3 完成 3 批**（attempts 431-463）：新增 **19 个非 e2a 类 / 241 项**（240 通过 / 1 条件 skip / 0 产品失败）；2 个 `IdentityLock*` 为**环境守卫**（需 19321 专用库）、`ReminderListRows` 系我误列夹具。**D2**：看板清掉 5 条冗余"已归档"占位（→61 行 / 6954 字符）。**环境阻塞已处置**：`D:` 曾 0GB 可用致 MySQL 无法 init（attempts 416-424 NOT-EXECUTED）；删 501 个 attempt 的 **datadir**（91.4GB）腾出 92.7GB，**日志/marker/storage/密钥全部保留**。**未开任何开关、未发布契约、未改 R05/R06/R07 业务逻辑。**
 - 2026-09-27 v17：**C 的渲染验证未接通线（如实记录，未硬做）**：新类 `R08TemporaryExportRenderIT`（`@Disabled` 附原因）三条路实测均不通——a) R08 库+MockMvc：TEMP 链夹具走**真 HTTP 19434** ⇒ ConnectException（R08-24）；b) e2a harness 不带 `-NonE2a`：数据源缺 URL ⇒ `url must start with jdbc`（384）；c) 带 `-NonE2a`：数据源被指到同一 attempt 库而链夹具随后 `profile.migrate(…,34/42)`，Flyway target 低于当前版本报错。**可执行接法**：给 e2a runner 加"只导出库坐标、`OUTBOUND_MIGRATE=false`"模式，让应用 context 与 `E2aCrossSourceProfile` 共用同一 attempt 库。⇒ C 证据边界＝**入口受理+首版快照（383）＋既有路径回归绿（19-22）**，**渲染内容正确仍未验**。**「断言假设过时」扫描**：同类仅 `TemporaryExportEvidence:46`（已修）；`ExportFacts:29/:55`、`ExportRangeReader:45`、`CommandBusinessIntegrity:81` 的 `result_version=1` 属设计，但与**子项 D 直接相关**（D 前先定"更正后导出取哪个结果版本"）。
 - 2026-09-27 v16（原文已归档）：R08 子项 C **已实现** ✅（`exports` 三处：`tempOrigin` + 选路 + 映射版本 ∈{1,2}），attempt 383 绿、既有导出路径回归 runs 19-22 全绿。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
 - 2026-09-27 v15（原文已归档）：R08ExportFenceIT 判定＝测试期望过时 ✅（run 18 4/4；R08 8 类 47/47）＋ 子项 C 阻塞点定位（400 INVALID_SUBMISSION）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-27 v14（原文已归档）：A2 口径已修 ✅（`dcaf7ad`，候选接口发布 `commandContextSha256`，Web 改用；草案 0.37.0 未发布）＋ R08 专用库构造器跑批（8 类 46/47）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-27 v13（原文已归档）：A2 口径修复经查**必须先改已声明契约** ⇒ 按硬边界停下报告（未改代码）；同轮完成 R08 专用库方案评估（源码已在主线、只缺库坐标）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-27 v12（原文已归档）：A3 残余① 收口 ✅（`E2aHandoverHttpLayerIT` attempt 374 绿：真实 FORMAL 来源＋迁 V44＋完整 expected；③403 PERMISSION_DENIED ④200 案件建立）＋ A2 口径定性为命令面完整性缺陷。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-27 v11（原文已归档）：A3 残余② 收口 ✅（`E2aTemporaryCommandWebHttpIT` attempts 363/364 绿）——csrf() 不带 Cookie ⇒ 匿名会话顶掉已认证会话（401）＋候选摘要两套口径（409）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-27 v10（原文已归档）：换会话固化——看板压缩 7990→5596 字符；R06 开发+回归基本完成；原文见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。
