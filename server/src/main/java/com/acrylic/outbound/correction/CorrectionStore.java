@@ -58,13 +58,57 @@ public class CorrectionStore {
               'currentResultVersion',CAST(IFNULL(o.current_result_version,0) AS CHAR),
               'currentResultEffectiveCount',CAST(IFNULL(r.actual_count,0) AS CHAR),
               'currentResultEffectiveWeightG',CAST(IFNULL(r.weight_g,0) AS CHAR),
+              'currentResultCreatedAt',IFNULL(DATE_FORMAT(r.created_at,'%Y-%m-%dT%H:%i:%s.%fZ'),'null'),
+              'sourceRecoveryEpoch',CAST(IFNULL(s.source_recovery_epoch,1) AS CHAR),
               'orderStatus',o.status,'warehouseId',BIN_TO_UUID(o.warehouse_id))
-            FROM outbound_order o LEFT JOIN order_result_version r
-              ON r.order_id=o.id AND r.result_version=o.current_result_version
+            FROM outbound_order o
+            LEFT JOIN order_result_version r ON r.order_id=o.id AND r.result_version=o.current_result_version
+            LEFT JOIN submission s ON s.id=r.submission_id
             WHERE o.id=?
             """,String.class,Ids.bytes(orderId));
         if (rows.size()!=1) throw CorrectionCommand.missing();
         return SubmissionJson.parse(rows.getFirst());
+    }
+
+    /**
+     * Server-side recompute of one line's "before" values. There is no {@code order_effective_scan} table in this
+     * repository (design §2 assumed one; it belongs to the result-version step 5), so the current effective values are
+     * read from the facts that exist today: the original dispatch plus its ledger row when it has one. This is exact
+     * while the order is still on its first result version, which is the only state a first correction can start from.
+     */
+    public JsonNode dispatchFacts(UUID orderId,UUID dispatchId) {
+        var rows=jdbc.queryForList("""
+            SELECT JSON_OBJECT('dispatchId',BIN_TO_UUID(d.id),'baleId',BIN_TO_UUID(d.bale_id),
+              'deliveryCode',d.delivery_code,'dispatchCycle',CAST(d.dispatch_cycle AS CHAR),
+              'confirmedAt',DATE_FORMAT(d.confirmed_at,'%Y-%m-%dT%H:%i:%s.%fZ'),
+              'count',CAST(IFNULL((SELECT -SUM(l.quantity_delta) FROM inventory_ledger l WHERE l.dispatch_id=d.id),1) AS CHAR),
+              'weightG',CAST(IFNULL((SELECT -SUM(l.weight_delta_g) FROM inventory_ledger l WHERE l.dispatch_id=d.id),d.weight_g) AS CHAR))
+            FROM dispatch_record d WHERE d.id=? AND d.order_id=?
+            """,String.class,Ids.bytes(dispatchId),Ids.bytes(orderId));
+        if (rows.size()!=1) throw CorrectionCommand.missing();
+        return SubmissionJson.parse(rows.getFirst());
+    }
+
+    public void insertDocument(UUID id,UUID warehouse,UUID order,String type,long expectedResultVersion,String reason,
+        String documentSha256,String status,long sourceRecoveryEpoch,UUID requestedBy,Instant now) {
+        jdbc.update("""
+            INSERT INTO correction_document(id,warehouse_id,order_id,type,expected_result_version,reason,document_sha256,
+              status,source_recovery_epoch,row_version,requested_by,requested_at)
+            VALUES(?,?,?,?,?,?,?,?,?,1,?,?)
+            """,Ids.bytes(id),Ids.bytes(warehouse),Ids.bytes(order),type,expectedResultVersion,reason,documentSha256,
+            status,sourceRecoveryEpoch,Ids.bytes(requestedBy),Timestamp.from(now));
+    }
+
+    public void insertLine(UUID id,UUID document,int lineNo,UUID dispatchId,UUID baleId,String deliveryCode,
+        long beforeCount,long beforeWeight,long targetCount,long targetWeight,UUID evidenceId,String evidenceSha256,
+        Instant occurredAt) {
+        jdbc.update("""
+            INSERT INTO correction_line(id,document_id,line_no,dispatch_id,bale_id,delivery_code,before_count,
+              before_weight_g,target_count,target_weight_g,evidence_id,evidence_sha256,business_occurred_at)
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """,Ids.bytes(id),Ids.bytes(document),lineNo,dispatchId==null?null:Ids.bytes(dispatchId),
+            baleId==null?null:Ids.bytes(baleId),deliveryCode,beforeCount,beforeWeight,targetCount,targetWeight,
+            evidenceId==null?null:Ids.bytes(evidenceId),evidenceSha256,Timestamp.from(occurredAt));
     }
 
     /** Facts an APPROVE or WITHDRAW anchors on: the frozen document digest and its expected result version. */
