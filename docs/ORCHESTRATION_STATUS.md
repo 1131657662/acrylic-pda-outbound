@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-09-27
 branch: codex/development
-head: 5678e06
+head: 15213f4
 dirty_entries: 0
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 27 }
@@ -18,7 +18,7 @@ server: { contract: 0.33.0, paths: 128, flyway: V41, migrations: 41 }
 历史结论见[历史索引](history/README.md)；验收索引见[开发进度](DEVELOPMENT_PROGRESS.md)；范围与完成标准见[路线](DEVELOPMENT_ROADMAP.md)与[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)。
 
 ## 在途
-- **M2b-4b 隔离端 link→confirm 真实 HTTP 验证（e2a 路线）已收口**。已完成：守卫星树 `D:/acrylic-pda-worktrees/r06-e2a-migration` 经空闲核对（工作区 0 项、无锁、19329/19330 无监听、无在跑构建；109/111/112/114 的未闭合 marker 是 2026-09-26 21:2x 的历史失败证据，保留不动）后，`checkout --detach ea4d166`——**HEAD 现为 detached ea4d166，分支 `codex/r06-e2a-migration` 未动（仍 d16836b），29 GB `.local`（含 19329 datadir）完好**。**待做**：写真实 HTTP 的 link→confirm 驱动与 IT（复用 `E2aCrossSourceHttp` 的 Bearer/pda_session 会话方式与 `E2aCrossSourceHttpSetup.session()` 造会话；状态准备复用 `TemporaryConfirmationFixture`；两条被测 POST 走 `/api/v1/pda/temporary-commands`，真服需带 `outbound.temporary.commands.enabled=true`；失败路径断言调用既有 `TemporaryConfirmationChecks.reject`，不重写）。**已完成**：attempt 120 与 123 在隔离非空 MySQL + 真实 HTTP 上全绿（LINK 200 → NORMAL_CONFIRM 200、四项落点断言、反例 409 后改回计划放行），证据见"已完成"区；反例与驱动为新增测试，未开生产开关。
+- **M2b-4b 隔离端 link→confirm 真实 HTTP 验证（e2a 路线）已收口**。已完成：守卫星树 `D:/acrylic-pda-worktrees/r06-e2a-migration` 经空闲核对（工作区 0 项、无锁、19329/19330 无监听、无在跑构建；109/111/112/114 的未闭合 marker 是 2026-09-26 21:2x 的历史失败证据，保留不动）后，`checkout --detach ea4d166`——**HEAD 现为 detached ea4d166，分支 `codex/r06-e2a-migration` 未动（仍 d16836b），29 GB `.local`（含 19329 datadir）完好**。**已完成**：attempt 120 与 123 在隔离非空 MySQL + 真实 HTTP 上全绿（LINK 200 → NORMAL_CONFIRM 200、四项落点断言、反例 409 后改回计划放行），证据见"已完成"区；反例与驱动为新增测试，未开生产开关。
 - 用户当次指令：M2b-4b（服务端放宽已完成 `c975dfc`；Web 复核页写操作与 Android LINK 映射安装待做）；① 发布身份链已完成；④ 文档收敛与工作树清点已完成（**只清点，未删除任何目录**）；C 清单放着不动。
 - 写权：`codex/development` 单写者；服务端树 `r06-e2a-migration` 现为 detached `ea4d166`（仅用于本次验证，分支未动），未归档、未删除。
 
