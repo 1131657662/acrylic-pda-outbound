@@ -160,10 +160,35 @@ server:
 `Facts` 里的 `candidateContextSha256: {type: 'null'}` 是既有设计（保证客户端逐字回显）。
 
 **结论**：让 Web 端拿到正确口径**必然要动契约**（任选 a/b 之一，且需同步契约版本与路径描述），
-而本轮硬边界是"**不发布契约**"、"若需要改契约字段 → 停下报告" ⇒ **本轮未改一行代码**，按指令停下。
-**建议（待业主书面授权后执行，最小面）**：选 **b**（契约自己就写着"由人工核对的候选接口单独提供"），
-在候选接口响应加一个命令口径字段（如 `commandContextSha256`）＋同步该路径描述与契约版本；
-或选 a 但须同时修改 facts 的"只返回…"描述。**两条路都不放行任何能力、`candidateContextSha256` 仍为 `null`、`linkAvailable/releaseAllowed` 仍恒 false。**
+本轮硬边界是"**不发布契约**"、"若需要改契约字段 → 停下报告" ⇒ 当时未改一行代码。
+
+### 6.6 A2 **已授权并已修**：候选接口发布命令口径摘要（v14，提交 `dcaf7ad`，attempt 377 绿）
+
+业主授权"方案 b（改契约草案）"后实施。**只增一个只读字段，不放行任何能力。**
+
+**服务端**（`TemporaryDuplicateModels.Response` / `TemporaryDuplicateService`）：
+- 候选响应新增 `commandContextSha256`：在原有只读 `REPEATABLE_READ` 事务内，用**与服务端命令同一套默认候选查询**
+  计算（`CommandFacts.read` + `SubmissionFiles.read` + `TemporaryDecisionCandidates.snapshot(...).contextSha256`）；
+  取不到（批次不可读等）返回 `null`，客户端不得据此发命令。
+- **facts 面未动**：`expected.candidateContextSha256` 仍恒 `null`；`linkAvailable`/`writeAvailable`/`releaseAllowed`
+  仍恒 `false`（`Candidate.linkAvailable` 的既有资格判定未改）。
+
+**契约（草案递增，未发布）**：`openapi.yaml` **0.36.0 → 0.37.0**（description 记录本字段）；
+`temporary-duplicate-schemas.yaml` 增 `commandContextSha256: {type: [string,'null'], pattern: 64hex}`；
+`temporary-duplicate-paths.yaml` 补充"只读取值、null 时不得发命令、不改变恒 false 能力"。
+
+**Web（改用新口径）**：`duplicate-contracts.ts` 增该字段；`TemporaryDuplicateCandidates.vue:27` 传 `command-context-sha256`；
+`TemporaryDuplicateCandidate.vue` 接收并作为 `candidate-context-sha256` 交给 LINK 动作；`TemporaryCommandAction.vue` 允许 `null`；
+`useTemporaryCommand.ts` 的取回分支由 `page.contextSha256` 改为 `page.commandContextSha256`。
+
+**证据（attempt 377，真 HTTP + Web 会话）**：`E2aTemporaryCommandWebHttpIT` `tests=1 failures=0 errors=0 skipped=0`。
+夹具现在**直接用候选接口发布的该字段**构造 LINK，并断言
+`publishedCommand == serverSnapshot`：实测 `0c86a524…` == `0c86a524…`，而复核页自己的 `contextSha256` 为 `55198072…`
+（两者确实不同）；LINK 与 NORMAL_CONFIRM 全部断言通过 ⇒ **发布的取值确实被命令接受**。Web `typecheck` 0 错误。
+
+**未验边界**：① 未做浏览器端到端（开关默认关闭）；② Web 侧 JS 分支本身未跑单测（仓库无 web 单测框架），
+只在 IT 里证明了端点发布的取值正确；③ 契约仍是**草案**（未发布、未部署）。
+
 
 
 

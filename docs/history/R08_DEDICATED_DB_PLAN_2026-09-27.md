@@ -80,6 +80,38 @@ R08 的源码**已并入 `codex/development`**（R08 独立分支 `codex/r08-exp
 **次选（若 A 之后有余量）**：**C —— TEMP 来源接入 R08 导出**（R06 已收口，前提最实），
 或 **D —— 更正净结果**（R07-3 已收口）。**E（多设备来源）应等 R07-2/R07-5**，前置不存在，不建议先做。
 
+## 四之补：A 的执行实况与三个环境前提（2026-09-27 v14，已实施）
+
+构造器已落地：`tools/r08-provision-and-run.ps1`（`-Port` / `-DatabasePrefix` / `-SampleData` 参数化 +
+`-NonE2a` 通道 + 独立 attempt 序列 `.local/r08-it-<Run>`）。**未改任何 R08 守卫与生产代码。**
+实测踩到三个**环境前提**（都不是产品缺陷，但缺一个就整类红）：
+
+1. **渲染器必须配置**：未配 `outbound.exports.renderer-home` 时导出 POST 直接
+   `503 EXPORT_UNAVAILABLE`（`ExportRendererProcess:25`）— 这是文档写明的 R08 前置。
+   `@SpringBootTest` **不读** Gradle 程序参数，Gradle 自己的 `-D` 也只进 Gradle JVM ⇒ 必须用 Spring 的
+   宽松绑定环境变量：`OUTBOUND_EXPORTS_RENDERER_HOME` / `OUTBOUND_EXPORTS_BROWSERS`（实测 R08-1 全红 → R08-2 修复）。
+2. **`outbound.exports.sample-data` 必须为 true**：`ExportSnapshotReader:28` 用它在 `TEST_SAMPLE` 与
+   `SOURCE_SNAPSHOT` 之间二选一，而 IT 断言 `TEST_SAMPLE`（e2a 导出夹具也是显式传这个开关）
+   ⇒ 环境变量 `OUTBOUND_EXPORTS_SAMPLE_DATA=true`（实测 R08-2 该项红 → R08-3 修复）。
+3. **库名与 URL 必须逐字匹配守卫**：`R08CenterFixture:34` / `R08ExportIT:27` 比对的是
+   `jdbc:mysql://127.0.0.1:23308/acrylic_r08_it?`（**带 `?`，且不接受任何后缀**）
+   ⇒ URL 必须带查询参数（`?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC`），
+   库名必须**恰好**是 `acrylic_r08_it`。因此**不能靠改库名做 per-class 隔离**，
+   必须**一类一 attempt**（每次 DROP+CREATE 同名库）——这正是"每类一 attempt"这条既有约定的由来。
+   实测：批量跑 8 类共用一个库时 `R08CenterFixture.<clinit>` 抛
+   `R08 center tests require the dedicated integration database`（29 项红），
+   改用**每次全新库 + 一类一跑**后该错误消失。
+
+**已取得的实测结果（V48，真库 + MockMvc + 渲染子进程）**：
+
+| run | 类 | 结果 |
+| --- | --- | --- |
+| R08-2 | `R08ExportIT` | **14/14 通过**（含 XLSX/PDF/SCAN_XLSX 落地、幂等回放、越权、篡改、并发同键） |
+| R08-4 | `R08PreviewSeedIT` | **1/1 通过**（合成正式单种子链可用） |
+| R08-4 | `R08ExportFenceIT` | 3/4（`recoveryGenerationBlocksPublicationAndDownload` 因同库被前一类改过代次而红） |
+| R08-4 | 其余 5 类 | 同库复用导致 `<clinit>` 守卫失败（环境，非产品） |
+
+
 ## 五、未验与边界
 
 - 本页为**评估**：未建库、未跑任何 R08 IT、未改代码/配置/守卫；"1 轮可完成"是**估时**，不是实测结论。

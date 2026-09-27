@@ -44,6 +44,17 @@ param(
     [string]$SigningDir = 'D:\acrylic-pda-outbound\.local\it-keys',
     [string]$RendererHome = 'D:\acrylic-pda-outbound\report-rendering\build\install\acrylic-report-rendering',
     [string]$Browsers = 'D:\acrylic-pda-worktrees\r08-export\report-rendering\build\browsers',
+    # R08 ITs assert the TEST_SAMPLE provenance (synthetic sample data); the export entry only sets it when
+    # outbound.exports.sample-data is on, exactly as the e2a export fixture passes it. Default on for this harness.
+    [bool]$SampleData = $true,
+    # R08 的环境守卫按"库名前缀"比对（R08CenterFixture:34 / R08ExportIT:27 要求 URL 以
+    # jdbc:mysql://127.0.0.1:23308/acrylic_r08_it? 开头），所以默认**不加 attempt 后缀**，库名严格等于
+    # -DatabasePrefix。每次运行会 DROP+CREATE 同名库，隔离由"独立 mysqld 实例 + 独立数据目录"保证。
+    [bool]$SuffixDatabaseWithRun = $false,
+    # R08 的每个类都必须跑在**全新库**上：R08CenterFixture.<clinit> 的守卫在库名恒定、且上一类已把库写成
+    # 非初始状态时会抛 "R08 center tests require the dedicated integration database"（实测 R08-4 批量 29 项红）。
+    # 传 -DatabaseSuffix <类名> 让库名带上后缀（仍以 acrylic_r08_it 开头，守卫按前缀比对可通过）。
+    [string]$DatabaseSuffix = '',
     [switch]$KeepServerRunning
 )
 
@@ -55,8 +66,10 @@ $log = Join-Path $attempt 'mysqld.log'
 $initLog = Join-Path $attempt 'initialize.log'
 $passwordFile = Join-Path $attempt 'run-password.txt'
 $runLog = Join-Path $attempt 'integration-test.log'
-$database = "${DatabasePrefix}_$Run"
-$user = "r08_it_$Run"
+$database = if ($SuffixDatabaseWithRun) { "${DatabasePrefix}_$Run" } else { $DatabasePrefix }
+if (-not [string]::IsNullOrWhiteSpace($DatabaseSuffix)) { $database = "${database}_$DatabaseSuffix" }
+$user = if ($SuffixDatabaseWithRun) { "r08_it_$Run" } else { 'r08_it' }
+if (-not [string]::IsNullOrWhiteSpace($DatabaseSuffix)) { $user = "${user}_$DatabaseSuffix" }
 $mysqld = Join-Path $MySqlBase 'bin/mysqld.exe'
 $mysql = Join-Path $MySqlBase 'bin/mysql.exe'
 
@@ -158,7 +171,7 @@ if ($tableCount -ne '0') { Fail 'verify empty schema' "expected 0 tables, found 
 Write-Host "== 7) run R08 integrationTest ($Tests) =="
 # -NonE2a channel (already verified in the e2a harness): the R08 ITs are @SpringBootTest + MockMvc and resolve the
 # application's own datasource, so the isolated database is exported and the app is allowed to migrate it.
-$env:OUTBOUND_DB_URL = "jdbc:mysql://127.0.0.1:$Port/$database"
+$env:OUTBOUND_DB_URL = "jdbc:mysql://127.0.0.1:$Port/$database`?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
 $env:OUTBOUND_DB_USER = $user
 $env:OUTBOUND_DB_PASSWORD = $password
 $env:OUTBOUND_MIGRATE = 'true'
@@ -174,12 +187,14 @@ Push-Location $Workspace
 $runStartedAt = Get-Date
 try {
     $testArgs = if ([string]::IsNullOrWhiteSpace($Tests) -or $Tests -in @('*','ALL')) { @() } else { @('--tests', $Tests) }
-    # Export ITs start a renderer subprocess; these are Spring program arguments, so they ride on the test task.
-    $rendererArgs = @(
-        "-Doutbound.exports.renderer-home=$RendererHome",
-        "-Doutbound.exports.browsers=$Browsers"
-    )
-    & (Join-Path $Workspace 'gradlew.bat') -p server integrationTest @testArgs --rerun-tasks --console=plain @rendererArgs 2>&1 |
+    # Export ITs start a renderer subprocess. `@SpringBootTest` does not read Gradle program arguments, and Gradle's
+    # own -D goes to the *Gradle* JVM, not the test JVM - so the renderer is configured through Spring's relaxed
+    # binding of environment variables (OUTBOUND_EXPORTS_RENDERER_HOME -> outbound.exports.renderer-home). Without it
+    # the export POST answers 503 EXPORT_UNAVAILABLE (the documented R08 precondition, not a product defect).
+    $env:OUTBOUND_EXPORTS_RENDERER_HOME = $RendererHome
+    $env:OUTBOUND_EXPORTS_BROWSERS = $Browsers
+    $env:OUTBOUND_EXPORTS_SAMPLE_DATA = if ($SampleData) { 'true' } else { 'false' }
+    & (Join-Path $Workspace 'gradlew.bat') -p server integrationTest @testArgs --rerun-tasks --console=plain 2>&1 |
         Tee-Object -FilePath $runLog
     $gradleExit = $LASTEXITCODE
 } finally {
