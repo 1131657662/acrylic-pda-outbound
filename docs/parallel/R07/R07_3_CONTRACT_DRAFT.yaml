@@ -10,8 +10,11 @@
 #
 # 发布前置（全绿才可并入）：
 #   1) `outbound.corrections.commands.enabled=true` 的**运维授权**（业主），且能力声明与开关同步；
-#   2) Web 路由 `/api/v1/corrections` 的真 HTTP 证据（当前被 A3 CSRF/会话问题挡住，仅 PDA 通道已验证）；
-#   3) 申请人确认机制（P-R07-08 的确认半程）政策确定并实现；
+#   2) ~~Web 路由 `/api/v1/corrections` 的真 HTTP 证据~~ **已具备**（2026-09-27，attempt 292：Web 会话 + CSRF + Cookie
+#      往返下 ①开关关闭 404 ②形状错误 400 `INVALID_CORRECTION_COMMAND` ③未知订单 404 `CORRECTION_DOCUMENT_NOT_FOUND`）；
+#      根因（会话 Cookie 默认 `Secure` 与明文 HTTP 冲突）已在 harness 侧显式 `OUTBOUND_COOKIE_SECURE=false` 解决，生产默认未改；
+#   3) 申请人确认机制（P-R07-08 的确认半程）——**已实现**（V48 + WITHDRAW/WITHDRAW_CONFIRM）；
+#      仍缺：待确认是否有期限、申请人可否拒绝（政策项）；
 #   4) `contracts/openapi.yaml` 版本号由维护者按事实块统一分配后递增；
 #   5) 本文件的路径与 schema 通过 `tools/version_facts.ps1 -Check` 的一致性校验（并入后）。
 #
