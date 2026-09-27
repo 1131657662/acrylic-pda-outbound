@@ -29,7 +29,11 @@ param(
     [string]$Workspace = 'D:\acrylic-pda-worktrees\r06-e2a-migration',
     [string]$MySqlBase = 'C:\Program Files\MySQL\MySQL Server 8.0',
     [int]$Port = 19330,
-    [switch]$ProvisionOnly
+    [switch]$ProvisionOnly,
+    # Reusable constructor (R02): by default the isolated MySQL is stopped again once the run is reported, so one
+    # command means "start empty DB -> run the chosen gated IT (which starts the real server and drives real HTTP)
+    # -> report -> stop". Pass -KeepServerRunning to inspect the instance afterwards.
+    [switch]$KeepServerRunning
 )
 
 $ErrorActionPreference = 'Continue'
@@ -169,4 +173,20 @@ $doc.testsuite.testcase | ForEach-Object {
 $started = Test-Path -LiteralPath (Join-Path $attempt 'test-started.marker')
 $completed = Test-Path -LiteralPath (Join-Path $attempt 'test-completed.marker')
 Write-Host "markers: started=$started completed=$completed attempt=$attempt"
+
+# Teardown is part of the constructor contract: the caller gets the instance back the way it was found.
+if (-not $KeepServerRunning) {
+    Get-CimInstance Win32_Process -Filter "Name='mysqld.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -and $_.CommandLine -match [regex]::Escape($attempt) } |
+        ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+    $stopped = $false
+    foreach ($i in 1..40) {
+        Start-Sleep -Milliseconds 500
+        if (@(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -eq $Port }).Count -eq 0) { $stopped = $true; break }
+    }
+    Write-Host ("teardown: port {0} free = {1}" -f $Port, $stopped)
+    if (-not $stopped) { Write-Host "teardown warning: port $Port still listening" }
+} else {
+    Write-Host "teardown skipped (-KeepServerRunning); instance is on 127.0.0.1:$Port"
+}
 if ($gradleExit -ne 0) { exit $gradleExit }
