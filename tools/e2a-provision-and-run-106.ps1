@@ -34,8 +34,16 @@ param(
     # need the isolated database exported and the app allowed to migrate it. Off by default: the verified e2a path keeps
     # its manual per-IT migration targets untouched.
     [switch]$NonE2a,
-    # Throwaway offline signing key pair for -NonE2a (gitignored; never production material).
+    # CoordinatesOnly: 只把隔离库坐标（URL/USER/PASSWORD）导出给应用 context，但**不**让应用自己迁移
+    # （OUTBOUND_MIGRATE=false）。用于"应用 context 与 E2aCrossSourceProfile 共用同一个 attempt 库"的场景：
+    # 库由 IT 内的 profile.migrate(...) 自己建，避免应用启动时先迁到最新、把后续 target 低于当前版本的
+    # Flyway 调用顶掉（A1：TEMP 链走真 HTTP 19434，同时要 @SpringBootTest 的 context 能起来）。
+    [switch]$CoordinatesOnly,
+    # Throwaway offline signing key pair for -NonE2a / -CoordinatesOnly (gitignored; never production material).
     [string]$SigningDir = 'D:\acrylic-pda-outbound\.local\it-keys',
+    # 导出类 IT 需要渲染器（否则 POST 直接 503 EXPORT_UNAVAILABLE）；只在这两个开关给出时透传。
+    [string]$RendererHome = '',
+    [string]$Browsers = '',
     # Reusable constructor (R02): by default the isolated MySQL is stopped again once the run is reported, so one
     # command means "start empty DB -> run the chosen gated IT (which starts the real server and drives real HTTP)
     # -> report -> stop". Pass -KeepServerRunning to inspect the instance afterwards.
@@ -160,13 +168,14 @@ $env:E2A_CROSS_PASSWORD = $password
 # present, the CSRF filter rejected it and the Web login answered 403 ACCESS_DENIED (attempts 150, 194-196, 237).
 # Production keeps the secure default; the isolated harness opts out explicitly for the lifetime of this process.
 $env:OUTBOUND_COOKIE_SECURE = 'false'
-if ($NonE2a) {
-    # See the -NonE2a switch: hand the isolated database to the application context itself.
+if ($NonE2a -or $CoordinatesOnly) {
+    # See the -NonE2a / -CoordinatesOnly switches: hand the isolated database coordinates to the application context.
     $env:OUTBOUND_DB_URL = "jdbc:mysql://127.0.0.1:$Port/$database"
     $env:OUTBOUND_DB_USER = $user
     $env:OUTBOUND_DB_PASSWORD = $password
-    $env:OUTBOUND_MIGRATE = 'true'
-    # Non-e2a ITs never call E2aCrossSourceHttpSetup.signing, so they need the offline signing key pair the e2a path
+    # -NonE2a lets the app migrate; -CoordinatesOnly keeps it off so the IT's own profile.migrate() owns the schema.
+    $env:OUTBOUND_MIGRATE = if ($CoordinatesOnly) { 'false' } else { 'true' }
+    # These ITs never call E2aCrossSourceHttpSetup.signing, so they need the offline signing key pair the e2a path
     # generates per attempt. A throwaway pair lives in the gitignored .local/it-keys (never committed, never production).
     $env:OUTBOUND_AUTH_SIGNING_PRIVATE_KEY = Join-Path $SigningDir 'server-private.der'
     $env:OUTBOUND_AUTH_SIGNING_PUBLIC_KEY = Join-Path $SigningDir 'server-public.der'
@@ -178,6 +187,8 @@ if ($NonE2a) {
         Fail 'signing key' "missing $($env:OUTBOUND_AUTH_SIGNING_PRIVATE_KEY); generate with .local/it-keys/GenKeys.java"
     }
 }
+if (-not [string]::IsNullOrWhiteSpace($RendererHome)) { $env:OUTBOUND_EXPORTS_RENDERER_HOME = $RendererHome }
+if (-not [string]::IsNullOrWhiteSpace($Browsers)) { $env:OUTBOUND_EXPORTS_BROWSERS = $Browsers }
 Push-Location $Workspace
 $runStartedAt = Get-Date
 try {

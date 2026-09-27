@@ -42,13 +42,42 @@ public final class TemporaryCommandWebHttpChecks {
 
     public static void verify(WebApplicationContext context) throws Exception { new TemporaryCommandWebHttpChecks(context).check(); }
 
-    /** 跑完整 TEMP→LINK→NORMAL_CONFIRM 链（含子项 C 的导出受理断言），并把结果交给调用方继续验证渲染。 */
-    public static ChainResult verifyAndReturn(WebApplicationContext context) throws Exception {
-        var checks = new TemporaryCommandWebHttpChecks(context); checks.check(); return checks.chain;
+    /**
+     * 跑完整 TEMP→LINK→NORMAL_CONFIRM 链（含子项 C 的导出受理断言），返回**本夹具实例**（会话仍有效），
+     * 供调用方接着调 {@link #renderExport(String)} 等只读/导出动作，或读 {@link #chain()} 取链路标识。
+     */
+    public static TemporaryCommandWebHttpChecks verifyAndReturn(WebApplicationContext context) throws Exception {
+        var checks = new TemporaryCommandWebHttpChecks(context); checks.check(); return checks;
     }
+
+    /** 链路标识（仓库、已授权主体、三个订单/提交标识）。 */
+    public ChainResult chain() { return chain; }
 
     /** R08 子项 C 渲染验证需要的事实：仓库与已授权的 Web 主体，以及链路上三个订单/提交标识。 */
     public record ChainResult(UUID warehouse,SessionUser supervisor,String submission,String tempOrder,String targetOrder) { }
+
+    /**
+     * 链尾导出的**渲染**（子项 C 的第二半）：用链上已认证的 Web 会话对目标正式单发起导出，把它推到成功，
+     * 再下载原字节返回。跑 worker 走的是同一容器里的 {@code BackgroundJobWorker} bean（真服 19434 的上下文）。
+     */
+    public record Rendered(String format,byte[] bytes,String contentType) { }
+
+    public Rendered renderExport(String format) throws Exception {
+        var created=postExport(chain.targetOrder(),chain.warehouse().toString(),format);
+        String jobId=created.path("id").asText();
+        var worker=context.getBean(com.acrylic.outbound.jobs.BackgroundJobWorker.class);
+        for(int i=0;i<60;i++) {
+            var status=data(get(BASE+"/exports/"+jobId+"?"+query(chain.warehouse().toString())),200,"export status");
+            String state=status.path("status").asText();
+            if(state.equals("SUCCEEDED"))break;
+            if(state.equals("FAILED"))throw new IllegalStateException("导出作业失败: "+status.path("errorCode").asText());
+            assertThat(worker.runOnce("r08-temp-render")).isPresent();
+        }
+        var download=send(request("/exports/"+jobId+"/file?"+query(chain.warehouse().toString())).GET().build());
+        assertThat(download.statusCode()).as("下载 TEMP 来源导出文件: "+new String(download.body(),StandardCharsets.UTF_8))
+            .isEqualTo(200);
+        return new Rendered(format,download.body(),download.headers().firstValue("Content-Type").orElse(""));
+    }
 
     private ChainResult chain;
 
@@ -144,14 +173,15 @@ public final class TemporaryCommandWebHttpChecks {
     }
 
     /** 用已认证的 Web 会话对 TEMP 确认后的目标正式单发起一次首版导出，返回信封 data（不跑 worker）。 */
-    private JsonNode postExport(String order,String warehouse) throws Exception {
-        String body="{\"format\":\"XLSX\",\"basis\":\"ORIGINAL_CONFIRMED\"}";
+    private JsonNode postExport(String order,String warehouse) throws Exception { return postExport(order,warehouse,"XLSX"); }
+    private JsonNode postExport(String order,String warehouse,String format) throws Exception {
+        String body="{\"format\":\""+format+"\",\"basis\":\"ORIGINAL_CONFIRMED\"}";
         var response=send(request("/orders/"+order+"/exports?"+query(warehouse))
             .header("Content-Type","application/json").header(csrfHeader,csrfToken)
             .header("Idempotency-Key",UUID.randomUUID().toString())
             .header("X-Server-Recovery-Epoch",epoch.isEmpty()?"1":epoch)
             .POST(HttpRequest.BodyPublishers.ofString(body,StandardCharsets.UTF_8)).build());
-        assertThat(response.statusCode()).as("TEMP 来源单导出受理: "+new String(response.body(),StandardCharsets.UTF_8))
+        assertThat(response.statusCode()).as("TEMP 来源单导出受理("+format+"): "+new String(response.body(),StandardCharsets.UTF_8))
             .isEqualTo(200);
         return data(response,200,"export");
     }
