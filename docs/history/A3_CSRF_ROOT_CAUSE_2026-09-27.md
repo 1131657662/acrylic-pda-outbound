@@ -53,7 +53,8 @@ server:
 
 ## 四、仍未解的两处**夹具**问题（不属产品缺陷，记录为残余）
 > **更新（指令 v11）**：本节的 **② `TemporaryCommandWebHttpChecks` 已收口** ✅，见文末「六」；
-> ① R07-1 ③/④ 仍待专项。第 ②（原条目）保留原文如下，不删除失败与错误诊断记录。
+> **① `E2aHandoverHttpLayerIT` ③/④ 也已收口** ✅（指令 v12，attempt 374），见文末「七」。
+> 第 ②（原条目）保留原文如下，不删除失败与错误诊断记录。
 
 1. **`E2aHandoverHttpLayerIT` ③/④**：③期望"登录但无权限 → 403"，④期望"有权限 → 到达业务层（400/404）"。
    实测 ③ 得 **404** ⇒ 因为其请求体用的是**全零 scope**，业务层在**查不到来源**时就先返回 404，**权限门根本没被触达**；
@@ -116,21 +117,37 @@ server:
 `TemporaryDecisionCandidates.snapshot(...)` 取摘要（复核页返回值只留作 `total==1` 校验）。
 `TemporaryArchiveDriver:44` 早就是这么做的 —— 这是本仓库既有的正确用法。
 
-### 6.3 ⚠️ 影响面：**Web 复核页写操作（A2）取的是错口径**（本会话静态确认，未修、未实测）
+### 6.3 ⚠️ 影响面：**Web 复核页写操作（A2）取的是错口径**——**性质判定＝命令面完整性缺陷**（v12 定性，未修）
 
-- `web/src/temporary-review/TemporaryDuplicateCandidate.vue:5,30`：把**复核页返回的** `contextSha256`
-  作为 `candidate-context-sha256` 传给 `TemporaryCommandAction` → `useTemporaryCommand.execute` → 写进 `expected.candidateContextSha256`。
-- `web/src/temporary-review/TemporaryReviewPage.vue:73`（`NORMAL_CONFIRM`）**不传**该 prop ⇒ 走
-  `useTemporaryCommand.ts:50-57` 的 fetch 分支，取的仍是
-  `/temporary-reviews/{id}/duplicate-candidates` 的 `page.contextSha256` ⇒ **同一个错口径**（两条路都不对）。
-- **后果**：开关一旦打开，A2 的 LINK 与 NORMAL_CONFIRM 都会**稳定 409 `COMMAND_CONTEXT_CHANGED`**
-  （"原上下文已变化，请核对原意图"）—— 与 A3 残余② 的夹具症状同源、同一根因。
-- **状态**：**待修**（记为接口一致性缺陷 / 行动项）；本轮**未改 web 代码**，也**未**开开关做真 HTTP 实测，
-  故 A2 这条属**静态确认**，不是实测结论。
-- **建议修法**：Web 复核页发起 LINK/NORMAL_CONFIRM 时，取**服务端候选集摘要**
-  （`TemporaryDecisionCandidates` 口径，即把命令事实面 `/temporary-commands/facts` 补上该值，
-  或由复核页接口另发一个命令口径字段），**不要**复用复核页的 `contextSha256`。
-  最稳的修法是**让服务端把命令口径的摘要发出来**，避免再出现"页面口径 vs 命令口径"这类客户端可自行猜错的接口。
+**性质（三层证据，判定为"本就该有、属缺陷"，不是"为新能力新增"）**：
+
+1. **契约已声明该字段并指明来源**：`contracts/temporary-command-facts-schemas.yaml:26`
+   `candidateContextSha256: {type: 'null', description: 由人工核对的候选接口单独提供，必须与本对象一并回显}`
+   —— 契约说它是**既有的**、由候选接口提供的值（facts 面恒为 `null` 是设计）。
+2. **命令面客户端无法自造该值**：该摘要 = `sha(warehouseId + context(products/vehicleNo/submissionId/payloadSha256)
+   + candidates(policyVersion/fromDate/throughDate/total/fingerprint))`，其中 candidates 是**服务端默认查询**的口径
+   （`TemporaryDecisionCandidates.snapshot`）。PDA 夹具之所以能用，是因为它在进程内直接注入该 bean
+   （`TemporaryArchiveDriver:44`、`TemporaryConfirmationFixture:64`）；**HTTP 客户端没有这个能力**，只能从服务端取。
+3. **契约点名的接口并不提供该值**：复核页 `GET /temporary-reviews/{id}/duplicate-candidates` 返回的
+   `contextSha256` 由 `TemporaryDuplicateService.read`（第 24 行）计算，是 `json.digest(List.of(warehouse, context, range))`，
+   `context` 冗长（含 `receivedAt/status/orderRevision/containerNo/reviewerPermissionVersion/serverRecoveryEpoch`…）
+   ⇒ **与命令口径不是同一个值**。实测（attempt 361）：服务端复检 `1439f4df…` vs 复核页 `70f9e17b…`。
+
+**结论**：契约所声明的"候选接口提供命令口径 `candidateContextSha256`"**在当前 HTTP 面不存在** ⇒
+**命令面完整性缺陷**（HTTP 侧缺一个可用的值来源），**不是**为新能力（Web 写操作）才需要的新字段。
+**故该修复可独立进行，不需开关授权、不改契约字段类型（仍 `null`）、也不放行任何能力。**
+
+**受影响消费者（静态确认，未实测）**：
+- `web/src/temporary-review/TemporaryDuplicateCandidate.vue:5,30`：把复核页 `contextSha256` 当 `candidate-context-sha256` 传给 LINK；
+- `web/src/temporary-review/TemporaryReviewPage.vue:73`（`NORMAL_CONFIRM`）：不传该 prop ⇒ 走
+  `useTemporaryCommand.ts:50-57` 的 fetch 分支，取的**仍是** `page.contextSha256`（同一个错口径，两条路都不对）。
+- 后果：开关一旦打开，A2 的 LINK / NORMAL_CONFIRM 都会**稳定 409 `COMMAND_CONTEXT_CHANGED`**（实测同源症状见 6.2）。
+
+**状态**：本轮**只定性、不修改**（硬边界）。记为**新债**，将来独立修；
+**建议修法**（不动契约字段类型）：让**服务端**把命令口径摘要发出来——在 `/temporary-commands/facts`
+（或候选接口）补一个命令口径字段，客户端一律回显服务端给的值，禁止页面复用自己那套 `contextSha256`。
+**未验边界**：① 该缺陷**未经真 HTTP 实测**（开关默认关闭，无法端到端复现 409）；② 未确认 Android/PC 端是否也取错口径。
+
 
 ### 6.4 本轮证据与边界
 
@@ -142,4 +159,53 @@ server:
 - **未验边界**：① Web 复核页真浏览器 UI 路径未跑（仍受"开关默认关闭"约束）；② A2 错口径**未实测**（见 6.3，属静态确认）；
   ③ 未做并发/多标签重放；④ 未跑全量 IT；⑤ 本 IT 只在隔离库 + 明文 HTTP（`OUTBOUND_COOKIE_SECURE=false`，harness 专用）下通过，
   **生产仍为 `Secure=true` 默认、未动**。
+
+---
+
+## 七、A3 残余① 收口：`E2aHandoverHttpLayerIT` HTTP 层③/④（2026-09-27，指令 v12，attempts 365-374）
+
+**结论**：R07-1 交接命令的 **HTTP 层拦截面**在真服 + 真 HTTP 下全部可达 —— **attempt 374 绿**
+（`tests=1 failures=0 errors=0 skipped=0`，`test-completed.marker` 已写）。**未改生产代码/配置默认值、未开开关。**
+
+### 7.1 为什么以前 ③/④ 不可达（两个夹具原因，都不是产品缺陷）
+
+1. **全零锚点**：请求体用 `scopeId=00000000-…`、`caseId` 同理 ⇒ `HandoverCommandService.executeOnce` 先取
+   `scopeFacts`/`caseFacts`（内部 `Locks` 走 `SELECT … FOR UPDATE`，查不到即抛）⇒ 业务层先 **404**，**权限门根本没被触达**。
+2. **权限码不存在**：IT 只迁到 **V42**，而 `order:handover` 由 **V44** 才 `INSERT INTO permission` ⇒
+   `INSERT INTO role_permission SELECT … WHERE code='order:handover'` **静默插入 0 行**，任何会话都不可能有该权限。
+   这正是 V44 文件头写明的 R07-1 老陷阱（attempt 162 实测过）：**实测 attempt 373**：`v44=[]`、
+   `仅 order:resume 生效`、`approverPerms=[order:resume]`。
+
+### 7.2 夹具改动（仅测试侧）
+
+- **真实来源夹具**：新增 `formalScope(...)` —— 按既有表插入一条 FORMAL 来源（`source_order_id` 非空、
+  `canonical_order_id` **必须** NULL，见 `ck_submission_scope_source`），**自带一张新正式单**
+  （`source_order_id` 唯一，不能复用既有单 ⇒ 撞 `submission_scope.source_order_id` 唯一键）
+  与**该来源自己的 submission**（不复用已播种提交：它的证据行挂在 `(scope_id,submission_id,work_round)` 上，
+  改归属会撞 `source_evidence_object` 外键 — attempt 366 实测）。
+- **迁移目标 V42 → V44**：让 `order:handover` 真正注册。
+- **命令体**：REQUEST/APPROVE 均改为锚定真实 `scopeFacts`/`caseFacts` 的**完整 expected**
+  （`userAuthVersion` 由 `app_user.auth_version` 查询，不猜）；APPROVE 另建一条状态可过状态门的 `handover_case` 行。
+
+### 7.3 实测结果（attempt 374；原文见 attempt 目录 `http-layer.txt`）
+
+| 探测 | 结果 | 判定 |
+| --- | --- | --- |
+| ① 开关关闭 + 有会话 | **404** | 路由整体缺席 ✓ |
+| ② 开关开启 + 无会话（先取令牌） | **401** | 认证入口可达 ✓ |
+| ③ 开关开启 + 无任何交接权限（真实 scope） | **403 `PERMISSION_DENIED`** | **权限门可达** ✓，且**不是** CSRF 的 `ACCESS_DENIED` |
+| ④ 开关开启 + 有 `order:handover` 发 REQUEST | **200**（案件建立） | **进入业务层并成功** ✓，同时证明 `Expected.forRequest` 与服务端 `scopeFacts` 完全一致 |
+| ⑤ 仅 `order:resume` 发 APPROVE | **409 `HANDOVER_STOP_NOT_PROVEN`** | 过了 approval 门、被业务层判；**approval 门接受 `order:resume`** |
+| ⑥ 仅 `order:handover` 发 REQUEST | **409 `IDEMPOTENCY_CONTENT_MISMATCH`** | 过了权限门（否则 403）；此 409 来自同 scope 二次 REQUEST 撞 `uk_handover_scope_open`，非权限 |
+
+### 7.4 附带发现（权限面，如实记录）
+
+- **内核权限门对四种命令一视同仁**：`HandoverCommand.Identity.current`（第 76 行）只要求
+  `order:handover || order:resume`；`Actor.mayApprove()`（第 82 行）同样接受两者，而 APPROVE/PREPARE/ACTIVATE 才走
+  `requiresApproval()`。故 ⑤ 实测 resume-only 能过 approval 门（业务层才拒）。
+- 由此：**设计语汇"REQUEST 需 `order:resume`／APPROVE 需 `order:handover`"并未在内核实现**。
+  本轮**未改**（属政策/权限设计裁决，且 `order:resume` 是既有 **WAREHOUSE_ADMIN** 持有码 ⇒ 存在实质授权差异），
+  记为**待裁决**，见欠债清单。
+- **未验**：APPROVE 的成功路径（需原机停止证明 `STOP_PROOF` 落库）、PREPARE/ACTIVATE、3 真并发、2 原子性（仍属 R07-1 服务层既有未验项）。
+
 
