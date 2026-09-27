@@ -193,6 +193,42 @@ R08 的源码**已并入 `codex/development`**（R08 独立分支 `codex/r08-exp
 
 ⇒ 既有正式订单导出（PC/PDA/汇总/重试/栅栏）**全部保持绿**。
 
+## 七、C 的渲染验证：**本轮未通过接线，已如实记录并留可执行接法**（v17）
+
+`R08TemporaryExportRenderIT`（新类，`@Disabled` 附原因）试图把 TEMP 单走完"申请 → worker → 下载"并回读
+XLSX / SCAN_XLSX / PDF 三种格式。**三条路本轮都实测过，都不通**：
+
+| 路 | 结果 |
+| --- | --- |
+| a) R08 库(23308) + `@SpringBootTest`/MockMvc | `ConnectException`：TEMP 链既有夹具 `TemporaryCommandWebHttpChecks` 走**真 HTTP 到 127.0.0.1:19434**（`TemporaryAccountingChecks.http`），MockMvc 不监听该端口（R08-24） |
+| b) e2a harness（真服 19434）不带 `-NonE2a` | `'url' must start with "jdbc"`：`@SpringBootTest` 的数据源缺 `OUTBOUND_DB_URL`（attempt 384） |
+| c) e2a harness + `-NonE2a` | 该开关同时把上下文数据源指到同一 attempt 库，而链夹具随后要 `profile.migrate(…,"34"/"42")`；库已被应用迁到最新，Flyway target 低于当前版本会报错 |
+
+**可执行接法（下一轮照做即可）**：给 e2a runner 增加"只导出库坐标、不预迁移"的模式 —— `-NonE2a` 只设
+`OUTBOUND_DB_URL/USER/PASSWORD` 并把 `OUTBOUND_MIGRATE=false`，让 **应用 context 与 `E2aCrossSourceProfile`
+共用同一个 attempt 库**（库由 profile 自己 migrate）⇒ **真服 19434 + TEMP 链 + 渲染**三者可同时成立。
+按本轮"1 轮为限、渲染验证不通则记录并转 D"的约定，**未硬做**。
+
+**因此 C 的当前证据边界仍是**：入口受理 + 首版快照落地（attempt 383）＋既有路径回归绿（runs 19-22）；
+**"渲染出的文件内容正确"仍未验**。
+
+## 八、「断言假设过时」类缺陷扫描清单（v17，只列清单，不强行全修）
+
+| 位置 | 假设 | 判定 |
+| --- | --- | --- |
+| `TemporaryExportEvidence:46`（原 `mappingVersion=="1"`） | 只处理 v1 映射 | **缺陷，已修** ✅（v16 放宽为 `∈{1,2}`） |
+| `ExportFacts:29` / `:55`、`ExportRangeReader:45` | 只取 `result_version=1` | **设计如此**（导出只做首版 `ORIGINAL_CONFIRMED`；`RESULT_VERSION`/`CURRENT_EFFECTIVE` 是显式的未接范围）——但**这正是子项 D（更正净结果）要改的面** |
+| `CommandBusinessIntegrity:81`（`v.result_version=1`） | 只核对首版结果行 | **需在 D 一并裁定**（更正后是否仍按 v1 核对） |
+| `CorrectionStore:381`（`ORDER BY (result_version=1) DESC, result_version ASC`） | 优先 v1 再取最小版本 | **R07-3 已裁决过的面**，不动 |
+| `PcAccounting:27` / `SubmissionAccounting:31`（`SET current_result_version=1`） | 首版记账写 1 | **R05/R06 既定语义**（首版即 1），不动 |
+| `TemporaryConfirmationSource:56`（`mappingVersion==1` 分支） | v1=未关联、v2+=受控关联 | **正确语义分支**（不是过时假设） |
+| web 侧 `duplicate-contracts.ts` 等 | `contextSha256` 语义 | **已随 A2 修**（改用 `commandContextSha256`） |
+
+扫描方式：`git grep` 搜 `mappingVersion").equals("1")` / `result_version=1` / `resultVersion==1` / `contextSha256`。
+**结论**：同类缺陷目前只发现 `TemporaryExportEvidence:46` 一处，已修；其余为设计或既定语义；
+但其中三处（`ExportFacts`/`ExportRangeReader`/`CommandBusinessIntegrity` 的 v1 过滤）**与子项 D 直接相关**，
+建议在 D 开工前先明确"更正后导出应取哪个结果版本"的口径。
+
 
 
 

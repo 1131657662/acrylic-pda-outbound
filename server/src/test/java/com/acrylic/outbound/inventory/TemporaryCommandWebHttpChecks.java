@@ -42,11 +42,21 @@ public final class TemporaryCommandWebHttpChecks {
 
     public static void verify(WebApplicationContext context) throws Exception { new TemporaryCommandWebHttpChecks(context).check(); }
 
+    /** 跑完整 TEMP→LINK→NORMAL_CONFIRM 链（含子项 C 的导出受理断言），并把结果交给调用方继续验证渲染。 */
+    public static ChainResult verifyAndReturn(WebApplicationContext context) throws Exception {
+        var checks = new TemporaryCommandWebHttpChecks(context); checks.check(); return checks.chain;
+    }
+
+    /** R08 子项 C 渲染验证需要的事实：仓库与已授权的 Web 主体，以及链路上三个订单/提交标识。 */
+    public record ChainResult(UUID warehouse,SessionUser supervisor,String submission,String tempOrder,String targetOrder) { }
+
+    private ChainResult chain;
+
     private void check() throws Exception {
         var f = new TemporaryConfirmationFixture(context,false);
         SessionUser supervisor = f.supervisor();
         grant(f,supervisor,"temporary_order:link");
-        // R08 子项 C 探针：导出入口要求 order:read（ExportController:24），TEMP 确认后目标正是 WEB 正式单。
+        // R08 子项 C：导出入口要求 order:read（ExportController:24），TEMP 确认后目标正是 WEB 正式单。
         grant(f,supervisor,"order:read");
         String warehouse = f.source.f.web.identity().warehouse().toString();
         String submission = f.source.id();
@@ -54,6 +64,7 @@ public final class TemporaryCommandWebHttpChecks {
             + "WHERE source='WEB' AND status='READY' AND warehouse_id=UUID_TO_BIN(?)",warehouse);
         String temp = string(f,"SELECT BIN_TO_UUID(canonical_order_id) FROM submission_scope WHERE current_submission_id=UUID_TO_BIN(?)",submission);
         String target = webOrder(f,supervisor,warehouse,temp,"FH-WEB-0001");
+        chain = new ChainResult(UUID.fromString(warehouse),supervisor,submission,temp,target);
         assertThat(candidateTotal(f,warehouse)).isEqualTo(1);
 
         // Without a Web session the read surface must stay closed.

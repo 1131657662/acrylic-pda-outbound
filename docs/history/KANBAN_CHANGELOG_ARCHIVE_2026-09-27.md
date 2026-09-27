@@ -47,3 +47,11 @@
 ## 归档：v14 变更日志（v16 为腾出上限移出，原文未改）
 
 - 2026-09-27 v14：**A2 口径已修 ✅**（`dcaf7ad`，attempt 377 绿）：候选接口新增只读 `commandContextSha256`，Web 全线改用它 ⇒ 开关一开不再必然 409；facts 面仍 `null`、capabilities 仍恒 false；契约**草案** 0.36.0→0.37.0（未发布）+ typecheck 0。**R08 专用库构造器跑批 ✅**（`9e448d7`）：**8 类 47 项 = 46 通过 / 1 失败**（Export 14/14、PreviewSeed 1/1、ClockBoundary 2/2、CenterPagination 4/4、Retry 7/7、Summary 6/6、AuthorizationRace 9/9）。**待专项（未判定真 bug）**：`R08ExportFenceIT.recoveryGenerationBlocksPublicationAndDownload` 两次独立复现红（`BackgroundJobLeases.fail:76→JobRecoveryFence.lock:18→ServerState.validate:39` 抛 409 逃逸）；**已按指令停下报告，未改生产代码/断言**。环境前提三条已记档（renderer-home / sample-data / 库名逐字匹配守卫 ⇒ 一类一 attempt）。（[R08 方案](history/R08_DEDICATED_DB_PLAN_2026-09-27.md)）
+
+## 归档：v15 变更日志（v17 为腾出上限移出，原文未改）
+
+- 2026-09-27 v15：**R08ExportFenceIT 判定＝测试期望过时 ✅（run 18 = 4/4；R08 8 类 47/47）**：代次由**测试自己**在 job handler 里 +1；`BackgroundJobWorker.failed→BackgroundJobLeases.fail:76→lockOwner:97→JobRecoveryFence.lock:18→ServerState.validate:39` **先抛 409** ⇒ `lockOwner` 的"不匹配即不认领"永不返回 false、`fail()` 的 STALE 分支不可达，连 `recoverExpired` 也抛 ⇒ 契约本就是"绝不静默接受被恢复的代次"，处置＝重启进程；已按实测语义改断言（**未改生产代码**，`8de3223`）。**子项 C 阻塞点已定位**（TEMP 单导出走 `PdaExportSource` 报 400 `INVALID_SUBMISSION`，attempts 378/379）。
+
+## 归档：v16 变更日志（v17 为腾出上限移出，原文未改）
+
+- 2026-09-27 v16：**R08 子项 C 已实现 ✅**（`exports` 包三处，既有路径未动）：①`ExportFacts.tempOrigin`（`submission_scope.source_order_id IS NULL` ⇒ 提交源自 TEMP）；②`ExportSnapshotReader` 选路新增"结果版本行的提交源自 TEMP ⇒ 走 `TemporaryExportSource`"（PDA_TEMP / 正式 PDA / PC 三路原样）；③`TemporaryExportEvidence` 映射版本 `==1` 放宽为 `∈{1,2}`（R06 受控关联后的确认必为 v2，旧断言把合法导出挡在门外）。**先探针后实现**：探针 attempt 382 即返回 200 ⇒ 证明缺口恰为此两处；正式实现 **attempt 383** `1/0/0/0`，TEMP 链尾导出得 `format=XLSX basis=ORIGINAL_CONFIRMED resultVersion=1 snapshotId=f913d65c…`。**不破坏既有**：R08 导出族回归 run 19-22 = **Export 14/14、ExportFence 4/4、Summary 6/6、Retry 7/7 全绿**。（[R08 方案 §6](history/R08_DEDICATED_DB_PLAN_2026-09-27.md)）
