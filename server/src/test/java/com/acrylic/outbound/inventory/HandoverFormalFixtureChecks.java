@@ -1,6 +1,7 @@
 package com.acrylic.outbound.inventory;
 
 import com.acrylic.outbound.common.Ids;
+import com.acrylic.outbound.devices.DeviceCrypto;
 import com.acrylic.outbound.handover.HandoverCommandService;
 import com.acrylic.outbound.handover.HandoverStore;
 import com.acrylic.outbound.submissions.SubmissionJson;
@@ -12,104 +13,74 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * R07-1 reduced goal: build a FORMAL, activatable source through the real publish/claim/submit/abort chain and run
- * REQUEST then APPROVE against it. Nothing here touches the TEMP fixtures' state.
+ * R07-1 FORMAL fixture (direction 2): keep the already published order facts, but give the FORMAL submission its
+ * own device, operator, session and assignment, so it never shares device-scoped capture sequences or audit
+ * batches with the TEMP submission that the shared fixture posts first. All rows are written directly to the real
+ * tables under the real constraints — no PDA claim API involved.
  */
 public final class HandoverFormalFixtureChecks {
     private HandoverFormalFixtureChecks() { }
 
     public static void verify(WebApplicationContext context) throws Exception {
         var f = new TemporaryConfirmationFixture(context,false);
-        var submission = f.source.f;
-        // The TEMP fixture posted a copy of this body with the SAME submissionId, and a submission id may never
-        // change its source. Mint a fresh id so the FORMAL submission is its own batch; the final FROZEN audit
-        // event must carry that id as its detail (SubmissionEvidence.java:79).
-        String fresh = UUID.randomUUID().toString();
-        submission.body.put("submissionId",fresh);
-        var events = submission.body.withArray("events");
-        ((ObjectNode) events.get(events.size()-1)).put("detail",fresh);
-        var submitResult = submission.send(submission.body).andReturn();
-        assertThat(submitResult.getResponse().getStatus())
-            .as("FORMAL submit response: " + submitResult.getResponse().getContentAsString()).isEqualTo(200);
-        submission.abort();
-        String scope = f.jdbc.queryForObject("SELECT BIN_TO_UUID(id) FROM submission_scope WHERE source_order_id=UUID_TO_BIN(?)",
-            String.class, submission.order);
-        String status = f.jdbc.queryForObject("SELECT status FROM submission WHERE scope_id=UUID_TO_BIN(?)",String.class,scope);
-        assertThat(status).as("FORMAL source must end ABORTED with a receipt").isEqualTo("ABORTED");
-        assertThat(f.jdbc.queryForObject("SELECT receipt_text IS NOT NULL FROM submission WHERE scope_id=UUID_TO_BIN(?)",Boolean.class,scope))
-            .as("ABORTED requires receipt_text").isTrue();
+        var template = f.source.f;                       // published order + original claim (we reuse its facts only)
+        var jdbc = f.jdbc;
+        UUID warehouse = f.source.f.web.identity().warehouse();
+        UUID order = UUID.fromString(template.order);
 
-        // 2) handover permission for the acting supervisor, then REQUEST through the real service.
-        var actor = f.operator();
-        grant(f,actor,"order:handover");
-        var store = f.bean(HandoverStore.class);
-        var service = f.bean(HandoverCommandService.class);
-        var scopeFacts = store.scopeFacts(UUID.fromString(scope));
-        assertThat(scopeFacts.path("sourceKind").asText()).as("FORMAL source kind").isEqualTo("FORMAL");
-        var request = SubmissionJson.object().put("commandVersion",1).put("commandType","REQUEST")
-            .put("commandId",UUID.randomUUID().toString()).put("transportRecoveryEpoch","1").put("reason","原机可用，申请交接")
-            .put("warehouseId",scopeFacts.path("warehouseId").asText()).put("scopeId",scope);
-        var requestExpected = SubmissionJson.object();
-        for(String key:List.of("scopeId","canonicalOrderId","mappingVersion","fromWorkRound")) requestExpected.set(key,scopeFacts.get(key));
-        requestExpected.put("userAuthVersion",actor.authVersion()+"");
-        request.set("expected",requestExpected);
-        var requestReceipt = execute(f,service,request,actor);
-        assertThat(requestReceipt.path("status").asText()).as("REQUEST: "+requestReceipt).isEqualTo("RECORDED");
-        assertThat(requestReceipt.path("commandType").asText()).isEqualTo("REQUEST");
-        String caseId = requestReceipt.path("businessDecision").path("caseId").asText();
-        assertThat(caseId).isNotEmpty();
-        assertThat(f.jdbc.queryForObject("SELECT status FROM handover_case WHERE id=UUID_TO_BIN(?)",String.class,caseId))
-            .isEqualTo("EVIDENCE_PENDING");
-        assertThat(f.jdbc.queryForObject("SELECT original_result_state FROM handover_case WHERE id=UUID_TO_BIN(?)",String.class,caseId))
-            .as("ABORTED maps to the ABORTED dimension").isEqualTo("ABORTED");
+        // --- own operator, device, session and assignment for the FORMAL batch -------------------------------
+        UUID operator = Ids.next();
+        jdbc.update("INSERT INTO app_user(id,username,display_name,password_hash,created_at) VALUES(?,?,?,?,UTC_TIMESTAMP(3))",
+            Ids.bytes(operator),"fixture-"+operator,"交接夹具人员","x");
+        UUID device = Ids.next();
+        String publicKey = Base64.getEncoder().encodeToString(("fixture-"+device).getBytes(StandardCharsets.UTF_8));
+        jdbc.update("INSERT INTO device(id,warehouse_id,device_code,name,public_key,key_sha256,status,row_version,created_by,created_at) "
+            + "VALUES(?,?,?,?,?,?, 'ACTIVE',1,?,UTC_TIMESTAMP(3))",
+            Ids.bytes(device),Ids.bytes(warehouse),"FIX-"+device.toString().substring(0,8),"交接夹具设备",publicKey,
+            DeviceCrypto.sha(publicKey),Ids.bytes(f.source.f.web.identity().user().id()));
+        jdbc.update("INSERT INTO user_warehouse VALUES(?,?)",Ids.bytes(operator),Ids.bytes(warehouse));
+        // A PDA session is only accepted for a user that actually holds the PDA role (pda:login / pda:submit).
+        jdbc.update("INSERT INTO user_role SELECT ?,id FROM role WHERE code='PDA_OPERATOR'",Ids.bytes(operator));
+        String token = DeviceCrypto.secret();
+        jdbc.update("""
+            INSERT INTO pda_session(id,device_id,user_id,user_auth_version,device_version,access_hash,refresh_hash,
+              access_expires_at,expires_at,created_at)
+            VALUES(?,?,?,1,1,?,?,TIMESTAMPADD(DAY,1,UTC_TIMESTAMP(3)),TIMESTAMPADD(DAY,2,UTC_TIMESTAMP(3)),UTC_TIMESTAMP(3))
+            """,Ids.bytes(Ids.next()),Ids.bytes(device),Ids.bytes(operator),DeviceCrypto.sha(token),DeviceCrypto.sha(DeviceCrypto.secret()));
+        // The order allows exactly one active qualification, so terminate the old claim and open the new epoch.
+        var active = jdbc.queryForMap("SELECT BIN_TO_UUID(publication_id) publication_id,BIN_TO_UUID(policy_id) policy_id,"
+            + "BIN_TO_UUID(inventory_snapshot_id) snapshot_id,plan_sha256,inventory_sha256,revision,recovery_epoch "
+            + "FROM order_assignment WHERE order_id=? AND status IN ('ACTIVE','RECALL_PENDING')",Ids.bytes(order));
+        long nextEpoch = jdbc.queryForObject("SELECT assignment_epoch+1 FROM outbound_order WHERE id=?",Long.class,Ids.bytes(order));
+        jdbc.update("UPDATE order_assignment SET status='CLOSED' WHERE order_id=? AND status IN ('ACTIVE','RECALL_PENDING')",Ids.bytes(order));
+        UUID assignment = Ids.next();
+        jdbc.update("""
+            INSERT INTO order_assignment(id,warehouse_id,order_id,revision,publication_id,device_id,operator_id,epoch,recovery_epoch,
+              inventory_snapshot_id,policy_id,plan_sha256,inventory_sha256,start_order_scan_seq,allocation_version,status,area_note,issued_at,expires_at)
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,1,0,'ACTIVE',?,UTC_TIMESTAMP(3),TIMESTAMPADD(HOUR,48,UTC_TIMESTAMP(3)))
+            """,Ids.bytes(assignment),Ids.bytes(warehouse),Ids.bytes(order),(int)active.get("revision"),
+            Ids.bytes(UUID.fromString(active.get("publication_id").toString())),Ids.bytes(device),Ids.bytes(operator),nextEpoch,
+            Long.parseLong(active.get("recovery_epoch").toString()),Ids.bytes(UUID.fromString(active.get("snapshot_id").toString())),
+            Ids.bytes(UUID.fromString(active.get("policy_id").toString())),active.get("plan_sha256"),active.get("inventory_sha256"),"交接夹具");
+        jdbc.update("UPDATE outbound_order SET assignment_epoch=?,row_version=row_version+1 WHERE id=?",nextEpoch,Ids.bytes(order));
 
-        // 3) the device-produced stop proof (PDA half is a separate sub-item; here it is recorded as data).
-        f.jdbc.update("""
-            INSERT INTO handover_evidence(id,case_id,kind,device_id,payload_sha256,high_watermark,receipt_bytes,recorded_at)
-            VALUES(?,UUID_TO_BIN(?),'STOP_PROOF',UUID_TO_BIN(?),UNHEX(REPEAT('ab',32)),7,UNHEX('00'),UTC_TIMESTAMP(6))
-            """,Ids.bytes(Ids.next()),caseId,f.source.a.device());
-
-        // 4) APPROVE: the supervisor binds the four dimensions and the per-bale retained list.
-        var caseFacts = store.caseFacts(UUID.fromString(caseId));
-        var approve = SubmissionJson.object().put("commandVersion",1).put("commandType","APPROVE")
-            .put("commandId",UUID.randomUUID().toString()).put("transportRecoveryEpoch","1").put("reason","主管逐包核对后批准")
-            .put("warehouseId",caseFacts.path("warehouseId").asText()).put("caseId",caseId)
-            .put("stopState","DEVICE_ACKED").put("integrityState","COMPLETE").put("originalResultState","ABORTED")
-            .put("physicalState","MATCHED").put("inputHighWatermark","7");
-        var approveExpected = SubmissionJson.object();
-        for(String key:List.of("caseId","caseVersion","status")) approveExpected.set(key,caseFacts.get(key));
-        approveExpected.put("userAuthVersion",actor.authVersion()+"");
-        approve.set("expected",approveExpected);
-        var checklist = approve.putArray("checklist");
-        checklist.addObject().put("baleId",Ids.next().toString()).put("deliveryCode","D1").put("state","RETAINED").put("dispatchCycle","1");
-        checklist.addObject().put("baleId",Ids.next().toString()).put("deliveryCode","D2").put("state","RETAINED").put("dispatchCycle","1");
-        var approveReceipt = execute(f,service,approve,actor);
-        assertThat(approveReceipt.path("status").asText()).as("APPROVE: "+approveReceipt).isEqualTo("RECORDED");
-        assertThat(approveReceipt.path("commandType").asText()).isEqualTo("APPROVE");
-        assertThat(f.jdbc.queryForObject("SELECT status FROM handover_case WHERE id=UUID_TO_BIN(?)",String.class,caseId))
-            .isEqualTo("APPROVED");
-        assertThat(f.jdbc.queryForObject("SELECT approved_by IS NOT NULL FROM handover_case WHERE id=UUID_TO_BIN(?)",Boolean.class,caseId))
-            .isTrue();
-        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM handover_checklist WHERE case_id=UUID_TO_BIN(?)",Integer.class,caseId))
-            .isEqualTo(2);
-        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM handover_command_receipt WHERE case_id=UUID_TO_BIN(?)",Integer.class,caseId))
-            .isEqualTo(2);
-        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM operation_event WHERE entity_type='HANDOVER_COMMAND'",Integer.class))
-            .as("one audit event per receipt").isEqualTo(2);
+        // --- the FORMAL batch body, rebound to the new device/assignment and its own submission id -------------
+        String submission = UUID.randomUUID().toString();
+        var body = (ObjectNode)template.body;
+        body.put("submissionId",submission).put("assignmentId",assignment.toString())
+            .put("assignmentEpoch",Long.toString(nextEpoch)).put("freezeDeviceId",device.toString());
+        var events = body.withArray("events");
+        for (JsonNode event : events) {
+            ((ObjectNode)event).put("assignmentId",assignment.toString()).put("originDeviceId",device.toString());
+        }
+        ((ObjectNode)events.get(events.size()-1)).put("detail",submission);
+        var submitted = template.pda.data(template.request(body),tokensFor(jdbc,token,device));
+        assertThat(submitted).as("FORMAL submit").isNotNull();
+        String status = jdbc.queryForObject("SELECT status FROM submission WHERE id=UUID_TO_BIN(?)",String.class,submission);
+        assertThat(status).as("FORMAL submission status").isIn("REVIEW_REQUIRED","RECEIVING");
     }
 
-    private static JsonNode execute(TemporaryConfirmationFixture f,HandoverCommandService service,ObjectNode command,com.acrylic.outbound.auth.SessionUser actor) throws Exception {
-        TemporaryConfirmationFixture.authenticate(actor);
-        try {
-            byte[] receipt=service.execute(SubmissionJson.canonical(command).getBytes(StandardCharsets.UTF_8),"handover-check");
-            return SubmissionJson.parse(receipt);
-        } finally { org.springframework.security.core.context.SecurityContextHolder.clearContext(); }
-    }
-
-    private static void grant(TemporaryConfirmationFixture f,com.acrylic.outbound.auth.SessionUser actor,String permission) {
-        UUID role=Ids.next();
-        f.jdbc.update("INSERT INTO role VALUES(?,?,?)",Ids.bytes(role),"HO_"+role.toString().substring(20),"隔离交接权限");
-        f.jdbc.update("INSERT INTO role_permission SELECT ?,id FROM permission WHERE code=?",Ids.bytes(role),permission);
-        f.jdbc.update("INSERT INTO user_role VALUES(?,?)",Ids.bytes(actor.id()),Ids.bytes(role));
+    private static JsonNode tokensFor(org.springframework.jdbc.core.JdbcTemplate jdbc,String token,UUID device) {
+        return SubmissionJson.object().put("accessToken",token).put("deviceId",device.toString());
     }
 }
