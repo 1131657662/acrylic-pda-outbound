@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-27
 branch: codex/development
-head: 3d37497
-dirty_entries: 5
+head: 0d14ba8
+dirty_entries: 3
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.36.0, paths: 131, flyway: V48, migrations: 48 }
@@ -39,7 +39,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V48, migrations: 48 }
 - 更早的 R06/R09 子项结论与测试口径：见[开发进度](DEVELOPMENT_PROGRESS.md)与 `history/R06_*`、`history/R09_*`。
 
 ## 未验与阻断（每条一行：项 → 缺什么 → 后果）
-- 七类生产决定 handler/POST → 代码已接线但**默认关闭**；开启需业主授权 + 契约同步发布 + **A3 真浏览器 403 未查清**；Android `LINK` 映射安装**已升 L4**（attempts 185/187） → 临时单仍不能确认出库。
+- 七类生产决定 handler/POST → 代码已接线但**默认关闭**；开启需业主授权 + 契约同步发布 + **A3 CSRF 根因已定位并测试侧修复（`0d14ba8`：会话 Cookie 默认 Secure 与明文 HTTP 冲突）；残余夹具项待专项**；Android `LINK` 映射安装**已升 L4**（attempts 185/187） → 临时单仍不能确认出库。
 - TEMP 归档 → 生产侧已接线（`9a6a001`/`859edce`/`5d91f9d`）并加**默认关闭**开关 `outbound.temporary.archive.enabled`（默认 false；`2a3acce`/`a91572e`）：关闭态生产面＝历史硬拒绝（409 `TEMPORARY_CONFIRMATION_REQUIRED`），开启态走已接线 TEMP 分派。**已验**：attempt 176（关闭态端到端，库内归档 1 行/派发 2 条）与 178（关/开两场景：409 无归档行 / 200 签名 v2 回执 + 恰 1 行 + 重放稳定）。**未验**：开关开启属运维授权，生产未声明能力开放；`localDeletionAllowed=false`。
 - 恢复出口 → 生产无任何路径置 `RECOVERY_PENDING`；`RecoveryNormalRegistration` 无 bean/路由、`baseline` 无自动来源 → 只能靠 R09 运维链或人工 SQL 解除。
 - Android 发布身份 → **签名链已完成**；仍缺**现场**：真机安装、App 内升级实测、发布/部署授权 → 不能声称现场升级可用。
@@ -67,7 +67,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V48, migrations: 48 }
 - 2026-09-27 TEMP 归档 attempt 174（`dd54c8a` 修 7 处 attempt 号守卫，仅测试/夹具）+ 看板 head 与 R07 口径修正（`00a17e9`）；attempt 172 的 closure 归因被证伪（把 `corruptIndex` 的故意反例日志当成根因）。详见 [R06 欠债清单](history/R06_DEBT_LIST_2026-09-27.md)。
 - 2026-09-27 TEMP 归档收口（选 B＝新能力默认关闭）：`2a3acce` 加 `outbound.temporary.archive.enabled`（默认 false）+ `a91572e` 修关闭态 500（`IdentityWriteGuard` MANDATORY）；attempt 176 绿（验收达成）、178 绿（关/开两场景）；attempt 号守卫扫描无遗漏。
 - 2026-09-27 Android LINK L4（选④）：`2bf2507` 三件套 → attempts **185/187** 双绿 `server=1/0/0/0`/`android=1/0/0/0`，L3→**L4**；`java.net.http` 不在 Android classpath→OkHttp；构造器补 `--rerun-tasks`。
-- 2026-09-27 R07-3 收口：D9/D10 裁决=接受缺口；R07-1 夹具卡点解除（幂等探测改重放原 REQUEST）→ 反例①②③④+3 幂等已验／283。历史：A 组共享表回归（14 类：10 通过 / 4 历史失败，均在不应用 V46/V47 的库）+ **最新 schema 回归 IT**／**256**；B 组（窗口权威来源 / 附件三档限额 / HEADER 补丁）与 C 组（撤销两阶段 + V48 模型）／**255**；契约草案未发布、默认关闭、未部署。
+- 2026-09-27 A3 CSRF 根因：会话 Cookie 默认 `secure=true` 与 harness 明文 HTTP 冲突（生产默认不改，harness 置 false）→ `E2aHandoverHttpLayerIT` ①② 转绿（284/285）；残余=两处夹具基础设施（待专项）。R07-1 夹具卡点解除（幂等探测改重放原 REQUEST）→ 反例①②③④+3 幂等已验／283。历史：A 组共享表回归（14 类：10 通过 / 4 历史失败，均在不应用 V46/V47 的库）+ **最新 schema 回归 IT**／**256**；B 组（窗口权威来源 / 附件三档限额 / HEADER 补丁）与 C 组（撤销两阶段 + V48 模型）／**255**；契约草案未发布、默认关闭、未部署。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。

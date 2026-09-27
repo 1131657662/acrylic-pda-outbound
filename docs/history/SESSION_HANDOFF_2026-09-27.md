@@ -71,3 +71,18 @@ D10＝经查 `order_current_result` **无生产读方**，权威指针是 `outbo
   `UNIQUE uk_handover_scope_open(scope_id, open_flag)`（V42，同一来源只允许一个开案）。修法＝重放原 REQUEST（同键同字节）。
 - **仍未验**：⑤–⑧ 反例（需额外夹具）、3 真并发、2 原子性、**HTTP 层**拦截（`E2aHandoverHttpLayerIT` 被 Web 登录/A3 CSRF 挡住）。
 - **接续建议**：若继续 R07-1，先做 ⑤–⑧（夹具扩展）或先把 A3 CSRF 专项查清以解 HTTP 层；**不要**再把它当作"冻结不可动"。
+
+---
+
+## A3 CSRF 根因定位（2026-09-27，指令 v6，提交 `0d14ba8`，attempts 284/285）
+
+- **根因（主因）**：`application.yml` 的 `server.servlet.session.cookie.secure: ${OUTBOUND_COOKIE_SECURE:true}`
+  ⇒ harness 走**明文 HTTP** 时 Secure Cookie **不回传** ⇒ 每请求新会话 ⇒ CSRF 令牌与所出示会话不匹配 ⇒ **403 ACCESS_DENIED**。
+  **生产默认正确、未改**；`tools/e2a-provision-and-run-106.ps1` 启动 IT 前显式置 `false`（测试侧修复）。
+- **次因（夹具）**：`E2aHandoverHttpLayerIT` ② 原先发**无令牌匿名 POST** 期望 401，但 CsrfFilter 在认证之前 ⇒ 403；
+  改为**先取令牌再 POST** ⇒ 401 ✓（只改探测构造，断言不变）。
+- **证据**：该 IT 由 attempt 150 起的 `-1`（登录失败）变为 ①**404** ✓ ②**401** ✓（attempts **284/285**）。
+- **残余（非产品缺陷，待专项）**：① R07-1 ③/④ 需真实 scope 夹具 + REQUEST 需 `order:resume`/APPROVE 需 `order:handover` 的权限拆分；
+  ② `TemporaryCommandWebHttpChecks` 登录轮换出的 Cookie 未被后续请求采用（该 IT 仍红，半成品已回退）；
+  ③ R07-3 `/api/v1/corrections` 的 **Web 路由真 HTTP** 未验（本轮上限内未做）。
+- 详见 [A3 根因记录](A3_CSRF_ROOT_CAUSE_2026-09-27.md)。
