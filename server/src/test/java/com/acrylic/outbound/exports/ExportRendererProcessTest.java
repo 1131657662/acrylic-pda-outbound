@@ -20,13 +20,18 @@ class ExportRendererProcessTest {
         Files.writeString(source,"""
             package com.acrylic.outbound.reports;
             public class ReportCli {
+                static void publish(String name) throws Exception {
+                    java.nio.file.Path target=java.nio.file.Path.of(name);java.nio.file.Path temp=java.nio.file.Path.of(name+".tmp");
+                    java.nio.file.Files.writeString(temp,Long.toString(ProcessHandle.current().pid()));
+                    java.nio.file.Files.move(temp,target,java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                }
                 public static void main(String[] args) throws Exception {
                     if(args.length>0 && args[0].equals("--supervised")) {
                         if(!java.util.Arrays.equals(System.in.readNBytes(6),"START\\n".getBytes()))throw new IllegalStateException("Not supervised");
                         args=java.util.Arrays.copyOfRange(args,1,args.length);
                     }
                     if(args.length==1) {
-                        java.nio.file.Files.writeString(java.nio.file.Path.of("child-pid"),Long.toString(ProcessHandle.current().pid()));
+                        publish("child-pid");
                         System.out.println("READY");System.out.flush();Thread.sleep(60000);return;
                     }
                     String executable=java.nio.file.Path.of(System.getProperty("java.home"),"bin","java").toString();
@@ -34,7 +39,7 @@ class ExportRendererProcessTest {
                         "com.acrylic.outbound.reports.ReportCli","leaf").start();
                     if(!new java.io.BufferedReader(new java.io.InputStreamReader(child.getInputStream())).readLine().equals("READY"))
                         throw new IllegalStateException("Child did not start");
-                    java.nio.file.Files.writeString(java.nio.file.Path.of("pid"),Long.toString(ProcessHandle.current().pid()));
+                    publish("pid");
                     Thread.sleep(60000);
                 }
             }
@@ -48,11 +53,27 @@ class ExportRendererProcessTest {
         process=new ExportRendererProcess(directory.toString(),directory.toString(),10);
     }
     private void render() throws Exception { process.render(execution,directory.resolve("snapshot.json"),output,ExportModels.Format.XLSX); }
-    private void assertStopped() throws Exception {
-        for(String name:java.util.List.of("pid","child-pid")) {
-            long pid=Long.parseLong(Files.readString(directory.resolve("attempt/"+name)));
-            assertThat(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false)).as(name).isFalse();
+    /**
+     * Reads a published renderer pid. The fixture publishes atomically, but this still waits for non-blank content
+     * instead of mere existence: {@code Files.writeString} creates the file before writing it, so a full-suite run
+     * under load used to observe the empty create window and fail with {@code NumberFormatException: For input string: ""}.
+     */
+    private long pid(String name) throws Exception {
+        Path file=directory.resolve("attempt/"+name);long until=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);
+        while(true) {
+            try {
+                if(Files.exists(file)) {
+                    String text=Files.readString(file).trim();
+                    if(!text.isEmpty()) return Long.parseLong(text);
+                }
+            } catch(java.io.IOException retry) { /* Retried inside the same bound; never parsed half a line. */ }
+            assertThat(System.nanoTime()).as(name+" pid must be published complete").isLessThan(until);
+            Thread.sleep(20);
         }
+    }
+    private void assertStopped() throws Exception {
+        for(String name:java.util.List.of("pid","child-pid"))
+            assertThat(ProcessHandle.of(pid(name)).map(ProcessHandle::isAlive).orElse(false)).as(name).isFalse();
         assertThat(output).doesNotExist();
     }
     @Test void lostLeaseTerminatesRendererProcess() throws Exception {
@@ -66,9 +87,8 @@ class ExportRendererProcessTest {
         var pool=Executors.newSingleThreadExecutor();
         try {
             Future<?> running=pool.submit(()->{try { render(); } catch(Exception error) { throw new RuntimeException(error); }});
-            long until=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);
-            while(!Files.exists(directory.resolve("attempt/pid")) && System.nanoTime()<until) Thread.sleep(20);
-            assertThat(directory.resolve("attempt/pid")).exists();running.cancel(true);
+            pid("pid"); // Waits for a complete published pid, so the interrupt lands on a running renderer.
+            running.cancel(true);
         } finally { pool.shutdownNow();assertThat(pool.awaitTermination(5,TimeUnit.SECONDS)).isTrue(); }
         assertStopped();
     }
