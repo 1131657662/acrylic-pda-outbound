@@ -170,3 +170,26 @@ attempt 157：`tests=1 failures=1 errors=0 skipped=0`。
 **给业主的两条根本建议**：
 1. **R07-3 时间盒需重新评估**：步骤 1-3 预算 3 轮、实际已用 5+ 轮（含本轮），若步骤 2-3 同量级，10 轮不够。
 2. **读一次 `ck_submission_scope_source` 的定义**（`SHOW CREATE TABLE submission_scope`）：该约束已卡住两处（R03 四轮、R07-3 本轮），一条命令可能把"5 道前置拼图"变成"一次看懂"，为 FORMAL 夹具独立排期提供关键输入。
+## 15. 【关键发现】ck_submission_scope_source 的定义与它揭穿的三件事
+
+**定义（原文，`V33__temporary_submission_sources.sql:10-12`）**：
+```sql
+ADD CONSTRAINT ck_submission_scope_source CHECK(
+    (source_order_id IS NOT NULL AND creator_device_id IS NULL AND client_order_id IS NULL AND canonical_order_id IS NULL) OR
+    (source_order_id IS NULL     AND creator_device_id IS NOT NULL AND client_order_id IS NOT NULL));
+```
+即**互斥二选一**：
+- **FORMAL scope**：`source_order_id NOT NULL` 且 **`canonical_order_id` 必须为 NULL**（creator_device_id/client_order_id 亦为 NULL）；
+- **TEMP scope**：`source_order_id` 为 NULL，`creator_device_id + client_order_id` 非 NULL（`canonical_order_id` 由受控关联写入）。
+
+### 揭穿的三件事
+
+1. **R07-1 的 FORMAL 路径在当前定义下结构性不可达（根本原因）**：`HandoverStore.scopeFacts` 要求 `c.canonical_order_id IS NOT NULL`，而 FORMAL scope 的该列**按约束必须为 NULL**（FORMAL 的"规范单"就是 `source_order_id` 本身）。**TEMP 能跑通、FORMAL 永远 404**——这正是 R07 五轮与 R03 反复卡住的机制性原因，而不是"夹具没造对"。
+   - **最小正确修法（一行，语义正确）**：`scopeFacts` 改用 `IFNULL(c.canonical_order_id, c.source_order_id)` 作为 canonical（有映射用映射，无映射则 FORMAL 的 source 即 canonical）。**属 R07-1 已验证面，需业主授权后才动。**
+2. **我在 R03 收口文档里记的"第 4 道前置（FORMAL 必须设 canonical_order_id）"是错的**：事实相反——FORMAL **必须不设**。R03 attempt 146 之所以通过，正因为它只设了 `source_order_id`（符合分支 1）；attempt 147 之所以 404，是内核要求 canonical 非空，而非数据库拒绝。R03 closure 文档已加订正。
+3. **R07-3 步骤 1 的 1c（「0 包/0g 能落库」）无需 FORMAL 级配方**：只要按**分支 1 的合法形状**建 scope（只设 `source_order_id`，`canonical_order_id` 留 NULL），约束即满足，`correction_effect`/`submission` 等依赖即可继续。**我此前在 IT 里设了 canonical，属我写错**（attempt 157 的报错正是这个）。
+
+### 影响评估
+- **R03 FORMAL 夹具**：性质从"缺配方"变为"**缺一行内核修正**"。夹具形状已明确（分支 1），无需再解"5 道前置拼图"；真正的门槛是是否授权改 `HandoverStore.scopeFacts` 一行。
+- **R07-3 步骤 4-6**：`ck_submission_scope_source` **不再构成阻断**（按分支 1 建 scope 即可）；「0 能落库」的功能级证据**可以在步骤 1/4 内自行补出**，不必等 FORMAL 夹具排期——§13 补充条件 3 的门槛因此可提前满足。
+- **R07-1 的 14 条断言**：一旦授权那一行修正，FORMAL 夹具即可成立（复用 TEMP 已验证机制），14 条断言有望真正开跑。
