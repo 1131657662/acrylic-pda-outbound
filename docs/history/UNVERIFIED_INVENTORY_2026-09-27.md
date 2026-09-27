@@ -75,3 +75,9 @@
 ## 8. 结构性结论（第五次记录）
 
 R06 九轮、R07 五轮、验证基础设施十轮——**未验证项的主要来源不是"代码没写"，而是"验证缺乏可用输入"**（来源夹具、HTTP 会话通道）。因此把"验证基础设施"当独立工程任务排期，比继续在每个业务子项里按需消耗更省。
+## 9. 更新（方向 ① 结果）：Android LINK 映射安装 —— 通道服务端半边已达 L4
+
+- **attempt 153 通过**：`tests=1 failures=0 errors=0 skipped=0`。链路＝R06 已验证机制产出 TEMP+LINK 关联 → 设备域端点 `GET /pda/temporary-source-bindings` 以 **PDA Bearer**（无 Web 会话，绕开已知 Web CSRF）读取 → 断言设备将收到的载荷。
+- 断言逐条：`installRequired=true` ✅；`mappingVersion` 与库内一致（≠1）✅；`canonicalOrderId`/`orderNo` 非空 ✅；`scopeCursor == scopeId` ✅；**Android 解析器需要的 11 个键全部存在** ✅（缺一个会导致安装静默失败）。
+- attempt 152 失败＝`404 接口不存在`：守卫星树未同步该端点主代码（机械遗漏，已补）。
+- **等级更新**：通道服务端半边 **L4**；**Android 安装代码本身仍为 L3**（Robolectric + MockWebServer 四条断言全绿）。让 Android 代码达 L4 需要**两进程编排**（真服在服务端 IT 内起、IT 结束即关，而 Android 单测在另一 gradle 进程）——列为独立小任务。
