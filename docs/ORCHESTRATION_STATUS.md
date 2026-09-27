@@ -40,13 +40,13 @@ server: { contract: 0.36.0, paths: 131, flyway: V45, migrations: 45 }
 
 ## 未验与阻断（每条一行：项 → 缺什么 → 后果）
 - 七类生产决定 handler/POST → 代码已接线但**默认关闭**；开启需业主授权 + 契约同步发布 + **Web 会话 POST 的真实 HTTP 证据（A3 部分验证：真浏览器 403 未查清）**；Android `LINK` 映射安装**已升 L4**（attempts 185/187 真服双绿） → 临时单仍不能确认出库。
-- TEMP 归档 → 生产侧已接线（`9a6a001`/`859edce`/`5d91f9d`）并加**默认关闭**开关 `outbound.temporary.archive.enabled`（默认 false；`2a3acce`/`a91572e`）：关闭态生产面＝历史硬拒绝（形状→PDA/epoch 准入→行锁→409 `TEMPORARY_CONFIRMATION_REQUIRED`），开启态走已接线 TEMP 分派。**已验**：attempt 176（关闭态端到端，库内归档 1 行/派发 2 条）与 178（关/开两场景：409 无归档行 / 200 签名 v2 回执 + 恰 1 行 + 重放稳定）。**未验**：开关开启属运维授权，生产未声明能力开放；`localDeletionAllowed=false`。
+- TEMP 归档 → 生产侧已接线（`9a6a001`/`859edce`/`5d91f9d`）并加**默认关闭**开关 `outbound.temporary.archive.enabled`（默认 false；`2a3acce`/`a91572e`）：关闭态生产面＝历史硬拒绝（409 `TEMPORARY_CONFIRMATION_REQUIRED`），开启态走已接线 TEMP 分派。**已验**：attempt 176（关闭态端到端，库内归档 1 行/派发 2 条）与 178（关/开两场景：409 无归档行 / 200 签名 v2 回执 + 恰 1 行 + 重放稳定）。**未验**：开关开启属运维授权，生产未声明能力开放；`localDeletionAllowed=false`。
 - 恢复出口 → 生产无任何路径置 `RECOVERY_PENDING`；`RecoveryNormalRegistration` 无 bean/路由、`baseline` 无自动来源 → 只能靠 R09 运维链或人工 SQL 解除。
 - Android 发布身份 → **签名链已完成**；仍缺**现场**：真机安装、App 内升级实测、发布/部署授权 → 不能声称现场升级可用。
-- 现场与人工 → 真机/Keystore、独立人员、长时与五年留存、外网与异地、生产审批均未验；R05 code20/Room17 历史关键未验、原资料与旧 BCD、R09 现场限制继续单列 → 不能声称上线就绪。
+- 现场与人工 → 真机/Keystore、独立人员、长时留存、外网与异地、生产审批均未验；R05 code20/Room17 历史关键未验、原资料与旧 BCD、R09 现场限制继续单列 → 不能声称上线就绪。
 - 服务端 IT 分批 → 入口已封装 `tools/e2a-batch-it.ps1`（每类一 attempt + XML 聚合 + 分类；计数修复 `f34c886`）：runs **181–184** 四类全绿 `4/0/0/0`；**波次 IT 仍缺专用库/账号**（约束 c）。
 
-- R07-3 更正 → **步骤 1 已收口**（`cf14bf5`／attempt 190）＋**步骤 2 第一片**（`22e9b81`／attempt 192：V45 回执表与 `outbound:correct`/`correction:approve` 权限码 + Command/Store/Codec，**无接线** ⇒ 开关打开也一律 `CORRECTION_COMMAND_NOT_OPEN`）；剩余＝service/controller/configuration + CREATE Operation；契约未发布。
+- R07-3 更正 → **步骤 1 已收口**（`cf14bf5`）＋**步骤 2 第一片**（`22e9b81`：V45 回执表与 `outbound:correct`/`correction:approve` 权限码 + Command/Store/Codec，**无接线** ⇒ 开关打开也一律 `CORRECTION_COMMAND_NOT_OPEN`）；剩余＝service/controller/configuration + CREATE Operation。
 ## 越界提醒（不变）
 - `localDeletionAllowed=false`；七类生产决定 handler/POST/放行/证据写入/关闭能力**不得因内部测试通过而开放**；TEMP 生产归档边界不变。
 - 不合 `main`、不发布/部署、不操作原库现网，除非用户明确授权且证据满足范围；项目交接不等于生产授权。
