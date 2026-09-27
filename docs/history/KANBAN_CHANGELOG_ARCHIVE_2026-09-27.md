@@ -55,3 +55,7 @@
 ## 归档：v16 变更日志（v17 为腾出上限移出，原文未改）
 
 - 2026-09-27 v16：**R08 子项 C 已实现 ✅**（`exports` 包三处，既有路径未动）：①`ExportFacts.tempOrigin`（`submission_scope.source_order_id IS NULL` ⇒ 提交源自 TEMP）；②`ExportSnapshotReader` 选路新增"结果版本行的提交源自 TEMP ⇒ 走 `TemporaryExportSource`"（PDA_TEMP / 正式 PDA / PC 三路原样）；③`TemporaryExportEvidence` 映射版本 `==1` 放宽为 `∈{1,2}`（R06 受控关联后的确认必为 v2，旧断言把合法导出挡在门外）。**先探针后实现**：探针 attempt 382 即返回 200 ⇒ 证明缺口恰为此两处；正式实现 **attempt 383** `1/0/0/0`，TEMP 链尾导出得 `format=XLSX basis=ORIGINAL_CONFIRMED resultVersion=1 snapshotId=f913d65c…`。**不破坏既有**：R08 导出族回归 run 19-22 = **Export 14/14、ExportFence 4/4、Summary 6/6、Retry 7/7 全绿**。（[R08 方案 §6](history/R08_DEDICATED_DB_PLAN_2026-09-27.md)）
+
+## 归档：v17 变更日志（v19 为腾出上限移出，原文未改）
+
+- 2026-09-27 v17：**C 的渲染验证未接通线（如实记录，未硬做）**：新类 `R08TemporaryExportRenderIT`（`@Disabled` 附原因）三条路实测均不通——a) R08 库+MockMvc：TEMP 链夹具走**真 HTTP 19434** ⇒ ConnectException（R08-24）；b) e2a harness 不带 `-NonE2a`：数据源缺 URL ⇒ `url must start with jdbc`（384）；c) 带 `-NonE2a`：数据源被指到同一 attempt 库而链夹具随后 `profile.migrate(…,34/42)`，Flyway target 低于当前版本报错。**可执行接法**：给 e2a runner 加"只导出库坐标、`OUTBOUND_MIGRATE=false`"模式，让应用 context 与 `E2aCrossSourceProfile` 共用同一 attempt 库。⇒ C 证据边界＝**入口受理+首版快照（383）＋既有路径回归绿（19-22）**，**渲染内容正确仍未验**。**「断言假设过时」扫描**：同类仅 `TemporaryExportEvidence:46`（已修）；`ExportFacts:29/:55`、`ExportRangeReader:45`、`CommandBusinessIntegrity:81` 的 `result_version=1` 属设计，但与**子项 D 直接相关**（D 前先定"更正后导出取哪个结果版本"）。
