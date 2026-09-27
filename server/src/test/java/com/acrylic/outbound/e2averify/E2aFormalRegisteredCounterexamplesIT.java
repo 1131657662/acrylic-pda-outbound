@@ -101,28 +101,22 @@ class E2aFormalRegisteredCounterexamplesIT {
         expect(jdbc,service,approve(store,caseId,warehouse,"DEVICE_ACKED","COMPLETE","ABORTED","MATCHED","7"),outsider,
             "PERMISSION_DENIED","④非主管审批",notes);
 
-        // Idempotency (3): same key+bytes returns the original receipt; same key with different bytes must be a
-        // conflict (actual code recorded, not guessed); a lost response is recovered by resending the original bytes.
-        var idem = SubmissionJson.object().put("commandVersion",1).put("commandType","REQUEST")
-            .put("commandId",UUID.randomUUID().toString()).put("transportRecoveryEpoch","1").put("reason","幂等探测")
-            .put("warehouseId",warehouse.toString()).put("scopeId",scope.toString());
-        var idemExpected = SubmissionJson.object();
-        var idemFacts = store.scopeFacts(scope);
-        for (String key : List.of("scopeId","canonicalOrderId","mappingVersion","fromWorkRound")) idemExpected.set(key,idemFacts.get(key));
-        idemExpected.put("userAuthVersion","1");
-        idem.set("expected",idemExpected);
-        var first = execute(service,idem,requester).toString();
-        var again = execute(service,idem,requester).toString();
+        // Idempotency (3): replay the ORIGINAL request - same key, same bytes. A second REQUEST for the same scope is
+        // NOT an idempotency probe: handover_case carries UNIQUE(scope_id, open_flag) (one open case per source), so it
+        // fails as a duplicate key and the kernel answers HANDOVER_RESULT_UNKNOWN, which says nothing about idempotency.
+        var first = requestReceipt.toString();
+        var again = execute(service,request,requester).toString();
         notes.append("幂等①同键同文 -> ").append(again.equals(first)?"原回执一致 PASS":"不一致 FAIL").append('\n');
         assertThat(again).as("同键同文返回原回执").isEqualTo(first);
-        var tampered = idem.deepCopy(); tampered.put("reason","篡改后的理由");
+        var tampered = request.deepCopy(); tampered.put("reason","篡改后的理由");
         String reuseCode;
         try { execute(service,tampered,requester); reuseCode="NO_ERROR"; }
         catch (BusinessException error) { reuseCode=error.code(); }
         notes.append("幂等②同键异文 -> ").append(reuseCode).append('\n');
         assertThat(reuseCode).as("同键异文应为冲突码（实际记录：%s）",reuseCode)
-            .isIn("IDEMPOTENCY_KEY_REUSED","COMMAND_KEY_REUSED","IDEMPOTENCY_CONFLICT","INVALID_COMMAND_KEY_REUSE");
-        var recovered = execute(service,idem,requester).toString();
+            .isIn("IDEMPOTENCY_CONTENT_MISMATCH","IDEMPOTENCY_KEY_REUSED","COMMAND_KEY_REUSED","IDEMPOTENCY_CONFLICT",
+                "INVALID_COMMAND_KEY_REUSE");
+        var recovered = execute(service,request,requester).toString();
         notes.append("幂等③丢响应按原键恢复 -> ").append(recovered.equals(first)?"原回执 PASS":"不一致 FAIL").append('\n');
         assertThat(recovered).as("丢响应按原键恢复原回执").isEqualTo(first);
 
