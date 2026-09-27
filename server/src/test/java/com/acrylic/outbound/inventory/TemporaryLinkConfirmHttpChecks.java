@@ -55,6 +55,23 @@ public final class TemporaryLinkConfirmHttpChecks {
         assertThat(orderStatus(f, tempOrder)).isEqualTo("LINKED");
         assertThat(orderStatus(f, target)).isEqualTo("READY");
 
+        // 2) Counterexample on the very same submission: an in-place plan edit of the bound target must be
+        // refused, and restoring the reviewed plan must let the same confirmation through again.
+        f.jdbc.update("UPDATE order_line SET planned_count=planned_count+1 WHERE revision_id="
+            + "(SELECT id FROM order_revision WHERE order_id=UUID_TO_BIN(?) ORDER BY revision DESC LIMIT 1)", target);
+        var refused = send(token, f.command("NORMAL_CONFIRM", actor));
+        assertThat(refused.statusCode()).as("tampered plan must be refused: " + new String(refused.body(), StandardCharsets.UTF_8))
+            .isEqualTo(409);
+        assertThat(SubmissionJson.parse(refused.body()).path("code").asText()).isEqualTo("TEMPORARY_LINK_TARGET_PLAN_DIFFERS");
+        assertThat(longValue(f, "SELECT COUNT(*) FROM order_result_version WHERE submission_id=UUID_TO_BIN(?)", f.source.id()))
+            .as("no result written for the refused confirmation").isZero();
+        assertThat(orderStatus(f, target)).as("target untouched by the refused confirmation").isEqualTo("READY");
+        assertThat(string(f, "SELECT s.status FROM submission s WHERE s.id=UUID_TO_BIN(?)", f.source.id())).isEqualTo("REVIEW_REQUIRED");
+        assertThat(longValue(f, "SELECT COUNT(*) FROM temporary_command_receipt WHERE submission_id=UUID_TO_BIN(?)", f.source.id()))
+            .as("a refused command stores no receipt").isEqualTo(1);
+        f.jdbc.update("UPDATE order_line SET planned_count=planned_count-1 WHERE revision_id="
+            + "(SELECT id FROM order_revision WHERE order_id=UUID_TO_BIN(?) ORDER BY revision DESC LIMIT 1)", target);
+
         // 2) NORMAL_CONFIRM over real HTTP on the now linked source
         var confirm = f.command("NORMAL_CONFIRM", actor);
         byte[] confirmOriginal = post(token, confirm);
@@ -98,18 +115,24 @@ public final class TemporaryLinkConfirmHttpChecks {
         assertThat(longValue(f, "SELECT COUNT(*) FROM api_idempotency_request q JOIN temporary_command_receipt r ON r.api_request_id=q.id WHERE r.submission_id=UUID_TO_BIN(?)", f.source.id())).isEqualTo(2);
     }
 
-    private byte[] post(String token, ObjectNode command) throws Exception {
+    private HttpResponse<byte[]> send(String token, ObjectNode command) throws Exception {
         var request = HttpRequest.newBuilder(URI.create(BASE))
             .timeout(Duration.ofSeconds(30)).header("Content-Type", "application/json")
             .header("Authorization", "Bearer " + token)
             .POST(HttpRequest.BodyPublishers.ofByteArray(SubmissionJson.canonical(command).getBytes(StandardCharsets.UTF_8)))
             .build();
-        var response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+        return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+    }
+
+    private byte[] post(String token, ObjectNode command) throws Exception {
+        var response = send(token, command);
         assertThat(response.statusCode()).as("POST " + command.get("commandType").asText() + ": " + new String(response.body(), StandardCharsets.UTF_8))
             .isEqualTo(200);
         assertThat(response.headers().firstValue("Cache-Control")).hasValue("no-store");
         return response.body();
     }
+
+
 
     private void grantLink(TemporaryConfirmationFixture f, SessionUser actor) {
         UUID role = Ids.next();
