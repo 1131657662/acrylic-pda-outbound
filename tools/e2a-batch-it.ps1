@@ -172,7 +172,8 @@ foreach ($c in $classRows) {
     $report.Add("| $($c.Run) | $($c.Class) | $($c.XmlFiles) | $($c.Tests) | $($c.Failures) | $($c.Errors) | $($c.Skipped) | **$($c.State)** |")
 }
 $report.Add('')
-$report.Add("**TOTAL: classes=$($classRows.Count) tests=$totalTests failures=$totalFailures errors=$totalErrors skipped=$totalSkipped**")
+$entryIssues = @($failureRows | Where-Object { "$($_.Class)" -like 'E *' }).Count
+$report.Add("**TOTAL: classes=$($classRows.Count) tests=$totalTests failures=$totalFailures errors=$totalErrors skipped=$totalSkipped entryIssues=$entryIssues**")
 $report.Add('')
 $report.Add('## Failures and classification')
 $report.Add('')
@@ -202,7 +203,7 @@ $reportPath = Join-Path $batchDir 'REPORT.md'
 [System.IO.File]::WriteAllLines($reportPath, $report, (New-Object System.Text.UTF8Encoding($false)))
 
 Write-Host ''
-Write-Host "TOTAL classes=$($classRows.Count) tests=$totalTests failures=$totalFailures errors=$totalErrors skipped=$totalSkipped"
+Write-Host "TOTAL classes=$($classRows.Count) tests=$totalTests failures=$totalFailures errors=$totalErrors skipped=$totalSkipped entryIssues=$entryIssues"
 $classRows | Format-Table -AutoSize | Out-String -Width 160 | Write-Host
 Write-Host "report: $reportPath"
 if ($failureRows.Count -gt 0) { exit 1 }
