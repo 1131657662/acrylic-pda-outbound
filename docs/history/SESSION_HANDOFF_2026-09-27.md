@@ -86,3 +86,20 @@ D10＝经查 `order_current_result` **无生产读方**，权威指针是 `outbo
   ② `TemporaryCommandWebHttpChecks` 登录轮换出的 Cookie 未被后续请求采用（该 IT 仍红，半成品已回退）；
   ③ R07-3 `/api/v1/corrections` 的 **Web 路由真 HTTP** 未验（本轮上限内未做）。
 - 详见 [A3 根因记录](A3_CSRF_ROOT_CAUSE_2026-09-27.md)。
+
+---
+
+## v8：非 e2a 回归面解锁（2026-09-27，提交 `36d2368`，attempts 293-328）
+
+- **解锁方式**（测试侧，生产默认未动）：一次性 RSA-2048 密钥对生成到 gitignored `.local/it-keys/`（不入 Git、非生产材料）；
+  harness `-NonE2a` 导出 `OUTBOUND_DB_URL/USER/PASSWORD`、`OUTBOUND_MIGRATE=true`、`OUTBOUND_AUTH_SIGNING_*` 与
+  **`OUTBOUND_STORAGE`**（文件类 IT 的前置）；批量入口新增 `-ExtraConstructorArgs '-NonE2a'` 透传。
+- **真回归（已修）**：`SubmissionArchiveIT`（FORMAL 归档确认）8/14 红，`expected 409 but was 500`；
+  根因＝`859edce`（本会话接线 TEMP 分派）把单个 `@Transactional confirm(...)` 拆成分派 + `confirmFormal(...)`，
+  分派 `this.` 自调用 ⇒ 代理不介入 ⇒ 无事务 ⇒ `IdentityWriteGuard`（MANDATORY）抛错。修法＝同文件既有
+  `closedTemporary` 同款 `TransactionTemplate formalConfirmation` 包住 FORMAL 分支（恢复性、未改语义）；
+  **attempt 316 复验 14/14 绿**。**FORMAL 归档确认此前无任何 IT 覆盖** ⇒ 正是非 e2a 盲区。
+- **覆盖**：非 e2a 共 **33 类**（31 通过 / 2 需专用库：R08 族、身份锁族）；**累计本会话在最新 schema 上跑过 72 个 IT 类**
+  （39 e2a + 33 非 e2a）。
+- **剩余盲区**：R08（8 类）与身份锁族（约 6 类）需专用库/账号（独立工程，未逐波配置）；其余约 103 个非 e2a 类未跑；
+  并发/压力类未抽样。
