@@ -63,15 +63,19 @@ class E2aCorrectionSchemaIT {
             notes.append("result v").append(pair[0]).append(" count=").append(pair[1]).append(" weight=").append(pair[2])
                 .append(" accepted\n");
         }
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE()"
-            + " AND TABLE_NAME='order_result_version' AND CHECK_CLAUSE LIKE '%actual_count%' AND CHECK_CLAUSE NOT LIKE '%>=%'",
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.CHECK_CONSTRAINTS cc"
+            + " JOIN information_schema.TABLE_CONSTRAINTS tc ON tc.CONSTRAINT_SCHEMA=cc.CONSTRAINT_SCHEMA"
+            + " AND tc.CONSTRAINT_NAME=cc.CONSTRAINT_NAME"
+            + " WHERE cc.CONSTRAINT_SCHEMA=DATABASE() AND tc.TABLE_NAME='order_result_version'"
+            + " AND cc.CHECK_CLAUSE LIKE '%actual_count%' AND cc.CHECK_CLAUSE NOT LIKE '%>=%'",
             Integer.class)).as("no restrictive actual_count CHECK remains").isZero();
         // (4) inventory_ledger invariants unchanged: UNIQUE(dispatch_id) and both CHECKs still present
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE()"
             + " AND TABLE_NAME='inventory_ledger' AND COLUMN_NAME='dispatch_id' AND NON_UNIQUE=0", Integer.class))
             .as("ledger dispatch_id stays UNIQUE").isEqualTo(1);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE()"
-            + " AND TABLE_NAME='inventory_ledger'", Integer.class)).as("ledger CHECKs still present").isGreaterThanOrEqualTo(2);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE()"
+            + " AND TABLE_NAME='inventory_ledger' AND CONSTRAINT_TYPE='CHECK'", Integer.class))
+            .as("ledger CHECKs still present").isGreaterThanOrEqualTo(2);
         if (dispatches > 0) {
             var dispatch = jdbc.queryForObject("SELECT BIN_TO_UUID(id) FROM dispatch_record LIMIT 1", String.class);
             var bale = jdbc.queryForObject("SELECT BIN_TO_UUID(bale_id) FROM dispatch_record LIMIT 1", String.class);

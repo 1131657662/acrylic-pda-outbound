@@ -16,16 +16,20 @@
 -- 既有可用对象：order_effective_line(order_id,result_version,delivery_code,actual_count,weight_g) 直接复用。
 
 -- 1) 放宽 order_result_version 的两条 CHECK（约束名由 MySQL 自动生成，按 CHECK 子句动态定位）
-SET @count_check = (SELECT CONSTRAINT_NAME FROM information_schema.CHECK_CONSTRAINTS
-    WHERE CONSTRAINT_SCHEMA = DATABASE() AND TABLE_NAME = 'order_result_version'
-      AND CHECK_CLAUSE LIKE '%actual_count%' LIMIT 1);
+SET @count_check = (SELECT cc.CONSTRAINT_NAME FROM information_schema.CHECK_CONSTRAINTS cc
+    JOIN information_schema.TABLE_CONSTRAINTS tc ON tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA
+      AND tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME
+    WHERE cc.CONSTRAINT_SCHEMA = DATABASE() AND tc.TABLE_NAME = 'order_result_version'
+      AND cc.CHECK_CLAUSE LIKE '%actual_count%' LIMIT 1);
 SET @stmt = IF(@count_check IS NULL, 'SELECT 1',
     CONCAT('ALTER TABLE order_result_version DROP CHECK `', @count_check, '`'));
 PREPARE drop_count FROM @stmt; EXECUTE drop_count; DEALLOCATE PREPARE drop_count;
 
-SET @weight_check = (SELECT CONSTRAINT_NAME FROM information_schema.CHECK_CONSTRAINTS
-    WHERE CONSTRAINT_SCHEMA = DATABASE() AND TABLE_NAME = 'order_result_version'
-      AND CHECK_CLAUSE LIKE '%weight_g%' LIMIT 1);
+SET @weight_check = (SELECT cc.CONSTRAINT_NAME FROM information_schema.CHECK_CONSTRAINTS cc
+    JOIN information_schema.TABLE_CONSTRAINTS tc ON tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA
+      AND tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME
+    WHERE cc.CONSTRAINT_SCHEMA = DATABASE() AND tc.TABLE_NAME = 'order_result_version'
+      AND cc.CHECK_CLAUSE LIKE '%weight_g%' LIMIT 1);
 SET @stmt = IF(@weight_check IS NULL, 'SELECT 1',
     CONCAT('ALTER TABLE order_result_version DROP CHECK `', @weight_check, '`'));
 PREPARE drop_weight FROM @stmt; EXECUTE drop_weight; DEALLOCATE PREPARE drop_weight;

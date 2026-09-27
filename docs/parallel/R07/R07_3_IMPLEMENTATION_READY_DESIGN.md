@@ -113,3 +113,11 @@
 **若选 A**，步骤 1（迁移）实际内容变为：新增 `correction_document`、`correction_line`、`correction_effect`、`correction_ledger`、`cycle_reopening`、`inventory_reconciliation`、`orders.current_result_version`（列或指针表）+ **放宽 `order_result_version` 两条 CHECK 至 ≥0**，并说明为何不动 `inventory_ledger`。
 
 **纪律遵守**：本轮**未写任何迁移代码**（避免按错误假设建表）；步骤 1 待路线确定后开工。
+## 11. 步骤 1 进展与脆弱模式提醒（2026-09-27）
+
+**进展（attempt 156）**：四处 JOIN 修复后 **V43 迁移本身已成功应用**（不再出现 Flyway 错误）；失败点前移到验证 IT 自己的断言查询（`order_assignment` 查询报 bad SQL grammar）。attempt 154 的原错误 `Unknown column 'TABLE_NAME'`（`information_schema.CHECK_CONSTRAINTS` 无该列）已解决。
+
+**脆弱模式提醒（务必记录）**：
+1. V43 用 `information_schema` **动态查约束名**来放宽 CHECK（按 `CHECK_CLAUSE LIKE` 匹配内容，比按名字稳）——R06 的 V41 也用过同类手法；**若将来在别的 MySQL 实例跑不通，优先检查约束名/子句匹配**（大小写、版本差异、`CHECK_CLAUSE` 文本格式）。
+2. **Flyway SQL 文件里用 `@变量 + PREPARE/EXECUTE` 动态 SQL 是脆弱模式**：无法被静态检查、报错定位差、跨版本行为不稳。
+3. **步骤 2 之后评估**：是否改为**显式命名约束**（建表时即 `CONSTRAINT ck_xxx CHECK(...)`，放宽时按名字 `DROP CHECK ck_xxx`），从而彻底去掉动态 SQL。当前 V4 的既有约束是内联未命名，故本步骤只能动态匹配。
