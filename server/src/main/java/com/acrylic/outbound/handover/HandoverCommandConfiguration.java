@@ -26,4 +26,14 @@ public class HandoverCommandConfiguration {
     HandoverCommand.Operation handoverApprove(HandoverStore store) {
         return new HandoverOperations.Approve(store);
     }
+
+    @Bean
+    HandoverCommand.Operation handoverPrepare(HandoverStore store) {
+        return new HandoverActivation.Prepare(store);
+    }
+
+    @Bean
+    HandoverCommand.Operation handoverActivate(HandoverStore store, HandoverActivation activation) {
+        return new HandoverActivation.Activate(store, activation);
+    }
 }
