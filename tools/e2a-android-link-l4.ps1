@@ -109,9 +109,12 @@ Write-Host "android exit=$androidExit"
 Write-Host "== 4) writing the stop file =="
 New-Item -ItemType File -Force -Path $stopFile | Out-Null
 $serverExited = $server.WaitForExit($ServerExitTimeoutSeconds * 1000)
+$serverExitText = if ($server.HasExited) { "$($server.ExitCode)" } else { 'not observed' }
 if (-not $serverExited) { Write-Host "server half did not exit within ${ServerExitTimeoutSeconds}s; leaving it to the operator" }
-$serverExit = if ($serverExited) { $server.ExitCode } else { $null }
-Write-Host "server exit=$serverExit"
+# The IT's own end-of-run marker is the authoritative statement that the resident half shut down cleanly; the wrapper
+# exit code is only informational (with redirected output it can stay unset even after the child finished).
+$serverHalfCompleted = Test-Path -LiteralPath (Join-Path $attemptDir 'test-completed.marker')
+Write-Host "server wrapper exit=$serverExitText; server half completed marker=$serverHalfCompleted"
 
 # ---------------------------------------------------------------- 5) aggregate both halves
 $serverXmlDir = Join-Path $Workspace 'server/build/test-results/integrationTest'
@@ -140,8 +143,9 @@ function Read-Suite($files) {
 $serverSide = Read-Suite $serverXml
 $androidSide = Read-Suite $androidXml
 $level = 'L3 (unchanged: no usable real-server evidence)'
-if ($serverSide.Files -gt 0 -and $androidSide.Files -gt 0 -and $serverSide.Failures -eq 0 -and $serverSide.Errors -eq 0 `
-    -and $androidSide.Tests -eq 1 -and $androidSide.Failures -eq 0 -and $androidSide.Errors -eq 0 -and $androidSide.Skipped -eq 0) {
+if ($serverSide.Files -gt 0 -and $serverHalfCompleted -and $serverSide.Failures -eq 0 -and $serverSide.Errors -eq 0 `
+    -and $androidSide.Files -gt 0 -and $androidSide.Tests -eq 1 -and $androidSide.Failures -eq 0 `
+    -and $androidSide.Errors -eq 0 -and $androidSide.Skipped -eq 0) {
     $level = 'L4 (Android code hit the real server and installed the served binding)'
 }
 
@@ -151,7 +155,7 @@ $report.Add('')
 $report.Add("- workspace: ``$Workspace``")
 $report.Add("- attempt: ``$attemptDir``")
 $report.Add("- handshake: ``$handshakeFile``; stop: ``$stopFile``")
-$report.Add("- android exit: $androidExit; server exit: $serverExit")
+$report.Add("- android exit: $androidExit; server wrapper exit: $serverExitText; server half completed marker: $serverHalfCompleted")
 $report.Add('')
 $report.Add('| half | xml | tests | failures | errors | skipped |')
 $report.Add('| --- | --- | --- | --- | --- | --- |')
