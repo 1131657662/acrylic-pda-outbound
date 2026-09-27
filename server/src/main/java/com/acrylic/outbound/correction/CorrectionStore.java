@@ -40,7 +40,9 @@ public class CorrectionStore {
               canonical_command_bytes,response_bytes,response_sha256,actor_id,expected_json,status,event_id,recorded_at)
             VALUES(?,?,?,?,?,?,?,?,?,?,?,'RECORDED',?,?)
             """,Ids.bytes(write.receiptId()),
-            write.documentId()==null?null:Ids.bytes(write.documentId()),Ids.bytes(write.orderId()),
+            write.documentId()==null?null:Ids.bytes(write.documentId()),
+            // A reconciliation command has no order; V47 relaxed this column to NULL for exactly that case.
+            write.orderId()==null?null:Ids.bytes(write.orderId()),
             Ids.bytes(UUID.fromString(write.command().key())),write.command().kind(),unhex(write.command().digest()),
             write.command().bytes(),response[0].getBytes(java.nio.charset.StandardCharsets.UTF_8),unhex(response[1]),
             Ids.bytes(UUID.fromString(write.actor().path("principalId").asText())),expectedJson,
@@ -325,5 +327,36 @@ public class CorrectionStore {
               evidence_sha256,state_version,issued_recovery_epoch,created_at) VALUES(?,?,?,?,?,?,?,?,?)
             """,Ids.bytes(id),Ids.bytes(originalDispatchId),Ids.bytes(lineId),cycleBefore,cycleAfter,
             evidenceSha256,stateVersion,issuedRecoveryEpoch,Timestamp.from(now));
+    }
+
+    // ---------------------------------------------------------------- A3 step 7: discrepancy cases
+
+    public void insertReconciliation(UUID id,UUID warehouseId,String kind,UUID baleId,UUID dispatchId,Integer cycle,
+        Long expectedResultVersion,Long expectedLedgerVersion,Long expectedStockStateVersion,Instant now) {
+        jdbc.update("""
+            INSERT INTO inventory_reconciliation(id,warehouse_id,kind,bale_id,dispatch_id,cycle,status,
+              expected_result_version,expected_ledger_version,expected_stock_state_version,row_version,
+              created_at,updated_at) VALUES(?,?,?,?,?,?,'OPEN',?,?,?,1,?,?)
+            """,Ids.bytes(id),Ids.bytes(warehouseId),kind,baleId==null?null:Ids.bytes(baleId),
+            dispatchId==null?null:Ids.bytes(dispatchId),cycle,expectedResultVersion,expectedLedgerVersion,
+            expectedStockStateVersion,Timestamp.from(now),Timestamp.from(now));
+    }
+
+    public JsonNode reconciliationFacts(UUID caseId) {
+        var rows=jdbc.queryForList("""
+            SELECT JSON_OBJECT('caseId',BIN_TO_UUID(id),'warehouseId',BIN_TO_UUID(warehouse_id),'kind',kind,
+              'status',status,'rowVersion',CAST(row_version AS CHAR),
+              'baleId',IFNULL(BIN_TO_UUID(bale_id),'null'),'dispatchId',IFNULL(BIN_TO_UUID(dispatch_id),'null'),
+              'cycle',IFNULL(CAST(cycle AS CHAR),'null'),'conclusion',IFNULL(conclusion,'null'))
+            FROM inventory_reconciliation WHERE id=?
+            """,String.class,Ids.bytes(caseId));
+        if (rows.size()!=1) throw CorrectionCommand.missing();
+        return SubmissionJson.parse(rows.getFirst());
+    }
+
+    /** Status transition under the row lock: the predicate makes a racing advance fail instead of double-applying. */
+    public int advanceReconciliation(UUID caseId,String fromStatus,String toStatus,String conclusion,Instant now) {
+        return jdbc.update("UPDATE inventory_reconciliation SET status=?,conclusion=?,row_version=row_version+1,"
+            + " updated_at=? WHERE id=? AND status=?",toStatus,conclusion,Timestamp.from(now),Ids.bytes(caseId),fromStatus);
     }
 }

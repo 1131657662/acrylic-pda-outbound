@@ -69,9 +69,15 @@ public class CorrectionCommandService {
     private byte[] executeOnce(CorrectionCommand.Input input,CorrectionCommand.Actor actor,
         CorrectionCommand.Operation operation,String requestId) {
         state.requireWritable(input.text("transportRecoveryEpoch"));
-        JsonNode anchor;UUID documentId=null;UUID orderId;
+        JsonNode anchor;UUID documentId=null;UUID orderId=null;UUID caseId=null;
         if (input.kind().equals("CREATE")) {
             orderId=input.uuid("orderId");locks.order(orderId);anchor=store.orderFacts(orderId);
+        } else if (input.kind().startsWith("RECONCILE_")) {
+            if (input.kind().equals("RECONCILE_OPEN")) {
+                anchor=SubmissionJson.object().put("warehouseId",input.text("warehouseId"));
+            } else {
+                caseId=input.uuid("caseId");locks.caseRow(caseId);anchor=store.reconciliationFacts(caseId);
+            }
         } else {
             documentId=input.uuid("documentId");locks.document(documentId);
             anchor=store.documentFacts(documentId);orderId=UUID.fromString(anchor.path("orderId").asText());
@@ -79,9 +85,10 @@ public class CorrectionCommandService {
             locks.order(orderId);
         }
         if (!anchor.path("warehouseId").asText().equals(actor.warehouse().toString())) throw CorrectionCommand.missing();
-        var current=input.kind().equals("CREATE")
-            ? CorrectionCommand.Expected.forCreate(anchor,Long.parseLong(actor.authVersion()))
-            : CorrectionCommand.Expected.forDocument(anchor,Long.parseLong(actor.authVersion()));
+        var current=input.kind().equals("CREATE")?CorrectionCommand.Expected.forCreate(anchor,Long.parseLong(actor.authVersion()))
+            :input.kind().equals("RECONCILE_OPEN")?CorrectionCommand.Expected.forCaseOpen(anchor,Long.parseLong(actor.authVersion()))
+            :input.kind().equals("RECONCILE_ADVANCE")?CorrectionCommand.Expected.forCase(anchor,Long.parseLong(actor.authVersion()))
+            :CorrectionCommand.Expected.forDocument(anchor,Long.parseLong(actor.authVersion()));
         CorrectionCommand.Expected.validate(input.expected(),current);
         if (operation.requiresApproval() && !actor.mayApprove()) throw CorrectionCommand.denied();
         var write=new CorrectionCommand.Write(Ids.next(),Ids.next(),Ids.next(),documentId,orderId,
@@ -98,8 +105,10 @@ public class CorrectionCommandService {
             new String[]{new String(receipt.original(),StandardCharsets.UTF_8),receipt.originalSha256()});
         var details=SubmissionJson.object().put("commandSha256",input.digest())
             .put("originalResponseSha256",receipt.originalSha256())
-            .put("orderId",orderId.toString())
-            .put("documentId",decision==null||decision.path("documentId").isMissingNode()?"null":decision.path("documentId").asText());
+            .put("orderId",orderId==null?"null":orderId.toString())
+            .put("documentId",decision==null||decision.path("documentId").isMissingNode()?"null":decision.path("documentId").asText())
+            .put("caseId",decision!=null&&decision.hasNonNull("caseId")?decision.path("caseId").asText()
+                :(caseId==null?"null":caseId.toString()));
         audit.append(new AuditWriter.Event(actor.id(),"CORRECTION_"+input.kind(),"CORRECTION_COMMAND",
             write.receiptId(),details.toString()),requestId);
         return receipt.original();

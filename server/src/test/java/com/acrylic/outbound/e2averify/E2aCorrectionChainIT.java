@@ -44,7 +44,7 @@ class E2aCorrectionChainIT {
         var profile = new E2aCrossSourceProfile(); var jdbc = profile.connect();
         Files.createFile(profile.attempt.resolve("test-started.marker"));
         profile.migrate(jdbc, "34"); E2aV34Seed.seed(jdbc, profile.attempt.resolve("storage"));
-        profile.migrate(jdbc, "46"); E2aCrossSourceHttpSetup.signing(profile.attempt);
+        profile.migrate(jdbc, "47"); E2aCrossSourceHttpSetup.signing(profile.attempt);
         var order = confirmedOrder(profile, jdbc);
         assertThat(order.dispatchIds()).as("the R06 chain must leave dispatches to correct").isNotEmpty();
         var notes = new StringBuilder("验证层级=真服 19434 + 真 HTTP（PDA 通道）+ 真 MySQL\n");
@@ -281,8 +281,56 @@ class E2aCorrectionChainIT {
             assertThat(reopenTwice.statusCode()).isEqualTo(409);
             assertThat(codeOf(reopenTwice.body())).isEqualTo("CYCLE_REOPENING_EXISTS");
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM cycle_reopening", Integer.class)).isEqualTo(1);
+
+            // (k) A3 step 7: a discrepancy case walks the state machine and never touches availability.
+            String versionBefore = jdbc.queryForObject("SELECT CAST(current_result_version AS CHAR) FROM outbound_order"
+                + " WHERE id=UUID_TO_BIN(?)", String.class, order.orderId());
+            int effectiveBefore = jdbc.queryForObject("SELECT COUNT(*) FROM order_effective_scan WHERE order_id=UUID_TO_BIN(?)"
+                + " AND result_version=4 AND is_effective=1", Integer.class, order.orderId());
+            grant(jdbc, order.operatorId(), "inventory:reconcile");
+            var openCase = post(token, reconcileOpenBody(order, "WEIGHT_MISMATCH"));
+            notes.append("⑭RECONCILE_OPEN -> ").append(openCase.statusCode()).append(' ')
+                .append(shortBody(openCase.body())).append('\n');
+            assertThat(openCase.statusCode()).as(shortBody(openCase.body())).isEqualTo(200);
+            String caseId = SubmissionJson.parse(openCase.body()).path("businessDecision").path("caseId").asText();
+            assertThat(jdbc.queryForObject("SELECT status FROM inventory_reconciliation WHERE id=UUID_TO_BIN(?)",
+                String.class, caseId)).isEqualTo("OPEN");
+            for (String[] step : new String[][]{{"OPEN", "1", null}, {"EVIDENCE_PENDING", "2", null},
+                {"REVIEW_READY", "3", "实物短少 1 包，已按现场照片结案"}}) {
+                var advanced = post(token, reconcileAdvanceBody(order, caseId, step[0], step[1], step[2], false));
+                assertThat(advanced.statusCode()).as(shortBody(advanced.body())).isEqualTo(200);
+                notes.append("⑮").append(step[0]).append(" -> ")
+                    .append(SubmissionJson.parse(advanced.body()).path("businessDecision").path("status").asText()).append('\n');
+            }
+            assertThat(jdbc.queryForMap("SELECT status,conclusion,CAST(row_version AS CHAR) rv"
+                + " FROM inventory_reconciliation WHERE id=UUID_TO_BIN(?)", caseId))
+                .satisfies(row -> {
+                    assertThat(String.valueOf(row.get("status"))).isEqualTo("RESOLVED");
+                    assertThat(String.valueOf(row.get("conclusion"))).contains("现场照片");
+                    assertThat(String.valueOf(row.get("rv"))).isEqualTo("4");
+                });
+            assertThat(jdbc.queryForObject("SELECT CAST(current_result_version AS CHAR) FROM outbound_order"
+                + " WHERE id=UUID_TO_BIN(?)", String.class, order.orderId()))
+                .as("a case conclusion is not availability").isEqualTo(versionBefore);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM order_effective_scan WHERE order_id=UUID_TO_BIN(?)"
+                + " AND result_version=4 AND is_effective=1", Integer.class, order.orderId())).isEqualTo(effectiveBefore);
+            var afterResolved = post(token, reconcileAdvanceBody(order, caseId, "RESOLVED", "4", null, false));
+            notes.append("⑯已结案再推进 -> ").append(afterResolved.statusCode()).append(' ')
+                .append(codeOf(afterResolved.body())).append(" (期望 409)\n");
+            assertThat(afterResolved.statusCode()).isEqualTo(409);
+            // (l) a conflict blocks a non-terminal case, and blocking needs a reason.
+            String blockedCase = SubmissionJson.parse(post(token, reconcileOpenBody(order, "MISSING_PACKAGE")).body())
+                .path("businessDecision").path("caseId").asText();
+            var noReason = post(token, reconcileAdvanceBody(order, blockedCase, "OPEN", "1", null, true));
+            assertThat(noReason.statusCode()).as("标记冲突必须写原因").isEqualTo(400);
+            var blocked = post(token, reconcileAdvanceBody(order, blockedCase, "OPEN", "1", "账面与实物互相矛盾", true));
+            notes.append("⑰BLOCKED -> ").append(blocked.statusCode()).append(' ')
+                .append(SubmissionJson.parse(blocked.body()).path("businessDecision").path("status").asText()).append('\n');
+            assertThat(blocked.statusCode()).as(shortBody(blocked.body())).isEqualTo(200);
+            assertThat(jdbc.queryForObject("SELECT status FROM inventory_reconciliation WHERE id=UUID_TO_BIN(?)",
+                String.class, blockedCase)).isEqualTo("BLOCKED");
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM operation_event WHERE entity_type='CORRECTION_COMMAND'",
-                Integer.class)).as("one audit event per accepted receipt (the refused ones write none)").isEqualTo(6);
+                Integer.class)).as("one audit event per accepted receipt (the refused ones write none)").isEqualTo(12);
         }
         Files.writeString(profile.attempt.resolve("correction-chain.txt"), notes.toString());
         Files.writeString(profile.attempt.resolve("test-completed.marker"), notes.toString());
@@ -363,6 +411,28 @@ class E2aCorrectionChainIT {
         for (String dispatchId : order.dispatchIds())
             lines.add(SubmissionJson.object().put("dispatchId", dispatchId)
                 .put("targetCount", targetCount).put("targetWeightG", targetWeight));
+        body.set("expected", expected);
+        return body;
+    }
+
+    /** A case is opened against a warehouse, optionally naming a dispatch - it carries no order anchor. */
+    private ObjectNode reconcileOpenBody(Order order, String kind) {
+        var expected = SubmissionJson.object().put("warehouseId", order.warehouseId()).put("userAuthVersion", "1");
+        return (ObjectNode) SubmissionJson.object().put("commandVersion", 1).put("commandType", "RECONCILE_OPEN")
+            .put("commandId", UUID.randomUUID().toString()).put("transportRecoveryEpoch", "1")
+            .put("warehouseId", order.warehouseId()).put("kind", kind)
+            .put("dispatchId", order.dispatchIds().getFirst()).set("expected", expected);
+    }
+
+    private ObjectNode reconcileAdvanceBody(Order order, String caseId, String status, String rowVersion,
+        String conclusion, boolean blocked) {
+        var expected = SubmissionJson.object().put("caseId", caseId).put("status", status)
+            .put("rowVersion", rowVersion).put("userAuthVersion", "1");
+        var body = (ObjectNode) SubmissionJson.object().put("commandVersion", 1).put("commandType", "RECONCILE_ADVANCE")
+            .put("commandId", UUID.randomUUID().toString()).put("transportRecoveryEpoch", "1")
+            .put("warehouseId", order.warehouseId()).put("caseId", caseId);
+        if (conclusion != null) body.put("conclusion", conclusion);
+        if (blocked) body.put("blocked", true);
         body.set("expected", expected);
         return body;
     }

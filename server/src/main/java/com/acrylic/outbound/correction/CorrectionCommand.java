@@ -28,7 +28,7 @@ final class CorrectionCommand {
     private CorrectionCommand() { }
 
     static final String ROUTE_SCOPE = "r07.correction.v1";
-    static final List<String> KINDS = List.of("CREATE", "APPROVE", "WITHDRAW");
+    static final List<String> KINDS = List.of("CREATE", "APPROVE", "WITHDRAW", "RECONCILE_OPEN", "RECONCILE_ADVANCE");
     static final Set<String> KINDS_SET = Set.copyOf(KINDS);
     /** Both codes are registered by V45 - the R07-1 lesson was an approval gate whose code was never registered. */
     static final String CORRECT_PERMISSION = "outbound:correct";
@@ -111,6 +111,11 @@ final class CorrectionCommand {
             var rows=jdbc.queryForList("SELECT row_version FROM correction_document WHERE id=? FOR UPDATE",Ids.bytes(document));
             if (rows.size()!=1) throw missing();return 1;
         }
+        /** The reconciliation case is the fourth serialisation point (step 7). */
+        long caseRow(UUID caseId) {
+            var rows=jdbc.queryForList("SELECT row_version FROM inventory_reconciliation WHERE id=? FOR UPDATE",Ids.bytes(caseId));
+            if (rows.size()!=1) throw missing();return 1;
+        }
     }
 
     /**
@@ -136,13 +141,26 @@ final class CorrectionCommand {
         static void validate(JsonNode expected,ObjectNode current) {
             if (!current.equals(expected)) throw stale();
         }
+        /** A case does not exist yet when it is opened, so its anchor is just the warehouse it belongs to. */
+        static ObjectNode forCaseOpen(JsonNode anchor,long userAuthVersion) {
+            return SubmissionJson.object().put("warehouseId",anchor.path("warehouseId").asText())
+                .put("userAuthVersion",Long.toString(userAuthVersion));
+        }
+        /** An advancing case is anchored on its own id, status and row version. */
+        static ObjectNode forCase(JsonNode caseFacts,long userAuthVersion) {
+            var expected=SubmissionJson.object();
+            for (String key : List.of("caseId","status","rowVersion")) expected.set(key,caseFacts.get(key));
+            expected.put("userAuthVersion",Long.toString(userAuthVersion));
+            return expected;
+        }
     }
 
     /** What an operation returns: a business decision object, or null for a read-only decision. */
     interface Operation {
         String commandType();
         JsonNode execute(Write write);
-        default boolean requiresApproval() { return !commandType().equals("CREATE"); }
+        /** Only the two document decisions carry the supervisor gate; reconciliation cases do not (design §5). */
+        default boolean requiresApproval() { return commandType().equals("APPROVE")||commandType().equals("WITHDRAW"); }
     }
 
     record Write(UUID requestId,UUID receiptId,UUID eventId,UUID documentId,UUID orderId,Instant recordedAt,Input command,

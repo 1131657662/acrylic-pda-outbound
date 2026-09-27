@@ -29,7 +29,8 @@ public class CorrectionReceiptCodec {
             .put("commandSha256",write.command().digest()).put("status","RECORDED")
             .put("recordedAt",write.recordedAt().toString()).put("eventId",write.eventId().toString())
             .put("documentId",write.documentId()==null?null:write.documentId().toString())
-            .put("orderId",write.orderId().toString());
+            // A reconciliation command anchors on a case, not on an order, so both ids may legitimately be absent.
+            .put("orderId",write.orderId()==null?null:write.orderId().toString());
         unsigned.set("context",write.anchor());
         unsigned.set("actor",write.actor());
         unsigned.set("businessDecision",decision==null?com.fasterxml.jackson.databind.node.NullNode.getInstance():decision);
