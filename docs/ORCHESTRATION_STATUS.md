@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-27
 branch: codex/development
-head: 71ebe44
-dirty_entries: 0
+head: dd54c8a
+dirty_entries: 3
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
@@ -19,7 +19,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 
 ## 在途
 - **R06 M2b-4b 客户端一半**：A1 命令前置事实只读面 `4be09e2`、A2 Web 复核页写操作 `94c74b4` 已完成；A3（隔离真实 HTTP 的 Web 会话链路）**部分验证**——无会话 401、Web 登录 200、`GET /temporary-commands/facts` 200 且 A1 设计断言全过；但 LINK/NORMAL_CONFIRM 的 Web 会话 POST 在**真浏览器**下同样 403 `ACCESS_DENIED`（疑登录后会话轮换使登录前 CSRF 令牌失效），按 2 轮上限停止，差异记为**开关开放时另验**。服务端资格判定 `7448c91` 已完成，开关仍默认关闭。守卫星树 `r06-e2a-migration` 现为 detached `ea4d166`（分支未动、29 GB `.local` 完好）。
-- 下一步：**R06 欠债收口**（TEMP 归档夹具重写）；**R07 需用户明确指示才动**（更正/审批/附件的原机可用段先做，故障换机段依赖 R09 恢复接口）；Android `LINK` 映射安装待做。
+- 下一步：**R06 欠债收口**（TEMP 归档：等业主在「夹具断言改正向」与「给归档前门加默认关闭开关」之间决策）；**R07 需用户明确指示才动**；Android `LINK` 映射安装待做。
 - 用户当次指令：M2b-4b（服务端放宽已完成 `c975dfc`；Web 复核页写操作与 Android LINK 映射安装待做）；① 发布身份链已完成；④ 文档收敛与工作树清点已完成（**只清点，未删除任何目录**）；C 清单放着不动。
 - 写权：`codex/development` 单写者；服务端树 `r06-e2a-migration` 现为 detached `ea4d166`（仅用于本次验证，分支未动），未归档、未删除。
 
@@ -40,7 +40,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 
 ## 未验与阻断（每条一行：项 → 缺什么 → 后果）
 - 七类生产决定 handler/POST → 代码已接线但**默认关闭**；服务端已支持关联后确认、Web 复核页已具备写操作、资格标志已按条件计算，但开启仍需业主明确授权 + 契约同步发布 + **Web 会话 POST 的真实 HTTP 证据（A3 仅部分验证：真浏览器 POST 403 未查清）**；Android `LINK` 映射安装**客户端已实现**（真 HTTP 未验） → 临时单仍不能确认出库。
-- TEMP 归档 → **硬拒绝已按授权解除并接线**（`SubmissionArchiveService.confirm` 改为分派入口：TEMP→`TemporaryArchiveService.confirm`（自持事务），FORMAL→`confirmFormal` 原路径）；`archive-schemas.yaml` 已放宽（`archiveVersion` enum[1,2]、`assignmentId` 允许 null、为 TEMP 补齐 7 个专有字段并保持 `additionalProperties:false`；`required` 经核对无需改）；**接线与装配已完成**（`9a6a001` 生产 @Bean + `859edce` 分派接线，编译与全量单测 718/0/1 均通过）；**验收未达成**：定向 IT attempt 172 红于 `CommandReceiptIntegrity.closure`，根因＝夹具用 `TemporaryArchiveDriver.grantTestConfirmation(...)`（测试专用授权，绕过内核写审计）→ 下一轮改写夹具（勿改生产代码）；开关默认关闭、能力未声明开放；开关默认关闭 → 未获授权前生产面不变。
+- TEMP 归档 → 生产侧装配与分派已接线（`9a6a001` @Bean + `859edce` 分派 + `5d91f9d` 契约放宽；生产 `POST …/archive-confirmation` 对 TEMP **无开关**直入 TEMP 分支）但**验收未达成**：attempt 172 的真实根因是夹具路径守卫 `[1-9][0-9]?` 拒绝三位 attempt 号（已修 `dd54c8a`，仅测试/夹具）；attempt 174 越过后停在夹具**过时预期**——`TemporaryArchiveHttpTest.kt:70` 仍断言生产前门 `TEMPORARY_CONFIRMATION_REQUIRED`，实测 200；库内已证 2 条 TEMP 归档（`archiveVersion=2`、各有内核 event + 恰好一条 audit、各 2 条派发记录） → 待业主决定：断言改正向验收，或给归档前门加默认关闭开关。
 - 恢复出口 → 生产无任何路径置 `RECOVERY_PENDING`（只能人工 SQL 造成）；`RecoveryNormalRegistration` 无 bean/路由且 `baseline` 无自动来源 → 该状态只能靠 R09 运维链或人工 SQL 解除。
 - Android 发布身份 → **签名链已完成**（见已完成区与事实块）；仍缺的是**现场**：真机安装、App 内升级实测、正式发布/部署授权 → 不能声称现场升级可用。
 - 现场与人工 → 真机/Keystore、独立人员、长时与五年留存、外网与异地、生产审批均未验；R05 code20/Room17 历史关键未验、原资料与旧 BCD、R09 现场限制继续单列 → 不能声称上线就绪。
@@ -60,10 +60,11 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 - 2026-09-26 冻结两树：`3c677ad`（主树 10 提交）/ `d16836b`（服务端树 6 提交），两个 freeze tag 已推远端。
 - 2026-09-27 发布身份链：生成正式 keystore（`.local/pda-signing/`，两份备份分别在 D: 与 E: 两块物理盘）、`signingConfigs` 接入 release、versionCode 20→21、`build_pda.ps1` 支持 `-BuildType` 并注入更新公钥、更新白名单补 `0.33.0`；release APK 经 `apksigner verify` 通过且签名摘要与 keystore 一致。
 - 2026-09-27 工作树清点（只读，未删除）：34 个工作树、33 个分支、112.9 GB；3 个树各有 1 个未合并提交（r08-export / r09-v33-recovery / sixth-wave-integration），5 个树含 32 个基线中不存在的未跟踪文件；发现 2 个**未注册检出**（`D:\acrylic-entry-verify`、`D:\acrylic-snapshots\…\workspace`）共用 `r06-e2a-migration` 的 gitdir。归档前须先取证，删除一律待批。
-- 2026-09-27 唯一文件回收（选项 A）：32 个文件经 `git log --all` 与对象库 blob 双重确认从未入库；30 个提交进基线（datetime-display 11 个 + 其 9 个已跟踪集成改动、R06 设计 6 个、R07 设计 13 个），2 个归档到工作区外 `E:\acrylic-archive-unique-20260927`（日志与可复现的 `.class`），另归档 2 份补丁与 entry-verify 的 2 个未跟踪文件；清单见 [回收记录](history/UNIQUE_FILE_RESCUE_2026-09-27.md)。验证：Android 451 项 0 失败、web typecheck 通过、恢复的 init 脚本实测通过。
+- 2026-09-27 唯一文件回收（选项 A）：32 个文件经 `git log --all` 与对象库 blob 双重确认从未入库，30 个提交进基线（datetime-display / R06 设计 / R07 设计），2 个归档到工作区外 `E:\acrylic-archive-unique-20260927`；清单见 [回收记录](history/UNIQUE_FILE_RESCUE_2026-09-27.md)。验证：Android 451 项 0 失败、web typecheck 通过。
 - 2026-09-27 `D:\acrylic-entry-verify` 726 个缺失文件结论：**刻意的部分副本，不是丢失**——缺失集中在 android/web/demo/contracts/tools/deploy 等无关模块（server 仅 2 个），磁盘上实存 1,241 个（server/src/main 488、server/src/test 418）；726/726 均可从 Git 取回（0 不可恢复）。
 - 2026-09-27 合并三提交（选项 B）：`0b1094e`→`f196887`（deploy + `.gitattributes`，仅覆盖 `deploy/test/*.sh`，合并后 0 项重新规范化）、`94305a7`→`1e98e44`（R09 V34 演练，17 文件全在 `docs/parallel/R09/`，README 取并集）、`f051535`→`8bb3e57`（R08 授权竞争修复）。验证：`R08AuthorizationRaceIT` 9 项全通过、`npm run build` 通过。两个环境发现：V35+ 建触发器需 `log_bin_trust_function_creators=1`（否则 Flyway 1419）；`renderer-home` 必须是当前源码同批 `installDist` 产物，否则作业 `EXPORT_RENDER_FAILED`。详见 [合并记录](history/MERGE_BATCH_2026-09-27.md)。
 - 2026-09-27 选项 C 前置：`r08-export` / `r09-v33-recovery` / `sixth-wave-integration` 三棵树已合并且工作区干净，**可进入删除候选**；删除仍待业主逐项批准。
+- 2026-09-27 TEMP 归档 attempt 174（`dd54c8a` 修 7 处 attempt 号守卫，仅测试/夹具）+ 看板 head 与 R07 口径修正（`00a17e9`）；attempt 172 的 closure 归因被证伪（把 `corruptIndex` 的故意反例日志当成根因）。详见 [R06 欠债清单](history/R06_DEBT_LIST_2026-09-27.md)。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。
