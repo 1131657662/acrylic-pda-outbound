@@ -13,10 +13,10 @@ Confirmation:
   additionalProperties: false
   required: [archiveVersion, submissionId, orderId, assignmentId, warehouseId, operatorId, freezeDeviceId, workRound, sourceRecoveryEpoch, recoveryEpoch, payloadSha256, receiptSha256, payloadBytes, receiptBytes, completedAt, archivedAt, retainUntil, storagePolicy, localDeletionAllowed, signedArchive]
   properties:
-    archiveVersion: {type: integer, const: 1}
+    archiveVersion: {type: integer, enum: [1, 2], description: '1=FORMAL 来源；2=TEMP 来源（assignmentId 为 null，改由 authorizationId/commandReceiptId 等表达）'}
     submissionId: {type: string, format: uuid}
     orderId: {type: string, format: uuid}
-    assignmentId: {type: string, format: uuid}
+    assignmentId: {type: [string, 'null'], format: uuid, description: 'FORMAL 写正式资格 UUID；TEMP 写 null（临时作业无正式资格）'}
     warehouseId: {type: string, format: uuid}
     operatorId: {type: string, format: uuid}
     freezeDeviceId: {type: string, format: uuid}
@@ -32,6 +32,13 @@ Confirmation:
     retainUntil: {type: string, format: date-time, description: 至少保留至archivedAt的UTC日期加5个公历年；当前不提供云端删除处理器}
     storagePolicy: {type: string, const: SERVER_DURABLE_FILES_V1}
     localDeletionAllowed: {type: boolean, const: false}
+    authorizationId: {type: string, format: uuid, description: 'TEMP 专有：临时作业授权 id'}
+    commandReceiptId: {type: string, format: uuid, description: 'TEMP 专有：独立确认命令回执 id'}
+    commandResponseSha256: {$ref: '#/Hash', description: 'TEMP 专有：命令回执响应摘要'}
+    commandBytes: {$ref: './submission-schemas.yaml#/Positive', description: 'TEMP 专有：命令回执字节数'}
+    mappingVersion: {type: string, pattern: '^[0-9]+$', description: 'TEMP 专有：提交时冻结的映射版本'}
+    planSha256: {$ref: '#/Hash', description: 'TEMP 专有：计划摘要'}
+    source: {type: object, description: 'TEMP 专有：TEMP 来源快照（原样携带，不重写）'}
     signedArchive:
       type: string
       description: RS256 JWT，iss=acrylic-outbound、aud=acrylic-pda-archive，archive声明等于移除此字段后的完整响应；证明不按离线48小时过期，不能跨恢复代次授权清理。
