@@ -255,3 +255,46 @@ attempt 191 红于 `No migration with a target version 45`（V45 只复制到主
 ≈40 行）+ 第一个 `Operation`（属步骤 3：文档与行 + 目标值服务端重算）。**在此之前，即使打开开关也没有 operation
 bean，命令一律 `CORRECTION_COMMAND_NOT_OPEN`** —— 故建议把「service/controller/configuration + CREATE operation」
 作为同一片（步骤 2 收尾 + 步骤 3 开局）交付。
+
+## 18. 步骤 2 收尾 + 步骤 3 开局（2026-09-27 同一片交付，**已完成**）
+
+提交：`71cafc3`（接线与 CREATE）+ `3c3e297`（顺序缺陷修复）；验证 attempt **199** 绿。
+
+### 18.1 交付物
+| 件 | 内容 |
+| --- | --- |
+| `CorrectionCommandService` | R06/R07-1 内核形态：原键回放在任何工作之前；写路径单事务；重复键碰撞读回原字节；CREATE 锚订单（`outbound_order` FOR UPDATE + orderFacts），APPROVE/WITHDRAW 锚文档（`correction_document` FOR UPDATE + documentFacts）；锁后重验 expected；审批门 `correction:approve`；签名回执 + 单一审计事件；CREATE 的 documentId 在决定产生后回填进回执 |
+| `CorrectionCommandController` | `POST /api/v1/corrections`（§5 路由）**＋ PDA 别名** `POST /api/v1/pda/corrections`（照 R06 `TemporaryCommandController` 既有做法）；受 `outbound.corrections.commands.enabled` 门控，默认无路由 |
+| `CorrectionCommandConfiguration` | `@ConditionalOnProperty` 只注册本批唯一的 Operation（CREATE）；APPROVE/WITHDRAW 与 effect/结果/账务/周期/对账未注册 ⇒ 开关打开也一律 `CORRECTION_COMMAND_NOT_OPEN` |
+| `CorrectionOperations.Create`（步骤 3 开局） | 把正文冻结为 SUBMITTED 文档 + 逐行；**目标值服务端重算**：行的 before 侧由服务端从当前版本事实（`dispatch_record` + 其 `inventory_ledger` 行）读出，不信任客户端；目标等于 before → `CORRECTION_LINE_TARGET_UNCHANGED`；目标为负即拒；3 天补录窗口（P-R07-06，以当前结果版本 `created_at` 为出库时点）；实物类型且带 dispatch 的行必须附核验凭据 → `CORRECTION_EVIDENCE_REQUIRED`。**不写账、不改结果版本** |
+
+### 18.2 实测约束（两条，均为读实而非推测）
+1. **没有 `order_effective_scan` 表**（§2 假设其存在，实际 V43 未建）⇒ before 值改由 `dispatch_record` +
+   `inventory_ledger` 推出；在订单仍处首个结果版本时这是**精确**的（首次更正只能从此态开始）。该表的引入属步骤 5。
+2. **Web 会话 POST 被 403 挡住**：`/api/v1/corrections`（§5 路由）确实可装配，但真 HTTP 的 Web 会话 POST 返回
+   `403 ACCESS_DENIED`（与本项目已知的 A3 CSRF/会话问题同源，属"未查清"项）⇒ 本轮**不硬做**，改走 R06 命令面
+   既有做法：控制器加 PDA 别名（`PdaSecurity` 对该前缀 `csrf(c->c.disable())`），IT 用已验证的 PDA Bearer 通道。
+
+### 18.3 验证（attempt 199：`classes=1 tests=1 failures=0 errors=0 skipped=0`）
+```
+①开关关闭 -> 404（路由未装配）        ②开关开启+无效会话 -> 401
+③有效会话 -> 200 RECORDED / CREATE / 五能力位 false
+④businessDecision: 文档 SUBMITTED、lines=2（= 该订单的 dispatch 数）
+⑤每行 before 值 == 服务端 dispatch/ledger 事实（客户端无法伪造）
+⑥同键同文回放字节一致，且未新增第二份文档
+⑦目标值等于 before -> 409 CORRECTION_LINE_TARGET_UNCHANGED
+```
+订单来源＝已验证的 R06 链（`TemporaryLinkConfirmHttpChecks`），本 IT 只读其结果，未改 R06/R07-1 任何面。
+另：全量单测 `104 classes / 720 tests / 0 failures / 0 errors / 1 skip`（718 基线 + 新增 2 项开关边界单测）。
+过程中修掉一处顺序缺陷：原实现先插 `correction_line` 后插 `correction_document` → 外键失败 500（`3c3e297`）。
+
+### 18.4 未验边界（下一步的输入）
+- **APPROVE / WITHDRAW 未实现**（开关打开也未注册）⇒ 文档停在 `SUBMITTED`，审批/撤销链未验；
+- **effect / 账务 / 结果版本 / 周期重开 / 对账（§9 步骤 4-8）全部未做**：本轮不写账、不改 `order_result_version`、
+  不建 `correction_effect`；「全单退货后 0 包/0g」的真实业务链（v2 生效）仍待步骤 4-5；
+- **实物更正只做了凭据必填校验**，未做凭据内容核验与附件限额（P-R07-09 单文件 10MB/单次 50MB/单条 5 个）；
+- **3 天窗口的时点来源**取当前结果版本 `created_at`（可达的最接近事实），权威来源待 effect 步骤确认；
+- **Web 路由未经真 HTTP 验证**（被 A3 CSRF 挡住），仅 PDA 通道已验证；
+- 契约登记（`§9.2`）仍未做：按「默认关闭不发布未开能力」纪律待能力开放时同步发布；
+- 未跑全量 IT、未部署；`CORRECTION_*` 中除目标未变/上下文/权限/未开放外的码仍未触发。
+

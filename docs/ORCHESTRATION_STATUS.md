@@ -46,7 +46,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V45, migrations: 45 }
 - 现场与人工 → 真机/Keystore、独立人员、长时留存、外网与异地、生产审批均未验；R05 code20/Room17 历史关键未验、原资料与旧 BCD、R09 现场限制继续单列 → 不能声称上线就绪。
 - 服务端 IT 分批 → 入口已封装 `tools/e2a-batch-it.ps1`（每类一 attempt + XML 聚合 + 分类；计数修复 `f34c886`）：runs **181–184** 四类全绿 `4/0/0/0`；**波次 IT 仍缺专用库/账号**（约束 c）。
 
-- R07-3 更正 → **步骤 1 已收口**（`cf14bf5`）＋**步骤 2 第一片**（`22e9b81`：V45 回执表与 `outbound:correct`/`correction:approve` 权限码 + Command/Store/Codec，**无接线** ⇒ 开关打开也一律 `CORRECTION_COMMAND_NOT_OPEN`）；剩余＝service/controller/configuration + CREATE Operation。
+- R07-3 更正 → **步骤 1 已收口**（`cf14bf5`）＋**步骤 2/3 开局已交付**（`71cafc3`+`3c3e297`：内核 + CREATE Operation；attempt **199** 绿：开关关闭 404、有效会话 200、文档 SUBMITTED、before 值服务端重算、回放一致、目标等于 before 409）；**未验**：APPROVE/WITHDRAW 未实现、effect/账务/结果版本/周期/对账未做、Web 路由被 A3 CSRF 挡住。
 ## 越界提醒（不变）
 - `localDeletionAllowed=false`；七类生产决定 handler/POST/放行/证据写入/关闭能力**不得因内部测试通过而开放**；TEMP 生产归档边界不变。
 - 不合 `main`、不发布/部署、不操作原库现网，除非用户明确授权且证据满足范围；项目交接不等于生产授权。
@@ -69,7 +69,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V45, migrations: 45 }
 - 2026-09-27 IT 分批评估 attempt 179（`*E2aTemporaryArchive*IT` 3 类 / 1 attempt）：1 通过 2 红，均 `One-shot attempt already used`（结构性，非产品）；构造器 `tests` 计数与 `-Tests` 同名失真（复现 `0111`）→ 需先封装分批入口。
 - 2026-09-27 分批入口封装（选 A）：`f34c886` 修构造器 `tests` 计数；新增 `tools/e2a-batch-it.ps1`（每类一 attempt + XML 聚合 + 分类 + `entryIssues`）；runs **181–184** 四类全绿；波次 IT 仍需专用库。
 - 2026-09-27 Android LINK L4（选④）：`2bf2507` 三件套 → attempts **185/187** 双绿 `server=1/0/0/0`/`android=1/0/0/0`，L3→**L4**；`java.net.http` 不在 Android classpath→OkHttp；构造器补 `--rerun-tasks`。
-- 2026-09-27 R07-3：**步骤 1 收口**（`cf14bf5`／attempt 190）+ **步骤 2 第一片**（`22e9b81`／attempt 192：V45 回执表 + `outbound:correct`/`correction:approve` 权限码 + Command/Store/Codec，无接线）；剩余＝service/controller/configuration + CREATE Operation（文档与行 + 目标值服务端重算）。
+- 2026-09-27 R07-3（步骤 1-3 开局）：`cf14bf5` 步骤 1 收口／190；`22e9b81` V45 回执表 + 权限码 + Command/Store/Codec／192；`71cafc3`+`3c3e297` 内核接线 + CREATE Operation／**199 绿**（关闭 404、有效会话 200、文档 SUBMITTED、before 值服务端重算、回放一致、目标等于 before 409）。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。
