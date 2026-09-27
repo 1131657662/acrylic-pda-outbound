@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: b5af24f
-dirty_entries: 0
+head: dceb2b1
+dirty_entries: 2
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
@@ -57,8 +57,9 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 
 ## 变更日志（滚动，只留最近 20 行）
 - 2026-09-27 v7-v9（原文已归档）：V43-V48 未破坏共享面（290）；R07-3 Web 路由（292）；非 e2a 回归面解锁（临时密钥 + `-NonE2a`）共 56 类（53 通过/3 需专用环境）并**修复本会话真回归**（`36d2368`）；v9 高风险 23 类=21 绿/2 环境守卫。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-28 v20：**G7 判定＝描述精度问题（实现不需改）**：契约"不含 TEMP"在设计语境指**未关联的 TEMP_PDA 临时单**（`CONFIRMED_V1.md:3` 证明单订单 TEMP 导出早期即支持；`INTEGRATION.md:34` 证明"TEMP→正式"当时是提案）⇒ **子项 C 不越界**；建议改措辞、版本随下次实质变更递增，**待授权未改**。**D 开工前实测＝面超授权，停下报告**：`V46` 的 `ck_result_channel` 第三支使 **v>1 行无提交来源**（两列必为 NULL、只有 `source_correction_id`），三条读取器全以"提交"为锚 ⇒ 导出 v>1 需**新写更正来源读取器**＋跨模块 `Basis.CORRECTED`＋裁定"汇总/命令完整性按哪个版本"＋触碰契约发布（[D 范围报告](history/D_CORRECTED_EXPORT_SCOPE_2026-09-28.md)）；建议**方案 C 分步**（先单订单 v>1，不碰契约、默认 v1 不变）。
 - 2026-09-28 v19：**磁盘例行策略落地**（`cleanup-old-attempt-datadirs.ps1`：只删旧 attempt 的 datadir、保留最近 50，日志/marker/storage/签名材料一律保留；两个 harness 收尾自动接线，冒烟 attempt 464 绿；本次执行"无需清理"0.6s，`D:` 85.78GB）。**B 组确认 ✅**：跨订单汇总与完整导出中心**已具备**（源码＋已进正式契约 `openapi.yaml:27-37`＋`Summary 6/6 / CenterPagination 4/4 / Retry 7/7 / AuthorizationRace 9/9 / ClockBoundary 2/2` 全绿）⇒ 无功能缺口；缺口清单 G1-G7 全是政策/规模/现场/运维项（[B 组确认](history/R08_B_GROUP_CONFIRMATION_2026-09-28.md)）。**新发现待授权**：`contracts/export-center-paths.yaml:4`（已发布契约面）写着汇总"不含 TEMP"，但子项 C 之后 TEMP 来源已可导出（383/390）⇒ 描述性偏差，**未改**。**待 D 口径**（更正后导出取哪个结果版本）——未自行开工。
-- 2026-09-28 v18 自主运行：**A1 收口 ✅**（TEMP 渲染验证接通：e2a harness 新增 `-CoordinatesOnly`（只给库坐标不预迁移）＋渲染器透传；新 IT `E2aTemporaryExportRenderIT` 用"同一 attempt 库＋真服 19434＋可注入 bean"跑通 **attempt 390**：XLSX 13965B / SCAN_XLSX 4400B / PDF 360092B 真生成，openpyxl 回读订单汇总 `FH-WEB-0001`/来源 `TEMP_PDA`/结果版本1/2.0 包/**601.5kg**、产品 003→300.5 + 571→301.0、扫码明细 2 行、扫码 Excel 单表 2 行 ⇒ **内容正确**）。**A2 收口 ✅**：重启后新代次接管**已由既有** `JobFenceChecks.restartedOldJob` 覆盖，跑出绿证据 **attempt 401**（`E2aJobFenceHttpIT` 1/0/0/0）；取证前修掉 harness 两处断言级缺陷（piped SQL 静默截断致 GRANT 丢失、隔离账号无权读 `performance_schema`，另统一 CRLF）。**A3 完成 3 批**（attempts 431-463）：新增 **19 个非 e2a 类 / 241 项**（240 通过 / 1 条件 skip / 0 产品失败）；2 个 `IdentityLock*` 为**环境守卫**（需 19321 专用库）、`ReminderListRows` 系我误列夹具。**D2**：看板清掉 5 条冗余"已归档"占位（→61 行 / 6954 字符）。**环境阻塞已处置**：`D:` 曾 0GB 可用致 MySQL 无法 init（attempts 416-424 NOT-EXECUTED）；删 501 个 attempt 的 **datadir**（91.4GB）腾出 92.7GB，**日志/marker/storage/密钥全部保留**。**未开任何开关、未发布契约、未改 R05/R06/R07 业务逻辑。**
+- 2026-09-28 v18（原文已归档）：自主运行——A1 TEMP 渲染验证接通（390）、A2 重启接管已由既有 JobFence 覆盖（401）、A3 非 e2a 三批新增 19 类 241 项全绿、磁盘 0GB 阻塞已处置。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
 - 2026-09-27 v17（原文已归档）：C 的渲染验证当时未接通线（三条路实测不通，已记可执行接法）；同日 v18 已用 `-CoordinatesOnly` 接通并跑绿（attempt 390）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
 - 2026-09-27 v16（原文已归档）：R08 子项 C **已实现** ✅（`exports` 三处：`tempOrigin` + 选路 + 映射版本 ∈{1,2}），attempt 383 绿、既有导出路径回归 runs 19-22 全绿。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
 - 2026-09-27 v15（原文已归档）：R08ExportFenceIT 判定＝测试期望过时 ✅（run 18 4/4；R08 8 类 47/47）＋ 子项 C 阻塞点定位（400 INVALID_SUBMISSION）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
