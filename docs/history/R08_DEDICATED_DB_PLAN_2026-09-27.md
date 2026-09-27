@@ -229,6 +229,68 @@ XLSX / SCAN_XLSX / PDF 三种格式。**三条路本轮都实测过，都不通*
 但其中三处（`ExportFacts`/`ExportRangeReader`/`CommandBusinessIntegrity` 的 v1 过滤）**与子项 D 直接相关**，
 建议在 D 开工前先明确"更正后导出应取哪个结果版本"的口径。
 
+## 九、自主运行 v11：A1 收口（TEMP 渲染验证，attempt 390 绿）
+
+**接线**（原 `R08TemporaryExportRenderIT` 在 MockMvc 下不可能跑通：TEMP 链夹具走真 HTTP 19434）：
+- e2a harness 新增 `-CoordinatesOnly`：只导出库坐标给应用 context 且 `OUTBOUND_MIGRATE=false`，schema 由 IT 内
+  `profile.migrate(...)` 自建；新增 `-RendererHome`/`-Browsers` 透传（缺则导出 POST 503）。
+- 新 IT `E2aTemporaryExportRenderIT`（e2averify 包）用 `E2aCrossSourceHttpIT.start(...)` 一次满足
+  "同一 attempt 库 + 真服 19434 + 可注入 bean"；顺序照同类 IT：**先** migrate 34 → seed → migrate 41 → signing → **再**起服
+  （实测教训：只迁到 34 时 LINK 500，V35-V41 表缺位 = attempt 388；先起服后建表同样 500 = 387）。
+- `TemporaryCommandWebHttpChecks`：`verifyAndReturn` 返回夹具实例（会话仍有效）、暴露 `chain()`，
+  新增 `renderExport(format)`（发起导出 → 容器内 Worker 推成功 → 真 HTTP 下载原字节）；原 `verify(...)` 与断言不变。
+
+**证据（attempt 390 绿；真 MySQL + 真服 + 真 HTTP + 渲染子进程）**：
+`TEMP-RENDER XLSX=13965B`、`SCAN_XLSX=4400B`、`PDF=360092B`；`render-completed.marker` 留三种格式字节数与路径。
+**文件内容回读**（openpyxl，独立于生成侧）：订单汇总 = `FH-WEB-0001` / 来源 `TEMP_PDA` / 修订 1 / 结果版本 1 /
+实绩 2.0 包 / 精确 **601.5kg**；产品汇总 003→300.5kg、571→301.0kg；原始扫码明细 2 行
+（`003X6E0FCFC`、`571X6E0FCFC`，`DEVICE_UNVERIFIED`，原人员ID…）；版本有效明细 2 行；
+扫码 Excel（单表 `out`）序号 1/2 + 型号 + 条码 + 300.5/301.0 + 扫码人。
+⇒ **渲染是导出功能的另一半，本轮已补齐**：文件真的生成且内容与 TEMP 来源事实一致。
+**边界**：PDF 只验到容器签名 `%PDF-1.6` + 内嵌 `TEST_SAMPLE` 标记（本机无 pypdf/fitz，Chromium 用 Adobe-UCS 字形编码）。
+
+## 十、自主运行 v11：A2 收口（重启后新代次接管）
+
+**结论：该行为无需新增验证——已被既有 `JobFenceChecks.restartedOldJob` 覆盖，本轮跑出绿证据。**
+- 既有覆盖（代码）：旧代次作业在重启后 `renew`/`complete`/`fail`/`recoverExpired`/`claim` **全部不成立**；
+  伪造"新代次 DTO"也被 DB 原代次挡住；`E2aJobFenceHttpIT` 的"重启与新代次正例"在
+  [R09 代次屏障验收](R09_JOB_FENCE_ACCEPTANCE_2026-09-26.md)（attempt 72）已记。
+- **本轮实测 attempt 401**：`E2aJobFenceHttpIT` `tests=1 failures=0 errors=0 skipped=0`（真 MySQL + 真服 + 真锁竞争取证）。
+- **但取证前连撞两个测试基础设施缺陷（均非产品问题，已修，提交见下）**：
+  1. provisioning SQL 经 PowerShell 管道路径被**静默截断**（后半段 GRANT 丢失、退出码仍 0 ⇒ `Assert-Zero` 抓不到），
+     实测 393/395；改法＝写 `provision.sql` 后 `cmd /c "mysql … < file"`，并**执行后立即探测**该权限。
+     （附带两个语法坑：`--` 注释在管道路径下会吃掉后续语句，`#` 会被 cmd 当注释 ⇒ 用 `/* */`。）
+  2. 隔离账号默认**无权读 `performance_schema`**，而该 IT 用 `data_lock_waits/data_locks` 证明"不以 sleep 猜并发"
+     ⇒ provisioning 补只读授权（实测 391/392 报 1142）。
+  3. 另把脚本行尾统一为 CRLF：LF-only 时 PS 5.1 解析器报错行号错位（报 "Empty path name is not legal"）。
+
+## 十一、自主运行 v11：A3 剩余非 e2a 回归（三批，attempts 431-463）
+
+**筛选口径**：178 个 IT 类中 136 个非 e2a；按"是否读被 V43-V48 动过的表"筛出 27 个高风险候选，
+剔除 3 个 R08 族（需 R08 专用库）、跳过 2 个 `Ledger*`（需 ledgerverify 专用环境），其余按批跑。
+
+| 批 | attempt | 类 | 结果 |
+| --- | --- | --- | --- |
+| A | 431-439 | BackgroundJobConcurrency / BackgroundWorkerProcess / ContinuationApi / ContinuationConcurrency / DispositionApi / OrderPublication / OrderPublicationRollback / PcExceptionLifecycle / PcExceptionSafety | **9 类 56 项 全绿** |
+| B | 440-453 | PcRecovery / PdaAssignmentConcurrency / PdaAssignment / PdaSyncConcurrency / RecallConcurrency / ReviewReminderQuery / SourceFoundation / SubmissionApi / TemporaryReviewPagination / **IdentityLockTemporary（环境守卫）** / FoundationNegative / FoundationSchema / PdaAudit / PairingAccess | **13 类通过（94 项：88 通过 / 6 红为环境守卫 / 9 skip）** |
+| C | 454-463 | TemporaryAccess / TemporaryAudit / TemporaryReview / TemporarySourceEvidenceAccess / ReviewReminderQuery（复跑）/ AuditArchive / PdaAudit（复跑）/ SubmissionArchive / **IdentityLockAuthentication（环境守卫）** / ReminderListRows（我误列，非 IT） | **7 类 94 项：93 通过 / 1 skip** |
+
+**本轮新增覆盖（去重后）：19 个非 e2a 类，241 项测试（240 通过 / 1 条件 skip），0 个产品失败。**
+
+**两处"红"均为环境守卫，非产品缺陷**：
+- `IdentityLockTemporaryIT`(449) 与 `IdentityLockAuthenticationIT`(463)：`IdentityLockFixture` 静态守卫要求
+  `jdbc:mysql://127.0.0.1:19321/acrylic_outbound_l2_20260921` + 同名账号，e2a harness 的库坐标不匹配
+  ⇒ `IllegalStateException: Identity lock tests require a dedicated database and matching account`（与既有记录一致）。
+- `ReminderListRows`(460) 是我把**夹具 record** 误当 IT 列进批次 ⇒ `NOT-EXECUTED`；不影响覆盖统计。
+
+**过程中撞到并处理的环境阻塞（已记录，未删证据）**：
+- 磁盘写满：`D:` 0 GB 可用，MySQL `--initialize` 报 `data directory … is unusable` / `ibdata1 … Probably out of
+  disk space`，attempts 416-424 全部 NOT-EXECUTED。处置＝删除 501 个 attempt 目录中的 **datadir**（91.4 GB），
+  保留每个 attempt 的 `integration-test.log`、markers、`storage/`（渲染产物）、`private/`（签名材料）与 `provision.sql`
+  ⇒ 腾出 92.7 GB 后 431 起恢复正常。**未删任何日志、证据或源码**。
+
+
+
 
 
 
