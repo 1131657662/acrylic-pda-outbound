@@ -212,3 +212,46 @@ ADD CONSTRAINT ck_submission_scope_source CHECK(
 - **A（推荐，需明确授权）**：在生产 `@Configuration` 里按上面同一方式建 `@Bean`（依赖 9 个既有 bean + `PlatformTransactionManager`），并明确接受"生产临时归档"这一能力（开关默认关闭）；
 - **B（保守）**：撤销接线，保持"生产拒绝 TEMP"，TEMP 归档继续只在测试域验证（本项记为**边界不变**，不再是欠债）。
 **本轮采取 B 的即时部分：把会让应用启动失败的生产改动回退**（见提交），路线选择交回业主。
+
+## 17. 步骤 1 收口 + 步骤 2 第一片（2026-09-27 实测，attempt 188–192）
+
+### 17.1 步骤 1：**已收口**（`cf14bf5`，attempt **190** 绿）
+`E2aCorrectionSchemaIT` `classes=1 tests=1 failures=0 errors=0 skipped=0`。逐条结果（取代 §13 表）：
+
+| # | 断言 | 证据等级 | 结果 |
+| --- | --- | --- | --- |
+| — | 迁移可应用（V43，7 张新表） | 实测 | ✅ |
+| 3 | 既有数据保留 | 实测 | ✅（注意：本 seed `results=0`、`ledgers=0`、`dispatches=0`、`orders=1`，"保留"对这三项是保留了 0） |
+| 4 | 7 张新表存在且为空 | 实测 | ✅ |
+| 1a | 无残留 `>0` 子句 | 定义级 | ✅ |
+| **1a'** | 新子句为 `>= 0` | 定义级 | ✅ **已产出**：改按 V43 命名约束 `ck_result_version_count`/`ck_result_version_weight` 取值、去反引号+压缩空白后比对；原文留证 `raw=(`actual_count` >= 0)`、`raw=(`weight_g` >= 0)` |
+| **1b** | `>0` 仍可读 | — | ⚠️ **改判**：本 seed **无任何 `order_result_version` 行**（实测 0），原「既有 v1 >0」写法不可证；§13 该行的「读取级」前提不成立 |
+| **1c** | `0 包/0g` 新建能落库 | **功能级** | ✅ **已产出**：复用 seed 的 TEMP authorization 建新 submission（`ck_submission_authorization` 要求 `assignment_id` 非空 **或** `temporary_authorization_id` 非空；V12 限制一 scope 一 round，故取该 scope 的下一轮），插入 `actual_count=0/weight_g=0` 的行并读回 |
+| 2 | `inventory_ledger` 原 UNIQUE + 两条 CHECK 未放松 | 定义级 | ✅ |
+| **2'** | 功能级反例（+1 数量、正重量仍被拒） | 功能级 | ⚠️ **不可产出**：本 seed `dispatch_record=0`，无真实 dispatch 可插入；补 diff 级证据：**V43 文本对 `inventory_ledger` 只有注释、无任何 ALTER** |
+
+**附带收口 §13 补充条件 2 的缺口**：本轮实测在 V43 **之后新插入** `>0` 行（result_version 首行）成功 ⇒
+「`>= 0` 包含 `> 0`」不再只是逻辑推理 + 旧行读取。
+
+**三次失败的原因（保留为证据）**：attempt 188 红于 1b（seed 无结果行，`queryForMap` 空结果）→ 如实改判 1b；
+attempt 189 红于 `submission.uq_submission_round`（V12：一 scope 一 round，新 submission 必须取下一轮）→ 修正轮次取值；
+attempt 191 红于 `No migration with a target version 45`（V45 只复制到主树、未同步守卫星树）→ 同步后 192 绿。
+
+### 17.2 步骤 2 第一片：**存储与内核构件已落地**（`22e9b81`，attempt **192** 绿）
+- **V45 `correction_command_kernel.sql`**：按 V42 `handover_command_receipt` 形态建
+  `correction_command_receipt`（`original_key` 唯一 ⇒ 重试回放原字节；`document_id`/`order_id` 外键；3 条 CHECK），
+  并**同批登记 §5 草案权限码** `outbound:correct`、`correction:approve` 且绑 `WAREHOUSE_ADMIN`
+  ——直接封堵 §14/R07-1 记录的那类"审批门权限码从未注册"陷阱（V44 事后补的教训）。
+- **内核构件**（照 R07-1 `Handover*` 形态，不另造设计）：`CorrectionCommand`（ROUTE_SCOPE/KINDS/Input/Identity/
+  Locks/Expected/Operation SPI/Write + §5 草案错误码全集）、`CorrectionStore`（receipt 读取、原键预留、回执写入、
+  orderFacts/documentFacts、audits）、`CorrectionReceiptCodec`（签名回执、五能力位恒 false、形状校验）。
+- **实测修正一处**：本仓库**没有 `stock_state` 表**（§3 的 `expectedStockVersion/expectedLedgerVersion` 属 effect
+  步骤），故 `orderFacts` 不读库存版本，留待步骤 4。
+- 本片**不含** service/controller 接线 ⇒ 无路由、无 bean、启动面与默认关闭态不变（符合"默认关闭"纪律）。
+
+### 17.3 步骤 2 剩余（下一片，估量已读实）
+照 R07-1 同族文件规模：`CorrectionCommandService`（≈110 行）、`CorrectionCommandController`（≈35 行）、
+`CorrectionCommandConfiguration`（`@ConditionalOnProperty(prefix="outbound.corrections.commands",name="enabled")`，
+≈40 行）+ 第一个 `Operation`（属步骤 3：文档与行 + 目标值服务端重算）。**在此之前，即使打开开关也没有 operation
+bean，命令一律 `CORRECTION_COMMAND_NOT_OPEN`** —— 故建议把「service/controller/configuration + CREATE operation」
+作为同一片（步骤 2 收尾 + 步骤 3 开局）交付。

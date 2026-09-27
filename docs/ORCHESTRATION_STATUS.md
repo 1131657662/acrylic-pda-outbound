@@ -18,8 +18,8 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 历史结论见[历史索引](history/README.md)；验收索引见[开发进度](DEVELOPMENT_PROGRESS.md)；范围与完成标准见[路线](DEVELOPMENT_ROADMAP.md)与[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)。
 
 ## 在途
-- **R06 M2b-4b 客户端一半**：A1 只读事实面 `4be09e2`、A2 复核页写操作 `94c74b4` 已完成；A3 **部分验证**：无会话 401、Web 登录 200、事实面 200 全过，但 LINK/NORMAL_CONFIRM 的 Web 会话 POST 在**真浏览器**下 403 `ACCESS_DENIED`（疑会话轮换使登录前 CSRF 令牌失效），记为**开关开放时另验**。服务端资格判定 `7448c91` 已完成，开关仍默认关闭。守卫星树 `r06-e2a-migration` 为 detached `ea4d166`（分支未动、29 GB `.local` 完好）。
-- 下一步：**R06 欠债收口**（TEMP 归档已收口：默认关闭开关 + 关/开两场景已验；转欠债清单其余项）；**R07 需用户明确指示才动**；Android `LINK` 映射安装待做。
+- **R06 M2b-4b 客户端一半**：A1 只读事实面 `4be09e2`、A2 复核页写操作 `94c74b4` 已完成；A3 **部分验证**（无会话 401/登录 200/事实面 200 全过，LINK/NORMAL_CONFIRM 的 Web 会话 POST 在真浏览器 403，记为**开关开放时另验**）。资格判定 `7448c91` 已完成，开关默认关闭。守卫星树 `r06-e2a-migration` detached `ea4d166`（分支未动、29 GB `.local` 完好）。
+- 下一步：**R07-3**（步骤 2 收尾 + 步骤 3 开局：内核 service/controller/configuration + CREATE Operation）；R06 剩余属发布准备期。
 - 用户当次指令：M2b-4b（服务端放宽已完成 `c975dfc`；Web 复核页写操作与 Android LINK 映射安装待做）；① 发布身份链已完成；④ 文档收敛与工作树清点已完成（**只清点，未删除任何目录**）；C 清单放着不动。
 - 写权：`codex/development` 单写者；服务端树 `r06-e2a-migration` 现为 detached `ea4d166`（仅用于本次验证，分支未动），未归档、未删除。
 
@@ -34,7 +34,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 - **M2b-4b 服务端部分已收口**（守卫放宽 `c975dfc`；占用行迁移 `ee60155`；形状修复与计划比对 `70fde3b`；真实 HTTP 反例 `73767cb`）。实测 attempt **120**/**123** 均 `tests=1 failures=0 errors=0 skipped=0`——LINK 200 → NORMAL_CONFIRM 200，结果版本/槽位/占用/派发/决策版本/重放幂等逐条通过；反例 409 `TEMPORARY_LINK_TARGET_PLAN_DIFFERS` 且改回计划后放行。
 - **`c975dfc` 的"效果落点不需要改"已被实测推翻**（净结论）：①占用行 `bale_commitment.order_id` 是首次预留固化的历史行，`Head.order()` 管不到 → 必须随受控关联在同一事务内迁移该提交的 `REVIEW_RESERVED` 行；②回执形状契约 `CommandDecision.validate` 把"零候选"假设写死，关联后候选恰为 1 → 必须接受已关联且绑定同一目标的 `total==1`（换目标/多候选仍拒）。**仍成立**：结果版本/记账/槽位/订单事件/`current_result_version` 由 `Head.order()` 驱动并落在关联后的正式单；审计沿用该 LINK 命令既有账本回执与单一审计事件。
 - 工作树与本地证据归档候选清单（只清点、未删除）→ [归档候选清单](history/WORKTREE_ARCHIVE_CANDIDATES_2026-09-27.md)
-- **R06 Web 写操作客户端与服务端资格判定**：A1 只读事实面 `4be09e2`（新增 `temporary-command-facts-schemas.yaml`）、A2 复核页写操作 `94c74b4`、A3 浏览器驱动与候选摘要修复 `d39abbb`（`requiresCandidateContext()` 对 NORMAL_CONFIRM 也为 true，原实现传 null 必被拒）、资格判定 `7448c91`（`linkAvailable`/`writeAvailable`/`writeConfirmationAvailable` 均要求开关启用且各自 blockers/候选/issues 条件成立；`releaseAllowed` 与 capabilities 五项不动）。验证：web `typecheck`/`build` 均 0；服务端全量 718 项 = 717 通过 / 1 既有 flake（隔离重跑通过）/ 1 既有条件 skip。
+- **R06 Web 写操作客户端与服务端资格判定**：A1 只读事实面 `4be09e2`、A2 复核页写操作 `94c74b4`、A3 浏览器驱动与候选摘要修复 `d39abbb`、资格判定 `7448c91`（三个 available 标志均要求开关启用且各自 blockers/候选/issues 条件成立；`releaseAllowed` 与 capabilities 五项不动）。验证：web `typecheck`/`build` 均 0；服务端全量 718 项 = 717 通过 / 1 既有 flake（隔离重跑通过）/ 1 既有条件 skip。
 - 合并态机器口径（`--rerun-tasks`，非业务验收）：服务端 718 项 = 717 通过/1 条件 skip；Android 444 项 = 440 通过/4 条件 skip；均 0 失败。
 - 更早的 R06/R09 子项结论与测试口径：见[开发进度](DEVELOPMENT_PROGRESS.md)与 `history/R06_*`、`history/R09_*`。
 
@@ -46,7 +46,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 - 现场与人工 → 真机/Keystore、独立人员、长时与五年留存、外网与异地、生产审批均未验；R05 code20/Room17 历史关键未验、原资料与旧 BCD、R09 现场限制继续单列 → 不能声称上线就绪。
 - 服务端 IT 分批 → 入口已封装 `tools/e2a-batch-it.ps1`（每类一 attempt + XML 聚合 + 分类；计数修复 `f34c886`）：runs **181–184** 四类全绿 `4/0/0/0`；**波次 IT 仍缺专用库/账号**（约束 c）。
 
-- R07-3 更正 → **实现前设计已产出**（`docs/parallel/R07/R07_3_IMPLEMENTATION_READY_DESIGN.md`：数据模型/锁序/结果版本/契约草案/复用点/下一轮清单）；**零实现**，契约未发布。
+- R07-3 更正 → **步骤 1 已收口**（`cf14bf5`／attempt 190）＋**步骤 2 第一片**（`22e9b81`／attempt 192：V45 回执表与 `outbound:correct`/`correction:approve` 权限码 + Command/Store/Codec，**无接线** ⇒ 开关打开也一律 `CORRECTION_COMMAND_NOT_OPEN`）；剩余＝service/controller/configuration + CREATE Operation；契约未发布。
 ## 越界提醒（不变）
 - `localDeletionAllowed=false`；七类生产决定 handler/POST/放行/证据写入/关闭能力**不得因内部测试通过而开放**；TEMP 生产归档边界不变。
 - 不合 `main`、不发布/部署、不操作原库现网，除非用户明确授权且证据满足范围；项目交接不等于生产授权。
@@ -67,8 +67,9 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 - 2026-09-27 TEMP 归档收口（选 B＝新能力默认关闭）：`2a3acce` 加 `outbound.temporary.archive.enabled`（默认 false）+ `a91572e` 修关闭态 500（`IdentityWriteGuard` MANDATORY）；attempt 176 绿（验收达成）、178 绿（关/开两场景）；attempt 号守卫扫描无遗漏。
 - 2026-09-27 修 `ExportRendererProcessTest` pid 握手 flake（`9480a21`）：只判 `exists` 就 `parseLong` 会命中 `Files.writeString` 的空文件窗口；改原子发布＋等非空内容（A/B 12998→0）。隔离/负载/全量 718 均 0 失败。
 - 2026-09-27 IT 分批评估 attempt 179（`*E2aTemporaryArchive*IT` 3 类 / 1 attempt）：1 通过 2 红，均 `One-shot attempt already used`（结构性，非产品）；构造器 `tests` 计数与 `-Tests` 同名失真（复现 `0111`）→ 需先封装分批入口。
-- 2026-09-27 分批入口封装（选 A）：`f34c886` 修构造器 `tests` 计数；新增 `tools/e2a-batch-it.ps1`（每类一个 attempt + 全 XML 聚合 + 失败分类 + `entryIssues`，`3e6c507`…`5056e8b`）；runs **181–184** 四类全绿 `4/0/0/0`，失败分类路径（E 类）实测；波次 IT 仍需专用库（未解决）。
-- 2026-09-27 Android LINK L4 收口（选④）：三件套 `2bf2507` → attempts **185/187** 双绿 `server=1/0/0/0`/`android=1/0/0/0`，L3→**L4**；更正：`java.net.http` 不在 Android 测试 classpath→OkHttp；构造器补 `--rerun-tasks`（防 UP-TO-DATE 静默空跑）。
+- 2026-09-27 分批入口封装（选 A）：`f34c886` 修构造器 `tests` 计数；新增 `tools/e2a-batch-it.ps1`（每类一 attempt + XML 聚合 + 分类 + `entryIssues`）；runs **181–184** 四类全绿；波次 IT 仍需专用库。
+- 2026-09-27 Android LINK L4（选④）：`2bf2507` 三件套 → attempts **185/187** 双绿 `server=1/0/0/0`/`android=1/0/0/0`，L3→**L4**；`java.net.http` 不在 Android classpath→OkHttp；构造器补 `--rerun-tasks`。
+- 2026-09-27 R07-3：**步骤 1 收口**（`cf14bf5`／attempt 190）+ **步骤 2 第一片**（`22e9b81`／attempt 192：V45 回执表 + `outbound:correct`/`correction:approve` 权限码 + Command/Store/Codec，无接线）；剩余＝service/controller/configuration + CREATE Operation（文档与行 + 目标值服务端重算）。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。
