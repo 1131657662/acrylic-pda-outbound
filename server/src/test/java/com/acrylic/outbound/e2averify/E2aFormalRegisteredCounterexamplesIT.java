@@ -57,8 +57,10 @@ class E2aFormalRegisteredCounterexamplesIT {
         UUID device = UUID.fromString(host.get("device_id").toString());
 
         // Approver (order:handover) and an outsider with no handover permission at all.
-        UUID approver = user(jdbc, warehouse, true);
-        UUID outsider = user(jdbc, warehouse, false);
+        // Role split per the kernel: REQUEST needs order:resume, APPROVE needs order:handover.
+        UUID requester = user(jdbc, warehouse, "order:resume");
+        UUID approver = user(jdbc, warehouse, "order:handover");
+        UUID outsider = user(jdbc, warehouse, null);
 
         UUID scope = UUID.randomUUID(); UUID submission = UUID.randomUUID();
         // FORMAL shape per ck_submission_scope_source: source_order_id set, canonical_order_id MUST stay NULL.
@@ -80,7 +82,7 @@ class E2aFormalRegisteredCounterexamplesIT {
         for (String key : List.of("scopeId","canonicalOrderId","mappingVersion","fromWorkRound")) requestExpected.set(key,scopeFacts.get(key));
         requestExpected.put("userAuthVersion","1");
         request.set("expected",requestExpected);
-        JsonNode requestReceipt = execute(service,request,approver);
+        JsonNode requestReceipt = execute(service,request,requester);
         assertThat(requestReceipt.path("status").asText()).isEqualTo("RECORDED");
         UUID caseId = UUID.fromString(requestReceipt.path("businessDecision").path("caseId").asText());
         String baselineStatus = jdbc.queryForObject("SELECT status FROM handover_case WHERE id=?",String.class,Ids.bytes(caseId));
@@ -130,15 +132,15 @@ class E2aFormalRegisteredCounterexamplesIT {
         return command;
     }
 
-    private UUID user(org.springframework.jdbc.core.JdbcTemplate jdbc,UUID warehouse,boolean handover) {
+    private UUID user(org.springframework.jdbc.core.JdbcTemplate jdbc,UUID warehouse,String permission) {
         UUID id = Ids.next();
         jdbc.update("INSERT INTO app_user(id,username,display_name,password_hash,created_at) VALUES(?,?,?,'x',UTC_TIMESTAMP(3))",
             Ids.bytes(id),"handover-"+id,"交接夹具人员");
         jdbc.update("INSERT INTO user_warehouse VALUES(?,?)",Ids.bytes(id),Ids.bytes(warehouse));
-        if (handover) {
+        if (permission != null) {
             UUID role = Ids.next();
             jdbc.update("INSERT INTO role VALUES(?,?,?)",Ids.bytes(role),"HO_"+role.toString().substring(20),"隔离交接审批");
-            jdbc.update("INSERT INTO role_permission SELECT ?,id FROM permission WHERE code='order:handover'",Ids.bytes(role));
+            jdbc.update("INSERT INTO role_permission SELECT ?,id FROM permission WHERE code=?",Ids.bytes(role),permission);
             jdbc.update("INSERT INTO user_role VALUES(?,?)",Ids.bytes(id),Ids.bytes(role));
         }
         return id;
