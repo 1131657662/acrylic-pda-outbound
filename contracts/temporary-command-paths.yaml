@@ -80,6 +80,38 @@ DetailResponses:
   '401': {$ref: './openapi.yaml#/components/responses/Error'}
   '404': {$ref: './openapi.yaml#/components/responses/Error'}
   '409': {$ref: './openapi.yaml#/components/responses/Error'}
+PdaSourceBindings:
+  get:
+    summary: 读取本机 TEMP 来源当前绑定（只读，设备域）
+    description: 设备用它得知自己的 TEMP 来源是否已被主管关联到正式单（映射版本+1）。仅返回 creator_device_id=本机的 scope：canonicalOrderId、mappingVersion、workRound、phase、submissionStatus、mappingOrigin、orderNo/orderSource/orderStatus，以及 installRequired（映射来源为 CONTROLLED_LINK）。与 temporary commands 同一开关；默认关闭时该路径不存在。不授予任何写入或业务能力。
+    security: [{pdaBearer: []}]
+    parameters: [{$ref: '#/BindingCursor'}, {$ref: '#/PageLimit'}]
+    responses: {$ref: '#/BindingResponses'}
+BindingCursor:
+  name: cursor
+  in: query
+  required: false
+  schema: {type: string, description: 上一页最后一条的 scopeId；空表示第一页}
+PageLimit:
+  name: limit
+  in: query
+  required: false
+  schema: {type: integer, minimum: 1, maximum: 50, default: 20}
+BindingResponses:
+  '200':
+    description: 本机来源绑定分页
+    content:
+      application/json:
+        schema:
+          allOf:
+            - {$ref: './schemas.yaml#/Envelope'}
+            - type: object
+              properties:
+                data: {$ref: './temporary-source-binding-schemas.yaml#/BindingPage'}
+  '400': {$ref: './openapi.yaml#/components/responses/Error'}
+  '401': {$ref: './openapi.yaml#/components/responses/Error'}
+  '403': {$ref: './openapi.yaml#/components/responses/Error'}
+
 OriginalResponses:
   '200':
     description: 原JSON业务回执bytes，仅INTERNAL_TEST_ONLY，不是成功出库凭证

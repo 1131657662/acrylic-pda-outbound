@@ -1,0 +1,31 @@
+BindingPage:
+  type: object
+  additionalProperties: false
+  required: [items, nextCursor]
+  properties:
+    items:
+      type: array
+      maxItems: 50
+      items: {$ref: '#/Binding'}
+    nextCursor: {type: [string, 'null'], description: 下一页游标；为空表示没有更多}
+Binding:
+  type: object
+  additionalProperties: false
+  required: [scopeId, clientOrderId, canonicalOrderId, mappingVersion, workRound, currentSubmissionId, phase,
+    submissionStatus, mappingId, mappingOrigin, orderNo, orderSource, orderStatus, installRequired, scopeCursor]
+  properties:
+    scopeId: {type: string, format: uuid}
+    clientOrderId: {type: string, format: uuid}
+    canonicalOrderId: {type: string, format: uuid, description: 关联后指向正式单}
+    mappingVersion: {type: string, pattern: '^[0-9]+$'}
+    workRound: {type: string, pattern: '^[1-9][0-9]*$'}
+    currentSubmissionId: {type: string, description: 'uuid 或字符串 null'}
+    phase: {type: string, description: 'FROZEN/COMPLETED 或字符串 null'}
+    submissionStatus: {type: string, description: '提交状态或字符串 null'}
+    mappingId: {type: string, description: 'uuid 或字符串 null'}
+    mappingOrigin: {type: string, description: 'MIGRATED_BASELINE/INITIAL_ACCEPTANCE/SOURCE_REGISTERED/CONTROLLED_LINK 或字符串 null'}
+    orderNo: {type: string}
+    orderSource: {type: string}
+    orderStatus: {type: string}
+    installRequired: {type: boolean, description: 映射来源为 CONTROLLED_LINK 时为真，设备据此安装本地绑定}
+    scopeCursor: {type: string, format: uuid, description: 与 scopeId 相同的游标值}

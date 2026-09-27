@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: 纤序·腈纶包离线出库管理系统 — 已实现接口
-  version: 0.35.0
+  version: 0.36.0
   description: 已实现TEMP原来源证据只读查询与原正文/分块读取，以及R06/E2a原机证据OPEN/PAGE/STOP/VERIFY保守接收和本人原键只读查询；后者只生成PARTIAL，原键读取独立显示动态currentEffect，历史key不可验时只提供带警示视图，不提供可信占用、决定或放行。另有独立只读待确认审阅、疑似重复正式单候选与原批次计划对照、正式与临时提醒分权，以及正式订单原确认V1的单订单Excel/扫码Excel/PDF、日期汇总、本人导出中心和原快照重生成。来源证据支持正文前取消与空canonical，声明上传和已收正文分开，保留原回执字节及验签缺口，不授权续扫、释放或删除。候选只供人工核对，不开放决定、排除或关联。文件暂不接TEMP、更正净结果及未核验多设备来源。保留人员角色与仓库管理、受控离线续期、PDA持续同步/审计、PC手工出库、签名资料与提交、短装审批、全局防重/可选记账、短码配对、受控召回及卸货/隔离续作。TEMP写确认/关联/实物处置、PDA换机、更正和灾后账务重建仍待接入；R09当前仅独立运维方案与本机恢复证据，不代表新增灾后恢复API。
 servers:
   - url: /api/v1
@@ -10,6 +10,8 @@ security:
 paths:
   /orders/{id}/temporary-candidates:
     $ref: ./order-temporary-candidates.yaml#/Path
+  /pda/temporary-source-bindings:
+    $ref: './temporary-command-paths.yaml#/PdaSourceBindings'
   /handover-commands:
     $ref: './handover-command-paths.yaml#/Execute'
   /temporary-commands/facts:
