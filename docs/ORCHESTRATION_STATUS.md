@@ -40,7 +40,7 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 
 ## 未验与阻断（每条一行：项 → 缺什么 → 后果）
 - 七类生产决定 handler/POST → 代码已接线但**默认关闭**；服务端已支持关联后确认、Web 复核页已具备写操作、资格标志已按条件计算，但开启仍需业主明确授权 + 契约同步发布 + **Web 会话 POST 的真实 HTTP 证据（A3 仅部分验证：真浏览器 POST 403 未查清）**；Android `LINK` 映射安装**客户端已实现**（真 HTTP 未验） → 临时单仍不能确认出库。
-- TEMP 归档 → **硬拒绝已按授权解除并接线**（`SubmissionArchiveService.confirm` 改为分派入口：TEMP→`TemporaryArchiveService.confirm`（自持事务），FORMAL→`confirmFormal` 原路径）；`archive-schemas.yaml` 已放宽（`archiveVersion` enum[1,2]、`assignmentId` 允许 null、为 TEMP 补齐 7 个专有字段并保持 `additionalProperties:false`；`required` 经核对无需改）；**定向 IT attempt 170 红**：`TemporaryArchiveEvidence` 非 Spring bean → 装配失败（服务装配问题，非契约问题），待修；开关默认关闭 → 未获授权前生产面不变。
+- TEMP 归档 → **硬拒绝已按授权解除并接线**（`SubmissionArchiveService.confirm` 改为分派入口：TEMP→`TemporaryArchiveService.confirm`（自持事务），FORMAL→`confirmFormal` 原路径）；`archive-schemas.yaml` 已放宽（`archiveVersion` enum[1,2]、`assignmentId` 允许 null、为 TEMP 补齐 7 个专有字段并保持 `additionalProperties:false`；`required` 经核对无需改）；**接线与装配已完成**（`9a6a001` 生产 @Bean + `859edce` 分派接线，编译与全量单测 718/0/1 均通过）；**验收未达成**：定向 IT attempt 172 红于 `CommandReceiptIntegrity.closure`，根因＝夹具用 `TemporaryArchiveDriver.grantTestConfirmation(...)`（测试专用授权，绕过内核写审计）→ 下一轮改写夹具（勿改生产代码）；开关默认关闭、能力未声明开放；开关默认关闭 → 未获授权前生产面不变。
 - 恢复出口 → 生产无任何路径置 `RECOVERY_PENDING`（只能人工 SQL 造成）；`RecoveryNormalRegistration` 无 bean/路由且 `baseline` 无自动来源 → 该状态只能靠 R09 运维链或人工 SQL 解除。
 - Android 发布身份 → **签名链已完成**（见已完成区与事实块）；仍缺的是**现场**：真机安装、App 内升级实测、正式发布/部署授权 → 不能声称现场升级可用。
 - 现场与人工 → 真机/Keystore、独立人员、长时与五年留存、外网与异地、生产审批均未验；R05 code20/Room17 历史关键未验、原资料与旧 BCD、R09 现场限制继续单列 → 不能声称上线就绪。
@@ -67,3 +67,4 @@ server: { contract: 0.36.0, paths: 131, flyway: V44, migrations: 44 }
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。
+
