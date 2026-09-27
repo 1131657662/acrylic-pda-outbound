@@ -34,7 +34,7 @@
 
 ## e. 未验边界清单
 1. **TEMP 归档**：**已收口 ✅**——attempt 176（关闭态端到端）与 178（关/开两场景）均绿；能力默认关闭、未声明开放；
-2. **Android LINK 安装**：Android 侧仍 L3（Robolectric+MockWebServer 四断言绿）；通道服务端半边 L4（attempt 153）；「Android 代码打到真服」未取得；
+2. **Android LINK 安装**：**已升 L4 ✅**（`2bf2507` 三件套 + `516dfd7`/`eda91b9` 工具修正）：常驻 IT 真服 19434 + Android `RealServerSourceBindingTest` 真打真服 → `installBindings` → 本地行 == 服务端关联结果 + 幂等；attempt **185/187** 双绿（`server=1/0/0/0`、`android=1/0/0/0`）。未验：多设备/并发/断网重连/仪器化/真机现场；
 3. **全量 IT**：**分批入口已封装并小规模验证**（`tools/e2a-batch-it.ps1`：每类一 attempt + 全 XML 聚合 + 失败分类；构造器计数修 `f34c886`）→ runs **181–184** 四类全绿 `4/0/0/0`，失败分类路径（E 类）实测。**覆盖仅限 28 个 `E2aCrossSourceProfile` IT**；波次 IT 仍缺专用库/账号（约束 c）；**未跑全量**；
 4. **R07-1**：14 条断言 0 条有结论（1 条触达审批门后被夹具幂等构造阻断）；`order:handover` 权限缺口已由 V44 修复；
 5. **Web CSRF（A3）**：已知问题未解（真浏览器 403 ACCESS_DENIED）；
@@ -42,4 +42,4 @@
 7. 已知 flake：`ExportRendererProcessTest.interruptionTerminatesRendererProcess` — **已收口 ✅**（`9480a21`：pid 文件「存在即完成」握手竞态 → 原子发布 + 等非空内容；隔离单类 3/0/0/0、12 路 CPU 负载 3/0/0/0、全量 718/0/0/1；机制 A/B 反证 12998→0）。
 
 ## f. 下一项决策待办（交业主）
-① TEMP 归档**已收口**；② 已知 flake **已收口**（`9480a21`）；③ **分批入口已封装**（`tools/e2a-batch-it.ps1`，`f34c886`…`5056e8b`）：e2a profile 组 runs 181–184 全绿；**建议下一步＝按批继续覆盖 28 个 e2a IT（每批 3–5 类）**，或转 ④；波次 IT 专用库/账号需独立排期；④ Android L4 独立任务；⑤ R07 项（需明确指示，勿自动切）。
+① TEMP 归档**已收口**；② 已知 flake **已收口**（`9480a21`）；③ 分批入口**已封装**（`tools/e2a-batch-it.ps1`）；④ **Android LINK L4 已收口**（attempts 185/187，`2bf2507`）；⑤ **R06 剩余可推进项已属发布准备期**（分批覆盖续跑、七类开关授权、A3 Web CSRF）→ 建议评估**转 R07**（需明确指示，勿自动切）。

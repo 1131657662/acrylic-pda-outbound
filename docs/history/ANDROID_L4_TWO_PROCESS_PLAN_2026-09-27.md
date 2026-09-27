@@ -47,3 +47,18 @@
 3. 三个风险点的处理要求：stop/超时设死、两侧字段名对齐、同 attempt 内完成两侧动作。
 
 **定性**：Android LINK 映射安装**维持 L3**（Robolectric + MockWebServer 四条断言），通道服务端半边维持 **L4**（attempt 153）；「Android 代码打到真服」这一 L4 证据**尚未取得**，列为**独立验证基础设施任务**（建议独立时间盒，勿在业务子项内消耗）。
+
+## 第 3 轮结果：**已实现 → L4 达成**（2026-09-27，业主重启授权、按本方案执行不重新设计）
+
+三件套全部落地（提交 `2bf2507`；工具修正 `516dfd7`、`eda91b9`）：
+1. `server/.../e2averify/E2aServeBindingForAndroidIT.java`（常驻：R06 链产出 LINK → 铸 PDA Bearer → 真 HTTP 自证 → 握手文件 → 轮询 stop，15 min 上限）；
+2. `android/.../pda/temporary/RealServerSourceBindingTest.kt`（OkHttp 真打 19434 → `installBindings` → 本地行 == 服务端关联结果 + 幂等）；
+3. `tools/e2a-android-link-l4.ps1`（同 attempt：后台常驻 IT → 等握手 → 跑 Android → 写 stop → teardown → 双侧 XML 汇总 + L4 判定）。
+
+**结果**：attempt **185** 与 **187** 各 `server=1/0/0/0 android=1/0/0/0 level=L4`（两次独立可复现；均双标记完成、19330 释放）。
+
+**两处细节更正（三前提仍成立）**：
+- `java.net.http` **不在 Android 测试 classpath**（`android.jar` 无此包，编译即失败）⇒ 改用 **OkHttp 4.12**；本 transport 不经 `PdaNetwork`，故明文缝与生产 `PdaSession` 传输未行使；
+- **Gradle UP-TO-DATE 陷阱**：同一 `--tests` 重复跑会静默不执行（attempt 186 实测 `NOT-EXECUTED`）⇒ 构造器加 `--rerun-tasks`。
+
+**未验**：单类/单路径；多设备、并发、断网重连、仪器化、真机现场均未验。
