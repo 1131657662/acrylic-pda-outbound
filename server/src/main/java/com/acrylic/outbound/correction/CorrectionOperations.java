@@ -20,9 +20,49 @@ import java.util.*;
 public final class CorrectionOperations {
     private CorrectionOperations() { }
 
+    /**
+     * Header keys the server owns: receipt identity plus every fact that lines, effects or accounting already express.
+     * They are refused even though the snapshot carries them, so a "header" correction can never smuggle a count, a
+     * weight or a scan fact past the line model. Patch values must be scalars for the same reason. Validated at CREATE
+     * (fail fast against the then-current snapshot) and again at APPROVE (the snapshot may have moved since).
+     */
+    private static final Set<String> SERVER_OWNED_HEADER_KEYS=Set.of("submissionId","source","orderId","status",
+        "payloadSha256","freezeDeviceId","workRound","issuedRecoveryEpoch","resultVersion","receiptVersion",
+        "actualCount","actualWeightGrams","inventoryDeducted","items","signedReceipt","firstOrderScanSeq",
+        "lastOrderScanSeq","completedAt","captureHighWatermark","mayResumeScanning","stockReleased","orderStatus");
+
+    /** Merge a header patch into the snapshot: unknown keys are refused, owned keys are refused, no-op is refused. */
+    private static String mergedHeader(String snapshot,JsonNode patch) {
+        var current=com.acrylic.outbound.submissions.SubmissionJson.parse(snapshot);
+        com.fasterxml.jackson.databind.node.ObjectNode merged=
+            (com.fasterxml.jackson.databind.node.ObjectNode)current.deepCopy();
+        boolean changed=false;
+        var fields=patch.fields();
+        while(fields.hasNext()) {
+            var field=fields.next();
+            String key=field.getKey();
+            if(!current.has(key))
+                throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","表头字段不存在："+key);
+            if(SERVER_OWNED_HEADER_KEYS.contains(key))
+                throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","该表头字段由服务端持有，不能更正："+key);
+            if(!field.getValue().isValueNode())
+                throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","表头更正值必须是标量："+key);
+            if(!current.get(key).equals(field.getValue())) { merged.replace(key,field.getValue()); changed=true; }
+        }
+        if(!changed) throw CorrectionCommand.targetUnchanged();
+        return com.acrylic.outbound.submissions.SubmissionJson.canonical(merged);
+    }
+
     public static final class Create implements CorrectionCommand.Operation {
         private static final Duration BACKFILL_WINDOW = Duration.ofDays(3);
+        private static final long ATTACHMENT_MAX_BYTES = 10L*1024*1024;
+        private static final long ATTACHMENTS_MAX_BYTES = 50L*1024*1024;
         private static final Set<String> PHYSICAL = Set.of("PHYSICAL_RETURN", "DISPATCH_CANCELLATION");
+
+        /** P-R07-09 capacity breach, with the design's own code so the client can tell it from a shape error. */
+        private static BusinessException attachmentLimit(String message) {
+            return new BusinessException(400,"ATTACHMENT_LIMIT_EXCEEDED",message);
+        }
 
         private final CorrectionStore store;
         public Create(CorrectionStore store) { this.store=store; }
@@ -37,10 +77,23 @@ public final class CorrectionOperations {
             if(!Set.of("PHYSICAL_RETURN","DISPATCH_CANCELLATION","WEIGHT_CORRECTION","HEADER_CORRECTION").contains(type))
                 throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","更正类型无效");
             var lines=body.path("lines");
-            if(!lines.isArray() || lines.isEmpty() || lines.size()>200)
+            boolean header="HEADER_CORRECTION".equals(type);
+            var patch=body.path("headerPatch");
+            if(header) {
+                // A header correction carries no numeric lines: it patches the frozen receipt that IS the header
+                // snapshot. The patch lives inside the signed command bytes, so nothing extra has to be stored.
+                if(!patch.isObject() || patch.isEmpty())
+                    throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","表头更正必须给出非空 headerPatch");
+                if(lines.isArray() && !lines.isEmpty())
+                    throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","表头更正不接受明细行");
+                // Validate the patch against the current snapshot now, so a document is never created for a patch that
+                // could only fail later (unknown key, server-owned key, non-scalar, no-op).
+                mergedHeader(store.currentHeaderSnapshot(write.orderId()),patch);
+            } else if(!lines.isArray() || lines.isEmpty() || lines.size()>200)
                 throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","更正行必须为 1..200 条");
             long expectedVersion=write.anchor().path("currentResultVersion").asLong();
-            Instant shipment=shipmentTime(write.anchor());
+            // P-R07-06 compares business time against the ORIGINAL shipment day, never against a later correction.
+            Instant shipment=store.shipmentCreatedAt(write.orderId());
             UUID documentId=Ids.next();
             // The document row must exist before its lines: correction_line.document_id is a real foreign key.
             String digest=write.command().digest();
@@ -49,8 +102,9 @@ public final class CorrectionOperations {
                 write.anchor().path("sourceRecoveryEpoch").asLong(1),
                 UUID.fromString(write.actor().path("principalId").asText()),write.recordedAt());
             List<ObjectNode> decided=new ArrayList<>();
+            long attachmentBytes=0;
             int lineNo=1;
-            for(var line:lines) {
+            for(var line:header?com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode():lines) {
                 UUID dispatchId=uuid(line,"dispatchId");
                 var facts=dispatchId==null?null:store.dispatchFacts(write.orderId(),dispatchId);
                 long beforeCount=facts==null?0:facts.path("count").asLong();
@@ -65,6 +119,25 @@ public final class CorrectionOperations {
                 String evidenceSha=text(line,"evidenceSha256",null);
                 if(dispatchId!=null && PHYSICAL.contains(type) && (evidenceId==null || evidenceSha==null))
                     throw CorrectionCommand.evidenceRequired();
+                // P-R07-09 capacity: at most 5 attachments per line, at most 10MB each, at most 50MB per command.
+                var attachments=line.path("attachments");
+                if(!attachments.isMissingNode() && !attachments.isNull()) {
+                    if(!attachments.isArray() || attachments.isEmpty() || attachments.size()>5)
+                        throw attachmentLimit("单条凭据最多 5 个附件");
+                    long lineBytes=0;boolean referenced=false;
+                    for(var attachment:attachments) {
+                        long size=number(attachment,"sizeBytes",-1);
+                        String sha=text(attachment,"evidenceSha256",null);
+                        if(size<0 || sha==null) throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","附件项必须给出 evidenceSha256 与 sizeBytes");
+                        if(size>ATTACHMENT_MAX_BYTES) throw attachmentLimit("单个附件不得超过 10MB");
+                        lineBytes+=size;
+                        if(sha.equals(evidenceSha)) referenced=true;
+                    }
+                    if(evidenceSha!=null && !referenced)
+                        throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","明细引用的凭据不在附件清单中");
+                    attachmentBytes+=lineBytes;
+                    if(attachmentBytes>ATTACHMENTS_MAX_BYTES) throw attachmentLimit("单次提交附件总量不得超过 50MB");
+                }
                 UUID lineId=Ids.next();
                 store.insertLine(lineId,documentId,lineNo,dispatchId,
                     facts==null?null:UUID.fromString(facts.path("baleId").asText()),
@@ -186,9 +259,16 @@ public final class CorrectionOperations {
             // The version row must exist before anything references it: correction_effect and the scan snapshot both
             // carry a real foreign key to (order_id, result_version).
             String originalSubmission=String.valueOf(current.get("original_submission_id"));
+            // A header correction patches the frozen success receipt that IS the header snapshot; every other type
+            // carries the snapshot forward untouched.
+            String headerSnapshot=String.valueOf(current.get("header_snapshot"));
+            if("HEADER_CORRECTION".equals(type))
+                headerSnapshot=mergedHeader(headerSnapshot,
+                    com.acrylic.outbound.submissions.SubmissionJson.parse(store.createCommandBytes(documentId))
+                        .path("headerPatch"));
             store.insertResultVersion(orderId,version,"null".equals(originalSubmission)?null
                     :UUID.fromString(originalSubmission),documentId,effectiveCount,effectiveWeight,
-                asBoolean(current.get("inventory_deducted")),String.valueOf(current.get("header_snapshot")),
+                asBoolean(current.get("inventory_deducted")),headerSnapshot,
                 write.recordedAt());
             var dispatches=store.dispatchesForUpdate(orderId);
             Map<String,Map<String,Object>> changed=new LinkedHashMap<>();
@@ -288,15 +368,14 @@ public final class CorrectionOperations {
     }
 
     /**
-     * WITHDRAW (P-R07-08, 误批撤销): the original approver rolls a mistakenly approved correction back, and the rollback
-     * is <b>entry by entry</b> - every {@code correction_ledger} row this document wrote gets a new row that points at
-     * it through {@code reverses_entry_id} with exactly opposite deltas, and a new result version is published from the
-     * reversed totals. Nothing is rewritten or deleted, so the original approval and the reversal both stay on record.
+     * WITHDRAW, first half of P-R07-08 (误批撤销): the original approver <b>initiates</b>. The document moves to
+     * WITHDRAW_PENDING and <b>no accounting, result version or availability is touched</b> - the rollback happens only
+     * when the requester confirms ({@link WithdrawConfirm}).
      *
-     * <p>The design fixes the participants ("原审批人发起 → 申请人确认") but not the confirmation mechanism: no column, no
-     * pending status and no second endpoint exist for it. The initiation half is implemented here and the decision
-     * carries {@code requesterConfirmation=POLICY_UNDEFINED}; the confirmation step is recorded as an open policy item
-     * rather than invented.
+     * <p>The design names both participants but defines no confirmation mechanism; V48 supplies the model
+     * ({@code withdrawal_requested_by/at}, {@code withdrawal_confirmed_by/at} and the WITHDRAW_PENDING status) and this
+     * pair of commands is the flow. Whether a pending request expires, and whether the requester may refuse, remain
+     * open policy items and are not invented here.
      */
     public static final class Withdraw implements CorrectionCommand.Operation {
         private final CorrectionStore store;
@@ -311,6 +390,36 @@ public final class CorrectionOperations {
             if(!"EFFECTIVE".equals(facts.path("status").asText())) throw CorrectionCommand.stale();
             String actor=write.actor().path("principalId").asText();
             if(!actor.equals(facts.path("approvedBy").asText())) throw CorrectionCommand.denied();
+            if(store.requestWithdrawal(documentId,UUID.fromString(actor),write.recordedAt())!=1)
+                throw CorrectionCommand.stale();
+            return com.acrylic.outbound.submissions.SubmissionJson.object()
+                .put("documentId",documentId.toString()).put("status","WITHDRAW_PENDING")
+                .put("requestedBy",actor)
+                .put("awaitingConfirmationBy",facts.path("requestedBy").asText())
+                .put("rolledBack",false);
+        }
+    }
+
+    /**
+     * WITHDRAW_CONFIRM, second half of P-R07-08: the <b>requester</b> confirms, and only then is the mistake rolled
+     * back <b>entry by entry</b> - every {@code correction_ledger} row this document wrote gets a new row that points at
+     * it through {@code reverses_entry_id} with exactly opposite deltas, and a new result version is published from the
+     * reversed totals. Nothing is rewritten or deleted, so the original approval, the withdrawal request and the
+     * confirmation all stay on record.
+     */
+    public static final class WithdrawConfirm implements CorrectionCommand.Operation {
+        private final CorrectionStore store;
+        public WithdrawConfirm(CorrectionStore store) { this.store=store; }
+
+        @Override public String commandType() { return "WITHDRAW_CONFIRM"; }
+
+        @Override public JsonNode execute(CorrectionCommand.Write write) {
+            UUID documentId=write.documentId();
+            if(documentId==null) throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","确认撤销必须指定更正单");
+            var facts=write.anchor();
+            if(!"WITHDRAW_PENDING".equals(facts.path("status").asText())) throw CorrectionCommand.stale();
+            String actor=write.actor().path("principalId").asText();
+            if(!actor.equals(facts.path("requestedBy").asText())) throw CorrectionCommand.denied();
             UUID orderId=write.orderId();
             var current=store.lockCurrentVersion(orderId);
             long previous=Long.parseLong(String.valueOf(current.get("result_version")));
@@ -388,7 +497,8 @@ public final class CorrectionOperations {
             for(var entry:perDelivery.entrySet())
                 store.insertEffectiveLine(orderId,version,entry.getKey(),entry.getValue()[0],entry.getValue()[1]);
             store.moveCurrentPointer(orderId,version,write.recordedAt());
-            if(store.withdrawDocument(documentId)!=1) throw CorrectionCommand.stale();
+            if(store.confirmWithdrawal(documentId,UUID.fromString(actor),write.recordedAt())!=1)
+                throw CorrectionCommand.stale();
             // Step 8: the withdrawal is a state change of its own, published under the next free state version.
             long withdrawEpoch=store.recoveryEpoch();
             store.insertOutbox(orderId,withdrawEpoch,"CORRECTION_WITHDRAWN",
@@ -404,7 +514,7 @@ public final class CorrectionOperations {
                 .put("orderId",orderId.toString()).put("resultVersion",Long.toString(version))
                 .put("effectiveCount",Long.toString(effectiveCount)).put("effectiveWeightG",Long.toString(effectiveWeight))
                 .put("reversedEntryCount",Integer.toString(entries.size()))
-                .put("requesterConfirmation","POLICY_UNDEFINED");
+                .put("confirmedBy",actor);
             decision.set("reversedEntries",reversed);
             return decision;
         }

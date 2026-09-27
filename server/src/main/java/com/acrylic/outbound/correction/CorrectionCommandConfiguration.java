@@ -35,6 +35,11 @@ public class CorrectionCommandConfiguration {
     }
 
     @Bean
+    CorrectionCommand.Operation correctionWithdrawConfirm(CorrectionStore store) {
+        return new CorrectionOperations.WithdrawConfirm(store);
+    }
+
+    @Bean
     CorrectionCommand.Operation reconciliationOpen(CorrectionStore store) {
         return new CorrectionReconciliations.Open(store);
     }

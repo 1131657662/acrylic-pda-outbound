@@ -23,6 +23,6 @@ class CorrectionCommandConfigurationTest {
     @Test void enablingTheSwitchRegistersOnlyTheImplementedOperations() {
         runner.withPropertyValues("outbound.corrections.commands.enabled=true").run(context ->
             assertThat(context.getBeanNamesForType(CorrectionCommand.Operation.class))
-                .as("CREATE, APPROVE, WITHDRAW and the two reconciliation kinds").hasSize(5));
+                .as("CREATE, APPROVE, WITHDRAW + its confirmation, and the two reconciliation kinds").hasSize(6));
     }
 }

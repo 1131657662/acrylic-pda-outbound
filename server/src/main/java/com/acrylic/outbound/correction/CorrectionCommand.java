@@ -28,7 +28,7 @@ final class CorrectionCommand {
     private CorrectionCommand() { }
 
     static final String ROUTE_SCOPE = "r07.correction.v1";
-    static final List<String> KINDS = List.of("CREATE", "APPROVE", "WITHDRAW", "RECONCILE_OPEN", "RECONCILE_ADVANCE");
+    static final List<String> KINDS = List.of("CREATE", "APPROVE", "WITHDRAW", "WITHDRAW_CONFIRM", "RECONCILE_OPEN", "RECONCILE_ADVANCE");
     static final Set<String> KINDS_SET = Set.copyOf(KINDS);
     /** Both codes are registered by V45 - the R07-1 lesson was an approval gate whose code was never registered. */
     static final String CORRECT_PERMISSION = "outbound:correct";
@@ -159,7 +159,10 @@ final class CorrectionCommand {
     interface Operation {
         String commandType();
         JsonNode execute(Write write);
-        /** Only the two document decisions carry the supervisor gate; reconciliation cases do not (design §5). */
+        /**
+         * Only the two supervisor decisions carry the approval gate. Confirming a withdrawal is the requester's act
+         * (P-R07-08), and reconciliation cases have no gate at all (design §5).
+         */
         default boolean requiresApproval() { return commandType().equals("APPROVE")||commandType().equals("WITHDRAW"); }
     }
 

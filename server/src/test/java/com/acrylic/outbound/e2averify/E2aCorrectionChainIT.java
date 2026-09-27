@@ -44,7 +44,7 @@ class E2aCorrectionChainIT {
         var profile = new E2aCrossSourceProfile(); var jdbc = profile.connect();
         Files.createFile(profile.attempt.resolve("test-started.marker"));
         profile.migrate(jdbc, "34"); E2aV34Seed.seed(jdbc, profile.attempt.resolve("storage"));
-        profile.migrate(jdbc, "47"); E2aCrossSourceHttpSetup.signing(profile.attempt);
+        profile.migrate(jdbc, "48"); E2aCrossSourceHttpSetup.signing(profile.attempt);
         var order = confirmedOrder(profile, jdbc);
         assertThat(order.dispatchIds()).as("the R06 chain must leave dispatches to correct").isNotEmpty();
         var notes = new StringBuilder("验证层级=真服 19434 + 真 HTTP（PDA 通道）+ 真 MySQL\n");
@@ -191,22 +191,53 @@ class E2aCorrectionChainIT {
             assertThat(again.statusCode()).isEqualTo(409);
             assertThat(codeOf(again.body())).isEqualTo("CORRECTION_CONTEXT_CHANGED");
 
-            // (g) WITHDRAW (P-R07-08): the original approver rolls the mistake back entry by entry.
+            // (g) WITHDRAW (P-R07-08) first half: the original approver initiates, and nothing is rolled back yet.
             var withdraw = withdrawBody(order, documentId, documentSha256, "EFFECTIVE");
-            var withdrawn = post(token, withdraw);
-            notes.append("⑩WITHDRAW（原审批人）-> ").append(withdrawn.statusCode()).append(' ')
+            var initiated = post(token, withdraw);
+            notes.append("⑩WITHDRAW 发起（原审批人）-> ").append(initiated.statusCode()).append(' ')
+                .append(shortBody(initiated.body())).append('\n');
+            assertThat(initiated.statusCode()).as(shortBody(initiated.body())).isEqualTo(200);
+            var request = SubmissionJson.parse(initiated.body()).path("businessDecision");
+            assertThat(request.path("status").asText()).isEqualTo("WITHDRAW_PENDING");
+            assertThat(request.path("rolledBack").asBoolean()).isFalse();
+            assertThat(jdbc.queryForObject("SELECT status FROM correction_document WHERE id=UUID_TO_BIN(?)",
+                String.class, documentId)).isEqualTo("WITHDRAW_PENDING");
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_document WHERE id=UUID_TO_BIN(?)"
+                + " AND withdrawal_requested_by IS NOT NULL AND withdrawal_confirmed_by IS NULL",
+                Integer.class, documentId)).as("initiation is recorded, confirmation is not").isEqualTo(1);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_ledger WHERE reverses_entry_id IS NOT NULL",
+                Integer.class)).as("a pending withdrawal reverses nothing yet").isZero();
+            assertThat(jdbc.queryForObject("SELECT CAST(current_result_version AS CHAR) FROM outbound_order"
+                + " WHERE id=UUID_TO_BIN(?)", String.class, order.orderId())).as("no new version yet").isEqualTo("2");
+            // (g2) the confirmation belongs to the requester, not to the approver who opened it.
+            String otherUser = jdbc.queryForObject("SELECT BIN_TO_UUID(id) FROM app_user WHERE id<>? LIMIT 1",
+                String.class, Ids.bytes(order.operatorId()));
+            jdbc.update("UPDATE correction_document SET requested_by=UUID_TO_BIN(?) WHERE id=UUID_TO_BIN(?)",
+                otherUser, documentId);
+            var intruder = post(token, withdrawConfirmBody(order, documentId, documentSha256));
+            notes.append("⑩b 非申请人确认 -> ").append(intruder.statusCode()).append(' ')
+                .append(codeOf(intruder.body())).append(" (期望 403)\n");
+            assertThat(intruder.statusCode()).isEqualTo(403);
+            assertThat(codeOf(intruder.body())).isEqualTo("CORRECTION_PERMISSION_DENIED");
+            jdbc.update("UPDATE correction_document SET requested_by=? WHERE id=UUID_TO_BIN(?)",
+                Ids.bytes(order.operatorId()), documentId);
+            // (g3) the requester confirms: only now is the mistake rolled back, entry by entry.
+            var confirm = withdrawConfirmBody(order, documentId, documentSha256);
+            var withdrawn = post(token, confirm);
+            notes.append("⑩c WITHDRAW_CONFIRM（申请人）-> ").append(withdrawn.statusCode()).append(' ')
                 .append(shortBody(withdrawn.body())).append('\n');
             assertThat(withdrawn.statusCode()).as(shortBody(withdrawn.body())).isEqualTo(200);
             var withdrawal = SubmissionJson.parse(withdrawn.body()).path("businessDecision");
             assertThat(withdrawal.path("status").asText()).isEqualTo("WITHDRAWN");
             assertThat(withdrawal.path("resultVersion").asText()).isEqualTo("3");
-            assertThat(withdrawal.path("requesterConfirmation").asText())
-                .as("the confirmation mechanism is not defined by the design; recorded, not invented")
-                .isEqualTo("POLICY_UNDEFINED");
+            assertThat(withdrawal.path("confirmedBy").asText()).isEqualTo(order.operatorId().toString());
             assertThat(withdrawal.path("effectiveCount").asText()).isEqualTo(order.resultCount());
             assertThat(withdrawal.path("effectiveWeightG").asText()).isEqualTo(order.resultWeight());
             assertThat(jdbc.queryForObject("SELECT status FROM correction_document WHERE id=UUID_TO_BIN(?)",
                 String.class, documentId)).isEqualTo("WITHDRAWN");
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_document WHERE id=UUID_TO_BIN(?)"
+                + " AND withdrawal_confirmed_by IS NOT NULL AND withdrawal_confirmed_at IS NOT NULL",
+                Integer.class, documentId)).isEqualTo(1);
             assertThat(jdbc.queryForObject("SELECT CAST(current_result_version AS CHAR) FROM outbound_order"
                 + " WHERE id=UUID_TO_BIN(?)", String.class, order.orderId())).isEqualTo("3");
             assertThat(jdbc.queryForObject("SELECT CAST(result_version AS CHAR) FROM order_current_result"
@@ -232,7 +263,7 @@ class E2aCorrectionChainIT {
             assertThat(jdbc.queryForObject("SELECT IFNULL(SUM(actual_count),-1) FROM order_effective_line"
                 + " WHERE order_id=UUID_TO_BIN(?) AND result_version=3", Integer.class, order.orderId()))
                 .as("effective lines are back to the pre-correction aggregate").isEqualTo(order.dispatchIds().size());
-            assertThat(post(token, withdraw).body()).as("WITHDRAW replay returns the stored original")
+            assertThat(post(token, confirm).body()).as("WITHDRAW_CONFIRM replay returns the stored original")
                 .isEqualTo(withdrawn.body());
             // (h) a second withdrawal under a fresh key is refused: the document is no longer EFFECTIVE.
             var twice = post(token, freshKey(withdrawBody(order, documentId, documentSha256, "EFFECTIVE")));
@@ -330,7 +361,7 @@ class E2aCorrectionChainIT {
             assertThat(jdbc.queryForObject("SELECT status FROM inventory_reconciliation WHERE id=UUID_TO_BIN(?)",
                 String.class, blockedCase)).isEqualTo("BLOCKED");
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM operation_event WHERE entity_type='CORRECTION_COMMAND'",
-                Integer.class)).as("one audit event per accepted receipt (the refused ones write none)").isEqualTo(12);
+                Integer.class)).as("one audit event per accepted receipt so far").isEqualTo(13);
             // (m) A4 step 8: one unpublished state notification per published version. The outbox's entity_version space
             // is shared with the R05/R06 order events, so the correction takes the next free state version and the
             // result version it belongs to is carried in the payload.
@@ -355,6 +386,73 @@ class E2aCorrectionChainIT {
                 Integer.class)).as("nothing is published by the write path").isZero();
             assertThat(jdbc.queryForObject("SELECT COUNT(DISTINCT entity_version) FROM order_sync_outbox"
                 + " WHERE order_id=UUID_TO_BIN(?)", Integer.class, order.orderId())).isEqualTo(4);
+
+            // (n) B1: the 3-day window is measured against the ORIGINAL shipment, not the current version. Backdate the
+            // current version by 10 days; a business time 5 days old is then inside a "current version" window but
+            // outside the original shipment's, so only a v1-anchored check can refuse it.
+            jdbc.update("UPDATE order_result_version SET created_at=DATE_SUB(created_at,INTERVAL 10 DAY)"
+                + " WHERE order_id=UUID_TO_BIN(?) AND result_version=4", order.orderId());
+            var backdatedBody = lineBody(jdbc, order, "WEIGHT_CORRECTION", "4", order.dispatchIds(), "0", "0", false);
+            backdatedBody.set("lines", datedLines(order));
+            var backdated = post(token, backdatedBody);
+            notes.append("⑱业务时间早于原出库日 3 天以上 -> ").append(backdated.statusCode()).append(' ')
+                .append(codeOf(backdated.body())).append(" (期望 409 CORRECTION_WINDOW_EXCEEDED)\n");
+            assertThat(backdated.statusCode()).as(shortBody(backdated.body())).isEqualTo(409);
+            assertThat(codeOf(backdated.body())).isEqualTo("CORRECTION_WINDOW_EXCEEDED");
+
+            // (o) B2: attachment capacity (P-R07-09) - 5 per line, 10MB each, 50MB per command. The still-effective
+            // dispatch is targeted so the target differs from its current values and the capacity check is reached.
+            var live = List.of(order.dispatchIds().get(1));
+            assertThat(post(token, evidenceBody(jdbc, order, "4", live, 1, 1024L * 1024, "0")).statusCode())
+                .as("one 1MB attachment is accepted").isEqualTo(200);
+            var tooMany = post(token, evidenceBody(jdbc, order, "4", live, 6, 1024L, "0"));
+            notes.append("⑲6 个附件 -> ").append(tooMany.statusCode()).append(' ').append(codeOf(tooMany.body()))
+                .append(" (期望 400 ATTACHMENT_LIMIT_EXCEEDED)\n");
+            assertThat(tooMany.statusCode()).isEqualTo(400);
+            assertThat(codeOf(tooMany.body())).isEqualTo("ATTACHMENT_LIMIT_EXCEEDED");
+            var tooBig = post(token, evidenceBody(jdbc, order, "4", live, 1, 11L * 1024 * 1024, "0"));
+            assertThat(tooBig.statusCode()).as("11MB single file").isEqualTo(400);
+            assertThat(codeOf(tooBig.body())).isEqualTo("ATTACHMENT_LIMIT_EXCEEDED");
+            var tooMuch = post(token, evidenceBody(jdbc, order, "4", order.dispatchIds(), 5, 10L * 1024 * 1024, "500"));
+            assertThat(tooMuch.statusCode()).as("5x10MB on each of two lines exceeds the 50MB command total").isEqualTo(400);
+            assertThat(codeOf(tooMuch.body())).isEqualTo("ATTACHMENT_LIMIT_EXCEEDED");
+
+            // (p) B3: a header correction patches the frozen receipt that IS the header snapshot.
+            var headerCreate = post(token, headerBody(jdbc, order, "4", "orderNo", "CORR-HEADER-1"));
+            notes.append("⑳HEADER_CORRECTION CREATE -> ").append(headerCreate.statusCode()).append(' ')
+                .append(shortBody(headerCreate.body())).append('\n');
+            assertThat(headerCreate.statusCode()).as(shortBody(headerCreate.body())).isEqualTo(200);
+            var headerDecision = SubmissionJson.parse(headerCreate.body()).path("businessDecision");
+            assertThat(headerDecision.path("lineCount").asInt()).isZero();
+            var headerApprove = post(token, approveBody(order, headerDecision.path("documentId").asText(),
+                headerDecision.path("documentSha256").asText(), "SUBMITTED", "4"));
+            assertThat(headerApprove.statusCode()).as(shortBody(headerApprove.body())).isEqualTo(200);
+            assertThat(jdbc.queryForObject("SELECT JSON_UNQUOTE(JSON_EXTRACT(header_snapshot,'$.orderNo'))"
+                + " FROM order_result_version WHERE order_id=UUID_TO_BIN(?) AND result_version=5",
+                String.class, order.orderId())).as("the patch landed on the new version").isEqualTo("CORR-HEADER-1");
+            assertThat(jdbc.queryForObject("SELECT JSON_UNQUOTE(JSON_EXTRACT(header_snapshot,'$.actualCount'))"
+                + " FROM order_result_version WHERE order_id=UUID_TO_BIN(?) AND result_version=5",
+                String.class, order.orderId())).as("server-owned facts are untouched").isNotNull();
+            assertThat(jdbc.queryForObject("SELECT JSON_UNQUOTE(JSON_EXTRACT(header_snapshot,'$.orderNo'))"
+                + " FROM order_result_version WHERE order_id=UUID_TO_BIN(?) AND result_version=4",
+                String.class, order.orderId())).as("the earlier version's snapshot stays immutable").isNotEqualTo("CORR-HEADER-1");
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM correction_effect", Integer.class))
+                .as("weight correction (2 lines) + cancellation (1 line); the header correction adds none")
+                .isEqualTo(3);
+            assertThat(jdbc.queryForObject("SELECT CAST(actual_count AS CHAR) FROM order_result_version"
+                + " WHERE order_id=UUID_TO_BIN(?) AND result_version=5", String.class, order.orderId()))
+                .as("counts do not move for a header correction").isEqualTo("1");
+            // The patch is deny-by-default: unknown keys, server-owned keys and no-op patches are all refused.
+            var unknown = post(token, headerBody(jdbc, order, "5", "notAHeaderField", "x"));
+            assertThat(unknown.statusCode()).as("unknown header key").isEqualTo(400);
+            var owned = post(token, headerBody(jdbc, order, "5", "actualCount", "9"));
+            assertThat(owned.statusCode()).as("server-owned header key").isEqualTo(400);
+            var noop = post(token, headerBody(jdbc, order, "5", "orderNo", "CORR-HEADER-1"));
+            assertThat(noop.statusCode()).as("a patch that changes nothing").isEqualTo(409);
+            assertThat(codeOf(noop.body())).isEqualTo("CORRECTION_LINE_TARGET_UNCHANGED");
+            // Every refusal above (window, capacity, patch shape) wrote no audit event: 13 + the three accepted ones.
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM operation_event WHERE entity_type='CORRECTION_COMMAND'",
+                Integer.class)).as("refused commands leave no audit trail").isEqualTo(16);
         }
         Files.writeString(profile.attempt.resolve("correction-chain.txt"), notes.toString());
         Files.writeString(profile.attempt.resolve("test-completed.marker"), notes.toString());
@@ -459,6 +557,83 @@ class E2aCorrectionChainIT {
         if (blocked) body.put("blocked", true);
         body.set("expected", expected);
         return body;
+    }
+
+    /** Current-version facts, so a body's expected block always matches what the server will compare it with. */
+    private String[] versionFacts(JdbcTemplate jdbc, String version, Order order) {
+        String count = jdbc.queryForObject("SELECT CAST(actual_count AS CHAR) FROM order_result_version"
+            + " WHERE order_id=UUID_TO_BIN(?) AND result_version=?", String.class, order.orderId(),
+            Long.parseLong(version));
+        String weight = jdbc.queryForObject("SELECT CAST(weight_g AS CHAR) FROM order_result_version"
+            + " WHERE order_id=UUID_TO_BIN(?) AND result_version=?", String.class, order.orderId(),
+            Long.parseLong(version));
+        return new String[]{count, weight};
+    }
+
+    /** One PHYSICAL_RETURN line per dispatch, each carrying {@code count} attachments of {@code sizeBytes}. */
+    private ObjectNode evidenceBody(JdbcTemplate jdbc, Order order, String currentVersion, List<String> dispatchIds,
+        int count, long sizeBytes, String targetWeight) {
+        var facts = versionFacts(jdbc, currentVersion, order);
+        var expected = SubmissionJson.object().put("orderId", order.orderId())
+            .put("currentResultVersion", currentVersion).put("currentResultEffectiveCount", facts[0])
+            .put("currentResultEffectiveWeightG", facts[1]).put("userAuthVersion", "1");
+        String sha = "b".repeat(64);
+        var body = (ObjectNode) SubmissionJson.object().put("commandVersion", 1).put("commandType", "CREATE")
+            .put("commandId", UUID.randomUUID().toString()).put("transportRecoveryEpoch", "1")
+            .put("warehouseId", order.warehouseId()).put("orderId", order.orderId()).put("type", "PHYSICAL_RETURN")
+            .put("reason", "实物退回并附照片");
+        var lines = body.putArray("lines");
+        for (String dispatchId : dispatchIds) {
+            var line = SubmissionJson.object().put("dispatchId", dispatchId).put("targetCount", "0")
+                .put("targetWeightG", targetWeight).put("evidenceId", UUID.randomUUID().toString())
+                .put("evidenceSha256", sha);
+            var attachments = line.putArray("attachments");
+            for (int index = 0; index < count; index++)
+                attachments.add(SubmissionJson.object().put("evidenceSha256", sha)
+                    .put("sizeBytes", Long.toString(sizeBytes)));
+            lines.add(line);
+        }
+        body.set("expected", expected);
+        return body;
+    }
+
+    /** A HEADER_CORRECTION body: a scalar patch and no lines at all. */
+    private ObjectNode headerBody(JdbcTemplate jdbc, Order order, String currentVersion, String key, String value) {
+        var facts = versionFacts(jdbc, currentVersion, order);
+        var expected = SubmissionJson.object().put("orderId", order.orderId())
+            .put("currentResultVersion", currentVersion).put("currentResultEffectiveCount", facts[0])
+            .put("currentResultEffectiveWeightG", facts[1]).put("userAuthVersion", "1");
+        var patch = com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+        patch.put(key, value);
+        ObjectNode body = com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.objectNode();
+        body.put("commandVersion", 1).put("commandType", "CREATE")
+            .put("commandId", UUID.randomUUID().toString()).put("transportRecoveryEpoch", "1")
+            .put("warehouseId", order.warehouseId()).put("orderId", order.orderId()).put("type", "HEADER_CORRECTION")
+            .put("reason", "更正表头信息");
+        body.set("headerPatch", patch);
+        body.set("expected", expected);
+        return body;
+    }
+
+    /** Lines dated 5 days ago with a target that differs from the current values, so the window check is reached. */
+    private com.fasterxml.jackson.databind.node.ArrayNode datedLines(Order order) {
+        var lines = com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.arrayNode();
+        for (String dispatchId : order.dispatchIds())
+            lines.add(SubmissionJson.object().put("dispatchId", dispatchId).put("targetCount", "0")
+                .put("targetWeightG", "500").put("businessOccurredAt",
+                    java.time.Instant.now().minus(5, java.time.temporal.ChronoUnit.DAYS).toString()));
+        return lines;
+    }
+
+    /** The requester's half of P-R07-08: the same frozen digest, now under WITHDRAW_PENDING. */
+    private ObjectNode withdrawConfirmBody(Order order, String documentId, String documentSha256) {
+        var expected = SubmissionJson.object().put("documentId", documentId).put("documentSha256", documentSha256)
+            .put("status", "WITHDRAW_PENDING").put("expectedResultVersion", order.resultVersion())
+            .put("userAuthVersion", "1");
+        return (ObjectNode) SubmissionJson.object().put("commandVersion", 1).put("commandType", "WITHDRAW_CONFIRM")
+            .put("commandId", UUID.randomUUID().toString()).put("transportRecoveryEpoch", "1")
+            .put("warehouseId", order.warehouseId()).put("documentId", documentId)
+            .put("reason", "申请人确认撤销").set("expected", expected);
     }
 
     /** WITHDRAW anchors on the same frozen digest, the current status and the approver who is undoing it. */

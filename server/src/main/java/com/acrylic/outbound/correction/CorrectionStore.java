@@ -163,7 +163,9 @@ public class CorrectionStore {
               'warehouseId',BIN_TO_UUID(warehouse_id),'type',type,'status',status,
               'documentSha256',document_sha256,'expectedResultVersion',CAST(expected_result_version AS CHAR),
               'documentVersion',CAST(row_version AS CHAR),
-              'approvedBy',IFNULL(BIN_TO_UUID(approved_by),'null'),'requestedBy',BIN_TO_UUID(requested_by))
+              'approvedBy',IFNULL(BIN_TO_UUID(approved_by),'null'),'requestedBy',BIN_TO_UUID(requested_by),
+              'withdrawalRequestedBy',IFNULL(BIN_TO_UUID(withdrawal_requested_by),'null'),
+              'withdrawalConfirmedBy',IFNULL(BIN_TO_UUID(withdrawal_confirmed_by),'null'))
             FROM correction_document WHERE id=?
             """,String.class,Ids.bytes(documentId));
         if (rows.size()!=1) throw CorrectionCommand.missing();
@@ -194,7 +196,10 @@ public class CorrectionStore {
         var rows=jdbc.queryForList("""
             SELECT CAST(result_version AS CHAR) result_version,CAST(actual_count AS CHAR) actual_count,
               CAST(weight_g AS CHAR) weight_g,inventory_deducted,header_snapshot,
-              IFNULL(BIN_TO_UUID(original_submission_id),IFNULL(BIN_TO_UUID(submission_id),'null')) original_submission_id
+              -- original_submission_id is only filled by V46's backfill or by this service's own inserts; for versions
+              -- written later by the R05/R06 writers it stays NULL, so fall back to whichever channel the version has.
+              COALESCE(BIN_TO_UUID(original_submission_id),BIN_TO_UUID(submission_id),BIN_TO_UUID(pc_submission_id),'null')
+                original_submission_id
             FROM order_result_version WHERE order_id=? ORDER BY result_version DESC LIMIT 1 FOR UPDATE
             """,Ids.bytes(orderId));
         if (rows.size()!=1) throw CorrectionCommand.missing();
@@ -299,10 +304,21 @@ public class CorrectionStore {
             """,Ids.bytes(orderId),version);
     }
 
-    /** §7.2 keeps the original approval receipt; the withdrawing actor is carried by the audit event and the receipt. */
-    public int withdrawDocument(UUID documentId) {
-        return jdbc.update("UPDATE correction_document SET status='WITHDRAWN',row_version=row_version+1"
-            + " WHERE id=? AND status='EFFECTIVE'",Ids.bytes(documentId));
+    /**
+     * P-R07-08 initiation by the original approver: the document enters WITHDRAW_PENDING and <b>nothing is rolled
+     * back yet</b> - the requester's confirmation is what applies the reversal.
+     */
+    public int requestWithdrawal(UUID documentId,UUID approver,Instant at) {
+        return jdbc.update("UPDATE correction_document SET status='WITHDRAW_PENDING',withdrawal_requested_by=?,"
+            + " withdrawal_requested_at=?,row_version=row_version+1 WHERE id=? AND status='EFFECTIVE'",
+            Ids.bytes(approver),Timestamp.from(at),Ids.bytes(documentId));
+    }
+
+    /** P-R07-08 confirmation by the requester: the moment the rollback is applied and the document becomes WITHDRAWN. */
+    public int confirmWithdrawal(UUID documentId,UUID requester,Instant at) {
+        return jdbc.update("UPDATE correction_document SET status='WITHDRAWN',withdrawal_confirmed_by=?,"
+            + " withdrawal_confirmed_at=?,row_version=row_version+1 WHERE id=? AND status='WITHDRAW_PENDING'",
+            Ids.bytes(requester),Timestamp.from(at),Ids.bytes(documentId));
     }
 
     // ---------------------------------------------------------------- A2 cycle reopening (step 6)
@@ -352,6 +368,44 @@ public class CorrectionStore {
             """,String.class,Ids.bytes(caseId));
         if (rows.size()!=1) throw CorrectionCommand.missing();
         return SubmissionJson.parse(rows.getFirst());
+    }
+
+    /**
+     * The authoritative shipment-confirmation instant: the <b>v1</b> result version's {@code created_at}, which
+     * {@code SubmissionAccounting.commit} writes inside the confirmation transaction. The current version's own
+     * {@code created_at} is a correction time once v&gt;1 exists, so it must not be used for the 3-day backfill window
+     * (P-R07-06). Falls back to the current version only if v1 is absent.
+     */
+    public Instant shipmentCreatedAt(UUID orderId) {
+        var rows=jdbc.queryForList("SELECT created_at FROM order_result_version WHERE order_id=?"
+            + " ORDER BY (result_version=1) DESC,result_version ASC LIMIT 1",Ids.bytes(orderId));
+        if (rows.size()!=1) throw CorrectionCommand.missing();
+        Object value=rows.getFirst().get("created_at");
+        if (value instanceof java.sql.Timestamp stamp) return stamp.toInstant();
+        if (value instanceof java.time.LocalDateTime local) return local.toInstant(java.time.ZoneOffset.UTC);
+        throw new com.acrylic.outbound.common.BusinessException(409,"CORRECTION_CONTEXT_CHANGED","出库确认时间不可读");
+    }
+
+    /** The current version's header snapshot (the frozen success receipt), used to validate a header patch early. */
+    public String currentHeaderSnapshot(UUID orderId) {
+        var rows=jdbc.queryForList("SELECT header_snapshot FROM order_result_version WHERE order_id=?"
+            + " ORDER BY result_version DESC LIMIT 1",Ids.bytes(orderId));
+        if(rows.isEmpty()) throw CorrectionCommand.missing();
+        return String.valueOf(rows.getFirst().get("header_snapshot"));
+    }
+
+    /**
+     * A document's own CREATE bytes, kept in its immutable receipt. For a header correction this is the only place the
+     * patch is stored - the request that carries it is the CREATE, while the effect runs in a later APPROVE command.
+     */
+    public byte[] createCommandBytes(UUID documentId) {
+        var rows=jdbc.queryForList("SELECT canonical_command_bytes FROM correction_command_receipt"
+            + " WHERE document_id=? AND command_type='CREATE' ORDER BY recorded_at DESC LIMIT 1",Ids.bytes(documentId));
+        if(rows.isEmpty())
+            throw new com.acrylic.outbound.common.BusinessException(409,"CORRECTION_CONTEXT_CHANGED","更正单缺少原始命令证据");
+        Object value=rows.getFirst().get("canonical_command_bytes");
+        if(value instanceof byte[] bytes) return bytes;
+        return String.valueOf(value).getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 
     /** Status transition under the row lock: the predicate makes a racing advance fail instead of double-applying. */
