@@ -359,4 +359,28 @@ public class CorrectionStore {
         return jdbc.update("UPDATE inventory_reconciliation SET status=?,conclusion=?,row_version=row_version+1,"
             + " updated_at=? WHERE id=? AND status=?",toStatus,conclusion,Timestamp.from(now),Ids.bytes(caseId),fromStatus);
     }
+
+    // ---------------------------------------------------------------- A4 step 8: state outbox
+
+    /**
+     * One notification per published version. {@code order_sync_outbox} is unique on
+     * {@code (recovery_epoch, order_id, entity_version)} and that version space is <b>shared with the R05/R06 order
+     * events</b> - using the result version collided with a row the confirmation chain had already written, so a
+     * correction takes the next free state version of its order instead. The order lock is held by the caller, so the
+     * read-then-insert cannot race.
+     */
+    public long nextOutboxEntityVersion(UUID orderId,long epoch) {
+        Long next=jdbc.queryForObject("SELECT IFNULL(MAX(entity_version),0)+1 FROM order_sync_outbox"
+            + " WHERE recovery_epoch=? AND order_id=?",Long.class,epoch,Ids.bytes(orderId));
+        return next==null?1:next;
+    }
+
+    public void insertOutbox(UUID orderId,long epoch,String eventType,long entityVersion,String payload,Instant now) {
+        jdbc.update("""
+            INSERT INTO order_sync_outbox(id,recovery_epoch,warehouse_id,order_id,entity_version,event_type,payload,
+              published_seq,created_at)
+            SELECT ?,?,o.warehouse_id,o.id,?,?,CAST(? AS JSON),NULL,?
+            FROM outbound_order o WHERE o.id=?
+            """,Ids.bytes(Ids.next()),epoch,entityVersion,eventType,payload,Timestamp.from(now),Ids.bytes(orderId));
+    }
 }

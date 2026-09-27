@@ -331,6 +331,30 @@ class E2aCorrectionChainIT {
                 String.class, blockedCase)).isEqualTo("BLOCKED");
             assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM operation_event WHERE entity_type='CORRECTION_COMMAND'",
                 Integer.class)).as("one audit event per accepted receipt (the refused ones write none)").isEqualTo(12);
+            // (m) A4 step 8: one unpublished state notification per published version. The outbox's entity_version space
+            // is shared with the R05/R06 order events, so the correction takes the next free state version and the
+            // result version it belongs to is carried in the payload.
+            assertThat(jdbc.queryForList("SELECT event_type,JSON_UNQUOTE(JSON_EXTRACT(payload,'$.resultVersion')) v"
+                + " FROM order_sync_outbox WHERE order_id=UUID_TO_BIN(?) AND event_type IN"
+                + " ('CORRECTION_EFFECTIVE','CORRECTION_WITHDRAWN','CYCLE_REOPENED') ORDER BY entity_version",
+                order.orderId()))
+                .as("v2 effect, v3 withdrawal, v4 cancellation - and nothing from the reconciliation cases")
+                .satisfies(rows -> {
+                    assertThat(rows).hasSize(3);
+                    assertThat(String.valueOf(rows.get(0).get("event_type"))).isEqualTo("CORRECTION_EFFECTIVE");
+                    assertThat(String.valueOf(rows.get(0).get("v"))).isEqualTo("2");
+                    assertThat(String.valueOf(rows.get(1).get("event_type"))).isEqualTo("CORRECTION_WITHDRAWN");
+                    assertThat(String.valueOf(rows.get(1).get("v"))).isEqualTo("3");
+                    assertThat(String.valueOf(rows.get(2).get("event_type"))).isEqualTo("CYCLE_REOPENED");
+                    assertThat(String.valueOf(rows.get(2).get("v"))).isEqualTo("4");
+                });
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM order_sync_outbox"
+                + " WHERE order_id=UUID_TO_BIN(?) AND event_type='SUBMISSION_COMPLETED'", Integer.class, order.orderId()))
+                .as("the confirmation chain's own event is untouched").isEqualTo(1);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM order_sync_outbox WHERE published_seq IS NOT NULL",
+                Integer.class)).as("nothing is published by the write path").isZero();
+            assertThat(jdbc.queryForObject("SELECT COUNT(DISTINCT entity_version) FROM order_sync_outbox"
+                + " WHERE order_id=UUID_TO_BIN(?)", Integer.class, order.orderId())).isEqualTo(4);
         }
         Files.writeString(profile.attempt.resolve("correction-chain.txt"), notes.toString());
         Files.writeString(profile.attempt.resolve("test-completed.marker"), notes.toString());

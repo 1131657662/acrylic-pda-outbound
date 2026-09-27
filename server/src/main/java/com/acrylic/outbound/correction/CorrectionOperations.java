@@ -262,6 +262,17 @@ public final class CorrectionOperations {
                 store.insertEffectiveLine(orderId,version,entry.getKey(),entry.getValue()[0],entry.getValue()[1]);
             store.moveCurrentPointer(orderId,version,write.recordedAt());
             if(store.effectDocument(documentId,version)!=1) throw CorrectionCommand.stale();
+            // Step 8: one state notification per published version. The name follows the design's CYCLE_REOPENED state
+            // when a cycle was reopened; otherwise the correction itself is the state change.
+            var outboxPayload=com.acrylic.outbound.submissions.SubmissionJson.object()
+                .put("documentId",documentId.toString()).put("resultVersion",Long.toString(version))
+                .put("type",type).put("effectiveCount",Long.toString(effectiveCount))
+                .put("effectiveWeightG",Long.toString(effectiveWeight));
+            outboxPayload.set("reopenedCycles",reopenedCycles.deepCopy());
+            long outboxEpoch=store.recoveryEpoch();
+            store.insertOutbox(orderId,outboxEpoch,reopenedCycles.isEmpty()?"CORRECTION_EFFECTIVE":"CYCLE_REOPENED",
+                store.nextOutboxEntityVersion(orderId,outboxEpoch),
+                com.acrylic.outbound.submissions.SubmissionJson.canonical(outboxPayload),write.recordedAt());
             var decision=com.acrylic.outbound.submissions.SubmissionJson.object()
                 .put("documentId",documentId.toString()).put("status","EFFECTIVE")
                 .put("approvedBy",approvedBy).put("approvedAt",write.recordedAt().toString())
@@ -378,6 +389,16 @@ public final class CorrectionOperations {
                 store.insertEffectiveLine(orderId,version,entry.getKey(),entry.getValue()[0],entry.getValue()[1]);
             store.moveCurrentPointer(orderId,version,write.recordedAt());
             if(store.withdrawDocument(documentId)!=1) throw CorrectionCommand.stale();
+            // Step 8: the withdrawal is a state change of its own, published under the next free state version.
+            long withdrawEpoch=store.recoveryEpoch();
+            store.insertOutbox(orderId,withdrawEpoch,"CORRECTION_WITHDRAWN",
+                store.nextOutboxEntityVersion(orderId,withdrawEpoch),
+                com.acrylic.outbound.submissions.SubmissionJson.canonical(
+                    com.acrylic.outbound.submissions.SubmissionJson.object()
+                        .put("documentId",documentId.toString()).put("resultVersion",Long.toString(version))
+                        .put("reversedEntryCount",Integer.toString(entries.size()))
+                        .put("effectiveCount",Long.toString(effectiveCount))
+                        .put("effectiveWeightG",Long.toString(effectiveWeight))),write.recordedAt());
             var decision=com.acrylic.outbound.submissions.SubmissionJson.object()
                 .put("documentId",documentId.toString()).put("status","WITHDRAWN")
                 .put("orderId",orderId.toString()).put("resultVersion",Long.toString(version))
