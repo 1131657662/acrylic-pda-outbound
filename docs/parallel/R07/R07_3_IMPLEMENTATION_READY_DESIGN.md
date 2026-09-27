@@ -364,5 +364,47 @@ APPROVE 生效体顺序：锁当前版本 → 重验 `expectedResultVersion` →
   全量单测 720/0/0/1 通过，但**未跑全量 IT 回归**（尤其 R05 PC 手工出库与 R08 导出）；
 - 未部署、契约登记未发布。
 
+## 21. A1 WITHDRAW（误批撤销，2026-09-27，`ce3ad51`，attempt **212** 绿）
+
+- **实现**：`CorrectionOperations.Withdraw` —— 仅**原审批人**可发起（`actor == document.approved_by`，否则 403
+  `CORRECTION_PERMISSION_DENIED`）；文档必须 `EFFECTIVE`（行锁 + 状态谓词 UPDATE 且恰 1 行）。
+- **逐笔回退**（§7.2「账务与占用逐笔回退，不能只改汇总数」）：文档写过的每条 `correction_ledger` 追加一条新行，
+  `reverses_entry_id` 指向原行（UNIQUE）、**delta 完全相反**、`business_key='WD:<doc>:<原行>'`；
+  **不改写不删除**——正向账务与 `correction_effect` 全保留（effect 仍每行恰一条，回退只体现在账务与结果版本）。
+- **冲突保护**：回退前核对当前 `order_effective_scan`，若该明细已被其他更正改变 → 409 `CORRECTION_LEDGER_CONFLICT`
+  （用 §5 既有错误码）。
+- **结果面**：新结果版本 v+1（`source_correction_id` 仍指本文档、`submission_id` NULL ⇒ 满足 V46 放宽后的渠道约束）、
+  逐包快照重建（本单动过的 dispatch 回退到 `line.before_*`，其余沿用当前值并保留其 `latest_correction_line_id`）、
+  `order_effective_line` 重算、双指针同步、文档 `WITHDRAWN`。
+- **证据（attempt 212）**：⑩ 200 → WITHDRAWN、v3、有效包数/重量回到更正前、双指针=3、**反向不变量成立**
+  （每条 `CORR:%` 行都有且仅有一条 `WD:%` 行指向它且 delta 完全相反）、正向账务与 effect 仍完整、
+  v3 快照全部 `is_effective=1`、`effective_line` 汇总回到 2；⑪ 新原键重复撤销 → 409；审计 3 条。
+- **政策缺口（记录，未发明）**：P-R07-08 只写「审批人发起 → 申请人确认」，但**没有**确认机制的数据模型
+  （无 `withdrawn_*` 列、无待确认状态、无第二端点）⇒ 本次只实现**发起半程**，决定里显式给出
+  `requesterConfirmation=POLICY_UNDEFINED`，确认步骤待政策定义。
+- **未验**：「非原审批人发起 → 403」这条**未在 IT 中触发**（夹具只有一个操作者，需要第二主体/PDA 配对）；
+  两次撤销的并发争用未测。
+
+## 22. A2 步骤 6 周期重开（2026-09-27，`c2d5518`，attempt **215** 绿）
+
+- **实现**：生效事务内对 `type=DISPATCH_CANCELLATION` 的每条明细写 `cycle_reopening`：`cycle_before` 取
+  `dispatch_record.dispatch_cycle`，`cycle_after=cycle_before+1`（CHECK + 代码双重），`evidence_sha256` 取该明细凭据
+  （缺失即 400 `CORRECTION_EVIDENCE_REQUIRED`），`state_version`=新结果版本，`issued_recovery_epoch`=`server_state.recovery_epoch`；
+  原 dispatch 已重开过 → 409 `CYCLE_REOPENING_EXISTS`。
+- **重开 ≠ 可用**：重开只写 `cycle_reopening`，同一次生效的逐包快照里该 dispatch 仍 `is_effective=0` ✓（IT 断言）。
+- **触发类型的解释（记录待确认）**：设计只写「周期重开：`cycle_reopening` 一次性 + 可用性独立表达 + `CYCLE_REOPENED`
+  状态 outbox」，**未写明由哪种更正类型触发**；本次按业务语义取 `DISPATCH_CANCELLATION`（取消派发 → 该包可重扫、
+  周期 +1）。若 `PHYSICAL_RETURN` 也需重开，是一处判断的扩展。
+- **证据（attempt 215）**：⑫ 取消派发 APPROVE 200 → `resultVersion=4`、`reopenedCycles` 1 条、`cycle_reopening` 行
+  `cycle_after=cycle_before+1`、`evidence_sha256`=明细凭据、`state_version=4`、epoch>0，该 dispatch 在 v4 快照
+  `is_effective=0` 而其余仍为 1；⑬ 再次对同一 dispatch 建取消单并审批 → 409 `CYCLE_REOPENING_EXISTS`（表内仍 1 行）；
+  审计事件 6 条（= 6 次成功命令，被拒的不写审计）。
+- **顺带修的真实缺陷（R07-3 自身代码）**：`dispatchFacts`（"before 侧"）原只读原始 `inventory_ledger`，**首次更正之后**
+  再对同一 dispatch 建更正会拿 v1 的值当 before，delta 静默错误；现改为**优先读当前版本的 `order_effective_scan`**，
+  仅当该版本无快照行才回退 ledger（v1 行为不变 ⇒ 此前证据不受影响）。
+- **未验**：`CYCLE_REOPENED` 的**发件箱事件**（属 A4/步骤 8）；重开后的**重新扫描**（PDA 端重扫 → cycle+1 落库）
+  不在本 IT 范围；`PHYSICAL_RETURN` 是否需要重开待确认。
+
+
 
 
