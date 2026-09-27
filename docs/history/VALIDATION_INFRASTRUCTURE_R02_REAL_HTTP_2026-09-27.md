@@ -46,3 +46,8 @@ gradle exit=0
 - 未做跨服务端/Android 统一框架；未重构既有 e2a harness（`E2aCrossSourceProfile`/`E2aMysqlLauncher` 等仍原样）。
 - 未改生产代码。
 - 端口/数据库名/账号仍由 attempt 号派生，未做多实例并行编排。
+## 补充定性（2026-09-27，attempt 166-168 后）
+
+- **R02 构造器是"隔离验证工具"，不是"全量回归工具"**：它的 e2a 夹具语义是**每 JVM 一次性 attempt**，单 JVM 内跑全量 IT 会因 one-shot 用尽 + Spring 上下文失败级联而产生大量不可解读的失败（attempt 168 实测）。
+- **全量覆盖应改为分批跑**：每 attempt 跑一类或一组（建议 10–15 个类），attempt 号连续使用；**不要**再试图单 JVM 全量。
+- 工具本轮修好三处缺陷：全量模式不传 `--tests`（避免 PowerShell glob 展开成非法过滤器）、按本次运行时间戳聚合全部 `TEST-*.xml`、本次无 XML 时报 `NOT-EXECUTED`（不再回退打印历史结果）。
