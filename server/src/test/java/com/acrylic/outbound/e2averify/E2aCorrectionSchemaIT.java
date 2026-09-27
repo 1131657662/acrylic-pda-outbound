@@ -97,6 +97,22 @@ class E2aCorrectionSchemaIT {
             notes.append("断言2' ledger：本 seed 无 dispatch（实测 0），功能级反例本轮不可产出；\n")
                 .append("        但 V43 对 inventory_ledger 无任何 ALTER（diff 级证据）：原 UNIQUE/两条 CHECK 未被迁移触碰\n");
         }
+        // (step 2) V45: the command kernel's receipt surface + the permission codes R07-1 forgot to register.
+        profile.migrate(jdbc, "45");
+        assertThat(count(jdbc, "correction_command_receipt")).as("V45 receipt table exists and is empty").isZero();
+        for (String code : List.of("outbound:correct", "correction:approve")) {
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permission WHERE code=?", Integer.class, code))
+                .as(code + " registered by V45").isEqualTo(1);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM role_permission rp"
+                + " JOIN permission p ON p.id=rp.permission_id JOIN role r ON r.id=rp.role_id"
+                + " WHERE p.code=? AND r.code='WAREHOUSE_ADMIN'", Integer.class, code))
+                .as(code + " bound to WAREHOUSE_ADMIN").isEqualTo(1);
+        }
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS"
+            + " WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='correction_command_receipt' AND CONSTRAINT_TYPE='CHECK'",
+            Integer.class)).as("receipt table keeps its CHECKs").isGreaterThanOrEqualTo(3);
+        notes.append("步骤2 存储与权限：correction_command_receipt 建表成功且为空；")
+            .append("outbound:correct / correction:approve 已注册并绑 WAREHOUSE_ADMIN（V45）\n");
         Files.writeString(profile.attempt.resolve("correction-schema.txt"), notes.toString());
         Files.writeString(profile.attempt.resolve("test-completed.marker"), notes.toString());
     }
