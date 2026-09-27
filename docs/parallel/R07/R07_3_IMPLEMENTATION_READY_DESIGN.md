@@ -193,3 +193,22 @@ ADD CONSTRAINT ck_submission_scope_source CHECK(
 - **R03 FORMAL 夹具**：性质从"缺配方"变为"**缺一行内核修正**"。夹具形状已明确（分支 1），无需再解"5 道前置拼图"；真正的门槛是是否授权改 `HandoverStore.scopeFacts` 一行。
 - **R07-3 步骤 4-6**：`ck_submission_scope_source` **不再构成阻断**（按分支 1 建 scope 即可）；「0 能落库」的功能级证据**可以在步骤 1/4 内自行补出**，不必等 FORMAL 夹具排期——§13 补充条件 3 的门槛因此可提前满足。
 - **R07-1 的 14 条断言**：一旦授权那一行修正，FORMAL 夹具即可成立（复用 TEMP 已验证机制），14 条断言有望真正开跑。
+## 16. 【R06 欠债 · TEMP 归档】接线方案被证伪（attempt 170/171 前置发现）
+
+**attempt 170 原样错误**：`UnsatisfiedDependencyException: 'submissionArchiveService' 构造参数 6: No qualifying bean of type 'com.acrylic.outbound.temporary.TemporaryArchiveEvidence'`。
+
+**读代码后的真实装配点**（不是猜）：
+- `server/src/test/java/com/acrylic/outbound/inventory/TemporaryArchiveDriver.java:24-26` —— **位于 test 源码**，其 `service(archives, proofs)`：
+  ```java
+  var evidence = new TemporaryArchiveEvidence(bean(SubmissionFiles.class), bean(SubmissionStore.class),
+      bean(JdbcTemplate.class), bean(CommandStore.class), bean(CommandReceiptIntegrity.class));
+  return new TemporaryArchiveService(new TemporaryArchiveService.Dependencies(
+      bean(SubmissionAccess.class), bean(SubmissionStore.class), archives, evidence, proofs),
+      bean(PlatformTransactionManager.class));
+  ```
+- 即：TEMP 归档的装配**只存在于测试驱动**里（`TemporaryArchiveService` 自身注释也写明 "Explicit internal assembly only. **The production archive controller continues to reject TEMP**"），且 `archives`/`proofs` 是**按调用方传入**的。
+
+**结论（架构级，不是"再修一处"）**：把 `TemporaryArchiveService` 接进**生产**装配，等于**把刻意留在测试域的临时归档装配提升为生产组件**——这是产品边界决定，不是装配细节。两条路线：
+- **A（推荐，需明确授权）**：在生产 `@Configuration` 里按上面同一方式建 `@Bean`（依赖 9 个既有 bean + `PlatformTransactionManager`），并明确接受"生产临时归档"这一能力（开关默认关闭）；
+- **B（保守）**：撤销接线，保持"生产拒绝 TEMP"，TEMP 归档继续只在测试域验证（本项记为**边界不变**，不再是欠债）。
+**本轮采取 B 的即时部分：把会让应用启动失败的生产改动回退**（见提交），路线选择交回业主。
