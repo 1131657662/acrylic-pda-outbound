@@ -21,8 +21,16 @@ public final class HandoverFormalFixtureChecks {
     public static void verify(WebApplicationContext context) throws Exception {
         var f = new TemporaryConfirmationFixture(context,false);
         var submission = f.source.f;
-        // 1) real FORMAL submission for the published+claimed order, then a real abort (which writes receipt_text).
-        submission.submit();
+        // The TEMP fixture posted a copy of this body with the SAME submissionId, and a submission id may never
+        // change its source. Mint a fresh id so the FORMAL submission is its own batch; the final FROZEN audit
+        // event must carry that id as its detail (SubmissionEvidence.java:79).
+        String fresh = UUID.randomUUID().toString();
+        submission.body.put("submissionId",fresh);
+        var events = submission.body.withArray("events");
+        ((ObjectNode) events.get(events.size()-1)).put("detail",fresh);
+        var submitResult = submission.send(submission.body).andReturn();
+        assertThat(submitResult.getResponse().getStatus())
+            .as("FORMAL submit response: " + submitResult.getResponse().getContentAsString()).isEqualTo(200);
         submission.abort();
         String scope = f.jdbc.queryForObject("SELECT BIN_TO_UUID(id) FROM submission_scope WHERE source_order_id=UUID_TO_BIN(?)",
             String.class, submission.order);
