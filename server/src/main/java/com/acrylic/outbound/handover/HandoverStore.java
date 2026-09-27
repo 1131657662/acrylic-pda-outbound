@@ -24,13 +24,15 @@ public class HandoverStore {
     public JsonNode scopeFacts(UUID scopeId) {
         var rows=jdbc.queryForList("""
             SELECT JSON_OBJECT('scopeId',BIN_TO_UUID(c.id),'warehouseId',BIN_TO_UUID(c.warehouse_id),
-              'canonicalOrderId',BIN_TO_UUID(c.canonical_order_id),'mappingVersion',CAST(c.mapping_version AS CHAR),
+              'canonicalOrderId',BIN_TO_UUID(IFNULL(c.canonical_order_id,c.source_order_id)),'mappingVersion',CAST(c.mapping_version AS CHAR),
               'fromWorkRound',CAST(c.work_round AS CHAR),'currentSubmissionId',BIN_TO_UUID(c.current_submission_id),
               'submissionStatus',s.status,
               'sourceKind',IF(c.source_order_id IS NULL,'TEMP','FORMAL'))
             FROM submission_scope c LEFT JOIN submission s ON s.id=c.current_submission_id
-            WHERE c.id=? AND c.canonical_order_id IS NOT NULL
-              AND (c.source_order_id IS NULL OR c.source_order_id=c.canonical_order_id)
+            -- A FORMAL scope must leave canonical_order_id NULL (ck_submission_scope_source), so its canonical order IS
+            -- the source order; a TEMP scope takes the canonical order written by the controlled link.
+            WHERE c.id=? AND (c.canonical_order_id IS NOT NULL OR c.source_order_id IS NOT NULL)
+              AND (c.source_order_id IS NULL OR c.canonical_order_id IS NULL OR c.source_order_id=c.canonical_order_id)
             """,String.class,Ids.bytes(scopeId));
         if (rows.size()!=1) throw HandoverCommand.missing();
         return SubmissionJson.parse(rows.getFirst());
