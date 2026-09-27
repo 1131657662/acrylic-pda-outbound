@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-27
 branch: codex/development
-head: 2ca2c14
-dirty_entries: 6
+head: f889996
+dirty_entries: 4
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.36.0, paths: 131, flyway: V47, migrations: 47 }
@@ -65,9 +65,6 @@ server: { contract: 0.36.0, paths: 131, flyway: V47, migrations: 47 }
 - 2026-09-27 选项 C 前置：`r08-export` / `r09-v33-recovery` / `sixth-wave-integration` 三棵树已合并且工作区干净，**可进入删除候选**；删除仍待业主逐项批准。
 - 2026-09-27 TEMP 归档 attempt 174（`dd54c8a` 修 7 处 attempt 号守卫，仅测试/夹具）+ 看板 head 与 R07 口径修正（`00a17e9`）；attempt 172 的 closure 归因被证伪（把 `corruptIndex` 的故意反例日志当成根因）。详见 [R06 欠债清单](history/R06_DEBT_LIST_2026-09-27.md)。
 - 2026-09-27 TEMP 归档收口（选 B＝新能力默认关闭）：`2a3acce` 加 `outbound.temporary.archive.enabled`（默认 false）+ `a91572e` 修关闭态 500（`IdentityWriteGuard` MANDATORY）；attempt 176 绿（验收达成）、178 绿（关/开两场景）；attempt 号守卫扫描无遗漏。
-- 2026-09-27 修 `ExportRendererProcessTest` pid 握手 flake（`9480a21`）：只判 `exists` 就 `parseLong` 会命中 `Files.writeString` 的空文件窗口；改原子发布＋等非空内容（A/B 12998→0）。隔离/负载/全量 718 均 0 失败。
-- 2026-09-27 IT 分批评估 attempt 179（`*E2aTemporaryArchive*IT` 3 类 / 1 attempt）：1 通过 2 红，均 `One-shot attempt already used`（结构性，非产品）；构造器 `tests` 计数与 `-Tests` 同名失真（复现 `0111`）→ 需先封装分批入口。
-- 2026-09-27 分批入口封装（选 A）：`f34c886` 修构造器 `tests` 计数；新增 `tools/e2a-batch-it.ps1`（每类一 attempt + XML 聚合 + 分类 + `entryIssues`）；runs **181–184** 四类全绿；波次 IT 仍需专用库。
 - 2026-09-27 Android LINK L4（选④）：`2bf2507` 三件套 → attempts **185/187** 双绿 `server=1/0/0/0`/`android=1/0/0/0`，L3→**L4**；`java.net.http` 不在 Android classpath→OkHttp；构造器补 `--rerun-tasks`。
 - 2026-09-27 R07-3（代码面收口）：步骤 1-8 + 撤销发起半程全部实现并逐项验证——190/192/199/203/211/212/215/**223**（差异案件状态机）/**227**（状态发件箱）；收口文档 + 契约草案（未发布）已出；全部默认关闭、未部署。
 <!-- CURRENT_STATE_END -->

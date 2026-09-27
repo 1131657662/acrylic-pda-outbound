@@ -14,6 +14,12 @@
 #   3) 申请人确认机制（P-R07-08 的确认半程）政策确定并实现；
 #   4) `contracts/openapi.yaml` 版本号由维护者按事实块统一分配后递增；
 #   5) 本文件的路径与 schema 通过 `tools/version_facts.ps1 -Check` 的一致性校验（并入后）。
+#
+# 已知「已实现但故意未发布」的路由（同一纪律：能力默认关闭 ⇒ 不发布）——并入时需一并处理：
+#   - /api/v1/pda/corrections            （R07-3 PDA 别名，本文件即其草案）
+#   - /api/v1/pda/temporary-commands     （R06 命令面 PDA 别名）
+#   - /api/v1/pda/local-draft-evidence   （R06 草稿证据面）
+# 2026-09-27 全局扫描（收口文档 §7.2）：除此之外未发现"应发布却缺失"的路由。
 
 openapi: 3.1.0
 info:
