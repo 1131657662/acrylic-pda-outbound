@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: c974188
+head: 0bcf24c
 dirty_entries: 5
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
@@ -14,7 +14,7 @@ server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
 
-本页是唯一断点，源码版本事实只见生成块。C1第二批收尾前看板已[原文归档](history/ORCHESTRATION_STATE_before_R09_C1_BATCH2_CLOSE_2026-09-28.md)，其中保留此前归档索引；生成后文档提交HEAD以Git为准，不恢复历史指令。
+本页是唯一断点，源码版本事实只见生成块。C1冒烟前看板已[原文归档](history/ORCHESTRATION_STATE_before_R09_C1_SMOKE_2026-09-28.md)，其中保留此前归档索引；生成后文档提交HEAD以Git为准，不恢复历史指令。
 
 ## 交付与本次接续
 - **D整块已交付（用户按已验范围接受）**：11c20e8已推送；片1/片2/片3、部分更正/连续更正/实物撤销/抬头生效四项基本边界、审批人ID/撤销导出/抬头导出修复均✅。[交付确认](history/R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)列全部历史证据；不再停留D扩测。
@@ -28,14 +28,15 @@ server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 - **21类转发布前完整回归清单**：Ledger13/Foundation6/迁移1/Android1，8类R08保留专用历史验收。11类此前因新profile需改守卫停在配置前，5d977ea已推送；[目录及前置](history/A3_NON_E2A_REMAINING_2026-09-28.md)保留。本阶段不配置profile、不补跑，旧库/marker/失败证据原样保留；清单转移不计通过。
 - **R09 C1第一批已完成**：用户已授权两批实施，范围评估停报结论仅为历史。37beeaa/c146f5f均已推送；[独立库外协议/耐久存储](history/R09_C1_INITIAL_PROTOCOL_BATCH1_2026-09-28.md)仅新增4个生产组件/3个测试文件，22/0/0/0。首批按只新增边界未改既有看板/欠债，本批补同步。
 - **R09 C1第二批部分完成，未验收**：c974188已推送，新增初次DB登记/事务/查询/核验、耐久UNKNOWN与R09适配、独立存储迁移和测试域HTTP探针。[批次证据/缺口](history/R09_C1_INITIAL_REGISTRATION_BATCH2_2026-09-28.md)：557/558各1/1/0/0，真MySQL迁移成功，探针重复mapping阻断启动，均0 HTTP/未进C1登记或105真库回归。探针修正后78/0/0/0单测；此前78/1/0/0红保留，完整Boot未复验。
+- **C1本轮先冒烟，准备失败即停**：0bcf24c新增独立完整应用启动入口，编译通过。本机脚本未引用MySQL主机参数，报`Unknown MySQL server host '127' (11001)`；隔离MySQL已启动，但Java/Spring未执行，非产品缺陷定性、未验证探针修正。按用户失败即停要求未重试/未跑IT/未分配559；[原样错误与证据](history/R09_C1_SMOKE_BLOCKER_2026-09-28.md)。
 - **R09 C2入口评估bf568a0已推送，实施未启动**：[评估](history/R09_C2_ENTRY_ASSESSMENT_2026-09-28.md)列各入口/最小验收。用户同意先C1后C2；C1完成后核定旧操作收尾，再B1 HTTP/Session→PDA/各文件/Worker/渲染/迁移/Bootstrap逐入口分批，不自动开工。
-- **C1/C2证据边界**：单测和迁移绿不等于C1双侧真HTTP通过；初次正反例/原事实守恒/UNKNOWN重启/105真库回归待验。按本次时间盒在两次IT失败、单测修正后收尾，559未启动，续验交用户决定。没有生产登记端点或入口接线；旧关闭链验收不替代初次协议，C2嵌套租约/框架清理/异步/multipart仍待验。
+- **C1/C2证据边界**：本轮仅编译绿，冒烟未通过；历史单测和迁移绿不等于C1双侧真HTTP通过，初次正反例/原事实守恒/UNKNOWN重启/105真库回归待验。用户已授权复验但规定冒烟失败即停，本次据此收尾，接续交用户决定。没有生产登记端点或入口接线；C2嵌套租约/框架清理/异步/multipart仍待验。
 
 ## 树、写权与环境断点
-- 主树D:/acrylic-pda-outbound，codex/development；本批实现c974188与origin一致。只有当前助手写入，无在途重型测试。实现清单见该提交（22文件）；收尾改动仅看板、欠债v55、历史索引、新增第二批记录及前看板原文，共5文档，实际HEAD见事实块/Git。
-- 557/558为新主树精确profile与独立datadir/schema/账号，真MySQL迁移已执行；失败均发生在HTTP之前。收尾不再建库/测试；A3不重开、C2未开工，不绕过旧守卫/删除marker/替换旧目录或放宽超时。
+- 主树D:/acrylic-pda-outbound，codex/development；输入6c74f79与origin一致、开始干净。只有当前助手写入，无在途重型测试。本轮0bcf24c仅新增C1StartupSmoke测试入口；收尾仅看板、欠债v56、索引、新增冒烟记录及前看板原文5文档，实际HEAD见事实块/Git。
+- 本轮独立冒烟目录.local/r09-c1-smoke-20260928-1/；数据库初始化后readiness参数错误，未建业务schema/迁移/调用Java。失败脚本及原日志保留，收尾只纠正清理命令关闭实例，未修正/重跑冒烟。A3不重开、C2未开工，不绕过守卫/删marker/放宽超时。
 - 旧验证树历史断点为detached ea4d166、97条既有dirty/untracked；上轮status文本差异0。本轮未进入/写入旧树，不将历史检查写成本轮复核；没有同步文件、提交、重置或合并。
-- 收尾检查19300–19500无监听，无在途C1/Gradle测试，既有Gradle daemon保留；系统3306未动。557/558隔离库、started marker及失败证据完整留在.local/e2a-cross-20260925-557/与558/；日志/XML在.local/r09-c1-batch2-20260928/，修正后10份单测XML已单独保全。
+- 冒烟实例已核对PID/datadir后正常关闭，19330/19437释放；收尾复核专用端口与在途任务，既有Gradle daemon保留，系统3306未动。冒烟编译日志/失败库/原错误在.local保留；557/558及单测红绿证据仍在.local/r09-c1-batch2-20260928/与各失败库目录。
 - 实际使用号止于558（失败也不重用），559未启动，接续执行前查重。历史A3库/日志保持，Ledger/Foundation等专用环境未接续，R08专用run32未用；所有旧manifest含已用号不可复用。
 
 ## 历史证据、失败与未验
@@ -45,9 +46,9 @@ server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 - D范围外：抬头撤销HTTP、多个字段/其他标量类型、抬头与实物混合链、多文档撤销/撤销后再更正、独立审查及现场。R08实物撤销证据不外推抬头。
 - A3原清点136类中67类已有批次绿、69类待核；后续40类执行（39类全绿、526另挂疑似专项），21类待发布前、8类R08历史去重；[完整目录](history/A3_NON_E2A_REMAINING_2026-09-28.md)。去重/转清单不计通过/skip；夹具绿非浏览器/Android消费；专项环境/迁移/原资料组合、外部HTTP仍未验。
 - R07-1⑤–⑧反例、3真并发、2原子性、APPROVE成功、PREPARE/ACTIVATE与REQUEST/APPROVE权限拆分仍未验/待裁决；③命令记录时版本待授权，②汇总最新有效版本未实现。
-- R09 C1初次协议/生产适配已提交，双侧真HTTP、原安装现场资料组合、真实UNKNOWN/重启及105真库回归未通过；557/558和探针单测红保留，不以迁移成功覆盖。C2所有动态组合、Windows断电/Linux持久性与进程隔离、关闭态能力和生产释放未验/未授权。P1–P7、真机/Keystore/App内升级/长时留存/外网异地、原资料旧BCD及历史现场限制保留。A2已修dcaf7ad/377，不重开。
+- R09 C1本轮冒烟准备失败，Spring/HTTP未执行；初次协议/生产适配已提交，双侧真HTTP、原安装现场资料组合、真实UNKNOWN/重启及105真库回归未通过。557/558及单测红保持。C2动态组合、Windows断电/Linux持久性与进程隔离、关闭态能力和生产释放未验/未授权。P1–P7、真机/Keystore/App内升级/长时留存/外网异地、原资料旧BCD及历史现场限制保留。A2已修dcaf7ad/377，不重开。
 
 ## 边界
-- 本轮C1按两批授权推进，R09适配/新增迁移已提交但真实验收未完成；未改旧迁移、R05/R06/R07、ConfirmedV1Adapter、契约或生产配置/开关。不发布/部署/合main，不修R07抬头撤销、不深入526、不配置A3 profile；C1续验及C2各批交用户决定。
+- 本轮C1按冒烟失败即停边界收尾，仅新增测试入口和文档，未改生产代码/旧迁移/R05/R06/R07/ConfirmedV1Adapter/契约/默认配置或开关。不发布/部署/合main，不修R07抬头撤销、不深入526、不配置A3 profile；冒烟接续及C2各批交用户决定。
 - 不提交.local密钥/数据库/真实业务资料。七类生产决定及TEMP归档仍关闭，localDeletionAllowed=false，普通有权正常确认允许空理由；本机留证不代表异地备份。
 <!-- CURRENT_STATE_END -->

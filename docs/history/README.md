@@ -1,5 +1,8 @@
 # 历史归档
 
+- [R09_C1_SMOKE_BLOCKER_2026-09-28.md](R09_C1_SMOKE_BLOCKER_2026-09-28.md)：0bcf24c新增完整应用冒烟入口，编译通过；本机MySQL主机参数误解析导致准备失败，Spring/IT未执行，559未分配，按用户边界停止，原样错误及清理证据保留。
+- [C1冒烟前看板原文](ORCHESTRATION_STATE_before_R09_C1_SMOKE_2026-09-28.md)：保留两批实现及557/558红的收尾断点，历史指令不恢复生效。
+
 - [R09_C1_INITIAL_REGISTRATION_BATCH2_2026-09-28.md](R09_C1_INITIAL_REGISTRATION_BATCH2_2026-09-28.md)：c974188接入初次NORMAL双侧协调器/新存储；557/558重复HTTP mapping启动失败，修正探针后78项单测绿，C1真实验收未完成，红证据及接续条件完整保留。
 - [R09_C1_INITIAL_PROTOCOL_BATCH1_2026-09-28.md](R09_C1_INITIAL_PROTOCOL_BATCH1_2026-09-28.md)：37beeaa仅新增独立库外模型/耐久存储与测试，22项绿；c146f5f记录协议、可信原件及第二批DB存储边界。
 - [C1第二批收尾前看板原文](ORCHESTRATION_STATE_before_R09_C1_BATCH2_CLOSE_2026-09-28.md)：保存评估时断点；首批按只新增约束延后既有文档同步，历史指令不恢复生效。
