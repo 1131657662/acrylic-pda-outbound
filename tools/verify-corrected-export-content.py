@@ -105,7 +105,7 @@ def verify_pdf_adjustments(text, order):
     approvals = re.findall(r'审批人:([0-9a-f-]{36})', section)
     assert Counter(approvals) == Counter(a['approver'] for a in order['adjustments'])
     for item in order['adjustments']:
-        start = compact(item['correctionId'] + '/' + item['lineId'])
+        start = compact(f"{item['correctionId']}/{item['lineId']};结果版本{item['resultVersion']};")
         block = section.split(start, 1)[1].split('凭据依据:', 1)[0]
         for field in ['dispatchId', 'kind', 'reason', 'approver']:
             assert compact(item[field]) in block, field

@@ -28,7 +28,8 @@ public final class WithdrawnCorrectionExportHttpChecks {
         var check=new WithdrawnCorrectionExportHttpChecks(context,scope,attempt);
         Files.createDirectories(check.output);check.captureFacts();
         check.wire=CorrectionExportHttpClient.login(context,scope);
-        check.export("XLSX");check.export("PDF");
+        check.export("XLSX",3);check.export("PDF",3);
+        check.export("XLSX",2);check.export("PDF",2);check.export("XLSX",1);
         Files.writeString(attempt.resolve("withdrawn-http-completed.marker"),"withdrawn v3 HTTP XLSX/PDF completed\n");
     }
 
@@ -47,6 +48,7 @@ public final class WithdrawnCorrectionExportHttpChecks {
                 +"effective_weight_g weightG FROM order_effective_scan WHERE order_id=? AND result_version=3 ORDER BY original_sequence",order);
         var values=new LinkedHashMap<String,Object>();values.put("versions",versions);values.put("documents",documents);
         values.put("ledger",ledger);values.put("effective",effective);
+        values.put("withdrawal",withdrawalFacts(jdbc,lineId,documents.getFirst().get("id")));
         values.put("correctionDocumentForV3",context.getBean(ExportFacts.class).correctionDocumentFor(scope.order(),3));
         String json=context.getBean(JsonText.class).encode(values);Files.writeString(output.resolve("database-facts.json"),json);
         facts=SubmissionJson.parse(json);assertThat(versions).hasSize(3);assertThat(documents).hasSize(1);
@@ -58,29 +60,49 @@ public final class WithdrawnCorrectionExportHttpChecks {
         assertThat(facts.at("/ledger/weightDeltaG").asLong()).isZero();
     }
 
-    private void export(String format) throws Exception {
-        var body=SubmissionJson.object().put("format",format).put("basis","CORRECTED").put("resultVersion",3);
-        Files.writeString(output.resolve("request-"+format+".json"),body.toPrettyString());
+    private Map<String,Object> withdrawalFacts(JdbcTemplate jdbc,String lineId,Object document) {
+        var receipts=jdbc.queryForList("SELECT BIN_TO_UUID(id) id,BIN_TO_UUID(actor_id) actor,canonical_command_bytes"
+                +" FROM correction_command_receipt WHERE document_id=UUID_TO_BIN(?) AND command_type='WITHDRAW_CONFIRM'",document);
+        assertThat(receipts).hasSize(1);var receipt=receipts.getFirst();
+        var rows=jdbc.queryForList("SELECT BIN_TO_UUID(id) id,BIN_TO_UUID(reverses_entry_id) reversesId"
+                +" FROM correction_ledger WHERE correction_line_id=UUID_TO_BIN(?) AND reverses_entry_id IS NOT NULL",lineId);
+        return Map.of("lineId",lineId,"receiptId",receipt.get("id"),"confirmer",receipt.get("actor"),"entries",rows,
+                "reason",SubmissionJson.parse((byte[])receipt.get("canonical_command_bytes")).path("reason").asText());
+    }
+
+    private void export(String format,long version) throws Exception {
+        var destination=version==3?output:output.resolve(version==2?"historical-v2":"default-v1");
+        Files.createDirectories(destination);
+        var body=SubmissionJson.object().put("format",format).put("basis",version>1?"CORRECTED":"ORIGINAL_CONFIRMED");
+        if(version>1)body.put("resultVersion",version);
+        Files.writeString(destination.resolve("request-"+format+".json"),body.toPrettyString());
         var response=wire.post("/orders/"+scope.order()+"/exports",body,UUID.randomUUID());
-        Files.write(output.resolve("create-"+format+".json"),response.body());
-        Files.writeString(output.resolve("http-status-"+format+".txt"),Integer.toString(response.statusCode()));
+        Files.write(destination.resolve("create-"+format+".json"),response.body());
+        Files.writeString(destination.resolve("http-status-"+format+".txt"),Integer.toString(response.statusCode()));
         UUID id=UUID.fromString(data(response,200).path("id").asText());
         var store=context.getBean(BackgroundJobStore.class);var queries=context.getBean(ExportJobQueries.class);
         BackgroundJob job=null;
         for(int index=0;index<30;index++) {
             var status=data(wire.get("/exports/"+id),200);
-            Files.writeString(output.resolve("status-"+format+".json"),status.toPrettyString());
+            Files.writeString(destination.resolve("status-"+format+".json"),status.toPrettyString());
             assertThat(status.path("status").asText()).as("withdrawn export status: %s",status).isNotIn("FAILED","EXPIRED","INVALIDATED");
             if(status.path("status").asText().equals("SUCCEEDED")){job=store.find(id).orElseThrow();break;}
             assertThat(context.getBean(BackgroundJobWorker.class).runOnce("d-withdraw-boundary")).isPresent();
         }
         assertThat(job).isNotNull();var payload=queries.payload(job);var files=context.getBean(ExportFiles.class);
         var snapshot=SubmissionJson.parse(Files.readString(files.snapshot(payload.snapshotHash())));
-        Files.writeString(output.resolve("snapshot-"+payload.format().extension+".json"),snapshot.toPrettyString());
-        assertSnapshot(snapshot);
+        Files.writeString(destination.resolve("snapshot-"+payload.format().extension+".json"),snapshot.toPrettyString());
+        if(version==3)assertSnapshot(snapshot);
+        else if(version==2) assertThat(snapshot.path("orders")).isEqualTo(SubmissionJson.parse(Files.readString(output.resolve("pre-withdraw-v2.json"))).path("orders"));
+        else {
+            assertThat(snapshot.at("/metadata/basis").asText()).isEqualTo("ORIGINAL_CONFIRMED");
+            assertThat(snapshot.at("/orders/0/resultVersion").asLong()).isEqualTo(1);
+            assertThat(snapshot.at("/orders/0/adjustments")).isEmpty();
+            assertThat(snapshot.at("/orders/0/originalLines")).hasSize(2);
+        }
         var download=wire.get("/exports/"+id+"/file");assertThat(download.statusCode()).isEqualTo(200);
         assertThat(download.body()).isEqualTo(Files.readAllBytes(files.artifact(id,payload.artifact().token(),payload.format())));
-        Files.write(output.resolve("withdrawn."+payload.format().extension),download.body());
+        Files.write(destination.resolve("withdrawn."+payload.format().extension),download.body());
     }
 
     private void assertSnapshot(JsonNode snapshot) {
@@ -94,5 +116,27 @@ public final class WithdrawnCorrectionExportHttpChecks {
             assertThat(actual.path("weightGrams").asLong()).isEqualTo(expected.path("weightG").asLong());
         }
         assertThat(order.path("originalHeader")).isEqualTo(order.path("effectiveHeader"));
+        assertWithdrawal(order.path("adjustments"));
+    }
+
+    private void assertWithdrawal(JsonNode adjustments) {
+        assertThat(adjustments).hasSize(2);var forward=adjustments.get(0);var reverse=adjustments.get(1);
+        assertThat(forward.path("resultVersion").asInt()).isEqualTo(2);
+        assertThat(forward.path("beforeWeightGrams").asLong()).isEqualTo(300500);
+        assertThat(forward.path("afterWeightGrams").asLong()).isZero();
+        assertThat(reverse.path("resultVersion").asInt()).isEqualTo(3);
+        assertThat(reverse.path("kind").asText()).isEqualTo("CORRECTION_WITHDRAWAL");
+        assertThat(reverse.path("correctionId").asText()).isEqualTo(facts.at("/documents/0/id").asText());
+        assertThat(reverse.path("lineId").asText()).isEqualTo(facts.at("/withdrawal/lineId").asText());
+        assertThat(reverse.path("beforeCount").asInt()).isZero();assertThat(reverse.path("afterCount").asInt()).isEqualTo(1);
+        assertThat(reverse.path("beforeWeightGrams").asLong()).isZero();assertThat(reverse.path("afterWeightGrams").asLong()).isEqualTo(300500);
+        assertThat(reverse.path("reason").asText()).isEqualTo(facts.at("/withdrawal/reason").asText());
+        assertThat(Ids.bytes(UUID.fromString(reverse.path("approver").asText())))
+                .containsExactly(HexFormat.of().parseHex(facts.at("/documents/0/approvedByHex").asText()));
+        assertThat(reverse.path("evidenceReference").asText()).contains(facts.at("/withdrawal/receiptId").asText(),facts.at("/withdrawal/confirmer").asText());
+        for(var entry:facts.at("/withdrawal/entries"))
+            assertThat(reverse.path("evidenceReference").asText()).contains(entry.path("id").asText(),entry.path("reversesId").asText());
+        assertThat(java.time.Instant.parse(reverse.path("occurredAt").asText()))
+                .isEqualTo(java.time.Instant.parse(facts.at("/documents/0/withdrawal_confirmed_at").asText()+"Z"));
     }
 }

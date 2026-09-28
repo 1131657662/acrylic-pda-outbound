@@ -1,6 +1,7 @@
 package com.acrylic.outbound.e2averify;
 
-import com.acrylic.outbound.exports.ExportModels;
+import com.acrylic.outbound.exports.*;
+import com.acrylic.outbound.common.JsonText;
 import com.acrylic.outbound.inventory.WithdrawnCorrectionExportHttpChecks;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,6 +28,9 @@ class E2aWithdrawnCorrectionExportIT {
         Path output=profile.attempt.resolve("storage/withdrawn-correction");Files.createDirectories(output);
         try(var app=E2aCrossSourceHttpIT.start(profile,"--outbound.corrections.commands.enabled=true")) {
             var document=correct(fixture,jdbc,order,token,output);
+            var scope=new ExportModels.Scope(order.operatorId(),UUID.fromString(order.warehouseId()),UUID.fromString(order.orderId()));
+            var before=app.getBean(ExportSnapshotReader.class).read(scope,ExportModels.Format.XLSX,java.time.Instant.now(),2);
+            Files.writeString(output.resolve("pre-withdraw-v2.json"),app.getBean(JsonText.class).encode(before));
             var initiated=receipt(fixture.post(token,fixture.withdrawBody(order,document.path("documentId").asText(),
                     document.path("documentSha256").asText(),"EFFECTIVE")),output,"withdraw");
             assertThat(initiated.path("status").asText()).isEqualTo("WITHDRAW_PENDING");
@@ -36,7 +40,6 @@ class E2aWithdrawnCorrectionExportIT {
             assertThat(withdrawn.path("resultVersion").asInt()).isEqualTo(3);
             assertThat(withdrawn.path("effectiveCount").asText()).isEqualTo(order.resultCount());
             assertThat(withdrawn.path("effectiveWeightG").asText()).isEqualTo(order.resultWeight());
-            var scope=new ExportModels.Scope(order.operatorId(),UUID.fromString(order.warehouseId()),UUID.fromString(order.orderId()));
             WithdrawnCorrectionExportHttpChecks.verify((WebApplicationContext)app,scope,profile.attempt);
         }
         Files.writeString(profile.attempt.resolve("test-completed.marker"),"withdrawn correction HTTP export passed\n");

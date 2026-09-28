@@ -52,12 +52,19 @@ public class ExportFacts {
         return h;
     }
     /**
-     * 该结果版本是否由某一更正文档产出（v&gt;1 的判定来源：{@code correction_document.effective_result_version}）。
+     * 固定结果版本以 source_correction_id 为锚；原生效版本与撤销确认生成的版本均保持可追溯。
      * 返回 null 表示该版本没有对应的更正文档 ⇒ 不属于"更正净结果"。
      */
     public String correctionDocumentFor(UUID order, long resultVersion) {
-        var rows=jdbc.queryForList("SELECT BIN_TO_UUID(id) FROM correction_document WHERE order_id=? "
-            + "AND effective_result_version=? AND status IN ('EFFECTIVE','WITHDRAW_PENDING') LIMIT 2",
+        var rows=jdbc.queryForList("""
+            SELECT BIN_TO_UUID(d.id) FROM order_result_version r
+            JOIN correction_document d ON d.id=r.source_correction_id AND d.order_id=r.order_id
+            WHERE r.order_id=? AND r.result_version=? AND (
+              (r.result_version=d.effective_result_version AND d.status IN ('EFFECTIVE','WITHDRAW_PENDING','WITHDRAWN'))
+              OR (r.result_version>d.effective_result_version AND d.status='WITHDRAWN'
+                AND d.withdrawal_confirmed_by IS NOT NULL AND r.created_at=d.withdrawal_confirmed_at))
+            LIMIT 2
+            """,
             String.class,Ids.bytes(order),resultVersion);
         if(rows.isEmpty()) return null;
         check(rows.size()==1,"同一结果版本对应多个更正文档");

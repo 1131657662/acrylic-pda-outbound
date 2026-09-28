@@ -7,5 +7,5 @@ public record Adjustment(String correctionId, String lineId, long resultVersion,
         String dispatchId, int beforeCount, int afterCount, String beforeWeightGrams,
         String afterWeightGrams, String headerField, String beforeText, String afterText,
         Instant occurredAt, String reason, String approver, String evidenceReference) {
-    public enum Kind { WEIGHT_CORRECTION, PHYSICAL_RETURN, DISPATCH_CANCELLATION, HEADER_CORRECTION }
+    public enum Kind { WEIGHT_CORRECTION, PHYSICAL_RETURN, DISPATCH_CANCELLATION, HEADER_CORRECTION, CORRECTION_WITHDRAWAL }
 }
