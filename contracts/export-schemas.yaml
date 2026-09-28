@@ -11,13 +11,31 @@ Range:
   properties:
     fromDate: {type: string, format: date}
     throughDate: {type: string, format: date}
+# D slice 3 draft only: reviewed implementation support, not a contract release.
 SingleCommand:
   type: object
   required: [format, basis]
   properties:
     format: {$ref: '#/Format'}
-    basis: {type: string, const: ORIGINAL_CONFIRMED}
+    basis: {type: string, enum: [ORIGINAL_CONFIRMED, CORRECTED]}
     range: {type: 'null', description: 单订单请求必须省略或为null。}
+    resultVersion:
+      type: [integer, 'null']
+      minimum: 1
+      default: 1
+      description: 草案；省略或null按版本1处理。原确认只允许1；CORRECTED必须显式指定大于1的已存在结果版本，不推断最新版本。
+  allOf:
+    - if:
+        properties: {basis: {const: CORRECTED}}
+        required: [basis]
+      then:
+        required: [resultVersion]
+        properties:
+          resultVersion: {type: integer, minimum: 2}
+          format: {type: string, enum: [XLSX, PDF]}
+      else:
+        properties:
+          resultVersion: {enum: [1, null]}
 RangeCommand:
   type: object
   required: [format, basis, range]
@@ -25,6 +43,7 @@ RangeCommand:
     format: {type: string, enum: [XLSX, PDF]}
     basis: {type: string, const: ORIGINAL_CONFIRMED}
     range: {$ref: '#/Range'}
+    resultVersion: {type: [integer, 'null'], enum: [1, null], default: 1, description: 汇总仍限定原确认首版；不开放更正净结果汇总。}
 View:
   type: object
   required: [id, orderNo, format, basis, resultVersion, revision, status, attempts, errorCode, createdAt, expiresAt, originalDay, snapshotId, sha256, bytes, downloadable, orderId, range, orderCount, retryOf]
@@ -32,8 +51,8 @@ View:
     id: {type: string, format: uuid}
     orderNo: {type: string, description: 单订单原编号；跨订单为汇总标题。}
     format: {$ref: '#/Format'}
-    basis: {type: string, const: ORIGINAL_CONFIRMED}
-    resultVersion: {type: integer, const: 1}
+    basis: {type: string, enum: [ORIGINAL_CONFIRMED, CORRECTED]}
+    resultVersion: {type: integer, minimum: 1, description: 固定快照的结果版本；旧持久任务缺少该字段时按1兼容，CORRECTED任务返回请求指定版本。}
     revision: {type: integer, minimum: 0, description: 单订单原修订；跨订单为0。}
     status: {$ref: '#/Status'}
     attempts: {type: integer, minimum: 0}

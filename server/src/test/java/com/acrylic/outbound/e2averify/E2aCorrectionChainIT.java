@@ -180,6 +180,9 @@ class E2aCorrectionChainIT {
                 .isEqualTo(approved.body());
             // (d2) D 片1：更正净结果（v>1）快照能被组装（服务端只读，不渲染），逐条对照库内 v2 事实。
             CorrectionExportSnapshotChecks.verify((WebApplicationContext) open, order.orderId(), 2L);
+            com.acrylic.outbound.inventory.CorrectionExportHttpChecks.verify((WebApplicationContext) open,
+                new com.acrylic.outbound.exports.ExportModels.Scope(order.operatorId(),
+                    UUID.fromString(order.warehouseId()),UUID.fromString(order.orderId())),profile.attempt);
             notes.append("⑧-1D 片1 更正净结果快照组装（v2：版本/逐包/合计/凭据对照库内事实 + 默认 v1 不变）-> OK\n");
             // (e) a second correction on the moved order must not be accepted against the old version.
             var stale = post(token, freshKey(createBody(order, expectedBlock(order, "1"), "0", "0")));

@@ -28,6 +28,7 @@ public class ExportProducer {
     public View create(Request request,String requestId) throws IOException {
         if((request.scope().order()==null)!=(request.command().range()!=null))
             throw new BusinessException(400,"EXPORT_RANGE_INVALID","单订单与汇总范围不匹配");
+        validateSelection(request);
         state.lockWritable(request.epoch());
         jdbc.queryForList("SELECT id FROM app_user WHERE id=? FOR UPDATE",Ids.bytes(request.scope().actor()));
         access.require("order:read",request.scope().warehouse());
@@ -36,20 +37,35 @@ public class ExportProducer {
         if(existing.isPresent()) return replay(existing.get(),request);
         renderer.requireAvailable(request.command().format());queries.checkCapacity(request.scope().actor());
         Instant now=jdbc.queryForObject("SELECT UTC_TIMESTAMP(6)",java.sql.Timestamp.class).toInstant();
-        var snapshot=request.scope().order()==null?ranges.read(request,now):snapshots.read(request.scope(),request.command().format(),now);
+        var snapshot=request.scope().order()==null?ranges.read(request,now)
+                :snapshots.read(request.scope(),request.command().format(),now,request.command().version());
+        if("CORRECTED".equals(request.command().basis()) && request.command().format()==Format.PDF
+                && snapshot.orders().getFirst().originalLines().size()>1000)
+            throw new BusinessException(409,"EXPORT_LIMIT_EXCEEDED","单次PDF最多1000包，请使用Excel");
         var order=request.scope().order()==null?null:snapshot.orders().getFirst();String hash=files.store(snapshot);
         var p=new Payload(request.scope(),request.command().format(),request.command().basis(),request.epoch(),hash,
                 snapshot.metadata().snapshotId(),order==null?"跨订单原确认汇总":order.number(),order==null?0:order.revision(),snapshot.metadata().fromDate().toString(),
-                request.command().format().template(),now.plus(Duration.ofDays(7)),null,request.command().range(),snapshot.orders().size(),null);
+                request.command().format().template(),now.plus(Duration.ofDays(7)),null,request.command().range(),snapshot.orders().size(),null,
+                request.command().version());
         var job=jobs.enqueue(new NewBackgroundJob(TYPE,key,json.encode(p),3,now));
         audit.append(new AuditWriter.Event(request.scope().actor(),"REPORT_EXPORT_REQUESTED","ORDER",request.scope().order(),
                 json.encode(Map.of("jobId",job.id(),"format",p.format(),"basis",p.basis(),"snapshotHash",hash))),requestId);
         return queries.view(job);
     }
+    private void validateSelection(Request request) {
+        var command=request.command();boolean corrected="CORRECTED".equals(command.basis());
+        if((corrected && command.version()<2) || (!corrected && command.version()!=1))
+            throw new BusinessException(400,"EXPORT_VERSION_INVALID","原确认须为版本1；更正净结果须指定大于1的版本");
+        if(corrected && request.scope().order()==null)
+            throw new BusinessException(400,"EXPORT_RANGE_INVALID","更正净结果仅支持单订单指定版本");
+        if(corrected && command.format()==Format.SCAN_XLSX)
+            throw new BusinessException(400,"EXPORT_FORMAT_UNSUPPORTED","扫码记录Excel仅支持原确认口径");
+    }
     private View replay(BackgroundJob job,Request request) {
         var p=queries.payload(job);
         if(!job.jobType().equals(TYPE) || !p.scope().equals(request.scope()) || p.format()!=request.command().format()
                 || !p.basis().equals(request.command().basis()) || !p.epoch().equals(request.epoch())
+                || p.version()!=request.command().version()
                 || !java.util.Objects.equals(p.range(),request.command().range()) || p.retryOf()!=null)
             throw new BusinessException(409,"IDEMPOTENCY_CONFLICT","幂等键已用于其他导出请求");
         return queries.view(job);

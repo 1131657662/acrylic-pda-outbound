@@ -33,7 +33,7 @@ public class ExportRetry {
         if(existing.isPresent()) return replay(existing.get(),request);
         validate(original,p,request.epoch());renderer.requireAvailable(p.format());queries.checkCapacity(request.scope().actor());
         Instant now=Instant.now();var payload=new Payload(p.scope(),p.format(),p.basis(),p.epoch(),p.snapshotHash(),p.snapshotId(),
-                p.orderNo(),p.revision(),p.originalDay(),p.template(),now.plus(Duration.ofDays(7)),null,p.range(),p.orderCount(),original.id());
+                p.orderNo(),p.revision(),p.originalDay(),p.template(),now.plus(Duration.ofDays(7)),null,p.range(),p.orderCount(),original.id(),p.resultVersion());
         var job=jobs.enqueue(new NewBackgroundJob(TYPE,key,json.encode(payload),3,now));
         audit.append(new AuditWriter.Event(p.scope().actor(),"REPORT_EXPORT_RETRIED","EXPORT",job.id(),
                 json.encode(Map.of("retryOf",original.id(),"snapshotHash",p.snapshotHash()))),requestId);

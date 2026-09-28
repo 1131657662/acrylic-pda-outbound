@@ -8,8 +8,11 @@ import jakarta.validation.constraints.*;
 public final class ExportModels {
     public static final String TYPE = "REPORT_RENDER_V1";
     public record Range(@NotNull LocalDate fromDate, @NotNull LocalDate throughDate) { }
-    public record Command(@NotNull Format format, @NotNull @Pattern(regexp="ORIGINAL_CONFIRMED") String basis,
-            @jakarta.validation.Valid Range range) { }
+    public record Command(@NotNull Format format, @NotNull @Pattern(regexp="ORIGINAL_CONFIRMED|CORRECTED") String basis,
+            @jakarta.validation.Valid Range range, @Min(1) Long resultVersion) {
+        public Command(Format format,String basis,Range range) { this(format,basis,range,null); }
+        public long version() { return resultVersion==null?1L:resultVersion; }
+    }
     public enum Format {
         XLSX("xlsx", "xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
         SCAN_XLSX("xlsx", "scan-xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
@@ -28,7 +31,15 @@ public final class ExportModels {
     public record Request(Scope scope, UUID key, String epoch, Command command) { }
     public record Payload(Scope scope, Format format, String basis, String epoch, String snapshotHash,
             String snapshotId, String orderNo, long revision, String originalDay, String template,
-            Instant expiresAt, Artifact artifact, Range range, Integer orderCount, UUID retryOf) { }
+            Instant expiresAt, Artifact artifact, Range range, Integer orderCount, UUID retryOf, Long resultVersion) {
+        public Payload(Scope scope,Format format,String basis,String epoch,String snapshotHash,String snapshotId,
+                String orderNo,long revision,String originalDay,String template,Instant expiresAt,Artifact artifact,
+                Range range,Integer orderCount,UUID retryOf) {
+            this(scope,format,basis,epoch,snapshotHash,snapshotId,orderNo,revision,originalDay,template,
+                    expiresAt,artifact,range,orderCount,retryOf,null);
+        }
+        public long version() { return resultVersion==null?1L:resultVersion; }
+    }
     public record Artifact(UUID token, String sha256, long bytes) { }
     public record View(UUID id, String orderNo, Format format, String basis, long resultVersion, long revision,
             String status, int attempts, String errorCode, Instant createdAt, Instant expiresAt,

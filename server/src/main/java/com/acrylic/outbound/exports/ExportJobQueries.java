@@ -28,7 +28,7 @@ public class ExportJobQueries {
     public View view(BackgroundJob job) {
         var p=payload(job);var a=p.artifact();boolean expired=!p.expiresAt().isAfter(Instant.now());
         boolean old=!p.epoch().equals(state.current().epoch()) || !p.epoch().equals(job.recoveryEpoch());
-        return new View(job.id(),p.orderNo(),p.format(),p.basis(),1,p.revision(),old?"INVALIDATED":expired?"EXPIRED":job.status().name(),
+        return new View(job.id(),p.orderNo(),p.format(),p.basis(),p.version(),p.revision(),old?"INVALIDATED":expired?"EXPIRED":job.status().name(),
                 job.attemptCount(),job.lastError(),job.createdAt(),p.expiresAt(),p.originalDay(),p.snapshotId(),
                 a==null?null:a.sha256(),a==null?null:a.bytes(),!old && !expired && a!=null && job.status()==BackgroundJob.Status.SUCCEEDED,
                 p.scope().order(),p.range(),p.orderCount()==null?1:p.orderCount(),p.retryOf());

@@ -30,7 +30,8 @@ public class ExportDownloads {
             var a=p.artifact();byte[] bytes=files.verified(files.artifact(job.id(),a.token(),p.format()),a.sha256(),a.bytes());
             audit.append(new AuditWriter.Event(p.scope().actor(),"REPORT_EXPORT_DOWNLOADED","ORDER",p.scope().order(),
                     json.encode(Map.of("jobId",job.id(),"sha256",a.sha256()))),requestId);
-            String prefix=p.format()==ExportModels.Format.SCAN_XLSX?"scan-records-v1-":"original-v1-";
+            String prefix="CORRECTED".equals(p.basis())?"corrected-v"+p.version()+"-"
+                    :p.format()==ExportModels.Format.SCAN_XLSX?"scan-records-v1-":"original-v1-";
             return new Download(bytes,p.format(),prefix+job.id()+"."+p.format().extension);
         } catch(IOException error) { throw new BusinessException(410,"EXPORT_FILE_UNAVAILABLE","文件缺失或校验失败，请重新生成"); }
     }

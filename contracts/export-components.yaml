@@ -12,7 +12,7 @@ Key:
   name: Idempotency-Key
   in: header
   required: true
-  description: UUID；同账号原键、原请求、原恢复代次回放。参数冲突返回409，每次回放重验权限。
+  description: UUID；同账号原键、原请求、原恢复代次回放。草案明确结果版本参与请求比对，省略版本与显式1等价；参数冲突返回409，每次回放重验权限。
   schema: {type: string, format: uuid}
 Before:
   name: before
