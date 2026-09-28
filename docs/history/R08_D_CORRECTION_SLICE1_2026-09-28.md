@@ -29,20 +29,34 @@ R05/R06/R07 业务代码；未开开关、未发布契约。
   `correction_ledger` 行数（含 `reverses_entry_id` 反向引用链），只输出**该版本实际写入且写了账**的行；
 - 每条凭据带 `correction_document:<id> / correction_line:<id> / ledger_rows:<n>` 溯源串。
 
-## 三、**发现：跨模块口径差异（待裁定，片2 处理）**
+## 三、**④ 跨模块口径差异 → 已裁定：选 C（按效果归类）＋加断言防误解释**（业主 2026-09-28 决定）
 
-**实测证据（attempt 476 探针）**：更正引擎把"整行归零"的更正写成
-`type=WEIGHT_CORRECTION, before_count=1, target_count=0, target_weight_g=0`；
-而 R08 渲染侧 `AdjustmentValidator.effect` 规定
-`WEIGHT_CORRECTION` 必须 `afterCount == 1 && afterWeight > 0`（"重量更正不能改数量"）⇒ **两边口径不一致**。
+**本质**：同一件事（整行归零）在两个模块用了不同表达 —— 引擎写
+`WEIGHT_CORRECTION + target_count=0`（实测 attempt 476），渲染 `AdjustmentValidator.effect` 要求
+`WEIGHT_CORRECTION` 必须 `afterCount==1 && afterWeight>0` ⇒ 两边口径不一致。
 
-- 影响：若把引擎的 `WEIGHT_CORRECTION` 原样映射到 `Adjustment.Kind.WEIGHT_CORRECTION`，
-  渲染校验会拒绝（attempt 475 实测报"重量更正不能改数量"）。
-- 本片处置：`CorrectionExportSource` **按实际效果归类**（`target_count==0 && target_weight==0` ⇒ 退出净结果，
-  记为 `DISPATCH_CANCELLATION`/`PHYSICAL_RETURN`），**未改动任何一方的既有规则**。
-- **待片2 裁定**：是"引擎的 `WEIGHT_CORRECTION` 允不允许把整行归零"（改 R07-3 引擎＝越界，需业主授权），
-  还是"渲染的 `WEIGHT_CORRECTION` 应接受 count=0"（改 R08 已验证面，同样需授权），或"按效果归类"就是最终口径
-  （则需在设计与契约里写明"文档类型 ≠ 调整凭据类型"）。
+**裁定：C ＝ 在组装层按实际效果归类**，且**只对已证明合法的形状做转换**，其余一律拒绝：
+
+| 引擎形状 | 组装层解释 | 断言 |
+| --- | --- | --- |
+| `WEIGHT_CORRECTION` + `0包0克` | 整行退出净结果 ⇒ `DISPATCH_CANCELLATION` | 必须恰好 `targetCount==0 && targetWeight==0` |
+| `WEIGHT_CORRECTION` + `1包>0克` | 只改重量 ⇒ `WEIGHT_CORRECTION` | 必须恰好 `targetCount==1 && targetWeight>0` |
+| `WEIGHT_CORRECTION` + 其它（如既改重量又改数量的合法组合） | **拒绝** | `409 CORRECTION_EXPORT_KIND_AMBIGUOUS`（**不得静默解释为取消**） |
+| `PHYSICAL_RETURN` / `DISPATCH_CANCELLATION` | 归零类 | 必须 `0包0克`，否则拒绝 |
+| `HEADER_CORRECTION` | 无出库行 | 本轮**明确拒绝**（片2 专门处理） |
+
+另加统一前置断言：`before_count==1 && before_weight>0 && target_weight>=0`（形状非法即拒）。
+
+**性质声明**：这是**边界层转换**——**不改变引擎（R07-3）与渲染（R08 已验证面）任一方的语义**，
+也**不静默掩盖非法组合**（非法组合报可观测、可回归的错误码）。
+**验证**：attempt **478** `E2aCorrectionChainIT` `tests=1 failures=0 errors=0 skipped=0`（加断言后仍绿）。
+
+## 三之二、②③ 判定（已定，本轮只记录不改代码）
+
+- **② 跨订单汇总按哪个版本 → 每个订单的「最新有效版本」**（汇总是"当前状态"：每单取最新 v，v1 或 v>1；
+  单订单导出仍可看历史＝"两个都出"）。**本轮不改 `ExportRangeReader`**（改它需一并处理合计口径，随片3/后续）。
+- **③ 命令完整性按哪个版本 → 按命令记录时的版本**（不是固定 v1）。改 `CommandBusinessIntegrity:81`
+  要动 R05/R06/R07 面 ⇒ **本轮只记录、不改代码，列入「待授权项」**。
 
 ## 四、验证证据
 

@@ -117,25 +117,42 @@ public class CorrectionExportSource {
         for (var row : rows) {
             if (((Number) row.get("ledger_rows")).longValue() == 0) continue; // 未写账的行不是净结果凭据
             String type = String.valueOf(row.get("type"));
+            long beforeCount = ((Number) row.get("before_count")).longValue();
+            long beforeWeight = ((Number) row.get("before_weight_g")).longValue();
             long targetCount = ((Number) row.get("target_count")).longValue();
             long targetWeight = ((Number) row.get("target_weight_g")).longValue();
-            // 按**实际效果**归类，而不是照抄文档类型：实测（attempt 476）更正引擎会把"整行归零"的更正
-            // 记为 `WEIGHT_CORRECTION` 且 `target_count=0`，而导出侧 `AdjustmentValidator` 要求
-            // WEIGHT_CORRECTION 必须保持 count=1。两者是 R07-3 引擎与 R08 渲染模块之间的口径差异，
-            // 双方都不属本片可改范围 ⇒ 这里按效果归类（归零＝退出净结果），并在文档中登记该差异待裁定。
-            var kind = (targetCount == 0 && targetWeight == 0)
-                ? (type.equals("PHYSICAL_RETURN") ? Adjustment.Kind.PHYSICAL_RETURN : Adjustment.Kind.DISPATCH_CANCELLATION)
-                : switch (type) {
-                    case "WEIGHT_CORRECTION" -> Adjustment.Kind.WEIGHT_CORRECTION;
-                    case "PHYSICAL_RETURN" -> Adjustment.Kind.PHYSICAL_RETURN;
-                    case "DISPATCH_CANCELLATION" -> Adjustment.Kind.DISPATCH_CANCELLATION;
-                    case "HEADER_CORRECTION" -> Adjustment.Kind.HEADER_CORRECTION;
-                    default -> throw new BusinessException(409, "EXPORT_SOURCE_UNAVAILABLE", "更正类型无法映射到调整凭据");
-                };
+            String lineId = String.valueOf(row.get("line_id"));
+            // ── 边界层转换（业主 2026-09-28 决策④，选 C）────────────────────────────────────────
+            // 引擎与渲染对"整行归零"用了不同表达：引擎写 `WEIGHT_CORRECTION + target_count=0`，
+            // 而渲染侧 `AdjustmentValidator` 要求 WEIGHT_CORRECTION 必须 count=1。
+            // 这里在**组装层**按实际效果归类（不改引擎、不改渲染），并且**只对已证明合法的两种形状做转换**：
+            //   · 归零（target 0 包 0 克）        ⇒ 解释为"整行退出净结果"
+            //   · WEIGHT_CORRECTION 保持 1 包    ⇒ 解释为"只改重量"
+            // 其余组合一律拒绝，**绝不静默误解释**（业主明确要求：合法组合不能被当成取消）。
+            ExportFacts.check(beforeCount == 1 && beforeWeight > 0 && targetWeight >= 0,
+                "更正凭据的 before/after 形状非法");
+            var kind = switch (type) {
+                case "WEIGHT_CORRECTION" -> {
+                    if (targetCount == 0 && targetWeight == 0) yield Adjustment.Kind.DISPATCH_CANCELLATION;
+                    if (targetCount == 1 && targetWeight > 0) yield Adjustment.Kind.WEIGHT_CORRECTION;
+                    throw new BusinessException(409, "CORRECTION_EXPORT_KIND_AMBIGUOUS",
+                        "重量更正的包数/重量组合无法归类（既不归零也未保持 1 包）：不得静默解释为取消");
+                }
+                case "PHYSICAL_RETURN" -> {
+                    requireZeroed(targetCount, targetWeight, "退货");
+                    yield Adjustment.Kind.PHYSICAL_RETURN;
+                }
+                case "DISPATCH_CANCELLATION" -> {
+                    requireZeroed(targetCount, targetWeight, "出库取消");
+                    yield Adjustment.Kind.DISPATCH_CANCELLATION;
+                }
+                case "HEADER_CORRECTION" -> throw new BusinessException(409, "CORRECTION_EXPORT_KIND_AMBIGUOUS",
+                    "抬头更正无出库行，需片2 专门处理（本轮未支持）");
+                default -> throw new BusinessException(409, "EXPORT_SOURCE_UNAVAILABLE", "更正类型无法映射到调整凭据");
+            };
             String dispatchId = row.get("dispatch_id") == null ? "" : String.valueOf(row.get("dispatch_id"));
             ExportFacts.check(!dispatchId.isEmpty(), "更正凭据缺少出库行引用");
             String documentId = String.valueOf(row.get("document_id"));
-            String lineId = String.valueOf(row.get("line_id"));
             result.add(new Adjustment(documentId, lineId, resultVersion, kind, dispatchId,
                 (int) ((Number) row.get("before_count")).longValue(), (int) ((Number) row.get("target_count")).longValue(),
                 Long.toString(((Number) row.get("before_weight_g")).longValue()),
@@ -147,6 +164,11 @@ public class CorrectionExportSource {
         }
         ExportFacts.check(!result.isEmpty(), "该结果版本没有可追溯的更正凭据行");
         return result;
+    }
+
+    /** 归零类的形状要求：0 包 0 克。非此形状一律拒绝（不得静默解释为取消）。 */
+    private static void requireZeroed(long targetCount, long targetWeight, String label) {
+        ExportFacts.check(targetCount == 0 && targetWeight == 0, label + "的更正形状非法（应归零）");
     }
 
     /** 业务发生时刻：驱动可能给 {@link java.sql.Timestamp} 或 {@link LocalDateTime}，两种都接。 */
