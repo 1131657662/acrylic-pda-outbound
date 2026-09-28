@@ -1,9 +1,9 @@
 # 会话交接（2026-09-28）— DSH → Codex
 
-**当前 HEAD**：`184bfd7e7ead2a2320a63047f2a5c00b07e7569d`（`184bfd7`，分支 `codex/development`）
+**当前 HEAD**：`f51fc85`（分支 `codex/development`；本轮收尾前的交付 HEAD 为 `184bfd7`，其后仅追加收尾文档提交 `ec1dd14`/`3dc628d`/`f51fc85`）
 **远端同步**：`git rev-list --left-right --count origin/codex/development...HEAD` ＝ **0 0**（已全部推送）
 **工作树**：干净（`git status --porcelain` 无输出；`.local/` 由 `.gitignore:5` 忽略，无被跟踪文件）
-**事实块**：`tools/version_facts.ps1 -Check` 通过（看板当前区 65 行 / 7,810 字符）
+**事实块**：`tools/version_facts.ps1 -Check` 通过（看板当前区见事实块与脚本输出）
 
 ---
 
