@@ -1,5 +1,8 @@
 # 历史归档
 
+- [A3_SPECIAL_ENV_ASSESSMENT_2026-09-28.md](A3_SPECIAL_ENV_ASSESSMENT_2026-09-28.md)：剩余21类精确环境/阶段/原件要求与共用评估；值得分组，建议先Ledger作者2＋验证9类，配置超出换库名，3–5轮仅条件估算。本轮只读、未执行。
+- [专用环境评估前看板原文](ORCHESTRATION_STATE_before_A3_SPECIAL_ENV_ASSESSMENT_2026-09-28.md)：保留两批A3回归收尾断点，历史指令不恢复生效。
+
 - [A3_POST526_REGRESSION_2026-09-28.md](A3_POST526_REGRESSION_2026-09-28.md)：526另挂专项后两批接续回归；531–556共26类107项全绿，余21类专项环境/原输入待接续；529/530入口失败、545编排编码失败保留，真实MySQL+MockMvc。
 - [本次第2批收尾前看板原文](ORCHESTRATION_STATE_before_A3_POST526_BATCH2_CLOSE_2026-09-28.md)：保留第1批断点，历史指令不恢复生效。
 

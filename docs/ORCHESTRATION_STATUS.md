@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: ca985be
+head: 321bbe0
 dirty_entries: 6
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
@@ -14,7 +14,7 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 ```
 <!-- FACTS_END -->
 
-本页是唯一断点，源码版本事实只见生成块。A3恢复跑批前看板已[原文归档](history/ORCHESTRATION_STATE_before_A3_POST526_RESUME_2026-09-28.md)，本次第2批收尾前另存[第1批断点](history/ORCHESTRATION_STATE_before_A3_POST526_BATCH2_CLOSE_2026-09-28.md)；生成后文档提交HEAD以Git为准，不恢复历史指令。
+本页是唯一断点，源码版本事实只见生成块。专用环境评估前看板已[原文归档](history/ORCHESTRATION_STATE_before_A3_SPECIAL_ENV_ASSESSMENT_2026-09-28.md)，其中保留此前归档索引；生成后文档提交HEAD以Git为准，不恢复历史指令。
 
 ## 交付与本次接续
 - **D整块已交付（用户按已验范围接受）**：11c20e8已推送；片1/片2/片3、部分更正/连续更正/实物撤销/抬头生效四项基本边界、审批人ID/撤销导出/抬头导出修复均✅。[交付确认](history/R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)列全部历史证据；不再停留D扩测。
@@ -24,14 +24,15 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 - **A3原首批历史收口**：496–499四类28项、501复验6项、506–512余7类34项均绿；原计划12类汇集68项（跨批次/提交）。500的5/1/0/0历史红保留。[逐类结果](history/A3_NON_E2A_REGRESSION_2026-09-28.md)；本轮新增批次另列，不外推全量通过。
 - **A3新第1批历史**：输入83e633b，513–526共14类37项36通过/1失败/0skip；13类全绿，526条码并发4/1/0/0。[逐批结果](history/A3_NON_E2A_WAVES_2026-09-28.md)保留，后续两次同类重现不增加覆盖类数。
 - **A3-526（原A3-BC）挂待专项**：按用户决定为疑似产品缺陷、尚未确证，不占A3轮次。526/528红、527绿和43份锁快照保留；读4665→写4664的pending主键锁等待已观察，仓库锁已取得，采样无环、当次未永久阻塞。真实业务入口/EXPLAIN/跳锁有效性/真实竞争待验；[专项范围](history/A3_526_LOCK_PENDING_SCOPE_2026-09-28.md)。不深入、不修。
-- **A3接续两批绿**：第1批531–542共12类47项，文档ca985be已推送；第2批543–556共14类60项，共26类107项全绿，零skip，无新业务失败/条码同类。真实MySQL+Spring/MockMvc；529/530入口失败及545编排编码错误留证，只修本机脚本。[逐批记录](history/A3_POST526_REGRESSION_2026-09-28.md)。余21类专项环境/原输入待接续；本次两批收尾，交回用户决定。
+- **A3主体已被用户接受**：第1批531–542共12类47项，ca985be；第2批543–556共14类60项，321bbe0；均已推送，共26类107项全绿，零skip，无新业务失败/条码同类。真实MySQL+Spring/MockMvc；529/530入口失败及545编排编码错误留证。[逐批记录](history/A3_POST526_REGRESSION_2026-09-28.md)。
+- **余21类环境评估完成、未执行**：[逐类要求/分组建议](history/A3_SPECIAL_ENV_ASSESSMENT_2026-09-28.md)。值得分组继续：Ledger作者2类/验证11类两套profile，Foundation6类同实例但分正向/负例schema，迁移/Android各1条流程。先建议2＋9类；旧固定datadir、一次性seed和原件链使配置超出换库名，3–5轮为条件估算。本轮按边界停在评估，交回用户决定。
 - **R09 C2待立项**：84db51c已推送，[范围/验收建议](history/R09_C2_PROJECT_SCOPE_2026-09-28.md)已登记。连接层有历史验收，待接HTTP/Session外层、Worker、文件/进程与初始化准入；C1 NORMAL双侧登记未完成，生产实施待单独授权/独立时间盒，本次零代码。
 
 ## 树、写权与环境断点
-- 主树D:/acrylic-pda-outbound，codex/development；本次接续输入c7cf378，业务/测试/仓库工具源码零改动，仅文档与本机忽略目录跑批脚本/证据。只有当前助手写入；完整文档清单见本次提交，实际HEAD见事实块/Git。
-- 接续使用主树、独立空库及既有e2a-batch-it.ps1；先核对固定坐标/账号守卫及条码调用范围，不改测试超时，不绕过专项环境要求。
+- 主树D:/acrylic-pda-outbound，codex/development；本轮评估输入321bbe0，业务/测试/仓库工具源码零改动，仅更新文档。只有当前助手写入；完整文档清单见本次提交，实际HEAD见事实块/Git。
+- 本轮只读主树守卫/fixture/历史材料并核对路径存在性；未连接数据库、未读取私钥、未配置实例、未运行测试。新增精确测试环境profile仅为建议，尚未实施，不弱化守卫或放宽超时。
 - 旧验证树D:/acrylic-pda-worktrees/r06-e2a-migration仍detached ea4d166，97条既有dirty/untracked原样保留，前后status文本差异0；没有向旧树同步文件、提交、重置或合并。
-- 本次结束，19309/19321/19330/19434/23308空闲，无在途测试；系统3306未动。531–539锁/状态证据25份、第1批两份及第2批七份生成物已保全；源码/XML哈希及旧树状态在.local/a3-resume-20260928/，报告在.local/it-batches/，529及531–556隔离库保留，530仅入口解析失败。526原证据不动。
+- 本轮19324/19326/19327/19328专用端口与前批测试端口无监听，无在途测试；系统3306未动，旧目录/失败证据原样保留。前批531–539锁/状态证据25份、两批2＋7份生成物、源码/XML哈希及旧树状态在.local/a3-resume-20260928/；报告在.local/it-batches/，529及531–556隔离库保留，530仅入口解析失败。
 - 实际使用号止于556（530无执行也不重用），557+执行前查重。身份锁适配九类已验、556恢复样本专用坐标10项已验，均新隔离datadir/原守卫；不是R09 C2实施。旧manifest含已用号不可复用；Ledger/Foundation等专用旧树环境未接续，R08专用run32未用。
 
 ## 历史证据、失败与未验
@@ -44,6 +45,6 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 - R09 C1未完成/C2实施未启动（范围已登记）；P1–P7、真机/Keystore/App内升级/长时留存/外网异地、原资料旧BCD及历史现场限制保留。A2已修dcaf7ad/377，不重开。
 
 ## 边界
-- 本次只将526挂待专项并继续A3回归，不改R05/R06/R07、ConfirmedV1Adapter、契约或生产配置/开关；不发布/部署/合main，不修R07抬头撤销/R09，不深入526、不放宽测试。
+- 本轮仅评估A3剩余21类，实施待下一步决定；不改R05/R06/R07、ConfirmedV1Adapter、契约或生产配置/开关；不发布/部署/合main，不修R07抬头撤销/R09，不深入526、不放宽测试。
 - 不提交.local密钥/数据库/真实业务资料。七类生产决定及TEMP归档仍关闭，localDeletionAllowed=false，普通有权正常确认允许空理由；本机留证不代表异地备份。
 <!-- CURRENT_STATE_END -->
