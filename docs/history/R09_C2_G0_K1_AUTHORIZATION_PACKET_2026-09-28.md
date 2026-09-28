@@ -16,7 +16,7 @@
 
 | 项 | 状态 | 说明 |
 | --- | --- | --- |
-| K1-1 JDBC 效果入口与判定 | **未通过** | 规范与模型已闭合（冻结表、提交类优先、无参/批处理信息流、未知形态委托前拒绝、S20-u）；**真实驱动 SQL 分类、真实隐式提交时机、生产效果门仍未验证** |
+| K1-1 JDBC 效果入口与判定 | **未通过（驱动层已补证）** | 规范与模型已闭合（冻结表、提交类优先、无参/批处理信息流、未知形态委托前拒绝、S20-u），且**驱动层行为已实测**（隔离 MySQL 8.0.46：提交可见性、隐式提交、批处理/`clearBatch`、可更新 `ResultSet`、DDL 隐式提交、`getAutoCommit()` 非提交证据）；**生产效果门未实现、未验**，真实方言/权限差异未验 |
 | K1-2 探针与判定语义 | **未通过（保留缺口 W）** | 逐记录观察时语义、命名窗口 W＝(t_i(p), t_n] 与机制级论证已明确；W 仍是机制级保留缺口，未消除 |
 | K1-3 围栏失败矩阵 | **未通过（依条件分支）** | 矩阵按**观察时状态**计算（F1′ 依据＝观察时仍存活且已确认取得且仍持有；F5 确认后不并列围栏依据）；F1′/F3/F5 **均未确认**时跨进程无依据 ⇒ `UNCONFIRMED_NO_CROSS_PROCESS_BASIS`，须外部隔离 |
 | K1-4 验收规格 | 沿用 | 按进程/请求/事务/单次效果分层（S13 拆分、S17 T1/T2、S18 角色 A/B/C、S19–S21、S20-u） |
@@ -30,7 +30,7 @@
 | **代理行为实测** | 真实 `RecoveryAdmittedDataSource` 代理 + fake delegate：连接级效果直接委托、`setAutoCommit(true)` 委托后钩子、`execute(sql)`/`addBatch(sql)` 可见 SQL 与 prepare 记忆点、无参 `execute*/addBatch/executeBatch` 不可见、`ResultSet` 变更与非白名单方法均被委托、手动事务下原始 `COMMIT` 直接委托、CallableStatement 无参执行无 SQL | [K1 模型最终复验](R09_C2_G0_K1_MODEL_FINAL_REVERIFY_2026-09-28.md) §2.3、`.local/r09-c2-g0-k1-model-final-20260928-a/run2/normal-pass-output.txt` | 效果门存在；真实驱动隐式提交；真实 SQL 语义 |
 | **测试模型验证** | 围栏状态迁移矩阵（观察时依据、终止释放全部锁、四状态分别验证）、三条调度轨迹严格次序、JDBC 信息流与 **20 规则行↔17 测试方法唯一映射**（双向校验）、4 组负控 | [K1 模型最终复验](R09_C2_G0_K1_MODEL_FINAL_REVERIFY_2026-09-28.md) §2.1–§2.3；`run2/negative-control-output.txt` | 真实 `FileLock`、跨进程共享锁、真实进程终止、跨 JVM 可见性 |
 | **静态规范修订** | §4.2 冻结表与规则、§5.4/§5.5 观察时依据与失败矩阵、§4.1 接纳判定可证明语义（不主张 t_n 无孤儿）、§6.5 INITIAL 关闭意图 | [设计定稿 v5](R09_C2_G0_DESIGN_2026-09-28.md) | 文档一致≠行为已验证 |
-| **真实驱动／真实锁协议未验** | 无 | — | 见 §5 未验边界 |
+| **真实驱动／真实锁协议未验** | 真实 JDBC 驱动**部分已验证**（[G0-K1-1 真实驱动验证](R09_C2_G0_K1_REAL_JDBC_REVERIFY_2026-09-29.md)，独立有限授权：隔离 MySQL 8.0.46＋Connector/J、13 项 IT 全绿、独立观察连接核对；`getAutoCommit()` 非提交证据、DDL 隐式提交、注释/多语句/CALL/会话 SET 行为已记录） | **真实跨进程 `FileLock`/`fenced.lock`、真实进程终止与跨 JVM 可见性仍未验**；驱动证据不覆盖生产效果门、HTTP/Session、W 与围栏分支 |
 | **B1 产品实现待授权** | 无（`src/main` 未改） | — | 见 §1 |
 
 ## 4. 证据封存清单
@@ -42,12 +42,13 @@
 | K1 模型更正 | [R09_C2_G0_K1_MODEL_CORRECTION](R09_C2_G0_K1_MODEL_CORRECTION_2026-09-28.md) | 53 项：1 失败 → 1 失败 → 0 失败 → 0 失败（逐轮独立目录） | `r09-c2-g0-k1-model-correction-20260928-a/` |
 | K1 模型最终复验 | [R09_C2_G0_K1_MODEL_FINAL_REVERIFY](R09_C2_G0_K1_MODEL_FINAL_REVERIFY_2026-09-28.md) | 60 项：2 失败（测试自身断言误判）→ **0 失败**，G0K1 方法 37 个且 37 个唯一名 | `r09-c2-g0-k1-model-final-20260928-a/` |
 | 验收与阻断 | [R09_C2_G0_ACCEPTANCE](R09_C2_G0_ACCEPTANCE_2026-09-28.md) | 含五类分类表、覆盖率映射、证据口径更正 | 各轮同目录 |
+| G0-K1-1 真实驱动（独立有限授权） | [R09_C2_G0_K1_REAL_JDBC_REVERIFY](R09_C2_G0_K1_REAL_JDBC_REVERIFY_2026-09-29.md) | 定向单测 `test` **60 项 0 失败**；隔离库 `integrationTest` **13 项 0 失败 0 跳过**；27 条 `G0K1REAL` 记录 | `r09-c2-g0-k1-real-jdbc-20260929-a/` |
 
 历史失败日志与第 2 轮 XML 缺失登记均保留；**未补造任何缺失文件**。
 
 ## 5. 未验边界（授权后也必须继续单列）
 
-1. 真实 JDBC 驱动的 SQL 分类（注释/多语句/`CALL` 调用体/厂商方言与 DDL 变体）与**真实隐式提交时机**。
+1. 真实 JDBC 驱动的 SQL 分类（注释/多语句/`CALL` 调用体/厂商方言与 DDL 变体）与**真实隐式提交时机**：**驱动层已补证**（见 §3 与 [G0-K1-1 真实驱动验证](R09_C2_G0_K1_REAL_JDBC_REVERIFY_2026-09-29.md)：无参执行/批处理/`clearBatch`/可更新 `ResultSet` 均产生真实已提交效果；原始 `COMMIT`/`SET AUTOCOMMIT=1` 后驱动标志仍为 `false`；DDL 隐式提交；注释语句与会话 SET 被服务器接受而候选规则保守拒绝）。**仍未验**：这些形态经**生产效果门**（B1 未实现）后的行为、以及线上方言/字符集/权限差异。
 2. 真实 `FileLock`、跨进程共享锁（`fenced.lock`）与其他 JVM 的可见性；真实进程终止与 OS 释放。
 3. 命名窗口 **W**：属主在其记录判定之后、扫描结束之前死亡时该次探针可能放行。
 4. F1′/F3/F5 **均未确认**时的跨进程阻断（`UNCONFIRMED_NO_CROSS_PROCESS_BASIS`，须外部隔离）。

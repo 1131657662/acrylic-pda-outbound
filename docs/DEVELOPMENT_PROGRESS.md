@@ -12,7 +12,8 @@
 
 ## 近期验收入口
 
-| R09 C2-G0/K1 授权包（**B1 待授权**，纯文档） | [K1授权包](history/R09_C2_G0_K1_AUTHORIZATION_PACKET_2026-09-28.md)：封存 `K1 仍未通过` 的边界（K1-1 真实驱动未验、K1-2 窗口 W、K1-3 `UNCONFIRMED_NO_CROSS_PROCESS_BASIS`）、五类验证分类、证据清单、未验边界、B1 范围与排除（B9 分离）、技术性前置条件与影响/风险边界。**该轮为授权准备，不代表 B1 获批或运行验收**；零代码零运行 |
+| R09 C2 G0-K1-1 真实 JDBC 驱动验证（**独立有限授权**） | [真实驱动验证](history/R09_C2_G0_K1_REAL_JDBC_REVERIFY_2026-09-29.md)：隔离 MySQL 8.0.46＋Connector/J（端口 19438、独立 datadir/账号/schema；系统 3306 未使用）。`test` 定向回归 **60 项 0 失败**、`integrationTest` **13 项 0 失败 0 跳过**、27 条 `G0K1REAL` 记录：`commit`/`setAutoCommit(true)` 隐式提交/原始 `COMMIT`/`SET AUTOCOMMIT=1`/无参 Prepared·Callable/批处理与 `clearBatch`/可更新 `ResultSet` 均产生真实已提交效果（独立观察连接核对）；**`getAutoCommit()` 非提交证据**；**DDL 隐式提交**；注释语句与会话 SET 被服务器接受而候选规则保守拒绝；多语句需 `allowMultiQueries`。**K1 仍未通过**（生产效果门未实现/未验、W、依条件分支）；**本轮不授权 B1** |
+| R09 C2-G0/K1 授权包（**B1 待授权**，纯文档） | [K1授权包](history/R09_C2_G0_K1_AUTHORIZATION_PACKET_2026-09-28.md)：封存 `K1 仍未通过` 的边界、五类验证分类、证据清单、未验边界、B1 范围与排除（B9 分离）、技术性前置条件与影响/风险边界。**该轮为授权准备，不代表 B1 获批或运行验收** |
 | R09 C2-G0/K1 模型最终复验（历史） | [K1模型最终复验](history/R09_C2_G0_K1_MODEL_FINAL_REVERIFY_2026-09-28.md)：围栏矩阵按观察时状态；时序三条轨迹严格断言；JDBC 规则行↔测试方法唯一映射双向校验（20/17/唯一）；`run2` 60 项 0 失败 |
 | R09 C2-G0/K1 模型更正轮（历史） | [K1模型更正](history/R09_C2_G0_K1_MODEL_CORRECTION_2026-09-28.md)：围栏矩阵改状态迁移、时序加调度点、JDBC 补信息流；登记第 2 次失败 XML 缺失（未补造）、证据改逐轮独立目录 |
 | R09 C2-G0/K1 测试侧模型复验（历史，已被更正轮部分更正） | [K1测试侧模型复验](history/R09_C2_G0_K1_MODEL_REVERIFY_2026-09-28.md)：四项反例与 W 反例有效；文首有更正块 |
