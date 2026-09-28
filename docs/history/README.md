@@ -1,6 +1,6 @@
 # 历史归档
 
-- [R08_D_BOUNDARIES_2026-09-28.md](R08_D_BOUNDARIES_2026-09-28.md)：四项边界按风险顺序补测；第一项部分更正非空attempt489通过，余项待执行。
+- [R08_D_BOUNDARIES_2026-09-28.md](R08_D_BOUNDARIES_2026-09-28.md)：四项边界按风险顺序补测；部分更正489与连续更正490通过，撤销后/抬头待执行。
 
 - [R09_JAVA_CONTROL_ACCEPTANCE_2026-09-26.md](R09_JAVA_CONTROL_ACCEPTANCE_2026-09-26.md)：外部可信checkpoint/完整链/严格路径与Python→Java原件消费，Windows/Linux各16项真实进程锁；失败和共享接入限制保留。
 

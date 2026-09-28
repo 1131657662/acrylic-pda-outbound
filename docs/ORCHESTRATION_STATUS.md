@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: b523eff
+head: 42b96fd
 dirty_entries: 5
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
@@ -16,11 +16,11 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 本页是唯一断点；源码版本事实仅见上方生成事实块。上轮停工结论已[原文归档](history/ORCHESTRATION_STATE_before_D_APPROVER_FIX_2026-09-28.md)，不恢复旧指令。详细历史见[历史索引](history/README.md)。
 
 ## 在途
-- **D四项边界已授权，按风险顺序推进**：部分更正非空样本已完成；连续更正、撤销后、抬头依次待测。测试提交b523eff已推送，详情见[边界记录](history/R08_D_BOUNDARIES_2026-09-28.md)。
+- **D四项边界已授权，按风险顺序推进**：部分更正非空与连续更正已完成；撤销后、抬头依次待测。测试提交b523eff/42b96fd已推送，详情见[边界记录](history/R08_D_BOUNDARIES_2026-09-28.md)。
 - 基线：主树D:/acrylic-pda-outbound，codex/development；本轮从eb3097d接续。旧结论已[原文归档](history/ORCHESTRATION_STATE_before_D_BOUNDARIES_2026-09-28.md)，历史授权不恢复。
-- 写权：单助手，无子代理。验证树D:/acrylic-pda-worktrees/r06-e2a-migration保持detached ea4d166和原改动，仅经守卫同步3个测试文件；前像/清单保存在主树.local/d-boundaries-20260928/。
-- 执行断点：489为1/0/0/0，XLSX/PDF内容回读通过。测试已结束；19330/19434已释放，无在途重型任务，原库未动。下次attempt从490+查重，专用run仍从30查重。已知cleanup空值警告保留。
-- 下一步仅连续更正导出，随后撤销、抬头；真bug即停报，不修生产逻辑，不自动转R09/A3。
+- 写权：单助手，无子代理。验证树D:/acrylic-pda-worktrees/r06-e2a-migration保持detached ea4d166和原改动，累计经守卫同步5个测试文件；前像/清单保存在主树.local/d-boundaries-20260928/。
+- 执行断点：489/490均为1/0/0/0，XLSX/PDF内容回读通过；490缺失v2凭据反例被拒绝。测试已结束；19330/19434已释放，无在途重型任务，原库未动。下次attempt从491+查重，专用run仍从30查重。已知cleanup空值警告保留。
+- 下一步仅撤销后快照导出，随后抬头；真bug即停报，不修生产逻辑，不自动转R09/A3。
 
 ## 已完成（范围与证据）
 - **A2已修，纠正误报**：dcaf7ad 已在基线中；服务端候选响应与Web均使用commandContextSha256。历史attempt 377真HTTP通过；本轮只核实源码、祖先关系及[A3记录§6.6](history/A3_CSRF_ROOT_CAUSE_2026-09-27.md)，未重跑。欠债状态修正5eff71d已推送。
@@ -33,7 +33,7 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 ## 未验与阻断
 - **审批人身份阻断已解除**：沿CorrectionStore惯例，仅将CorrectionAdjustmentSource查询的一列改为BIN_TO_UUID(approved_by)，原空值处理不变。静态排查未发现其他已确认同类缺陷；既有486/487错误证据继续保留。
 - **验收范围仍有限**：片3最小闭环通过；契约保持草案、未递增版本、未发布。486只验存在/数量/重量而漏验审批人值，488已补库内事实断言；后续内容验收须覆盖所有关键字段的值。独立审查未做。
-- **D边界剩余三项**：部分更正非空已由489实测；v2→v3多版本链、撤销后、抬头更正仍未验。历史业务链不替代导出验收。
+- **D边界剩余两项**：部分更正非空489、v2→v3连续更正490已实测；撤销后、抬头更正仍未验。历史业务链不替代导出验收。
 - **R07-1**：服务层①–④及3幂等、HTTP①–⑥有历史证据；⑤–⑧反例、3真并发、2原子性、APPROVE成功、PREPARE/ACTIVATE仍未验；REQUEST/APPROVE权限拆分待裁决。
 - **③/②**：命令完整性口径已定为命令记录时版本，仍待授权；汇总按最新有效版本已定但未实现。本轮均未改。
 - **R09 C1/C2**：NORMAL双侧登记未完成，应用入口接线未启动；跨生产恢复准入，另行立项授权。验证树不退役。
