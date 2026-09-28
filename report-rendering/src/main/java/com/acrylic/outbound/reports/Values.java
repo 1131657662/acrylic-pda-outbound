@@ -28,6 +28,14 @@ final class Values {
     static LocalDate shipmentDay(OrderSnapshot order) {
         return order.confirmedAt().atZone(ZONE).toLocalDate();
     }
+    /** The original identity remains immutable; a checked header chain supplies this version's display number. */
+    static String displayNumber(OrderSnapshot order) {
+        String number=order.number();
+        for(var adjustment:order.adjustments())
+            if(adjustment.kind()==Adjustment.Kind.HEADER_CORRECTION && adjustment.headerField().equals("orderNo"))
+                number=adjustment.afterText();
+        return number;
+    }
     static String time(Instant instant) {
         return instant.atZone(ZONE).toLocalDateTime().toString().replace('T', ' ');
     }

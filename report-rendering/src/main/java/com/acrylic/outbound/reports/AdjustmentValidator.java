@@ -10,7 +10,7 @@ final class AdjustmentValidator {
         o.originalLines().forEach(r -> expected.put(r.dispatchId(),
                 new OrderSnapshot.EffectiveLine(r.dispatchId(), 1, r.weightGrams())));
         var headers = new HashMap<>(Map.of("vehicle", o.originalHeader().vehicle(),
-                "container", o.originalHeader().container(), "remark", o.originalHeader().remark()));
+                "container", o.originalHeader().container(), "remark", o.originalHeader().remark(), "orderNo", o.number()));
         var keys = new HashSet<List<Object>>(); var effects = new HashSet<List<Object>>();
         var approved = new HashMap<List<String>,Adjustment>(); var withdrawn = new HashSet<List<String>>();
         long lastVersion = 1;
@@ -18,8 +18,9 @@ final class AdjustmentValidator {
             require(a.resultVersion() >= 2 && a.resultVersion() <= o.resultVersion(), "调整版本越界");
             require(a.resultVersion() >= lastVersion && a.resultVersion() <= lastVersion + 1, "调整版本链不完整或乱序");
             lastVersion = a.resultVersion(); fields(a, cutoff, o.confirmedAt());
-            require(keys.add(List.of(a.resultVersion(), a.correctionId(), a.lineId())), "调整凭据行重复");
-            var key = List.of(a.correctionId(), a.lineId());
+            String field=a.kind()==Adjustment.Kind.HEADER_CORRECTION?a.headerField():"";
+            require(keys.add(List.of(a.resultVersion(), a.correctionId(), a.lineId(),field)), "调整凭据行重复");
+            var key = List.of(a.correctionId(), a.lineId(),field);
             if (a.kind() == Adjustment.Kind.CORRECTION_WITHDRAWAL) withdrawal(a, approved.get(key), withdrawn.add(key));
             else require(approved.putIfAbsent(key, a) == null, "原调整凭据跨版本重复");
             if (a.kind() == Adjustment.Kind.HEADER_CORRECTION) header(a, headers);
@@ -29,12 +30,14 @@ final class AdjustmentValidator {
             }
         }
         require(lastVersion == o.resultVersion(), "缺少结果版本对应的调整凭据");
+        headers.remove("orderNo"); // number retains the original identity; rendered number follows the checked header chain.
         require(headers.equals(Map.of("vehicle", o.effectiveHeader().vehicle(), "container",
                 o.effectiveHeader().container(), "remark", o.effectiveHeader().remark())), "净抬头与调整不符");
         reconcile(o, expected);
     }
     private static void fields(Adjustment a, Instant cutoff, Instant confirmed) {
-        required(a.correctionId()); required(a.lineId()); Objects.requireNonNull(a.kind());
+        required(a.correctionId()); Objects.requireNonNull(a.kind());
+        if(a.kind()==Adjustment.Kind.HEADER_CORRECTION)text(a.lineId());else required(a.lineId());
         required(a.reason()); required(a.approver()); required(a.evidenceReference());
         require(!a.occurredAt().isAfter(cutoff) && !a.occurredAt().isBefore(confirmed), "调整时间不在确认至截点之间");
         text(a.dispatchId()); text(a.headerField()); text(a.beforeText()); text(a.afterText());
@@ -69,6 +72,8 @@ final class AdjustmentValidator {
                 && grams(a.beforeWeightGrams()).signum() == 0 && grams(a.afterWeightGrams()).signum() == 0,
                 "抬头调整不能携带包或重量效果");
         require(headers.containsKey(a.headerField()) && headers.get(a.headerField()).equals(a.beforeText()), "抬头调整前值不符");
+        require(!a.beforeText().equals(a.afterText()),"抬头调整没有字段变化");
+        if(a.headerField().equals("orderNo"))required(a.afterText());
         headers.put(a.headerField(), a.afterText());
     }
     private static void reconcile(OrderSnapshot o, Map<String, OrderSnapshot.EffectiveLine> expected) {

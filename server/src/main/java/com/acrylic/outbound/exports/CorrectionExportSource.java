@@ -73,12 +73,13 @@ public class CorrectionExportSource {
         ExportFacts.check(Long.toString(countSum).equals(corrected.count())
             && Long.toString(weightSum).equals(corrected.weight()), "逐包有效快照与结果版本合计不一致");
 
-        var order = new OrderSnapshot(scope.order().toString(), corrected.number(), revision, resultVersion, "CORRECTED",
-            source.header(), source.header(), origin.confirmedAt(),
+        var evidence=adjustments.read(scope.order(),resultVersion);
+        var order = new OrderSnapshot(scope.order().toString(), source.number(), revision, resultVersion, "CORRECTED",
+            source.header(), effectiveHeader(source.header(),evidence), origin.confirmedAt(),
             new OrderSnapshot.SequenceProof(OrderSnapshot.SequenceKind.PERSISTED_ORDER_SEQUENCE,
                 "dispatch_record.order_scan_seq / correction:" + document),
             source.products(), source.dispatches().stream().map(ConfirmedV1Input.Dispatch::line).toList(),
-            effectiveLines, adjustments.read(scope.order(), resultVersion), source.exceptions());
+            effectiveLines, evidence, source.exceptions());
         var day = cutoff.atZone(ZoneId.of("Asia/Shanghai")).toLocalDate();
         var metadata = new ReportSnapshot.Metadata(UUID.randomUUID().toString(),
             "result:" + resultVersion + "/revision:" + revision, cutoff, cutoff, day, day,
@@ -86,6 +87,21 @@ public class CorrectionExportSource {
             "固定结果版本 " + resultVersion + " 的更正净结果（更正文档 " + document + "）",
             "单个指定订单；单内按持久化order_scan_seq递增");
         return new ReportSnapshot(metadata, List.of(order));
+    }
+
+    /** Project checked scalar changes into the existing display fields. */
+    private static OrderSnapshot.Header effectiveHeader(OrderSnapshot.Header original,List<Adjustment> evidence) {
+        String vehicle=original.vehicle(),container=original.container(),remark=original.remark();
+        for(var adjustment:evidence) {
+            if(adjustment.kind()!=Adjustment.Kind.HEADER_CORRECTION)continue;
+            switch(adjustment.headerField()) {
+                case "vehicle" -> vehicle=adjustment.afterText();
+                case "container" -> container=adjustment.afterText();
+                case "remark" -> remark=adjustment.afterText();
+                default -> { }
+            }
+        }
+        return new OrderSnapshot.Header(vehicle,container,remark);
     }
 
     /** 该版本的逐包有效值（`order_effective_scan`：is_effective + 有效重量，含被归零的行）。 */

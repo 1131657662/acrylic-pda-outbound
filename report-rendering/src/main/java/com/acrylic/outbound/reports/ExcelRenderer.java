@@ -31,7 +31,7 @@ public final class ExcelRenderer {
                 "净减计划", "原重量kg", "原精确kg", "调整kg", "调整精确kg", "净重kg", "净精确kg");
         for (var o : s.orders()) {
             var t = ReportTotals.order(o);
-            orders.add(o.number(), Values.shipmentDay(o), o.source(), o.revision(), o.resultVersion(),
+            orders.add(Values.displayNumber(o), Values.shipmentDay(o), o.source(), o.revision(), o.resultVersion(),
                     o.originalHeader().vehicle(), o.effectiveHeader().vehicle(), o.originalHeader().container(),
                     o.effectiveHeader().container(), t.originalCount(), t.adjustedCount(), t.netCount(),
                     weight(t.originalGrams()), weight(t.adjustedGrams()), weight(t.netGrams()));
@@ -44,7 +44,7 @@ public final class ExcelRenderer {
         orders.finish(); products.finish();
     }
     private void product(WorkbookTable table, OrderSnapshot o, OrderSnapshot.Product p, ReportTotals.Total t) {
-        table.add(o.number(), Values.shipmentDay(o), p.code(), p.name(), p.model(), p.plannedCount(),
+        table.add(Values.displayNumber(o), Values.shipmentDay(o), p.code(), p.name(), p.model(), p.plannedCount(),
                 t.originalCount(), t.adjustedCount(), t.netCount(), BigInteger.valueOf(t.netCount()).subtract(BigInteger.valueOf(p.plannedCount())),
                 weight(t.originalGrams()), weight(t.adjustedGrams()), weight(t.netGrams()));
     }
@@ -59,9 +59,10 @@ public final class ExcelRenderer {
         table.add("明细顺序", "固定成员顺序；每单持久化 orderScanSeq；不声称不同离线设备存在全局物理顺序。");
         table.add("重量", "整数克精确求和；超过15位克数的数值kg列留空，使用精确kg文本列；原始重量文本独立保留。");
         for (var o : s.orders()) {
-            table.add("顺序依据 / " + o.number(), o.sequenceProof().kind() + " / " + o.sequenceProof().reference());
-            table.add("原备注 / " + o.number(), o.originalHeader().remark());
-            table.add("净备注 / " + o.number(), o.effectiveHeader().remark());
+            if(!o.number().equals(Values.displayNumber(o)))table.add("原单号 / " + Values.displayNumber(o),o.number());
+            table.add("顺序依据 / " + Values.displayNumber(o), o.sequenceProof().kind() + " / " + o.sequenceProof().reference());
+            table.add("原备注 / " + Values.displayNumber(o), o.originalHeader().remark());
+            table.add("净备注 / " + Values.displayNumber(o), o.effectiveHeader().remark());
         }
         table.finish();
     }

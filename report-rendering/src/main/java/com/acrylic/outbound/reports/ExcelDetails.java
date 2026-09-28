@@ -15,7 +15,7 @@ final class ExcelDetails {
         for (var o : s.orders()) {
             lines(o, original, net);
             for (var a : o.adjustments()) adjustment(adjustments, o, a);
-            for (var e : o.exceptions()) exceptions.add(o.number(), e.eventId(), e.orderScanSeq() == null ? "" : e.orderScanSeq().toString(),
+            for (var e : o.exceptions()) exceptions.add(Values.displayNumber(o), e.eventId(), e.orderScanSeq() == null ? "" : e.orderScanSeq().toString(),
                     e.originDeviceId(), e.kind(), e.barcode(), e.detail(), e.occurredAt());
         }
         original.finish(); net.finish(); adjustments.finish(); exceptions.finish();
@@ -23,16 +23,16 @@ final class ExcelDetails {
     private static void lines(OrderSnapshot o, WorkbookTable original, WorkbookTable net) {
         var effective = ReportTotals.effective(o);
         for (var r : o.originalLines()) {
-            original.add(o.number(), Values.shipmentDay(o), Long.toString(r.orderScanSeq()), r.barcode(), r.productCode(),
+            original.add(Values.displayNumber(o), Values.shipmentDay(o), Long.toString(r.orderScanSeq()), r.barcode(), r.productCode(),
                     weight(Values.grams(r.weightGrams())), r.rawWeight(), r.originDeviceId(), Long.toString(r.deviceCaptureSeq()),
                     r.operatorName(), r.inputSource(), r.receivedAt(), r.savedAt(), r.timeQuality(), r.dispatchCycle(), r.dispatchId(), r.captureId(), r.remark());
             var e = effective.get(r.dispatchId());
-            if (e.count() == 1) net.add(o.number(), Values.shipmentDay(o), o.resultVersion(), Long.toString(r.orderScanSeq()),
+            if (e.count() == 1) net.add(Values.displayNumber(o), Values.shipmentDay(o), o.resultVersion(), Long.toString(r.orderScanSeq()),
                     r.barcode(), r.productCode(), weight(Values.grams(e.weightGrams())), r.originDeviceId(), r.operatorName(), r.dispatchId());
         }
     }
     private static void adjustment(WorkbookTable table, OrderSnapshot o, Adjustment a) {
-        table.add(o.number(), Values.shipmentDay(o), a.occurredAt(), a.correctionId(), a.lineId(), a.resultVersion(), a.kind(), a.dispatchId(),
+        table.add(Values.displayNumber(o), Values.shipmentDay(o), a.occurredAt(), a.correctionId(), a.lineId(), a.resultVersion(), a.kind(), a.dispatchId(),
                 a.beforeCount(), a.afterCount(), weight(Values.grams(a.beforeWeightGrams())), weight(Values.grams(a.afterWeightGrams())),
                 a.headerField(), a.beforeText(), a.afterText(), a.reason(), a.approver(), a.evidenceReference());
     }

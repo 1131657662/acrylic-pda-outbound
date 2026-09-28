@@ -29,6 +29,15 @@ def rows(book, name):
     return [dict(zip(values[2], row)) for row in values[3:]]
 
 
+def display_number(order):
+    number = order['number']
+    for item in order['adjustments']:
+        if item['kind'] == 'HEADER_CORRECTION' and item['headerField'] == 'orderNo':
+            assert item['beforeText'] == number
+            number = item['afterText']
+    return number
+
+
 def match(row, expected):
     for key, value in expected.items():
         assert row[key] == value, f'{key}: {row[key]!r} != {value!r}'
@@ -57,7 +66,7 @@ def check_details(book, order):
     assert len(actual) == len(expected)
     for row, effect in zip(actual, expected):
         source = original[effect['dispatchId']]
-        match(row, {'订单': order['number'], '结果版本': order['resultVersion'], '出库ID': effect['dispatchId'],
+        match(row, {'订单': display_number(order), '结果版本': order['resultVersion'], '出库ID': effect['dispatchId'],
                     '订单序号': str(source['orderScanSeq']), '条码': source['barcode'], '代码': source['productCode'],
                     '净重kg': float(kg(effect['weightGrams'])), '净精确kg': kg(effect['weightGrams']),
                     '原设备ID': source['originDeviceId'], '操作人': source['operatorName']})
@@ -85,7 +94,7 @@ def verify_xlsx(folder, prefix, order):
     try:
         summary = rows(book, '订单汇总')
         assert len(summary) == 2 and summary[1]['订单'] == '合计'
-        match(summary[0], {'订单': order['number'], '来源': 'CORRECTED', '结果版本': order['resultVersion'],
+        match(summary[0], {'订单': display_number(order), '来源': 'CORRECTED', '结果版本': order['resultVersion'],
                           '原车号': order['originalHeader']['vehicle'], '净车号': order['effectiveHeader']['vehicle'],
                           '原柜号': order['originalHeader']['container'], '净柜号': order['effectiveHeader']['container']})
         for row in summary:
@@ -123,6 +132,9 @@ def verify_pdf(folder, prefix, order):
     (folder / 'pdf-extracted.txt').write_text(text, encoding='utf-8')
     value = compact(text)
     assert '[B@' not in value
+    assert compact('订单' + display_number(order)) in value
+    if display_number(order) != order['number']:
+        assert compact('原单号:' + order['number']) in value
     assert compact(f"结果版本{order['resultVersion']}") in value
     counts, weights = totals(order)
     expected = f"合计:原确认{counts[0]}包/{kg(weights[0])}kg;累计调整{counts[1]}包/{kg(weights[1])}kg;本版本净结果{counts[2]}包/{kg(weights[2])}kg"

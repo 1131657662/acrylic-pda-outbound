@@ -29,9 +29,10 @@ final class PdfHtml {
         return html.append("</body></html>").toString();
     }
     private static void order(StringBuilder h, OrderSnapshot o) {
-        h.append("<section><h2>订单 ").append(escape(o.number())).append("</h2><p>")
+        h.append("<section><h2>订单 ").append(escape(Values.displayNumber(o))).append("</h2><p>")
                 .append("修订 ").append(o.revision()).append(" / 结果版本 ").append(o.resultVersion())
                 .append(" / 原出库日 ").append(Values.shipmentDay(o)).append(" / 来源 ").append(escape(o.source())).append("</p>");
+        if(!o.number().equals(Values.displayNumber(o)))h.append("<p>原单号：").append(escape(o.number())).append("</p>");
         h.append("<p>原车号：").append(escape(o.originalHeader().vehicle())).append("；原柜号：")
                 .append(escape(o.originalHeader().container())).append("；本版本车号：").append(escape(o.effectiveHeader().vehicle()))
                 .append("；本版本柜号：").append(escape(o.effectiveHeader().container())).append("</p>");
@@ -43,7 +44,7 @@ final class PdfHtml {
         products(h, o);
         PdfDetails.write(h, o);
         h.append("<div class='closing'>");
-        total(h, "订单 " + o.number() + " 合计", ReportTotals.order(o));
+        total(h, "订单 " + Values.displayNumber(o) + " 合计", ReportTotals.order(o));
         h.append("<div class='signature'>操作员签字：________________　复核签字：________________</div></div></section>");
     }
     private static void products(StringBuilder h, OrderSnapshot o) {

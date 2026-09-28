@@ -9,7 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * 更正凭据（{@code correction_line} ＋其 {@code correction_ledger} 行）→ 渲染用 {@link Adjustment} 列表。
+ * 实物明细/账务与抬头文档/冻结CREATE回执 → 按版本排列的渲染用 {@link Adjustment} 列表。
  *
  * <p>**为什么单独一类**：这里承载业主 2026-09-28 决策④ 的"**边界层转换**"——引擎写
  * `WEIGHT_CORRECTION + target_count=0` 表示整行归零，而渲染侧 `AdjustmentValidator` 要求
@@ -24,8 +24,9 @@ import org.springframework.stereotype.Component;
 public class CorrectionAdjustmentSource {
     private final JdbcTemplate jdbc;
     private final CorrectionWithdrawalSource withdrawals;
-    public CorrectionAdjustmentSource(JdbcTemplate jdbc, CorrectionWithdrawalSource withdrawals) {
-        this.jdbc=jdbc; this.withdrawals=withdrawals;
+    private final HeaderCorrectionSource headers;
+    public CorrectionAdjustmentSource(JdbcTemplate jdbc, CorrectionWithdrawalSource withdrawals, HeaderCorrectionSource headers) {
+        this.jdbc=jdbc; this.withdrawals=withdrawals; this.headers=headers;
     }
 
     /** 该订单从 v2 到 {@code resultVersion} 的全部更正凭据（按版本、行号升序）。 */
@@ -39,7 +40,7 @@ public class CorrectionAdjustmentSource {
               (SELECT COUNT(*) FROM correction_ledger l WHERE l.correction_line_id=c.id AND l.reverses_entry_id IS NULL) ledger_rows
             FROM order_result_version r JOIN correction_document d ON d.id=r.source_correction_id AND d.order_id=r.order_id
             JOIN correction_line c ON c.document_id=d.id
-            WHERE r.order_id=? AND r.result_version BETWEEN 2 AND ? AND (
+            WHERE r.order_id=? AND r.result_version BETWEEN 2 AND ? AND d.type<>'HEADER_CORRECTION' AND (
               (r.result_version=d.effective_result_version AND d.status IN ('EFFECTIVE','WITHDRAW_PENDING','WITHDRAWN'))
               OR (r.result_version>d.effective_result_version AND d.status='WITHDRAWN'
                 AND d.withdrawal_confirmed_by IS NOT NULL AND r.created_at=d.withdrawal_confirmed_at))
@@ -51,9 +52,10 @@ public class CorrectionAdjustmentSource {
             if (((Number) row.get("is_withdrawal")).intValue() == 1) {
                 result.add(withdrawals.read(order,row)); continue;
             }
-            result.add("HEADER_CORRECTION".equals(String.valueOf(row.get("type")))
-                ? header(row) : physical(row));
+            result.add(physical(row));
         }
+        result.addAll(headers.read(order,resultVersion));
+        result.sort(Comparator.comparingLong(Adjustment::resultVersion).thenComparing(Adjustment::headerField));
         ExportFacts.check(!result.isEmpty(), "该结果版本没有可追溯的更正凭据行");
         return result;
     }
@@ -86,24 +88,6 @@ public class CorrectionAdjustmentSource {
             trace(row));
     }
 
-    /**
-     * 抬头更正：无出库行。渲染侧 `AdjustmentValidator.header` 要求抬头字段名存在且前值匹配；
-     * 撤销时净效果回到前值。
-     */
-    private Adjustment header(Map<String, Object> row) {
-        String field = row.get("delivery_code") == null ? "" : String.valueOf(row.get("delivery_code"));
-        String before = text(row.get("before_text"));
-        String after = text(row.get("after_text"));
-        ExportFacts.check(!field.isEmpty() && !before.isEmpty(), "抬头更正缺少字段名或前值（无法回放）");
-        boolean withdrawn = "WITHDRAWN".equals(String.valueOf(row.get("status")));
-        if (withdrawn) after = before;
-        ExportFacts.check(withdrawn || !after.equals(before), "抬头更正的前后值相同");
-        return new Adjustment(id(row, "document_id"), id(row, "line_id"), version(row),
-            Adjustment.Kind.HEADER_CORRECTION, "", 0, 0, "0", "0", field, before, after,
-            occurredAt(row), String.valueOf(row.get("reason")), approver(row),
-            trace(row) + (withdrawn ? " / 已撤销（净效果回到前值）" : ""));
-    }
-
     private static void requireZeroed(long targetCount, long targetWeight, String label) {
         ExportFacts.check(targetCount == 0 && targetWeight == 0, label + "的更正形状非法（应归零）");
     }
@@ -112,7 +96,6 @@ public class CorrectionAdjustmentSource {
     private static String approver(Map<String, Object> row) {
         return row.get("approved_by") == null ? "" : String.valueOf(row.get("approved_by"));
     }
-    private static String text(Object value) { return value == null ? "" : String.valueOf(value); }
     private static String trace(Map<String, Object> row) {
         return "correction_document:" + row.get("document_id") + " / correction_line:" + row.get("line_id")
             + " / ledger_rows:" + row.get("ledger_rows");
