@@ -605,7 +605,7 @@ class E2aCorrectionChainIT {
     }
 
     /** A HEADER_CORRECTION body: a scalar patch and no lines at all. */
-    private ObjectNode headerBody(JdbcTemplate jdbc, Order order, String currentVersion, String key, String value) {
+    ObjectNode headerBody(JdbcTemplate jdbc, Order order, String currentVersion, String key, String value) {
         var facts = versionFacts(jdbc, currentVersion, order);
         var expected = SubmissionJson.object().put("orderId", order.orderId())
             .put("currentResultVersion", currentVersion).put("currentResultEffectiveCount", facts[0])
