@@ -6,41 +6,39 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: da4d56a
-dirty_entries: 9
+head: a495ef5
+dirty_entries: 8
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-本轮为 **R09 C2-G0 残余阻断补正与设计复验**（零代码）：以 `da4d56a` 为审查基线，补正 R1–R5 并形成设计定稿 v3。源码版本事实只看上方生成块。
+本轮为 **R09 C2-G0 v4 定向补正与设计复验**（零代码）：以 `a495ef5` 为审查基线，处理 K1–K4 与文档一致性，形成设计定稿 v4。源码版本事实只看上方生成块。
 
-## 本轮产出与判定
-- [设计定稿 v3](history/R09_C2_G0_DESIGN_2026-09-28.md)（修订 v2）、[残余阻断补正与设计复验](history/R09_C2_G0_RESIDUAL_BLOCKERS_2026-09-28.md)、[验收与阻断记录 v3](history/R09_C2_G0_ACCEPTANCE_2026-09-28.md)、[纠错记录](history/R09_C2_G0_CORRECTION_REVERIFY_2026-09-28.md)（已加导航与事实更正）。
-- **判定分级、不写“全部关闭”**：R1–R5 设计反例**已关闭或已具名保留**；**运行行为全部未验证**；B1 未实施、未授权。
-- R1：共同互斥点＝P3 协调锁——接纳的 S2 移入该临界区；**离线登记写侧改造**（先取 P3，锁内取 P2、做“无在途租约”检查并在锁内发布完成/UNKNOWN）；锁序固定 P3→P2→P5(瞬时)，`RecoveryControlLock` 改为按根、可嵌套、带层号逆序拒止。
-- R2：`authorityKind` 校验下沉到权威加载唯一入口（`purpose` 必填）＋`authorityKind × consumer` 允许表；**撤回并重写** v2“模式变更必先完成独占控制推进”的证明（`RecoveryClosedProjection.register()` 同形接受 rev1/QUIESCING 且只持共享租约）；真实关闭权威创建/切换并入同一 P3 协议（B9 实施）。
-- R3：取消“上下文缺席＝权限”——主数据源改为 `RecoveryRequestAdmittedDataSource`，**每个取连接必须解析到有效根**，无根/失效一律拒绝且**永不回退**；旧连接级路径改为显式命名、非 `@Primary` 的独立能力（105 语义逐字节保留）；补四个负例。
-- R4：`leaseRoot` 绑定进信任身份 v2＋`lease-root.json`（同 P3 必须同 P5）；`.pending`/损坏/缺进程记录/退役失败逐项定案；**退役失败＝立即隔离并 halt**（不变式：存活进程不存在已结束但未退役的租约）；接纳改为**前后两次探针**，线性化点＝后探针完成；明确 halt 终止整个 JVM（同进程在途操作一并终止）。残余具名两项：授权者直接改文件/库不在威胁模型内；`halt` 理论不可执行时退化为“租约仍在⇒仍拒绝”。
-- R5：Session 保存断言改按实际时序（不强求 FINALIZING 子操作）；过滤器顺序改用 Spring 注册配置（会话过滤器默认 `-2147483598`／`{ASYNC,ERROR,REQUEST}`，javap 证据）＋运行轨迹，并说明 `FilterRegistration` 无 order API；`acquire` 前置条件修正为“调用方须先持协调锁”（删除 `acquireLocked` 增量项）；P2 正常/UNKNOWN 文件区分；v1↔v2 差异如实更正；看板规模与章节指向修正；实施清单合并为 21 行完整表。
+## 本轮产出与逐项判定
+- [设计定稿 v4](history/R09_C2_G0_DESIGN_2026-09-28.md)、[v4 定向复验](history/R09_C2_G0_V4_REVERIFY_2026-09-28.md)、[验收与阻断记录 v4](history/R09_C2_G0_ACCEPTANCE_2026-09-28.md)；[残余阻断复验](history/R09_C2_G0_RESIDUAL_BLOCKERS_2026-09-28.md)与[纠错复验](history/R09_C2_G0_CORRECTION_REVERIFY_2026-09-28.md)保留为历史。
+- **判定逐项标注，不使用“全部关闭”**：K1 设计级成立（含具名固有并发边界 G3）；K2/K3/K4 设计级成立；运行级全部**未验**；B1 未实施、未授权。
+- K1：撤回 v3 两处错误结论（“后探针即证明扫描完成时无孤儿”“halt 失败仍全局阻断”）。探针语义公开为逐记录步骤；新增**孤儿可观测性单调性引理**与**效果门**（`RecoveryConnectionHandler.commit()` 提交前在 P3 锁内再探针，覆盖业务事务与 Session 保存；已接纳根内自动提交写默认拒绝，须显式登记 `AUTOCOMMIT_WRITE`）；UNKNOWN/异常一律走**围栏 F1–F5**，其中 **F3 释放进程记录锁**才是他人可见的跨进程阻断依据；退役分决策期（任一未确认结果⇒不删除＋围栏）与决策后期（释放 L1/L2 失败⇒日志＋本 JVM 置毒化＋FENCED，无孤儿遗留）。
+- K2：绑定按**分派**深度计数、分派结束**无条件**解绑（不再以 `!isAsyncStarted()` 为条件）、嵌套 ERROR 分派恢复外层；根生命周期独立保留至 `requestDestroyed`；新增 S15“异步未结束时原线程被复用不得继承 A 的根”。
+- K3：新增 INITIAL 权威下**仅发布关闭意图的最小受限能力**（`initial-close-intent.json`(+`.pending`)＋`purpose=INITIAL_CLOSE_INTENT`，Python 工具入口），使 S4a/S4b 经真实协议到达；恢复型 `apply()`/投影继续拒绝 INITIAL；不推进阶段、不建恢复权威、不解除孤儿、不生产放行（本轮只定设计，接口属 B1 清单第 4/5 项）。
+- K4：离线登记在 P3 临界区内**先**做身份/形状校验与 P5 在途/孤儿检查（只读），**之后才**有 P2/P4 副作用；四步表、伪代码、证明与 S13 预期统一。
+- 文档一致性 7 项已修正：B1 守卫接线 vs B9 恢复链实跑的唯一清单、拒绝断言按阶段区分（接纳前拒绝 vs 登记后撤销）、身份承载 `RecoveryAuthorityIdentity`、证据路径归属（Python 协议笔记属上一轮 correction 目录）、状态表与 halt 矛盾、退役尾部表述、规模数字。
 
 ## 交付状态与下一步
-- **R09 C2 仍未实施**：B1（HTTP/Session 外层＋操作租约＋P5 孤儿阻断＋启动门）待独立授权；设计清单中的组件、`tools/r09-c2-b1-smoke.ps1`、`b1probe`、S1–S14 与 19 项场景均未创建/未执行。
-- 移出 B1：`jobs/*` 与 Worker、各文件入口、渲染子进程、Flyway/Bootstrap 接线、Session 清理路径、恢复链消费者接线。
-- **下一步**：等用户对 B1 独立授权（范围见设计 §9，验收见设计 §10）；本轮止于残余阻断补正，不自动进入 B1。
+- **R09 C2 仍未实施**：B1（HTTP/Session 外层＋租约＋P5 探针/围栏/效果门＋启动门＋purpose 守卫穿参＋INITIAL 关闭意图能力）待独立授权；B9＝恢复链业务运行验收。设计 §9 的 23 行清单、§10 的 S1–S18、§11 的 22 项场景均未创建/未执行。
+- **下一步**：等用户对 B1 独立授权（范围见设计 §9，验收见设计 §10）；本轮止于 v4 设计复验，不自动进入 B1。
 
 ## 树、写权与环境
-- 主树 `D:/acrylic-pda-outbound` / `codex/development`；本轮输入 `da4d56a`＝实际远端；**修改前** status 为空、无 `.git/index.lock`、`0/0`、`diff --check` 通过；单写者已核（无其他进程引用本树、受控源码近 90 分钟 0 改动）。
+- 主树 `D:/acrylic-pda-outbound` / `codex/development`；本轮输入 `a495ef5`＝实际远端；**修改前** status 为空、无 `.git/index.lock`、`0/0`、`diff --check` 通过；单写者已核（无其他进程引用本树/共享树、受控源码近 90 分钟 0 改动）。
 - 19330/19434/19437/23308/8080/8081/9090 无监听；19387＝DSH、3306＝系统 mysqld、既有 Gradle daemon 未动；未分配 IT/SmokeRun/端口/数据库。
 - 共享树 `r06-e2a-migration` 保持 detached `ea4d166`、30 修改＋67 未跟踪＝97；状态列表哈希与留档一致；138 项脏文件哈希逐项重算 **138/138 一致**（前后各核一次）；只读，未同步/清理/reset/提交/合并。
 
 ## 本轮实际验证
-- 实际运行：修改前 Git/写者/监听快照、共享树与 138 项哈希前后对照、依赖 `javap` 只读反编译（会话过滤器顺序与提交位置、两个 `shouldNotFilter*` 默认值、`FilterRegistration` 无 order API、`SessionProperties$Servlet` 默认顺序与分派集、`DEFAULT_CLEANUP_CRON`）、Python 协议只读核对、正文/归档链接检查、章节引用与跨文档一致性检查、`git diff --check`、事实块 `-Write` 后 `-Check`（当前区在上限内）、暂存清单与提交编码复核。
+- 实际运行：修改前 Git/写者/监听/进程快照、共享树与 138 项哈希前后对照、只读源码坐标核对（`RecoveryClosedProjection`/`RecoveryProjectionRows`/`RecoveryLeasedTransaction`/`RecoveryControlIntents`/`RecoveryControlSnapshot`/`RecoveryWriterLease`/`RecoveryControlLock`）、正文 278 条链接 0 断链（归档按既有惯例单列）、章节引用与跨文档一致性检查（范围/拒绝阶段/身份承载/证据归属）、`git diff --check`、事实块 `-Write` 后 `-Check`（当前区在上限内）、暂存清单与提交编码复核。
 - **未运行**：编译、单测、IT、真实 HTTP、数据库供给与读写、完整应用冒烟、跨进程与故障进程实验、断电/Linux 持久性、现场原资料组合。
 
 ## 边界与未验
 - 零代码/迁移/契约/默认开关变更；未发布/部署/合 main/打标签；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`；未重开 D 扩测、A3、526、R07 抬头撤销。
-- 无新真实产品缺陷（本轮未做动态验证；问题均为设计与文档层面且已补正）。
-- 保留未覆盖/未授权/未验：生产默认 Session 清理路径（未覆盖入口）、孤儿租约解除（未授权）、Java/Python `normal-admission.json` 允许集差异（独立欠债，本轮不修）、C1 首次插入提交丢回执/独立进程重启/真实网络故障/断电/Linux 持久性/现场原资料组合、C2 全部动态与组合验收。
-- 证据时点更正：上一轮 `01-git-status.txt` 采集于该轮修改之后，不作为“前置干净”证据；本轮已在修改前落盘 `00-pre-status.txt`，不补造历史快照。
+- 无新真实产品缺陷（本轮未做动态验证；K1–K4 均为设计与文档层面）。
+- 保留未覆盖/未授权/未验：K1 固有并发边界 G3（环境属性，已具名，未标为关闭）、生产默认 Session 清理路径（未覆盖入口）、孤儿租约解除（未授权）、Java/Python `normal-admission.json` 允许集差异（独立欠债，本轮不修）、C1 首次插入提交丢回执/独立进程重启/真实网络故障/断电/Linux 持久性/现场原资料组合、C2 全部动态与组合验收。
 <!-- CURRENT_STATE_END -->
