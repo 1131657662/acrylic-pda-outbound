@@ -24,6 +24,7 @@
 
 | 范围 | 证据及适用边界 |
 | --- | --- |
+| A3 非e2a回归接续 | [496–500结果及停报](history/A3_NON_E2A_REGRESSION_2026-09-28.md)：真MySQL+MockMvc，4类绿/1类红；证据及根因分列，不代表全量通过 |
 | R08 D 更正导出与四项边界 | [交付确认](history/R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)、[撤销验收](history/R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md)、[抬头验收与假设扫描](history/R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md)、[四项历史](history/R08_D_BOUNDARIES_2026-09-28.md)；仅作证据入口，状态见看板 |
 | R09 耐久关闭意图/接纳排空 | [验收](history/R09_CLOSING_INTENT_ACCEPTANCE_2026-09-26.md)：协议v2原意图永久保留、新写者拒绝；Windows/Linux各31无skip、Java675pass/1skip、Python114pass/11skip；attempt82实库事务/投影/HTTP。全应用接线与NORMAL仍未完 |
 | R09 关闭阶段数据库投影 | [验收](history/R09_CLOSED_PROJECTION_ACCEPTANCE_2026-09-26.md)：V39非空迁移、原事实字节不变、四阶段及并发/回退/错库反例；670单测通过/1skip，attempt80实库+HTTP/浏览器。仍未接共享入口或NORMAL |
