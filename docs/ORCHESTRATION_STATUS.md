@@ -6,17 +6,17 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 9ff064c
-dirty_entries: 5
+head: ec4be3b
+dirty_entries: 8
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
 
-本页是唯一断点，源码版本事实只见生成块。C1真实验收前看板已[原文归档](history/ORCHESTRATION_STATE_before_R09_C1_HTTP_ACCEPTANCE_2026-09-28.md)，其中保留此前归档索引；生成后文档提交HEAD以Git为准，不恢复历史指令。
+本页是唯一断点，源码版本事实只见生成块。**本轮只收尾并交回DSH，无新开发**；[接手交接](history/SESSION_HANDOFF_2026-09-28.md)区分DSH历史交付、Codex接续与待决策。交回前看板已[逐字归档](history/ORCHESTRATION_STATE_before_DSH_RETURN_2026-09-28.md)，保留此前历史索引；生成后文档提交HEAD以Git为准，不恢复旧指令。
 
-## 交付与本次接续
+## 交付与DSH接手续点
 - **D整块已交付（用户按已验范围接受）**：11c20e8已推送；片1/片2/片3、部分更正/连续更正/实物撤销/抬头生效四项基本边界、审批人ID/撤销导出/抬头导出修复均✅。[交付确认](history/R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)列全部历史证据；不再停留D扩测。
 - **R07抬头撤销另立待办**：4197427已推送，[独立blocker](history/R07_3_HEADER_WITHDRAW_BLOCKER_2026-09-28.md)。合法抬头零line/账，但WithdrawConfirm要求非空账；静态确认、未实际执行HTTP组合，只记录不修，待单独授权评估。
 - **JWT定性a并修复**：4b25bca先定性、39d1b84最小映射修复均已推送。损坏凭据未被当VERIFIED，两错误状态无已发现的权限/自动重试分支；只改异常分类，不改验签。[验收与扫描清单](history/R06_JWT_CLASSIFICATION_FIX_2026-09-28.md)。
@@ -30,19 +30,19 @@ server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 - **R09 C1第二批实现/历史红保留**：c974188新增独立初次DB协调器/核验/UNKNOWN、R09适配及测试域探针。[当批记录](history/R09_C1_INITIAL_REGISTRATION_BATCH2_2026-09-28.md)保留557/558重复mapping启动红与78/1/0/0单测红，修正后78项单测绿；当批未完成真实验收，现由下述560补齐。
 - **C1脚本修复/完整应用冒烟通过**：07ddf93修复两处裸IP并扫描同类，6类argv回读/编译绿；输入a860567的独立冒烟2完整Boot/Tomcat启动、唯一controller/两个映射断言绿，无重复mapping/启动异常，Java退出0，应用与DB正常关闭。[分步证据](history/R09_C1_REVERIFY_2026-09-28.md)。本步0 HTTP/0登记，旧冒烟1及557/558红不覆盖。
 - **C1本次隔离fixture真HTTP/真MySQL验收通过**：560为1/0/0/0，20次真实HTTP验证双侧/幂等/缺侧/NORMAL独立路径/关闭历史拒绝/上下文重启；124表前后摘要一致，真实commit后丢回执UNKNOWN拒绝，105连接面原断言全过。559为1/1/0/0，因观测账号缺PROCESS失败，定性测试环境问题；560只补隔离账号观测权限，未改产品/断言/超时，红证据保留。[逐项证据](history/R09_C1_REVERIFY_2026-09-28.md)。
-- **R09 C2实施未启动，待逐批授权**：[入口评估](history/R09_C2_ENTRY_ASSESSMENT_2026-09-28.md)。C1动态缺口已补齐，建议先G0租约/旧操作收尾，再B1 HTTP/Session→PDA/各文件/Worker/渲染/Flyway/Bootstrap；运行时初始化许可必须先于业务入口，不自动开工。
+- **R09 C2实施未启动，待逐批授权**：[入口评估](history/R09_C2_ENTRY_ASSESSMENT_2026-09-28.md)前已补C1通过的接续说明。**DSH建议第一步仅为只读形成G0操作租约/旧操作收尾的一批范围及验收提案，交用户授权**；获授权后再B1 HTTP/Session及后续各入口，不自动接线。
 - **C1/C2证据边界**：560使用隔离fixture与测试域loopback探针，非生产路由/PDA Bearer现场。重启是同一JVM内完整上下文重建；UNKNOWN是已有登记的幂等事务实际提交后注入JDBC异常，首次插入commit丢回执未验。独立进程/断电/真实网络中断/现场原资料/独立审查未验。无C2入口接线或生产放行；嵌套租约/框架清理/异步/multipart仍待验。
 
 ## 树、写权与环境断点
-- 主树D:/acrylic-pda-outbound，codex/development；IT输入9ff064c与origin一致、开始干净。单助手，无在途测试。本步仅看板/欠债v59/索引/复验记录与验收前原文5文档，实际HEAD见事实块/Git；本机包装器变化不提交，扫描清单已补。
-- 冒烟2及559/560独立库/原件/HTTP/回归证据保留在.local相应目录；日志和独立XML副本在.local/r09-c1-reverify-20260928/。559/560均正常关闭，19300–19500无监听；系统3306与旧树未动，未执行历史datadir清理。A3不重开、C2未开工。
-- 旧验证树历史断点为detached ea4d166、97条既有dirty/untracked；上轮status文本差异0。本轮未进入/写入旧树，不将历史检查写成本轮复核；没有同步文件、提交、重置或合并。
+- 主树D:/acrylic-pda-outbound / codex/development；本次收尾输入ec4be3b，开始干净，fetch成功后HEAD...origin领先/落后0/0，无未推送。只修改交接/看板/欠债/索引及历史说明，归档旧交接和看板；完整改动由Git及交接文档定位。收尾推送后Codex停止写入，交回DSH；最终SHA/干净状态以Git复核。
+- 冒烟2及559/560库/原件/HTTP/XML/日志全部原样保留于.local；it-keys与这些目录命中.local/忽略规则，tracked为0，50个接续提交无.local路径。19330/19434/19437/23308无监听；19387为DSH应用PID23292，系统3306/PID5448、Gradle daemon/PID20264均未动。未观察到C1测试在途，不从DSH应用存在推断写权空闲。
+- 本轮逐树只读核验34树：28干净、6棵有改动，共138个文件（39修改/99未跟踪）；[完整路径与坐标](history/DSH_SWITCH_WORKTREE_AUDIT_2026-09-28.md)。共享r06-e2a-migration仍detached ea4d166，30修改+67未跟踪=97；六树已留哈希快照，未覆盖/stash/reset/clean/提交/合并。DSH必须在主树开发，旧验证树先取证和独占写权再定向同步。
 - 上轮冒烟1主机参数错误/原脚本快照、557/558启动红、探针单测红与559权限红全保留；故障目录/marker未重用。既有Gradle daemon保留，本次未改通用构造器或旧测试守卫。
 - 实际使用号止于560（失败也不重用），561未用，接续执行前查重。历史A3库/日志保持，Ledger/Foundation等专用环境未接续，R08专用run32未用；所有旧manifest含已用号不可复用。
 
 ## 历史证据、失败与未验
 - D历史证据：片1b74078d/477、片2 93bbfae/486、片3 edb041a/487及488补齐；四边界489/490/493/495。审批人089b335、撤销0e837ff、抬头68a43f8；本次未重跑D。
-- 默认v1历史495真实HTTP通过；R08 run31为14/0/0/0（真MySQL+MockMvc），渲染134/0/0/0。作者自审，未独立审查；历史不同证据等级不混用。
+- 默认v1历史495真实HTTP通过；R08 run31为14/0/0/0（真MySQL+MockMvc），渲染134/0/0/0。PDF内容回读已由488审批人/数重及495抬头逐值与目视补齐，不能沿用486“仅容器级”结论；其他样本/版式/平台不外推。作者自审，未独立审查；历史不同证据等级不混用。
 - 历史486漏验审批人、487内容红、491撤销HTTP红、492测试漏basis红、494抬头预检红、缺浏览器及cleanup警告原记录保留；500红/JWT修复前两红/526/528红保留。527采集路径比较失败、528收尾SQL引号错误、529/530入口失败、545编排编码错误均留证；545实际13项绿、未重跑。540–555既有cleanup警告仍在，实例关闭另验；未修仓库工具。锁取证仍缺解除后完整状态/死锁计数。
 - D范围外：抬头撤销HTTP、多个字段/其他标量类型、抬头与实物混合链、多文档撤销/撤销后再更正、独立审查及现场。R08实物撤销证据不外推抬头。
 - A3原清点136类中67类已有批次绿、69类待核；后续40类执行（39类全绿、526另挂疑似专项），21类待发布前、8类R08历史去重；[完整目录](history/A3_NON_E2A_REMAINING_2026-09-28.md)。去重/转清单不计通过/skip；夹具绿非浏览器/Android消费；专项环境/迁移/原资料组合、外部HTTP仍未验。
@@ -50,6 +50,6 @@ server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 - R09 C1本次验收通过，原安装现场/跨进程/断电组合未验；旧冒烟1、557/558、单测及559红保持。C2动态组合、Windows断电/Linux持久性与进程隔离、关闭态能力和生产释放未验/未授权。P1–P7、真机/Keystore/App内升级/长时留存/外网异地、原资料旧BCD及历史现场限制保留。A2已修dcaf7ad/377，不重开。
 
 ## 边界
-- 本轮C1按先冒烟后IT完成，未改生产代码/旧迁移/R05/R06/R07/ConfirmedV1Adapter/契约/默认配置或开关；PROCESS仅给新隔离账号用于观测。不发布/部署/合main，不修R07抬头撤销、不深入526、不配置A3 profile；C2各批交用户决定。
+- 本轮只有DSH交接文档与只读取证，无代码/测试/脚本/契约/旧迁移或开关变更，无新单测/IT/HTTP/attempt。C1先冒烟后560已验仅历史引用。未发布/部署/合main、不改R05/R06/R07/ConfirmedV1Adapter、不修R07抬头撤销/526、不重开A3；DSH接管不自动获得C2或生产放行授权。
 - 不提交.local密钥/数据库/真实业务资料。七类生产决定及TEMP归档仍关闭，localDeletionAllowed=false，普通有权正常确认允许空理由；本机留证不代表异地备份。
 <!-- CURRENT_STATE_END -->

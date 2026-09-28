@@ -1,5 +1,9 @@
 # 历史归档
 
+- [Codex → DSH 会话交接](SESSION_HANDOFF_2026-09-28.md)：本轮只收尾；50个接续提交、各线状态、精确未验边界、单一接手建议与写权说明。
+- [DSH → Codex 原交接](SESSION_HANDOFF_DSH_TO_CODEX_ORIGINAL_2026-09-28.md)：逐字保存旧交接，仅历史，不恢复D片3未做及PDF未读等旧结论。
+- [DSH切换工作树清点](DSH_SWITCH_WORKTREE_AUDIT_2026-09-28.md)：34树坐标，6棵有改动树/138个文件及环境监听；只盘点保护，不清理旧树。
+- [交回DSH前看板原文](ORCHESTRATION_STATE_before_DSH_RETURN_2026-09-28.md)：保留C1验收后的旧断点。
 - [R09_C1_REVERIFY_2026-09-28.md](R09_C1_REVERIFY_2026-09-28.md)：07ddf93修复参数/同类扫描、冒烟2绿；559缺PROCESS红保留，560真HTTP/真MySQL与105连接回归通过，124表原事实守恒；列上下文重启/故障注入/现场等精确边界，C2待授权。
 - [C1真实验收前看板原文](ORCHESTRATION_STATE_before_R09_C1_HTTP_ACCEPTANCE_2026-09-28.md)：保存冒烟已绿、尚未执行559的断点。
 - [C1冒烟通过前看板原文](ORCHESTRATION_STATE_before_R09_C1_SMOKE_PASS_2026-09-28.md)：保存脚本修复已完成、尚未启动的断点。

@@ -1,125 +1,159 @@
-# 会话交接（2026-09-28）— DSH → Codex
+# 会话交接（2026-09-28）— Codex → DSH
 
-**当前 HEAD（交付）**：`184bfd7`｜**分支**：`codex/development`｜**收尾文档提交**：`ec1dd14`（本交接）→`3dc628d`（看板/欠债）→`f51fc85`→`c832d29`（事实块）→其后仅本行修正。**注意**：读本文时应以 `git rev-parse --short HEAD` 与 `git rev-list --left-right --count origin/codex/development...HEAD` 为准（收尾期间 HEAD 只会因文档提交前移，代码未变）。
-**远端同步**：`git rev-list --left-right --count origin/codex/development...HEAD` ＝ **0 0**（已全部推送）
-**工作树**：干净（`git status --porcelain` 无输出；`.local/` 由 `.gitignore:5` 忽略，无被跟踪文件）
-**事实块**：`tools/version_facts.ps1 -Check` 通过（看板当前区见事实块与脚本输出）
+本次切换仅收尾交接，不开新功能、不写新代码、不跑业务测试。源码版本事实只看[看板生成事实块](../ORCHESTRATION_STATUS.md)。原DSH→Codex交接已[逐字归档](SESSION_HANDOFF_DSH_TO_CODEX_ORIGINAL_2026-09-28.md)，不再把其中的“当前/下一步”当现行状态。
 
----
+## a. 接管坐标、推送与写权
 
-## a. 本轮（DSH）完成了什么
+- **必须使用的开发工作树/分支**：`D:/acrylic-pda-outbound` / `codex/development`。本次交接开始HEAD为`ec4be3b30b38ece02d68c45e577366077aac70ef`，`git status --short --untracked-files=all`为空。
+- 已成功执行`git fetch origin codex/development`，随后`git rev-list --left-right --count HEAD...origin/codex/development`为`0 0`，无未推送提交。origin使用SSH；本轮未遇443或推送阻断。
+- 本交接文档提交会使HEAD前移；**最终交接提交取本文件最后修改提交**：`git log -1 --format='%h %s' -- docs/history/SESSION_HANDOFF_2026-09-28.md`。看板的Git字段是生成时点快照，不为追逐自身SHA反复提交；运行状态以交接后实际Git核验为准。
+- Codex本轮单助手，仅维护交接文档；最终提交推送后停止写入，交回DSH。DSH应用已运行（监听19387），不能由进程存在推断写权空闲；开始修改前核实没有另一任务同时写同一文件/库/目标。
+- 本轮无在途测试、无新attempt；现有应用/数据库与失败证据不清理、不归档退役，不恢复旧多代理或旧角色分工。
 
-| # | 事项 | 提交 | 验证（attempt / 结果） |
-| --- | --- | --- | --- |
-| 1 | R08 子项 C：TEMP 来源接入正式订单导出 | `f9a73c8` | 383 绿；既有导出路径回归 runs 19-22 全绿 |
-| 2 | A1：TEMP 来源**渲染验证**接通（新 IT + `-CoordinatesOnly` + 渲染器透传） | `f6ecdd2` | **390 绿**；XLSX 13965B / SCAN_XLSX 4400B / PDF 360092B；openpyxl 回读 601.5kg、2.0 包、产品 003→300.5 + 571→301.0 |
-| 3 | A2：重启后新代次接管（判定＝既有 `JobFenceChecks` 已覆盖） | 判定记录 + `8649295` | **401 绿**；同时修 e2a harness 两处断言级缺陷（provisioning SQL 静默截断、`performance_schema` 无权） |
-| 4 | A3：非 e2a 回归三批 | 文档 `17ee508` | attempts **431-463**；去重 **19 个新类 / 241 项**（240 通过 / 1 条件 skip / **0 产品失败**） |
-| 5 | 磁盘阻塞处置 + **例行清理策略** | `112c345` | 删 501 个 attempt 的 datadir（91.4 GB）解除 D: 0GB；新增 `tools/cleanup-old-attempt-datadirs.ps1` 并接入两个 harness 收尾 |
-| 6 | B 组确认（跨订单汇总 / 完整导出中心） | `019e3fd` | **已具备**，无功能缺口；`Summary 6/6 / CenterPagination 4/4 / Retry 7/7 / AuthorizationRace 9/9 / ClockBoundary 2/2` 全绿 |
-| 7 | G7：汇总契约描述修正（**只改描述**） | `4b8ab5b` | 明确"含经 R06 受控关联确认正式化的订单；未关联 TEMP_PDA 临时单不在汇总内"；版本不单独递增（0.38.0 留下次实质变更） |
-| 8 | D 开工前实测（面超授权 → 停下报告） | `aa4c8ed` | 发现 `V46 ck_result_channel` 第三支使 v>1 行**无提交来源** |
-| 9 | ④ 口径差异裁定落地（**边界层转换** + 断言） | `1f422c2` | **478 绿**；非法组合报 `409 CORRECTION_EXPORT_KIND_AMBIGUOUS` |
-| 10 | **D 片1**：更正净结果快照可组装（服务端**只读**、形状零变更） | `b74078d` | **477 绿**；逐包有效行/合计/凭据逐条对照库内 v2 事实；R08 run 27 `R08ExportIT` **14/14** |
-| 11 | **D 片2**：更正净结果**真出文件**（XLSX/PDF） | `93bbfae` | **486 绿**；真服+真 MySQL+**真渲染子进程**+**真作业租约**；XLSX 13776B / PDF 382320B；openpyxl 回读 7 表；R08 run 28 **14/14** |
-| 12 | C3 两树整合评估 | `587d80a` | 业务内容 52/53 相同，唯一差异是应丢弃的临时探针 ⇒ **建议暂不退役** |
-| 13 | D1/D2/D3 | `143b0f1` / `bce5a26` / `0742e17` | R07-3 契约草案补齐（6 种命令）；看板瘦身；34 棵工作树清点（24 可删 / 6 待取证 / 3 在用） |
-| 14 | E2：测试基础设施自验 + 覆盖率工具 | `c37d40b` | `tools/it-coverage.ps1`（102 类 / 133 套件）；记录两类"假通过"模式 |
+## b. DSH之前做的与Codex本次完成的
 
-**关键结论**：D 片1/片2 把"更正净结果"从**无法导出**推进到**能组装正确快照 + 能真出正确文件**，
-且**默认 v1 行为逐字未变**（两轮 `R08ExportIT` 14/14）。
+### DSH已有交付（本轮引用，未重做）
 
-## b. 未完成 / 待决策（交业主）
+原交接输入为`5d4e06c`，交付代码点`184bfd7`，其间为交接措辞。DSH已完成R08子项C/TEMP来源及渲染（f9a73c8/f6ecdd2，383/390）、job fence核实（401）、B组确认与G7描述（019e3fd/4b8ab5b）、D片1（b74078d，477）、D片2（93bbfae，486）、④口径边界转换（1f422c2，478）、A3历史三批（431–463）及测试/磁盘基础设施。详细原记录见[DSH交接原文](SESSION_HANDOFF_DSH_TO_CODEX_ORIGINAL_2026-09-28.md)。
 
-| # | 事项 | 状态 | 备注 |
-| --- | --- | --- | --- |
-| 1 | **D 片3（请求面）** | **待决策** | `ExportModels.Command.basis` 是 `@Pattern("ORIGINAL_CONFIRMED")` 硬编码 ⇒ **当前无法经 HTTP 申请更正净结果导出**；含契约草案 ⇒ 需授权 |
-| 2 | **③ 命令完整性按哪个版本** | **待授权** | 已判定＝"按命令记录时的版本"（非固定 v1）；改 `CommandBusinessIntegrity:81` 要动 R05/R06/R07 面 |
-| 3 | **② 跨订单汇总按哪个版本** | **已判定、未实现** | 判定＝"每个订单的最新有效版本"；`ExportRangeReader:45` 仍固定 `result_version=1` |
-| 4 | **D 未验边界** | 见下 §e | v2→v3 多版本链、撤销后快照、抬头更正真跑、**部分更正样本**（净结果行非空） |
-| 5 | **R09 C1/C2（NORMAL 双侧登记 / 应用入口接线）** | 未开工 | C1 判定＝**未完成**（`APPLICATION_ADMISSION.md`：HTTP/Session 外层、Worker/文件入口、NORMAL 双侧证据与生产释放均"未接"）；**建议单独立项**（跨生产面） |
-| 6 | 退役 `r06-e2a-migration` 树 | 未决定 | C3 建议**暂不**（它是唯一真服验证树；退役需先有替代树 + 证据归档） |
-| 7 | 三棵待取证工作树 | 未处理 | `r06-e2a-protocol` / `r06-e2a-foundation` / `r06-design` / `r07-design` / `datetime-display`（见 D3 评估） |
+**A2候选摘要修复属于DSH此前成果**：dcaf7ad / attempt377；Codex只做后续核实和清单纠正5eff71d。旧交接把job fence也称为“A2”是局部编号，勿与候选摘要债混淆。不得重复实现D片1/片2或重开已修A2。
 
-## c. attempt 号
+### Codex接续提交与证据
 
-- **本轮用至 486；下次从 487 起。**
-- 关键绿：**390**（A1 渲染）、**401**（job fence）、**431-463**（非 e2a 三批）、**477**（D 片1）、**478**（④）、**486**（D 片2）。
-- 失败留档（不删除）：attempts 465-486 全部保留（含 469 探针语法错、474 选路错、479 渲染器路径错、481 zip 读法、483 租约 null、485 表名索引）。
-- R08 专用库运行号：**19-28**（`R08ExportIT` 最近两次为 **27 / 28，均 14/14**）。
-
-## d. 关键文档路径
-
-| 文档 | 用途 |
-| --- | --- |
-| `AGENTS.md` | 长期协作约定（必读） |
-| `docs/ORCHESTRATION_STATUS.md` | 看板（事实块 + 当前区，含 v23） |
-| `docs/history/R08_D_CORRECTION_SLICE1_2026-09-28.md` | **D 片1/片2 记录**（实现、④裁定、证据、未验边界） |
-| `docs/history/D_CORRECTED_EXPORT_SCOPE_2026-09-28.md` | D 开工前实测 + 三片拆法 |
-| `docs/history/R08_B_GROUP_CONFIRMATION_2026-09-28.md` | B 组确认 + **G7 判定**（§6） |
-| `docs/history/R06_DEBT_LIST_2026-09-27.md` | 欠债清单（含 v19/v20 增补） |
-| `docs/history/DISK_MAINTENANCE_POLICY_2026-09-28.md` | 磁盘例行维护策略 |
-| `docs/history/TEST_INFRA_SELFCHECK_2026-09-28.md` | 测试基础设施自验 + 假通过模式 |
-| `docs/history/TWO_TREE_INTEGRATION_ASSESSMENT_2026-09-28.md` | C3 两树评估 |
-| `docs/history/WORKTREE_CLEANUP_ASSESSMENT_2026-09-28.md` | D3 工作树清点 |
-| `docs/parallel/R08/EXPORT_CENTER.md` | R08 导出中心已实现边界（**注意**：§"待主线整合"段已过期，中心已进正式契约） |
-
-## e. 未验边界清单（累积，不得被局部通过覆盖）
-
-1. **D：v2→v3 多版本链** —— 已实现"取 v2..目标版本整条链"以满足渲染侧连续性要求，但**未真跑** v3（需二次更正生效的样本）；
-2. **D：撤销（WITHDRAW / WITHDRAW_CONFIRM）** —— 已实现"撤销即归零"并读入 `status`，**未真跑**；
-3. **D：抬头更正（HEADER_CORRECTION）** —— 已实现映射（字段名/前值/后值 + 撤销回退），**未真跑**（缺该类型样本）；
-4. **D：部分更正样本** —— 本 fixture 两包**全部归零** ⇒ "版本有效明细"按渲染器设计为空；**未验**"部分更正、净结果行非空"时该表完整呈现；
-5. **D 片3 未接** —— 无法经 HTTP 申请更正净结果导出（片2 只证明"快照能渲染成正确文件"）；
-6. **PDF 内容级回读** —— 只验容器签名 + 字节数（本机无 pypdf/fitz；Chromium 用 Adobe-UCS 字形编码）；
-7. **A3 剩余约 80 个非 e2a 类未跑** —— 通道已验证，可继续分批（每批 12-15 类约 40 分钟）；
-8. **环境守卫族**需专用库才会真跑：R08 族（23308/`acrylic_r08_it`）、IdentityLock 族（19321/`acrylic_outbound_l2_20260921` 且账号同名）、ledgerverify 族；
-9. **B 组缺口 G1-G7** —— 政策/生产规模/R09 运维/现场类，**非缺失功能**（G7 已修描述）。
-
-## f. 验证基础设施资产（Codex 可直接复用）
-
-| 资产 | 用途 | 关键约定 |
+| 范围 | 关键提交 | 验证/结论与记录 |
 | --- | --- | --- |
-| `tools/e2a-provision-and-run-106.ps1` | e2a 单类真服 IT（一 attempt 一库，端口 19330） | `-Run <n> -Tests '<Class>'`；新开关：`-NonE2a`、**`-CoordinatesOnly`**（只导出库坐标、`OUTBOUND_MIGRATE=false`）、`-RendererHome`、`-Browsers`、`-KeepServerRunning`、`-ProvisionOnly` |
-| `tools/r08-provision-and-run.ps1` | R08 专用库（端口 23308、库名**必须** `acrylic_r08_it`） | 渲染默认自动指向 `report-rendering/build/install/acrylic-report-rendering` 与 r08-export 工作树的 playwright browsers |
-| `tools/e2a-batch-it.ps1` | 批量（每类一 attempt + XML 聚合 + 分类） | **`-Classes 'A','B'` 必须逗号分隔**（PS 数组会崩） |
-| `tools/cleanup-old-attempt-datadirs.ps1` | 磁盘例行维护：只删旧 attempt 的 `data/`，保留最近 50 | 日志/marker/`storage/`/`private/`/`run-password.txt`/`provision.sql` **一律保留**；两个 harness 收尾自动调用 |
-| `tools/it-coverage.ps1` | 从 JUnit XML 汇总"哪些 IT 跑过、最新状态" | 局限：e2a harness **不按 attempt 归档 XML** ⇒ 直连复跑不在视野内；`LATEST-RED` 应读作"需重新确认" |
-| `tools/version_facts.ps1` | 事实单一来源 | `-Check` 校验漂移与看板上限；`-Write` 更新 |
-| 渲染前提（导出/渲染类 IT 必须） | `OUTBOUND_EXPORTS_RENDERER_HOME` + `OUTBOUND_EXPORTS_BROWSERS`（否则 503 `EXPORT_UNAVAILABLE`） | 渲染器安装目录必须**含最新 `report-rendering` 构建**（D 片2 的 `Basis.CORRECTED` 就需要 `.\gradlew.bat -p report-rendering installDist` 重建） |
+| A2核实 | 5eff71d | 候选接口commandContextSha256和Web取值均在；以[A3 §6.6](A3_CSRF_ROOT_CAUSE_2026-09-27.md)377为已修证据，§6.5仅为修复前历史。 |
+| D片3请求面 | edb041a；e130ef3阶段记录 | HTTP允许CORRECTED并选resultVersion，默认不传仍v1；复用既有快照/渲染，契约只完善草案。487请求链通但审批人内容红，488补齐；[片3记录](R08_D_SLICE3_CHECKPOINT_2026-09-28.md)。 |
+| 审批人编码修复 | 089b335 / eb3097d | 遵循项目UUID口径，1457文件同类排查；488审批人原16字节与XLSX/PDF值一致，run29默认14项回归；[内容盲区与修复](R08_D_APPROVER_ENCODING_FIX_2026-09-28.md)。 |
+| D部分/连续更正 | b523eff / 092063d；42b96fd / 3cf0709 | 489非空净1包/301kg；490连续更正整链净2包/600.5kg、缺链拒绝；[边界记录](R08_D_BOUNDARIES_2026-09-28.md)。 |
+| 实物撤销导出 | 0e837ff / 0797228（定性6d5d019） | 491产品红、492测试漏basis红保留；493合法v3恢复2包/601.5kg和反向凭据，通过真HTTP及内容；[定性/修复](R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md)。 |
+| 抬头生效导出 | 68a43f8 / 3ef1715 / ec79b7f（定性ee9b2ee） | 494红保留；495零line/effect抬头更正值正确，XLSX/PDF内容及目视；默认v1真HTTP、run31的14项、渲染134项通过；[修复与假设扫描](R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md)。 |
+| D交付/独立R07债 | 11c20e8 / 4197427 | D按已验范围用户接受；[交付确认](R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)。抬头撤销空账阻断独立记录，不修R07、不外推实物撤销证据。 |
+| R06 JWT恢复性修复 | 4b25bca定性 / 39d1b84代码 / 7bded33验收 | 损坏JWT被拒但错误分类不精确；授权后只修异常映射。修后单测6绿、501–505五类39项绿；500及修前红保留；[记录](R06_JWT_CLASSIFICATION_FIX_2026-09-28.md)。 |
+| A3常规回归 | a257e11 / 83e633b / 43f813a / ca985be / 321bbe0 | 496–512首批历史记录；513–526新批14类中13全绿/526并发红；531–556两批26类107项绿。真实MySQL+Spring/MockMvc，不泛称外部HTTP；[逐批台账](A3_NON_E2A_WAVES_2026-09-28.md)。 |
+| 526锁专项/专用环境 | a0c5928 / 3648629 / c7cf378；806625f / 5d977ea / fc7ebbd | 526/528红、527绿保留，最终定性疑似产品缺陷非确证，待专项；8类R08历史验收去重，21类专用环境移发布前。用户已让A3收手；[收尾](A3_REGRESSION_CLOSURE_2026-09-28.md)。 |
+| R09 C2范围与入口评估 | 84db51c / bf568a0 | 只形成[独立范围](R09_C2_PROJECT_SCOPE_2026-09-28.md)及[逐入口评估](R09_C2_ENTRY_ASSESSMENT_2026-09-28.md)，没有入口实现。 |
+| R09 C1两批 | 0ea36a3评估；37beeaa / c146f5f；c974188 / 6c74f79 | 首批独立库外协议/耐久存储22项绿；第二批DB协调器/双侧核验/UNKNOWN与R09适配；修正后78项单测绿。557/558重复mapping启动红保留；[首批](R09_C1_INITIAL_PROTOCOL_BATCH1_2026-09-28.md)、[第二批](R09_C1_INITIAL_REGISTRATION_BATCH2_2026-09-28.md)。 |
+| C1冒烟与最终验收 | 0bcf24c / 8408d27；07ddf93 / a860567 / 9ff064c / ec4be3b | 脚本两处裸IP修复，4份本次脚本+1份依赖扫描，6类argv逐字回读；完整Spring/Tomcat冒烟通过。559因PROCESS观测权限红，560新隔离账号补观测权限后1/0/0/0，20次HTTP、124表守恒、原105连接回归全过；[精确验收边界](R09_C1_REVERIFY_2026-09-28.md)。 |
 
-## g. 硬边界（Codex 必须守）
+上表是关键提交索引，完整接续提交列表见文末。作者自审/自测不等于独立审查；历史回归证据不当成本轮新跑。本轮只查文档/Git/文件状态，未更改任何产品、测试、工具脚本或契约。
 
-1. **不改 R05/R06/R07 已验证业务代码**（含 `CommandBusinessIntegrity` —— ③ 只能等授权）；
-2. **不开放七类生产开关**、不发布/部署、不动原库与现网；
-3. **不发布契约**（`contracts/*.yaml` 的字段/版本变更需业主授权；G7 那次是**已授权的描述性更正**）；
-4. **不提交 `.local` 临时密钥/数据库/真实业务数据**（`.local/` 已 gitignore）；
-5. **不改生产配置默认值**；默认行为必须不变（D 的"取 v>1"是**新增能力**）；
-6. **发现真 bug 立即停下报告**，不"顺手修"越过授权面；
-7. **失败证据不删除**（attempts、日志、marker、storage 一律留档）；
-8. 普通有权正常确认允许空理由；`localDeletionAllowed=false`。
+## c. 各线交付状态
 
-## h. 切换到 Codex
+| 线 | 本次交接状态 | 尚待处理 |
+| --- | --- | --- |
+| R06 | 核心业务与TEMP归档/Android LINK L4/已知flake已收口；JWT映射缺陷已授权修复。 | A3主体完成：原清点136类中67已有历史批次证据，待核69类中40已执行（39全绿、526待专项）、21待发布前、8类R08历史去重。不同集合不可相加成“全量136通过”。 |
+| R07-1 | 服务层①–④与3幂等已有283；HTTP层含③/④已有374。 | ⑤–⑧反例、3真并发、2原子性、APPROVE成功、PREPARE/ACTIVATE及权限拆分待验/待裁决，独立时间盒。 |
+| R07-3 | 步骤1–8/两阶段撤销已有交付；D验证补齐实物撤销和抬头生效导出。 | 抬头撤销WithdrawConfirm要求非空账，合法零账抬头受阻：静态确认，HTTP组合未跑，需单独授权；P1–P7仍待决策。 |
+| R08 D | 片1/2/3＋四项基本边界＋审批人/撤销/抬头导出修复全部按已验范围接受交付。 | 不继续扩测；混合/跨文档等组合保留。③命令完整性按记录时版本待授权；②跨订单汇总按最新有效版本未实现，均非已交付D请求面。 |
+| R09 C1 | 独立初次NORMAL登记已实现，560按隔离fixture＋测试域loopback真HTTP/真MySQL范围通过；缺侧不接纳、原事实不重造、与灾后释放独立。 | 首次INSERT提交丢回执及独立进程等未验；不能称生产登记端点/PDA Bearer已接。 |
+| R09 C2 | 只有立项/入口评估，未实施。 | G0操作租约与旧操作收尾设计→B1 HTTP/Session→其余入口按批授权；C1通过不自动授权C2或生产释放。 |
 
-**DSH 本轮交付**（§a 全表）：R08 子项 C、A1 渲染验证、A2 判定+harness 修复、A3 三批回归（19 类 241 项）、
-B 组确认、G7 描述修正、D 片1、D 片2、④ 边界层转换、磁盘例行策略、C3/D1/D2/D3/E2。
+## d. 未验边界与过时表述纠正
 
-**待 Codex 接续**（按建议顺序）：
-1. **D 片3（请求面 + 契约草案）** —— 需业主授权；`basis` 正则放宽 + 请求参数 + 契约草案；
-   建议**先确认片2 渲染路径已验**（已完成，attempt 486），再做片3；
-2. **③ 命令完整性按命令记录时版本** —— 需授权（动 R05/R06/R07 面）；
-3. **D 未验边界** §e 1-4：v2→v3 链、撤销、抬头更正、部分更正样本；
-4. **A3 剩余约 80 个非 e2a 类** —— 通道已验证、成本低、收益确定；
-5. **R09 C1/C2** —— 建议**单独立项**（跨生产面，需明确授权与时间盒）；
-6. **② 汇总按最新有效版本** —— 已判定、待实现（`ExportRangeReader`）。
+1. **C1 UNKNOWN**：已验已有登记行的幂等事务实际commit返回后注入客户端异常，UNKNOWN持久化、新登记器/verifier拒绝。**首次插入事务commit丢回执未验**；真实网络中断、跨进程UNKNOWN/人工解除未验。
+2. **C1重启/身份**：只在同一JVM内关闭并重建完整Boot上下文；独立JVM/机器重启、断电、Windows掉电/Linux持久性、跨主机恢复、现场原安装/可信原资料组合及独立审查未验。20次HTTP是测试域loopback探针，非生产端点或PDA Bearer现场。
+3. **C2**：HTTP/Session尾保存、PDA、Worker/sweep、文件/渲染、迁移/初始化全入口均未接；嵌套租约、关闭态旧操作收尾、框架清理、ERROR/ASYNC分派、multipart暂存和全链组合均未验。
+4. **PDF不再笼统列“内容级未验”**：486时只验容器/字段存在的旧结论原样归档；488已回读审批人UUID、凭据、版本与数重（两页2492字符）并目视；495已回读抬头新旧值（两页2300字符）并目视。其余未跑样本/平台/所有版式不外推，详见对应内容记录。
+5. **D范围外**：抬头撤销真HTTP（R07静态blocker）、多个抬头字段/其他标量类型、抬头与实物混合链、多文档撤销/撤销后再更正、独立审查、真机/现场未验。实物撤销通过不覆盖抬头撤销。
+6. **R06/A3**：21类发布前清单（Ledger13/Foundation6/编号迁移1/Android原输入组合1）未跑，新profile/旧种子守卫没有绕过；526仅疑似，真实入口/执行计划/跳锁有效性/真实竞争待专项，采样无环不等于无缺陷。
+7. **A2**：dcaf7ad/377已修，源码字段/Web取值本轮再次静态核实；真浏览器端到端、Web JS分支单测和契约发布未做。历史§6.5/欠债旧v13“未修”不恢复为待办。
+8. **R07及发布现场**：c节未验、P1–P7、原资料旧BCD、真机/Keystore/App内升级/长时留存/外网异地与生产恢复释放继续单列。所有代码通过均不替代生产授权。
 
-**Codex 应先读**（顺序）：
-`AGENTS.md` → `docs/ORCHESTRATION_STATUS.md`（事实块 + 当前区）→ **本文件** →
-`docs/history/R08_D_CORRECTION_SLICE1_2026-09-28.md`（D 片1/片2 全部细节与未验边界）→
-`docs/history/R06_DEBT_LIST_2026-09-27.md`（欠债与待授权项）→
-`docs/history/D_CORRECTED_EXPORT_SCOPE_2026-09-28.md`（三片拆法）。
-接手前先核对：实际分支、HEAD、远端、全部未提交/未跟踪文件、有无活动写者与监听端口。
+**红证据保留**：486审批人漏验、487内容红、491产品红/492测试红/494预检红、JWT500及修前红、526/528锁红、527采集路径比较失败、528收尾SQL错误、529/530入口失败、545编排编码错误、557/558探针启动红、探针单测红、冒烟1主机参数错误、559权限红均不抹去。详见各阶段记录；545实际13项绿但包装器红需分列。
 
-**Codex 复用的验证基础设施**：见 §f。**注意两个已踩过的坑**：
-① 渲染器安装目录必须重建以包含最新 `report-rendering`（否则新 `Basis` 值反序列化失败）；
-② R08 库名/端口与 IdentityLock 库坐标是**逐字比对**的守卫，不接受后缀或缺少查询参数（见 `TEST_INFRA_SELFCHECK`）。
+## e. 本机临时状态与六棵有改动工作树
+
+主树.local及it-keys均被.gitignore第5行忽略，tracked文件数0，Codex接续提交范围中.local路径提交数0。未读取/上传密钥或日志正文；这不是全历史秘密扫描。失败数据库/原件/运行产物保持本机，不代表异地备份。
+
+[工作树清点](DSH_SWITCH_WORKTREE_AUDIT_2026-09-28.md)列完整34树坐标及138个脏文件路径：
+
+| D:/acrylic-pda-worktrees/ 下的树 | 已跟踪修改 | 未跟踪 | 内容 |
+| --- | --- | --- | --- |
+| datetime-display | 9 | 11 | Android/Web时间展示、配置与测试 |
+| r06-design | 0 | 6 | R06设计/验收/依赖等文档 |
+| r06-e2a-foundation | 0 | 1 | 树根.local-e2a-vector.log，非.local目录 |
+| r06-e2a-migration | 30 | 67 | R06/R07/R08/迁移与测试的历史同步副本；detached ea4d166 |
+| r06-e2a-protocol | 0 | 1 | 树根.local-e2a-vector.log，非.local目录 |
+| r07-design | 0 | 13 | R07设计/验收/接口等文档 |
+
+本轮不清理上述改动、不为它们代提交或合并。计数采用untracked-files=all，不能与旧目录折叠数直接比较。138个原文件已记录SHA-256；本轮收尾再次读取33棵非主树status及138个文件哈希，变化均为0。`r08-export`虽Git干净，仍是渲染浏览器资产来源，不能直接移除。
+
+环境观测：19330/19434/19437/23308没有监听；19387为DeepSeek Harness.exe（PID23292），系统3306为PID5448，既有Gradle daemon为PID20264，均未动。未观察到C1服务/IT在途；不可把DSH程序存在当成正在写库或已空闲的证据，接手须自己核对活动任务。
+
+## f. attempt、验证树与证据保护
+
+- 本机台账实际使用到560，失败号也不重用；561只可作候选，**执行前重新查全部34树.local目录、manifest、日志/台账以及监听/写者**。R08专用run31已用、run32亦须先查重，勿按旧交接从487或559盲开。
+- `r06-e2a-migration`是共享验证树，不是DSH开发主树；保持detached ea4d166与97条脏状态。守卫绑定旧路径/库名/账号/端口时不得绕过，不删除一次性marker或改旧种子；需要同步时先前像留证，再只同步已授权且比较一致的文件。旧树只读主树AGENTS和看板规则，不合并主线来“同步纪律”。
+- C1证据：主树`.local/r09-c1-reverify-20260928/`（扫描、argv、559/560独立XML/日志）；`.local/r09-c1-smoke-20260928-2/`；`.local/e2a-cross-20260925-559/`和`560/`（各自数据库、20次HTTP、原件及marker）。
+- D证据分布于主树内容回读目录和旧验证树attempt目录，准确路径见D分项记录。不能把主树Git干净理解为这些忽略资料已上传。
+- 复用工具前读其参数/守卫和清理行为。C1使用ProvisionOnly再独立包装执行，避开构造器尾部历史datadir清理；本轮没运行清理器。PowerShell特殊参数一律加引号或字符串数组，多行commit正文用UTF-8文件加--file，不用JSON冒充Shell转义。
+
+## g. 待DSH接手与建议第一步
+
+**建议第一步（唯一）**：在主树只读核对本交接与[C2入口评估](R09_C2_ENTRY_ASSESSMENT_2026-09-28.md)，形成G0“操作租约与旧操作收尾”的单批范围/最小验收提案，交用户授权；未获实施授权前不接线、不开放入口。必要的Git/写权/监听核对是该步前置，不另开开发任务。
+
+待用户决定：C2 G0/B1及后续入口是否逐批实施；C1未验失联/进程边界的补验时机；R07抬头撤销及其他反例/政策；526锁专项；A3发布前21类；③命令记录时版本与②汇总最新有效版本。此表是待决策账，不授权并行开工。
+
+DSH此前D片1/片2等历史成果见b节；Codex完成片3/缺陷修复/四边界、A3降风险、C1及C2评估；DSH接手范围从本节决策与本机状态继续，**不重复已验交付**。
+
+## h. 交接验证与不变边界
+
+本轮只做Git远端/工作树/监听/忽略规则与文件哈希核验、文档证据对照。事实块Write/Check通过（当前区53行，未超上限）、238个本地文档链接有效、diff检查通过；33棵非主树状态及138个脏文件哈希复核变化为0。未运行新的单测/IT/HTTP。原DSH交接、交接前看板逐字归档；旧A2/R07-3开局文字只作历史。本次提交只包含文档，不改生产代码/测试/脚本/旧迁移/契约/默认开关，不触碰原库、main或发布部署。
+
+七类生产决定及TEMP生产归档不因内部测试通过而开放；localDeletionAllowed=false。R05/R06/R07已验代码、ConfirmedV1Adapter维持边界，发现真bug先报告后授权。本轮没有向DSH聊天自动发消息；用户持本交接切换即可。
+
+## 附：Codex接续提交完整索引（本次交接提交之前）
+
+```text
+5eff71d docs(a2): 依据修复提交与后续证据纠正欠债状态
+edb041a feat(r08): 接通指定更正版本导出请求（阶段备份）
+e130ef3 docs(r08): 记录片3内容阻断并归档看板旧结论
+089b335 fix(r08): 按既有UUID口径编码导出审批人并核对库内事实
+eb3097d docs(r08): 固化审批人编码验收与内容检查盲区
+b523eff test(r08): 验证部分更正非空净结果导出内容
+092063d docs(r08): 记录部分更正边界通过及后续顺序
+42b96fd test(r08): 验证连续更正完整版本链及内容
+3cf0709 docs(r08): 记录连续更正验收与撤销边界接续
+5e48d80 test(r08): 阶段备份撤销后导出失败复现
+4a8e99c docs(r08): 记录撤销后导出真缺陷并停止边界补测
+6d5d019 docs(r08): 定性撤销新版本合法并定位导出修复面
+0e837ff fix(r08): 按合法撤销版本导出原凭据和反向账证据
+0797228 docs(r08): 记录撤销修复验收和全部失败证据
+48609c1 test(r08): 阶段备份无明细抬头更正导出失败复现
+1b03f34 docs(r08): 记录抬头补测新缺陷并交回决策
+ee9b2ee docs(r08): 定性零明细抬头为设计并明确凭据来源
+68a43f8 fix(r08): 从冻结回执读取零明细抬头凭据并渲染版本单号
+3ef1715 docs(r08): 记录抬头导出内容验收与默认回归
+ec79b7f docs(r08): 收口凭据假设扫描并记录R07抬头撤销阻断
+11c20e8 docs(r08): 确认D按已验范围交付并保留未验边界
+4197427 docs(r07): 单列抬头撤销空账阻断与待授权评估
+a257e11 docs(a3): 记录496至500回归及损坏签名误分类停报
+4b25bca docs(r06): 定性JWT缺陷为证据状态误分类
+39d1b84 fix(r06): 区分损坏JWT与可信签名密钥不可用
+7bded33 docs(r06): 记录JWT修复验收与签名异常分类候选
+84db51c docs(r09): 单列C2入口接线范围与待授权验收
+83e633b docs(a3): 记录506至512续验并收尾首批12类
+43f813a docs(a3): 记录513至526回归及条码并发待定性阻断
+a0c5928 docs(a3): 以实际锁证据定性条码跳锁查询阻断
+c7cf378 docs(a3): 将八类R08专用验收从后续跑批队列去重
+3648629 docs(a3): 将526锁行为改挂疑似缺陷待专项
+6261905 docs(a3): 保留既有归档并为本次接续使用独立文件
+ca985be docs(a3): 记录身份锁及共享面十二类回归全绿
+321bbe0 docs(a3): 记录第二批十四类回归全绿及剩余专项条件
+806625f docs(a3): 评估剩余二十一类专用环境与分组成本
+5d977ea docs(a3): 记录Ledger十一类配置前守卫阻断
+fc7ebbd docs(a3): 收尾主体回归并将二十一类转发布前清单
+bf568a0 docs(r09): 完成应用入口评估并列出分批验收边界
+0ea36a3 docs(r09): 记录C1独立初次登记缺口及新组件停报范围
+37beeaa feat(r09): 新增独立初次NORMAL库外证据与耐久存储
+c146f5f docs(r09): 记录C1首批协议单测及第二批存储边界
+c974188 feat(r09): 接入初次NORMAL双侧登记协调器
+6c74f79 docs(r09): 记录C1两批实现与真实HTTP验收缺口
+0bcf24c test(r09): 新增独立完整应用冒烟入口
+8408d27 docs(r09): 记录C1冒烟准备失败与停报断点
+07ddf93 fix(r09): 修复冒烟脚本特殊字符传参与保留失败轮次
+a860567 docs(r09): 记录PowerShell参数修复及扫描边界
+9ff064c docs(r09): 记录完整应用冒烟通过并接续C1真实验收
+ec4be3b docs(r09): 记录C1真实验收通过及精确覆盖边界
+```
