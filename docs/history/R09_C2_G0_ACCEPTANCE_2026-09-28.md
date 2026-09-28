@@ -7,7 +7,7 @@
 | 项 | 判定 | 说明 |
 | --- | --- | --- |
 | **K1 整体** | **未通过（仍阻断）** | 两个具名缺口：①**X-孤儿命名窗口 W** ＝某属主在其记录存活判定 t_{i(p)} 之后、本次判定结束 t_n 之前死亡时，该次探针可能放行（本机制下不可消除，已给机制级论证）；②**围栏依条件分支** ＝ F1′（`fenced.lock`）、F3（`FileLock.release()` 确认）、F5（halt）三者都未确认时，跨进程阻断**无确认依据**，须外部隔离。不得改名为“环境属性”后宣布不阻断 |
-| K1-1 效果门覆盖 | **设计级成立** | 冻结 13 类 JDBC 调用形态（显式 commit／`setAutoCommit(true)` 隐式提交／自动提交语句与批处理／原始事务控制 SQL／Spring Session 提交／无法归类等），门放在**真实入口**（`RecoveryConnectionHandler.invoke` 的 `commit`/`setAutoCommit` 分支与 `RecoveryJdbcObjectHandler.invoke` 委托前）；**取消 `AUTOCOMMIT_WRITE` 豁免**；无法归类者委托前拒绝 |
+| K1-1 效果门覆盖 | **未通过（设计已按测试侧反例修订，规则未在产品代码实现/验证）** | 测试侧反例（本轮，`G0K1JdbcBoundaryTest`）暴露四项：①JDBC 允许 `ResultSet.insertRow/updateRow/deleteRow`，现有代理直接委托，v5 表把它们一概列为“无持久化”是错的；②无参 `PreparedStatement.execute*` 与无参批处理的 SQL 在本次调用不可见（`sql(args)` 只读首个字符串参数），信息流必须改为“记住 prepare 期 SQL，缺失即拒绝”；③`autoCommit==false` 整体免门会漏掉原始 `COMMIT`/`SET AUTOCOMMIT=1`，提交类必须有更高优先级；④“无法归类”在 v5 表与规则句/S20 之间有两种结果。设计 §4.2 已按四项修订（含 S20-u：**统一为委托前拒绝**）；判定仍为未通过，因为规则只在测试侧模型内验证 |
 | K1-2 探针/判定语义 | 部分成立 | X-围栏（`fenced.lock` 共享锁＋门独占 tryLock 的原子观察）**设计级成立**；X-孤儿在 W 之外成立、**W 内保留缺口** |
 | K1-3 围栏失败矩阵 | 部分成立 | F1 本机内存判定**无条件成立**（含已借出连接/已建 Statement）；跨进程五条分支成立；一条保留阻断分支 |
 | K1-4 验收断言分层 | **设计级成立** | S13 拆正常登记完成／UNKNOWN 发布；S17 区分 T1/T2 并保留 T1；S18 角色化（A 故障／B 在飞提交／C 后续），不要求已死的 A 被拒、W 内不写“零业务写”；新增 S19/S20/S21 |
@@ -19,7 +19,22 @@
 | 结论口径 | **G0 v5 文档已提交，K1 仍未通过；B1 未获授权。**不得写成设计复验通过或 C2 已实现 | |
 | 新发现真实产品缺陷 | 无（本轮未做动态验证）。K1 的缺口是**设计与验收规格**层面，不是已复现的产品故障 | |
 
-## 2. 本轮（v5）实际执行（设计验收依据）
+## 2. 本轮（K1 测试侧模型轮）实际执行
+
+| # | 检查 | 结果 | 证据（`.local/r09-c2-g0-k1-model-20260928-a/`） |
+| --- | --- | --- | --- |
+| 1 | **修改前**基线快照 | 分支/HEAD `5c07c52`、实际远端同 SHA、status 为空、无 `index.lock`、`0/0`、`diff --check` 退出 0 | `00-pre-*.txt` |
+| 2 | 共享树只读保护 | detached `ea4d166`、30 修改＋67 未跟踪＝97；状态列表哈希与留档一致（前后各一次）；138 项哈希 **138/138 一致** | `01-pre-shared-tree-*.txt`、`09-post-*` |
+| 3 | 写者/监听/进程 | 仅本会话引用本树/共享树；受控源码近 60 分钟 0 改动；相关端口无监听 | `03-pre-writers.txt`、`04-pre-listeners.txt` |
+| 4 | 定向测试（既有代理特征 9 + 时序模型 9 + 围栏矩阵 5 ＋ 回归） | 首次运行 46 项 3 失败（均为**测试模型自身缺陷**，非产品缺陷）；修正后复跑结果见 `23-gradle-rerun2.log` 与 `23-gradle-rerun2-exit.txt`；失败轮 XML 保留在 `failed-run-xml/` | `20-gradle-run.log`、`21-failed-run-summary.txt`、`failed-run-xml/`、`22-gradle-rerun*.log`、`23-gradle-rerun2*.log` |
+| 5 | 负控（守卫承重） | `G0K1OrderingModelTest.guardRemovedModelDetectsTheCounterexampleAndRestoringItRemovesIt`：撤去守卫 ⇒ 模型检出反例；恢复 ⇒ 反例消失 | 同上 JUnit XML 的 stdout 轨迹 |
+| 6 | 文档检查（含保留失败） | 正文链接 0 断链；归档单列；章节引用可解析；本轮修正 v5 的效果入口表/无法归类规则/接纳线性化表述/S13/§11 标题/历史证据归属 | `06-doc-links.txt`、`10-consistency-recheck.txt` |
+| 7 | 事实块与看板上限 | `-Write` 后 `-Check` 通过；当前区在上限内 | `07-facts-check.txt` |
+| 8 | 授权范围与提交编码 | 仅授权测试源码与文档；`.local` 未入库；提交正文 BOM-less UTF-8 | `08-staged.txt`、`24-commit-message.txt` |
+
+**测试侧结果的两类必须分开**：①**现有代码特征**（真实代理 + fake delegate）只说明“今天如何委托、参数与 SQL 可见性如何”，**不**说明效果门存在；②**候选协议模型**（测试源码内）只说明规则在模型内自洽与反例可回放，**不**等于产品实现通过。两者都不构成真实数据库效果、跨进程文件锁协议或 C2 组合验收。
+
+## 2b. v5 轮实际执行（历史，保留）
 
 | # | 检查 | 结果 | 证据（`.local/r09-c2-g0-v5-20260928/`） |
 | --- | --- | --- | --- |
@@ -32,7 +47,11 @@
 | 7 | 事实块与看板上限 | `-Write` 后 `-Check` 通过；本轮更新后当前区见 `07-facts-check.txt`（上限 100 行/8000 字符） | `07-facts-*.txt` |
 | 8 | 授权范围与提交编码 | 仅授权文档变更；`.local` 未入库；提交正文为 BOM-less UTF-8 | `08-staged.txt`、`11-commit-message.txt`、`12-push-result.txt` |
 
-**证据归属更正（对 v4 轮）**：Python 协议只读笔记属 `.local/r09-c2-g0-correction-20260928/07-python-protocol-notes.md`（历史目录），v4 验收记录误列为其本轮目录；v4 的 `01-git-status.txt` 采集时点问题已在[残余阻断记录](R09_C2_G0_RESIDUAL_BLOCKERS_2026-09-28.md) §1 注明。本轮不补造历史快照。**v4 报告中“章节引用与跨文档一致性检查全部通过”的表述已撤回**（原始输出为 `unresolved=6.6`，本轮保留该失败行并给出修正后复查）。
+**历史证据归属更正（逐轮对号，不再混指）**：
+- **v3（`a495ef5`）轮**：Python 协议只读笔记误归属问题发生在该轮（文件实在 `.local/r09-c2-g0-correction-20260928/07-python-protocol-notes.md`，属 B01–B06 轮目录）。
+- **correction 轮（`40d3702`→`da4d56a`）**：`01-git-status.txt` 采集于该轮文档修改**之后**，不能作为“前置干净”证据；该点已在[残余阻断记录](R09_C2_G0_RESIDUAL_BLOCKERS_2026-09-28.md) §1 如实注明，不补造历史快照。
+- **v4（`d656ab9`）轮**：真正属于该轮的问题是**章节检查失败**（原始 `unresolved=6.6`），其“章节引用与跨文档一致性检查全部通过”的表述已在本轮撤回；原失败行保留在 v4 证据目录 `06b-consistency.txt`。
+- **v5（`5c07c52`）轮**：本文件的证据说明已按上述逐轮口径更正；本轮（K1 模型轮）另建独立证据目录。
 
 ## 3. 保留项（具名；**K1 的两项属阻断，其余为未覆盖/未授权/未验**）
 
