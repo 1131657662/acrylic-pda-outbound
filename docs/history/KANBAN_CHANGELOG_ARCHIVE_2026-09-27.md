@@ -75,3 +75,15 @@
 ## 归档：v19 变更日志（v22 为腾出上限移出，原文未改）
 
 - 2026-09-28 v19：**磁盘例行策略落地**（`cleanup-old-attempt-datadirs.ps1`：只删旧 attempt 的 datadir、保留最近 50，日志/marker/storage/签名材料一律保留；两 harness 收尾自动接线，冒烟 464 绿）。**B 组确认 ✅**：跨订单汇总与完整导出中心**已具备**（源码＋已进正式契约＋`Summary 6/6 / CenterPagination 4/4 / Retry 7/7 / AuthorizationRace 9/9 / ClockBoundary 2/2` 全绿）⇒ 无功能缺口，缺口清单 G1-G7 均政策/规模/现场/运维项。**待 D 口径**（[B 组确认](history/R08_B_GROUP_CONFIRMATION_2026-09-28.md)）。
+
+## 归档：v22 变更日志（v23 为腾出上限移出，原文未改）
+
+- 2026-09-28 v22：**D 片1 已交付 ✅**（`b74078d`，服务端只读、不渲染）：`ExportFacts` 按版本取事实（新重载；`Head` 增 `resultVersion` 但保留旧构造器 ⇒ JSON 形状不变）＋新 `CorrectionExportSource`（`correction_line` + 该版本 `order_effective_scan`；原始事实行沿用原确认读取器并按 `tempOrigin` 选路）＋`ExportSnapshotReader` 版本重载（**v==1 逐字不变**，WEB/PDA/TEMP 三路未动）。**默认行为不变**；未碰 `report-rendering`/`ExportModels` 正则/`ConfirmedV1Adapter`。**语义①＝带调整凭据**（R07-3 逐笔可追溯；带 `document/line/ledger_rows` 溯源串）。**证据**：attempt **477** `1/0/0/0`，快照 `hash=1dd7262c… version=2 lines=2 adjustments=2 count=0 weightG=0` 与库内 v2 逐条一致并落 JSON；R08 run 27 `R08ExportIT` **14/14 绿**。**发现（待片2 裁）**：引擎把整行归零记为 `WEIGHT_CORRECTION`+`target_count=0`，渲染 `AdjustmentValidator` 却要求其 count=1（attempt 476）⇒ 本片按效果归类规避，未改任何一方。**待决策**：②汇总版本 ③命令完整性版本 ④该口径差异 ⑤模板是否显式展示凭据。
+
+## 归档：v22 存根（v23 为腾出上限移出）
+
+- 2026-09-28 v22（原文已归档）：D 片1 交付（服务端只读快照，attempt 477 绿；证据见 v23 与[片1/片2 记录](history/R08_D_CORRECTION_SLICE1_2026-09-28.md)）。
+
+## 归档：v21 存根（v23 为腾出上限移出）
+
+- 2026-09-28 v21（原文已归档）：G7 已修（只改描述：明确"含经 R06 关联确认正式化的订单、未关联 TEMP_PDA 临时单不在汇总内"，版本不单独递增）；D 方案 C 第一步实测触发停止条件（`ConfirmedV1Adapter` 硬门/版本写死、请求面 basis 正则）⇒ 改拆片。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。

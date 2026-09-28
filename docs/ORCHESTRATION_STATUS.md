@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: df41f0c
-dirty_entries: 0
+head: f1fd1e3
+dirty_entries: 2
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
@@ -57,8 +57,7 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 
 ## 变更日志（滚动，只留最近 20 行）
 - 2026-09-27 v7-v9（原文已归档）：V43-V48 未破坏共享面（290）；R07-3 Web 路由（292）；非 e2a 回归面解锁（临时密钥 + `-NonE2a`）共 56 类（53 通过/3 需专用环境）并**修复本会话真回归**（`36d2368`）；v9 高风险 23 类=21 绿/2 环境守卫。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-28 v22：**D 片1 已交付 ✅**（`b74078d`，服务端只读、不渲染）：`ExportFacts` 按版本取事实（新重载；`Head` 增 `resultVersion` 但保留旧构造器 ⇒ JSON 形状不变）＋新 `CorrectionExportSource`（`correction_line` + 该版本 `order_effective_scan`；原始事实行沿用原确认读取器并按 `tempOrigin` 选路）＋`ExportSnapshotReader` 版本重载（**v==1 逐字不变**，WEB/PDA/TEMP 三路未动）。**默认行为不变**；未碰 `report-rendering`/`ExportModels` 正则/`ConfirmedV1Adapter`。**语义①＝带调整凭据**（R07-3 逐笔可追溯；带 `document/line/ledger_rows` 溯源串）。**证据**：attempt **477** `1/0/0/0`，快照 `hash=1dd7262c… version=2 lines=2 adjustments=2 count=0 weightG=0` 与库内 v2 逐条一致并落 JSON；R08 run 27 `R08ExportIT` **14/14 绿**。**发现（待片2 裁）**：引擎把整行归零记为 `WEIGHT_CORRECTION`+`target_count=0`，渲染 `AdjustmentValidator` 却要求其 count=1（attempt 476）⇒ 本片按效果归类规避，未改任何一方。**待决策**：②汇总版本 ③命令完整性版本 ④该口径差异 ⑤模板是否显式展示凭据。
-- 2026-09-28 v21（原文已归档）：G7 已修（只改描述：明确"含经 R06 关联确认正式化的订单、未关联 TEMP_PDA 临时单不在汇总内"，版本不单独递增）；D 方案 C 第一步实测触发停止条件（`ConfirmedV1Adapter` 硬门/版本写死、请求面 basis 正则）⇒ 改拆片。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-28 v23：**D 片1+片2 均已交付 ✅**。片1（`b74078d`）＝服务端只读快照：`ExportFacts` 按版本取事实（`Head` 增 `resultVersion` 但保留旧构造器 ⇒ JSON 形状不变），新 `CorrectionExportSource` 沿用原确认读取器并按 `tempOrigin` 选路，`ExportSnapshotReader` 版本重载（**v==1 逐字不变**）；**语义①＝带调整凭据**。片2（`93bbfae`）＝**真出文件**：`Basis` 加 `CORRECTED`（枚举加值、字段零变更；`PdfHtml`/`ReportText` 本就对非原确认口径输出"净结果"文案，扫码模板按设计拒绝）＋决策④**边界层转换**独立成 `CorrectionAdjustmentSource`（`WEIGHT_CORRECTION+0包0克`⇒归零、`+1包>0克`⇒只改重量、其它报 `409 CORRECTION_EXPORT_KIND_AMBIGUOUS`；取 v2..目标版本整条链；撤销即归零；抬头更正支持），原 217 行超 200 行上限 ⇒ 拆为 98+117 行。**证据**：attempt **486** `1/0/0/0`（真服+真 MySQL+真渲染子进程+真作业租约；XLSX/PDF 双格式发布 + openpyxl 独立回读 7 表，订单汇总 `CORRECTED｜v2｜2.0包601.5kg→净0`、凭据 2 行），"版本有效明细"0 行但凭据仍在＝**零结果可追溯**；R08 run 28 **14/14 绿**。**片3 未接**（`basis` 正则未改 ⇒ 仍无法经 HTTP 申请）。**待决策**：②汇总按最新有效版本、③命令完整性按命令记录时版本（属待授权项）。未验：v2→v3、撤销、抬头更正真跑、净结果非空样本（[记录](history/R08_D_CORRECTION_SLICE1_2026-09-28.md)）。
 - 2026-09-28 v20（原文已归档）：G7 判定＝描述精度问题（"不含 TEMP"指未关联 TEMP_PDA 临时单 ⇒ 子项 C 不越界）；D 开工前实测＝面超授权（V46 使 v>1 行无提交来源）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
 - 2026-09-28 v19（原文已归档）：磁盘例行策略落地（只删旧 attempt 的 datadir、保留最近 50）＋B 组确认（跨订单汇总/完整导出中心已具备，无功能缺口）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
 - 2026-09-28 v18（原文已归档）：自主运行——A1 TEMP 渲染验证接通（390）、A2 重启接管已由既有 JobFence 覆盖（401）、A3 非 e2a 三批新增 19 类 241 项全绿、磁盘 0GB 阻塞已处置。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
