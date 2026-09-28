@@ -6,37 +6,42 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 27cc85a
+head: 40d3702
 dirty_entries: 8
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-本轮为 **R09 C2-G0 设计定稿**（零代码）；用户已接受 `27cc85a` 提案为输入，只授权设计定稿、提案纠错与断点同步，**未授权 B1 实现**。源码版本事实只看上方生成块。
+本轮为 **R09 C2-G0 定向纠错与设计复验**（零代码）：以 `40d3702` 为审查基线，关闭 B01–B06 并形成设计定稿 v2。源码版本事实只看上方生成块。
 
-## 本轮产出与关键定案
-- [G0 设计定稿](history/R09_C2_G0_DESIGN_2026-09-28.md)：六项必做设计全部定案——初次 NORMAL 与租约衔接、接纳原子性与证据连接隔离、根/子租约与关闭后收尾、UNKNOWN 与多进程语义、启动与框架边界、B1 范围收紧；§8 为逐文件代码级清单，§9 为 B1 测试规格，§10 为九场景推演。无技术选型交回用户。
-- [验收与阻断记录](history/R09_C2_G0_ACCEPTANCE_2026-09-28.md)：**设计验收，非运行验收**；无设计阻断；保留 §6.4 需生产释放权限的解除流程为未授权事项。
-- 原 [G0 提案](history/R09_C2_G0_SCOPE_PROPOSAL_2026-09-28.md) 保留可追溯，并已标注“由定稿取代”。
-- 定案要点：接纳＝DB 证据（锁外、受限只读）→P2 文件证据（独立锁）→P3 协调锁内身份/协议/毒化/关闭意图校验＋根租约登记，线性化点在锁内登记，意图与登记同临界区故无检查后窗口；根租约覆盖请求至 `requestDestroyed`（含最终 Session 保存），令牌单次、身份绑定、线程绑定、子操作白名单，关闭后禁新根、允已接纳收尾；锁语义纠正为 JVM 内引用/跨进程共享锁/控制推进独占锁三层；UNKNOWN 两层毒化（进程内＋P3 耐久记录），新进程启动直接失败、不自动恢复；顺序＝显式许可→迁移→初始化→业务入口，READY 前一律拒绝。
+## 本轮产出与判定
+- [设计定稿 v2](history/R09_C2_G0_DESIGN_2026-09-28.md)（修订 v1；v1 原文留在 Git `40d3702` 与纠错记录“原断言”栏）、[纠错与设计复验](history/R09_C2_G0_CORRECTION_REVERIFY_2026-09-28.md)、[验收与阻断记录 v2](history/R09_C2_G0_ACCEPTANCE_2026-09-28.md)。
+- **判定分两级**：B01–B06 **设计反例已关闭**（可审查、可测试）；**运行行为全部未验证**。不写 G0 验收通过。
+- B01：`identity.json` 升 v2（`authorityKind=INITIAL_NORMAL_INSTALL`＋`closedAuthority`）；初次接纳要求单条 QUIESCING 记录且逐字段绑定可信原件、`requireUnclosed` 在登记与接纳两条路径强制、关闭权威父目录必须存在且条目不存在 ⇒ 恢复型权威与任意不存在路径在结构上无法通过。
+- B02：按 javap 依赖证据重写生命周期——Session 提交在 `SessionRepositoryFilter` 方法体内（链后与异常路径）、嵌套 ERROR 分派重跑、Spring Web 的 `OncePerRequestFilter` **默认跳过 ERROR/ASYNC**，故我们显式不跳过；根令牌入请求属性、重分派复用、`requestDestroyed` 释放；S4a 屏障改到真实 `save()` 路径（测试专用 `SessionRepository` 装饰器）。
+- B03：A–F 调用方判定表；失效令牌、请求上下文丢失、未绑定异步线程一律拒绝，**禁止静默回退旧连接级路径**；105 语义由“无上下文”分支原样保留。
+- B04：承认 Session 清理**默认开启**（`0 * * * * *`、自有 `spring-session-` 线程、DB 写）；B1 测试显式禁用并验证生效，新增启动守卫 `CONTROL_SESSION_CLEANUP_UNCOVERED`；生产默认清理路径单列为**未覆盖入口**。
+- B05：改为**故障前**建立阻断依据（P5 操作租约目录：进程记录持生命周期独占锁＋按操作租约记录）；UNKNOWN 不退役租约并 fail-stop ⇒ 孤儿由文件锁持有性判定（不依赖时间）；阻断不依赖任何故障时写入成功；**解除**仍属生产释放，未授权。
+- B06：补齐事实表（可变性/写者/所持锁/失效方式/校验位置）与四段证明（P3 意图、P2 UNKNOWN、DB 模式变化含框架写、孤儿租约）＋五项并发反例规格；不再用“窗口小/再读一次/仅业务守卫”作答。
+- 附带修正：三层锁表述与四个锁接口前置条件、P2 七个允许名、Python 双侧文件清单、P3 允许集不变（取消 `writers.poison.json`）、取消 `InitialNormalDisk` 泛化；新登记一项既有跨语言不一致（Python 允许集不含 `normal-admission.json`，Java 含之，未修）。
 
 ## 交付状态与下一步
-- **R09 C2 仍未实施**：B1（HTTP/Session 外层及必要租约衔接）待独立授权；设计清单中的新组件、`tools/r09-c2-b1-smoke.ps1`、`b1probe`、B1 IT 均未创建；C2 动态接线与组合验收全部未做。
-- 移出 B1 的实现面：`jobs/*` 与 Worker、各文件入口、渲染子进程、Flyway/Bootstrap 接线（规则已定，批次后移）。
-- **下一步**：等用户对 B1 独立授权（范围见设计 §8，验收见 §9）；G0 到此收口，不自动进入 B1。
+- **R09 C2 仍未实施**：B1（HTTP/Session 外层＋操作租约衔接＋孤儿阻断＋启动门）待独立授权；设计清单中的组件、`tools/r09-c2-b1-smoke.ps1`、`b1probe`、B1 测试与并发反例均未创建。
+- 移出 B1：`jobs/*` 与 Worker、各文件入口、渲染子进程、Flyway/Bootstrap 接线、**Session 清理路径**。
+- **下一步**：等用户对 B1 独立授权（范围见设计 §9，验收见设计 §10）；本轮止于纠错复验，不自动进入 B1。
 
 ## 树、写权与环境
-- 主树 `D:/acrylic-pda-outbound` / `codex/development`；本轮输入 `27cc85a`，工作区干净、与 origin `0/0`；单写者已核：无 `.git/index.lock`、无其他进程引用本树、受控源码近 60 分钟无改动。
-- 19330/19434/19437/23308/8080/8081/9090 无监听；19387＝DSH 应用、3306＝系统 mysqld、既有 Gradle daemon 保留未动。
-- 共享树 `D:/acrylic-pda-worktrees/r06-e2a-migration` 保持 detached `ea4d166`、30 修改＋67 未跟踪＝97；状态列表哈希与本轮前快照一致，`dsh-handoff-20260928-ec4be3b` 的 138 条脏文件逐项重算哈希 138/138 一致；只读，未同步/清理/reset/提交/合并。
+- 主树 `D:/acrylic-pda-outbound` / `codex/development`；本轮输入 `40d3702`，工作区仅本轮文档改动；与 origin `0/0`；单写者已核（无 `.git/index.lock`、无其他进程引用本树、受控源码近 90 分钟 0 改动）。
+- 19330/19434/19437/23308/8080/8081/9090 无监听；19387＝DSH 应用、3306＝系统 mysqld、既有 Gradle daemon 保留未动；未分配 IT/SmokeRun/端口/数据库。
+- 共享树 `D:/acrylic-pda-worktrees/r06-e2a-migration` 保持 detached `ea4d166`、30 修改＋67 未跟踪＝97；状态列表哈希与本轮前一致；`dsh-handoff-20260928-ec4be3b` 的 138 条脏文件逐项重算哈希 **138/138 一致**；只读，未同步/清理/reset/提交/合并。
 
 ## 本轮实际验证
-- 实际运行：Git 基线与 status、`git diff --check`、共享树状态与 138 文件哈希比对、监听/进程/写者核对、文档本地链接检查、事实块 `-Write` 后 `-Check`（含当前区上限）、暂存清单复核。
-- **未运行**：编译、单测、IT、真实 HTTP、数据库读写、完整应用冒烟、跨进程、断电/Linux 持久性、现场原资料组合。
+- 实际运行：Git 基线与 status、`git diff --check`、共享树 97 条状态与 138 文件哈希逐项比对、监听/进程/写者核对、4 个依赖 jar 的 SHA-256 与 `javap` 只读反编译（会话过滤器层次与顺序、`commitSession` 位置、ERROR/ASYNC 默认跳过、`DEFAULT_CLEANUP_CRON` 与默认调度）、Python 协议侧只读核对、文档链接检查、事实块 `-Write` 后 `-Check`（当前区在 100 行/8000 字符内）。
+- **未运行**：编译、单测、IT、真实 HTTP、数据库供给与读写、完整应用冒烟、跨进程与断电实验、Linux 持久性、现场原资料组合。
 
 ## 边界与未验
-- 零代码/迁移/契约/默认开关变更；未发布、未部署、未合 main、未打标签；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`；未重开 D 扩测、A3、526、R07 抬头撤销。
-- 无新真实产品缺陷；本轮未做动态验证，接线风险只是源码级判断。
-- 未验保留：C1 首次插入提交丢回执、独立进程重启、真实网络故障、断电、Linux 持久性、现场原资料组合，以及 C2 全部动态与组合验收。
+- 零代码/迁移/契约/默认开关变更；未发布/部署/合 main/打标签；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`；未重开 D 扩测、A3、526、R07 抬头撤销。
+- 无新真实产品缺陷（本轮未做动态验证；B01–B06 均为设计与文档缺陷，已关闭）。
+- 未验保留：C1 首次插入提交丢回执、独立进程重启、真实网络故障、断电、Linux 持久性、现场原资料组合；C2 全部动态接线与组合验收；生产默认 Session 清理路径（未覆盖入口）；孤儿租约解除（未授权）。
 <!-- CURRENT_STATE_END -->
