@@ -74,13 +74,39 @@ R05/R06/R07 业务代码；未开开关、未发布契约。
 | --- | --- | --- | --- |
 | ② | **跨订单汇总按哪个版本** | `ExportRangeReader:45` 固定 `r.result_version=1`；口径 C（两个都出）已定但**汇总的成员/合计口径未定** | 决定汇总是"只按原确认"、"只按当前版本"还是"两份都出" |
 | ③ | **命令完整性按哪个版本** | `CommandBusinessIntegrity:81` 按 `v.result_version=1` 核对 | 更正后再确认/归档时，完整性核对是否仍按 v1 |
-| ④ | 第三节的引擎/渲染口径差异 | 本片按效果归类规避 | 片2 渲染必须给出最终口径 |
-| ⑤ | 更正净结果文件是否显示"调整凭据"页签与文案 | 模板 `r08-general-2` 有该页签 | 片2（渲染） |
+| ④ | 第三节的引擎/渲染口径差异 | **已裁定为 C 并落地**（见第三节） | 片2 已按此实现 |
+| ⑤ | 更正净结果文件是否显示"调整凭据"页签与文案 | 模板 `r08-general-2` 本就含"调整凭据"表 | **片2 已验**：凭据 2 行落进文件 |
+| ⑥ | 净结果行非空时的"版本有效明细"呈现 | 本 fixture 两包全归零 ⇒ 该表按设计为空 | 需"部分更正"样本补验 |
 
-## 六、未验边界
+## 六、D 片2 交付：更正净结果**真出文件**（提交 `93bbfae`，attempt 486 绿）
 
-- 片1 **不渲染**：未验证更正净结果能否真的出 XLSX/PDF（那是片2，且会撞 `ConfirmedV1Adapter` 的硬门）；
-- 未验证**多版本链**（v2→v3 连续更正）下 `AdjustmentValidator` 的"版本链完整"约束是否满足（疑似 `lastVersion` 需从 1 起链式）；
-- 未验证**撤销（WITHDRAW/WITHDRAW_CONFIRM）之后**的 v>1 快照（`reverses_entry_id` 链与 `WITHDRAW_PENDING` 状态已读入，但未跑该场景）；
-- 未验证 **HEADER_CORRECTION** 场景（本片按 dispatch 归类，抬头更正无 dispatch ⇒ 会走"缺少出库行引用"检查，需片2 处理）；
-- `document` 仅用于溯源/序列证明，未写入凭据行（片2 若需可按文档渲染）。
+**范围**：片2（渲染）。**未改 `ConfirmedV1Adapter`**、未碰请求面正则（片3）、未改 R05/R06/R07、未开开关、未发布契约。
+
+| # | 改动 | 说明 |
+| --- | --- | --- |
+| 1 | `report-rendering/ReportSnapshot.Basis` **加 `CORRECTED`** | 枚举加值、**不动任何字段**。既有消费点语义正好承接：`PdfHtml`/`ReportText` 对非原确认口径输出"净结果"文案；`ScanRecordExcelRenderer` 仅支持原确认；`SnapshotValidator` 只在原确认口径下要求 `resultVersion==1` ⇒ CORRECTED 放行非 1 版本 |
+| 2 | 新增 `exports/CorrectionAdjustmentSource` | **单职责拆分**：`CorrectionExportSource` 原 217 行超项目 200 行上限 ⇒ 凭据与边界层转换独立成类（现 98 + 117 行）。承载决策④转换、**整条更正链**（v2→目标版本：`AdjustmentValidator` 要求调整版本从 2 起连续）、**撤销即归零**、**抬头更正**支持 |
+| 3 | `CorrectionExportSource` 口径改 `Basis.CORRECTED` | `dataVersion=result:<v>/revision:<r>`，其余逻辑不变 |
+
+**验证（真服 + 真 MySQL + 真渲染子进程 + 真作业）**
+
+| 项 | 结果 |
+| --- | --- |
+| 定向 IT | attempt **486** `E2aCorrectionChainIT` `tests=1 failures=0 errors=0 skipped=0`（同一测试覆盖片1 快照 + 片2 渲染） |
+| 真渲染 | 经 `BackgroundJobStore.enqueue` + `BackgroundJobWorker.runOnce`（真实租约/handler/产物发布）：**XLSX 13776 B**、**PDF 382320 B**，均发布可下载且字节数一致 |
+| openpyxl 独立回读 | 7 张表；订单汇总 `CORRECTED｜结果版本 2｜原 2.0包/601.5kg → 净 -2.0包/-601.5kg → 净结果 0包/0kg`；产品 003/571 各净 0；原始扫码明细保留 2 行；**调整凭据 2 行**（结果版本 2.0，带更正号/行ID/原因/凭据依据）；说明表 `数据版本 result:2/revision:1`、`口径 SHIPMENT_DATE_NET / CORRECTED` |
+| 零结果语义 | 断言"版本有效明细"数据行＝0（渲染器 `if (e.count()==1)` 的设计）而调整凭据仍在 ⇒ **零结果仍可追溯** |
+| 扫码模板 | 明确拒绝更正净结果（设计如此）；已断言为可观测拒绝、不静默出文件 |
+| 既有路径回归 | R08 **run 28** `R08ExportIT` **14/14 绿** |
+| 失败留档 | attempts 479–486（渲染器路径错、`ZipInputStream` 数据描述符、作业租约 null、表名索引取不到）全部保留 |
+
+## 六之二、未验边界（累积，片2 后）
+
+- **多版本链 v2→v3**：已实现"取 v2..目标版本整条链"以满足渲染侧连续性要求，**未真跑** v3（需二次更正生效样本）；
+- **撤销（WITHDRAW/WITHDRAW_CONFIRM）**：已按"撤销即归零"实现并读入 `status`，**未真跑**；
+- **抬头更正（HEADER_CORRECTION）**：已实现映射（字段名/前值/后值 + 撤销回退），**未真跑**（缺该类型样本）；
+- **净结果行非空样本**：本 fixture 两包全归零 ⇒ "版本有效明细"按设计为空；**未验**"部分更正"时该表完整呈现；
+- **片3 未接**：`ExportModels.Command.basis` 的 `@Pattern("ORIGINAL_CONFIRMED")` 未改 ⇒
+  **当前无法经 HTTP 申请更正净结果导出**（片2 只证明"快照能渲染成正确文件"）；
+- ② 汇总按最新有效版本、③ 命令完整性按命令记录时版本：**已判定、未实现**（③ 属待授权项）；
+- 片1 遗留：`document` 仅用于溯源/序列证明，未写入凭据行（渲染已够，无需补）。
