@@ -1,5 +1,8 @@
 # 历史归档
 
+- [R09_C1_REVERIFY_2026-09-28.md](R09_C1_REVERIFY_2026-09-28.md)：07ddf93修复冒烟原生参数并扫描同类，6类argv逐字回读通过；后续独立记录冒烟和C1真实复验结果。
+- [C1脚本修复/复验前看板原文](ORCHESTRATION_STATE_before_R09_C1_REVERIFY_2026-09-28.md)：保留上轮准备失败的完整断点，不恢复历史指令。
+
 - [R09_C1_SMOKE_BLOCKER_2026-09-28.md](R09_C1_SMOKE_BLOCKER_2026-09-28.md)：0bcf24c新增完整应用冒烟入口，编译通过；本机MySQL主机参数误解析导致准备失败，Spring/IT未执行，559未分配，按用户边界停止，原样错误及清理证据保留。
 - [C1冒烟前看板原文](ORCHESTRATION_STATE_before_R09_C1_SMOKE_2026-09-28.md)：保留两批实现及557/558红的收尾断点，历史指令不恢复生效。
 

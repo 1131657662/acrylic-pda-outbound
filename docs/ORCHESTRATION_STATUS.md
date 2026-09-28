@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 0bcf24c
+head: 07ddf93
 dirty_entries: 5
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
@@ -14,7 +14,7 @@ server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
 
-本页是唯一断点，源码版本事实只见生成块。C1冒烟前看板已[原文归档](history/ORCHESTRATION_STATE_before_R09_C1_SMOKE_2026-09-28.md)，其中保留此前归档索引；生成后文档提交HEAD以Git为准，不恢复历史指令。
+本页是唯一断点，源码版本事实只见生成块。C1脚本修复/复验前看板已[原文归档](history/ORCHESTRATION_STATE_before_R09_C1_REVERIFY_2026-09-28.md)，其中保留此前归档索引；生成后文档提交HEAD以Git为准，不恢复历史指令。
 
 ## 交付与本次接续
 - **D整块已交付（用户按已验范围接受）**：11c20e8已推送；片1/片2/片3、部分更正/连续更正/实物撤销/抬头生效四项基本边界、审批人ID/撤销导出/抬头导出修复均✅。[交付确认](history/R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)列全部历史证据；不再停留D扩测。
@@ -28,13 +28,13 @@ server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 - **21类转发布前完整回归清单**：Ledger13/Foundation6/迁移1/Android1，8类R08保留专用历史验收。11类此前因新profile需改守卫停在配置前，5d977ea已推送；[目录及前置](history/A3_NON_E2A_REMAINING_2026-09-28.md)保留。本阶段不配置profile、不补跑，旧库/marker/失败证据原样保留；清单转移不计通过。
 - **R09 C1第一批已完成**：用户已授权两批实施，范围评估停报结论仅为历史。37beeaa/c146f5f均已推送；[独立库外协议/耐久存储](history/R09_C1_INITIAL_PROTOCOL_BATCH1_2026-09-28.md)仅新增4个生产组件/3个测试文件，22/0/0/0。首批按只新增边界未改既有看板/欠债，本批补同步。
 - **R09 C1第二批部分完成，未验收**：c974188已推送，新增初次DB登记/事务/查询/核验、耐久UNKNOWN与R09适配、独立存储迁移和测试域HTTP探针。[批次证据/缺口](history/R09_C1_INITIAL_REGISTRATION_BATCH2_2026-09-28.md)：557/558各1/1/0/0，真MySQL迁移成功，探针重复mapping阻断启动，均0 HTTP/未进C1登记或105真库回归。探针修正后78/0/0/0单测；此前78/1/0/0红保留，完整Boot未复验。
-- **C1本轮先冒烟，准备失败即停**：0bcf24c新增独立完整应用启动入口，编译通过。本机脚本未引用MySQL主机参数，报`Unknown MySQL server host '127' (11001)`；隔离MySQL已启动，但Java/Spring未执行，非产品缺陷定性、未验证探针修正。按用户失败即停要求未重试/未跑IT/未分配559；[原样错误与证据](history/R09_C1_SMOKE_BLOCKER_2026-09-28.md)。
+- **C1脚本修复及扫描完成，待冒烟**：用户授权本轮接续。07ddf93修复readiness/关闭两处裸IP，新增tools/r09-c1-smoke.ps1，旧本机副本同类已修，原脚本/失败目录保留；6类原生参数回读与编译通过。[扫描及分步结果](history/R09_C1_REVERIFY_2026-09-28.md)。第2次冒烟尚未启动，成功才执行559+；上轮准备失败[原样记录](history/R09_C1_SMOKE_BLOCKER_2026-09-28.md)不改。
 - **R09 C2入口评估bf568a0已推送，实施未启动**：[评估](history/R09_C2_ENTRY_ASSESSMENT_2026-09-28.md)列各入口/最小验收。用户同意先C1后C2；C1完成后核定旧操作收尾，再B1 HTTP/Session→PDA/各文件/Worker/渲染/迁移/Bootstrap逐入口分批，不自动开工。
-- **C1/C2证据边界**：本轮仅编译绿，冒烟未通过；历史单测和迁移绿不等于C1双侧真HTTP通过，初次正反例/原事实守恒/UNKNOWN重启/105真库回归待验。用户已授权复验但规定冒烟失败即停，本次据此收尾，接续交用户决定。没有生产登记端点或入口接线；C2嵌套租约/框架清理/异步/multipart仍待验。
+- **C1/C2证据边界**：本轮脚本修复仅静态/argv/编译绿，完整应用冒烟及双侧真HTTP尚未通过；初次正反例/原事实守恒/UNKNOWN重启/105真库回归待验。按授权先冒烟再IT，失败须分类/停报。无生产登记端点或C2入口接线；嵌套租约/框架清理/异步/multipart仍待验。
 
 ## 树、写权与环境断点
-- 主树D:/acrylic-pda-outbound，codex/development；输入6c74f79与origin一致、开始干净。只有当前助手写入，无在途重型测试。本轮0bcf24c仅新增C1StartupSmoke测试入口；收尾仅看板、欠债v56、索引、新增冒烟记录及前看板原文5文档，实际HEAD见事实块/Git。
-- 本轮独立冒烟目录.local/r09-c1-smoke-20260928-1/；数据库初始化后readiness参数错误，未建业务schema/迁移/调用Java。失败脚本及原日志保留，收尾只纠正清理命令关闭实例，未修正/重跑冒烟。A3不重开、C2未开工，不绕过守卫/删marker/放宽超时。
+- 主树D:/acrylic-pda-outbound，codex/development；输入8408d27与origin一致、开始干净。单助手。本步07ddf93包含工具与测试坐标适配2文件；文档为看板、欠债v57、索引、复验记录及前看板原文5文件，实际HEAD见事实块/Git。
+- 旧冒烟1目录/失败日志完整保留，脚本原件已另存；本机副本修正，实际使用仓库构造器。后续独立冒烟2未建、559未分配；本步证据在.local/r09-c1-reverify-20260928/。A3不重开、C2未开工，不绕过守卫/删marker/放宽超时。
 - 旧验证树历史断点为detached ea4d166、97条既有dirty/untracked；上轮status文本差异0。本轮未进入/写入旧树，不将历史检查写成本轮复核；没有同步文件、提交、重置或合并。
 - 冒烟实例已核对PID/datadir后正常关闭，19330/19437释放；收尾复核专用端口与在途任务，既有Gradle daemon保留，系统3306未动。冒烟编译日志/失败库/原错误在.local保留；557/558及单测红绿证据仍在.local/r09-c1-batch2-20260928/与各失败库目录。
 - 实际使用号止于558（失败也不重用），559未启动，接续执行前查重。历史A3库/日志保持，Ledger/Foundation等专用环境未接续，R08专用run32未用；所有旧manifest含已用号不可复用。
@@ -49,6 +49,6 @@ server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 - R09 C1本轮冒烟准备失败，Spring/HTTP未执行；初次协议/生产适配已提交，双侧真HTTP、原安装现场资料组合、真实UNKNOWN/重启及105真库回归未通过。557/558及单测红保持。C2动态组合、Windows断电/Linux持久性与进程隔离、关闭态能力和生产释放未验/未授权。P1–P7、真机/Keystore/App内升级/长时留存/外网异地、原资料旧BCD及历史现场限制保留。A2已修dcaf7ad/377，不重开。
 
 ## 边界
-- 本轮C1按冒烟失败即停边界收尾，仅新增测试入口和文档，未改生产代码/旧迁移/R05/R06/R07/ConfirmedV1Adapter/契约/默认配置或开关。不发布/部署/合main，不修R07抬头撤销、不深入526、不配置A3 profile；冒烟接续及C2各批交用户决定。
+- 本轮C1已获脚本修复/冒烟/真HTTP复验授权，先冒烟成功才进IT；未改生产代码/旧迁移/R05/R06/R07/ConfirmedV1Adapter/契约/默认配置或开关。不发布/部署/合main，不修R07抬头撤销、不深入526、不配置A3 profile；C2各批仍待用户决定。
 - 不提交.local密钥/数据库/真实业务资料。七类生产决定及TEMP归档仍关闭，localDeletionAllowed=false，普通有权正常确认允许空理由；本机留证不代表异地备份。
 <!-- CURRENT_STATE_END -->
