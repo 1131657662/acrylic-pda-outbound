@@ -1,5 +1,8 @@
 # 历史归档
 
+- [R09_C1_SCOPE_ASSESSMENT_2026-09-28.md](R09_C1_SCOPE_ASSESSMENT_2026-09-28.md)：独立初次NORMAL范围判c（兼b）；既有组件仅覆盖关闭链后的登记，需新组件/生产适配，按用户边界停报；含双侧证据、文件清单、3–4轮估算及未验，无代码/IT。
+- [C1范围评估前看板原文](ORCHESTRATION_STATE_before_R09_C1_ASSESSMENT_2026-09-28.md)：保留C2入口评估收尾断点，历史指令不恢复生效。
+
 - [R09_C2_ENTRY_ASSESSMENT_2026-09-28.md](R09_C2_ENTRY_ASSESSMENT_2026-09-28.md)：逐入口源码/生产面/前置/最小验收，区分C1历史组件与未完成双侧证据；大块实现按入口分批，建议先公共依赖再HTTP/Session。仅评估、无代码/测试，实施待授权。
 - [C2入口评估前看板原文](ORCHESTRATION_STATE_before_R09_C2_ASSESSMENT_2026-09-28.md)：保留A3收尾断点，旧推进指令不恢复生效。
 
