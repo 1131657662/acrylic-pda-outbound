@@ -49,3 +49,34 @@
 ## 7. 第三轮入口
 
 撤销修复验收完成后仅补抬头：沿既有headerBody的无dispatch样本，不新造业务场景。若真HTTP证实新缺陷即停报告并保留红证据，不扩本修复。四边界此时为3通过/1待测，D整体尚未交付；不转R09 C2/A3。抬头撤销、多文档跨链撤销与撤销后再更正组合也未新增验收。
+
+## 8. 第三轮抬头补测：494发现新缺陷，立即停工
+
+失败测试阶段备份48609c1已单独提交推送；撤销验收文档0797228已推送。新增fixture规模小：复用既有E2aCorrectionChainIT.headerBody，只把该测试方法改为包内可见；沿已验的无dispatch、无lines、标量orderNo更正，不构造新业务流程，不直接伪造业务事实。
+
+真实HTTP的CREATE/APPROVE都成功：更正文档HEADER_CORRECTION/EFFECTIVE，lineCount=0；v1的orderNo=FH-LINKCONFIRM-0001，v2冻结header_snapshot已为CORR-HEADER-EXPORT-1。两版均2包/601500g，批准回执scanCoverage=2、effects/ledgerKeys为空，符合抬头不改实物的样本形状。
+
+attempt494为1/1/0/0，异常为EXPORT_SOURCE_UNAVAILABLE的BusinessException，“该结果版本没有可追溯的更正凭据行”。调用栈：HeaderCorrectionExportHttpChecks.captureFacts → ExportSnapshotReader → CorrectionExportSource → CorrectionAdjustmentSource.read非空守卫。**证据边界：这是实际库事实上的服务读取失败；发生在测试预检，尚未发送导出HTTP POST，也未进入作业、渲染、下载与XLSX/PDF内容断言。** 不将其写成HTTP导出409，不写成容器或内容通过。
+
+静态定位：R08凭据读取内连接correction_line，并仅保留有账行的调整；合法抬头文档没有correction_line，因此结果为空。对照本轮初始4a8e99c，原查询同样从correction_line出发并过滤无账行，原header(row)存在不代表真实无明细抬头可到达。此是既有R08消费缺口，不归因于本轮撤销写入（本轮未改R07）。后续若授权修复，应先核定抬头冻结事实和文档/回执证据的映射及报告字段，不得虚构dispatch或账行，也不能仅删除非空校验来放行。
+
+本轮遵守新真bug即停：没有修任何抬头生产代码，没有改测试期待为失败，没有重新分配attempt去扩大验证。失败库和日志保留。证据在验证树.local/e2a-cross-20260925-494/，storage/header-correction/仅四件：command-create.json、create-correction.json、approve.json、database-facts.json；主树.local/d-withdraw-fix-20260928/保存attempt494-IT.xml、attempt494.log和header-source-manifest.json。无candidate-snapshot/导出请求/产物。
+
+## 9. 四项边界与接续
+
+| 顺序 | 边界 | 截止本轮结果 | 证据 |
+| --- | --- | --- | --- |
+| 1 | 部分更正且净结果非空 | 通过 | 历史489；493历史v2再次回读非空内容 |
+| 2 | v2→v3连续更正 | 通过（历史） | 490及完整链/缺链反例；本轮未重跑该HTTP样本 |
+| 3 | 撤销后版本导出 | 通过 | 0e837ff；493真HTTP及XLSX/PDF逐值内容，R08 run30 14项回归 |
+| 4 | 抬头更正无dispatch | 失败，已停 | 48609c1阶段备份；494真命令成功，快照读取失败，导出HTTP/内容未验 |
+
+D仍不能整块交付；用户待决定是否另行授权抬头消费修复，R09 C2/A3不自动启动。未验：抬头导出全链及内容、抬头撤销、多文档撤销与撤销后再更正组合、独立审查及现场；不外推单样本通过。
+
+主树codex/development，停工代码HEAD48609c1（后续仅文档提交）；验证树仍detached ea4d166。初始/最终全量status与同步哈希/前像均保留.local/d-withdraw-fix-20260928/；没有提交/重置验证树。端口19330/19434/23308均已释放，系统3306未动，无活动测试进程。下一e2a attempt495+、R08专用run31+执行前查重。完成定性/撤销修复/抬头补测共三轮，至此结束。
+
+## 10. 改动清单
+
+- 实现0e837ff：exports目录ExportFacts、CorrectionAdjustmentSource、新CorrectionWithdrawalSource；report-rendering的Adjustment/AdjustmentValidator及新WithdrawalValidationTest；撤销IT和WithdrawnCorrectionExportHttpChecks；只读文件回读工具。合计9文件，详情以git show为准。
+- 失败测试48609c1：E2aCorrectionChainIT仅headerBody测试可见性；新增E2aHeaderCorrectionExportIT、HeaderCorrectionExportHttpChecks。合计3文件，无生产代码变动。
+- 文档：本报告、看板、欠债v31–v33、四边界报告续记、历史/验收索引；三次替换前看板原文归档。全部本机密钥、数据库、回执/导出文件及日志均未暂存。

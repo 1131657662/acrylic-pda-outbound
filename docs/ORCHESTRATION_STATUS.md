@@ -6,20 +6,22 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 0e837ff
-dirty_entries: 4
+head: 48609c1
+dirty_entries: 7
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 ```
 <!-- FACTS_END -->
 
-本页是唯一断点；源码版本事实仅见生成事实块。替换前结论已[原文归档](history/ORCHESTRATION_STATE_before_D_WITHDRAW_VERIFIED_2026-09-28.md)，不恢复历史指令。事实块为生成时快照，随后文档提交HEAD以Git为准。
+本页是唯一断点；源码版本事实仅见生成事实块。替换前结论已[原文归档](history/ORCHESTRATION_STATE_before_D_HEADER_STOP_2026-09-28.md)，不恢复历史指令。事实块为生成时快照，随后文档提交HEAD以Git为准。
 
-## 在途
+## 停工与断点
 - **撤销后导出已修复并推送0e837ff**；只读设计定性A已由6d5d019保存。v3合法、WITHDRAWN终态，不回指v1。详细证据见[本轮记录](history/R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md)。
-- 主树D:/acrylic-pda-outbound、codex/development；单助手，本轮代码已提交。验证树D:/acrylic-pda-worktrees/r06-e2a-migration仍detached ea4d166，既有未提交/未跟踪全部保留；本轮仅定向同步8文件，前像与最终哈希存.local/d-withdraw-fix-20260928/。
-- 本轮第二步完成；第三轮只补抬头样本。复用既有无dispatch的headerPatch命令，不扩新业务场景；遇新真bug立即停，不自动切R09/A3。下一attempt494+/R08 run31须先查重。
+- 主树D:/acrylic-pda-outbound、codex/development，停工代码HEAD48609c1（抬头失败测试阶段备份）；0e837ff修复/0797228验收文档均已推送。单助手，无活动写者/重型任务，后续文档提交HEAD以Git为准。
+- 验证树D:/acrylic-pda-worktrees/r06-e2a-migration仍detached ea4d166，既有未提交/未跟踪全部保留；本轮同步8个撤销相关文件+3个抬头测试文件，前像/最终哈希及前后全量status在.local/d-withdraw-fix-20260928/。
+- **第三轮494发现新的抬头导出真bug，立即停工**：真实CREATE/APPROVE成功，无dispatch样本v2抬头正确；随后快照读取报“该结果版本没有可追溯的更正凭据行”。仅保存红证据，未修。导出HTTP/文件未抵达，不写成HTTP拒绝。
+- 三轮已到限；D四边界3通过/1失败，不能整体交付。交回用户决定是否另授抬头导出修复；不转R09/A3。下一attempt495+/R08 run31须先查重。
 - 重型任务已结束，隔离测试端口已随harness停库；系统原库不动。历史失败库/日志保留，未自行清理。
 
 ## 验证与四项边界
@@ -27,13 +29,14 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 - **②连续更正通过（历史490）**：同包300.5→300→299.5kg，另一包301kg，v3净2包/600.5kg，完整v2/v3凭据；删除v2凭据的内存反例被拒。未把历史HTTP通过冒充当次重跑。
 - **③撤销后通过（493）**：真MySQL、真服、PDA更正/两阶段撤销、Web会话CSRF导出；IT 1/0/0/0。v3恢复2包/601.5kg，XLSX有效明细2行、调整2行；PDF3页2965字符，关键值及原审批人/撤销确认人/实际反向账回读正确，三页目视通过。
 - 493历史v2 XLSX/PDF仍为1包/301kg、1条原调整；缺省resultVersion且必填basis=ORIGINAL_CONFIRMED的v1真实HTTP导出成功。R08 run30的R08ExportIT为14/0/0/0（真MySQL+MockMvc），不冒充外部HTTP。
-- 渲染套件129/0/0/0，含5个撤销验证正反例；安装目录已重建。本轮作者自审，无独立审查。④抬头待第三轮，D尚未整体交付。
+- 渲染套件129/0/0/0，含5个撤销验证正反例；安装目录已重建。本轮作者自审，无独立审查。
+- **④抬头失败（494，1/1/0/0）**：复用已验headerBody，orderNo由FH-LINKCONFIRM-0001改为CORR-HEADER-EXPORT-1；文档EFFECTIVE、lineCount=0，v2仍2包/601.5kg、scanCoverage=2。R08凭据查询内连接correction_line，零明细文档被遗漏，触发非空守卫。此前基线同样依赖明细/账行，非本轮撤销逻辑引入。
 
 ## 失败与未验
 - 491真实缺陷原证据保留；486导出的零包版本是撤销前v2，撤销后导出未验，旧“撤销归零”声明不作验收。
 - **492红记录1/1/0/0**：v3/历史v2 XLSX/PDF已通过，最后默认v1测试漏传原本必填basis导致400；只改测试输入后493全绿，不改接口默认规则。492文件独立内容回读也通过，整次仍记红。
 - 首次渲染129项中2项因主树缺Chromium失败，XML/日志已留；用忽略目录init脚本指向既有浏览器后129全绿。493/run30既有cleanup空值收尾警告保留，未修工具。
-- 未验：抬头更正、抬头撤销；多更正后跨文档撤销、撤销后再更正等组合未新增验证；不把单样本或内部校验器反例扩写为全业务通过。
+- 494失败在测试预检调用ExportSnapshotReader处，未产生候选快照文件，未执行导出POST/作业/渲染/XLSX/PDF；没有改断言期待失败。抬头关键字段/完整凭据呈现、抬头撤销、多文档跨链撤销与撤销后再更正组合均未验。
 - R07-1⑤–⑧反例、3真并发、2原子性、APPROVE成功、PREPARE/ACTIVATE与REQUEST/APPROVE权限拆分仍未验/待裁决。③按命令记录时版本待授权；②汇总最新有效版本已定未实现。
 - R09 C1未完成/C2未启动、A3剩余约80类非e2a、政策P1–P7、真机/Keystore/App内升级/独立人员/长时留存/外网异地、原资料旧BCD及历史R05/R09现场限制继续单列。
 
