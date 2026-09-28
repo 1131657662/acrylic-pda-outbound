@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09_C2_PROJECT_SCOPE_2026-09-28.md](R09_C2_PROJECT_SCOPE_2026-09-28.md)：应用入口接线独立范围、C1依赖与分段验收建议；仅记录，实施待授权，无代码变化。
+
 - [R06_JWT_CLASSIFICATION_FIX_2026-09-28.md](R06_JWT_CLASSIFICATION_FIX_2026-09-28.md)：JWT定性a、39d1b84最小映射修复；单测6项与501–505共39项绿，红记录及同类静态候选清单保留。
 
 - [A3_NON_E2A_REGRESSION_2026-09-28.md](A3_NON_E2A_REGRESSION_2026-09-28.md)：496–499四类全绿；500损坏JWT误报密钥不可用，真MySQL+MockMvc发现R06缺陷并停报，未修代码。
