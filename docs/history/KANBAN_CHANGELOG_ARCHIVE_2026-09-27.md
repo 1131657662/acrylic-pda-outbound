@@ -87,3 +87,12 @@
 ## 归档：v21 存根（v23 为腾出上限移出）
 
 - 2026-09-28 v21（原文已归档）：G7 已修（只改描述：明确"含经 R06 关联确认正式化的订单、未关联 TEMP_PDA 临时单不在汇总内"，版本不单独递增）；D 方案 C 第一步实测触发停止条件（`ConfirmedV1Adapter` 硬门/版本写死、请求面 basis 正则）⇒ 改拆片。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+
+## 归档：v7-v9 / v15-v22 变更日志（v24 收尾按「留最近 1 条」合并移出，原文未改）
+
+- 2026-09-28 v20（原文已归档）：G7 判定＝描述精度问题（"不含 TEMP"指未关联 TEMP_PDA 临时单 ⇒ 子项 C 不越界）；D 开工前实测＝面超授权（V46 使 v>1 行无提交来源）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-28 v19（原文已归档）：磁盘例行策略落地（只删旧 attempt 的 datadir、保留最近 50）＋B 组确认（跨订单汇总/完整导出中心已具备，无功能缺口）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-28 v18（原文已归档）：自主运行——A1 TEMP 渲染验证接通（390）、A2 重启接管已由既有 JobFence 覆盖（401）、A3 非 e2a 三批新增 19 类 241 项全绿、磁盘 0GB 阻塞已处置。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-27 v17（原文已归档）：C 的渲染验证当时未接通线（三条路实测不通，已记可执行接法）；同日 v18 已用 `-CoordinatesOnly` 接通并跑绿（attempt 390）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-27 v16（原文已归档）：R08 子项 C **已实现** ✅（`exports` 三处：`tempOrigin` + 选路 + 映射版本 ∈{1,2}），attempt 383 绿、既有导出路径回归 runs 19-22 全绿。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-27 v15（原文已归档）：R08ExportFenceIT 判定＝测试期望过时 ✅（run 18 4/4；R08 8 类 47/47）＋ 子项 C 阻塞点定位（400 INVALID_SUBMISSION）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。

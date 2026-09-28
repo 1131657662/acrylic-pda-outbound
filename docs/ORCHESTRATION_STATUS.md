@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: cb45abe
-dirty_entries: 0
+head: ec1dd14
+dirty_entries: 2
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
@@ -58,12 +58,7 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 ## 变更日志（滚动，只留最近 20 行）
 - 2026-09-27 v7-v9（原文已归档）：V43-V48 未破坏共享面（290）；R07-3 Web 路由（292）；非 e2a 回归面解锁（临时密钥 + `-NonE2a`）共 56 类（53 通过/3 需专用环境）并**修复本会话真回归**（`36d2368`）；v9 高风险 23 类=21 绿/2 环境守卫。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
 - 2026-09-28 v23：**D 片1+片2 均已交付 ✅**。片1（`b74078d`）＝服务端只读快照：`ExportFacts` 按版本取事实（`Head` 增 `resultVersion` 但保留旧构造器 ⇒ JSON 形状不变），新 `CorrectionExportSource` 沿用原确认读取器并按 `tempOrigin` 选路，`ExportSnapshotReader` 版本重载（**v==1 逐字不变**）；**语义①＝带调整凭据**。片2（`93bbfae`）＝**真出文件**：`Basis` 加 `CORRECTED`（枚举加值、字段零变更；`PdfHtml`/`ReportText` 本就对非原确认口径输出"净结果"文案，扫码模板按设计拒绝）＋决策④**边界层转换**独立成 `CorrectionAdjustmentSource`（`WEIGHT_CORRECTION+0包0克`⇒归零、`+1包>0克`⇒只改重量、其它报 `409 CORRECTION_EXPORT_KIND_AMBIGUOUS`；取 v2..目标版本整条链；撤销即归零；抬头更正支持），原 217 行超 200 行上限 ⇒ 拆为 98+117 行。**证据**：attempt **486** `1/0/0/0`（真服+真 MySQL+真渲染子进程+真作业租约；XLSX/PDF 双格式发布 + openpyxl 独立回读 7 表，订单汇总 `CORRECTED｜v2｜2.0包601.5kg→净0`、凭据 2 行），"版本有效明细"0 行但凭据仍在＝**零结果可追溯**；R08 run 28 **14/14 绿**。**片3 未接**（`basis` 正则未改 ⇒ 仍无法经 HTTP 申请）。**待决策**：②汇总按最新有效版本、③命令完整性按命令记录时版本（属待授权项）。未验：v2→v3、撤销、抬头更正真跑、净结果非空样本（[记录](history/R08_D_CORRECTION_SLICE1_2026-09-28.md)）。
-- 2026-09-28 v20（原文已归档）：G7 判定＝描述精度问题（"不含 TEMP"指未关联 TEMP_PDA 临时单 ⇒ 子项 C 不越界）；D 开工前实测＝面超授权（V46 使 v>1 行无提交来源）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-28 v19（原文已归档）：磁盘例行策略落地（只删旧 attempt 的 datadir、保留最近 50）＋B 组确认（跨订单汇总/完整导出中心已具备，无功能缺口）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-28 v18（原文已归档）：自主运行——A1 TEMP 渲染验证接通（390）、A2 重启接管已由既有 JobFence 覆盖（401）、A3 非 e2a 三批新增 19 类 241 项全绿、磁盘 0GB 阻塞已处置。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-27 v17（原文已归档）：C 的渲染验证当时未接通线（三条路实测不通，已记可执行接法）；同日 v18 已用 `-CoordinatesOnly` 接通并跑绿（attempt 390）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-27 v16（原文已归档）：R08 子项 C **已实现** ✅（`exports` 三处：`tempOrigin` + 选路 + 映射版本 ∈{1,2}），attempt 383 绿、既有导出路径回归 runs 19-22 全绿。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-27 v15（原文已归档）：R08ExportFenceIT 判定＝测试期望过时 ✅（run 18 4/4；R08 8 类 47/47）＋ 子项 C 阻塞点定位（400 INVALID_SUBMISSION）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-28 v24（**会话收尾 / 切换 Codex**）：状态已固化 ✅。HEAD `184bfd7`→本次收尾提交；工作树干净、远端 `0 0`、事实块通过；**环境**：删 datadir 后 `D:` 82.22 GB 空闲（保留最近 50 个 attempt 的 datadir，最新含 481-486 证据）、**19330/23308/19434 端口全空闲**、杀掉 attempt 393 遗留的 mysqld 孤儿（系统 MySQL 3306 未动）、`.local/` 已 gitignore 且无被跟踪文件。**交接文档＝[SESSION_HANDOFF_2026-09-28](history/SESSION_HANDOFF_2026-09-28.md)**（本轮交付全表 / 待决策 / 未验边界 / 验证基础设施资产 / 硬边界 / 切换说明）。**待接续**：D 片3（请求面 `basis` 正则＋契约草案，待授权）、③ 命令完整性按命令记录时版本（待授权，动 R05/R06/R07 面）、② 汇总按最新有效版本（已判定未实现）、D 未验边界（v2→v3 链/撤销/抬头更正/部分更正样本）、A3 剩余约 80 个非 e2a 类、R09 C1/C2（建议单独立项）。
 <!-- CURRENT_STATE_END -->
 
 历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。
