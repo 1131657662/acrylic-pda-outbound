@@ -10,13 +10,24 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExportSnapshotReader {
     private final ExportFacts facts;private final PdaExportSource pda;private final PcExportSource pc;
-    private final TemporaryExportSource temporary;
+    private final TemporaryExportSource temporary;private final CorrectionExportSource correction;
     private final boolean sampleData;
     public ExportSnapshotReader(ExportFacts facts,PdaExportSource pda,PcExportSource pc,TemporaryExportSource temporary,
+            CorrectionExportSource correction,
             @Value("${outbound.exports.sample-data:false}") boolean sampleData) {
-        this.facts=facts;this.pda=pda;this.pc=pc;this.temporary=temporary;this.sampleData=sampleData;
+        this.facts=facts;this.pda=pda;this.pc=pc;this.temporary=temporary;this.correction=correction;this.sampleData=sampleData;
     }
+    /** 默认入口：结果版本 1（原确认）。既有调用点与行为一字不变。 */
     public ReportSnapshot read(ExportModels.Scope scope,ExportModels.Format format,Instant cutoff) {
+        return read(scope,format,cutoff,1L);
+    }
+    /**
+     * D 片1：按**指定结果版本**读快照。v==1 时与既有逻辑逐字相同（三条 WEB/PDA/TEMP 路径条件与顺序未动）；
+     * v&gt;1 时该版本行**没有提交来源**（V46 `ck_result_channel` 第三支），故走 {@link CorrectionExportSource}
+     * 从更正凭据组装——三条既有读取器不变，只是**多一条新分支**。
+     */
+    public ReportSnapshot read(ExportModels.Scope scope,ExportModels.Format format,Instant cutoff,long resultVersion) {
+        if (resultVersion > 1) return correction.read(scope, resultVersion, cutoff);
         var head=facts.head(scope.warehouse(),scope.order());
         if(format==ExportModels.Format.PDF && Long.parseLong(head.count())>1000)
             throw new BusinessException(409,"EXPORT_LIMIT_EXCEEDED","单次PDF最多1000包，请使用Excel");

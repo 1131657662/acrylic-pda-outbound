@@ -3,6 +3,7 @@ package com.acrylic.outbound.e2averify;
 import com.acrylic.outbound.common.Ids;
 import com.acrylic.outbound.correction.CorrectionCommandController;
 import com.acrylic.outbound.devices.DeviceCrypto;
+import com.acrylic.outbound.inventory.CorrectionExportSnapshotChecks;
 import com.acrylic.outbound.inventory.TemporaryLinkConfirmHttpChecks;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -177,6 +178,9 @@ class E2aCorrectionChainIT {
                 .as("effective lines are the scan aggregate, so 0/0 as well").isZero();
             assertThat(post(token, approve).body()).as("APPROVE replay returns the stored original")
                 .isEqualTo(approved.body());
+            // (d2) D 片1：更正净结果（v>1）快照能被组装（服务端只读，不渲染），逐条对照库内 v2 事实。
+            CorrectionExportSnapshotChecks.verify((WebApplicationContext) open, order.orderId(), 2L);
+            notes.append("⑧-1D 片1 更正净结果快照组装（v2：版本/逐包/合计/凭据对照库内事实 + 默认 v1 不变）-> OK\n");
             // (e) a second correction on the moved order must not be accepted against the old version.
             var stale = post(token, freshKey(createBody(order, expectedBlock(order, "1"), "0", "0")));
             notes.append("⑧再次更正（仍按 v1 预期）-> ").append(stale.statusCode()).append(' ')
