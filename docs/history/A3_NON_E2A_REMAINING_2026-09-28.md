@@ -1,6 +1,6 @@
 # A3非e2a剩余逐类目录（2026-09-28）
 
-原清点输入83e633b：136个非e2a源文件中67类已有批次绿，69类待核；513–526跑14类（13绿/1红），55类未跑，8类R08按专用验收去重。用户授权继续其余47类后，531–542新增12类47项绿，**余35类待跑**；529/530无XML不计执行。A3-526疑似缺陷另挂待专项、不阻断其他类；527/528同类重现不增类数。源码版本事实见[看板生成块](../ORCHESTRATION_STATUS.md)。
+原清点输入83e633b：136个非e2a源文件中67类已有批次绿，69类待核；513–526跑14类（13绿/1红），55类未跑，8类R08按专用验收去重。用户授权继续其余47类后，531–556两批新增26类107项绿，**余21类待跑**；529/530无XML不计执行，545编排编码失败不改变其13项绿。原69类中累计执行40个不同类（39类全绿、526另挂疑似专项），21类待跑、8类历史去重。A3-526不阻断其他类；527/528同类重现不增类数。源码版本事实见[看板生成块](../ORCHESTRATION_STATUS.md)。
 
 本目录不声称55类在所有历史入口从未运行，也不以缺XML推定失败；只记录当次批次证据与接续条件。结果与停报原因见[本批记录](A3_NON_E2A_WAVES_2026-09-28.md)。
 
@@ -12,26 +12,26 @@
 
 ## 普通非e2a及生成夹具（16类）
 
-本次第一批已执行TEMP两类夹具及任务生命周期；其余保持待跑，夹具绿不等于浏览器/Android消费。
+16类均已在本次两批执行通过；夹具绿不等于浏览器/Android消费。
 
 | 类 | 本轮状态/输入 |
 | --- | --- |
-| DeviceBrowserFixtureIT | 未跑 |
-| OrderUiBrowserFixtureIT | 未跑 |
-| PairingApiIT | 未跑 |
-| PairingBrowserFixtureIT | 未跑 |
-| PairingConcurrencyIT | 未跑 |
-| PcSearchIT | 未跑 |
-| PdaAndroidFixtureIT | 未跑 |
+| DeviceBrowserFixtureIT | 通过，attempt 551，1/0/0/0 |
+| OrderUiBrowserFixtureIT | 通过，attempt 552，1/0/0/0 |
+| PairingApiIT | 通过，attempt 547，9/0/0/0 |
+| PairingBrowserFixtureIT | 通过，attempt 553，1/0/0/0 |
+| PairingConcurrencyIT | 通过，attempt 546，4/0/0/0 |
+| PcSearchIT | 通过，attempt 548，2/0/0/0 |
+| PdaAndroidFixtureIT | 通过，attempt 554，1/0/0/0 |
 | TemporaryAuditContractFixtureIT | 通过，attempt 540，1/0/0/0 |
 | TemporaryContractFixtureIT | 通过，attempt 541，1/0/0/0 |
-| UserManagementBrowserFixtureIT | 未跑 |
-| UserManagementConcurrencyIT | 未跑 |
-| UserManagementRollbackIT | 未跑 |
-| UserPasswordPolicyIT | 未跑 |
+| UserManagementBrowserFixtureIT | 通过，attempt 555，1/0/0/0 |
+| UserManagementConcurrencyIT | 通过，attempt 543，3/0/0/0 |
+| UserManagementRollbackIT | 通过，attempt 544，1/0/0/0 |
+| UserPasswordPolicyIT | 通过，attempt 545，13/0/0/0；编排编码错误另列 |
 | BackgroundJobLifecycleIT | 通过，attempt 542，10/0/0/0 |
-| BackgroundJobWorkerIT | 未跑 |
-| OrderNumbersIT | 未跑 |
+| BackgroundJobWorkerIT | 通过，attempt 550，8/0/0/0 |
+| OrderNumbersIT | 通过，attempt 549，5/0/0/0 |
 
 ## 身份锁与精确身份集合（9类）
 
@@ -89,14 +89,14 @@ LedgerVerifyEnvironment逐字守卫datadir/端口/数据库/账号/签名/存储
 | LedgerSeedIT | 未跑 |
 | LedgerSignedMetadataIT | 未跑 |
 
-## 其他专项输入/组合（3类）
+## 其他专项输入/组合（3类，1通过/2待跑）
 
 见下表各自条件；未设置条件制造空跑。
 
 | 类 | 本轮状态/输入 |
 | --- | --- |
 | OrderNumberMigrationIT | 未跑；独立前代空库/升级URL及前代迁移输入，测试自行迁移，不能沿用-NonE2a先迁完 |
-| R09V33FixtureIT | 未跑；专用r09_source坐标和显式条件，原阶段样本，不等于C2实施 |
+| R09V33FixtureIT | 通过，attempt 556，10/0/0/0；新隔离datadir，精确19309/r09_ops_source/r09_source坐标与显式条件保持，不等于C2实施 |
 | TemporaryAndroidSubmissionIT | 未跑；实际Android冻结正文必须对应同库原授权，不能拿旧body配新空库 |
 
 ## R08已有专用入口验收（8类，本次跳过不重复）
@@ -118,4 +118,4 @@ R08历史证据见[专用库方案与各轮验收](R08_DEDICATED_DB_PLAN_2026-09
 
 ## 接续规则
 
-用户已授权继续上列47类，526疑似缺陷另挂专项、不占回归轮次。按共享表风险和环境条件选取，每批12–15类、单类独立attempt；避开条码同步相关类，8类R08不进入manifest。新失败仅分类记录，不深入；遇条码同类或明确真bug停报。本轮2–3批，每批独立提交推送。旧第2/3批manifest未执行且含已用号不可直接复用；529+须查重。不得弱化守卫、打开生产开关、修改已验业务或以skip计绿。R09 C2保持只记录、未实施。
+本次授权47类中两批完成26类，剩余21类需要专项环境或原输入接续，交回用户决定下一时间盒；526疑似缺陷另挂专项、不占回归轮次。后续仍按共享表风险和环境条件选取，每批12–15类、单类独立attempt；避开条码同步相关类，8类R08不进入manifest。新失败仅分类记录，不深入；遇条码同类或明确真bug停报。每批独立提交推送；本机manifest含已用号不得直接复用，557+须重新查重。不得弱化守卫、打开生产开关、修改已验业务或以skip计绿。R09 C2保持只记录、未实施。
