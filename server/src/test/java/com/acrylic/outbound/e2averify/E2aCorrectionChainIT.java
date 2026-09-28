@@ -633,7 +633,7 @@ class E2aCorrectionChainIT {
     }
 
     /** The requester's half of P-R07-08: the same frozen digest, now under WITHDRAW_PENDING. */
-    private ObjectNode withdrawConfirmBody(Order order, String documentId, String documentSha256) {
+    ObjectNode withdrawConfirmBody(Order order, String documentId, String documentSha256) {
         var expected = SubmissionJson.object().put("documentId", documentId).put("documentSha256", documentSha256)
             .put("status", "WITHDRAW_PENDING").put("expectedResultVersion", order.resultVersion())
             .put("userAuthVersion", "1");
@@ -644,7 +644,7 @@ class E2aCorrectionChainIT {
     }
 
     /** WITHDRAW anchors on the same frozen digest, the current status and the approver who is undoing it. */
-    private ObjectNode withdrawBody(Order order, String documentId, String documentSha256, String status) {
+    ObjectNode withdrawBody(Order order, String documentId, String documentSha256, String status) {
         var expected = SubmissionJson.object().put("documentId", documentId).put("documentSha256", documentSha256)
             .put("status", status).put("expectedResultVersion", order.resultVersion()).put("userAuthVersion", "1");
         return (ObjectNode) SubmissionJson.object().put("commandVersion", 1).put("commandType", "WITHDRAW")
