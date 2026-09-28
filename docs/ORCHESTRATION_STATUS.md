@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: ec79b7f
-dirty_entries: 6
+head: 11c20e8
+dirty_entries: 4
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
@@ -21,9 +21,9 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 - **抬头定性A及修复完成**：ee9b2ee明确B3零明细为设计；68a43f8从真实CREATE回执+相邻header_snapshot读取标量凭据，已有字段足够，无新表/列/DTO字段。记录见[本轮验收](history/R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md)。
 - 主树D:/acrylic-pda-outbound，codex/development，代码HEAD68a43f8已推送；单助手。验证树D:/acrylic-pda-worktrees/r06-e2a-migration仍detached ea4d166，既有dirty/untracked完整保留，前像/10文件哈希/状态保存在.local/d-header-fix-20260928/。
 - 三轮已结束：第三轮扫描1813个代码/配置文件、60个重点Java文件，更正表引用14文件/生产侧5文件；[完整清单](history/R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md)区分已修、合理约束、已知欠债与未验。
-- **R07静态阻断仅记录**：B3抬头零line/账；WithdrawConfirm要求非空账，故确认抬头撤销会报CORRECTION_LEDGER_CONFLICT。未执行该HTTP场景，未改R07；用户已将其拆为独立R07待办，不阻塞D已验范围交付。
+- **R07静态阻断仅记录**：[独立blocker](history/R07_3_HEADER_WITHDRAW_BLOCKER_2026-09-28.md)及欠债R07-HW/v38已建。B3抬头零line/账，WithdrawConfirm要求非空账；静态确认，未执行HTTP组合，未改R07。需另授权评估，不阻塞D已验范围交付。
 - 重型任务已结束，测试监听随harness释放；系统原库不动、失败库日志保留。下一attempt496+/R08 run32先查重。
-- 本次文档输入HEAD ec79b7f与origin一致、主树干净；只有当前助手写入，无测试写者，19330/19434/23308空闲。先分别提交交付确认与R07 blocker，再推进已授权A3非e2a回归；R09 C2交用户决策，不自动启动。
+- D交付确认11c20e8已推送；R07记录以该提交为输入，相关生产代码与ec79b7f相同。只有当前助手写入，无测试写者，19330/19434/23308空闲；随后推进已授权A3非e2a回归，R09 C2交用户决策，不自动启动。
 
 ## 四项边界及证据
 - **①部分更正**：历史489通过，原2包/601.5kg→净1包/301kg；历史493撤销后再导出v2同样通过且快照与撤销前完全一致。

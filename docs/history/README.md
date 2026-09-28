@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R07_3_HEADER_WITHDRAW_BLOCKER_2026-09-28.md](R07_3_HEADER_WITHDRAW_BLOCKER_2026-09-28.md)：合法零账抬头被WithdrawConfirm空账守卫拒绝；静态确认、未跑HTTP组合，R07独立待办，只记录不修。
+
 - [R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md](R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)：用户按已验范围接受D整块交付；片1/2/3、四项基本边界及三项修复的证据与范围外限制。
 
 - [R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md](R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md)：B3定性A、68a43f8抬头修复及495/run31验收；凭据扫描发现R07抬头撤销空账静态阻断，已停报。
