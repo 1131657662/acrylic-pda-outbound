@@ -1,5 +1,8 @@
 # 历史归档
 
+- [A3_LEDGER_11_PREFLIGHT_BLOCKER_2026-09-28.md](A3_LEDGER_11_PREFLIGHT_BLOCKER_2026-09-28.md)：11类配置前复核触发“需要改守卫即停报”；精确旧datadir非空，新隔离profile未实施，11类全部未执行、仍21类未跑；另10类前置列明，seed标记未删。
+- [Ledger 11类配置前看板原文](ORCHESTRATION_STATE_before_A3_LEDGER_11_PREFLIGHT_2026-09-28.md)：保留环境评估断点，历史指令不恢复生效。
+
 - [A3_SPECIAL_ENV_ASSESSMENT_2026-09-28.md](A3_SPECIAL_ENV_ASSESSMENT_2026-09-28.md)：剩余21类精确环境/阶段/原件要求与共用评估；值得分组，建议先Ledger作者2＋验证9类，配置超出换库名，3–5轮仅条件估算。本轮只读、未执行。
 - [专用环境评估前看板原文](ORCHESTRATION_STATE_before_A3_SPECIAL_ENV_ASSESSMENT_2026-09-28.md)：保留两批A3回归收尾断点，历史指令不恢复生效。
 

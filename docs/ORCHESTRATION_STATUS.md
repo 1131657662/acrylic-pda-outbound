@@ -6,15 +6,15 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 321bbe0
-dirty_entries: 6
+head: 806625f
+dirty_entries: 7
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 ```
 <!-- FACTS_END -->
 
-本页是唯一断点，源码版本事实只见生成块。专用环境评估前看板已[原文归档](history/ORCHESTRATION_STATE_before_A3_SPECIAL_ENV_ASSESSMENT_2026-09-28.md)，其中保留此前归档索引；生成后文档提交HEAD以Git为准，不恢复历史指令。
+本页是唯一断点，源码版本事实只见生成块。Ledger 11类配置前看板已[原文归档](history/ORCHESTRATION_STATE_before_A3_LEDGER_11_PREFLIGHT_2026-09-28.md)，其中保留此前归档索引；生成后文档提交HEAD以Git为准，不恢复历史指令。
 
 ## 交付与本次接续
 - **D整块已交付（用户按已验范围接受）**：11c20e8已推送；片1/片2/片3、部分更正/连续更正/实物撤销/抬头生效四项基本边界、审批人ID/撤销导出/抬头导出修复均✅。[交付确认](history/R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)列全部历史证据；不再停留D扩测。
@@ -25,14 +25,14 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 - **A3新第1批历史**：输入83e633b，513–526共14类37项36通过/1失败/0skip；13类全绿，526条码并发4/1/0/0。[逐批结果](history/A3_NON_E2A_WAVES_2026-09-28.md)保留，后续两次同类重现不增加覆盖类数。
 - **A3-526（原A3-BC）挂待专项**：按用户决定为疑似产品缺陷、尚未确证，不占A3轮次。526/528红、527绿和43份锁快照保留；读4665→写4664的pending主键锁等待已观察，仓库锁已取得，采样无环、当次未永久阻塞。真实业务入口/EXPLAIN/跳锁有效性/真实竞争待验；[专项范围](history/A3_526_LOCK_PENDING_SCOPE_2026-09-28.md)。不深入、不修。
 - **A3主体已被用户接受**：第1批531–542共12类47项，ca985be；第2批543–556共14类60项，321bbe0；均已推送，共26类107项全绿，零skip，无新业务失败/条码同类。真实MySQL+Spring/MockMvc；529/530入口失败及545编排编码错误留证。[逐批记录](history/A3_POST526_REGRESSION_2026-09-28.md)。
-- **余21类环境评估完成、未执行**：[逐类要求/分组建议](history/A3_SPECIAL_ENV_ASSESSMENT_2026-09-28.md)。值得分组继续：Ledger作者2类/验证11类两套profile，Foundation6类同实例但分正向/负例schema，迁移/Android各1条流程。先建议2＋9类；旧固定datadir、一次性seed和原件链使配置超出换库名，3–5轮为条件估算。本轮按边界停在评估，交回用户决定。
+- **Ledger 11类配置前停报、仍21类未跑**：用户授权作者2＋验证9类，同时规定需要改守卫即停；复核三个精确旧datadir均非空，新隔离库需新profile，因此未配置/未执行、无新attempt。[11类逐项状态/另10类前置](history/A3_LEDGER_11_PREFLIGHT_BLOCKER_2026-09-28.md)。旧seed标记不直接挡住这9类，未删标记/重种。前轮[评估](history/A3_SPECIAL_ENV_ASSESSMENT_2026-09-28.md)的适配前提未满足，交回环境适配或其他方向决策。
 - **R09 C2待立项**：84db51c已推送，[范围/验收建议](history/R09_C2_PROJECT_SCOPE_2026-09-28.md)已登记。连接层有历史验收，待接HTTP/Session外层、Worker、文件/进程与初始化准入；C1 NORMAL双侧登记未完成，生产实施待单独授权/独立时间盒，本次零代码。
 
 ## 树、写权与环境断点
-- 主树D:/acrylic-pda-outbound，codex/development；本轮评估输入321bbe0，业务/测试/仓库工具源码零改动，仅更新文档。只有当前助手写入；完整文档清单见本次提交，实际HEAD见事实块/Git。
-- 本轮只读主树守卫/fixture/历史材料并核对路径存在性；未连接数据库、未读取私钥、未配置实例、未运行测试。新增精确测试环境profile仅为建议，尚未实施，不弱化守卫或放宽超时。
+- 主树D:/acrylic-pda-outbound，codex/development；本轮配置前复核输入806625f，业务/测试/仓库工具源码零改动，仅更新文档。只有当前助手写入；完整文档清单见本次提交，实际HEAD见事实块/Git。
+- 本轮只读守卫/fixture/R08构造器及旧目录元数据；未连接数据库、未读取私钥、未配置实例、未运行测试。新增精确测试profile需要改守卫，已按用户明确边界停止；未绕过守卫/删除marker/替换旧目录或放宽超时。
 - 旧验证树D:/acrylic-pda-worktrees/r06-e2a-migration仍detached ea4d166，97条既有dirty/untracked原样保留，前后status文本差异0；没有向旧树同步文件、提交、重置或合并。
-- 本轮19324/19326/19327/19328专用端口与前批测试端口无监听，无在途测试；系统3306未动，旧目录/失败证据原样保留。前批531–539锁/状态证据25份、两批2＋7份生成物、源码/XML哈希及旧树状态在.local/a3-resume-20260928/；报告在.local/it-batches/，529及531–556隔离库保留，530仅入口解析失败。
+- 本轮19324/19326/19327/19328专用端口与前批测试端口无监听，无在途测试；系统3306未动，旧目录/失败证据原样保留。三个Ledger datadir顶层分别25/24/26项（文件系统计数，非表数），未启动旧库。前批证据仍在.local/a3-resume-20260928/及.local/it-batches/；529及531–556隔离库保留，530仅入口解析失败。
 - 实际使用号止于556（530无执行也不重用），557+执行前查重。身份锁适配九类已验、556恢复样本专用坐标10项已验，均新隔离datadir/原守卫；不是R09 C2实施。旧manifest含已用号不可复用；Ledger/Foundation等专用旧树环境未接续，R08专用run32未用。
 
 ## 历史证据、失败与未验
@@ -45,6 +45,6 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 - R09 C1未完成/C2实施未启动（范围已登记）；P1–P7、真机/Keystore/App内升级/长时留存/外网异地、原资料旧BCD及历史现场限制保留。A2已修dcaf7ad/377，不重开。
 
 ## 边界
-- 本轮仅评估A3剩余21类，实施待下一步决定；不改R05/R06/R07、ConfirmedV1Adapter、契约或生产配置/开关；不发布/部署/合main，不修R07抬头撤销/R09，不深入526、不放宽测试。
+- 本轮11类授权推进在配置前按“需要改守卫即停”收尾，未实施；不改R05/R06/R07、ConfirmedV1Adapter、契约或生产配置/开关；不发布/部署/合main，不修R07抬头撤销/R09，不深入526、不放宽测试。
 - 不提交.local密钥/数据库/真实业务资料。七类生产决定及TEMP归档仍关闭，localDeletionAllowed=false，普通有权正常确认允许空理由；本机留证不代表异地备份。
 <!-- CURRENT_STATE_END -->
