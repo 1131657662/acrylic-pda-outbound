@@ -1,5 +1,8 @@
 # 历史归档
 
+- [A3_NON_E2A_WAVES_2026-09-28.md](A3_NON_E2A_WAVES_2026-09-28.md)：新第1批513–526执行14类，37项36通过/1失败；条码并发commit timeout待定性停报，后续批次未启动。
+- [A3_NON_E2A_REMAINING_2026-09-28.md](A3_NON_E2A_REMAINING_2026-09-28.md)：55类本轮未跑逐项清单（含R08专用历史已验8类）及526红色待办，明确各族环境和输入条件。
+
 - [R09_C2_PROJECT_SCOPE_2026-09-28.md](R09_C2_PROJECT_SCOPE_2026-09-28.md)：应用入口接线独立范围、C1依赖与分段验收建议；仅记录，实施待授权，无代码变化。
 
 - [R06_JWT_CLASSIFICATION_FIX_2026-09-28.md](R06_JWT_CLASSIFICATION_FIX_2026-09-28.md)：JWT定性a、39d1b84最小映射修复；单测6项与501–505共39项绿，红记录及同类静态候选清单保留。
