@@ -1,5 +1,6 @@
 package com.acrylic.outbound.temporary.evidence;
 
+import com.acrylic.outbound.common.BusinessException;
 import com.acrylic.outbound.pda.OfflineSigner;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.charset.StandardCharsets;
@@ -33,9 +34,21 @@ class TemporarySourceEvidenceProofTest {
         assertThat(SourceEvidenceProof.verify(receipt,view())).isEqualTo("INVALID_SIGNATURE");
     }
     @Test void malformedAndForgedSignaturesFailClosed() throws Exception {
-        for(String token:new String[]{"bad","a.b.c","","e30.e30.Zm9yZ2Vk"}) {
+        for(String token:new String[]{"bad","a.b.c","","e30.e30.Zm9yZ2Vk","invalid.token.signature"}) {
             var receipt=signed("test-key").put("signedReceipt",token);
             assertThat(SourceEvidenceProof.verify(receipt,view())).isEqualTo("INVALID_SIGNATURE");
         }
+    }
+    @Test void malformedClaimsRemainInvalidEvenWithAValidSignature() throws Exception {
+        String prefix=encode(canonical(object().put("alg","RS256").put("typ","JWT").put("kid","test-key")))+"."+encode("{broken");
+        var signer=Signature.getInstance("SHA256withRSA");signer.initSign(keys.getPrivate());
+        signer.update(prefix.getBytes(StandardCharsets.US_ASCII));
+        String token=prefix+"."+Base64.getUrlEncoder().withoutPadding().encodeToString(signer.sign());
+        assertThat(SourceEvidenceProof.verify(object().put("signedReceipt",token),view())).isEqualTo("INVALID_SIGNATURE");
+    }
+    @Test void unavailableTrustedKeyKeepsItsOriginalFailure() throws Exception {
+        var receipt=signed("test-key");
+        var unavailable=new BusinessException(503,"SIGNING_KEY_UNAVAILABLE","test key unavailable");
+        assertThatThrownBy(()->SourceEvidenceProof.verify(receipt,kid->{throw unavailable;})).isSameAs(unavailable);
     }
 }

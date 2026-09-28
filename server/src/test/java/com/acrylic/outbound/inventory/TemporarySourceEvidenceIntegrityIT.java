@@ -2,6 +2,7 @@ package com.acrylic.outbound.inventory;
 
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import org.junit.jupiter.api.*;
@@ -14,7 +15,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest @AutoConfigureMockMvc
+@SpringBootTest(properties="outbound.signing.historical-public-keys=${outbound.storage}/missing-history-for-classification.der")
+@AutoConfigureMockMvc
 class TemporarySourceEvidenceIntegrityIT {
     @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired JdbcTemplate jdbc;@Autowired PasswordEncoder passwords;
     @Value("${outbound.storage}") String storage;
@@ -55,8 +57,34 @@ class TemporarySourceEvidenceIntegrityIT {
             assertThat(view.at("/terminalProof/verification").asText()).isEqualTo("INVALID_SIGNATURE");
             assertThat(view.at("/terminalProof/originalStoredReceiptUtf8").asText()).isEqualTo(modified);
             assertThat(view.at("/currentAssessment/gaps").toString()).contains("VERIFIED_TERMINAL_PROOF_NOT_AVAILABLE");
+            assertCapabilitiesFalse(view);
             assertThat(f.facts()).isEqualTo(before);
         } finally { jdbc.update("UPDATE submission SET receipt_text=? WHERE id=UUID_TO_BIN(?)",original,f.temporary.id()); }
+    }
+    @Test void unavailableHistoricalKeyRemainsUnverifiedAndPreservesOriginalEvidence() throws Exception {
+        var f=fixture(false);f.temporary.abort();String original=f.storedReceipt();
+        assertThat(f.read().at("/terminalProof/verification").asText()).isEqualTo("VERIFIED");
+        assertThat(Path.of(storage,"missing-history-for-classification.der")).doesNotExist();
+        var receipt=(com.fasterxml.jackson.databind.node.ObjectNode)SubmissionJson.parse(original);
+        var parts=receipt.path("signedReceipt").asText().split("\\.");
+        var header=(com.fasterxml.jackson.databind.node.ObjectNode)SubmissionJson.parse(Base64.getUrlDecoder().decode(parts[0]));
+        header.put("kid","unknown-history-classification-test");
+        parts[0]=Base64.getUrlEncoder().withoutPadding().encodeToString(SubmissionJson.canonical(header).getBytes(StandardCharsets.UTF_8));
+        receipt.put("signedReceipt",String.join(".",parts));String modified=SubmissionJson.canonical(receipt);
+        try {
+            jdbc.update("UPDATE submission SET receipt_text=? WHERE id=UUID_TO_BIN(?)",modified,f.temporary.id());
+            var before=f.facts();var view=f.read();
+            assertThat(view.at("/terminalProof/verification").asText()).isEqualTo("UNVERIFIABLE_KEY");
+            assertThat(view.at("/terminalProof/originalStoredReceiptUtf8").asText()).isEqualTo(modified);
+            assertThat(view.at("/currentAssessment/gaps").toString()).contains("VERIFIED_TERMINAL_PROOF_NOT_AVAILABLE");
+            assertCapabilitiesFalse(view);assertThat(f.facts()).isEqualTo(before);
+        } finally { jdbc.update("UPDATE submission SET receipt_text=? WHERE id=UUID_TO_BIN(?)",original,f.temporary.id()); }
+        assertThat(f.read().at("/terminalProof/verification").asText()).isEqualTo("VERIFIED");
+    }
+    private static void assertCapabilitiesFalse(JsonNode view) {
+        for(String key:List.of("writeAllowed","writeConfirmationAvailable","releaseAllowed","mayResumeScanning",
+            "stockReleaseAllowed","localDeletionAllowed","evidenceUploadAllowed"))
+            assertThat(view.at("/currentAssessment/"+key).asBoolean()).as(key).isFalse();
     }
     @Test void validBodyWithWrongOriginalControlIsNeverReturnedUnderAnotherSubmission() throws Exception {
         var f=fixture(false);f.temporary.submit();var another=fixture(false);another.temporary.submit();

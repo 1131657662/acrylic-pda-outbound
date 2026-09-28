@@ -50,7 +50,10 @@ public class SourceEvidenceProof {
             var claims=parse(decoder.decode(parts[1]));var original=receipt.deepCopy();((com.fasterxml.jackson.databind.node.ObjectNode)original).remove("signedReceipt");
             return claims.path("iss").asText().equals("acrylic-outbound") && claims.path("aud").asText().equals("acrylic-pda-receipt")
                 && claims.path("receipt").equals(original)?"VERIFIED":"INVALID_SIGNATURE";
-        } catch(BusinessException unavailable) { throw unavailable; }
+        } catch(BusinessException error) {
+            if("SIGNING_KEY_UNAVAILABLE".equals(error.code()))throw error;
+            return "INVALID_SIGNATURE";
+        }
         catch(GeneralSecurityException | RuntimeException error) { return "INVALID_SIGNATURE"; }
     }
     private static boolean matches(JsonNode receipt,SubmissionStore.Head h,SourceEvidenceQueries.FileRecord payload) {
