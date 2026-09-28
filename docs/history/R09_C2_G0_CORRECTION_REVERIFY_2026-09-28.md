@@ -1,5 +1,8 @@
 # R09 C2-G0 定向纠错与设计复验（2026-09-28）
 
+> **后续状态（2026-09-28 晚，本条为纠错后追加的导航）**：本记录的 v2 修订经独立核对后，有**两处结论被推翻**（P2 空租约检查不构成互斥、模式变更必先完成独占控制推进的证明不成立），另有 P5、上下文回退与验收规格问题；已在[残余阻断补正与设计复验](R09_C2_G0_RESIDUAL_BLOCKERS_2026-09-28.md)中逐项补正，设计定稿更新为 v3。本记录中与本条冲突的表述以 v3 与残余阻断记录为准。
+> **一处事实更正**：本记录 §4 曾把 v1 描述为“未覆写/依赖自动覆盖两个 `shouldNotFilter*`”，与 v1 原文不符——v1 已明确写为覆写为 `false`。v1 的真实缺陷是：把 Spring Session 自有 `OncePerRequestFilter` 与 Spring Web 同名类混同、未处理嵌套 ERROR 分派重跑、重分派时根复用语义未定义、S4a 屏障未落在真实保存路径。已在[残余阻断记录](R09_C2_G0_RESIDUAL_BLOCKERS_2026-09-28.md) §7 如实更正。
+
 > 审查基线：`40d3702575aa25c5b70fc87beb76355421a27a1b`（v1 定稿）。本轮只做设计纠错与文档级复验：**零代码/迁移/契约/默认开关变更**，未编译、未跑单测/IT/HTTP/数据库、未启动应用，未分配 IT attempt / SmokeRun / 数据库 / 端口。产出见[设计定稿 v2](R09_C2_G0_DESIGN_2026-09-28.md)与[验收与阻断记录](R09_C2_G0_ACCEPTANCE_2026-09-28.md)。
 > **判定口径**：B01–B06 的**设计反例已关闭**（设计级，可审查、可测试）；**运行行为全部未验证**。凡涉及“已通过/已生效”的表述只指设计一致性。
 
@@ -63,7 +66,7 @@ javap -p -v         -classpath <auto>  org.springframework.boot.autoconfigure.se
 ## 4. B02 按实际依赖纠正请求生命周期
 
 - **原断言（v1）**：“过滤器在 `finally` 内 `enterFinalizing()`，`requestDestroyed` 释放根”，并把 S4a 屏障放在“SERVING→FINALIZING 后首次子操作登记处”，称其代表最终 Session 保存；还声称 Spring Session 与我们的过滤器都属 Spring Web 的 `OncePerRequestFilter` 语义。
-- **源码/依赖证据**：§2 第 1–5 条。关键差异三处：①`SessionRepositoryFilter` 用的是 **Spring Session 自己的** `OncePerRequestFilter`（无 `shouldNotFilter*`，且覆写了嵌套 ERROR 分派）；②Session 提交在**其方法体内、链返回之后与异常路径**（不是容器回调，也不在我们过滤器的 finally 之后）；③Spring Web 的 `OncePerRequestFilter` **默认跳过 ERROR 与 ASYNC 分派**，故 v1 “不跳过/自动覆盖”的结论不成立。
+- **源码/依赖证据**：§2 第 1–5 条。关键差异三处：①`SessionRepositoryFilter` 用的是 **Spring Session 自己的** `OncePerRequestFilter`（无 `shouldNotFilter*`，且覆写了嵌套 ERROR 分派）；②Session 提交在**其方法体内、链返回之后与异常路径**（不是容器回调，也不在我们过滤器的 finally 之后）；③**我们自己的**过滤器若延用 Spring Web 默认（两个 `shouldNotFilter*` 返回 `true`）就会被跳过——v2 明确覆写为 `false`，但 v1 的缺陷不在此（v1 也写了 `false`），而在于①把两类同名 `OncePerRequestFilter` 混同、②未处理嵌套 ERROR 分派重跑、③重分派时根复用语义未定义。
 - **反例时序（v1 下成立）**：(1) 请求进入我们的过滤器并登记根；(2) 链内 `response.sendError`；(3) 容器发起 ERROR 分派，Spring Web 默认 `shouldNotFilterErrorDispatch()==true` 使我们的过滤器**不再进入**（若异步/独立线程执行该分派，则线程未绑定）；(4) 该分派内 `SessionRepositoryFilter.doFilterNestedErrorDispatch → doFilterInternal → commitSession()` 执行 DB 写；(5) v1 的屏障/断言放在外层 finally 之后的连接借用上，**永远观察不到这一步**，S4a 会把“非真实尾保存”当成通过。
 - **修订规则（v2 §6.3）**：过滤器显式覆写 `shouldNotFilterErrorDispatch()`/`shouldNotFilterAsyncDispatch()` 为 `false`；根令牌写进**请求属性且释放前不移除**，重分派（ERROR/ASYNC/nested）**复用同一根**并为当前线程补 `bindThread`（保证 ERROR 分派内的 Session 提交仍被覆盖）；释放仍只在 `requestDestroyed`；`finally` 只 `enterFinalizing()`；S4a 屏障改为**测试专用 `SessionRepository` 装饰器**在 `save()` 阻塞（真实保存路径），S4a（正常收尾成功）与 S4b（新根拒绝）保持两个独立用例。
 - **未来测试及唯一预期**：§10.2 S4a 期望“请求 200 + `SPRING_SESSION` 行在场 + 控制推进 `CONTROL_WRITERS_ACTIVE` + 意图在场且指针未推进”；S8 期望“错误分派 Session 写覆盖且根数不增（复用）”“异步未绑定线程 503 `RECOVERY_OPERATION_FORBIDDEN`”。
@@ -110,7 +113,7 @@ javap -p -v         -classpath <auto>  org.springframework.boot.autoconfigure.se
 | # | v1 错误 | v2 修正 |
 | --- | --- | --- |
 | 1 | 把 `writers.lock` 称为“写者独占锁” | §2 三层锁表：L1 JVM 引用、L2 跨进程**共享**租约、L3 控制推进**独占**（`coordinator.lock` ＋ 控制推进对 `writers.lock` 的独占尝试） |
-| 2 | 锁接口描述含糊（未写前置条件） | §2 表格：`locked` / `lockedWaiting` / `acquire` / `acquireLocked` 的签名、前置条件、误用结果 |
+| 2 | 锁接口描述含糊（未写前置条件） | §2 表格：`locked` / `lockedWaiting` / `acquire` 的签名、前置条件、误用结果（v2 曾列 `acquireLocked`，v3 已删除：`acquire` 本身就是“调用方须先持协调锁”，两者语义相同） |
 | 3 | P2 允许集只说“保持不变” | §3.3 逐名列出 7 个允许名（含三种 `.pending`），并明确 B1 不得增删 |
 | 4 | Python 文件清单缺项 | §3.6 第 9–16 项：`control_paths.py`、`control_history.py`、`control_model.py`、`control_store.py`、新增 `control_initial.py`/`control_cli.py`、夹具与既有 3 个测试文件、R09 协议文档 |
 | 5 | 章节引用错位/内容重复 | v2 重排为 §0–§14，交叉引用逐处校正；原 v1 段落与 Git 历史可对照 |
@@ -120,7 +123,9 @@ javap -p -v         -classpath <auto>  org.springframework.boot.autoconfigure.se
 
 ## 10. 本轮实际运行 / 未运行
 
-**实际运行**：§1 前置检查全部项、§2 依赖 `javap` 只读核对（命令与原始输出留档）、Python 协议文件只读阅读、文档链接检查（正文与原文归档分别报告，见 `08-doc-links.txt`）、`git diff --check`、`tools/version_facts.ps1 -Write` 后 `-Check`（看板当前区 40 行/2310 字符内）。
+**实际运行**：§1 前置检查全部项、§2 依赖 `javap` 只读核对（命令与原始输出留档）、Python 协议文件只读阅读、文档链接检查（正文与原文归档分别报告，见 `08-doc-links.txt`）、`git diff --check`、`tools/version_facts.ps1 -Write` 后 `-Check`（看板当前区在本轮更新后为 **45 行 / 3234 字符**，在 100 行/8000 字符上限内；此前“40 行/2310 字符”是定稿 v1 时的旧值，已作废）。
+
+**证据时点更正**：本记录所在证据目录的 `01-git-status.txt` 采集于**该轮文档修改之后**（内容含 2 个已修改文档与 1 个未跟踪文档），不能作为“前置工作区干净”的证据；该轮真正的前置干净事实来自其首条只读命令的实时输出，当时未落盘为独立文件。此更正不补造历史快照，详见[残余阻断记录](R09_C2_G0_RESIDUAL_BLOCKERS_2026-09-28.md) §1。
 
 **未运行**：编译、单测、IT、真实 HTTP、数据库供给、完整应用冒烟、跨进程与断电实验、Linux 持久性、现场原资料组合。§10 的全部 B1 用例与 §5.6 并发反例均为**待 B1 授权后执行**，不计入本轮通过项。
 

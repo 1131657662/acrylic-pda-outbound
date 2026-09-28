@@ -6,42 +6,41 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 40d3702
-dirty_entries: 8
+head: da4d56a
+dirty_entries: 9
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-本轮为 **R09 C2-G0 定向纠错与设计复验**（零代码）：以 `40d3702` 为审查基线，关闭 B01–B06 并形成设计定稿 v2。源码版本事实只看上方生成块。
+本轮为 **R09 C2-G0 残余阻断补正与设计复验**（零代码）：以 `da4d56a` 为审查基线，补正 R1–R5 并形成设计定稿 v3。源码版本事实只看上方生成块。
 
 ## 本轮产出与判定
-- [设计定稿 v2](history/R09_C2_G0_DESIGN_2026-09-28.md)（修订 v1；v1 原文留在 Git `40d3702` 与纠错记录“原断言”栏）、[纠错与设计复验](history/R09_C2_G0_CORRECTION_REVERIFY_2026-09-28.md)、[验收与阻断记录 v2](history/R09_C2_G0_ACCEPTANCE_2026-09-28.md)。
-- **判定分两级**：B01–B06 **设计反例已关闭**（可审查、可测试）；**运行行为全部未验证**。不写 G0 验收通过。
-- B01：`identity.json` 升 v2（`authorityKind=INITIAL_NORMAL_INSTALL`＋`closedAuthority`）；初次接纳要求单条 QUIESCING 记录且逐字段绑定可信原件、`requireUnclosed` 在登记与接纳两条路径强制、关闭权威父目录必须存在且条目不存在 ⇒ 恢复型权威与任意不存在路径在结构上无法通过。
-- B02：按 javap 依赖证据重写生命周期——Session 提交在 `SessionRepositoryFilter` 方法体内（链后与异常路径）、嵌套 ERROR 分派重跑、Spring Web 的 `OncePerRequestFilter` **默认跳过 ERROR/ASYNC**，故我们显式不跳过；根令牌入请求属性、重分派复用、`requestDestroyed` 释放；S4a 屏障改到真实 `save()` 路径（测试专用 `SessionRepository` 装饰器）。
-- B03：A–F 调用方判定表；失效令牌、请求上下文丢失、未绑定异步线程一律拒绝，**禁止静默回退旧连接级路径**；105 语义由“无上下文”分支原样保留。
-- B04：承认 Session 清理**默认开启**（`0 * * * * *`、自有 `spring-session-` 线程、DB 写）；B1 测试显式禁用并验证生效，新增启动守卫 `CONTROL_SESSION_CLEANUP_UNCOVERED`；生产默认清理路径单列为**未覆盖入口**。
-- B05：改为**故障前**建立阻断依据（P5 操作租约目录：进程记录持生命周期独占锁＋按操作租约记录）；UNKNOWN 不退役租约并 fail-stop ⇒ 孤儿由文件锁持有性判定（不依赖时间）；阻断不依赖任何故障时写入成功；**解除**仍属生产释放，未授权。
-- B06：补齐事实表（可变性/写者/所持锁/失效方式/校验位置）与四段证明（P3 意图、P2 UNKNOWN、DB 模式变化含框架写、孤儿租约）＋五项并发反例规格；不再用“窗口小/再读一次/仅业务守卫”作答。
-- 附带修正：三层锁表述与四个锁接口前置条件、P2 七个允许名、Python 双侧文件清单、P3 允许集不变（取消 `writers.poison.json`）、取消 `InitialNormalDisk` 泛化；新登记一项既有跨语言不一致（Python 允许集不含 `normal-admission.json`，Java 含之，未修）。
+- [设计定稿 v3](history/R09_C2_G0_DESIGN_2026-09-28.md)（修订 v2）、[残余阻断补正与设计复验](history/R09_C2_G0_RESIDUAL_BLOCKERS_2026-09-28.md)、[验收与阻断记录 v3](history/R09_C2_G0_ACCEPTANCE_2026-09-28.md)、[纠错记录](history/R09_C2_G0_CORRECTION_REVERIFY_2026-09-28.md)（已加导航与事实更正）。
+- **判定分级、不写“全部关闭”**：R1–R5 设计反例**已关闭或已具名保留**；**运行行为全部未验证**；B1 未实施、未授权。
+- R1：共同互斥点＝P3 协调锁——接纳的 S2 移入该临界区；**离线登记写侧改造**（先取 P3，锁内取 P2、做“无在途租约”检查并在锁内发布完成/UNKNOWN）；锁序固定 P3→P2→P5(瞬时)，`RecoveryControlLock` 改为按根、可嵌套、带层号逆序拒止。
+- R2：`authorityKind` 校验下沉到权威加载唯一入口（`purpose` 必填）＋`authorityKind × consumer` 允许表；**撤回并重写** v2“模式变更必先完成独占控制推进”的证明（`RecoveryClosedProjection.register()` 同形接受 rev1/QUIESCING 且只持共享租约）；真实关闭权威创建/切换并入同一 P3 协议（B9 实施）。
+- R3：取消“上下文缺席＝权限”——主数据源改为 `RecoveryRequestAdmittedDataSource`，**每个取连接必须解析到有效根**，无根/失效一律拒绝且**永不回退**；旧连接级路径改为显式命名、非 `@Primary` 的独立能力（105 语义逐字节保留）；补四个负例。
+- R4：`leaseRoot` 绑定进信任身份 v2＋`lease-root.json`（同 P3 必须同 P5）；`.pending`/损坏/缺进程记录/退役失败逐项定案；**退役失败＝立即隔离并 halt**（不变式：存活进程不存在已结束但未退役的租约）；接纳改为**前后两次探针**，线性化点＝后探针完成；明确 halt 终止整个 JVM（同进程在途操作一并终止）。残余具名两项：授权者直接改文件/库不在威胁模型内；`halt` 理论不可执行时退化为“租约仍在⇒仍拒绝”。
+- R5：Session 保存断言改按实际时序（不强求 FINALIZING 子操作）；过滤器顺序改用 Spring 注册配置（会话过滤器默认 `-2147483598`／`{ASYNC,ERROR,REQUEST}`，javap 证据）＋运行轨迹，并说明 `FilterRegistration` 无 order API；`acquire` 前置条件修正为“调用方须先持协调锁”（删除 `acquireLocked` 增量项）；P2 正常/UNKNOWN 文件区分；v1↔v2 差异如实更正；看板规模与章节指向修正；实施清单合并为 21 行完整表。
 
 ## 交付状态与下一步
-- **R09 C2 仍未实施**：B1（HTTP/Session 外层＋操作租约衔接＋孤儿阻断＋启动门）待独立授权；设计清单中的组件、`tools/r09-c2-b1-smoke.ps1`、`b1probe`、B1 测试与并发反例均未创建。
-- 移出 B1：`jobs/*` 与 Worker、各文件入口、渲染子进程、Flyway/Bootstrap 接线、**Session 清理路径**。
-- **下一步**：等用户对 B1 独立授权（范围见设计 §9，验收见设计 §10）；本轮止于纠错复验，不自动进入 B1。
+- **R09 C2 仍未实施**：B1（HTTP/Session 外层＋操作租约＋P5 孤儿阻断＋启动门）待独立授权；设计清单中的组件、`tools/r09-c2-b1-smoke.ps1`、`b1probe`、S1–S14 与 19 项场景均未创建/未执行。
+- 移出 B1：`jobs/*` 与 Worker、各文件入口、渲染子进程、Flyway/Bootstrap 接线、Session 清理路径、恢复链消费者接线。
+- **下一步**：等用户对 B1 独立授权（范围见设计 §9，验收见设计 §10）；本轮止于残余阻断补正，不自动进入 B1。
 
 ## 树、写权与环境
-- 主树 `D:/acrylic-pda-outbound` / `codex/development`；本轮输入 `40d3702`，工作区仅本轮文档改动；与 origin `0/0`；单写者已核（无 `.git/index.lock`、无其他进程引用本树、受控源码近 90 分钟 0 改动）。
-- 19330/19434/19437/23308/8080/8081/9090 无监听；19387＝DSH 应用、3306＝系统 mysqld、既有 Gradle daemon 保留未动；未分配 IT/SmokeRun/端口/数据库。
-- 共享树 `D:/acrylic-pda-worktrees/r06-e2a-migration` 保持 detached `ea4d166`、30 修改＋67 未跟踪＝97；状态列表哈希与本轮前一致；`dsh-handoff-20260928-ec4be3b` 的 138 条脏文件逐项重算哈希 **138/138 一致**；只读，未同步/清理/reset/提交/合并。
+- 主树 `D:/acrylic-pda-outbound` / `codex/development`；本轮输入 `da4d56a`＝实际远端；**修改前** status 为空、无 `.git/index.lock`、`0/0`、`diff --check` 通过；单写者已核（无其他进程引用本树、受控源码近 90 分钟 0 改动）。
+- 19330/19434/19437/23308/8080/8081/9090 无监听；19387＝DSH、3306＝系统 mysqld、既有 Gradle daemon 未动；未分配 IT/SmokeRun/端口/数据库。
+- 共享树 `r06-e2a-migration` 保持 detached `ea4d166`、30 修改＋67 未跟踪＝97；状态列表哈希与留档一致；138 项脏文件哈希逐项重算 **138/138 一致**（前后各核一次）；只读，未同步/清理/reset/提交/合并。
 
 ## 本轮实际验证
-- 实际运行：Git 基线与 status、`git diff --check`、共享树 97 条状态与 138 文件哈希逐项比对、监听/进程/写者核对、4 个依赖 jar 的 SHA-256 与 `javap` 只读反编译（会话过滤器层次与顺序、`commitSession` 位置、ERROR/ASYNC 默认跳过、`DEFAULT_CLEANUP_CRON` 与默认调度）、Python 协议侧只读核对、文档链接检查、事实块 `-Write` 后 `-Check`（当前区在 100 行/8000 字符内）。
-- **未运行**：编译、单测、IT、真实 HTTP、数据库供给与读写、完整应用冒烟、跨进程与断电实验、Linux 持久性、现场原资料组合。
+- 实际运行：修改前 Git/写者/监听快照、共享树与 138 项哈希前后对照、依赖 `javap` 只读反编译（会话过滤器顺序与提交位置、两个 `shouldNotFilter*` 默认值、`FilterRegistration` 无 order API、`SessionProperties$Servlet` 默认顺序与分派集、`DEFAULT_CLEANUP_CRON`）、Python 协议只读核对、正文/归档链接检查、章节引用与跨文档一致性检查、`git diff --check`、事实块 `-Write` 后 `-Check`（当前区在上限内）、暂存清单与提交编码复核。
+- **未运行**：编译、单测、IT、真实 HTTP、数据库供给与读写、完整应用冒烟、跨进程与故障进程实验、断电/Linux 持久性、现场原资料组合。
 
 ## 边界与未验
 - 零代码/迁移/契约/默认开关变更；未发布/部署/合 main/打标签；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`；未重开 D 扩测、A3、526、R07 抬头撤销。
-- 无新真实产品缺陷（本轮未做动态验证；B01–B06 均为设计与文档缺陷，已关闭）。
-- 未验保留：C1 首次插入提交丢回执、独立进程重启、真实网络故障、断电、Linux 持久性、现场原资料组合；C2 全部动态接线与组合验收；生产默认 Session 清理路径（未覆盖入口）；孤儿租约解除（未授权）。
+- 无新真实产品缺陷（本轮未做动态验证；问题均为设计与文档层面且已补正）。
+- 保留未覆盖/未授权/未验：生产默认 Session 清理路径（未覆盖入口）、孤儿租约解除（未授权）、Java/Python `normal-admission.json` 允许集差异（独立欠债，本轮不修）、C1 首次插入提交丢回执/独立进程重启/真实网络故障/断电/Linux 持久性/现场原资料组合、C2 全部动态与组合验收。
+- 证据时点更正：上一轮 `01-git-status.txt` 采集于该轮修改之后，不作为“前置干净”证据；本轮已在修改前落盘 `00-pre-status.txt`，不补造历史快照。
 <!-- CURRENT_STATE_END -->
