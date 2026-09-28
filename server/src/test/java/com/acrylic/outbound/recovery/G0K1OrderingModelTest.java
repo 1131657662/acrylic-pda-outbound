@@ -198,6 +198,44 @@ class G0K1OrderingModelTest {
             .isEqualTo("UNCONFIRMED_NO_CROSS_PROCESS_BASIS");
     }
 
+    @Test void requiredSchedulingOrdersAreAssertedFromEventTracesOnly() {
+        // ① final-read(false) < F1 < delegate（在途：本机重读无法关闭的窗口）
+        var t1 = new Trace();
+        var g1 = new LocalGate(t1, true, true);
+        assertThat(g1.enterEffect("c1", null, () -> g1.fence("after-final-read"))).isTrue();
+        assertThat(ordered(t1, "gate(c1) read2=false", "F1@", "delegate(c1)"))
+            .as("① 轨迹必须严格满足 final-read(false) < F1 < delegate：%s", t1.joined()).isTrue();
+
+        // ② F1 < new-read(true) < refuse（F1 之后的“新进入”调用）
+        var t2 = new Trace();
+        var g2 = new LocalGate(t2, true, false);
+        g2.fence("before-call");
+        assertThat(g2.enterEffect("c2", null, null)).isFalse();
+        assertThat(ordered(t2, "F1@", "gate(c2) read1=true", "refuse(c2)"))
+            .as("② 轨迹必须严格满足 F1 < new-read(true) < refuse：%s", t2.joined()).isTrue();
+
+        // ③ read1(false) < F1 < read2(true) < refuseAfterRecheck
+        var t3 = new Trace();
+        var g3 = new LocalGate(t3, true, true);
+        assertThat(g3.enterEffect("c3", () -> g3.fence("after-read1"), null)).isFalse();
+        assertThat(ordered(t3, "gate(c3) read1=false", "F1@", "gate(c3) read2=true", "refuseAfterRecheck(c3)"))
+            .as("③ 轨迹必须严格满足 read1(false) < F1 < read2(true) < refuseAfterRecheck：%s", t3.joined()).isTrue();
+
+        System.out.println("[G0K1-order] required orders (trace-only): ①" + t1.joined()
+            + " | ②" + t2.joined() + " | ③" + t3.joined());
+    }
+
+    /** 严格递增的次序检查：每个前缀都必须存在且按给定顺序出现。 */
+    private static boolean ordered(Trace trace, String... prefixes) {
+        int previous = -1;
+        for (String prefix : prefixes) {
+            int index = trace.indexOfPrefix(prefix);
+            if (index < 0 || index <= previous) return false;
+            previous = index;
+        }
+        return true;
+    }
+
     // ------------------------------------------------------------------ 扫描窗口用例
 
     @Test void ownerDeathBeforeItsRecordEvaluationIsDetectedAsOrphan() {

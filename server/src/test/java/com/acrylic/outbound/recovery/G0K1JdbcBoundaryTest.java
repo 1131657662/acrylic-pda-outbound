@@ -287,6 +287,134 @@ class G0K1JdbcBoundaryTest {
             .isEqualTo(gate("execute", "UPDATE t SET v=1", model, autoCommit, false, null));
     }
 
+    @Test void callableStatementAndLargeBatchRowsFollowTheSameInformationFlow() {
+        var autoCommit = new CandidateGate.ConnState(true, false);
+        var call = new CandidateGate.StatementModel();
+        call.bind("{call p(1)}");
+        assertThat(gate("callableExecute", null, call, autoCommit, false, null))
+            .as("CallableStatement：样本分类器无法判定调用体 ⇒ 委托前拒绝（保守；真实语义未验）")
+            .isEqualTo(CandidateGate.Decision.REFUSE_UNCLASSIFIED);
+
+        var large = new CandidateGate.StatementModel();
+        assertThat(gate("addBatch", "SELECT 1", large, autoCommit, false, null)).isEqualTo(CandidateGate.Decision.NO_GATE);
+        assertThat(gate("executeLargeBatch", null, large, autoCommit, false, null)).isEqualTo(CandidateGate.Decision.NO_GATE);
+        gate("addBatch", "UPDATE t SET v=1", large, autoCommit, false, null);
+        assertThat(gate("executeLargeBatch", null, large, autoCommit, false, null)).isEqualTo(CandidateGate.Decision.GATE);
+        assertThat(gate("executeLargeBatch", null, large, autoCommit, true, null))
+            .as("executeLargeBatch 同样在执行时重新判定围栏").isEqualTo(CandidateGate.Decision.REFUSE_FENCED);
+        System.out.println("[G0K1-flow] callableRow=REFUSE_UNCLASSIFIED (unverified call body); largeBatchRows=re-checked");
+    }
+
+    @Test void classifierInputsAreSqlSamplesNotPrecomputedBooleans() {
+        assertThat(CandidateGate.classifySql("SELECT 1 FROM dual")).isEqualTo(CandidateGate.SqlKind.READ_ONLY);
+        assertThat(CandidateGate.classifySql("WITH x AS (SELECT 1) SELECT * FROM x")).isEqualTo(CandidateGate.SqlKind.READ_ONLY);
+        assertThat(CandidateGate.classifySql("INSERT INTO t VALUES(1)")).isEqualTo(CandidateGate.SqlKind.WRITE);
+        assertThat(CandidateGate.classifySql("COMMIT")).isEqualTo(CandidateGate.SqlKind.COMMIT_CLASS);
+        assertThat(CandidateGate.classifySql("SET AUTOCOMMIT=1")).isEqualTo(CandidateGate.SqlKind.COMMIT_CLASS);
+
+        // 判定输入只有“方法名 + SQL 文本 + 语句/连接状态”；同一输入在同一状态下结论唯一
+        var state = new CandidateGate.ConnState(true, false);
+        assertThat(gate("execute", "UPDATE t SET v=1", new CandidateGate.StatementModel(), state, false, null))
+            .isEqualTo(CandidateGate.Decision.GATE);
+        assertThat(gate("execute", "UPDATE t SET v=1", new CandidateGate.StatementModel(), state, false, null))
+            .isEqualTo(CandidateGate.Decision.GATE);
+        assertThat(CandidateGate.gateSetAutoCommit(false, new CandidateGate.StatementModel(), state, false, null))
+            .isEqualTo(CandidateGate.Decision.NO_GATE);
+        System.out.println("[G0K1-flow] classifier inputs are SQL text + call shape + state only");
+    }
+
+    @Test void classifierDeclaresWhichFormsRemainUnverified() {
+        assertThat(CandidateGate.classifySql("{call p(1)}")).isEqualTo(CandidateGate.SqlKind.UNKNOWN);
+        assertThat(CandidateGate.classifySql("SELECT 1; UPDATE t SET v=1")).isEqualTo(CandidateGate.SqlKind.UNKNOWN);
+        assertThat(CandidateGate.classifySql("/* hint */ SELECT 1")).isEqualTo(CandidateGate.SqlKind.UNKNOWN);
+        assertThat(CandidateGate.classifySql("-- note\nSELECT 1")).isEqualTo(CandidateGate.SqlKind.UNKNOWN);
+        assertThat(CandidateGate.classifySql("SET SESSION x=1")).isEqualTo(CandidateGate.SqlKind.UNKNOWN);
+        assertThat(CandidateGate.classifySql("ALTER TABLE t ADD c INT")).isEqualTo(CandidateGate.SqlKind.WRITE);
+        assertThat(CandidateGate.classifySql("TRUNCATE t")).isEqualTo(CandidateGate.SqlKind.WRITE);
+        assertThat(CandidateGate.classifySql("START TRANSACTION")).isEqualTo(CandidateGate.SqlKind.COMMIT_CLASS);
+        assertThat(CandidateGate.classifySql("SOME VENDOR SYNTAX")).isEqualTo(CandidateGate.SqlKind.UNKNOWN);
+
+        // 声明：以下形态的**真实驱动语义**未验；样本分类器一律保守拒绝（不可判定 ⇒ UNKNOWN）
+        var declaredUnverified = List.of("CallableStatement 调用体", "多语句", "带注释语句", "会话级 SET",
+            "厂商方言与 DDL 变体", "驱动在 autoCommit 切换时的真实隐式提交时机");
+        assertThat(declaredUnverified).isNotEmpty();
+        System.out.println("[G0K1-flow] declared unverified forms (conservatively refused, real driver semantics NOT verified): "
+            + declaredUnverified);
+    }
+
+    @Test void coverageMatrixMapsEveryRuleRowAndEveryTestMethod() {
+        var testMethods = testMethodNames();
+        assertThat(testMethods).as("测试方法名必须唯一").doesNotHaveDuplicates();
+        for (var row : RuleRow.values()) {
+            var names = COVERAGE.get(row);
+            assertThat(names).as("规则行 %s 必须至少有一个覆盖测试", row).isNotNull().isNotEmpty();
+            for (String name : names) {
+                assertThat(testMethods).as("规则行 %s 引用的测试方法必须存在：%s", row, name).contains(name);
+            }
+        }
+        for (String method : testMethods) {
+            assertThat(COVERAGE.values().stream().anyMatch(names -> names.contains(method)))
+                .as("测试方法 %s 必须至少映射一条规则行或并发性质", method).isTrue();
+        }
+        System.out.println("[G0K1-flow] coverage: rules=" + RuleRow.values().length
+            + " testMethods=" + testMethods.size() + " allMapped=true");
+    }
+
+    /** 规则行 / 并发性质：与设计 §4.2 冻结表逐行对应。 */
+    enum RuleRow {
+        CONNECTION_COMMIT, SET_AUTOCOMMIT_TRUE, SET_AUTOCOMMIT_FALSE,
+        STATEMENT_EXECUTE_VISIBLE_SQL, PREPARED_NO_ARG_BOUND_SQL, CALLABLE_NO_ARG_BOUND_SQL,
+        PREPARE_BINDING_PRESENT, PREPARE_BINDING_MISSING,
+        BATCH_ADD, BATCH_EXECUTE, BATCH_EXECUTE_LARGE, BATCH_CLEAR,
+        MANUAL_TX_RAW_COMMIT_PRIORITY, RESULTSET_MUTATOR, RESULTSET_READ_WHITELIST, RESULTSET_UNKNOWN_METHOD,
+        EXECUTE_BATCH_RECHECKS_FENCE, ROW_MAPPING_UNIQUENESS, CLASSIFIER_INPUT_IS_SQL_TEXT,
+        CLASSIFIER_DECLARED_UNVERIFIED_FORMS
+    }
+
+    /** 唯一映射：规则行 → 覆盖它的测试方法（双向检查见 coverageMatrixMapsEveryRuleRowAndEveryTestMethod）。 */
+    static final Map<RuleRow, List<String>> COVERAGE = Map.ofEntries(
+        Map.entry(RuleRow.CONNECTION_COMMIT, List.of("existingProxyDelegatesConnectionLevelEffectsWithoutAnyGate")),
+        Map.entry(RuleRow.SET_AUTOCOMMIT_TRUE,
+            List.of("autoCommitResetIsDelegatedAndTheHookRunsOnlyAfterTheDelegate")),
+        Map.entry(RuleRow.SET_AUTOCOMMIT_FALSE,
+            List.of("oneActualCallCannotGetDifferentDecisionsFromDifferentEnums")),
+        Map.entry(RuleRow.STATEMENT_EXECUTE_VISIBLE_SQL,
+            List.of("sqlTextIsVisibleOnExecuteButNotOnNoArgPreparedExecutionOrBatch")),
+        Map.entry(RuleRow.PREPARED_NO_ARG_BOUND_SQL, List.of("prepareBindingIsUsedForNoArgExecutionAndMissingBindingIsRefused")),
+        Map.entry(RuleRow.CALLABLE_NO_ARG_BOUND_SQL,
+            List.of("callableStatementAndLargeBatchRowsFollowTheSameInformationFlow",
+                "callableStatementIsWrappedAndItsNoArgExecutionCarriesNoSql")),
+        Map.entry(RuleRow.PREPARE_BINDING_PRESENT, List.of("prepareBindingIsUsedForNoArgExecutionAndMissingBindingIsRefused")),
+        Map.entry(RuleRow.PREPARE_BINDING_MISSING, List.of("prepareBindingIsUsedForNoArgExecutionAndMissingBindingIsRefused")),
+        Map.entry(RuleRow.BATCH_ADD, List.of("batchQueueDrivesTheDecisionAndUnknownItemsAreRefused")),
+        Map.entry(RuleRow.BATCH_EXECUTE, List.of("fenceAfterAddBatchIsRecheckedAtExecuteBatchAndMissingRecheckIsDetectable")),
+        Map.entry(RuleRow.BATCH_EXECUTE_LARGE, List.of("callableStatementAndLargeBatchRowsFollowTheSameInformationFlow")),
+        Map.entry(RuleRow.BATCH_CLEAR, List.of("clearBatchDropsThePreviousClassification")),
+        Map.entry(RuleRow.MANUAL_TX_RAW_COMMIT_PRIORITY,
+            List.of("rawCommitInManualTransactionOutranksTheExemption",
+                "rawCommitSqlIsDelegatedEvenWhenAutoCommitIsDisabled")),
+        Map.entry(RuleRow.RESULTSET_MUTATOR,
+            List.of("unknownResultSetMethodIsRefusedBeforeDelegation",
+                "updatableResultSetMutatorsAndUnknownResultSetMethodsAreDelegated")),
+        Map.entry(RuleRow.RESULTSET_READ_WHITELIST,
+            List.of("unknownResultSetMethodIsRefusedBeforeDelegation",
+                "updatableResultSetMutatorsAndUnknownResultSetMethodsAreDelegated")),
+        Map.entry(RuleRow.RESULTSET_UNKNOWN_METHOD,
+            List.of("unknownResultSetMethodIsRefusedBeforeDelegation",
+                "updatableResultSetMutatorsAndUnknownResultSetMethodsAreDelegated")),
+        Map.entry(RuleRow.EXECUTE_BATCH_RECHECKS_FENCE, List.of("fenceAfterAddBatchIsRecheckedAtExecuteBatchAndMissingRecheckIsDetectable")),
+        Map.entry(RuleRow.ROW_MAPPING_UNIQUENESS,
+            List.of("coverageMatrixMapsEveryRuleRowAndEveryTestMethod",
+                "oneActualCallCannotGetDifferentDecisionsFromDifferentEnums")),
+        Map.entry(RuleRow.CLASSIFIER_INPUT_IS_SQL_TEXT, List.of("classifierInputsAreSqlSamplesNotPrecomputedBooleans")),
+        Map.entry(RuleRow.CLASSIFIER_DECLARED_UNVERIFIED_FORMS, List.of("classifierDeclaresWhichFormsRemainUnverified")));
+
+    private static List<String> testMethodNames() {
+        return java.util.Arrays.stream(G0K1JdbcBoundaryTest.class.getDeclaredMethods())
+            .filter(method -> method.isAnnotationPresent(org.junit.jupiter.api.Test.class))
+            .map(java.lang.reflect.Method::getName).sorted().toList();
+    }
+
     // ------------------------------------------------------------------ 辅助
 
     private static CandidateGate.Decision gate(String method, String sql, CandidateGate.StatementModel model,

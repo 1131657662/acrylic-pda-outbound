@@ -7,33 +7,44 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * G0-K1 定向反例（测试侧第 2 类）：<b>围栏状态迁移模型</b>。
+ * G0-K1 定向反例（测试侧第 2 类）：<b>按“观察时状态”计算的围栏矩阵模型</b>。
  *
- * <p>本类按“状态迁移”而不是“历史动作计数”计算阻断依据：模型保存每个进程的**终态**（存活、
- * 进程记录锁、围栏共享锁、租约记录是否存在），观察者在自己的执行时刻**只看终态**。
- * 确认终止必须释放该进程模型中的全部锁；终止后不得再执行本机效果门。
+ * <p>模型只保存**观察时刻的终态**（进程存活、进程记录锁、`fenced.lock` 共享锁、租约记录、本机 FENCED），
+ * 观察者据此计算跨进程依据，<b>不累计历史成功动作</b>。每条跨进程依据都带必要前提：
+ * <ul>
+ *   <li>`fenced.lock` 依据：**观察时进程仍存活且共享锁仍被持有**（“本轮曾确认取得过”不算）；</li>
+ *   <li>孤儿依据：**观察时进程记录锁已释放且租约仍未退役**；</li>
+ *   <li>终止依据：**观察时进程已确认终止且租约仍未退役**；F5 已确认时同一进程的共享锁必然已被释放，
+ *       因此不得再并列“共享锁仍被持有”。</li>
+ * </ul>
  *
- * <p>本机拒绝不通过 `local = true` 这类赋值证明，而是通过**调用入口与委托轨迹**验证。
- * 模型只在测试源码内，不修改 src/main、不连接数据库、不启动服务、不执行真实 halt/kill。
+ * <p>本机拒绝的效力**不在此类用赋值断言**，而由 {@link G0K1OrderingModelTest} 的调用入口＋事件轨迹用例证明；
+ * 本类只记录本机 FENCED 状态并给出指向。模型仅在测试源码内：不改 src/main、不连接数据库、不启动服务、
+ * 不执行真实 halt/kill，也<b>不</b>验证真实 {@code FileLock}、真实进程终止或其他 JVM 的可见性。
  */
 class G0K1FenceMatrixTest {
 
     // ------------------------------------------------------------------ 状态迁移模型
 
-    /** 一个进程的模型状态；所有迁移都显式，且终止释放全部锁。 */
+    /** 一个进程在观察时刻的状态；所有迁移都显式，终止释放全部锁并禁止后续动作。 */
     static final class ProcessState {
         private boolean alive = true;
         private boolean recordLockHeld = true;
         private boolean fenceLockHeld = false;
         private boolean leasesPresent = true;
+        private boolean locallyFenced = false;
 
         boolean alive() { return alive; }
         boolean recordLockHeld() { return recordLockHeld; }
         boolean fenceLockHeld() { return fenceLockHeld; }
         boolean leasesPresent() { return leasesPresent; }
+        boolean locallyFenced() { return locallyFenced; }
+
+        /** F1：本机内存围栏置位（其拒绝效力见 G0K1OrderingModelTest 的轨迹用例）。 */
+        void markFenced() { locallyFenced = true; }
 
         /** F1′：取得 fenced.lock 共享锁（共享模式，可与其它围栏进程共存）。 */
-        void fenceSignal(String ignored) {
+        void fenceSignal() {
             requireAlive("fenceSignal");
             fenceLockHeld = true;
         }
@@ -44,7 +55,7 @@ class G0K1FenceMatrixTest {
             recordLockHeld = false;
         }
 
-        /** 正常收尾：退役租约记录（仅在仍在运行时由本进程执行）。 */
+        /** 正常收尾：退役租约记录。 */
         void retireLeases() {
             requireAlive("retireLeases");
             leasesPresent = false;
@@ -58,9 +69,7 @@ class G0K1FenceMatrixTest {
         }
 
         /** 负控专用：故意违反“终止释放全部锁”的不变式。 */
-        void terminateWithoutReleasing() {
-            alive = false;
-        }
+        void terminateWithoutReleasing() { alive = false; }
 
         private void requireAlive(String action) {
             if (!alive) throw new IllegalStateException("FENCED/TERMINATED 进程不得再执行 " + action);
@@ -75,19 +84,21 @@ class G0K1FenceMatrixTest {
         }
     }
 
-    /** 观察者：只看观察时刻的终态，不数历史成功动作。 */
+    /** 观察者：只看观察时刻的终态。 */
     static final class Observer {
+        static final String FENCE_PRECONDITION = "观察时仍存活且已确认取得 fenced.lock 共享锁并仍持有";
+
         static List<String> basis(ProcessState state) {
             var evidence = new ArrayList<String>();
             if (!state.alive()) {
                 if (state.leasesPresent()) {
-                    evidence.add("进程已确认终止且租约未退役 ⇒ 逐记录探针判孤儿");
+                    evidence.add("进程已确认终止且租约未退役 ⇒ 逐记录探针判孤儿（终止时该进程全部锁已释放，"
+                        + "因此不再并列围栏通道依据）");
                 }
-                // 终止后 fenceLock 必为 false（不变式），不得再出现“共享锁仍被持有”
                 return List.copyOf(evidence);
             }
             if (state.fenceLockHeld()) {
-                evidence.add("fenced.lock 共享锁仍被持有 ⇒ 门的独占 tryLock 必失败");
+                evidence.add(FENCE_PRECONDITION + " ⇒ 门的独占 tryLock 必失败");
             }
             if (!state.recordLockHeld() && state.leasesPresent()) {
                 evidence.add("进程记录锁已释放且租约未退役 ⇒ 逐记录探针判孤儿");
@@ -98,138 +109,203 @@ class G0K1FenceMatrixTest {
         static String outcome(List<String> basis) {
             return basis.isEmpty() ? "UNCONFIRMED_NO_CROSS_PROCESS_BASIS" : "BLOCKED";
         }
-    }
 
-    /** 本机效果门模型：拒绝必须由调用入口＋轨迹证明。 */
-    static final class LocalGate {
-        private final List<String> trace = new ArrayList<>();
-        private final boolean guardEnabled;
-        private boolean fenced;
-        LocalGate(boolean guardEnabled) { this.guardEnabled = guardEnabled; }
-        void fence() { fenced = true; trace.add("F1"); }
-        List<String> trace() { return List.copyOf(trace); }
-        /** true＝允许委托；false＝拒绝。 */
-        boolean enterEffect(String callId) {
-            trace.add("gate(" + callId + ") readFenced=" + fenced);
-            if (fenced && guardEnabled) { trace.add("refuse(" + callId + ")"); return false; }
-            trace.add("delegate(" + callId + ")");       // 负控：守卫关闭时此处即为反例
-            return true;
+        static String followUp(ProcessState state, List<String> basis) {
+            if (basis.isEmpty()) {
+                return "跨进程无确认依据 ⇒ 必须由运维外部隔离（停机/隔离该实例）；这不是已实现能力";
+            }
+            return "跨进程：后续接纳与效果在下一次观察处拒绝";
         }
     }
 
-    // ------------------------------------------------------------------ 8 种确认组合（按状态迁移构造）
+    /** 一行结论：本机结果、跨进程依据、后续唯一结果。 */
+    record Row(String label, boolean localFenceSet, String localResult, List<String> crossBasis, String outcome,
+               String followUp) { }
 
-    private record Row(ProcessState state, String label, List<String> basis, String outcome) { }
+    private static Row evaluate(String label, ProcessState state) {
+        requireTerminationReleasesAllLocks(state, "evaluate(" + label + ")");
+        var basis = Observer.basis(state);
+        String local = state.locallyFenced()
+            ? "本机 FENCED 已置：F1 之后**新进入**的调用被拒（效力由 G0K1OrderingModelTest 的调用入口＋轨迹用例证明，"
+                + "此处不用赋值断言）"
+            : "本机 FENCED 未置";
+        return new Row(label, state.locallyFenced(), local, basis, Observer.outcome(basis),
+            Observer.followUp(state, basis));
+    }
 
-    private static Row combination(boolean f1p, boolean f3, boolean f5) {
+    private static ProcessState state(boolean f1p, boolean f3, boolean f5) {
         var state = new ProcessState();
-        if (f1p) state.fenceSignal("F1′");
+        state.markFenced();
+        if (f1p) state.fenceSignal();
         if (f3) state.releaseRecordLock();
         if (f5) state.terminate();
-        requireTerminationReleasesAllLocks(state, "combination(f1p=" + f1p + ",f3=" + f3 + ",f5=" + f5 + ")");
-        var basis = Observer.basis(state);
-        return new Row(state, "F1′=" + (f1p ? "ok" : "unconfirmed") + ",F3=" + (f3 ? "ok" : "unconfirmed")
-            + ",F5=" + (f5 ? "ok" : "unconfirmed"), basis, Observer.outcome(basis));
+        return state;
     }
 
-    @Test void terminationReleasesEveryLockInTheModel() {
-        var state = new ProcessState();
-        state.fenceSignal("F1′");
-        state.terminate();
+    // ------------------------------------------------------------------ 必须分别验证的四种状态
 
-        assertThat(state.alive()).isFalse();
-        assertThat(state.fenceLockHeld()).as("终止后不得仍持有围栏共享锁").isFalse();
-        assertThat(state.recordLockHeld()).as("终止后不得仍持有进程记录锁").isFalse();
-        requireTerminationReleasesAllLocks(state, "terminationReleasesEveryLockInTheModel");
-        assertThatThrownBy(() -> state.fenceSignal("again")).isInstanceOf(IllegalStateException.class);
-        assertThatThrownBy(() -> state.releaseRecordLock()).isInstanceOf(IllegalStateException.class);
-    }
+    @Test void f1pConfirmedAndAliveIsTheBasisThatRequiresStillHeld() {
+        var state = state(true, false, false);
+        var row = evaluate("F1′ 已确认且进程仍存活", state);
 
-    @Test void basisIsComputedFromTheFinalStateNotFromHistoricalSuccesses() {
-        // F1′、F3、F5 都曾确认成功；终态是“已终止且租约未退役”
-        var row = combination(true, true, true);
-
-        assertThat(row.basis()).hasSize(1);
-        assertThat(row.basis().getFirst()).contains("已确认终止").contains("孤儿");
-        assertThat(row.basis()).noneMatch(text -> text.contains("共享锁"));
-        assertThat(row.basis()).noneMatch(text -> text.contains("记录锁已释放且"));
+        assertThat(state.alive()).isTrue();
+        assertThat(state.fenceLockHeld()).isTrue();
+        assertThat(row.crossBasis()).hasSize(1);
+        assertThat(row.crossBasis().getFirst()).contains(Observer.FENCE_PRECONDITION);
         assertThat(row.outcome()).isEqualTo("BLOCKED");
-        System.out.println("[G0K1-fence] final-state basis (" + row.label() + ") = " + row.basis());
+        assertThat(row.localResult()).contains("新进入").contains("轨迹用例证明");
+        System.out.println("[G0K1-fence] " + row);
     }
 
-    @Test void everyConfirmationCombinationYieldsAStateBasedOutcome() {
-        var rows = List.of(combination(true, true, true), combination(true, true, false),
-            combination(true, false, true), combination(true, false, false),
-            combination(false, true, true), combination(false, true, false),
-            combination(false, false, true), combination(false, false, false));
+    @Test void f3ConfirmedMeansTheRecordLockIsActuallyReleased() {
+        var state = state(false, true, false);
+        var row = evaluate("F3 已确认", state);
+
+        assertThat(state.recordLockHeld()).as("F3 已确认 ⇒ 进程记录锁确实已释放").isFalse();
+        assertThat(state.leasesPresent()).isTrue();
+        assertThat(row.crossBasis()).hasSize(1);
+        assertThat(row.crossBasis().getFirst()).contains("记录锁已释放").contains("孤儿");
+        assertThat(row.outcome()).isEqualTo("BLOCKED");
+        System.out.println("[G0K1-fence] " + row);
+    }
+
+    @Test void f5ConfirmedMeansTheProcessIsActuallyTerminatedAndNoLockIsStillHeld() {
+        var state = state(true, false, true);
+        var row = evaluate("F5 已确认（此前 F1′ 也曾确认）", state);
+
+        assertThat(state.alive()).as("F5 已确认 ⇒ 进程确实已终止").isFalse();
+        assertThat(state.fenceLockHeld()).as("终止后不得仍持有共享锁").isFalse();
+        assertThat(state.recordLockHeld()).isFalse();
+        assertThat(row.crossBasis()).hasSize(1);
+        assertThat(row.crossBasis().getFirst()).contains("已确认终止").doesNotContain(Observer.FENCE_PRECONDITION);
+        assertThat(row.crossBasis()).noneMatch(entry -> entry.contains("仍被持有"));
+        assertThat(row.outcome()).isEqualTo("BLOCKED");
+        System.out.println("[G0K1-fence] " + row);
+    }
+
+    @Test void noneConfirmedKeepsTheBlockerLabelAndEmptyBasis() {
+        var state = state(false, false, false);
+        var row = evaluate("F1′/F3/F5 均未确认", state);
+
+        assertThat(state.alive()).isTrue();
+        assertThat(state.fenceLockHeld()).isFalse();
+        assertThat(state.recordLockHeld()).isTrue();
+        assertThat(row.crossBasis()).isEmpty();
+        assertThat(row.outcome()).isEqualTo("UNCONFIRMED_NO_CROSS_PROCESS_BASIS");
+        assertThat(row.followUp()).contains("外部隔离").contains("不是已实现能力");
+        System.out.println("[G0K1-fence] " + row);
+    }
+
+    // ------------------------------------------------------------------ 观察时状态语义
+
+    @Test void fenceBasisDisappearsOnceTheProcessIsTerminated() {
+        var state = state(true, false, false);
+        assertThat(Observer.basis(state)).hasSize(1);
+
+        state.terminate();                       // “本轮曾确认取得过共享锁”不得继续作为依据
+        var basis = Observer.basis(state);
+        assertThat(basis).hasSize(1);
+        assertThat(basis.getFirst()).doesNotContain(Observer.FENCE_PRECONDITION);
+        assertThat(basis).noneMatch(entry -> entry.contains("仍被持有"));
+        System.out.println("[G0K1-fence] after terminate: " + basis);
+    }
+
+    @Test void everyConfirmationCombinationYieldsAnObservationTimeOutcome() {
+        var rows = List.of(
+            evaluate("111", state(true, true, true)), evaluate("110", state(true, true, false)),
+            evaluate("101", state(true, false, true)), evaluate("100", state(true, false, false)),
+            evaluate("011", state(false, true, true)), evaluate("010", state(false, true, false)),
+            evaluate("001", state(false, false, true)), evaluate("000", state(false, false, false)));
 
         for (Row row : rows) {
-            if (row.basis().isEmpty()) {
-                assertThat(row.outcome()).as("%s：无终态依据 ⇒ 必须保留为阻断项", row.label())
+            if (row.crossBasis().isEmpty()) {
+                assertThat(row.outcome()).as("%s：观察时无依据 ⇒ 保留为阻断项", row.label())
                     .isEqualTo("UNCONFIRMED_NO_CROSS_PROCESS_BASIS");
             } else {
-                assertThat(row.outcome()).as("%s：终态存在可见依据 ⇒ 阻断", row.label()).isEqualTo("BLOCKED");
+                assertThat(row.outcome()).as("%s：观察时有依据 ⇒ 阻断", row.label()).isEqualTo("BLOCKED");
+                for (String entry : row.crossBasis()) {
+                    assertThat(entry).as("每条依据都必须带观察时前提").matches(
+                        ".*(观察时仍存活|已确认终止|已释放).*");
+                }
             }
+            assertThat(row.localResult()).isNotBlank();
+            assertThat(row.followUp()).isNotBlank();
         }
-        System.out.println("[G0K1-fence] 8 组合（终态依据）："
-            + rows.stream().map(row -> row.label() + "=" + row.basis().size()).toList());
-    }
-
-    @Test void allUnconfirmedKeepsTheBlockerLabelAndBasisIsEmpty() {
-        var row = combination(false, false, false);
-
-        assertThat(row.state().alive()).isTrue();
-        assertThat(row.state().recordLockHeld()).as("F3 未确认 ⇒ 记录锁仍持有 ⇒ 属在途，不阻断").isTrue();
-        assertThat(row.basis()).isEmpty();
-        assertThat(row.outcome()).isEqualTo("UNCONFIRMED_NO_CROSS_PROCESS_BASIS");
+        System.out.println("[G0K1-fence] 8 组合（观察时依据条数）："
+            + rows.stream().map(row -> row.label() + "=" + row.crossBasis().size()).toList());
     }
 
     @Test void retiredLeasesAfterTerminationGiveNoBasisAndAreNotAGap() {
         var state = new ProcessState();
-        state.retireLeases();          // 正常收尾先退役租约
-        state.terminate();             // 再终止
+        state.markFenced();
+        state.retireLeases();
+        state.terminate();
 
         assertThat(Observer.basis(state)).isEmpty();
         assertThat(Observer.outcome(Observer.basis(state))).isEqualTo("UNCONFIRMED_NO_CROSS_PROCESS_BASIS");
-        // 这是“正常完成 + 进程退出”的干净路径：没有未退役租约，因此没有需要阻断的对象。
+        // 正常完成 + 进程退出：没有未退役租约，因此没有需要阻断的对象。
     }
 
-    // ------------------------------------------------------------------ 本机拒绝与负控
+    // ------------------------------------------------------------------ 不变式与负控
 
-    @Test void localRefusalIsVerifiedByCallEntryAndTraceNotByAFlag() {
-        var gate = new LocalGate(true);
-        gate.fence();
+    @Test void terminationReleasesEveryLockAndForbidsFurtherActions() {
+        var state = new ProcessState();
+        state.fenceSignal();
+        state.terminate();
 
-        assertThat(gate.enterEffect("c2")).isFalse();
-        assertThat(gate.trace()).containsExactly("F1", "gate(c2) readFenced=true", "refuse(c2)");
-        assertThat(gate.trace()).noneMatch(event -> event.startsWith("delegate"));
+        assertThat(state.fenceLockHeld()).isFalse();
+        assertThat(state.recordLockHeld()).isFalse();
+        requireTerminationReleasesAllLocks(state, "terminationReleasesEveryLockAndForbidsFurtherActions");
+        assertThatThrownBy(state::fenceSignal).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(state::releaseRecordLock).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(state::retireLeases).isInstanceOf(IllegalStateException.class);
     }
 
-    @Test void guardBypassIsDetectedByTheTrace() {
-        var unguarded = new LocalGate(false);
-        unguarded.fence();
-        assertThat(unguarded.enterEffect("c2")).as("负控：关闭守卫后调用进入委托 ⇒ 反例可达").isTrue();
-        assertThat(unguarded.trace()).containsExactly("F1", "gate(c2) readFenced=true", "delegate(c2)");
-
-        var restored = new LocalGate(true);
-        restored.fence();
-        assertThat(restored.enterEffect("c2")).isFalse();
-        assertThat(restored.trace()).contains("refuse(c2)").noneMatch(event -> event.startsWith("delegate"));
-        System.out.println("[G0K1-fence] negative control: " + unguarded.trace() + " | restored: " + restored.trace());
-    }
-
-    @Test void terminationInvariantDetectsARetainedLock() {
+    @Test void negativeControlTerminationInvariantDetectsARetainedLock() {
         var bad = new ProcessState();
-        bad.fenceSignal("F1′");
-        bad.terminateWithoutReleasing();      // 负控：故意保留锁状态
+        bad.fenceSignal();
+        bad.terminateWithoutReleasing();
 
         assertThatThrownBy(() -> requireTerminationReleasesAllLocks(bad, "negative-control"))
             .isInstanceOf(AssertionError.class).hasMessageContaining("仍有锁被持有");
 
         var good = new ProcessState();
-        good.fenceSignal("F1′");
+        good.fenceSignal();
         good.terminate();
         requireTerminationReleasesAllLocks(good, "restored");
-        System.out.println("[G0K1-fence] termination invariant: retained-lock detected, restored run passes");
+        System.out.println("[G0K1-fence] negative control (terminateWithoutReleasing) detected; restored run passes");
+    }
+
+    @Test void negativeControlGuardBypassDelegatesAndIsDetectedByTheTrace() {
+        var unguarded = new LocalGateProbe(false);
+        unguarded.fence();
+        assertThat(unguarded.enterEffect("c2")).isTrue();
+        assertThat(unguarded.trace()).containsExactly("F1", "gate(c2) readFenced=true", "delegate(c2)");
+
+        var restored = new LocalGateProbe(true);
+        restored.fence();
+        assertThat(restored.enterEffect("c2")).isFalse();
+        assertThat(restored.trace()).containsExactly("F1", "gate(c2) readFenced=true", "refuse(c2)");
+        System.out.println("[G0K1-fence] negative control (guard removed): " + unguarded.trace()
+            + " | restored: " + restored.trace());
+    }
+
+    /**
+     * 本机门的最小探针，仅用于负控：证明“撤去守卫后仍会委托”可被轨迹检出。
+     * 正向结论（F1 之后新进入必拒）以 {@link G0K1OrderingModelTest} 的调度用例为准。
+     */
+    static final class LocalGateProbe {
+        private final List<String> trace = new ArrayList<>();
+        private final boolean guardEnabled;
+        private boolean fenced;
+        LocalGateProbe(boolean guardEnabled) { this.guardEnabled = guardEnabled; }
+        void fence() { fenced = true; trace.add("F1"); }
+        List<String> trace() { return List.copyOf(trace); }
+        boolean enterEffect(String callId) {
+            trace.add("gate(" + callId + ") readFenced=" + fenced);
+            if (fenced && guardEnabled) { trace.add("refuse(" + callId + ")"); return false; }
+            trace.add("delegate(" + callId + ")");
+            return true;
+        }
     }
 }
