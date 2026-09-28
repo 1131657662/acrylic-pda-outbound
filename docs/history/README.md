@@ -1,6 +1,7 @@
 # 历史归档
 
-- [R09_C1_REVERIFY_2026-09-28.md](R09_C1_REVERIFY_2026-09-28.md)：07ddf93修复原生参数/扫描，6类argv逐字回读通过；第2次完整应用冒烟已通过，真实C1验收另行记录。
+- [R09_C1_REVERIFY_2026-09-28.md](R09_C1_REVERIFY_2026-09-28.md)：07ddf93修复参数/同类扫描、冒烟2绿；559缺PROCESS红保留，560真HTTP/真MySQL与105连接回归通过，124表原事实守恒；列上下文重启/故障注入/现场等精确边界，C2待授权。
+- [C1真实验收前看板原文](ORCHESTRATION_STATE_before_R09_C1_HTTP_ACCEPTANCE_2026-09-28.md)：保存冒烟已绿、尚未执行559的断点。
 - [C1冒烟通过前看板原文](ORCHESTRATION_STATE_before_R09_C1_SMOKE_PASS_2026-09-28.md)：保存脚本修复已完成、尚未启动的断点。
 - [C1脚本修复/复验前看板原文](ORCHESTRATION_STATE_before_R09_C1_REVERIFY_2026-09-28.md)：保留上轮准备失败的完整断点，不恢复历史指令。
 
