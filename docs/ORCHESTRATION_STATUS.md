@@ -6,20 +6,21 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 68a43f8
-dirty_entries: 4
+head: 3ef1715
+dirty_entries: 7
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 ```
 <!-- FACTS_END -->
 
-本页是唯一断点，源码版本事实只见生成块。前一阶段已[原文归档](history/ORCHESTRATION_STATE_before_D_HEADER_VERIFIED_2026-09-28.md)；生成后文档提交HEAD以Git为准，不恢复历史指令。
+本页是唯一断点，源码版本事实只见生成块。前一阶段已[原文归档](history/ORCHESTRATION_STATE_before_D_HEADER_SCAN_CLOSE_2026-09-28.md)；生成后文档提交HEAD以Git为准，不恢复历史指令。
 
-## 在途
+## 阶段收口与待决策
 - **抬头定性A及修复完成**：ee9b2ee明确B3零明细为设计；68a43f8从真实CREATE回执+相邻header_snapshot读取标量凭据，已有字段足够，无新表/列/DTO字段。记录见[本轮验收](history/R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md)。
 - 主树D:/acrylic-pda-outbound，codex/development，代码HEAD68a43f8已推送；单助手。验证树D:/acrylic-pda-worktrees/r06-e2a-migration仍detached ea4d166，既有dirty/untracked完整保留，前像/10文件哈希/状态保存在.local/d-header-fix-20260928/。
-- 第二轮已完成；第三轮仅只读扫描凭据/明细假设，其他发现记清单、不扩修。D四项基本样本已通过，整体交付待扫描后交用户决定；不自动转R09/A3。
+- 三轮已结束：第三轮扫描1813个代码/配置文件、60个重点Java文件，更正表引用14文件/生产侧5文件；[完整清单](history/R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md)区分已修、合理约束、已知欠债与未验。
+- **发现R07静态阻断并停报**：B3抬头零line/账；WithdrawConfirm要求非空账，故确认抬头撤销会报CORRECTION_LEDGER_CONFLICT。未执行该HTTP场景，未改R07，未扩测。D四项基本样本通过，但抬头撤销组合不具备交付证据；整块是否接受及下一步交用户决定，不切R09/A3。
 - 重型任务已结束，测试监听随harness释放；系统原库不动、失败库日志保留。下一attempt496+/R08 run32先查重。
 
 ## 四项边界及证据
@@ -32,7 +33,8 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 ## 失败与未验
 - 494抬头服务预检失败原证据保留；其导出HTTP/文件未抵达，不改写成历史HTTP红。495才是本轮完整HTTP与内容通过。
 - 历史486漏验审批人、487内容红、491撤销HTTP红、492漏必填basis的测试红及首次缺浏览器2红全部保留。495/run31既有cleanup空值警告保留，端口已先停；未修工具。
-- 未验：抬头撤销、多个抬头字段/其他标量类型、抬头与实物混合链、多文档撤销及撤销后再更正组合、独立审查和现场；不以单样本外推。
+- 未验：抬头撤销真实HTTP（已有R07空账静态阻断）、多个字段/其他标量类型、抬头与实物混合链、多文档撤销/撤销后再更正、独立审查及现场。R08撤销凭据也只覆盖实物，不外推抬头。
+- 扫描另列：TemporaryExportEvidence仍限映射1/2，更高版本合法性待核；A2已修不重复；物理line/正反账、原dispatch非空及连续版本守卫保留，未通过删守卫放行。
 - R07-1⑤–⑧反例、3真并发、2原子性、APPROVE成功、PREPARE/ACTIVATE与REQUEST/APPROVE权限拆分仍未验/待裁决；③命令记录时版本待授权，②汇总最新有效版本已定未实现。
 - R09 C1未完成/C2未启动、A3约80类剩余非e2a、政策P1–P7、真机/Keystore/App内升级/长时留存/外网异地、原资料旧BCD及历史现场限制继续单列。
 

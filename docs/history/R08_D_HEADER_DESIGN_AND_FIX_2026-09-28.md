@@ -41,3 +41,45 @@ CorrectionAdjustmentSource合并实物/撤销及抬头凭据，按版本排序�
 ## 6. 第三轮待做
 
 仅只读扫描correction_line/effect/账行存在性及相关前提，检查撤销/抬头/部分/连续更正场景；分类记录已修、合理约束、风险候选及确认缺口。不强行扩修。四项基本样本已有通过证据，但混合/跨文档、抬头撤销、其他标量字段及独立审查仍未验，D整块是否交付由用户决策。
+
+## 7. 第三轮：凭据/明细假设扫描及停报（只读）
+
+扫描1813个受跟踪代码/配置文件（Java/Kotlin/TypeScript/TSX/JavaScript/Python/PowerShell/SQL）；14个文件引用correction_line、correction_effect或correction_ledger，其中生产Java/Kotlin/TS/JS 5个：CorrectionOperations、CorrectionStore、CorrectionAdjustmentSource、CorrectionWithdrawalSource、HeaderCorrectionSource。另对更正、导出、渲染目录60个生产Java文件检查非空/行数/版本链守卫。原始命中在.local/d-header-fix-20260928/assumption-scan-table-hits.json与assumption-scan-guards.json；这是静态扫描范围，不等同运行1813项测试。
+
+| 位置及假设 | 判定/场景 | 处理及证据边界 |
+| --- | --- | --- |
+| CorrectionStore.lines（190行）、CorrectionOperations.Create/Approve（80–107、248–289行） | 抬头明确零明细；实物更正必须有数值明细，Approve对空集合自然不写effect/账务 | 设计一致，495实际无line/effect且数重不变 |
+| CorrectionAdjustmentSource（40–59行）：line JOIN、有正向账才读 | 抬头消费假设已修：先排除HEADER_CORRECTION，改由HeaderCorrectionSource分流；物理路径约束保持 | 68a43f8；495抬头通过，489部分/490连续/493撤销属历史证据 |
+| HeaderCorrectionSource（24–60行）：零明细、前后抬头与冻结CREATE补丁一致 | 正确文档证据，不依赖effect或账行 | 495回执引用及前后值实证；多个标量字段/类型仍未验 |
+| CorrectionWithdrawalSource（45–65行）：逐笔正反账与line对应；AdjustmentValidator（62–69行）仅允许实物撤销 | 对493的物理撤销是合理完整性要求；不能外推到抬头撤销 | 未改；R08也没有已验的抬头反向字段凭据路径 |
+| CorrectionStore.ledgerEntries（289–295行）及CorrectionOperations.WithdrawConfirm（428–430行） | **确认静态阻断**：所有撤销都要求账行；B3抬头按设计无line/账，确认撤销必被空账守卫拒绝 | 新发现R07面缺口，立即报告并停止新增开发/测试，只记录。没有实际执行抬头WITHDRAW/CONFIRM，不声称真实HTTP复现 |
+| CorrectionExportSource（62–63行）、SnapshotValidator（38行）要求快照/原dispatch非空 | 合理：每版本保留全部原dispatch，归零行仍存在；“有效明细为空”不等于原事实为空 | 全归零历史486及部分489/撤销493；未移除约束 |
+| AdjustmentValidator的连续版本、前值匹配、净值对账与重复凭据守卫 | 部分更正不强求所有包都有调整；连续更正需完整v2..目标；撤销原凭据可在显式逆转下复用 | 原有490/493及当次渲染134项；混合抬头/实物链未实际验证 |
+| TemporaryExportEvidence（50行）mappingVersion接受1/2 | 历史==1缺陷已修；代码仍限1/2，注释v2+不代表任意大版本通过 | 不重复修改；更高映射版本合法性未决，未把静态候选升格为新实测bug |
+| TemporaryDuplicateModels及Web useTemporaryCommand | A2命令候选摘要已分离commandContextSha256；页面contextSha256不再直接当命令摘要 | 核对已有代码，历史dcaf7ad/377；本轮未重跑A2 |
+| CommandBusinessIntegrity（81行）固定v1；ExportRangeReader/ExportSummary原确认汇总 | 已知③命令记录时版本欠债和②最新有效汇总未实现；原确认汇总自身不应默默切更正口径 | 仍待单独授权，本轮不改 |
+
+确认静态阻断的推导完整：495实际抬头文档零line/effect；B3无需账；ledgerEntries内连接correction_line必得空集合；WithdrawConfirm在读版本/身份之后无类型分支，直接抛CORRECTION_LEDGER_CONFLICT。发起WITHDRAW也没有排除HEADER_CORRECTION，因而存在进入WITHDRAW_PENDING后无法确认完成的风险。未在数据库执行该场景，不增加attempt、不修改R07，也不通过伪造账行或删守卫绕过。
+
+这与已验物理撤销493、抬头生效导出495是不同组合。唯一新增确认的同类阻断在R07写入面；其余列为已修、合理约束、已有欠债或待验证候选。按用户“真bug立即停报告”已停止开发和后续测试，剩余仅保存清单及交接文档。不能据此声称全系统无其他缺陷。
+
+## 8. 四项状态与交付边界
+
+| 风险顺序 | 基本边界 | 证据/结果 |
+| --- | --- | --- |
+| 1 | 部分更正且净结果非空 | 489通过；493历史v2再次回读通过 |
+| 2 | v2→v3连续实物更正 | 历史490通过；本轮未重跑HTTP |
+| 3 | 实物更正撤销后快照导出 | 493通过，0e837ff修复；本轮未重跑HTTP |
+| 4 | 无dispatch的抬头生效导出 | 495通过，68a43f8修复；XLSX/PDF逐值、默认v1与run31回归通过 |
+
+四项基本样本通过不等于所有组合完成。D整块是否接受为有明确限制的交付，交用户决策；建议把抬头撤销作为单独R07设计/修复项，先确认撤销前后抬头、并发更正冲突及R08反向字段凭据的语义，不在本轮直接实施。R09 C2/A3不自动启动。
+
+未验保留：抬头撤销真实HTTP（已有静态阻断）、多个字段/其他标量类型、抬头与实物混合链、多文档跨链撤销/撤销后再更正、独立审查和现场。本轮没有增加数据结构，历史494红及495/run31已知cleanup空值警告保留。
+
+## 9. 最终断点
+
+本轮提交顺序：ee9b2ee只读定性、68a43f8实现、3ef1715验收文档；最终扫描/交接文档SHA以Git日志为准。均逐步推送codex/development。代码清单为68a43f8的11文件（3个R08服务读取文件、5个内部渲染文件、2个测试、1个回读工具），无R05/R06/R07生产文件、ConfirmedV1Adapter、契约结构、默认生产开关或配置变动。
+
+主树D:/acrylic-pda-outbound；验证树D:/acrylic-pda-worktrees/r06-e2a-migration仍detached ea4d166，全部既有dirty/untracked保留，本轮只同步10个源码/测试文件，前像/最终哈希/前后全量status保存在.local/d-header-fix-20260928/。验证树未提交、重置或合并。
+
+无活动重型任务，测试端口19330/19434/23308已释放，原库3306未动；下一e2a attempt496+、R08专用run32+执行前查重。三轮到限，单助手、作者自审，未独立审查。所有.local密钥/数据库/真实回执和导出文件均未提交；本机留证不等于异地备份。
