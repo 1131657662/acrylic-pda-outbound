@@ -63,3 +63,15 @@
 ## 归档：v18 变更日志（v20 为腾出上限移出，原文未改）
 
 - 2026-09-28 v18 自主运行：**A1 收口 ✅**（TEMP 渲染验证接通：e2a harness 新增 `-CoordinatesOnly`（只给库坐标不预迁移）＋渲染器透传；新 IT `E2aTemporaryExportRenderIT` 用"同一 attempt 库＋真服 19434＋可注入 bean"跑通 **attempt 390**：XLSX 13965B / SCAN_XLSX 4400B / PDF 360092B 真生成，openpyxl 回读订单汇总 `FH-WEB-0001`/来源 `TEMP_PDA`/结果版本1/2.0 包/**601.5kg**、产品 003→300.5 + 571→301.0、扫码明细 2 行、扫码 Excel 单表 2 行 ⇒ **内容正确**）。**A2 收口 ✅**：重启后新代次接管**已由既有** `JobFenceChecks.restartedOldJob` 覆盖，跑出绿证据 **attempt 401**（`E2aJobFenceHttpIT` 1/0/0/0）；取证前修掉 harness 两处断言级缺陷（piped SQL 静默截断致 GRANT 丢失、隔离账号无权读 `performance_schema`，另统一 CRLF）。**A3 完成 3 批**（attempts 431-463）：新增 **19 个非 e2a 类 / 241 项**（240 通过 / 1 条件 skip / 0 产品失败）；2 个 `IdentityLock*` 为**环境守卫**（需 19321 专用库）、`ReminderListRows` 系我误列夹具。**D2**：看板清掉 5 条冗余"已归档"占位（→61 行 / 6954 字符）。**环境阻塞已处置**：`D:` 曾 0GB 可用致 MySQL 无法 init（attempts 416-424 NOT-EXECUTED）；删 501 个 attempt 的 **datadir**（91.4GB）腾出 92.7GB，**日志/marker/storage/密钥全部保留**。**未开任何开关、未发布契约、未改 R05/R06/R07 业务逻辑。**
+
+## 归档：v21 变更日志（v22 为腾出上限移出，原文未改）
+
+- 2026-09-28 v21：**G7 已修 ✅**（`4b8ab5b`，只改描述）：`export-center-paths.yaml:4` 明确"限 WEB 正式已完成订单原确认 V1（**含**由 TEMP 批次经 R06 受控关联并确认后正式化的订单；**未关联的 TEMP_PDA 临时单不在汇总内**）；不含更正净结果、未核验多设备来源"；`IMPLEMENTED_API.md:24` 属 2026-09-20 历史段 ⇒ 就地加更正注记（不改写历史）；`SummaryResponse` 与 `web/` 无同批需改文案。**版本不单独递增（0.38.0 留下次实质变更）**。**D 方案 C 第一步＝触发停止条件，停下报告**（`aa4c8ed`）：`ConfirmedV1Adapter:11` 对非原确认 basis **硬拒**、`:29/:36` **版本写死 1**，且请求面 `ExportModels.Command:11` 是 `@Pattern("ORIGINAL_CONFIRMED")` 硬编码 ⇒ 渲染更正净结果需**新写更正适配器（跨模块新代码）**＋改请求面正则（契约面）⇒ **未写任何 v>1 代码**；建议拆三片（服务端只读快照→渲染适配器→请求面），并待裁 3 个语义（调整凭据行/汇总口径/命令完整性口径）。
+
+## 归档：v20 变更日志（v22 为腾出上限移出，原文未改）
+
+- 2026-09-28 v20：**G7 判定＝描述精度问题（实现不改）**：契约"不含 TEMP"在设计语境指**未关联的 TEMP_PDA 临时单** ⇒ **子项 C 不越界**（次日已按授权改描述，见 v21）。**D 开工前实测＝面超授权**：`V46` 的 `ck_result_channel` 第三支使 **v>1 行无提交来源**，三条读取器全以"提交"为锚 ⇒ 需新写更正来源读取器＋跨模块 `Basis.CORRECTED`＋契约面（[D 范围报告](history/D_CORRECTED_EXPORT_SCOPE_2026-09-28.md)）。
+
+## 归档：v19 变更日志（v22 为腾出上限移出，原文未改）
+
+- 2026-09-28 v19：**磁盘例行策略落地**（`cleanup-old-attempt-datadirs.ps1`：只删旧 attempt 的 datadir、保留最近 50，日志/marker/storage/签名材料一律保留；两 harness 收尾自动接线，冒烟 464 绿）。**B 组确认 ✅**：跨订单汇总与完整导出中心**已具备**（源码＋已进正式契约＋`Summary 6/6 / CenterPagination 4/4 / Retry 7/7 / AuthorizationRace 9/9 / ClockBoundary 2/2` 全绿）⇒ 无功能缺口，缺口清单 G1-G7 均政策/规模/现场/运维项。**待 D 口径**（[B 组确认](history/R08_B_GROUP_CONFIRMATION_2026-09-28.md)）。

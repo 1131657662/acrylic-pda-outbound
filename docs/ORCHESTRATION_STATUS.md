@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 9572b59
-dirty_entries: 0
+head: d53eb1e
+dirty_entries: 2
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
@@ -57,9 +57,10 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 
 ## 变更日志（滚动，只留最近 20 行）
 - 2026-09-27 v7-v9（原文已归档）：V43-V48 未破坏共享面（290）；R07-3 Web 路由（292）；非 e2a 回归面解锁（临时密钥 + `-NonE2a`）共 56 类（53 通过/3 需专用环境）并**修复本会话真回归**（`36d2368`）；v9 高风险 23 类=21 绿/2 环境守卫。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-28 v21：**G7 已修 ✅**（`4b8ab5b`，只改描述）：`export-center-paths.yaml:4` 明确"限 WEB 正式已完成订单原确认 V1（**含**由 TEMP 批次经 R06 受控关联并确认后正式化的订单；**未关联的 TEMP_PDA 临时单不在汇总内**）；不含更正净结果、未核验多设备来源"；`IMPLEMENTED_API.md:24` 属 2026-09-20 历史段 ⇒ 就地加更正注记（不改写历史）；`SummaryResponse` 与 `web/` 无同批需改文案。**版本不单独递增（0.38.0 留下次实质变更）**。**D 方案 C 第一步＝触发停止条件，停下报告**（`aa4c8ed`）：`ConfirmedV1Adapter:11` 对非原确认 basis **硬拒**、`:29/:36` **版本写死 1**，且请求面 `ExportModels.Command:11` 是 `@Pattern("ORIGINAL_CONFIRMED")` 硬编码 ⇒ 渲染更正净结果需**新写更正适配器（跨模块新代码）**＋改请求面正则（契约面）⇒ **未写任何 v>1 代码**；建议拆三片（服务端只读快照→渲染适配器→请求面），并待裁 3 个语义（调整凭据行/汇总口径/命令完整性口径）。
-- 2026-09-28 v20：**G7 判定＝描述精度问题（实现不改）**：契约"不含 TEMP"在设计语境指**未关联的 TEMP_PDA 临时单** ⇒ **子项 C 不越界**（次日已按授权改描述，见 v21）。**D 开工前实测＝面超授权**：`V46` 的 `ck_result_channel` 第三支使 **v>1 行无提交来源**，三条读取器全以"提交"为锚 ⇒ 需新写更正来源读取器＋跨模块 `Basis.CORRECTED`＋契约面（[D 范围报告](history/D_CORRECTED_EXPORT_SCOPE_2026-09-28.md)）。
-- 2026-09-28 v19：**磁盘例行策略落地**（`cleanup-old-attempt-datadirs.ps1`：只删旧 attempt 的 datadir、保留最近 50，日志/marker/storage/签名材料一律保留；两 harness 收尾自动接线，冒烟 464 绿）。**B 组确认 ✅**：跨订单汇总与完整导出中心**已具备**（源码＋已进正式契约＋`Summary 6/6 / CenterPagination 4/4 / Retry 7/7 / AuthorizationRace 9/9 / ClockBoundary 2/2` 全绿）⇒ 无功能缺口，缺口清单 G1-G7 均政策/规模/现场/运维项。**待 D 口径**（[B 组确认](history/R08_B_GROUP_CONFIRMATION_2026-09-28.md)）。
+- 2026-09-28 v22：**D 片1 已交付 ✅**（`b74078d`，服务端只读、不渲染）：`ExportFacts` 按版本取事实（新重载；`Head` 增 `resultVersion` 但保留旧构造器 ⇒ JSON 形状不变）＋新 `CorrectionExportSource`（`correction_line` + 该版本 `order_effective_scan`；原始事实行沿用原确认读取器并按 `tempOrigin` 选路）＋`ExportSnapshotReader` 版本重载（**v==1 逐字不变**，WEB/PDA/TEMP 三路未动）。**默认行为不变**；未碰 `report-rendering`/`ExportModels` 正则/`ConfirmedV1Adapter`。**语义①＝带调整凭据**（R07-3 逐笔可追溯；带 `document/line/ledger_rows` 溯源串）。**证据**：attempt **477** `1/0/0/0`，快照 `hash=1dd7262c… version=2 lines=2 adjustments=2 count=0 weightG=0` 与库内 v2 逐条一致并落 JSON；R08 run 27 `R08ExportIT` **14/14 绿**。**发现（待片2 裁）**：引擎把整行归零记为 `WEIGHT_CORRECTION`+`target_count=0`，渲染 `AdjustmentValidator` 却要求其 count=1（attempt 476）⇒ 本片按效果归类规避，未改任何一方。**待决策**：②汇总版本 ③命令完整性版本 ④该口径差异 ⑤模板是否显式展示凭据。
+- 2026-09-28 v21（原文已归档）：G7 已修（只改描述：明确"含经 R06 关联确认正式化的订单、未关联 TEMP_PDA 临时单不在汇总内"，版本不单独递增）；D 方案 C 第一步实测触发停止条件（`ConfirmedV1Adapter` 硬门/版本写死、请求面 basis 正则）⇒ 改拆片。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-28 v20（原文已归档）：G7 判定＝描述精度问题（"不含 TEMP"指未关联 TEMP_PDA 临时单 ⇒ 子项 C 不越界）；D 开工前实测＝面超授权（V46 使 v>1 行无提交来源）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
+- 2026-09-28 v19（原文已归档）：磁盘例行策略落地（只删旧 attempt 的 datadir、保留最近 50）＋B 组确认（跨订单汇总/完整导出中心已具备，无功能缺口）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
 - 2026-09-28 v18（原文已归档）：自主运行——A1 TEMP 渲染验证接通（390）、A2 重启接管已由既有 JobFence 覆盖（401）、A3 非 e2a 三批新增 19 类 241 项全绿、磁盘 0GB 阻塞已处置。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
 - 2026-09-27 v17（原文已归档）：C 的渲染验证当时未接通线（三条路实测不通，已记可执行接法）；同日 v18 已用 `-CoordinatesOnly` 接通并跑绿（attempt 390）。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
 - 2026-09-27 v16（原文已归档）：R08 子项 C **已实现** ✅（`exports` 三处：`tempOrigin` + 选路 + 映射版本 ∈{1,2}），attempt 383 绿、既有导出路径回归 runs 19-22 全绿。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
