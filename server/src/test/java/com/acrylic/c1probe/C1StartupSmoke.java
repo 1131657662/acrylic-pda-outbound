@@ -12,8 +12,10 @@ import static org.assertj.core.api.Assertions.*;
 /** Standalone full-application startup check; never runs the C1 registration IT. */
 public final class C1StartupSmoke {
     private static final Path ROOT = Path.of("D:/acrylic-pda-outbound");
-    private static final Path BASE = ROOT.resolve(".local/r09-c1-smoke-20260928-1");
-    private static final String SCHEMA = "acrylic_r09_c1_smoke_20260928_1";
+    private static final int RUN = Integer.getInteger("c1.smoke.run", 2);
+    private static final Path BASE = ROOT.resolve(".local/r09-c1-smoke-20260928-" + RUN);
+    private static final String SCHEMA = "acrylic_r09_c1_smoke_20260928_" + RUN;
+    private static final String USER = "r09_c1_smoke_" + RUN;
 
     public static void main(String[] args) throws Exception {
         var jdbc = guardedDatabase();
@@ -38,19 +40,20 @@ public final class C1StartupSmoke {
     }
 
     private static JdbcTemplate guardedDatabase() throws Exception {
+        assertThat(RUN).isBetween(2, 9999);
         assertThat(Path.of("").toRealPath()).isEqualTo(ROOT.resolve("server").toRealPath());
         assertThat(BASE.toRealPath()).startsWith(ROOT.toRealPath());
         assertThat(BASE.resolve("smoke-started.marker")).doesNotExist();
         String url = "jdbc:mysql://127.0.0.1:19330/" + SCHEMA;
         assertThat(System.getenv("OUTBOUND_DB_URL")).isEqualTo(url);
-        assertThat(System.getenv("OUTBOUND_DB_USER")).isEqualTo("r09_c1_smoke_1");
+        assertThat(System.getenv("OUTBOUND_DB_USER")).isEqualTo(USER);
         assertThat(System.getenv("OUTBOUND_DB_PASSWORD")).matches("[0-9a-f]{64}");
         var jdbc = new JdbcTemplate(new DriverManagerDataSource(url,
             System.getenv("OUTBOUND_DB_USER"), System.getenv("OUTBOUND_DB_PASSWORD")));
         assertThat(jdbc.queryForObject("SELECT @@datadir", String.class).replace('\\', '/'))
             .isEqualToIgnoringCase(BASE.resolve("data").toString().replace('\\', '/') + "/");
         assertThat(jdbc.queryForObject("SELECT DATABASE()", String.class)).isEqualTo(SCHEMA);
-        assertThat(jdbc.queryForObject("SELECT CURRENT_USER()", String.class)).isEqualTo("r09_c1_smoke_1@127.0.0.1");
+        assertThat(jdbc.queryForObject("SELECT CURRENT_USER()", String.class)).isEqualTo(USER + "@127.0.0.1");
         assertThat(jdbc.queryForObject("SELECT @@port", Integer.class)).isEqualTo(19330);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE()", Integer.class)).isZero();
         return jdbc;
