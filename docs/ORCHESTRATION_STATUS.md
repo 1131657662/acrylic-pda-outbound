@@ -14,7 +14,7 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 ```
 <!-- FACTS_END -->
 
-本页是唯一断点，源码版本事实只见生成块。A3恢复跑批前看板已[原文归档](history/ORCHESTRATION_STATE_before_A3_RESUME_2026-09-28.md)；生成后文档提交HEAD以Git为准，不恢复历史指令。
+本页是唯一断点，源码版本事实只见生成块。A3恢复跑批前看板已[原文归档](history/ORCHESTRATION_STATE_before_A3_POST526_RESUME_2026-09-28.md)；生成后文档提交HEAD以Git为准，不恢复历史指令。
 
 ## 交付与本次接续
 - **D整块已交付（用户按已验范围接受）**：11c20e8已推送；片1/片2/片3、部分更正/连续更正/实物撤销/抬头生效四项基本边界、审批人ID/撤销导出/抬头导出修复均✅。[交付确认](history/R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)列全部历史证据；不再停留D扩测。
