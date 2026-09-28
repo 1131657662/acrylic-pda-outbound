@@ -6,39 +6,39 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 4a8e99c
-dirty_entries: 5
+head: 0e837ff
+dirty_entries: 4
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 ```
 <!-- FACTS_END -->
-本页是唯一断点；源码版本事实仅见生成事实块。前三阶段旧结论均已原文归档，最近一次见[停工前归档](history/ORCHESTRATION_STATE_before_D_WITHDRAW_STOP_2026-09-28.md)；不恢复历史指令。事实块为生成时快照，随后文档提交的HEAD以Git为准。
+
+本页是唯一断点；源码版本事实仅见生成事实块。替换前结论已[原文归档](history/ORCHESTRATION_STATE_before_D_WITHDRAW_VERIFIED_2026-09-28.md)，不恢复历史指令。事实块为生成时快照，随后文档提交HEAD以Git为准。
 
 ## 在途
-- **撤销后导出修复已授权，第一步判定A**：v3是设计要求的合法结果版本，WITHDRAWN是终态；缺陷属R08读取/渲染消费面。只读定性证据见[本轮记录](history/R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md)，未修改生产代码。
-- 基线：主树D:/acrylic-pda-outbound，codex/development，4a8e99c；单助手，无其他已发现写者或在途任务。验证树仍detached ea4d166，全部既有改动保留，初始状态已存.local/d-withdraw-fix-20260928/。
-- 下一步仅已授权的R08撤销导出修复：保留v2原凭据、追加v3撤销凭据并逐项校验；不改R07状态/版本写入、不改ConfirmedV1Adapter。测试监听空闲，attempt492+/专用run30起先查重。
-- 前轮2通过/1失败/1跳过仍是有效证据状态；491红证据不删。486零包文件属于撤销前v2，不能作撤销后导出通过证据；旧看板已[原文归档](history/ORCHESTRATION_STATE_before_D_WITHDRAW_REPAIR_2026-09-28.md)。
-- 2–3轮时间盒；撤销修复、内容验收及默认v1回归通过后，有余量才补抬头。遇新的真bug即停，不自动切R09/A3。
+- **撤销后导出已修复并推送0e837ff**；只读设计定性A已由6d5d019保存。v3合法、WITHDRAWN终态，不回指v1。详细证据见[本轮记录](history/R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md)。
+- 主树D:/acrylic-pda-outbound、codex/development；单助手，本轮代码已提交。验证树D:/acrylic-pda-worktrees/r06-e2a-migration仍detached ea4d166，既有未提交/未跟踪全部保留；本轮仅定向同步8文件，前像与最终哈希存.local/d-withdraw-fix-20260928/。
+- 本轮第二步完成；第三轮只补抬头样本。复用既有无dispatch的headerPatch命令，不扩新业务场景；遇新真bug立即停，不自动切R09/A3。下一attempt494+/R08 run31须先查重。
+- 重型任务已结束，隔离测试端口已随harness停库；系统原库不动。历史失败库/日志保留，未自行清理。
 
-## 本次已验证
-- **部分更正净结果非空**：复用两包真实命令夹具，仅归零第一包；原2包/601.5kg、调整-1包/-300.5kg、净1包/301kg。489真MySQL/真服/PDA更正+Web会话CSRF导出，XLSX有效明细1行与凭据1行，PDF两页关键值回读正确。
-- **v2→v3完整链**：同包300.5→300→299.5kg，另一包301kg不变；v3净2包/600.5kg，调整0包/-1kg。490真HTTP、XLSX两条有效明细/两条调整、PDF三页内容通过；内存删除v2凭据后既有版本链校验明确拒绝。
-- 内容断言核对数量/重量、ID、版本、时间、原因、审批人及凭据等具体值，并与隔离库事实衔接；不是字段非空检查。未改导出文件，未将验证器反例冒充HTTP反例；作者自审，未独立审查/本轮PDF视觉检查。
+## 验证与四项边界
+- **①部分更正通过**：历史489，原2包/601.5kg，归零第一包后净1包/301kg；真实HTTP、XLSX/PDF逐值回读。493撤销后的历史v2再次导出该非空形状，快照与撤销前逐项相等。
+- **②连续更正通过（历史490）**：同包300.5→300→299.5kg，另一包301kg，v3净2包/600.5kg，完整v2/v3凭据；删除v2凭据的内存反例被拒。未把历史HTTP通过冒充当次重跑。
+- **③撤销后通过（493）**：真MySQL、真服、PDA更正/两阶段撤销、Web会话CSRF导出；IT 1/0/0/0。v3恢复2包/601.5kg，XLSX有效明细2行、调整2行；PDF3页2965字符，关键值及原审批人/撤销确认人/实际反向账回读正确，三页目视通过。
+- 493历史v2 XLSX/PDF仍为1包/301kg、1条原调整；缺省resultVersion且必填basis=ORIGINAL_CONFIRMED的v1真实HTTP导出成功。R08 run30的R08ExportIT为14/0/0/0（真MySQL+MockMvc），不冒充外部HTTP。
+- 渲染套件129/0/0/0，含5个撤销验证正反例；安装目录已重建。本轮作者自审，无独立审查。④抬头待第三轮，D尚未整体交付。
 
 ## 失败与未验
-- **已确认缺陷**：491两阶段撤销成功，库内v3恢复2包/601.5kg，冲正账合计0包/0g；真实HTTP申请CORRECTED/resultVersion=3/XLSX却返回409 EXPORT_SOURCE_UNAVAILABLE，“该结果版本没有对应的更正文档”。
-- **定位**：v3.source_correction_id指向原更正文档，该文档status=WITHDRAWN、effective_result_version=2；ExportFacts.correctionDocumentFor只按目标生效版本及EFFECTIVE/WITHDRAW_PENDING取文档，查不到；CorrectionExportSource拒绝继续。未修改此生产判定，未声称只改状态过滤就能完整修复。
-- **未验**：撤销后快照、渲染及XLSX/PDF内容均未抵达；PDF申请未执行。抬头更正因停工跳过。默认v1全套当次未重跑，R08 run29的14/14仅作历史引用。
-- **R07-1**：服务层①–④及3幂等、HTTP①–⑥有历史证据；⑤–⑧反例、3真并发、2原子性、APPROVE成功、PREPARE/ACTIVATE仍未验；REQUEST/APPROVE权限拆分待裁决。
-- **③/②**：命令完整性按命令记录时版本仍待授权；汇总按最新有效版本已定但未实现，本轮均未改。
-- **R09 C1/C2**：NORMAL双侧登记未完成、应用入口接线未启动；另行立项授权。A3剩余约80类非e2a/专用环境守卫族、政策P1–P7、真机/Keystore/App内升级/独立人员/长时留存/外网异地、原资料旧BCD及历史R05/R09现场限制均保留。
+- 491真实缺陷原证据保留；486导出的零包版本是撤销前v2，撤销后导出未验，旧“撤销归零”声明不作验收。
+- **492红记录1/1/0/0**：v3/历史v2 XLSX/PDF已通过，最后默认v1测试漏传原本必填basis导致400；只改测试输入后493全绿，不改接口默认规则。492文件独立内容回读也通过，整次仍记红。
+- 首次渲染129项中2项因主树缺Chromium失败，XML/日志已留；用忽略目录init脚本指向既有浏览器后129全绿。493/run30既有cleanup空值收尾警告保留，未修工具。
+- 未验：抬头更正、抬头撤销；多更正后跨文档撤销、撤销后再更正等组合未新增验证；不把单样本或内部校验器反例扩写为全业务通过。
+- R07-1⑤–⑧反例、3真并发、2原子性、APPROVE成功、PREPARE/ACTIVATE与REQUEST/APPROVE权限拆分仍未验/待裁决。③按命令记录时版本待授权；②汇总最新有效版本已定未实现。
+- R09 C1未完成/C2未启动、A3剩余约80类非e2a、政策P1–P7、真机/Keystore/App内升级/独立人员/长时留存/外网异地、原资料旧BCD及历史R05/R09现场限制继续单列。
 
 ## 既有交付与硬边界
-- A2已修：dcaf7ad、历史377；候选摘要服务端/Web统一，5eff71d纠正旧欠债。R06开发回归基本完成；R07-3步骤1–8/两阶段撤销已收口，能力默认关闭，剩余政策与现场项不由本次代决策。
-- R08 C与D片1/片2、片3最小闭环已有交付；089b335审批人编码修复、488真实HTTP内容与run29默认v1回归为历史证据；本次491表明D仍有真实缺陷，不能扩大既有通过范围。
-- 486漏验审批人值的教训、487内容失败、488/run29工具警告及本轮491红证据均保留；旧看板原文归档不改，状态以本区为准。
-- 本轮无生产逻辑变动：不改片1/片2/片3、R05/R06/R07、ConfirmedV1Adapter、生产配置或契约；不发布/部署/合main，不动原库，不提交.local密钥/数据库/真实业务数据。
-- 七类生产决定、TEMP归档等开关仍默认关闭；localDeletionAllowed=false；普通有权正常确认允许空理由。内部测试不授权生产放行、证据写入或关闭能力；本机留证不等于异地备份。
+- A2已修dcaf7ad（历史377）；R06开发回归基本完成；R07-3步骤1–8/两阶段撤销已收口，能力默认关闭；R08 C/D片1/片2/片3及审批人修复089b335已有记录，本次只修R08撤销读取/内部渲染验证。
+- 不改R05/R06/R07生产代码、撤销写入、ConfirmedV1Adapter、生产配置默认值；不发布契约、不部署、不合main、不开放开关，不提交.local密钥/数据库/真实业务数据。
+- 七类生产决定、TEMP归档边界保持；localDeletionAllowed=false；普通有权正常确认允许空理由。内部验证不授权生产放行、证据写入或关闭能力；本机证据不等于异地备份。
 <!-- CURRENT_STATE_END -->
