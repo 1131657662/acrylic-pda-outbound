@@ -466,7 +466,7 @@ class E2aCorrectionChainIT {
     }
 
     /** Runs the verified R06 chain, then collects what a correction needs: order, dispatches, operator, device. */
-    private Order confirmedOrder(E2aCrossSourceProfile profile, JdbcTemplate jdbc) throws Exception {
+    Order confirmedOrder(E2aCrossSourceProfile profile, JdbcTemplate jdbc) throws Exception {
         try (var context = E2aCrossSourceHttpIT.start(profile, "--outbound.temporary.commands.enabled=true")) {
             TemporaryLinkConfirmHttpChecks.verify((WebApplicationContext) context);
         }
@@ -506,7 +506,7 @@ class E2aCorrectionChainIT {
      * across this chain (the withdrawal returns them to the pre-correction values), so the expected block is built
      * from the freshly read row rather than from a stale copy.
      */
-    private ObjectNode lineBody(JdbcTemplate jdbc, Order order, String type, String currentVersion,
+    ObjectNode lineBody(JdbcTemplate jdbc, Order order, String type, String currentVersion,
         List<String> dispatchIds, String targetCount, String targetWeight, boolean withEvidence) {
         var facts = jdbc.queryForMap("SELECT CAST(actual_count AS CHAR) c,CAST(weight_g AS CHAR) w"
             + " FROM order_result_version WHERE order_id=UUID_TO_BIN(?) AND result_version=?",
@@ -661,7 +661,7 @@ class E2aCorrectionChainIT {
     }
 
     /** APPROVE anchors on the frozen document digest and its current status, never on the client's word alone. */
-    private ObjectNode approveBody(Order order, String documentId, String documentSha256, String status,
+    ObjectNode approveBody(Order order, String documentId, String documentSha256, String status,
         String expectedResultVersion) {
         var expected = SubmissionJson.object().put("documentId", documentId).put("documentSha256", documentSha256)
             .put("status", status).put("expectedResultVersion", expectedResultVersion).put("userAuthVersion", "1");
@@ -671,7 +671,7 @@ class E2aCorrectionChainIT {
             .put("reason", "主管核对后批准").set("expected", expected);
     }
 
-    private String mintSession(JdbcTemplate jdbc, Order order) {
+    String mintSession(JdbcTemplate jdbc, Order order) {
         String token = DeviceCrypto.secret();
         jdbc.update("""
             INSERT INTO pda_session(id,device_id,user_id,user_auth_version,device_version,access_hash,refresh_hash,
@@ -684,7 +684,7 @@ class E2aCorrectionChainIT {
     }
 
     /** V45 registers both correction codes; this binds one of them to the acting user. */
-    private void grant(JdbcTemplate jdbc, UUID actor, String permission) {
+    void grant(JdbcTemplate jdbc, UUID actor, String permission) {
         var roles = jdbc.queryForList("SELECT BIN_TO_UUID(r.id) id FROM role r JOIN user_role ur ON ur.role_id=r.id"
             + " WHERE ur.user_id=? AND r.code LIKE 'CR_%'", String.class, Ids.bytes(actor));
         UUID role = roles.isEmpty() ? Ids.next() : UUID.fromString(roles.getFirst());
@@ -695,7 +695,7 @@ class E2aCorrectionChainIT {
         jdbc.update("INSERT INTO role_permission SELECT ?,id FROM permission WHERE code=?", Ids.bytes(role), permission);
     }
 
-    private HttpResponse<byte[]> post(String token, JsonNode command) throws Exception {
+    HttpResponse<byte[]> post(String token, JsonNode command) throws Exception {
         var request = HttpRequest.newBuilder(URI.create(ROUTE))
             .timeout(Duration.ofSeconds(30)).header("Content-Type", "application/json")
             .header("Authorization", "Bearer " + token).header("X-Server-Recovery-Epoch", "1")
@@ -711,6 +711,6 @@ class E2aCorrectionChainIT {
         return text.length() > 200 ? text.substring(0, 200) : text;
     }
 
-    private record Order(String orderId, String resultVersion, String resultCount, String resultWeight,
+    record Order(String orderId, String resultVersion, String resultCount, String resultWeight,
         String warehouseId, UUID operatorId, UUID deviceId, List<String> dispatchIds) { }
 }
