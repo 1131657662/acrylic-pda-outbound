@@ -9,17 +9,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * G0-K1 定向反例（测试侧第 2 类）：<b>确定性调度模型</b>。
  *
- * <p>本类只在测试源码内建立最小状态模型，用显式事件顺序验证候选规范；<b>不</b>修改 src/main、
- * <b>不</b>连接数据库、<b>不</b>启动服务、<b>不</b>执行真实 halt/kill、<b>不</b>使用随机等待。
- * 模型通过不等于产品实现通过。
+ * <p>模型显式提供两个调度点：**第一次读取之后**（`afterFirstRead`）与**最后一次读取之后**（`afterFinalRead`）。
+ * 因此可以实际构造并断言两条不同轨迹：
+ * <pre>
+ *   最终读取未围栏 → F1 → 委托        （在途调用：本机重读无法关闭的窗口）
+ *   F1 → 新调用读取 → 拒绝            （F1 之后的“新进入”调用）
+ * </pre>
+ * 先后关系一律由**独立轨迹断言**（事件的相对次序）检查，不用测试名称或打印文案充当证据。
  *
- * <p>模型语义：本机层效果门的线性化点＝本次调用对 volatile 围栏标志的**一次读取**；跨进程
- * 围栏通道＝对 {@code fenced.lock} 的**一次**独占 tryLock 观察；孤儿扫描＝逐记录在 t_i 判定属主
- * 存活、于 t_n 结束，因此存在命名窗口 W_i ＝ (t_i, t_n]。
+ * <p>本类不修改 src/main、不连接数据库、不启动服务、不执行真实 halt/kill、不使用随机等待。
  */
 class G0K1OrderingModelTest {
 
-    // ------------------------------------------------------------------ 轨迹与模型
+    // ------------------------------------------------------------------ 轨迹与门
 
     /** 有序事件轨迹。 */
     static final class Trace {
@@ -34,14 +36,14 @@ class G0K1OrderingModelTest {
     }
 
     /**
-     * 本机层效果门。{@code guardEnabled} 只用于负控：关闭守卫时模型应能检出反例。
-     * {@code recheck} 打开时在读标志之后、委托之前再读一次（用于证明“重读只移动线性化点”）。
+     * 本机层效果门。线性化点＝本调用对围栏标志的读取；{@code recheck} 打开时在读标志之后再读一次。
+     * {@code guardEnabled=false} 仅用于负控（应能检出反例）。
      */
     static final class LocalGate {
         private final Trace trace;
         private final boolean guardEnabled;
         private final boolean recheck;
-        private volatile boolean fenced;
+        private boolean fenced;
         private int violations;
 
         LocalGate(Trace trace, boolean guardEnabled, boolean recheck) {
@@ -49,35 +51,41 @@ class G0K1OrderingModelTest {
         }
 
         void fence(String where) { fenced = true; trace.add("F1@" + where); }
-        boolean isFenced() { return fenced; }
         int violations() { return violations; }
 
-        /** 返回 true＝允许委托（放行或在途），false＝拒绝。 */
-        boolean enterEffect(String callId, Runnable betweenReadAndDelegate) {
-            boolean observed = fenced;
-            trace.add("gate(" + callId + ") readFenced=" + observed);
-            if (guardEnabled && observed) { trace.add("refuse(" + callId + ")"); return false; }
-            if (!guardEnabled && observed) { violations++; trace.add("VIOLATION(" + callId + ")"); }
-            if (betweenReadAndDelegate != null) betweenReadAndDelegate.run();
+        /** true＝允许委托（放行或在途），false＝拒绝。 */
+        boolean enterEffect(String callId, Runnable afterFirstRead, Runnable afterFinalRead) {
+            boolean first = fenced;
+            trace.add("gate(" + callId + ") read1=" + first);
+            if (guardEnabled && first) { trace.add("refuse(" + callId + ")"); return false; }
+            if (!guardEnabled && first) { violations++; trace.add("VIOLATION(" + callId + ")"); }
+            if (afterFirstRead != null) afterFirstRead.run();
             if (guardEnabled && recheck) {
-                boolean again = fenced;
-                trace.add("gate(" + callId + ") recheckFenced=" + again);
-                if (again) { trace.add("refuseAfterRecheck(" + callId + ")"); return false; }
+                boolean second = fenced;
+                trace.add("gate(" + callId + ") read2=" + second);
+                if (second) { trace.add("refuseAfterRecheck(" + callId + ")"); return false; }
             }
+            if (afterFinalRead != null) afterFinalRead.run();
             trace.add("delegate(" + callId + ")");
             return true;
         }
     }
 
-    /** 跨进程围栏通道模型：F1′ 取得的共享锁与门的独占 tryLock 观察。 */
+    /** 跨进程围栏通道的状态：{@code held} 只能由 F1′ 转为 true。 */
     static final class FenceLock {
+        private final Trace trace;
         private boolean held;
-        void acquireShared() { held = true; }
-        /** true＝观察到无冲突锁（观察瞬间没有 FENCED 进程）。 */
-        boolean observeFree() { return !held; }
+        FenceLock(Trace trace) { this.trace = trace; }
+        void acquireShared() { held = true; trace.add("fenceLock.acquireShared"); }
+        /** true＝观察瞬间没有围栏共享锁；false＝有（门的独占 tryLock 必失败）。 */
+        boolean observeFree(String at) {
+            trace.add("fenceLock.observeFree@" + at + " free=" + !held);
+            return !held;
+        }
+        boolean held() { return held; }
     }
 
-    /** 逐记录孤儿扫描模型：记录 r1..rn，t_i ＝ offset+i+1，t_n ＝ offset+n+1。 */
+    /** 逐记录孤儿扫描：记录 r1..rn，t_i ＝ offset+i+1，t_n ＝ offset+n+1。 */
     static final class Scan {
         record Outcome(String verdict, List<String> events) { }
 
@@ -102,124 +110,117 @@ class G0K1OrderingModelTest {
         return record -> deathTimes[record - 1] > offset + record + 1;
     }
 
-    // ------------------------------------------------------------------ 时序用例
+    // ------------------------------------------------------------------ 轨迹用例
 
-    @Test void callEnteringTheGateAfterFenceIsRefusedAndNeverDelegates() {
+    @Test void newCallEnteringAfterFenceIsRefusedWithTraceOrder() {
         var trace = new Trace();
         var gate = new LocalGate(trace, true, false);
 
         gate.fence("before-call");
+        assertThat(gate.enterEffect("c2", null, null)).isFalse();
 
-        assertThat(gate.enterEffect("c2", null)).isFalse();
-        assertThat(trace.indexOfPrefix("F1@")).isLessThan(trace.indexOfPrefix("gate(c2)"));
-        assertThat(trace.indexOfPrefix("gate(c2)")).isLessThan(trace.indexOfPrefix("refuse(c2)"));
-        assertThat(trace.joined()).contains("gate(c2) readFenced=true").contains("refuse(c2)").doesNotContain("delegate(c2)");
+        assertThat(trace.indexOfPrefix("F1@")).isLessThan(trace.indexOfPrefix("gate(c2) read1"));
+        assertThat(trace.indexOfPrefix("gate(c2) read1")).isLessThan(trace.indexOfPrefix("refuse(c2)"));
+        assertThat(trace.joined()).contains("gate(c2) read1=true").doesNotContain("delegate(c2)");
     }
 
-    @Test void inFlightCallThatReadBeforeFenceDelegatesAndIsLabelledInFlight() {
-        var trace = new Trace();
-        var gate = new LocalGate(trace, true, false);
-
-        // 调用 c1 在围栏之前读到未围栏；F1 在读与委托之间发生；c1 属“在途调用”。
-        boolean allowed = gate.enterEffect("c1", () -> gate.fence("inside-c1"));
-
-        assertThat(allowed).as("在途调用（读标志发生在 F1 写之前）允许完成其委托").isTrue();
-        assertThat(trace.indexOfPrefix("gate(c1) readFenced=false")).isLessThan(trace.indexOfPrefix("F1@"));
-        assertThat(trace.indexOfPrefix("F1@")).isLessThan(trace.indexOfPrefix("delegate(c1)"));
-        // 之后的“新进入”调用必须被拒——这才是 F1 的保证对象。
-        assertThat(gate.enterEffect("c3", null)).isFalse();
-        System.out.println("[G0K1-order] in-flight vs new: " + trace.joined());
-    }
-
-    @Test void recheckNarrowsTheWindowButDoesNotRemoveTheLinearizationPoint() {
+    @Test void recheckCatchesFenceBetweenFirstReadAndRecheck() {
         var trace = new Trace();
         var gate = new LocalGate(trace, true, true);
 
-        // 重读把“读—委托之间”的窗口关掉：围栏发生在读之后、重读之前 ⇒ 被拒。
-        assertThat(gate.enterEffect("c1", () -> gate.fence("between-read-and-recheck"))).isFalse();
-        assertThat(trace.joined()).contains("refuseAfterRecheck(c1)").doesNotContain("delegate(c1)");
+        assertThat(gate.enterEffect("c1", () -> gate.fence("after-read1"), null)).isFalse();
 
-        // 但围栏若发生在最后一次读之后，仍属在途：证明重读只移动线性化点，不能消除它。
-        var trace2 = new Trace();
-        var gate2 = new LocalGate(trace2, true, true);
-        assertThat(gate2.enterEffect("c2", () -> { })).isTrue();
-        gate2.fence("after-final-read");
-        assertThat(trace2.joined()).contains("delegate(c2)");
+        assertThat(trace.indexOfPrefix("gate(c1) read1=false")).isLessThan(trace.indexOfPrefix("F1@"));
+        assertThat(trace.indexOfPrefix("F1@")).isLessThan(trace.indexOfPrefix("gate(c1) read2=true"));
+        assertThat(trace.indexOfPrefix("gate(c1) read2=true")).isLessThan(trace.indexOfPrefix("refuseAfterRecheck(c1)"));
+        assertThat(trace.joined()).doesNotContain("delegate(c1)");
+        System.out.println("[G0K1-order] recheck closes the first-read window: " + trace.joined());
     }
 
-    @Test void crossProcessObservationBeforeFenceIsNotInvalidatedForTheLaterGate() {
-        var lock = new FenceLock();
-        boolean firstDecision = lock.observeFree();          // t_f：无 FENCED 进程
-        assertThat(firstDecision).isTrue();
-        lock.acquireShared();                                 // 之后才有进程进入 FENCED（F1′ 成功）
-        assertThat(lock.observeFree())
-            .as("fenced.lock 的成功只能证明观察瞬间没有冲突锁；之后的门必须观察到冲突")
-            .isFalse();
+    @Test void windowAfterTheFinalReadIsRecordedAsInFlightNotAsAViolation() {
+        var trace = new Trace();
+        var gate = new LocalGate(trace, true, true);
+
+        // 调度点：最后一次读取之后、委托开始之前发生 F1
+        boolean allowed = gate.enterEffect("c1", null, () -> gate.fence("after-final-read"));
+
+        assertThat(allowed).as("最终读取早于 F1 写 ⇒ 在途调用，允许完成委托").isTrue();
+        assertThat(trace.indexOfPrefix("gate(c1) read2=false")).isLessThan(trace.indexOfPrefix("F1@"));
+        assertThat(trace.indexOfPrefix("F1@")).isLessThan(trace.indexOfPrefix("delegate(c1)"));
+        assertThat(gate.violations()).as("在途调用不是违反：违反只在“F1 之后新进入”时计").isZero();
+        // 之后的新调用必须被拒
+        assertThat(gate.enterEffect("c3", null, null)).isFalse();
+        System.out.println("[G0K1-order] irreducible window after final read (in-flight): " + trace.joined());
     }
 
-    @Test void unconfirmedFenceLockYieldsNoCrossProcessBasisAndIsNotCalledBlocked() {
+    @Test void violationsAreCountedOnlyWhenTheGuardIsRemoved() {
+        var removed = new Trace();
+        var unguarded = new LocalGate(removed, false, false);
+        unguarded.fence("before-call");
+        assertThat(unguarded.enterEffect("c2", null, null)).isTrue();
+        assertThat(unguarded.violations()).isEqualTo(1);
+        assertThat(removed.joined()).contains("VIOLATION(c2)").contains("delegate(c2)");
+
+        var restored = new Trace();
+        var guarded = new LocalGate(restored, true, false);
+        guarded.fence("before-call");
+        assertThat(guarded.enterEffect("c2", null, null)).isFalse();
+        assertThat(guarded.violations()).isZero();
+        System.out.println("[G0K1-order] negative control: " + removed.joined() + " | restored: " + restored.joined());
+    }
+
+    @Test void crossProcessFenceObservationIsAStateTransitionNotAConstant() {
+        var trace = new Trace();
+        var lock = new FenceLock(trace);
+
+        boolean beforeAcquire = lock.observeFree("t1");
+        assertThat(beforeAcquire).isTrue();
+        lock.acquireShared();
+        boolean afterAcquire = lock.observeFree("t2");
+        assertThat(afterAcquire).as("F1′ 之后同一通道的观察必须失败").isFalse();
+        assertThat(beforeAcquire).as("早先的观察不被追溯改写，但它只覆盖观察瞬间").isTrue();
+        assertThat(lock.held()).isTrue();
+        assertThat(trace.joined()).contains("fenceLock.observeFree@t1 free=true")
+            .contains("fenceLock.acquireShared").contains("fenceLock.observeFree@t2 free=false");
+        System.out.println("[G0K1-order] fence-channel transitions: " + trace.joined());
+    }
+
+    @Test void unconfirmedFenceSignalYieldsNoCrossProcessBasis() {
         var trace = new Trace();
         var gate = new LocalGate(trace, true, false);
-        gate.fence("F1");                       // F1 生效：本机停止无条件成立
-        var lock = new FenceLock();             // F1′ 未确认 ⇒ 未取得共享锁
+        gate.fence("F1");
+        var lock = new FenceLock(trace);            // F1′ 未执行 ⇒ held=false
 
-        boolean localStop = gate.isFenced();
-        boolean crossProcessBasis = !lock.observeFree();
-        String label = crossProcessBasis ? "BLOCKED" : "UNCONFIRMED_NO_CROSS_PROCESS_BASIS";
-
-        assertThat(localStop).as("本机效果停止由内存标志保证").isTrue();
-        assertThat(label).isEqualTo("UNCONFIRMED_NO_CROSS_PROCESS_BASIS");
-        assertThat(label).isNotEqualTo("BLOCKED");
+        assertThat(lock.held()).isFalse();
+        boolean crossProcessBasis = !lock.observeFree("after-F1");
+        assertThat(crossProcessBasis).isFalse();
+        assertThat(crossProcessBasis ? "BLOCKED" : "UNCONFIRMED_NO_CROSS_PROCESS_BASIS")
+            .isEqualTo("UNCONFIRMED_NO_CROSS_PROCESS_BASIS");
     }
 
+    // ------------------------------------------------------------------ 扫描窗口用例
+
     @Test void ownerDeathBeforeItsRecordEvaluationIsDetectedAsOrphan() {
-        // 记录 r1 属主在 t=1 死亡，其判定时刻 t_1=2 ⇒ 判孤儿
         var outcome = Scan.scan(2, 0, deathsAt(0, 1, 99), 1);
         assertThat(outcome.verdict()).isEqualTo("ORPHAN");
         assertThat(outcome.events()).anyMatch(event -> event.startsWith("scan1:ORPHAN(r1)"));
     }
 
     @Test void ownerDeathInsideWindowWIsMissedByThatScanAndCaughtByTheNext() {
-        // r1 属主在 t=3 死亡：t_1=2 时仍存活（3>2），t_n=3 —— 死亡落在 W_1=(2,3] ⇒ 本次扫描仍 CLEAR
         var first = Scan.scan(2, 0, deathsAt(0, 3, 99), 1);
-        assertThat(first.verdict()).as("命名缺口 W：属主在其记录判定之后、扫描结束之前死亡").isEqualTo("CLEAR");
+        assertThat(first.verdict()).as("窗口 W：属主在其记录判定之后、扫描结束之前死亡").isEqualTo("CLEAR");
         assertThat(first.events()).anyMatch(event -> event.startsWith("scan1:scan_end"));
         System.out.println("[G0K1-order] GAP_W: " + String.join(" | ", first.events()));
 
-        // 后一次扫描（t_1=12）必然判孤儿
         var second = Scan.scan(2, 10, deathsAt(10, 3, 99), 2);
         assertThat(second.verdict()).isEqualTo("ORPHAN");
         assertThat(second.events()).anyMatch(event -> event.startsWith("scan2:ORPHAN(r1)"));
     }
 
     @Test void ownerDeathAfterScanEndIsPostDecisionAndCaughtByTheNextScan() {
-        // r1 属主在 t=5 死亡，晚于本次扫描结束 t_n=3 ⇒ 本次 CLEAR（判定后类）
         var first = Scan.scan(2, 0, deathsAt(0, 5, 99), 1);
         assertThat(first.verdict()).isEqualTo("CLEAR");
-        assertThat(first.events()).anyMatch(event -> event.startsWith("scan1:scan_end"));
-        // 后一次扫描（t_1=12）发生在死亡之后 ⇒ ORPHAN
         var later = Scan.scan(2, 10, deathsAt(10, 5, 99), 2);
         assertThat(later.verdict()).isEqualTo("ORPHAN");
-    }
-
-    // ------------------------------------------------------------------ 负控（守卫是否承重）
-
-    @Test void guardRemovedModelDetectsTheCounterexampleAndRestoringItRemovesIt() {
-        var removedTrace = new Trace();
-        var unguarded = new LocalGate(removedTrace, false, false);
-        unguarded.fence("before-call");
-        boolean delegated = unguarded.enterEffect("c2", null);
-
-        assertThat(delegated).as("撤去守卫后反例可达（这正是守卫承重的证据）").isTrue();
-        assertThat(unguarded.violations()).isEqualTo(1);
-        assertThat(removedTrace.joined()).contains("VIOLATION(c2)").contains("delegate(c2)");
-        System.out.println("[G0K1-order] negative control (guard removed): " + removedTrace.joined());
-
-        var restoredTrace = new Trace();
-        var guarded = new LocalGate(restoredTrace, true, false);
-        guarded.fence("before-call");
-        assertThat(guarded.enterEffect("c2", null)).isFalse();
-        assertThat(guarded.violations()).isZero();
-        System.out.println("[G0K1-order] restored run (guard enabled): " + restoredTrace.joined());
     }
 }
