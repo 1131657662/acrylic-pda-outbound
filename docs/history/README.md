@@ -1,5 +1,9 @@
 # 历史归档
 
+- [R09_C1_INITIAL_REGISTRATION_BATCH2_2026-09-28.md](R09_C1_INITIAL_REGISTRATION_BATCH2_2026-09-28.md)：c974188接入初次NORMAL双侧协调器/新存储；557/558重复HTTP mapping启动失败，修正探针后78项单测绿，C1真实验收未完成，红证据及接续条件完整保留。
+- [R09_C1_INITIAL_PROTOCOL_BATCH1_2026-09-28.md](R09_C1_INITIAL_PROTOCOL_BATCH1_2026-09-28.md)：37beeaa仅新增独立库外模型/耐久存储与测试，22项绿；c146f5f记录协议、可信原件及第二批DB存储边界。
+- [C1第二批收尾前看板原文](ORCHESTRATION_STATE_before_R09_C1_BATCH2_CLOSE_2026-09-28.md)：保存评估时断点；首批按只新增约束延后既有文档同步，历史指令不恢复生效。
+
 - [R09_C1_SCOPE_ASSESSMENT_2026-09-28.md](R09_C1_SCOPE_ASSESSMENT_2026-09-28.md)：独立初次NORMAL范围判c（兼b）；既有组件仅覆盖关闭链后的登记，需新组件/生产适配，按用户边界停报；含双侧证据、文件清单、3–4轮估算及未验，无代码/IT。
 - [C1范围评估前看板原文](ORCHESTRATION_STATE_before_R09_C1_ASSESSMENT_2026-09-28.md)：保留C2入口评估收尾断点，历史指令不恢复生效。
 
