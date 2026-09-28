@@ -6,60 +6,41 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 3dc628d
-dirty_entries: 0
+head: edb041a
+dirty_entries: 4
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 ```
 <!-- FACTS_END -->
-
-本页是**唯一断点记录**。事实块由脚本从源码生成（`powershell -NoProfile -File tools/version_facts.ps1 -Check` 校验漂移）；其余只写四节，每条一行。
-历史结论见[历史索引](history/README.md)；验收索引见[开发进度](DEVELOPMENT_PROGRESS.md)；范围与完成标准见[路线](DEVELOPMENT_ROADMAP.md)与[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)。
+本页是唯一断点；源码版本事实仅见上方生成事实块。旧当前区已[逐字归档](history/ORCHESTRATION_STATE_before_D_SLICE3_2026-09-28.md)，不恢复旧指令。详细历史见[历史索引](history/README.md)。
 
 ## 在途
-- **R06 M2b-4b 客户端一半**：A1 只读事实面 `4be09e2`、A2 复核页写操作 `94c74b4` 已完成；A3 **部分验证**（无会话 401/登录 200/事实面 200 全过，LINK/NORMAL_CONFIRM 的 Web 会话 POST 在真浏览器 403，记为**开关开放时另验**）。资格判定 `7448c91` 已完成，开关默认关闭。守卫星树 `r06-e2a-migration` detached `ea4d166`（分支未动、29 GB `.local` 完好）。
-- 下一步：**R07-3**（步骤 2 收尾 + 步骤 3 开局：内核 service/controller/configuration + CREATE Operation）；R06 剩余属发布准备期。
-- 用户当次指令：M2b-4b（服务端放宽已完成 `c975dfc`；Web 复核页写操作与 Android LINK 映射安装待做）；① 发布身份链已完成；④ 文档收敛与工作树清点已完成（**只清点，未删除任何目录**）；C 清单放着不动。
-- 写权：`codex/development` 单写者；服务端树 `r06-e2a-migration` 现为 detached `ea4d166`（仅用于本次验证，分支未动），未归档、未删除。
+- **R08 D 片3：阶段备份，内容验收阻断**。用户仅授权请求接线、契约草案与旧看板修正；发现真 bug 即停。请求链实现 edb041a 已推送，但审批人输出缺陷位于既有片2，未获修复授权，已停止开发与后续测试。
+- 基线：主树 D:/acrylic-pda-outbound，分支 codex/development；原交付点 184bfd7 / 文档收尾 5d4e06c；本轮 A2 文档 5eff71d、请求链阶段备份 edb041a。看板事实块是生成时快照，文档提交后的 HEAD 以 Git 为准。
+- 写权：本会话单写者；未启子代理，未发现其他活动写者。验证树 D:/acrylic-pda-worktrees/r06-e2a-migration 仍 detached ea4d166，保留既有改动；仅同步经基线哈希核对的9个请求/测试文件，清单及前像在主树 .local/d-slice3-20260928/。
+- 执行断点：attempt 487 已结束且证据保留；下次从488+查重分配。R08专用序列下一候选29未使用。无在途重型任务；19330/23308/19434均无监听，系统MySQL 3306未动。例行清理有cleanup空值警告，未自行修工具、未手动删除证据。
+- 下一步只等用户裁决：是否授权最小修复片2审批人身份输出并补内容断言与R08原确认回归；D四项边界补测、③命令完整性、②汇总及R09均不自动开工。
 
-## 已完成（每条一行：子项 → 证据路径 + 提交）
-- 冻结两树未提交成果 → `3c677ad` / `d16836b`（tag `freeze-20260926-pda-r06`、`freeze-20260926-server-r06e2a`）：[收敛前看板归档](history/ORCHESTRATION_STATE_before_status_convergence_2026-09-26.md)
-- 合并单一基线（V1–V41、`recovery/`、`temporary/evidence/` 进入 development）→ `be2048e`（tag `baseline-20260926`）：[现状审计](history/PROJECT_REVIEW_2026-09-26.md)
-- 默认关闭的命令接线 + 服务模式启动告警 → `27729f7`：[接续记录](history/R06_DEFAULT_OFF_COMMAND_WIRING_2026-09-26.md)
-- 文档收敛（本页字段化 + 生成事实块 + 硬上限、旧当前区归档）→ `22c2215`
-- Android 正式签名身份（R06 起，PKCS12/RSA4096/30 年，证书 SHA-256 `96E9DE81…95B8`）+ release 打包链 + 更新通道白名单补 `0.33.0` → `5678e06`（事实块刷新 `a37d662`）：[签名说明](PDA_SIGNING_GUIDE.md)
-- 唯一未跟踪文件回收（32 个：30 提交 + 2 归档到工作区外）→ `d0fa14e` / `1ee7931` / `3587628`：[回收记录](history/UNIQUE_FILE_RESCUE_2026-09-27.md)
-- 三个未合并提交全部合入 development（`0b1094e`→`f196887`、`94305a7`→`1e98e44`、`f051535`→`8bb3e57`）；`R08AuthorizationRaceIT` **9 项全通过**、web 构建通过 → [合并记录](history/MERGE_BATCH_2026-09-27.md)
-- **M2b-4b 服务端部分已收口**（守卫放宽 `c975dfc`；占用行迁移 `ee60155`；形状修复与计划比对 `70fde3b`；真实 HTTP 反例 `73767cb`）。实测 attempt **120**/**123** 均 `tests=1 failures=0 errors=0 skipped=0`——LINK 200 → NORMAL_CONFIRM 200，结果版本/槽位/占用/派发/决策版本/重放幂等逐条通过；反例 409 `TEMPORARY_LINK_TARGET_PLAN_DIFFERS` 且改回计划后放行。
-- **`c975dfc` 的"效果落点不需要改"已被实测推翻**（净结论）：①占用行 `bale_commitment.order_id` 是首次预留固化的历史行，`Head.order()` 管不到 → 必须随受控关联在同一事务内迁移该提交的 `REVIEW_RESERVED` 行；②回执形状契约 `CommandDecision.validate` 把"零候选"假设写死，关联后候选恰为 1 → 必须接受已关联且绑定同一目标的 `total==1`（换目标/多候选仍拒）。**仍成立**：结果版本/记账/槽位/订单事件/`current_result_version` 由 `Head.order()` 驱动并落在关联后的正式单；审计沿用该 LINK 命令既有账本回执与单一审计事件。
-- 工作树与本地证据归档候选清单（只清点、未删除）→ [归档候选清单](history/WORKTREE_ARCHIVE_CANDIDATES_2026-09-27.md)
-- **R06 Web 写操作客户端与服务端资格判定**：A1 只读事实面 `4be09e2`、A2 复核页写操作 `94c74b4`、A3 浏览器驱动与候选摘要修复 `d39abbb`、资格判定 `7448c91`（三个 available 标志均要求开关启用且各自 blockers/候选/issues 条件成立；`releaseAllowed` 与 capabilities 五项不动）。验证：web `typecheck`/`build` 均 0；服务端全量 718 项 = 717 通过 / 1 既有 flake（隔离重跑通过）/ 1 既有条件 skip。
-- 合并态机器口径（`--rerun-tasks`，非业务验收）：服务端 718 项 = 717 通过/1 条件 skip；Android 444 项 = 440 通过/4 条件 skip；均 0 失败。
-- 更早的 R06/R09 子项结论与测试口径：见[开发进度](DEVELOPMENT_PROGRESS.md)与 `history/R06_*`、`history/R09_*`。
+## 已完成（范围与证据）
+- **A2已修，纠正误报**：dcaf7ad 已在基线中；服务端候选响应与Web均使用commandContextSha256。历史attempt 377真HTTP通过；本轮只核实源码、祖先关系及[A3记录§6.6](history/A3_CSRF_ROOT_CAUSE_2026-09-27.md)，未重跑。欠债状态修正5eff71d已推送。
+- **R06开发与回归基本完成**：TEMP归档、Android LINK L4、flake已收口；A3测试侧CSRF及残余夹具已修。历史证据与未验项见[欠债清单](history/R06_DEBT_LIST_2026-09-27.md)，不代表全量、现场或生产开放。
+- **R07-3已收口，默认关闭、未发布**：步骤1–8、两阶段撤销及相关补项完成；政策与现场项见[收口文档](history/R07_3_ACCEPTANCE_2026-09-27.md)。旧“下一步开局”文字已归档。
+- **R08 C、D片1/片2已有交付**：b74078d快照、93bbfae渲染、1f422c2口径转换未改；486曾真出XLSX/PDF、原确认回归历史run27/28各14/14。此次内容回读发现其审批人字段既有缺陷，不以历史绿覆盖该问题。
+- **片3请求链当次通过**：edb041a；487 IT为1/0/0/0，真MySQL+真服19434+真实Web会话/CSRF申请与下载；更正前置沿既有PDA Bearer链。指定版本2、缺省版本1、幂等冲突、旧payload兼容、状态、重试与文件名均有断言；兼容性/恢复视图单测6/6。详见[阶段记录](history/R08_D_SLICE3_CHECKPOINT_2026-09-28.md)。
+- **XLSX/PDF已内容级读取**：487的7表及PDF两页可读取，版本、原2包/601.5kg、调整-2包/-601.5kg、净0包/0kg及2条凭据对得上；审批人字段不正确，故总体内容验收失败。
 
-## 未验与阻断（每条一行：项 → 缺什么 → 后果）
-- 七类生产决定 handler/POST → 代码已接线但**默认关闭**；开启需业主授权 + 契约同步发布 + **A3 根因已定位并测试侧修复（`0d14ba8`）；残余② R06 Web 命令夹具已收口 ✅（363/364）；残余① R07-1 HTTP 层③/④ 已收口 ✅（374）**；Android `LINK` 映射安装**已升 L4**（185/187） → 临时单仍不能确认出库。
-- **【新债·命令面缺陷】候选口径在 HTTP 面没有可用来源（v12 定性，未修）** → 契约 `temporary-command-facts-schemas.yaml:26` 早声明该字段由"人工核对的候选接口"提供，但该接口返回的是 `TemporaryDuplicateService` **另一套摘要** ⇒ HTTP 客户端无法自造；PDA 夹具靠进程内注入 bean。消费者 `TemporaryDuplicateCandidate.vue:30`＋`TemporaryReviewPage.vue:73`（走 `useTemporaryCommand.ts:50-57` 同一错口径）→ 开关一开 A2 必 409。**可独立修、不需开关授权、不改字段类型** → [A3 记录 §6.3](history/A3_CSRF_ROOT_CAUSE_2026-09-27.md)
-- **【新债·待裁决】交接权限面** → 设计语汇"REQUEST 需 `order:resume`／APPROVE 需 `order:handover`"内核未实现（`HandoverCommand.Identity.current:76` 只要求二者之一，`Actor.mayApprove():82` 同样）→ 374 ⑤ 实测 resume-only 过 approval 门。属政策裁决，**未改**。
-- TEMP 归档 → 生产侧已接线（`9a6a001`/`859edce`/`5d91f9d`）并加**默认关闭**开关 `outbound.temporary.archive.enabled`（默认 false；`2a3acce`/`a91572e`）：关闭态生产面＝历史硬拒绝（409 `TEMPORARY_CONFIRMATION_REQUIRED`），开启态走已接线 TEMP 分派。**已验**：attempt 176（关闭态端到端，库内归档 1 行/派发 2 条）与 178（关/开两场景：409 无归档行 / 200 签名 v2 回执 + 恰 1 行 + 重放稳定）。**未验**：开关开启属运维授权，生产未声明能力开放；`localDeletionAllowed=false`。
-- 恢复出口 → 生产无任何路径置 `RECOVERY_PENDING`；`RecoveryNormalRegistration` 无 bean/路由、`baseline` 无自动来源 → 只能靠 R09 运维链或人工 SQL 解除。
-- Android 发布身份 → **签名链已完成**；仍缺**现场**：真机安装、App 内升级实测、发布/部署授权 → 不能声称现场升级可用。
-- 现场与人工 → 真机/Keystore、独立人员、长时留存、外网与异地、生产审批均未验；R05 code20/Room17 历史关键未验、原资料与旧 BCD、R09 现场限制继续单列 → 不能声称上线就绪。
-- 服务端 IT 分批 → 入口 `tools/e2a-batch-it.ps1`（每类一 attempt + 聚合 + 分类；`f34c886`）：181–184 四类全绿；**波次 IT 仍缺专用库**。
+## 未验与阻断
+- **新阻断：审批人身份输出错误，未修**。CorrectionAdjustmentSource直接取BINARY(16)的approved_by，再String.valueOf，导致快照及XLSX/PDF出现[B@…且多次读取不稳定。旧486与新487均复现；最小修复涉及片2保护面，按硬边界停报。
+- **片3未收口**：R08ExportIT本轮未重跑，不得写成14/14保持；契约仅更新草案，未递增版本、未发布。PDF内容级读取成功不代表视觉版式验收；独立审查未做。
+- **D四项仍未验且未开工**：v2→v3多版本链导出、撤销后快照导出、抬头更正导出、部分更正净结果非空样本。现有更正业务IT跑过对应业务步骤，不能替代其导出验收。
+- **R07-1**：服务层①–④及3幂等、HTTP①–⑥有历史证据；⑤–⑧反例、3真并发、2原子性、APPROVE成功、PREPARE/ACTIVATE仍未验；REQUEST/APPROVE权限拆分待裁决。
+- **③/②**：命令完整性口径已定为命令记录时版本，仍待授权；汇总按最新有效版本已定但未实现。本轮均未改。
+- **R09 C1/C2**：NORMAL双侧登记未完成，应用入口接线未启动；跨生产恢复准入，另行立项授权。验证树不退役。
+- **累积未验**：A3剩余约80类非e2a及专用环境守卫族；政策P1–P7；真机/Keystore、App内升级、独立人员、长时留存、外网与异地、原资料/旧BCD、历史R05关键未验及R09现场限制；均不得以局部绿覆盖。
 
-- R07-1 交接命令层 → **部分已验**：反例①②③④ + 3 幂等已验（283／`3d37497`）；原"冻结卡点"＝夹具构造（幂等探测二次 REQUEST 撞 `uk_handover_scope_open`）已解除；**HTTP 层③/④ 已收口 ✅（374）**；**未验**：⑤–⑧、3 真并发、2 原子性、APPROVE 成功路径、PREPARE/ACTIVATE。
-- R07-3 更正 → **✅ 已收口（能力默认关闭，未发布）**：步骤 1-8 + 两阶段撤销 + B 组三项（窗口权威来源/附件三档限额/HEADER 补丁）+ 共享表回归（attempts 255/256）；D9/D10 裁决＝**接受缺口**（D10 经查无生产读方）。剩余＝政策项与现场/发布项，见 [收口文档](history/R07_3_ACCEPTANCE_2026-09-27.md)。
-## 越界提醒（不变）
-- `localDeletionAllowed=false`；七类生产决定 handler/POST/放行/证据写入/关闭能力**不得因内部测试通过而开放**；TEMP 生产归档边界不变。
-- 不合 `main`、不发布/部署、不操作原库现网，除非用户明确授权且证据满足范围；项目交接不等于生产授权。
-- 版本四元组只出现在上方生成事实块；其他文档不得手写复述（规则见 [AGENTS.md](../AGENTS.md)）。
-
-## 变更日志（滚动，只留最近 20 行）
-- 2026-09-27 v7-v9（原文已归档）：V43-V48 未破坏共享面（290）；R07-3 Web 路由（292）；非 e2a 回归面解锁（临时密钥 + `-NonE2a`）共 56 类（53 通过/3 需专用环境）并**修复本会话真回归**（`36d2368`）；v9 高风险 23 类=21 绿/2 环境守卫。**原文**见[归档](history/KANBAN_CHANGELOG_ARCHIVE_2026-09-27.md)。
-- 2026-09-28 v23：**D 片1+片2 均已交付 ✅**。片1（`b74078d`）＝服务端只读快照：`ExportFacts` 按版本取事实（`Head` 增 `resultVersion` 但保留旧构造器 ⇒ JSON 形状不变），新 `CorrectionExportSource` 沿用原确认读取器并按 `tempOrigin` 选路，`ExportSnapshotReader` 版本重载（**v==1 逐字不变**）；**语义①＝带调整凭据**。片2（`93bbfae`）＝**真出文件**：`Basis` 加 `CORRECTED`（枚举加值、字段零变更；`PdfHtml`/`ReportText` 本就对非原确认口径输出"净结果"文案，扫码模板按设计拒绝）＋决策④**边界层转换**独立成 `CorrectionAdjustmentSource`（`WEIGHT_CORRECTION+0包0克`⇒归零、`+1包>0克`⇒只改重量、其它报 `409 CORRECTION_EXPORT_KIND_AMBIGUOUS`；取 v2..目标版本整条链；撤销即归零；抬头更正支持），原 217 行超 200 行上限 ⇒ 拆为 98+117 行。**证据**：attempt **486** `1/0/0/0`（真服+真 MySQL+真渲染子进程+真作业租约；XLSX/PDF 双格式发布 + openpyxl 独立回读 7 表，订单汇总 `CORRECTED｜v2｜2.0包601.5kg→净0`、凭据 2 行），"版本有效明细"0 行但凭据仍在＝**零结果可追溯**；R08 run 28 **14/14 绿**。**片3 未接**（`basis` 正则未改 ⇒ 仍无法经 HTTP 申请）。**待决策**：②汇总按最新有效版本、③命令完整性按命令记录时版本（属待授权项）。未验：v2→v3、撤销、抬头更正真跑、净结果非空样本（[记录](history/R08_D_CORRECTION_SLICE1_2026-09-28.md)）。
-- 2026-09-28 v24（**会话收尾 / 切换 Codex**）：状态已固化 ✅。HEAD `184bfd7`→本次收尾提交；工作树干净、远端 `0 0`、事实块通过；**环境**：删 datadir 后 `D:` 82.22 GB 空闲（保留最近 50 个 attempt 的 datadir，最新含 481-486 证据）、**19330/23308/19434 端口全空闲**、杀掉 attempt 393 遗留的 mysqld 孤儿（系统 MySQL 3306 未动）、`.local/` 已 gitignore 且无被跟踪文件。**交接文档＝[SESSION_HANDOFF_2026-09-28](history/SESSION_HANDOFF_2026-09-28.md)**（本轮交付全表 / 待决策 / 未验边界 / 验证基础设施资产 / 硬边界 / 切换说明）。**待接续**：D 片3（请求面 `basis` 正则＋契约草案，待授权）、③ 命令完整性按命令记录时版本（待授权，动 R05/R06/R07 面）、② 汇总按最新有效版本（已判定未实现）、D 未验边界（v2→v3 链/撤销/抬头更正/部分更正样本）、A3 剩余约 80 个非 e2a 类、R09 C1/C2（建议单独立项）。
+## 越界提醒
+- 七类生产决定、TEMP归档等生产开关保持默认关闭；localDeletionAllowed=false；普通有权正常确认允许空理由。内部测试不授权生产放行、证据写入或关闭能力。
+- 不合main、不发布契约/部署、不动原库现网、不提交密钥/数据库/真实业务数据；片1/片2、R05/R06/R07业务与ConfirmedV1Adapter未改。
+- 历史红attempt及本轮独立内容回读失败均保留；磁盘策略仅按已有规则处理旧datadir，其余证据不删。
 <!-- CURRENT_STATE_END -->
-
-历史已移至[管理原文归档](history/management-2026-09-25-before-refresh/README.md)和[历史索引](history/README.md)。旧段落中的“当前/最新”、旧 SHA 和角色均只作历史证据。
-
