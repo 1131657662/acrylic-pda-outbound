@@ -1,4 +1,6 @@
-# A3 非e2a回归接续：attempt496–500，真缺陷停报（2026-09-28）
+# A3 非e2a回归接续：首批停报与修复后续验（2026-09-28）
+
+接续索引：§1–4保留496–500当时停报事实；用户授权JWT修复后，39d1b84及501–505验收见[JWT记录](R06_JWT_CLASSIFICATION_FIX_2026-09-28.md)，余7类506–512结果见§5。旧“未修/未启动/待决策”仅对应各节时间点，不恢复为接续指令。
 
 ## 1. 范围与输入
 
@@ -52,3 +54,38 @@
 各harness均确认19330释放，收尾19330/19434/23308空闲，系统3306未动，无在途测试。旧验证树前后status逐字一致。实际使用号止于500，501及以后未启动，下一attempt501+须再查重；R08专用run32未使用。
 
 未验：首批余7类和后续非e2a、IdentityLock/ledgerverify等专用环境、迁移/Android现场组合；没有全量IT通过结论。D范围外见[交付确认](R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)，抬头撤销见[R07 blocker](R07_3_HEADER_WITHDRAW_BLOCKER_2026-09-28.md)。不改业务代码/ConfirmedV1Adapter/契约/生产开关，不部署或合main。R06缺陷修复及R09 C2是否另立项交用户决策。
+
+## 5. 授权修复后完成原首批余7类
+
+用户已授权R06 JWT先定性再修，并在有余量时继续A3。定性a为4b25bca，最小修复39d1b84，验收记录7bded33；R09 C2独立范围84db51c。原500失败已由501的TemporarySourceEvidenceIntegrityIT六项绿复验，原红不覆盖。501–505是JWT定向/认证验收，不能沿用旧manifest中的同号分配。
+
+此次续跑代码输入39d1b84，期间只有文档提交、源码/工具/fixture零改动。506–512执行前再次跨34棵工作树.local查重并确认端口无其他写者，使用新resume-manifest.json替代原计划号码。仍由忽略目录run-batch.ps1逐类调用e2a-batch-it.ps1/-NonE2a，每类一个独立空库/账号/attempt，任一非零退出即停。没有新增fixture。
+
+| attempt | 类 | tests / failures / errors / skipped | 分类与覆盖 |
+| --- | --- | --- | --- |
+| 506 | SourceFoundationConcurrencyIT | 2/0/0/0 | 通过：合成来源写者与正式提交两种争锁次序；不代表生产来源接纳 |
+| 507 | TemporaryAcknowledgementIT | 9/0/0/0 | 通过：激活事实、回执耐久/丢响应/重放及过期边界 |
+| 508 | TemporaryPreparationIT | 5/0/0/0 | 通过：准备分片内容/摘要、固定授权和映射变化后原包重放 |
+| 509 | TemporarySubmissionTransportIT | 9/0/0/0 | 通过：分块恢复、同源唯一落单、ABORT竞争、审计冲突回滚 |
+| 510 | DeviceTemporaryOrderAtomicityIT | 3/0/0/0 | 通过：设备版本竞争、审计失败回滚、同键单回执 |
+| 511 | PcConcurrencyIT | 3/0/0/0 | 通过：PDA/PC抢占、重复开工、跨订单包占用竞争 |
+| 512 | PcExceptionConcurrencyIT | 3/0/0/0 | 通过：停止/记录竞争、交接重放、撤回审批/应用竞争 |
+
+**本次续跑7类34项全绿，0失败/0error/0skip。** 原首批12类现均有绿色记录：496–499四类28项、501复验6项、506–512七类34项，合计68项（不同提交与批次的验收汇集，**不是同一次全批执行**）。历史500为5/1/0/0且永久保留；修复后测试增加1项，故与原测试数不同。JWT额外来源/认证四类不混入原12类计数。
+
+证据仍为**真实独立MySQL + Spring/MockMvc，不是外部真实HTTP**；未跳过环境守卫，迁移到测试源码所定义上限，具体源码版本事实见看板。每个attempt的XML、迁移记录与退出码已逐项核对。非e2a started/completed=false是未写e2a one-shot marker，不是未执行。
+
+506复用既有合成来源写者直接登记来源占用，真实事务/锁等待与正式提交竞争有效，但不能替代原身份/可信原件的生产来源接纳验收。其两份锁证据另存于.local/a3-continuation-20260928/source-concurrency-attempt506/，防止后续重跑覆盖。
+
+## 6. 续跑证据与收尾
+
+- .local/a3-continuation-20260928/resume-allocation-check.json、resume-manifest.json（测试源码SHA-256）、resume-console.log、resume-results.json（XML路径/哈希）保留完整分配与输出；旧manifest仅作历史计划，号码不得直接再用。
+- .local/it-batches/batch-20260928-130005-start506、130039-start507、130115-start508、130149-start509、130232-start510、130305-start511、130339-start512保存逐类REPORT.md、日志/XML。
+- .local/e2a-cross-20260925-506至512保存隔离库/日志/storage；历史500及JWT修复前单测两红原件保留。本次未清理失败证据。
+- 旧验证树仍detached ea4d166，续跑前后97条dirty/untracked文本一致（resume-verification-status-after.txt比对原verification-status-after.txt，差异0）；未同步、重置、提交或合并旧树。
+
+测试进程已结束，19330/19434/23308均空闲，系统3306未动，无在途重型任务。实际attempt用至512，后续513+执行前须再查重；R08专用run32未用。只有当前助手写入，最终未提交清单以Git状态核对。
+
+本轮只完成原首批剩余7类，**未启动第二批**。后续普通非e2a类仍需分批；建议下一批从原已准备的UserPasswordPolicyIT、UserManagementConcurrencyIT、UserManagementRollbackIT、PairingApiIT、PairingConcurrencyIT、PdaPreparationIT及订单/发布/条码/Worker相关类中取12–15类，执行前按共享表风险和已有证据去重，重新分配attempt。IdentityLock/ledgerverify专用环境、Android/迁移组合及现场仍单列未验，缺报告绿记录的类数不等同精确未跑数。
+
+原首批完成后交回用户决策：继续A3剩余回归或转其他方向。R09 C2只有范围登记、实施未启动；R07抬头撤销仍只记录。未改任何其他业务/测试代码、ConfirmedV1Adapter、契约或生产默认值/开关，未发布、部署或合main。
