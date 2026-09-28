@@ -1,5 +1,7 @@
 # 历史归档
 
+- [A3_POST526_REGRESSION_2026-09-28.md](A3_POST526_REGRESSION_2026-09-28.md)：526另挂专项后接续回归；531–542十二类47项全绿，529/530环境入口失败保留，真实MySQL+MockMvc。
+
 - [A3_526_LOCK_PENDING_SCOPE_2026-09-28.md](A3_526_LOCK_PENDING_SCOPE_2026-09-28.md)：用户将526按疑似缺陷挂待专项，列真实业务入口/执行计划/跳锁/竞争验收条件，不占其他A3回归轮次。
 
 - [A3_526_LOCK_DIAGNOSIS_2026-09-28.md](A3_526_LOCK_DIAGNOSIS_2026-09-28.md)：527绿/528红原样重现，43份锁快照及线程栈确认SKIP LOCKED查询等待pending主键锁；定性b，未修产品/测试，执行计划与真实写入口影响待评估。

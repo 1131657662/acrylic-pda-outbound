@@ -1,8 +1,10 @@
 # A3非e2a剩余逐类目录（2026-09-28）
 
-清点输入83e633b。按批次入口XML清点136个非e2a源文件，67类已有绿，69类待核；执行513–526共14类（13绿/1红），55类未跑。8类R08已有专用入口验收，本次不重复；**待跑47类已获授权继续，A3-526疑似缺陷另挂待专项、不阻断其他类**。527绿/528红为同类重现，不增覆盖类数；未修产品/测试。源码版本事实见[看板生成块](../ORCHESTRATION_STATUS.md)。
+原清点输入83e633b：136个非e2a源文件中67类已有批次绿，69类待核；513–526跑14类（13绿/1红），55类未跑，8类R08按专用验收去重。用户授权继续其余47类后，531–542新增12类47项绿，**余35类待跑**；529/530无XML不计执行。A3-526疑似缺陷另挂待专项、不阻断其他类；527/528同类重现不增类数。源码版本事实见[看板生成块](../ORCHESTRATION_STATUS.md)。
 
 本目录不声称55类在所有历史入口从未运行，也不以缺XML推定失败；只记录当次批次证据与接续条件。结果与停报原因见[本批记录](A3_NON_E2A_WAVES_2026-09-28.md)。
+
+授权恢复后的逐批结果见[接续记录](A3_POST526_REGRESSION_2026-09-28.md)；下表保留已跑类的attempt，未跑类仍逐项列出。
 
 ## A3-526另挂待专项（不阻断其他类）
 
@@ -10,7 +12,7 @@
 
 ## 普通非e2a及生成夹具（16类）
 
-后续批次未启动；夹具通过也不等于浏览器/Android组合验收。
+本次第一批已执行TEMP两类夹具及任务生命周期；其余保持待跑，夹具绿不等于浏览器/Android消费。
 
 | 类 | 本轮状态/输入 |
 | --- | --- |
@@ -21,31 +23,31 @@
 | PairingConcurrencyIT | 未跑 |
 | PcSearchIT | 未跑 |
 | PdaAndroidFixtureIT | 未跑 |
-| TemporaryAuditContractFixtureIT | 未跑 |
-| TemporaryContractFixtureIT | 未跑 |
+| TemporaryAuditContractFixtureIT | 通过，attempt 540，1/0/0/0 |
+| TemporaryContractFixtureIT | 通过，attempt 541，1/0/0/0 |
 | UserManagementBrowserFixtureIT | 未跑 |
 | UserManagementConcurrencyIT | 未跑 |
 | UserManagementRollbackIT | 未跑 |
 | UserPasswordPolicyIT | 未跑 |
-| BackgroundJobLifecycleIT | 未跑 |
+| BackgroundJobLifecycleIT | 通过，attempt 542，10/0/0/0 |
 | BackgroundJobWorkerIT | 未跑 |
 | OrderNumbersIT | 未跑 |
 
 ## 身份锁与精确身份集合（9类）
 
-继承IdentityLockFixture固定坐标/账号守卫；本机新隔离实例适配草稿未执行，不能称环境已验。
+9类均已在本次新隔离实例通过，端口/库名/账号守卫保持，35项全绿；不外推其他专项库环境。
 
 | 类 | 本轮状态/输入 |
 | --- | --- |
-| IdentityLockAuthenticationIT | 未跑 |
-| IdentityLockBusinessIT | 未跑 |
-| IdentityLockBypassIT | 未跑 |
-| IdentityLockRevocationIT | 未跑 |
-| IdentityLockTemporaryIT | 未跑 |
-| IdentitySetContinuationIT | 未跑 |
-| IdentitySetFinalizationIT | 未跑 |
-| IdentitySetPcIT | 未跑 |
-| IdentitySetSessionIT | 未跑 |
+| IdentityLockAuthenticationIT | 通过，attempt 535，5/0/0/0 |
+| IdentityLockBusinessIT | 通过，attempt 533，3/0/0/0 |
+| IdentityLockBypassIT | 通过，attempt 534，3/0/0/0 |
+| IdentityLockRevocationIT | 通过，attempt 532，9/0/0/0 |
+| IdentityLockTemporaryIT | 通过，attempt 531，6/0/0/0 |
+| IdentitySetContinuationIT | 通过，attempt 537，1/0/0/0 |
+| IdentitySetFinalizationIT | 通过，attempt 536，2/0/0/0 |
+| IdentitySetPcIT | 通过，attempt 538，4/0/0/0 |
+| IdentitySetSessionIT | 通过，attempt 539，2/0/0/0 |
 
 ## Ledger作者/生产边界（2类）
 
