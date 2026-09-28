@@ -1,10 +1,12 @@
 # 历史归档
 
+- [R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md](R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)：用户按已验范围接受D整块交付；片1/2/3、四项基本边界及三项修复的证据与范围外限制。
+
 - [R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md](R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md)：B3定性A、68a43f8抬头修复及495/run31验收；凭据扫描发现R07抬头撤销空账静态阻断，已停报。
 
 - [R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md](R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md)：撤销版本定性A及493修复验收；494抬头零明细凭据缺陷停工，包含全部失败与未验。
 
-- [R08_D_BOUNDARIES_2026-09-28.md](R08_D_BOUNDARIES_2026-09-28.md)：四项基本样本通过证据索引（489/490/493/495）；历史红保留，抬头撤销组合有静态阻断，整块交付待用户裁决。
+- [R08_D_BOUNDARIES_2026-09-28.md](R08_D_BOUNDARIES_2026-09-28.md)：四项基本样本通过证据索引（489/490/493/495）；历史红及组合未验保留，交付决定见D交付确认。
 
 - [R09_JAVA_CONTROL_ACCEPTANCE_2026-09-26.md](R09_JAVA_CONTROL_ACCEPTANCE_2026-09-26.md)：外部可信checkpoint/完整链/严格路径与Python→Java原件消费，Windows/Linux各16项真实进程锁；失败和共享接入限制保留。
 

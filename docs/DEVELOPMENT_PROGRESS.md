@@ -24,7 +24,7 @@
 
 | 范围 | 证据及适用边界 |
 | --- | --- |
-| R08 D 更正导出与四项边界 | [撤销验收](history/R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md)、[抬头验收与假设扫描](history/R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md)、[四项历史](history/R08_D_BOUNDARIES_2026-09-28.md)；仅作证据入口，状态见看板 |
+| R08 D 更正导出与四项边界 | [交付确认](history/R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)、[撤销验收](history/R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md)、[抬头验收与假设扫描](history/R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md)、[四项历史](history/R08_D_BOUNDARIES_2026-09-28.md)；仅作证据入口，状态见看板 |
 | R09 耐久关闭意图/接纳排空 | [验收](history/R09_CLOSING_INTENT_ACCEPTANCE_2026-09-26.md)：协议v2原意图永久保留、新写者拒绝；Windows/Linux各31无skip、Java675pass/1skip、Python114pass/11skip；attempt82实库事务/投影/HTTP。全应用接线与NORMAL仍未完 |
 | R09 关闭阶段数据库投影 | [验收](history/R09_CLOSED_PROJECTION_ACCEPTANCE_2026-09-26.md)：V39非空迁移、原事实字节不变、四阶段及并发/回退/错库反例；670单测通过/1skip，attempt80实库+HTTP/浏览器。仍未接共享入口或NORMAL |
 | R09 真实事务生命周期租约 | [验收](history/R09_LEASED_TRANSACTION_ACCEPTANCE_2026-09-26.md)：提交/回滚/UNKNOWN/内层事务反例、670单测通过/1skip，attempt78独立非空MySQL及原HTTP/浏览器回归，JVM退出后连接/事务0；API共享接入和DB投影仍未完 |
