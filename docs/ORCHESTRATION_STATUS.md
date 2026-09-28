@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 48609c1
-dirty_entries: 7
+head: 1b03f34
+dirty_entries: 5
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
@@ -16,12 +16,13 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 
 本页是唯一断点；源码版本事实仅见生成事实块。替换前结论已[原文归档](history/ORCHESTRATION_STATE_before_D_HEADER_STOP_2026-09-28.md)，不恢复历史指令。事实块为生成时快照，随后文档提交HEAD以Git为准。
 
-## 停工与断点
+## 在途
 - **撤销后导出已修复并推送0e837ff**；只读设计定性A已由6d5d019保存。v3合法、WITHDRAWN终态，不回指v1。详细证据见[本轮记录](history/R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md)。
 - 主树D:/acrylic-pda-outbound、codex/development，停工代码HEAD48609c1（抬头失败测试阶段备份）；0e837ff修复/0797228验收文档均已推送。单助手，无活动写者/重型任务，后续文档提交HEAD以Git为准。
 - 验证树D:/acrylic-pda-worktrees/r06-e2a-migration仍detached ea4d166，既有未提交/未跟踪全部保留；本轮同步8个撤销相关文件+3个抬头测试文件，前像/最终哈希及前后全量status在.local/d-withdraw-fix-20260928/。
 - **第三轮494发现新的抬头导出真bug，立即停工**：真实CREATE/APPROVE成功，无dispatch样本v2抬头正确；随后快照读取报“该结果版本没有可追溯的更正凭据行”。仅保存红证据，未修。导出HTTP/文件未抵达，不写成HTTP拒绝。
-- 三轮已到限；D四边界3通过/1失败，不能整体交付。交回用户决定是否另授抬头导出修复；不转R09/A3。下一attempt495+/R08 run31须先查重。
+- 用户已另行授权抬头修复，2–3轮；本轮第一步只读定性A：B3明确标量补丁保存在CREATE命令回执，不产生数值明细/effect/账务。实现与设计一致，缺陷在R08消费面，详见[抬头修复记录](history/R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md)。
+- 基线1b03f34、主树干净且已推送；仍单助手。第一步未改R08生产代码；无需新表/列/快照字段，沿已授权A分支修凭据读取及渲染校验。四边界仍3通过/1失败，不能提前交付；下一attempt495+/R08 run31先查重。
 - 重型任务已结束，隔离测试端口已随harness停库；系统原库不动。历史失败库/日志保留，未自行清理。
 
 ## 验证与四项边界

@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md](R08_D_HEADER_DESIGN_AND_FIX_2026-09-28.md)：B3零明细抬头定性A、R08修复和凭据假设扫描。
+
 - [R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md](R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md)：撤销版本定性A及493修复验收；494抬头零明细凭据缺陷停工，包含全部失败与未验。
 
 - [R08_D_BOUNDARIES_2026-09-28.md](R08_D_BOUNDARIES_2026-09-28.md)：四项边界原轮与后续索引；部分/连续更正通过，撤销491红后493修复通过，抬头494失败；D未整体交付。
