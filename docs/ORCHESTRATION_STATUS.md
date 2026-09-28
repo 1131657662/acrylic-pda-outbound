@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 5e48d80
+head: 4a8e99c
 dirty_entries: 5
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
@@ -15,14 +15,12 @@ server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 <!-- FACTS_END -->
 本页是唯一断点；源码版本事实仅见生成事实块。前三阶段旧结论均已原文归档，最近一次见[停工前归档](history/ORCHESTRATION_STATE_before_D_WITHDRAW_STOP_2026-09-28.md)；不恢复历史指令。事实块为生成时快照，随后文档提交的HEAD以Git为准。
 
-## 在途与停工
-- **D四项边界第三轮发现真bug，已停止**：部分更正489通过、连续更正490通过、撤销后491失败；抬头项遵守“真bug即停”跳过。D整块不能交付，不能转R09/A3。[逐项证据与提交](history/R08_D_BOUNDARIES_2026-09-28.md)。
-- 主树D:/acrylic-pda-outbound，codex/development，从eb3097d接续；测试提交b523eff、42b96fd、失败阶段备份5e48d80均已推送；前两阶段文档092063d、3cf0709。没有未提交业务修改，文档收尾实际HEAD以Git为准。
-- 写权：单助手，无子代理/其他已发现写者。验证树D:/acrylic-pda-worktrees/r06-e2a-migration仍detached ea4d166，保护原有全部脏文件；本轮累计只同步7个测试文件，未提交/合并/重置验证树。
-- 改动清单：既有E2aCorrectionChainIT仅测试方法可见性；新增Partial/Chained/Withdrawn三组IT及对应HTTP检查，新增tools/verify-corrected-export-content.py。文档仅看板、欠债清单、边界记录、历史索引和三个旧看板原文归档；完整路径/哈希/原状态见报告及主树.local/d-boundaries-20260928/。
-- 执行断点：489/490均1/0/0/0，491为1/1/0/0（真实HTTP409，失败期待不改为成功）。三个attempt的独立XML、日志、marker、库/请求/响应/产物均保留；无在途重型任务，19330/23308/19434无监听，系统MySQL3306未动。
-- 下次attempt从492+查重，R08专用run从30查重。489/490既有cleanup空值警告原样保留，491失败正常收尾释放端口；不清理失败库或证据。
-- 下一步只等用户决定是否授权撤销后导出缺陷修复；未修片1/片2/片3，未补抬头样本，不自动切③/②/A3/R09。
+## 在途
+- **撤销后导出修复已授权，第一步判定A**：v3是设计要求的合法结果版本，WITHDRAWN是终态；缺陷属R08读取/渲染消费面。只读定性证据见[本轮记录](history/R08_D_WITHDRAW_DESIGN_AND_FIX_2026-09-28.md)，未修改生产代码。
+- 基线：主树D:/acrylic-pda-outbound，codex/development，4a8e99c；单助手，无其他已发现写者或在途任务。验证树仍detached ea4d166，全部既有改动保留，初始状态已存.local/d-withdraw-fix-20260928/。
+- 下一步仅已授权的R08撤销导出修复：保留v2原凭据、追加v3撤销凭据并逐项校验；不改R07状态/版本写入、不改ConfirmedV1Adapter。测试监听空闲，attempt492+/专用run30起先查重。
+- 前轮2通过/1失败/1跳过仍是有效证据状态；491红证据不删。486零包文件属于撤销前v2，不能作撤销后导出通过证据；旧看板已[原文归档](history/ORCHESTRATION_STATE_before_D_WITHDRAW_REPAIR_2026-09-28.md)。
+- 2–3轮时间盒；撤销修复、内容验收及默认v1回归通过后，有余量才补抬头。遇新的真bug即停，不自动切R09/A3。
 
 ## 本次已验证
 - **部分更正净结果非空**：复用两包真实命令夹具，仅归零第一包；原2包/601.5kg、调整-1包/-300.5kg、净1包/301kg。489真MySQL/真服/PDA更正+Web会话CSRF导出，XLSX有效明细1行与凭据1行，PDF两页关键值回读正确。
