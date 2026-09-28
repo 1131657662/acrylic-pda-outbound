@@ -14,6 +14,7 @@ import static com.acrylic.outbound.recovery.RecoveryControlFormat.require;
 public final class InitialNormalStore {
     static final String REQUEST = "initial-normal-request.json";
     static final String COMPLETE = "initial-normal-committed.json";
+    static final String UNKNOWN = "initial-normal-unknown.json";
     private final RecoveryControlLocation location;
     private final Path trustedRequest;
 
@@ -75,7 +76,25 @@ public final class InitialNormalStore {
         InitialNormalDisk.publish(location.checked().root(), COMPLETE, completion.bytes());
     }
 
+    /** A persistent poison marker; no in-process retry or automatic UNKNOWN reconciliation. */
+    void unknownLocked() throws IOException {
+        InitialNormalDisk.publish(location.checked().root(), UNKNOWN, trusted().originalBytes());
+    }
+
+    void requireUnclosed(Path closedAuthority) throws IOException {
+        var checked = location.checked();
+        Path closed = RecoveryControlPaths.checked(closedAuthority);
+        require(!RecoveryControlPaths.overlap(checked.root(), closed), "INITIAL_NORMAL_CONTROL_OVERLAP");
+        require(!RecoveryControlPaths.overlap(closed, checked.checkpoint(trustedRequest)), "INITIAL_NORMAL_CONTROL_OVERLAP");
+        for (Path restored : checked.restoreRoots())
+            require(!RecoveryControlPaths.overlap(closed, restored), "CONTROL_INSIDE_RESTORE_SET");
+        // Even an incomplete closed bootstrap is terminal for this initial-only registration path.
+        require(!Files.exists(closed, LinkOption.NOFOLLOW_LINKS), "INITIAL_NORMAL_CLOSED_AUTHORITY");
+    }
+
     private static void layout(Path root) throws IOException {
+        require(!Files.exists(root.resolve(UNKNOWN), LinkOption.NOFOLLOW_LINKS)
+            && !Files.exists(root.resolve(UNKNOWN + ".pending"), LinkOption.NOFOLLOW_LINKS), "INITIAL_NORMAL_UNKNOWN");
         Set<String> allowed = Set.of("coordinator.lock", REQUEST, COMPLETE, REQUEST + ".pending", COMPLETE + ".pending");
         try (var paths = Files.newDirectoryStream(root)) {
             for (Path path : paths) require(allowed.contains(path.getFileName().toString()), "INITIAL_NORMAL_UNKNOWN_ARTIFACT");

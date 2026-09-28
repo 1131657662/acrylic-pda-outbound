@@ -12,6 +12,10 @@ import java.util.function.Supplier;
  * is reported as not admitted so callers stay closed.
  */
 public final class RecoveryAdmissionVerifier {
+    /** Snapshot check only. C2 operation leases and production entry wiring remain separate. */
+    public static Result verifyInitial(RecoveryAdmissionEvidence evidence, InitialNormalStore store, Path closedAuthority) {
+        return InitialNormalVerification.verify(evidence, store, closedAuthority);
+    }
     private final RecoveryAdmissionEvidence evidence;
     private final Supplier<RecoveryControlSnapshot> authority;
     private final Supplier<RecoveryIntentView> intent;

@@ -12,6 +12,8 @@ public final class RecoveryAdmissionQueries implements RecoveryAdmissionEvidence
 
     public RecoveryAdmissionQueries(DataSource source) { this.jdbc = new JdbcTemplate(source); }
 
+    @Override public Initial initial() { return InitialNormalQueries.read(jdbc); }
+
     @Override public Binding binding() {
         var rows = jdbc.query("SELECT BIN_TO_UUID(installation_id),baseline_numeric_epoch FROM recovery_installation_binding WHERE id=1",
             (rs, row) -> new Binding(UUID.fromString(rs.getString(1)), rs.getLong(2)));

@@ -13,6 +13,11 @@ import static com.acrylic.outbound.recovery.RecoveryControlFormat.require;
  * bean, exposes no route, and grants no production capability by itself.
  */
 public final class RecoveryNormalRegistration {
+    /** Initial registration is deliberately distinct from the historical closed-chain register(). */
+    public static InitialNormalRegistration.Result registerInitial(DataSource source, InitialNormalStore store,
+            Path closedAuthority) {
+        return new InitialNormalRegistration(source, store, closedAuthority).register();
+    }
     /** Without a durable external intent the operator identity is not evidence; the record says so. */
     private static final String NO_EXTERNAL_INTENT = "UNRECORDED_EXTERNAL_INTENT";
     private static final String REGISTERED = "REGISTERED";

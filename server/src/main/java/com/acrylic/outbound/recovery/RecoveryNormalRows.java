@@ -10,6 +10,17 @@ final class RecoveryNormalRows {
     private final JdbcTemplate jdbc;
     RecoveryNormalRows(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
+    /** Freeze the original initial request, without touching the closed-chain tables or service mode. */
+    void initial(InitialNormalEvidence original) {
+        jdbc.update("""
+            INSERT INTO recovery_initial_normal(id,format_version,installation_id,epoch_id,numeric_epoch,
+                mysql_server_uuid,database_schema,command_id,request_sha256,request_bytes)
+            VALUES(1,1,?,?,?,?,?,?,?,?)
+            """, Ids.bytes(original.installation()), Ids.bytes(original.epoch()), original.numericEpoch(),
+            Ids.bytes(original.serverUuid()), original.schema(), Ids.bytes(original.command()),
+            hash(original.sha256()), original.originalBytes());
+    }
+
     Record existing() {
         var rows = jdbc.query("SELECT control_revision,control_record_sha256,previous_record_sha256,intent_sha256,numeric_epoch,operator_id,authority_revision "
             + "FROM recovery_normal_admission WHERE id=1",

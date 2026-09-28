@@ -18,6 +18,11 @@ final class RecoveryNormalIntent {
 
     private RecoveryNormalIntent() { }
 
+    /** Independent initial protocol: missing original evidence is never optional. */
+    static InitialNormalStore.Snapshot initial(InitialNormalStore store) throws IOException {
+        return store.inspectLocked();
+    }
+
     static Requirement load(RecoveryControlLocation location, Path root, long baseline) throws IOException {
         Path directory = RecoveryControlPaths.checked(root);
         Path path = directory.resolve(FILE);

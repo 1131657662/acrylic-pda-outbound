@@ -8,6 +8,10 @@ import java.util.UUID;
  * repair, register or grant anything.
  */
 public interface RecoveryAdmissionEvidence {
+    /** Initial evidence must be supplied explicitly; historical implementations deny by default. */
+    default Initial initial() throws Exception { return null; }
+
+    record Initial(UUID serverUuid, String schema, State state, boolean closedHistory, InitialNormalEvidence request) { }
     /** The database installation binding, or null when no closed-phase registration was projected. */
     Binding binding() throws Exception;
 
