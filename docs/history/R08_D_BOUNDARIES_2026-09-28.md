@@ -36,3 +36,37 @@
 - 证据在验证树.local/e2a-cross-20260925-490/：独立XML、日志、marker、storage/chained-correction/中的database-facts、分格式快照、chained.xlsx/pdf、content-readback.json、pdf-extracted.txt、chain-validator-checks.txt。同步仅新增两个测试文件；哈希在主树.local/d-boundaries-20260928/chain-sync-manifest.json。
 - 无红业务attempt；已知cleanup空值警告保留，测试退出0、监听释放。一次只读rg在Windows上使用路径通配符失败，改为目录加-g过滤；未作为业务证据。
 - 第二轮结束仍未验：撤销后、抬头更正；下一步按风险顺序测试撤销。D未整体交付，不转其他任务。
+
+## 6. 第三轮：撤销后导出失败，立即停工
+
+失败测试阶段备份5e48d80已推送；第二轮文档提交3cf0709。复用同一两包业务夹具，仅归零第一包后执行原审批人WITHDRAW、申请人WITHDRAW_CONFIRM；角色/expected沿用已验证测试帮助方法，没有直接改业务事实来制造状态。
+
+“撤销归零”按现有已交付业务定义指更正净调整归零，不是把原订单实绩归零。真实命令回执及数据库共同证明：v1为2包/601.5kg，v2为1包/301kg，撤销生成v3回到2包/601.5kg；两条correction_ledger的数量/重量合计均为零。两条有效快照恢复原300.5kg和301kg。
+
+- attempt491 / E2aWithdrawnCorrectionExportIT：tests=1 failures=1 errors=0 skipped=0。编译成功；test-started存在，test-completed/withdrawn-http-completed不存在。保留红色200期待，未吞错或改为“409即通过”。
+- 真实Web会话/CSRF发送XLSX、CORRECTED、resultVersion=3；HTTP409，code=EXPORT_SOURCE_UNAVAILABLE，message=该结果版本没有对应的更正文档。失败发生于申请阶段，未生成导出快照/文件，PDF请求尚未执行。
+- v3.source_correction_id与原更正文档ID相同；文档status=WITHDRAWN、effective_result_version=2，withdrawal_confirmed_by/at已写；直接调用现有ExportFacts.correctionDocumentFor(order,3)返回null。库内原始事实保存于database-facts.json。
+- 对应生产判定：ExportFacts.java:58–64只筛effective_result_version=目标版本且状态在EFFECTIVE/WITHDRAW_PENDING；CorrectionExportSource.java:51–52要求查到文档。这同时漏掉撤销新版本关联和WITHDRAWN状态，是本次已确认的导出阻断，不是fixture未造出撤销结果。
+- 按用户硬边界立即停工，不修片1/片2/片3、不继续抬头、不发起更多业务测试。来源判定之后的撤销凭据表达、版本链和渲染约束尚未抵达；未宣称只改查询状态就能完整修复。
+- 491失败后harness退出1，19330/19434释放，未出现489/490成功尾部的cleanup空值警告。失败库、日志与全部回执保留，不清理或覆盖。测试自审在执行前纠正了新断言查询的列归属（账表按correction_line_id取，不存在order_id）；此为测试草稿修正，未另占attempt，也不是生产修复。
+
+## 7. 四项最终状态与提交
+
+| 风险顺序 | 边界 | 结果 | 当次证据 / 测试提交 |
+| --- | --- | --- | --- |
+| 1 | 部分更正且净结果非空 | 通过 | 489：1/0/0/0；XLSX/PDF内容回读PASS；b523eff |
+| 2 | v2→v3连续更正 | 通过 | 490：1/0/0/0；完整链/缺链反例/文件内容PASS；42b96fd |
+| 3 | 撤销后快照导出 | 失败 | 491：1/1/0/0；HTTP409真bug；5e48d80阶段备份 |
+| 4 | 抬头更正（无dispatch） | 跳过 | 第3项确认真bug后按授权停工；无attempt、无样本/内容结果 |
+
+前两阶段文档分别092063d、3cf0709；本次停工文档提交SHA以Git记录为准。每步均单独提交并推送origin/codex/development，没有合main。业务生产路径从eb3097d到本轮无diff；原默认v1的R08ExportIT当次未重跑，run29 14/14仅历史引用。
+
+## 8. 最终接续断点与未验范围
+
+- 主树D:/acrylic-pda-outbound，codex/development；本轮代码变动：server/src/test/java/com/acrylic/outbound/e2averify/E2aCorrectionChainIT.java（仅9个方法/类型可见性），同目录E2aPartialCorrectionExportIT.java、E2aChainedCorrectionExportIT.java、E2aWithdrawnCorrectionExportIT.java，inventory目录PartialCorrectionExportHttpChecks.java、ChainedCorrectionExportHttpChecks.java、WithdrawnCorrectionExportHttpChecks.java，以及tools/verify-corrected-export-content.py。无生产文件变动。
+- 文档变动：docs/ORCHESTRATION_STATUS.md、history/R06_DEBT_LIST_2026-09-27.md、R08_D_BOUNDARIES_2026-09-28.md、README.md，以及ORCHESTRATION_STATE_before_D_BOUNDARIES/CHAIN/WITHDRAW_STOP_2026-09-28.md三个原看板Git原文归档；旧原文不改写。
+- 验证树保持detached ea4d166，累计仅同步7个测试文件；全部既有dirty/untracked保留。before/after完整git status、方法可见性文件两次前像、分步SHA256清单留在主树.local/d-boundaries-20260928/。未提交验证树。
+- 491证据根D:/acrylic-pda-worktrees/r06-e2a-migration/.local/e2a-cross-20260925-491/，独立TEST-E2aWithdrawnCorrectionExportIT.xml和日志/marker保留。storage/withdrawn-correction/包含create-correction、approve、withdraw、withdraw-confirm回执，database-facts、request-XLSX、create-XLSX及http-status-XLSX；不含成功产物。主树保留console和退出码。489/490各自XML已在后续运行前单独归档，未被覆盖。
+- 无活动重型任务，测试监听19330/23308/19434均释放，系统MySQL3306未动；单助手、作者自审，无独立审查。未提交.local密钥/数据库/导出产物；本机保存不等于异地备份。
+- 三轮到限；下次attempt从492+查重，R08专用run从30查重。撤销后快照/文件/PDF内容、抬头更正、跨格式视觉及现场外推仍未验。前两项只覆盖本报告明确夹具，不外推全部组合。
+- **交回用户决策**：是否授权撤销后导出缺陷的最小修复与复验。修复前D不能整体交付，R09 C2/A3选择暂不推进；不自动启动其他范围。
