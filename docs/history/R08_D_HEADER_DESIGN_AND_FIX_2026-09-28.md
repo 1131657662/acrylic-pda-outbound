@@ -21,3 +21,23 @@ R07_3_IMPLEMENTATION_READY_DESIGN.md §26 B3（493–497行）明确：header_sn
 ## 3. 验收及时间盒
 
 第一轮定性；第二轮最小实现、真实MySQL/HTTP抬头XLSX/PDF逐值回读、默认v1真实HTTP及R08ExportIT14项回归；第三轮只读扫描凭据/明细假设并收口。新真bug立即停报告；其他同类记录，不扩修。attempt从495+、R08专用run31+先查重。494失败及全部历史红证据保留，不通过删除校验或修改成功期望冒充验收。
+
+## 4. 第二轮修复交付：68a43f8
+
+实现68a43f8已推送。HeaderCorrectionSource单独读取无明细抬头文档，使用真实CREATE回执字节及摘要、回执/文档/申请人一致性、相邻header_snapshot补丁合并结果、审批身份/时刻和数重不变约束；不创建数值明细，不借用回执ID冒充lineId。Adjustment现有文本字段表达变化，lineId/dispatchId留空；evidenceReference列真实文档、CREATE回执及headerPatch字段和前后版本。未改任何表/列、OrderSnapshot/Adjustment字段或契约结构。
+
+CorrectionAdjustmentSource合并实物/撤销及抬头凭据，按版本排序，保留非空、版本连续与物理逆转检查。渲染校验仅允许HEADER_CORRECTION无lineId，核对原值/字段/零数重并去重。OrderSnapshot.number仍是原单号身份；文件正文按已校验的orderNo调整链显示本版本单号，并另列原单号和前后值。原确认无调整时显示逻辑不变。支持的显示键限现有orderNo/vehicle/container/remark；其他已有标量键显式拒绝，未用默认空值放行。
+
+## 5. 本轮验收
+
+- attempt495：E2aHeaderCorrectionExportIT 1/0/0/0，真MySQL、真服、PDA Bearer CREATE/APPROVE、真实Web会话/CSRF申请下载XLSX/PDF；没有用服务DTO调用替代导出HTTP。
+- 样本仍复用两包原确认，仅orderNo从FH-LINKCONFIRM-0001改为CORR-HEADER-EXPORT-1；lineCount=0、effect=0、v2有效行仍2包/601500g。快照逐项核对前后字段、真实回执ID、原因、审批时刻、审批人原16字节、有效dispatch/数量/重量，以及空明细ID。
+- XLSX/PDF只读独立回读PASS：有效明细2行、抬头凭据1行；新单号在标题/汇总/明细正确显示，原单号及前后变化保留；PDF两页2300字符，页图目视无裁切/重叠。
+- 同一495还经真实HTTP验证basis=ORIGINAL_CONFIRMED且不传resultVersion：v1原单号、无调整、XLSX下载成功。R08专用run31的R08ExportIT为14/0/0/0（真MySQL+MockMvc），与外部HTTP证据分列。
+- 渲染全套134/0/0/0，新增5项包括零明细、前值错误、同字段重复、物理lineId仍必填及默认显示不变；compileTestJava与installDist成功。最终仅移动一处方法注释，运行逻辑与实测代码一致，已同步验证树哈希。
+- 作者自审，未独立审查。未改ConfirmedV1Adapter、R05/R06/R07、生产默认值/开关，不发布契约。494失败保留；本轮无红业务attempt，495/run31既有cleanup空值警告保留。
+- 主树.local/d-header-fix-20260928/保存编译日志、134项XML、495/run31独立XML/控制台、页图、验证树前像和10文件同步哈希。495真实回执、库事实、快照及文件在验证树.local/e2a-cross-20260925-495/storage/header-correction/，default-v1子目录独立。未提交任何本机密钥/数据/产物。
+
+## 6. 第三轮待做
+
+仅只读扫描correction_line/effect/账行存在性及相关前提，检查撤销/抬头/部分/连续更正场景；分类记录已修、合理约束、风险候选及确认缺口。不强行扩修。四项基本样本已有通过证据，但混合/跨文档、抬头撤销、其他标量字段及独立审查仍未验，D整块是否交付由用户决策。
