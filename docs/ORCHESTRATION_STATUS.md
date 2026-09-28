@@ -6,22 +6,23 @@
 ```yaml
 date: 2026-09-28
 branch: codex/development
-head: 4197427
-dirty_entries: 6
+head: a257e11
+dirty_entries: 5
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V48, migrations: 48 }
 ```
 <!-- FACTS_END -->
 
-本页是唯一断点，源码版本事实只见生成块。A3接续前看板已[原文归档](history/ORCHESTRATION_STATE_before_A3_RESUME_2026-09-28.md)；生成后文档提交HEAD以Git为准，不恢复历史指令。
+本页是唯一断点，源码版本事实只见生成块。JWT定性前看板已[原文归档](history/ORCHESTRATION_STATE_before_JWT_CLASSIFICATION_2026-09-28.md)；生成后文档提交HEAD以Git为准，不恢复历史指令。
 
 ## 交付与本次接续
 - **D整块已交付（用户按已验范围接受）**：11c20e8已推送；片1/片2/片3、部分更正/连续更正/实物撤销/抬头生效四项基本边界、审批人ID/撤销导出/抬头导出修复均✅。[交付确认](history/R08_D_DELIVERY_ACCEPTANCE_2026-09-28.md)列全部历史证据；不再停留D扩测。
 - **R07抬头撤销另立待办**：4197427已推送，[独立blocker](history/R07_3_HEADER_WITHDRAW_BLOCKER_2026-09-28.md)。合法抬头零line/账，但WithdrawConfirm要求非空账；静态确认、未实际执行HTTP组合，只记录不修，待单独授权评估。
 - **A3首批遇真缺陷停报**：输入4197427，主树已提交源码；496–499四类28项全绿，500为5/1/0/0，合计5类33项32通过/1失败/0skip。证据等级真MySQL+Spring/MockMvc，非外部HTTP。[本轮记录](history/A3_NON_E2A_REGRESSION_2026-09-28.md)列逐类结果与证据。
 - 500的TemporarySourceEvidenceIntegrityIT：损坏JWT预期INVALID_SIGNATURE，实际UNVERIFIABLE_KEY。SourceEvidenceProof把JSON解析抛出的BusinessException也当密钥不可用；R06读取面真实分类缺陷，未修代码、未改断言、未重跑，不归因共享迁移，不影响D接受范围。
-- 首批计划12类，实际在第5类失败后停止；余7类未启动，第二批仅manifest未运行。完整A3仍未完成，不以部分绿测或全skip替代覆盖。修复此R06缺陷需用户单独授权；R09 C2是否另立项交用户决策，不自动启动。
+- **JWT已授权，先定性a**：[只读证据](history/R06_JWT_CLASSIFICATION_FIX_2026-09-28.md)。两状态都不是VERIFIED，七能力恒false、E2a消费者同样拒绝，无已发现的两码权限/自动重试分支；仅最小修复异常分类，第一步未改代码。输入a257e11，主树干净/远端一致、单助手、无在途测试。
+- 首批原计划12类、余7类未启动；JWT验收后有余量再续。R09 C2已授权另写范围与验收，生产实现仍待单独授权，不自动启动。
 
 ## 树、写权与环境断点
 - 主树D:/acrylic-pda-outbound，codex/development；本批代码基线4197427与origin一致，生产代码最后改动68a43f8。只有当前助手写入；本批仅文档改变，完整清单见本次提交及A3记录。

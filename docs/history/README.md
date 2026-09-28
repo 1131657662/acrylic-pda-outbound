@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R06_JWT_CLASSIFICATION_FIX_2026-09-28.md](R06_JWT_CLASSIFICATION_FIX_2026-09-28.md)：JWT先定性a，区分只读证据状态与可信接纳；已授权最小分类修复，验收分阶段记录。
+
 - [A3_NON_E2A_REGRESSION_2026-09-28.md](A3_NON_E2A_REGRESSION_2026-09-28.md)：496–499四类全绿；500损坏JWT误报密钥不可用，真MySQL+MockMvc发现R06缺陷并停报，未修代码。
 
 - [R07_3_HEADER_WITHDRAW_BLOCKER_2026-09-28.md](R07_3_HEADER_WITHDRAW_BLOCKER_2026-09-28.md)：合法零账抬头被WithdrawConfirm空账守卫拒绝；静态确认、未跑HTTP组合，R07独立待办，只记录不修。
