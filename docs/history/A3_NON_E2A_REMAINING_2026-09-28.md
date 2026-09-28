@@ -1,5 +1,7 @@
 # A3非e2a剩余逐类目录（2026-09-28）
 
+**接续状态：A3主体完成，21类剩余项已转为“发布前完整回归清单”。** 用户决定本阶段收手，不继续配置profile或补跑；见[收尾记录](A3_REGRESSION_CLOSURE_2026-09-28.md)。下文运行证据及环境限制保留，旧推进建议不再作为当次执行指令。
+
 原清点输入83e633b：136个非e2a源文件中67类已有批次绿，69类待核；513–526跑14类（13绿/1红），55类未跑，8类R08按专用验收去重。用户授权继续其余47类后，531–556两批新增26类107项绿，**余21类待跑**；529/530无XML不计执行，545编排编码失败不改变其13项绿。原69类中累计执行40个不同类（39类全绿、526另挂疑似专项），21类待跑、8类历史去重。A3-526不阻断其他类；527/528同类重现不增类数。源码版本事实见[看板生成块](../ORCHESTRATION_STATUS.md)。
 
 本目录不声称55类在所有历史入口从未运行，也不以缺XML推定失败；只记录当次批次证据与接续条件。结果与停报原因见[本批记录](A3_NON_E2A_WAVES_2026-09-28.md)。
@@ -59,8 +61,8 @@ LedgerRuntimeEnvironment要求固定旧树datadir、库/账号/签名/存储及�
 
 | 类 | 本轮状态/输入 |
 | --- | --- |
-| LedgerAuthorIT | 未跑 |
-| LedgerProductionBoundaryIT | 未跑 |
+| LedgerAuthorIT | 未跑；发布前完整回归 |
+| LedgerProductionBoundaryIT | 未跑；发布前完整回归 |
 
 ## Foundation前代迁移（6类）
 
@@ -68,12 +70,12 @@ LedgerRuntimeEnvironment要求固定旧树datadir、库/账号/签名/存储及�
 
 | 类 | 本轮状态/输入 |
 | --- | --- |
-| FoundationCopyIT | 未跑 |
-| FoundationNegativeIT | 未跑 |
-| FoundationPreservationIT | 未跑 |
-| FoundationSchemaIT | 未跑 |
-| FoundationUpgradeIT | 未跑 |
-| FoundationV33SeedIT | 未跑 |
+| FoundationCopyIT | 未跑；发布前完整回归 |
+| FoundationNegativeIT | 未跑；发布前完整回归 |
+| FoundationPreservationIT | 未跑；发布前完整回归 |
+| FoundationSchemaIT | 未跑；发布前完整回归 |
+| FoundationUpgradeIT | 未跑；发布前完整回归 |
+| FoundationV33SeedIT | 未跑；发布前完整回归 |
 
 ## Ledger独立验证（11类）
 
@@ -81,17 +83,17 @@ LedgerVerifyEnvironment逐字守卫datadir/端口/数据库/账号/签名/存储
 
 | 类 | 本轮状态/输入 |
 | --- | --- |
-| LedgerConcurrencyIT | 未跑 |
-| LedgerCorruptionIT | 未跑 |
-| LedgerFaultIT | 未跑 |
-| LedgerHistoricalReadIT | 未跑 |
-| LedgerIdentityRaceIT | 未跑 |
-| LedgerReadAccessIT | 未跑 |
-| LedgerReplayIT | 未跑 |
-| LedgerRetainedSeedIT | 未跑 |
-| LedgerSecondLookupIT | 未跑 |
-| LedgerSeedIT | 未跑 |
-| LedgerSignedMetadataIT | 未跑 |
+| LedgerConcurrencyIT | 未跑；发布前完整回归 |
+| LedgerCorruptionIT | 未跑；发布前完整回归 |
+| LedgerFaultIT | 未跑；发布前完整回归 |
+| LedgerHistoricalReadIT | 未跑；发布前完整回归 |
+| LedgerIdentityRaceIT | 未跑；发布前完整回归 |
+| LedgerReadAccessIT | 未跑；发布前完整回归 |
+| LedgerReplayIT | 未跑；发布前完整回归 |
+| LedgerRetainedSeedIT | 未跑；发布前完整回归 |
+| LedgerSecondLookupIT | 未跑；发布前完整回归 |
+| LedgerSeedIT | 未跑；发布前完整回归 |
+| LedgerSignedMetadataIT | 未跑；发布前完整回归 |
 
 ## 其他专项输入/组合（3类，1通过/2待跑）
 
@@ -99,9 +101,9 @@ LedgerVerifyEnvironment逐字守卫datadir/端口/数据库/账号/签名/存储
 
 | 类 | 本轮状态/输入 |
 | --- | --- |
-| OrderNumberMigrationIT | 未跑；独立前代空库/升级URL及前代迁移输入，测试自行迁移，不能沿用-NonE2a先迁完 |
+| OrderNumberMigrationIT | 未跑；发布前完整回归；独立前代空库/升级URL及前代迁移输入，测试自行迁移，不能沿用-NonE2a先迁完 |
 | R09V33FixtureIT | 通过，attempt 556，10/0/0/0；新隔离datadir，精确19309/r09_ops_source/r09_source坐标与显式条件保持，不等于C2实施 |
-| TemporaryAndroidSubmissionIT | 未跑；实际Android冻结正文必须对应同库原授权，不能拿旧body配新空库 |
+| TemporaryAndroidSubmissionIT | 未跑；发布前完整回归；实际Android冻结正文必须对应同库原授权，不能拿旧body配新空库 |
 
 ## R08已有专用入口验收（8类，本次跳过不重复）
 
@@ -122,4 +124,4 @@ R08历史证据见[专用库方案与各轮验收](R08_DEDICATED_DB_PLAN_2026-09
 
 ## 接续规则
 
-本次授权47类中两批完成26类，剩余21类需要专项环境或原输入接续，交回用户决定下一时间盒；526疑似缺陷另挂专项、不占回归轮次。后续仍按共享表风险和环境条件选取，每批12–15类、单类独立attempt；避开条码同步相关类，8类R08不进入manifest。新失败仅分类记录，不深入；遇条码同类或明确真bug停报。每批独立提交推送；本机manifest含已用号不得直接复用，557+须重新查重。不得弱化守卫、打开生产开关、修改已验业务或以skip计绿。R09 C2保持只记录、未实施。
+按用户收尾决定，剩余21类仅保留为发布前完整回归清单，本阶段不配置profile或继续跑批。发布前重新核对源码与输入、环境写权和唯一attempt；本机旧manifest含已用号不得复用，557+实际执行前查重。526疑似缺陷另挂专项，8类R08保留专用历史证据；不以清单转移或skip计绿，不删除失败证据/marker，不弱化守卫或放宽超时。R09 C2只进入实施准备评估，生产接线待另行授权。
