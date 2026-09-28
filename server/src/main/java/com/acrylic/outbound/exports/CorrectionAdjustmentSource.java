@@ -30,7 +30,7 @@ public class CorrectionAdjustmentSource {
         var rows = jdbc.queryForList("""
             SELECT BIN_TO_UUID(c.id) line_id,BIN_TO_UUID(c.document_id) document_id,BIN_TO_UUID(c.dispatch_id) dispatch_id,
               c.before_count,c.before_weight_g,c.target_count,c.target_weight_g,c.business_occurred_at,c.delivery_code,
-              CAST(d.effective_result_version AS CHAR) applied_version,d.type,d.reason,d.approved_by,d.status,
+              CAST(d.effective_result_version AS CHAR) applied_version,d.type,d.reason,BIN_TO_UUID(d.approved_by) approved_by,d.status,
               (SELECT COUNT(*) FROM correction_ledger l WHERE l.correction_line_id=c.id) ledger_rows
             FROM correction_line c JOIN correction_document d ON d.id=c.document_id
             WHERE d.order_id=? AND d.effective_result_version BETWEEN 2 AND ?

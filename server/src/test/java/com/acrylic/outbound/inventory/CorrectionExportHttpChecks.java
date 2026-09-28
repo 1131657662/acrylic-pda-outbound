@@ -106,6 +106,7 @@ public final class CorrectionExportHttpChecks {
         assertThat(snapshot.at("/metadata/basis").asText()).isEqualTo("CORRECTED");
         assertThat(snapshot.at("/orders/0/resultVersion").asLong()).isEqualTo(2L);
         assertThat(snapshot.at("/orders/0/adjustments")).hasSize(2);
+        verifyApprovers(snapshot,p.format().extension);
         var response=wire.get("/exports/"+job.id()+"/file");
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue("Content-Disposition").orElseThrow()).contains("corrected-v2-");
@@ -113,7 +114,30 @@ public final class CorrectionExportHttpChecks {
         assertThat(response.body()).isEqualTo(Files.readAllBytes(files.artifact(job.id(),p.artifact().token(),p.format())));
         Files.write(output.resolve("corrected."+p.format().extension),response.body());
         Files.writeString(output.resolve("snapshot.json"),snapshot.toPrettyString());
+        Files.writeString(output.resolve("snapshot-"+p.format().extension+".json"),snapshot.toPrettyString());
         System.out.println("D-SLICE3 HTTP "+format+" resultVersion=2 bytes="+response.body().length+" job="+job.id());
+    }
+
+    private void verifyApprovers(JsonNode snapshot,String format) throws Exception {
+        var jdbc=context.getBean(org.springframework.jdbc.core.JdbcTemplate.class);
+        var facts=SubmissionJson.object().putArray("approvals");
+        for(var adjustment:snapshot.at("/orders/0/adjustments")) {
+            var correction=UUID.fromString(adjustment.path("correctionId").asText());
+            byte[] expected=jdbc.queryForObject(
+                    "SELECT approved_by FROM correction_document WHERE id=? AND order_id=?",byte[].class,
+                    com.acrylic.outbound.common.Ids.bytes(correction),com.acrylic.outbound.common.Ids.bytes(scope.order()));
+            assertThat(expected).as("database approval identity").hasSize(16);
+            String actual=adjustment.path("approver").asText();
+            assertThat(actual).doesNotStartWith("[B@");
+            UUID approvedBy=UUID.fromString(actual);
+            assertThat(actual).isEqualTo(approvedBy.toString());
+            assertThat(com.acrylic.outbound.common.Ids.bytes(approvedBy))
+                    .as("export approver equals binary database fact").containsExactly(expected);
+            facts.addObject().put("correctionId",correction.toString())
+                    .put("lineId",adjustment.path("lineId").asText())
+                    .put("approvedByHex",HexFormat.of().formatHex(expected));
+        }
+        Files.writeString(output.resolve("approval-facts-"+format+".json"),facts.toPrettyString());
     }
 
     private void verifyRetry(BackgroundJob original) throws Exception {
