@@ -1,5 +1,8 @@
 # 历史归档
 
+- [R09_C2_ENTRY_ASSESSMENT_2026-09-28.md](R09_C2_ENTRY_ASSESSMENT_2026-09-28.md)：逐入口源码/生产面/前置/最小验收，区分C1历史组件与未完成双侧证据；大块实现按入口分批，建议先公共依赖再HTTP/Session。仅评估、无代码/测试，实施待授权。
+- [C2入口评估前看板原文](ORCHESTRATION_STATE_before_R09_C2_ASSESSMENT_2026-09-28.md)：保留A3收尾断点，旧推进指令不恢复生效。
+
 - [A3_REGRESSION_CLOSURE_2026-09-28.md](A3_REGRESSION_CLOSURE_2026-09-28.md)：A3主体完成；待核69类中40类已覆盖（39全绿、526待专项），21类转发布前完整回归清单，停止本阶段profile配置与补跑。
 - [A3收尾前看板原文](ORCHESTRATION_STATE_before_A3_CLOSURE_2026-09-28.md)：保留Ledger配置前停报断点，旧推进指令不恢复生效。
 
