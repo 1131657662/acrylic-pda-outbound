@@ -6,6 +6,7 @@ param(
     [int]$PacingSeconds = 5,
     [int]$SqlPortWarmupSeconds = 30,
     [string]$ClassDirBase = '',
+    [string[]]$Only = @(),
     [switch]$Pinned
 )
 # R09 recovery-chain IT batch runner: one class per invocation, own attempt directory, one aggregate result.
@@ -132,6 +133,7 @@ $notAttempted = @(
     @{ name = 'C1InitialNormalHttpIT'; reason = 'needs a real HTTP/Session stack and its own environment' },
     @{ name = 'G0K1RealJdbcBoundaryIT'; reason = 'its fail-closed guard pins the JDBC URL to that round schema/port 19438' }
 )
+if ($Only.Count -gt 0) { $classes = $Only }
 $env:GIT_OPTIONAL_LOCKS = '0'
 $env:JAVA_HOME = 'C:\Program Files\Java\jdk-21.0.11'
 $env:OUTBOUND_DB_URL = "jdbc:mysql://127.0.0.1:$Port/${schema}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8"
