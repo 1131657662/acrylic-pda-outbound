@@ -14,7 +14,9 @@ param(
     [string]$TestClass = 'com.acrylic.outbound.e2averify.E2aRecoveryAdmissionEntryIT',
     [switch]$Shutdown,
     [switch]$Reuse,
-    [switch]$GradleInfo
+    [switch]$GradleInfo,
+    # Some ITs (the inventory fixture producers) expect the application to run Flyway on startup.
+    [switch]$AppMigrates
 )
 $ErrorActionPreference = 'Stop'
 $port = 19330
@@ -134,10 +136,26 @@ $env:OUTBOUND_DB_PASSWORD = $password
 # makes Spring Security's CSRF check reject the login form with 403 before any auth logic runs (some
 # ITs pass this flag themselves; explicit --server.servlet... arguments still win).
 $env:SERVER_SERVLET_SESSION_COOKIE_SECURE = 'false'
-$env:OUTBOUND_MIGRATE = 'false'
+$env:OUTBOUND_MIGRATE = if ($AppMigrates) { 'true' } else { 'false' }
 $env:OUTBOUND_STORAGE = Join-Path $attempt 'storage'
+# Some ITs never call E2aCrossSourceHttpSetup.signing, but the application still needs the offline
+# signing keypair; generate the same PKCS#8 / SPKI encodings with the bundled openssl when absent.
+$keyPath = Join-Path $attempt 'private/server-private.der'
+$pubPath = Join-Path $attempt 'private/server-public.der'
+if (-not (Test-Path $keyPath)) {
+    $openssl = 'C:\Program Files\Git\usr\bin\openssl.exe'
+    if (Test-Path $openssl) {
+        $keyPreference = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+        & $openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -outform DER -out $keyPath *> $null
+        & $openssl pkey -in $keyPath -inform DER -pubout -outform DER -out $pubPath *> $null
+        $ErrorActionPreference = $keyPreference
+    }
+}
 $env:OUTBOUND_AUTH_SIGNING_PRIVATE_KEY = Join-Path $attempt 'private/server-private.der'
 $env:OUTBOUND_AUTH_SIGNING_PUBLIC_KEY = Join-Path $attempt 'private/server-public.der'
+# The inventory/contract ITs sign with the offline signer, which reads the outbound.signing.* names.
+$env:OUTBOUND_SIGNING_PRIVATE_KEY = $env:OUTBOUND_AUTH_SIGNING_PRIVATE_KEY
+$env:OUTBOUND_SIGNING_PUBLIC_KEY = $env:OUTBOUND_AUTH_SIGNING_PUBLIC_KEY
 $env:OUTBOUND_EXPORTS_RENDERER_HOME = Join-Path $Root 'report-rendering/build/install/acrylic-report-rendering'
 # PDF rendering needs a Playwright browser tree. The tree under test may not have one (it is a
 # network download: gradlew :report-rendering:installChromium); the E2a ITs themselves hard-code the
