@@ -27,10 +27,10 @@ server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 - `@Primary` 唯一性：主代码仅一处；测试侧仅冻结的 `RecoveryEntryLostCommitConfiguration`（其上下文与主入口互斥）；静态白名单测试 3 项强制。**新增生命周期内部码待回填设计 §4.4 码表**（见记录 §2.2）。
 
 ## 运行与证据
-- 定向单测（run1）：**6 类 / 45 项 / 0 失败**；旧 `RecoveryAdmittedDataSourceTest` **17/17 仍绿**，新数据源 10 项（含六码），静态白名单 3 项，入口配置 4 项。
-- 全量单测（run3，`gradlew -p server test`，**不带 `--tests` 白名单**）：**123 类 / 2789 项 / 0 失败 / 0 错误 / 1 既有无关 skip**；`com.acrylic.outbound.recovery.*` **28 类 / 2151 项 / 0 失败 / 0 跳过**。
-- 恢复链 25 类 IT 批次（含 S1 后继增量复验）：全新专用实例 19453，**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空；TIME_WAIT 峰值 1521；正常 shutdown、端口释放。中止轮 `it-batch-25b-aborted-javadoc-edit`（注释改动后主动重跑）原样保留。
-- 证据根 `.local/r09-c2-b1-3-s2-20260929-a/`（不入库）：`run1-unit-targeted/`、`run3-unit-full-final/`、`it-batch-25/`（逐类 run101–run125＋batch-summary.json）、前置快照。
+- 定向单测（run5，自审后）：**6 类 / 47 项 / 0 失败**；旧 `RecoveryAdmittedDataSourceTest` **17/17 仍绿**，新数据源 11 项（六码＋失败借用路径），静态白名单 3 项，入口配置 4 项。
+- 全量单测（run4，`gradlew -p server test`，**不带 `--tests` 白名单**）：**123 类 / 2790 项 / 0 失败 / 0 错误 / 1 既有无关 skip**；`com.acrylic.outbound.recovery.*` **28 类 / 2152 项 / 0 失败 / 0 跳过**。自审补测的首版失败轮（测试自身打桩缺陷，已修）保留在证据根。
+- 恢复链 25 类 IT 批次（含 S1 后继增量复验）：全新专用实例 19453，**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空；TIME_WAIT 峰值 1521；正常 shutdown、端口释放。中止轮 `it-batch-25b-aborted-javadoc-edit`（注释改动后主动重跑）原样保留；自审补测仅改测试代码，批次对应的产品代码未变。
+- 证据根 `.local/r09-c2-b1-3-s2-20260929-a/`（不入库）：`run1-unit-targeted/`、`run3-unit-full-final/`、`run4-unit-full-postreview/`、`run5-unit-targeted-postreview/`、`it-batch-25/`（逐类 run101–run125＋batch-summary.json）、前置快照。
 
 ## 保留边界与停止点
 - `outbound.recovery.admission.enabled`、`effect-gate.enabled`、跨进程开关**全部默认 false**；未接生产、未部署、未合 main、未操作原库/现网；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`。

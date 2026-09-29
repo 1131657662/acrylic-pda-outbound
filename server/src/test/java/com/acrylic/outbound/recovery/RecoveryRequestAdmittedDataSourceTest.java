@@ -2,6 +2,7 @@ package com.acrylic.outbound.recovery;
 
 import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterEach;
@@ -77,6 +78,29 @@ class RecoveryRequestAdmittedDataSourceTest {
 
             assertThatThrownBy(f.adapter::getConnection).hasMessage("RECOVERY_OPERATION_CONTEXT_LOST");
             verifyNoInteractions(f.source);
+        } finally {
+            f.release(root);
+        }
+    }
+
+    /** A borrow that never reached a connection must not leave the root's retained work behind. */
+    @Test void failedBorrowReleasesTheRootsRetainedWorkAndKeepsItUsable() throws Exception {
+        var f = fixture();
+        var connection = mock(Connection.class);
+        when(connection.getAutoCommit()).thenReturn(true);
+        when(f.source.getConnection()).thenThrow(new SQLException("borrow failed")).thenReturn(connection);
+        var root = f.register(RecoveryOperationKind.HTTP_REQUEST);
+        try {
+            root.bindDispatch(Thread.currentThread());
+
+            assertThatThrownBy(f.adapter::getConnection).hasMessage("borrow failed");
+            assertThat(root.openSubOperations()).as("no sub-operation survives a failed borrow").isZero();
+            assertThat(root.phase()).isEqualTo(RecoveryOperationPhase.SERVING);
+
+            try (Connection borrowed = f.adapter.getConnection()) {
+                assertThat(borrowed).as("the failed borrow released only its own reference").isNotNull();
+            }
+            assertThat(root.openSubOperations()).isZero();
         } finally {
             f.release(root);
         }

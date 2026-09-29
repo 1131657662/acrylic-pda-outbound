@@ -42,7 +42,7 @@
 | 5 | 越集子操作（种类白名单或已进入释放相位） | `CONTROL_SUBOPERATION_FORBIDDEN` | `registerSubOperation` | `subOperationOutsideTheRootSetIsRefused`、`rootThatStartedReleasingRefusesNewSubOperations` |
 | 6 | 根处于 FENCED | `RECOVERY_LEASE_FENCED` | `requireRoot()` 相位判定 | `fencedRootIsRefusedWithTheFenceCode` |
 
-增强覆盖：`eachBorrowTakesAndReleasesItsOwnWriterReference`（根自己的租约引用跨两次借还仍存活 ⇒ 逐连接引用计数成立）、`finalizingRootStillAcceptsRetainedWork`（FINALIZING 仍覆盖链返回后的保留写）、`nestedDispatchBindingKeepsTheOuterScopeUntilItEnds`（嵌套分派深度 +1/−1，外层作用域不被提前清除）。
+增强覆盖：`eachBorrowTakesAndReleasesItsOwnWriterReference`（根自己的租约引用跨两次借还仍存活 ⇒ 逐连接引用计数成立）、`finalizingRootStillAcceptsRetainedWork`（FINALIZING 仍覆盖链返回后的保留写）、`nestedDispatchBindingKeepsTheOuterScopeUntilItEnds`（嵌套分派深度 +1/−1，外层作用域不被提前清除）、`failedBorrowReleasesTheRootsRetainedWorkAndKeepsItUsable`（借出失败不留残余子操作、根仍可用）。
 
 ### 2.2 新增拒绝码（须回填设计码表）
 
@@ -57,9 +57,11 @@
 
 ### 3.1 一级：单元测试（无数据库）
 
-- 定向（`run1-unit-targeted`）：**6 类 / 45 项 / 0 失败 / 0 错误 / 0 跳过**。其中 `RecoveryAdmittedDataSourceTest` **17/17 仍绿**（验收①基线）、`RecoveryRequestAdmittedDataSourceTest` 10（含六码）、`RecoveryLegacyPathIsolationTest` 3（验收③静态白名单）、`RecoveryAdmissionConfigurationTest` 4、`RecoveryAuthorityPurposeTest` 6、`RecoveryWriterLeaseTest` 6。
-- 全量（`run3-unit-full-final`）：`gradlew -p server test`，**不带 `--tests` 白名单**（因此不存在"新测试类被白名单静默漏跑"的旧口径问题）：**123 类 / 2789 项 / 0 失败 / 0 错误 / 1 既有 skip**（`com.acrylic.outbound.temporary.evidence.SourceEvidenceIntakeFilesTest`，与本切片无关）；其中 `com.acrylic.outbound.recovery.*` **28 类 / 2151 项 / 0 失败 / 0 跳过**。
+- 定向（`run1-unit-targeted`，自审前）：**6 类 / 45 项 / 0 失败 / 0 错误 / 0 跳过**；自审补一项失败借用路径单测后复跑（`run5-unit-targeted-postreview`）为 **6 类 / 47 项 / 0 失败 / 0 跳过**。其中 `RecoveryAdmittedDataSourceTest` **17/17 仍绿**（验收①基线）、`RecoveryRequestAdmittedDataSourceTest` **11**（含六码与失败借用路径）、`RecoveryLegacyPathIsolationTest` 3（验收③静态白名单）、`RecoveryAdmissionConfigurationTest` 4、`RecoveryAuthorityPurposeTest` 6、`RecoveryWriterLeaseTest` 6。
+- 全量（`run3-unit-full-final` 自审前；`run4-unit-full-postreview` 自审后）：`gradlew -p server test`，**不带 `--tests` 白名单**（因此不存在"新测试类被白名单静默漏跑"的旧口径问题）：**123 类 / 2790 项 / 0 失败 / 0 错误 / 1 既有 skip**（`com.acrylic.outbound.temporary.evidence.SourceEvidenceIntakeFilesTest`，与本切片无关）；其中 `com.acrylic.outbound.recovery.*` **28 类 / 2152 项 / 0 失败 / 0 跳过**。
 - 验收对照：①旧类 17 项仍绿 ✅；②六码各自的按码断言单测 ✅；③`@Primary` 唯一性静态测试 ✅。
+- 自审发现与修复（**发现者＝本会话自审，非独立第三方**）：`admit` 的 javadoc 声称"未真正到达连接的借用不会留下该根的保留工作"，但**没有对应断言** ⇒ 补 `failedBorrowReleasesTheRootsRetainedWorkAndKeepsItUsable`（借出抛错后子操作计数归零、根仍 SERVING、随后借用仍成功）。该单测首版因 Mockito 重复 `when(...)` 触发上一次 `thenThrow` 而失败（**测试自身缺陷，非产品缺陷**），改为连续打桩后通过；失败轮 `run4` 保留。
+- 该自审改动**仅测试代码**（产品代码零改动）⇒ 上述恢复链 IT 批次证据仍然对应同一产品代码；单元级证据以 `run4`/`run5` 为准。
 
 ### 3.2 二级：恢复链 25 类 IT 批次（含 S1 后继增量的 IT 复验）
 
@@ -81,7 +83,7 @@ S1 后继增量（kind 校验集中到同一 purpose 规则、错误码不变）
 
 ## 5. 证据位置（不入库，按约定保留）
 
-`.local/r09-c2-b1-3-s2-20260929-a/`：`pre-head.txt`、`pre-status.txt`、`run1-unit-targeted/`、`run3-unit-full-final/`（各含 `gradle.log`、`exit.txt`、全部 `TEST-*.xml`）、`it-batch-25/`（`preflight.txt`、`instance-identity.txt`、逐类 `run101–run125` 目录含 `command.txt`／`gradle.log`／`exit.txt`／XML／`files.sha256`、`batch-summary.json`、`db-shutdown.txt`）、`it-batch-25b-aborted-javadoc-edit/`（中断轮原样保留）。
+`.local/r09-c2-b1-3-s2-20260929-a/`：`pre-head.txt`、`pre-status.txt`、`run1-unit-targeted/`、`run3-unit-full-final/`、`run4-unit-full-postreview/`（含自审首版失败轮）、`run5-unit-targeted-postreview/`（各含 `gradle.log`、`exit.txt`、全部 `TEST-*.xml`）、`it-batch-25/`（`preflight.txt`、`instance-identity.txt`、逐类 `run101–run125` 目录含 `command.txt`／`gradle.log`／`exit.txt`／XML／`files.sha256`、`batch-summary.json`、`db-shutdown.txt`）、`it-batch-25b-aborted-javadoc-edit/`（中断轮原样保留）。
 
 ## 6. 下一步
 

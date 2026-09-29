@@ -1,6 +1,6 @@
 # 历史归档
 
-- [R09 C2 B1-3 S2：请求根数据源](R09_C2_B1_3_S2_REQUEST_ROOT_2026-09-29.md)：`RecoveryRequestAdmittedDataSource` 成为唯一 `@Primary`（六码、永不回退旧连接层），旧类降级并由静态白名单强制；`RecoveryOperationRegistry/Lease/SubLease/Token/Kind/Phase/SubOperation` 提供根登记与分派绑定。两级验证：定向单测 45/0（旧类 17/17 仍绿）、全量单测 2789 项 0 失败（无白名单）、恢复链 IT 25 类 696 项 0 失败 / 0 跳过（全新实例 19453）。**S3/S4 未开工，开关仍默认 false，K1 仍未通过**；入口 IT live/unknown 检查待 S3 重基。另附 S2 开工前看板归档。
+- [R09 C2 B1-3 S2：请求根数据源](R09_C2_B1_3_S2_REQUEST_ROOT_2026-09-29.md)：`RecoveryRequestAdmittedDataSource` 成为唯一 `@Primary`（六码、永不回退旧连接层），旧类降级并由静态白名单强制；`RecoveryOperationRegistry/Lease/SubLease/Token/Kind/Phase/SubOperation` 提供根登记与分派绑定。两级验证：定向单测 47/0（旧类 17/17 仍绿）、全量单测 2790 项 0 失败（无白名单）、恢复链 IT 25 类 696 项 0 失败 / 0 跳过（全新实例 19453）。**S3/S4 未开工，开关仍默认 false，K1 仍未通过**；入口 IT live/unknown 检查待 S3 重基。另附 S2 开工前看板归档。
 
 - [R09 C2 B1-2 跨进程围栏与真实 Authority](R09_C2_B1_2_FENCE_2026-09-29.md)：规则/实现/多 JVM 矩阵、真实效果与故障注入分离、W 与全未确认分支保留；默认关闭，K1 仍未通过。
 - [B1-2 开工前看板归档](ORCHESTRATION_STATE_before_R09_C2_B1_2_2026-09-29.md)。
