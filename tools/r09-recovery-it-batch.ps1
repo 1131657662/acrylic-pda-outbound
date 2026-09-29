@@ -188,7 +188,8 @@ $totalTests = ($rows | Measure-Object -Property tests -Sum).Sum
 $totalFailures = ($rows | Measure-Object -Property failures -Sum).Sum
 $totalErrors = ($rows | Measure-Object -Property errors -Sum).Sum
 $totalSkipped = ($rows | Measure-Object -Property skipped -Sum).Sum
-$failedClasses = @($rows | Where-Object { $_.exit -ne 0 })`n$skippedClasses = @($rows | Where-Object { $_.skipped -gt 0 })
+$failedClasses = @($rows | Where-Object { $_.exit -ne 0 })
+$skippedClasses = @($rows | Where-Object { $_.skipped -gt 0 })
 $summary = [ordered]@{
     time = (Get-Date).ToString('o'); pinned = [bool]$Pinned; port = $Port; schema = $schema; account = $account
     instance = $instance; classesAttempted = $classList.Count; totalTests = $totalTests
@@ -204,5 +205,6 @@ Write-Evidence 'db-shutdown.txt' ("exit=$LASTEXITCODE`n" + ($shutdown -join ' ')
 Write-Output ('BATCH pinned={0} classes={1} tests={2} failures={3} errors={4} skipped={5} failedClasses={6} portReleased={7}' -f
     [bool]$Pinned, $classList.Count, $totalTests, $totalFailures, $totalErrors, $totalSkipped, $failedClasses.Count,
     ((Get-ListenerCount $Port) -eq 0))
-Write-Output ('NOT-COVERED (conditions not met; skipped>0): ' + (($skippedClasses | ForEach-Object { $_.class }) -join ', '))`nif ($failedClasses.Count -gt 0) { exit 1 }
+Write-Output ('NOT-COVERED (conditions not met; skipped>0): ' + (($skippedClasses | ForEach-Object { $_.class }) -join ', '))
+if ($failedClasses.Count -gt 0) { exit 1 }
 exit 0
