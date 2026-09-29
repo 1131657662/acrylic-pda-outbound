@@ -6,42 +6,43 @@
 ```yaml
 date: 2026-09-29
 branch: codex/development
-head: e3a627f
+head: 33a5741
 dirty_entries: 2
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-**R09 C2 B1-3 S8 收口：入口 IT 重基到请求根语义（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。三处入口验证共用语料已按"一个请求＝一个操作根"重写，并新增可在隔离实例运行的第三处调用者（live／unknown／lost 三上下文同轮全绿）。记录见 [B1-3 S8 记录](history/R09_C2_B1_3_S8_ENTRY_REBASE_2026-09-29.md)；S8 开工前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S8_2026-09-29.md)；S7/S6 见 [S7](history/R09_C2_B1_3_S7_REFUSAL_MAPPING_2026-09-29.md)、[S6](history/R09_C2_B1_3_S6_CONTROL_LOCK_2026-09-29.md)。
+**R09 C2 B1-3 S9 收口：阶段 0 安全前置第一批——P5 根身份／围栏通道／进程记录接线（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。设计第 8–9 行的**应用侧接线**完成（第 10 行逐根发布/探针、第 11 行效果门接入 JDBC、第 12 行逐操作退役留作下一批）。记录见 [B1-3 S9 记录](history/R09_C2_B1_3_S9_P5_ROOT_WIRING_2026-09-29.md)；S9 开工前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S9_2026-09-29.md)；S8/S7 见 [S8](history/R09_C2_B1_3_S8_ENTRY_REBASE_2026-09-29.md)、[S7](history/R09_C2_B1_3_S7_REFUSAL_MAPPING_2026-09-29.md)。
 
 ## Git、写权与范围
-- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD `d414273`（S7 收口）；写者＝DSH（本会话）。
+- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD `33a5741`（S8 收口）；写者＝DSH（本会话）。
 - **非本会话的未提交改动**（未代提交、未修改）：`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、未跟踪 `docs/PDA_UI_UX_REVIEW_2026-09-29.md`。
 - 共享树 r06-e2a-migration 保持 detached ea4d166；只读，未同步/清理/reset/提交/合并。
 
-## 本轮交付（S8：看板长期单列的"入口 IT 重基"；**无产品代码改动**）
-- `RecoveryAdmissionEntryChecks`：三处检查改为**在入口接纳的操作根内**运行（`registry.admit` 有界等待＋`bindDispatch`，收尾 `retire`）；主源断言改 `RecoveryRequestAdmittedDataSource`；新增**无根拒绝**证据（`RECOVERY_OPERATION_REQUIRED`）；关闭意图检查改为区分"**已接纳根继续服务＝allowed**"与"**新根＝`CONTROL_CLOSING_INTENT`**"（旧检查钉的是旧连接级模型）。
-- `RecoveryEntryLostCommitConfiguration`：丢回执故障下沉到**请求根数据源之下**；补齐生产启动覆盖（注册表／初始化窗口／守卫），窗口与注册表用 **static** 工厂（否则守卫的 `dependsOn=窗口` 会把配置类自己卷成环）。
-- `RecoveryAdmissionEntryRebaseIT`（新）：隔离实例上跑同一批检查（live／unknown／lost）。
-- `C1MainProfile`／`E2aCrossSourceHttpIT`：启动参数补 `--spring.session.jdbc.cleanup-cron=-`（S5 守卫要求；**不补则两实验舱连启动都被拒**——本轮发现的重基缺口）。
-- `tools/r09-c2-b1-3-s3-session.ps1`：`-TestClass` 参数化；账号补 `GRANT PROCESS`（读 `INNODB_TRX`）；导出 `S3_INSTANCE_DIR`（夹具恢复根＝实例真实 datadir）与 `PYTHONUTF8`／`PYTHONIOENCODING=utf-8`。
+## 本轮交付（S9：设计第 8–9 行应用侧接线；开关默认 false）
+- `RecoveryLeaseConfiguration`（新）：仅 `outbound.recovery.lease.enabled=true` 时装配；绑定 `outbound.recovery.lease.{root,closed-authority,identity-sha256,marker-sha256}`（缺项 ⇒ `RECOVERY_LEASE_ROOT_UNBOUND`）；装配**唯一** `RecoveryLeaseLifecycle` 及其持有的 `RecoveryFenceAuthority`（效果门 `ObjectProvider<Authority>` 取到的真实现）；同时 `@EnableConfigurationProperties` 准入与效果门 settings（否则生产启用必缺 bean——现场实测）。
+- `RecoveryLeaseLifecycle`（新）：显式 P5 绑定 → 锚点校验（`CONTROL_ANCHOR_REQUIRED`）→ `RecoveryFenceAuthority.validateStartup()`（围栏通道＋孤儿扫描＋进程记录与生命周期锁，均在本机 P3 协调锁内）→ fail-closed 启动；`close()` 由 Spring 关停调用。
+- `RecoveryFenceAuthority.retire()`（新）：干净关停的 F3（释放生命周期锁＋关通道，幂等），**不**声明围栏；F1–F5 序列未改。
+- 新增 `RecoveryLeaseConfigurationTest` 7 项（见记录 §3.1）：默认不取根、无锚点拒、绑定摘要不符拒、`fenced.lock` 缺失拒且不修复、进程记录+锁持有+退役后可复用、两进程共用同根各留记录（更正我最初错误预设）、发布后删除租约 ⇒ 下次启动 `RECOVERY_LEASE_OUTSTANDING`。
 
 ## 运行与证据
-- 一级：全量单测（不带 `--tests` 白名单）**129 类 / 2818 项 / 0 失败 / 0 错误 / 1 既有无关 skip**。
-- 二级现场（`run9-s8-entry-rebase`，全新实例 19468／应用 19458，1 用例 0 失败，三上下文同轮）：`wiring primary=RecoveryRequestAdmittedDataSource … rootRequired=RECOVERY_OPERATION_REQUIRED`；`roundTrip committed=1 rolledBack=1`；`closeRace closeWaitedMillis=2500 innodbTrx=0`；`fence independentWriterBlocked=CONTROL_WRITERS_ACTIVE admittedRootStillServes=allowed newRootWithPendingIntent=CONTROL_CLOSING_INTENT`；提交期连接丢失 `TransactionSystemException`＋`counterAfterKilledTransaction=1`＋后续写 `CONTROL_WRITERS_ACTIVE`；丢回执 `committedCounter=2`（真实提交发生、仅回执丢失）＋后续写 `CONTROL_WRITERS_ACTIVE`；`restoreData=…mysql19468-s3session\data instanceBound=true`。
-- 产品代码未改，故恢复链 25 类批次沿用 S7 轮同产品 HEAD 证据（实例 19467：25 类 / 696 项 / 0 失败 / 0 跳过）。
-- 证据根（不入库）：`.local/r09-c2-b1-3-s2-…`…`…-s8-20260929-a/`（含 run1–run8 失败轮、run9 现场、全量）；夹具目录保留在 `.local/mysql19468-s3session/entry-*-<stamp>`。
+- 一级：全量单测（不带 `--tests` 白名单）**130 类 / 2825 项 / 0 失败 / 0 错误 / 1 既有无关 skip**。
+- 二级现场（`run2-s9-lease-wiring`，全新实例 19469／应用 19458，1 用例 0 失败）：`provision` 出真实 P5 树（`identitySha256`／`markerSha256` 落证）→ **真实应用启动成功**且 `gate enabled, checkEffect=ok`（真实 `fenced.lock` 探针＋孤儿扫描通过），树为 `[fenced.lock, lease-root.json, leases/index.json, processes/<uuid>.json]`；经真实 authority 发布租约（锚定索引同步）→ `retire` 释放生命周期锁 → 下一次启动因孤儿租约 **拒** `RECOVERY_LEASE_OUTSTANDING`。
+- 二级回归（`it-batch-25`，全新实例 19470；P5 基座对抗面）：**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空，TIME_WAIT 峰值 1410，正常 shutdown、端口释放。
+- 证据根（不入库）：`.local/r09-c2-b1-3-s2-…`…`…-s9-20260929-a/`；P5 夹具树保留在 `.local/control-java-cases/case-*/p5/`。
 
-## 语义澄清与发现
-1. 旧检查钉住的是**旧模型**："关闭意图⇒下一次借用即拒"与"任意线程可借用"在新模型下都不成立；已改写为"保留根继续服务／新根被拒"与"无根必拒"。
-2. **实验舱重基缺口**：`C1MainProfile`／`E2aCrossSourceHttpIT` 的启动参数缺 `cleanup-cron=-`，且故障入口配置缺启动覆盖——B1-3 后这两个实验舱**连启动都会失败**；本轮已补齐，但**实验舱本身仍未重跑**（需各自专属环境）。
-3. 隔离 harness 需求（已写入工具）：账号需 `PROCESS`（入口检查读 `INNODB_TRX`）；独立 Python 写者需 UTF-8；夹具恢复根指向实例真实 datadir。
+## 发现与边界（重要）
+1. **产品缺陷（现场发现，单测未暴露）**：`RecoveryLeaseConfiguration` 只启用自己的 settings，导致生产启用 lease 时 `RecoveryAdmissionConfiguration$Settings` 缺 bean ⇒ 启动必失败；已改为同时启用准入/效果门 settings。两级验证互补的实例，已入档。
+2. **P5 根是共享的**：进程记录/生命周期锁标识"本进程活着"，**不排斥**第二个进程；互斥由写者租约与租约记录仲裁（更正我最初"第二进程应被拒"的预设）。孤儿租约才是拒绝依据。
+3. **v2 初始权威供给缺失**：`RecoveryLeaseRoots.verify()` 要求 `identity.json` 为 v2 且带 `authorityKind/closedAuthority/leaseRoot`，而现有独立供给方（Python）仍写 v1；本轮现场由测试侧补成 v2（与既有 `RecoveryAuthorityPurposeTest` kind 补丁同法），**生产/独立供给方写 v2 仍是待办**（与 `closedAuthority` 身份文件同属 B9）。
+4. **锚点政策仍暂缓**（用户 2026-09-29 裁定）：本批只落实显式供给机制（仅提交 anchorId，秘密不入可写树）；保管/轮换未定，且不得把 F5/孤儿扫描当防伪依据。
+5. **第 11 行效果门尚未接入 JDBC 入口** ⇒ 开关打开也不冻结效果（`RecoveryRequestAdmittedDataSource`/`RecoveryConnectionHandler`/`RecoveryJdbcObjectHandler` 仍不查询门）；第 10 行逐根发布/探针与第 12 行逐操作退役协议同样待做。
 
 ## 保留边界与停止点
-- `admission.enabled`、`effect-gate.enabled`、跨进程开关**全部默认 false**；未接生产、未部署、未合 main、未操作原库/现网；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`。
-- 未做（后续批次）：**阶段 0 安全前置**（设计第 8–12 行：`leaseRoot` 三方一致/`lease-root.json`、P5 进程记录与锁、孤儿租约、FENCED 残留；需 `outbound.recovery.lease-root`／锚点秘密／`closedAuthority` 配置与 provision 协议）、效果门接线、§5.6 退役协议、完整接纳门 S0–S4 与 P5 前后探针/租约发布、C1/E2a 实验舱重跑。
+- `admission.enabled`、`effect-gate.enabled`、`cross-process-enabled`、`lease.enabled` **全部默认 false**；未接生产、未部署、未合 main、未操作原库/现网；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`。
+- 未做（后续批次）：**效果门接入真实 JDBC 入口（第 11 行）＋逐根发布/退役（第 10/12 行）**（须与 S17/S19/S20/S21 对抗用例同批交付）、v2 初始权威与 `closedAuthority` 身份供给（第 6/7 行、B9）、C1/E2a 实验舱重跑、§5.6 退役协议、完整接纳门 S0–S4。
 - 未验：PDA 客户端对 503 envelope 的消费、并发拒绝计数、跨进程并发接纳、Linux/其他文件系统、断电/硬复位、现场组合。
 - K1 仍未通过；单列：**窗口 W**、`DEBT-R09-C2-LEASE-ANCHOR`、UNCONFIRMED_NO_CROSS_PROCESS_BASIS（须外部隔离）、孤儿解除与生产释放、Java/Python 允许集差异、C1 历史未验项、**IT-DISCOVERY（21 类＝专用实验舱绑定）**、**IT-EVIDENCE-AUDIT（18 类历来仅"跳过型"证据）**、**TZ-GMT 时区显示不统一（待排期）**。
-- **下一步**：①**阶段 0 安全前置（设计第 8–12 行）**作为独立批次（需 `leaseRoot`／锚点秘密／`closedAuthority` 配置与 provision 协议、独立授权与验收）；②C1/E2a 实验舱重跑（环境相关，需协调）；③效果门接线与 §5.6 退役协议。均不改默认开关。
+- **下一步**：①**效果门接入真实 JDBC 入口＋逐根发布/退役**（第 10–12 行，独立批次，对抗面明确）；②v2 初始权威/`closedAuthority` 供给（需先定锚点政策）；③C1/E2a 实验舱重跑。均需独立授权/验收，不改默认开关。
 <!-- CURRENT_STATE_END -->

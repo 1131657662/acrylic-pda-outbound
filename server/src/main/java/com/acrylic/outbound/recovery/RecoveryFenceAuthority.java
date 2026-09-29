@@ -13,6 +13,7 @@ public final class RecoveryFenceAuthority implements RecoveryEffectGate.Authorit
     private final List<UUID> operations = new ArrayList<>();
     private volatile boolean localFenced;
     private boolean sequenceStarted;
+    private boolean retired;
 
     public RecoveryFenceAuthority(RecoveryLeaseRoots roots) { this.roots = Objects.requireNonNull(roots); }
 
@@ -49,6 +50,23 @@ public final class RecoveryFenceAuthority implements RecoveryEffectGate.Authorit
     @Override public void fenceLocal() {
         localFenced = true;
         if (signal != null) signal.fenceLocal();
+    }
+
+    /**
+     * Clean retirement, for a process that is shutting down without an unknown outcome: F3 without
+     * the unknown audit (release the lifecycle lock and read it back, then close the channel).
+     * Fencing itself stays with {@link #fenceUnknown()}: retirement must never claim a fence that
+     * never happened.
+     */
+    public synchronized void retire() throws IOException {
+        if (process == null || retired) return;
+        retired = true;
+        try {
+            process.releaseLock();
+        } finally {
+            process.closeChannel();
+        }
+        RecoveryFenceAudit.event("FENCE_F3_RETIRED", "lifecycle lock released on clean shutdown");
     }
 
     @Override public synchronized void fenceUnknown() {
