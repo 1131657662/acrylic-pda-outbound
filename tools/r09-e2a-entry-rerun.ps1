@@ -123,6 +123,12 @@ $env:SPRING_DATASOURCE_USERNAME = $user
 $env:SPRING_DATASOURCE_PASSWORD = $password
 # Some E2a ITs start the application without renderer arguments; the harness supplies the install
 # distribution that lives in the tree under test (explicit --outbound.exports.* args still win).
+# The reference runner supplies the remaining harness environment: the attempt storage root, the
+# explicit "no migration" switch, and the auth signing keys the setup writes into <attempt>/private.
+$env:OUTBOUND_MIGRATE = 'false'
+$env:OUTBOUND_STORAGE = Join-Path $attempt 'storage'
+$env:OUTBOUND_AUTH_SIGNING_PRIVATE_KEY = Join-Path $attempt 'private/server-private.der'
+$env:OUTBOUND_AUTH_SIGNING_PUBLIC_KEY = Join-Path $attempt 'private/server-public.der'
 $env:OUTBOUND_EXPORTS_RENDERER_HOME = Join-Path $Root 'report-rendering/build/install/acrylic-report-rendering'
 # PDF rendering needs a Playwright browser tree. The tree under test may not have one (it is a
 # network download: gradlew :report-rendering:installChromium); the E2a ITs themselves hard-code the

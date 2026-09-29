@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S21：权限/角色前提第三次尝试＋决定性诊断](R09_C2_B1_3_S21_PERMISSION_DIAGNOSIS_2026-09-29.md)：补齐参考 runner 的四个环境变量后，651/652/653 的失败点**完全不变** ⇒ 排除"缺参考环境变量"；对 653 的保留 datadir 离线查库显示 `temporary_order:{confirm,create,link,manage}` **权限行 4、授予 7** ⇒ `LINK 403 ACCESS_DENIED` **不是权限缺失**，收窄到**作用域/权限码/临时模块开关**三选一。下一步：给 harness 加测试 stdout 转发（`showStandardStreams`／`--info`）取回 `log=` 与断言上下文再判定。633/642/645 仍判未验；E2a 已验 16 个不变。K1 仍未通过；另附 S21 开工前看板归档。
+
 - [R09 C2 B1-3 S20：报表/渲染服务供给](R09_C2_B1_3_S20_RENDERER_HOME_2026-09-29.md)：读源码定位——`ExportRendererProcess.requireAvailable` 要求 `renderer-home` 下有 `lib/`（PDF 另需 `browsers`），渲染为子进程 `java -cp <home>/lib/* …ReportCli`；未显式传 `renderer-home` 的 IT 必然 `EXPORT_UNAVAILABLE`。harness 补 `OUTBOUND_EXPORTS_RENDERER_HOME`（树内 install 分发）与 `OUTBOUND_EXPORTS_BROWSERS`（树内优先、否则回退到 IT 自己硬编码的 r08-export 副本，已声明）：**648 `E2aTemporaryCommandWebHttpIT` 通过**（E2a 主树累计 **16 个**）；633 推进两级（XLSX→PDF→`real Web login 403`）⇒ 渲染不再是阻塞项，633／642／645 同源卡在**权限/角色种子前提**。未做：权限种子、Android 工具链、V36 门＋供给、树内 chromium 安装、Python v2 供给。K1 仍未通过；另附 S20 开工前看板归档。
 
 - [R09 C2 B1-3 S19：E2a 批次四](R09_C2_B1_3_S19_E2A_BATCH4_2026-09-29.md)：643 `E2aSourceBindingHttpIT` **通过**（E2a 主树累计 **15 个**）；644/647 依赖 Android 单测子进程、645 轨迹止于 `LINK 403 ACCESS_DENIED`（权限未授予）、646 响应 `EXPORT_UNAVAILABLE（报表生成服务尚未配置）`——四个失败**各自定位到具体环境前提**，无 B1-3 相关产品缺陷；646 同时给出 633「渲染必须成功（XLSX）」的同源假设（仍判未验）。未做（独立环境批次）：报表服务配置、权限种子/迁移到较晚版本、Android 工具链、V36 门＋供给、Python v2 供给。K1 仍未通过；另附 S19 开工前看板归档。
