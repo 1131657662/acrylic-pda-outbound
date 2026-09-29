@@ -6,41 +6,38 @@
 ```yaml
 date: 2026-09-29
 branch: codex/development
-head: 2475a44
-dirty_entries: 35
+head: d6ef53d
+dirty_entries: 34
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
 
-**R09 C2 B1-1 对抗性覆盖复核收口（2026-09-29）**。唯一[复核记录](history/R09_C2_B1_1_ADVERSARIAL_2026-09-29.md)含九项清单、三处真实缺口及修正、逐轮失败；另有[600 个接口签名表](history/R09_C2_B1_1_JDBC_SURFACE_2026-09-29.md)。开工旧区及过程断点均已归档，见历史索引。
+**R09 C2 B1-2 跨进程围栏切片收口（2026-09-29）**。唯一[本轮记录](history/R09_C2_B1_2_FENCE_2026-09-29.md)含规则↔实现↔用例、真实多 JVM 矩阵、原始输出、失败与边界；开工前区已归档。
 
-## Git、写权和范围
-- 树 D:/acrylic-pda-outbound；分支 codex/development；输入 2475a44927f5fed7b1b21db02080a89adb74c17e，开工 HEAD 等于实际远端，0/0、干净、无 index.lock。
-- 本块随本轮交付提交；交付 SHA、push 回执及实际远端/0/0/干净核对见 .local/r09-c2-b1-1-adversarial-20260929-a/final-git.json 与 push.log；生成事实块是提交前快照，不代替回执。
-- 当前 Codex 为唯一活动写者；相对原实现会话独立复核，必要修正由本轮实施并自审，无子代理/第二修正验收者；完成即停。
-- 产品仅 RecoveryEffectCalls.java、RecoveryEffectSql.java；对应 recovery 测试与受影响文档。精确全部清单见本轮 change-paths.txt/staged-paths.txt，已验证 116 个 recovery 源文件哈希见 verified-source-hashes.json；不暂存 .local/凭据/数据库/产物。
-- 共享树 r06-e2a-migration detached ea4d166ef9db2ea7711c1006cff208f3ff88495c；97 项状态及逐文件哈希/字节数前后相同。相同序列化状态 SHA-256：C76522C509FFCBA1D66436E290D6146E553D6761CC278D6022445FFD327BD9AC；未修改/清理/同步/提交该树。
+## Git、写权与改动
+- 树 D:/acrylic-pda-outbound；分支 codex/development；输入 d6ef53d406968be762895f08cd800b2ef47e49b0，开工实际远端一致，0/0、干净、无 index.lock、diff --check 0。
+- 本块随交付提交；精确交付 SHA/push/实际远端/0/0/干净回执见 .local/r09-c2-b1-2-fence-20260929-a/final-git.json 与 push.log；生成事实块是提交前快照。
+- 当前 Codex 单写者，实施/自审/测试均由本助手完成，无子代理或独立第二验收者；完成即停。
+- 产品仅 recovery 围栏/效果相关；测试仅 recovery；受影响文档已同步。全部清单见本轮 change-paths.txt/staged-paths.txt；133 个 recovery 源文件的最终两轮哈希一致。无 .local/密钥/产物入库。
+- 共享树 r06-e2a-migration detached ea4d166ef9db2ea7711c1006cff208f3ff88495c；97 项原始状态字节、2461 文件 SHA-256/长度前后相同。未修改/同步/清理/提交该树。
 
-## 缺口、修正与验证
-- A1：getObject/Callable 可变 getter 逃逸；厂商 Blob locator 在 FENCED 后真实 UPDATE。修正为全部不透明取得重载在委托前拒绝。
-- A2：简单 SELECT FROM 可执行写函数视图。修正 SOURCE_READ 分类，含 FROM、DESC/DESCRIBE/有限 EXPLAIN 全部重新过门；常量 SELECT/SHOW 保留免门。
-- A3：Prepared/Callable.getMetaData 会隐式 execute 原 SQL。修正为取得处拒绝；ResultSet 列元数据另行保持。
-- 最终单测 run9：2034 项（原 60＋既有门 66＋不透明 getter 108＋全接口 1800）；最终真实库 IT run11：536 项（四类既有 35＋对抗性 501），均 exit 0、0 失败/错误/跳过；每条新增场景/参数组合 3 次。
-- 真实委托与独立观察连接标 REAL；Authority/准入 fixture、调度和注入标 MODEL，不代替可信 Authority/P5/围栏事实。600 个标准接口签名均有明确判定，其他驱动/URL 扩展不外推为已验。
-- run1 80/45 失败；run2 86/51；run3 234/72；run5 3/3；run8 15/12；run10 精确基线三类反例 18/18；XML/日志/哈希全部保留。run6 编译失败、未启动测试、无 XML，修复后另轮重跑；run4/run7 只作过程验证。
-- run10 的输入源码原件/修正件保留，并在 finally 逐字节还原；最终两轮的源码哈希与交付源码一致。未运行全仓完整测试/构建、APK、模拟器、真机、真实 HTTP 或部署。
+## 实现与验证
+- P3/P5 显式 pin、原生锁身份（JNA 卷序列/文件索引；不使用 fileKey）、缺失/替换独立拒绝码及审计；只创建不删除/替换/重建。
+- 真实 RecoveryFenceAuthority：启动校验、每效果前本机内存＋跨进程独占观察＋逐记录孤儿扫描；未知 JDBC 结果 F1–F5，F3 release 确认独立于 close，F4 保留 L2，实际 halt(70)。
+- 默认 enabled=false，新增 cross-process-enabled=false；Spring 需显式双开关＋真实 Authority；不注册/替换 DataSource。SOURCE_READ 安全优先，围栏时业务读也拒绝。
+- run6 单测 2038 项、run7 真实 IT 643 项，均 exit 0、0 失败/错误/跳过。原四类门 IT、600 签名、A1/A2/A3 全部重跑；JDBC 判定无改动。
+- B1-2 102 项各场景/参数组合 3 次；60 份独立子 JVM 回执，F1′/F3/F5 8 组合×3；旧连接/Statement/ResultSet 目标委托 0、独立观察无新增提交。
+- REAL＝真实磁盘/锁/JVM/驱动/独立观察；MODEL＝合成供给输入、调度/注入、旧 admission fixture，不冒充现场身份。000 全未确认分支真 canary 委托/提交均 1，仍须外部隔离。
+- run1 编排参数错误，无测试/XML；run3 90 项中 6 项日志编码读取失败，失败原件完整保留；固定子 JVM UTF-8 后另轮通过。未运行全仓完整测试/构建、APK、模拟器、真机、真实 HTTP/Session 或部署。
 
-## 环境与证据
-- 新隔离端口 19440；datadir .local/mysql19440-b11-adversarial/data；schema/账号 b11_adv_20260929。BeforeAll 精确检查 URL/账号/证据根并拒绝 3306，随后核对真实身份。
-- 实例已正常 shutdown（exit 0），19440 释放，datadir/1143 张合成测试表/失败证据保留。无在途 Gradle/Java/隔离 mysqld；19387＝DSH PID 23292，3306/33060＝系统 mysqld PID 5448 未动、未连接/查询。
-- 证据根 .local/r09-c2-b1-1-adversarial-20260929-a/：run1–run11、原/修正源码、接口/驱动审计、全过程快照与最终验证回执；不入库。
-
-## 保留边界与停止点
-- outbound.recovery.effect-gate.enabled 默认 false；未注册/替换 DataSource，无生产 Authority、无 HTTP/Session 接线；原 admission 开关未开。
-- **默认关闭、未接线、未部署、未开生产开关；K1 仍未通过，B1 整体未完成。** 原先两项已闭合遗留未重做。
-- 未验：fenced.lock 跨进程层（F1′/F3/F5 产品实现）、P5/租约/锁协议、HTTP/Session 接线、生产默认 Session 清理、孤儿解除与生产释放、**窗口 W**、Linux 与其他文件系统、网络/共享盘、**断电与硬复位**、现场组合、Java/Python 允许集差异、C1 历史未验项。
-- **停止于 B1-1，不进入 B1-2**；不合 main、不发布、不操作原库/现网；七类生产决定、TEMP 生产归档、生产释放保持关闭，localDeletionAllowed=false。
+## 环境与停止点
+- 新隔离 19441，datadir .local/mysql19441-b12-fence/data，schema/账号 b12_fence_20260929；BeforeAll 精确 URL/账号/证据根并拒绝 3306。正常 shutdown exit 0，端口释放，datadir/合成表/失败证据保留；上轮 19440 不动。
+- 无 Java/Gradle/隔离 mysqld 在途；19387＝DSH PID 12168；3306/33060＝系统 mysqld PID 5448，未连接/查询/操作。
+- 证据根 .local/r09-c2-b1-2-fence-20260929-a/：run1–run7、共享前后/源码哈希、验证汇总、正常关库与 Git 回执；不入库。
+- **默认关闭、未接线、未部署、未开生产开关；K1 仍未通过，B1 整体未完成；未进入 B1-3。** 窗口 W 原证明与 UNCONFIRMED_NO_CROSS_PROCESS_BASIS 保留，不以本轮通过解除。
+- 未验：窗口 W、HTTP/Session/请求根、生产默认 Session 清理、孤儿解除与生产释放、现场组合、Linux/其它文件系统、网络共享盘、断电与硬复位、Java/Python 允许集差异、C1 历史未验、包装前物理句柄、已开始命令不可撤销。
+- 本轮完成即停；B1-3 另需授权，不合 main、不发布、不操作原库/现网；七类生产决定、TEMP 生产归档/生产释放仍关闭，localDeletionAllowed=false。
 
 <!-- CURRENT_STATE_END -->

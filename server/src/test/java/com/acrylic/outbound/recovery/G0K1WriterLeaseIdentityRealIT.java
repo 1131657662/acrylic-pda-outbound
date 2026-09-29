@@ -120,7 +120,7 @@ class G0K1WriterLeaseIdentityRealIT {
             String status = readStatus(challenger);
             assertThat(exit).isEqualTo(0);
             assertThat(status).as("锁文件缺失必须失败关闭（不自动重建）")
-                .contains("PRODUCT-LEASE-FAILED").contains("CONTROL_FILE_MISSING");
+                .contains("PRODUCT-LEASE-FAILED").contains("CONTROL_WRITER_LOCK_MISSING");
             assertThat(status).as("不得创建新文件后放行").doesNotContain("PRODUCT-LEASE-ACQUIRED-UNEXPECTED");
             assertThat(Files.exists(lock)).as("产品路径不得自动重建锁文件").isFalse();
 

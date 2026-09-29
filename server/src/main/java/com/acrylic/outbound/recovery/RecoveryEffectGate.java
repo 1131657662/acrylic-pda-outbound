@@ -2,7 +2,7 @@ package com.acrylic.outbound.recovery;
 
 import java.sql.SQLException;
 
-/** B1-1 delegate boundary only. No production authority or cross-process protocol is supplied. */
+/** Delegate boundary; a real cross-process authority can be attached explicitly, default off. */
 public final class RecoveryEffectGate {
     private final Authority authority;
     private volatile boolean fenced;
@@ -11,6 +11,8 @@ public final class RecoveryEffectGate {
     public interface Authority {
         void validateStartup() throws SQLException;
         void checkEffect() throws SQLException;
+        default void fenceLocal() { }
+        default void fenceUnknown() { }
     }
 
     private RecoveryEffectGate(Authority authority) { this.authority = authority; }
@@ -26,7 +28,9 @@ public final class RecoveryEffectGate {
     boolean enabled() { return authority != null; }
 
     /** Shared by all explicitly attached connections; no disk or lock is needed for this signal. */
-    public void fence() { if (enabled()) fenced = true; }
+    public void fence() { if (enabled()) { fenced = true; authority.fenceLocal(); } }
+
+    void poison() { fence(); if (enabled()) authority.fenceUnknown(); }
 
     void check() throws SQLException {
         if (!enabled()) return;

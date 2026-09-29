@@ -141,9 +141,9 @@ final class RecoveryConnectionHandler implements InvocationHandler {
     }
 
     private void poison(String code, Throwable cause) {
-        effects.fence();
         poisoned = true;
         lease.poison();
+        effects.poison();
     }
 
     private static SQLException combine(SQLException first, SQLException second) {

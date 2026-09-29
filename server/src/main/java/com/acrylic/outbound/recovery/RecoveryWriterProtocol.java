@@ -22,8 +22,7 @@ final class RecoveryWriterProtocol {
         var identity = RecoveryControlHistory.read(root.resolve("identity.json"));
         require(uuid(value, "installationId").equals(uuid(identity, "installationId"))
             && hash(identity).equals(text(value, "identitySha256")), "CONTROL_WRITER_PROTOCOL_MISMATCH");
-        require(Files.size(RecoveryControlPaths.file(lock)) == 1, "CONTROL_WRITER_LOCK_INVALID");
-        require(fileIdentity(lock).equals(text(value, "fileIdentity")), "CONTROL_WRITER_LOCK_REPLACED");
+        RecoveryLeaseRoots.checkFile(lock, text(value, "fileIdentity"), "WRITER");
         return true;
     }
 

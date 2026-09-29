@@ -23,7 +23,7 @@ class RecoveryWriterLeaseTest {
     @Test void missingLockFailsWithoutCreatingIt() throws Exception {
         var fixture = protocol();
         Files.move(fixture.root.resolve("writers.lock"), fixture.root.getParent().resolve("retained-lock"));
-        assertThatThrownBy(() -> acquire(fixture)).hasMessage("CONTROL_FILE_MISSING");
+        assertThatThrownBy(() -> acquire(fixture)).hasMessage("CONTROL_WRITER_LOCK_MISSING");
         assertThat(fixture.root.resolve("writers.lock")).doesNotExist();
     }
 

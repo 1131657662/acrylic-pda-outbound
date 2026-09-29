@@ -1,5 +1,8 @@
 # 历史归档
 
+- [R09 C2 B1-2 跨进程围栏与真实 Authority](R09_C2_B1_2_FENCE_2026-09-29.md)：规则/实现/多 JVM 矩阵、真实效果与故障注入分离、W 与全未确认分支保留；默认关闭，K1 仍未通过。
+- [B1-2 开工前看板归档](ORCHESTRATION_STATE_before_R09_C2_B1_2_2026-09-29.md)。
+
 - [R09 C2 B1-1 对抗性覆盖复核](R09_C2_B1_1_ADVERSARIAL_2026-09-29.md)：三处漏口、门内修正、九项清单、真实反例及默认关闭、逐轮失败留存；另附[600 个接口签名表](R09_C2_B1_1_JDBC_SURFACE_2026-09-29.md)。K1 仍未通过，B1 整体未完成。
 - [对抗性复核过程断点](ORCHESTRATION_STATE_before_R09_C2_B1_1_ADVERSARIAL_CLOSE_2026-09-29.md)：保留验证进行中与编译失败断点。
 - [对抗性复核前看板原区](ORCHESTRATION_STATE_before_R09_C2_B1_1_ADVERSARIAL_2026-09-29.md)：原样保留前轮当前区。
