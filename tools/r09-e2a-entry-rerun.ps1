@@ -103,6 +103,12 @@ $env:E2A_CROSS_RUN = "$Run"
 $env:E2A_CROSS_PASSWORD = $password
 $env:E2A_CROSS_ROOT = $Root
 $env:B11_EFFECT_EVIDENCE_DIR = $attempt
+# C1MainProfile starts the application without datasource arguments, so the harness supplies them the
+# way the reference run did: through the environment (explicit --spring.datasource.* args still win).
+$env:SPRING_DATASOURCE_URL = "jdbc:mysql://127.0.0.1:$port/$schema" +
+    '?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
+$env:SPRING_DATASOURCE_USERNAME = $user
+$env:SPRING_DATASOURCE_PASSWORD = $password
 $arguments = @('-p', 'server', 'recoveryControlClasspath', 'integrationTest', '--rerun-tasks', '--no-daemon',
     '--console=plain', '--tests', $TestClass)
 $ErrorActionPreference = 'Continue'
