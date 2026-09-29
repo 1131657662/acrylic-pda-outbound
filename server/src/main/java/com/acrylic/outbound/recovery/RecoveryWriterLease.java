@@ -60,6 +60,18 @@ final class RecoveryWriterLease implements AutoCloseable {
         }
     }
 
+    /**
+     * One independent reference to the same held descriptor, so a root that outlives a single
+     * connection can keep the shared writer lease while each borrowed connection releases its own.
+     * Refused once this handle was released or the descriptor was poisoned.
+     */
+    synchronized RecoveryWriterLease reference() {
+        require(!closed && held.lock.isValid() && HELD.get(identity) == held, "CONTROL_WRITER_LOCK_REPLACED");
+        require(!held.poisoned, "CONTROL_WRITERS_ACTIVE");
+        held.references++;
+        return new RecoveryWriterLease(identity, held);
+    }
+
     void poison() { synchronized (RecoveryWriterLease.class) { held.poisoned = true; } }
 
     private static final class Held {

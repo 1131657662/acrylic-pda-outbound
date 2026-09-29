@@ -18,12 +18,15 @@ import org.springframework.context.annotation.Primary;
 /**
  * Opt-in application entry wiring for the recovery admission adapter.
  *
- * <p>With {@code outbound.recovery.admission.enabled=true} the admitted writer is the primary
- * {@link DataSource}, so every unqualified lookup (JdbcTemplate, NamedParameterJdbcTemplate, the
- * JDBC transaction manager, Spring Session JDBC) takes the external writer lease before it borrows
- * a connection. The single raw pool stays reachable only through the {@link FlywayDataSource}
- * qualifier, because migration and bootstrap are explicit independent permissions rather than
- * business writes; a caller that asks for that qualifier deliberately stands outside the gate.
+ * <p>With {@code outbound.recovery.admission.enabled=true} the primary {@link DataSource} is the
+ * request-root data source, so every unqualified lookup (JdbcTemplate, NamedParameterJdbcTemplate,
+ * the JDBC transaction manager, Spring Session JDBC) must resolve to the operation root this thread
+ * is dispatching for; a thread without one is refused instead of being served. The single raw pool
+ * stays reachable only through the {@link FlywayDataSource} qualifier, because migration and
+ * bootstrap are explicit independent permissions rather than business writes.
+ *
+ * <p>The legacy connection-level adapter is no longer part of this wiring: it is an explicit
+ * test/offline capability, and a static check keeps it out of the request path.
  *
  * <p>The flag is off by default: an instance without an explicit control authority must not
  * silently replace its datasource, and a missing or stale authority fails context startup instead
@@ -43,10 +46,21 @@ public class RecoveryAdmissionConfiguration {
         return properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
+    /**
+     * The in-memory authority for operation roots. It fails context startup when the configured
+     * control authority is missing or unreadable, which is what keeps a misconfigured instance from
+     * degrading into an unguarded pool.
+     */
+    @Bean
+    RecoveryOperationRegistry recoveryOperationRegistry(Settings settings) {
+        return new RecoveryOperationRegistry(settings.location(), settings.checkpointPath());
+    }
+
+    /** The only primary data source: every borrow must resolve to a live operation root. */
     @Bean @Primary
-    RecoveryAdmittedDataSource recoveryAdmittedDataSource(
-            @Qualifier(MIGRATION_DATASOURCE) DataSource migration, Settings settings) {
-        return new RecoveryAdmittedDataSource(migration, settings.location(), settings.checkpointPath());
+    RecoveryRequestAdmittedDataSource recoveryAdmittedDataSource(
+            @Qualifier(MIGRATION_DATASOURCE) DataSource migration, RecoveryOperationRegistry operations) {
+        return new RecoveryRequestAdmittedDataSource(migration, operations);
     }
 
     /** Trusted control identity. There is no automatic bootstrap: every value must be explicit. */
