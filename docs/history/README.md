@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S28：V36 Audit 两 IT——1 通过、1 只差私钥物料](R09_C2_B1_3_S28_V36_AUDIT_2026-09-29.md)：两个 Audit IT 断言 **`@@log_bin == 0`**（与迁移类相反）⇒ 运行器改为按 item 决定 binlog；`E2aV36AuditPrefixIT` **通过**（E2a 主树已验 **21→22**），`E2aV36AuditArchiveIT` 只差私钥 `<attempt>/private/private.pk8`（与 `stopwriter` 的 `stop-it-private.pk8` 同类）。**待裁定**：①659 处置；②是否允许 harness 生成隔离用等价私钥（私钥不入库）。K1 仍未通过；另附 S28 开工前看板归档。
+
 - [R09 C2 B1-3 S27：V36 家族供给与首批运行](R09_C2_B1_3_S27_V36_FAMILY_2026-09-29.md)：新增 `tools/r09-e2a-v36-run.ps1`（datadir 置于 IT 断言的 `<attempt>/data`、导出 `E2A_<PREFIX>_*` 与 `E2A_CROSS_ROOT`、口令落盘复用、一次性拒绝重跑）；`E2aV36MigrationIT`／`E2aV36DeviceKeyIT`／`E2aV36PairedKeyIT` **通过**（E2a 主树已验 **18→21**）；`E2aV36StopWriterIT` 需预置私钥物料、两个 Audit IT 的身份断言仍与供给有差异（**均非产品问题**）。659 仍待裁定。K1 仍未通过；另附 S27 开工前看板归档。
 
 - [R09 C2 B1-3 S26：659 的 409 两次驱动实验](R09_C2_B1_3_S26_659_CONTEXT_409_2026-09-29.md)：①把取候选摘要提到 `facts#1` 之前、②命令改用快照自身的 `candidateContextSha256`（并打日志）——**两次仍 `LINK 409 COMMAND_CONTEXT_CHANGED`**，且日志无 `digest mismatch`（两来源一致）⇒ 排除"候选顺序"与"摘要覆盖"；663 审计**无该 409 事件** ⇒ 字段级差异不在审计中。S25 的 CSRF 修复保留有效；659 仍未验。定位字段须**产品侧仪表化运行（需授权）**，未授权前不做也不当产品缺陷。E2a 主树已验 18 个不变。K1 仍未通过；另附 S26 开工前看板归档。

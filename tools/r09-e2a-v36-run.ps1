@@ -74,6 +74,7 @@ if (-not $Reuse) {
 }
 New-Item -ItemType Directory -Force -Path (Join-Path $attempt 'storage') | Out-Null
 
+# The audit ITs assert @@log_bin = 0; the migration/key/stop ITs need binlog on.
 $bootstrap = Join-Path $attempt 'bootstrap.sql'
 $suffixes = @()
 $sql = "CREATE DATABASE IF NOT EXISTS $schema;`n" +
@@ -87,11 +88,12 @@ $sql = "CREATE DATABASE IF NOT EXISTS $schema;`n" +
     "GRANT ALL ON *.* TO 'root'@'127.0.0.1' WITH GRANT OPTION;`n" +
     "FLUSH PRIVILEGES;`n"
 [IO.File]::WriteAllText($bootstrap, $sql, (New-Object Text.UTF8Encoding($false)))
-
+# The audit ITs assert @@log_bin = 0; the migration/key/stop ITs need binlog on.
+if ($Item -in @('auditprefix', 'auditarchive')) { $logArgs = @('--skip-log-bin') } else { $logArgs = @('--log-bin-trust-function-creators=ON') }
 $serverArgs = @('--no-defaults', "--datadir=$data", "--port=$Port",
-    '--bind-address=127.0.0.1', '--mysqlx=OFF', '--skip-name-resolve', '--skip-grant-tables=false',
-    '--log-bin-trust-function-creators=ON', "--log-error=$attempt/server.log",
-    "--init-file=$($bootstrap.Replace('\', '/'))")
+    '--bind-address=127.0.0.1', '--mysqlx=OFF', '--skip-name-resolve', '--skip-grant-tables=false') + $logArgs + @(
+    "--log-error=$attempt/server.log", "--init-file=$($bootstrap.Replace('\', '/'))")
+
 Start-Process -FilePath $Mysqld -ArgumentList $serverArgs -WindowStyle Hidden `
     -RedirectStandardOutput (Join-Path $attempt 'server.stdout.log') -RedirectStandardError (Join-Path $attempt 'server.stderr.log') | Out-Null
 $ready = $false
