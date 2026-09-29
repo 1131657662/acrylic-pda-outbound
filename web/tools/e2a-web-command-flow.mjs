@@ -57,13 +57,20 @@ try {
       log.push(`candidates ${response.status}`);
       return body.data.contextSha256;
     };
-    const command = (kind, facts, digest, reason) => ({
+    const command = (kind, facts, digest, reason) => {
+      // The guard compares the whole expected block against the current server context, so the
+      // snapshot's own value wins; a differing digest from the review endpoint is only logged.
+      const fromFacts = facts.expected?.candidateContextSha256;
+      if (digest && fromFacts && digest !== fromFacts)
+        log.push(`digest mismatch facts=${String(fromFacts).slice(0, 12)} review=${String(digest).slice(0, 12)}`);
+      return {
       commandVersion: 1, commandType: kind, commandId: uuid(), transportRecoveryEpoch: epoch, reason,
       warehouseId: facts.warehouseId, submissionId: facts.submissionId, workRound: facts.workRound,
       authorizationId: facts.authorizationId, freezeDeviceId: facts.freezeDeviceId,
       sourceRecoveryEpoch: facts.sourceRecoveryEpoch, source: { ...facts.source },
-      expected: { ...facts.expected, candidateContextSha256: digest },
-    });
+      expected: { ...facts.expected, candidateContextSha256: fromFacts ?? digest },
+      };
+    };
     const post = async (label, body) => {
       const response = await fetch('/api/v1/temporary-commands', {
         method: 'POST',
@@ -75,15 +82,19 @@ try {
       return { status: response.status, receipt, body };
     };
 
+    // The candidate read advances the command context, so take the digest *before* the facts snapshot;
+    // otherwise the snapshot is stale by the time the command is posted (COMMAND_CONTEXT_CHANGED).
+    const firstDigest = await candidateDigest();
     const first = await readFacts('facts#1');
     if (first.status !== 200) return { log, failed: 'facts', first };
     const factsKeys = Object.keys(first.data ?? {}).sort();
     const expectedKeys = Object.keys(first.data?.expected ?? {}).sort();
-    const link = await post('LINK', command('LINK', first.data, await candidateDigest(), '人工核对候选后确认受控关联'));
+    const link = await post('LINK', command('LINK', first.data, firstDigest, '人工核对候选后确认受控关联'));
     if (link.status !== 200) return { log, factsKeys, expectedKeys, failed: 'link', link };
+    const secondDigest = await candidateDigest();
     const second = await readFacts('facts#2');
     if (second.status !== 200) return { log, factsKeys, expectedKeys, failed: 'facts#2', second };
-    const confirm = await post('NORMAL_CONFIRM', command('NORMAL_CONFIRM', second.data, await candidateDigest(), '人工核对无误后确认临时出库'));
+    const confirm = await post('NORMAL_CONFIRM', command('NORMAL_CONFIRM', second.data, secondDigest, '人工核对无误后确认临时出库'));
     return { log, factsKeys, expectedKeys, mappingVersionAfterLink: second.data?.expected?.mappingVersion,
       canonicalOrderAfterLink: second.data?.expected?.canonicalOrderId, link, confirm,
       failed: confirm.status === 200 ? null : 'confirm' };
