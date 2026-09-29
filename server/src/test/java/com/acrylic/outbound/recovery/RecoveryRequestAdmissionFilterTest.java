@@ -173,9 +173,9 @@ class RecoveryRequestAdmissionFilterTest {
     }
 
     /**
-     * The current control lock is neither nesting nor waiting (design row 13), so a second admission
-     * attempt made from inside the critical section is refused instead of queued: today the entry
-     * admits one root at a time, and concurrent requests are refused, not interleaved.
+     * The control lock refuses same-root nesting (design row 13), so a second admission attempt made
+     * from inside the critical section is named as misuse instead of being queued: the entry admits
+     * one root per critical section, and concurrent requests wait for it rather than being refused.
      */
     @Test void admissionIsRefusedWhenTheControlCriticalSectionIsAlreadyHeld() throws Exception {
         var f = fixture();
@@ -183,7 +183,7 @@ class RecoveryRequestAdmissionFilterTest {
             f.registry.startup().installationId(), f.registry.startup().recordSha256(), null);
 
         assertThatThrownBy(() -> RecoveryControlLock.locked(f.control.root, () -> f.registry.admit(token)))
-            .hasMessage("CONTROL_COORDINATOR_BUSY");
+            .hasMessage("CONTROL_COORDINATOR_REENTRANT");
         assertThat(f.registry.liveRoots()).isZero();
     }
 

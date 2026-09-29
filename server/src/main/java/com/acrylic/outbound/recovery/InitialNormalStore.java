@@ -39,7 +39,7 @@ public final class InitialNormalStore {
     <T> T locked(RecoveryControlLock.Read<T> action) {
         try {
             var checked = location.checked();
-            return RecoveryControlLock.locked(checked.root(), () -> {
+            return RecoveryControlLock.locked(RecoveryControlLock.STORE_LAYER, checked.root(), () -> {
                 layout(checked.root());
                 return action.run();
             });

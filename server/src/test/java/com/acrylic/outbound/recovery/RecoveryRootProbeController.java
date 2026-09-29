@@ -60,6 +60,17 @@ final class RecoveryRootProbeController {
         };
     }
 
+    /**
+     * Overlapping requests: each one holds its own root for a moment, so an entry that admitted only
+     * one request at a time would refuse the others instead of showing several live roots.
+     */
+    @GetMapping("/__s3/concurrent")
+    String concurrent() throws InterruptedException {
+        Thread.sleep(250);
+        observation.concurrent(operations.liveRoots());
+        return "concurrent-ok";
+    }
+
     /** Multipart staging happens inside the dispatch, so the root must already cover it. */
     @PostMapping("/__s3/multipart")
     String multipart(@RequestParam("file") MultipartFile file, HttpServletRequest request) {

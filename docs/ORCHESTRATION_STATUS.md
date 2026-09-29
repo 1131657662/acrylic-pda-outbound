@@ -6,44 +6,43 @@
 ```yaml
 date: 2026-09-29
 branch: codex/development
-head: 1943953
+head: 922a062
 dirty_entries: 2
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-**R09 C2 B1-3 S5 收口：启动守卫与初始化窗口（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。应用在 `admission.enabled=true` 下**首次真正启动成功**（不再需要任何测试替身）。完整记录、逐轮失败与未做项见 [B1-3 S5 记录](history/R09_C2_B1_3_S5_STARTUP_WINDOW_2026-09-29.md)；S5 开工前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S5_2026-09-29.md)；S1–S4 记录见 [S4](history/R09_C2_B1_3_S4_MULTIPART_2026-09-29.md)、[S3](history/R09_C2_B1_3_S3_REQUEST_ROOT_SESSION_2026-09-29.md)、[S2](history/R09_C2_B1_3_S2_REQUEST_ROOT_2026-09-29.md)。
+**R09 C2 B1-3 S6 收口：控制锁按根可嵌套与有界等待（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。并发请求已实测可同时被接纳（4 路并发全绿），S3 遗留的"并发 HTTP 未验"由此闭合。完整记录与逐轮失败见 [B1-3 S6 记录](history/R09_C2_B1_3_S6_CONTROL_LOCK_2026-09-29.md)；S6 开工前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S6_2026-09-29.md)；S1–S5 记录见 [S5](history/R09_C2_B1_3_S5_STARTUP_WINDOW_2026-09-29.md)、[S4](history/R09_C2_B1_3_S4_MULTIPART_2026-09-29.md)、[S3](history/R09_C2_B1_3_S3_REQUEST_ROOT_SESSION_2026-09-29.md)、[S2](history/R09_C2_B1_3_S2_REQUEST_ROOT_2026-09-29.md)。
 
 ## Git、写权与范围
-- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD `f75b9ca`（S4 收口）；写者＝DSH（本会话）。
+- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD `922a062`（S5 收口）；写者＝DSH（本会话）。
 - **非本会话的未提交改动**（未代提交、未修改）：`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、未跟踪 `docs/PDA_UI_UX_REVIEW_2026-09-29.md`。
 - 共享树 r06-e2a-migration 保持 detached ea4d166；只读，未同步/清理/reset/提交/合并。
 
-## 本轮交付（S5：设计第 19/22 行）
-- 新增 `RecoveryStartupGuard`（`BeanFactoryPostProcessor`）：**清理守卫**——`spring.session.jdbc.cleanup-cron != -`（含未配置）⇒ 启动失败 `CONTROL_SESSION_CLEANUP_UNCOVERED`；**显式排序**——把 `com.acrylic.outbound.*` 应用 Bean 的 `dependsOn` 合并加入 `recoveryInitializationWindow`（跳过配置属性、BP/BFPP 与框架 Bean，避免环）。
-- 新增 `RecoveryInitializationWindow`：协调锁内 `admit` 一个 `INITIALIZATION` 根并绑定刷新线程（覆盖 bean 构造与框架启动 runner），`ApplicationReadyEvent` 时清绑定并退役（异常关闭也会退役）。
-- `RecoveryAdmissionConfiguration` 装配两者，仍**仅 `admission.enabled=true` 生效**；未改任何启动消费者（`JobRecoveryFence`/`ServiceModeStartupNotice`/`BootstrapAdmin` 仍走主数据源，只是被显式根覆盖）。
-- 第 22 行清点＋守卫：新增静态白名单测试（`MIGRATION_DATASOURCE` 只允许冻结文件；`@FlywayDataSource` 全仓 1 处；启动覆盖必须是显式窗口）。
+## 本轮交付（S6：设计第 13 行）
+- `RecoveryControlLock` 重写：**按根信号量**（键＝`coordinator.lock` 规范路径）＋**线程级根集合**（根→层号，P3=1／P2=2／P5=3）；同根重入按误用拒绝（立即式仍 `CONTROL_COORDINATOR_BUSY`，等待式 `CONTROL_COORDINATOR_REENTRANT`）；层号不严格递增 ⇒ `CONTROL_LOCK_ORDER_VIOLATION`；新增 `lockedWaiting`（预算 `1..10000`ms，越界 `CONTROL_LOCK_TIMEOUT_RANGE`；JVM 信号量与跨进程文件锁同一预算内重试；预算耗尽仍 `CONTROL_COORDINATOR_BUSY`）。`locked` 保持立即失败语义。
+- `InitialNormalStore.locked` 明确落到 **P2 层**（P3 内取 P2 由此成为可能，符合 R1）；`RecoveryOperationRegistry.admit` 改用 `lockedWaiting(…, 2000ms)` ⇒ 并发请求排队而非被拒。
+- 新增 `RecoveryControlLockTest` 8 项；现场探针增加 `/__s3/concurrent` 与 4 路并发步骤。
 
 ## 运行与证据
-- 一级（`run4-unit-full`）：全量单测 **127 类 / 2806 项 / 0 失败 / 0 错误 / 1 既有无关 skip**；`recovery` 包 **32 类 / 2168 项 / 0 失败**。定向 `run3-s5-targeted` 5 类 20 项 0 失败。
-- 二级现场（`run3-s5-startup-window`，全新实例 19462／应用 19458，`migrate executed=49`；**已删除探针替身**）：带 `admission.enabled=true` **真实启动成功**；S3/S4 判据全部复现（session/error/async/multipart；`liveRootsDuringRequests=[1,1,1,1]`；解析 `[BOUND(staged=1), BOUND(staged=0)]`；暂存清理 `0`；14 次保存全 `BOUND`；`liveRootsAfter=0`；`springSessionThreads=[]`）；同轮第 2 用例：清理保持默认 ⇒ 启动失败 `CONTROL_SESSION_CLEANUP_UNCOVERED` 且端口未占用（`s5-cleanup-guard.txt`）。
-- 二级回归（`it-batch-25`，全新实例 19463）：**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空，TIME_WAIT 峰值 1435，正常 shutdown、端口释放。
-- 证据根（不入库）：`.local/r09-c2-b1-3-s2-20260929-a/`、`…-s3-…`、`…-s4-…`、`…-s5-20260929-a/`（含逐轮失败轮 `run1/run2-s5-targeted`、`run2-s5-startup-window`）。
+- 一级：定向 `run1-s6-targeted` 6 类 / **44 项 / 0 失败**；全量 `run2-unit-full`（不带 `--tests` 白名单）**128 类 / 2814 项 / 0 失败 / 0 错误 / 1 既有无关 skip**，`recovery` **33 类 / 2176 项 / 0 失败**。
+- 二级现场（`run1-s6-concurrency`，全新实例 19464／应用 19458，`migrate executed=49`）：**4 路并发全部 200**；`concurrentRoots=[4,3,2,1]`（观测瞬间 4 个根同时存活 ⇒ 真重叠）；并发窗口内会话保存 `liveRoots=4,4,3,3,2,2,1,1`（各自在自己的根内）；轨迹 `/__s3/concurrent` 四趟 `liveRoots=1,2,3,4`（接纳段串行化、每趟恰好一根）；`liveRootsAfter=0`、`springSessionThreads=[]`；同轮 S3/S4 判据与清理守卫真实入口全部复绿（2 用例 0 失败）。S5 的清理守卫结果不变（`CONTROL_SESSION_CLEANUP_UNCOVERED`＋端口未占用）。
+- 二级回归（`it-batch-25`，全新实例 19465）：**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空，TIME_WAIT 峰值 1393，正常 shutdown、端口释放。
+- 证据根（不入库）：`.local/r09-c2-b1-3-s2-…`、`…-s3-…`、`…-s4-…`、`…-s5-…`、`…-s6-20260929-a/`；逐轮失败轮全部保留。
 
-## 发现与说明（未修/未做）
-1. **初始化窗口绑定"刷新上下文的线程"**：刻意如此（bean 构造与 runner 都在根内）；就绪事件时 `unbindAll()` 后退役 ⇒ 业务流量从"无存活根"开始。单元里同线程启动上下文，故无根借用断言放在就绪事件之后（既有用例已按此更新）。
-2. **仍不宣称可用**：本轮只解决"起得来"；开关仍默认 false，真实业务入口、并发、跨进程、生产门未验。
-3. **并发接纳受限**（S3 发现保留）：`RecoveryControlLock` 非嵌套、`tryAcquire` 无等待 ⇒ 同时刻仅一个请求取根。
-4. **拒绝码 HTTP 映射未实现**（§4.4/第 20 行）；multipart 超限部件实测 500 而非应用 413（既有错误映射，S4 记录）。
-5. **阶段 0 安全前置未实现**（设计第 8–12 行）：`leaseRoot` 三方一致/`lease-root.json`、P5 进程记录与锁、孤儿租约、FENCED 残留——需新增 `outbound.recovery.lease-root`／锚点秘密／`closedAuthority` 配置与 provision 协议（B1-2 只留基座，未接入应用）。
+## 语义变更与发现
+1. **唯一语义变更（设计明文要求）**：同根重入在**等待式**入口的码由 `CONTROL_COORDINATOR_BUSY` 改为 `CONTROL_COORDINATOR_REENTRANT`（设计 §2.1）；立即式入口不变，故既有 `RecoveryControlProcess.nested`／`InitialNormalStoreTest:89`／`RecoveryControlReaderTest:55` 断言不改也全绿；S3 期我自写的"临界区内再接纳"单测按新语义更新（原记录的是旧限制，非产品契约）。
+2. **P5 层暂无取锁调用点**：`LEASE_PROCESS_LAYER` 已定义，但 P5 进程文件仍由 `RecoveryLeaseProcess` 自身文件锁承担（B1-2 基座未接入应用启动路径）；阶段 0 安全前置（第 8–12 行）仍未做。
+3. **未强制"P2 必须持 P3"**：设计 §2.1 未列此前置，本轮只做"逆序拒止"；若 K4 需要，应作为独立约束补上并配用例。
+4. 信号量表按根保留、不回收（条目极小），已在实现注释说明；生产只有一个权威根。
+5. S5 的 `RecoveryStartupGuard`/`RecoveryInitializationWindow` 语义本轮未变；开关仍全部默认 false。
 
 ## 保留边界与停止点
 - `admission.enabled`、`effect-gate.enabled`、跨进程开关**全部默认 false**；未接生产、未部署、未合 main、未操作原库/现网；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`。
-- 未做（后续批次）：完整接纳门 S0–S4 与 P5 前后探针/租约发布/孤儿与围栏通道、效果门接线、§5.6 退役协议（含退役失败即隔离＋halt）、锁的按根嵌套与有界等待、拒绝码 HTTP 映射、阶段 0 安全前置。
-- **入口 IT 重基**（`E2aRecoveryAdmissionEntryIT`、`C1EntryRegression` live/unknown）**启动阻塞已解除、重基本身未做**。
-- 未验：并发/多请求交叉、跨进程、Session 过期清理自有根、Worker/文件/渲染入口、自动配置层启动期读库、Linux/其他文件系统、断电/硬复位、现场组合。
+- 未做（后续批次）：阶段 0 安全前置（第 8–12 行：`leaseRoot` 三方一致/`lease-root.json`、P5 进程记录与锁、孤儿租约、FENCED 残留；需新增 `outbound.recovery.lease-root`／锚点秘密／`closedAuthority` 配置与 provision 协议）、**拒绝码 HTTP 映射**（§4.4/第 20 行，含 multipart 超限 413 与 S4 记录的 500 偏差）、效果门接线、§5.6 退役协议、完整接纳门 S0–S4 与 P5 前后探针/租约发布。
+- **入口 IT 重基**（`E2aRecoveryAdmissionEntryIT`、`C1EntryRegression` live/unknown）：启动阻塞已解除，重基本身未做。
+- 未验：**跨进程并发接纳**（两 JVM 同根、文件锁重试路径）、生产负载下的等待时间分布、Linux/其他文件系统重试语义、Worker/文件/渲染入口、Session 过期清理自有根、断电/硬复位、现场组合。
 - K1 仍未通过；单列：**窗口 W**、`DEBT-R09-C2-LEASE-ANCHOR`、UNCONFIRMED_NO_CROSS_PROCESS_BASIS（须外部隔离）、孤儿解除与生产释放、Java/Python 允许集差异、C1 历史未验项、**IT-DISCOVERY（21 类＝专用实验舱绑定）**、**IT-EVIDENCE-AUDIT（18 类历来仅"跳过型"证据）**、**TZ-GMT 时区显示不统一（待排期）**。
-- **下一步（按优先级）**：①已完成（启动期能力）；②**锁的按根可嵌套＋有界等待（第 13 行）**——解除"并发接纳受限、并发 HTTP 未验"；③**拒绝码 HTTP 映射（§4.4/第 20 行）**；④**入口 IT 重基**（阻塞已解除）；阶段 0 安全前置（第 8–12 行）建议与②或独立批次同排。均需独立授权/验收，不改默认开关。
+- **下一步（按优先级）**：①**拒绝码 HTTP 映射（§4.4/第 20 行）**（含 multipart 超限 413）；②**入口 IT 重基**；③**阶段 0 安全前置（第 8–12 行）**作为独立批次（需 `leaseRoot`/锚点配置与 provision 协议）。均需独立授权/验收，不改默认开关。
 <!-- CURRENT_STATE_END -->

@@ -60,10 +60,17 @@ class RecoveryRequestRootHttpIT {
                 transcript.append(multipartStep(client, multipart, "/__s3/multipart-too-large", 2_621_440, 500))
                     .append(absentSessionAttribute(session, "s3-multipart-large"));
             }
+            transcript.append(concurrentStep(client));
 
             assertThat(observation.asyncBorrows())
                 .as("the async worker carries the request context but no dispatch binding")
                 .containsExactly("RECOVERY_OPERATION_CONTEXT_LOST");
+            assertThat(observation.concurrentRoots()).as("four overlapping requests were all admitted")
+                .hasSize(4);
+            assertThat(observation.concurrentRoots()).as("every overlapping request served inside a root")
+                .allMatch(roots -> roots >= 1);
+            assertThat(observation.concurrentRoots().stream().mapToInt(Integer::intValue).max().orElse(0))
+                .as("the requests really overlapped instead of being serialized one by one").isGreaterThanOrEqualTo(2);
             assertThat(observation.liveRootsDuringRequests())
                 .as("exactly one root exists while each request is served").containsOnly(1);
             assertThat(observation.saves()).as("the framework saved the session at least once").isNotEmpty();
@@ -88,6 +95,7 @@ class RecoveryRequestRootHttpIT {
                 .append("\nliveRootsDuringRequests=").append(observation.liveRootsDuringRequests())
                 .append("\nsaves=").append(observation.saves())
                 .append("\nparses=").append(observation.parses())
+                .append("\nconcurrentRoots=").append(observation.concurrentRoots())
                 .append("\npasses=").append(observation.passes())
                 .append("\nmultipartStagedAfter=").append(stagedFiles(multipart))
                 .append("\nspringSessionThreads=").append(springSessionThreads())
@@ -196,6 +204,20 @@ class RecoveryRequestRootHttpIT {
             jakarta.servlet.DispatcherType.ERROR);
         return "entryOrder=" + entry + " sessionOrder=" + session.getOrder()
             + " sessionDispatcherTypes=" + session.determineDispatcherTypes() + '\n';
+    }
+
+    /** Four overlapping requests: the entry must admit all of them, each inside its own root. */
+    private static String concurrentStep(HttpClient client) throws Exception {
+        var requests = new java.util.ArrayList<java.util.concurrent.CompletableFuture<HttpResponse<String>>>();
+        for (int index = 0; index < 4; index++) {
+            requests.add(client.sendAsync(HttpRequest.newBuilder(
+                    URI.create("http://127.0.0.1:" + APP_PORT + "/__s3/concurrent"))
+                .timeout(Duration.ofSeconds(60)).GET().build(), HttpResponse.BodyHandlers.ofString()));
+        }
+        var codes = new java.util.ArrayList<Integer>();
+        for (var request : requests) codes.add(request.get(60, java.util.concurrent.TimeUnit.SECONDS).statusCode());
+        assertThat(codes).as("overlapping requests are admitted, not refused").containsOnly(200);
+        return "concurrent requests=" + codes.size() + " codes=" + codes + '\n';
     }
 
     private static String step(HttpClient client, String path, int expected) throws Exception {
