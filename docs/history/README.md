@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S24：659 的 403 定性——非业务层拒绝（安全/凭据）](R09_C2_B1_3_S24_659_SECURITY_LAYER_2026-09-29.md)：读源码排除"缺角色/仓库不匹配"（检查自己授予 `temporary_order:link` 且案卷同仓库）；run 660 的 `browser-command-flow.json` 给出 LINK 真实响应（`ACCESS_DENIED`＋"权限不足或安全凭据失效，请刷新后重试"）；660 datadir 审计**无任何拒绝事件** ⇒ 403 是**安全层（凭据/CSRF）**在业务之前拒绝，与 S22 同源（GET 通过、POST 被拒）⇒ 指向登录后 CSRF 令牌轮换。659 仍判未验但**不是产品缺陷**证据。下一步：查 CSRF 轮换配置或驱动是否重取 `/auth/csrf`。E2a 主树已验 18 个不变。K1 仍未通过；另附 S24 开工前看板归档。
+
 - [R09 C2 B1-3 S23：659 的权限/作用域查证与收窄](R09_C2_B1_3_S23_659_SCOPE_2026-09-29.md)：LINK 需要 `temporary_order:link`（与 IT 一致）；`role_permission`/`user_role` **无作用域列**；659 库中该码有 **2 条授予**；IT 已显式打开 `outbound.temporary.commands.enabled` ⇒ 排除"权限缺失/作用域列绑定"，剩三选一（actor 不持有该码角色／代码级仓库比对／真实产品差异）。下一步：读 `TemporaryCommandBrowserChecks` 的 LINK 构造＋一次查库判定；此前不得当作产品缺陷。E2a 主树已验 18 个不变。K1 仍未通过；另附 S23 开工前看板归档。
 
 - [R09 C2 B1-3 S22：Secure cookie／CSRF 根因——633 与 642 转为已验](R09_C2_B1_3_S22_SECURE_COOKIE_2026-09-29.md)：加 `-GradleInfo`（转发测试 stdout）后读源码与库诊断：655 的库里**无 `WEB_LOGIN_FAILED` 审计行** ⇒ 403 是**认证前的 CSRF 过滤器**拦的；对照通过的 640 显式传 cookie.secure=false ⇒ **Secure cookie 在明文 HTTP 下不被回送**。harness 补 `SERVER_SERVLET_SESSION_COOKIE_SECURE=false` 后 **657 `E2aCorrectionChainIT`、658 `E2aHandoverHttpLayerIT` 通过 ⇒ 633／642 转已验**（E2a 主树累计 **18 个**）；659 仍失败但性质澄清为**作用域/权限码**（登录 200 后 LINK 403，权限行与授予均在）。未做：659 判定、Android 工具链、V36 门＋供给、树内 chromium、Python v2 供给。K1 仍未通过；另附 S22 开工前看板归档。
