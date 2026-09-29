@@ -1,5 +1,8 @@
 # 历史归档
 
+- [R09 C2 B1-3 S10：效果门接入真实 JDBC 入口](R09_C2_B1_3_S10_EFFECT_GATE_WIRING_2026-09-29.md)：应用自己的主数据源挂上效果门（默认仍关闭）——本机层与跨进程层都在委托前生效；只读白名单严格性实测（常量读不查、**关系读照查**、未识别 SQL 拒绝）；**现场**（实例 19471）真实应用未围栏 write ok, commit ok、authority 拒绝后写/关系读/提交全部被拒且 counterAfterFence 不变（没落到驱动）；全量单测 132 类 2833 项 0 失败、恢复链 25 类 696 项 0 失败（实例 19472）。**发现**：准入层（v1）与跨进程 P5 层（v2）身份字段集互斥 ⇒ 今天无法同开，跨进程效果门生产形态落库仍未验。未做：第 10/12 行逐根发布/退役、v2 权威供给（B9）、实验舱重跑。K1 仍未通过；另附 S10 开工前看板归档。
+
+
 - [R09 C2 B1-3 S9：阶段 0 安全前置第一批——P5 根身份/围栏通道/进程记录接线](R09_C2_B1_3_S9_P5_ROOT_WIRING_2026-09-29.md)：`RecoveryLeaseConfiguration`＋`RecoveryLeaseLifecycle` 把设计第 8–9 行的 P5 基座接进应用（显式供给的 P5 根、锚点校验、围栏通道、孤儿扫描、进程记录与生命周期锁、fail-closed 启动、Spring 关停退役 `retire()`）；开关默认 false，不配则一根不取。验证：全量单测 130 类 2825 项 0 失败（新增 7 项含"发布后删租约⇒下次启动 `RECOVERY_LEASE_OUTSTANDING`"）；**现场**（实例 19469）真实应用取 P5 根且 `checkEffect=ok`、发布租约→退役→下次启动因孤儿租约被拒；恢复链 25 类 696 项 0 失败（实例 19470）。发现：lease 配置漏启用准入 settings（现场才暴露的产品缺陷）、P5 根按设计是共享的、v2 初始权威供给仍缺。未做：第 10–12 行（逐根发布/探针、**效果门接入 JDBC 入口**、逐操作退役）、v2 权威供给、实验舱重跑。K1 仍未通过；另附 S9 开工前看板归档。
 
 - [R09 C2 B1-3 S8：入口 IT 重基到请求根语义](R09_C2_B1_3_S8_ENTRY_REBASE_2026-09-29.md)：三处入口验证共用语料按"一个请求＝一个操作根"重写（根内运行、无根必拒 `RECOVERY_OPERATION_REQUIRED`、关闭意图下"保留根继续服务／新根 `CONTROL_CLOSING_INTENT`"）；丢回执故障下沉到请求根数据源之下并补齐启动覆盖（static 工厂避环）；新增可在隔离实例运行的 `RecoveryAdmissionEntryRebaseIT`，现场（实例 19468）live／unknown／lost 三上下文同轮全绿（`closeWaitedMillis=2500`、`innodbTrx=0`、丢回执 `committedCounter=2` 后仍 `CONTROL_WRITERS_ACTIVE`）；全量单测 2818 项 0 失败。发现并补齐实验舱重基缺口（`C1MainProfile`／`E2aCrossSourceHttpIT` 缺 `cleanup-cron=-`，否则连启动都被拒；实验舱本身仍未重跑）。未做：阶段 0 安全前置（第 8–12 行）、效果门接线。开关仍默认 false，K1 仍未通过；另附 S8 开工前看板归档。

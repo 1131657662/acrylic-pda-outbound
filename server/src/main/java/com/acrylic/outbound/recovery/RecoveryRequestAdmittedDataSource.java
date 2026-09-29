@@ -39,10 +39,18 @@ import javax.sql.DataSource;
 public final class RecoveryRequestAdmittedDataSource implements DataSource {
     private final DataSource delegate;
     private final RecoveryOperationRegistry operations;
+    private final RecoveryEffectGate effects;
 
+    /** Without an attached gate every JDBC effect is unfrozen: the default wiring never opts in. */
     public RecoveryRequestAdmittedDataSource(DataSource delegate, RecoveryOperationRegistry operations) {
+        this(delegate, operations, RecoveryEffectGate.disabled());
+    }
+
+    public RecoveryRequestAdmittedDataSource(DataSource delegate, RecoveryOperationRegistry operations,
+            RecoveryEffectGate effects) {
         this.delegate = Objects.requireNonNull(delegate);
         this.operations = Objects.requireNonNull(operations);
+        this.effects = Objects.requireNonNull(effects);
     }
 
     @Override public Connection getConnection() throws SQLException {
@@ -80,6 +88,9 @@ public final class RecoveryRequestAdmittedDataSource implements DataSource {
         }
         try {
             var handler = new RecoveryConnectionHandler(physical, writer, RecoveryAdmissionProbe.NOOP, connection);
+            // The gate is attached per connection: every effect of this borrow is checked before it
+            // reaches the driver, and an unclassified or fenced instance refuses instead of writing.
+            handler.useEffectGate(effects);
             return (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(),
                 new Class<?>[]{Connection.class}, handler);
         } catch (SQLException | RuntimeException error) {

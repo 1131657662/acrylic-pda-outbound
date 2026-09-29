@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 import javax.sql.DataSource;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -83,8 +84,13 @@ public class RecoveryAdmissionConfiguration {
     /** The only primary data source: every borrow must resolve to a live operation root. */
     @Bean @Primary
     RecoveryRequestAdmittedDataSource recoveryAdmittedDataSource(
-            @Qualifier(MIGRATION_DATASOURCE) DataSource migration, RecoveryOperationRegistry operations) {
-        return new RecoveryRequestAdmittedDataSource(migration, operations);
+            @Qualifier(MIGRATION_DATASOURCE) DataSource migration, RecoveryOperationRegistry operations,
+            ObjectProvider<RecoveryEffectGate> gate) {
+        // The effect gate is attached per connection. It stays disabled unless the gate switch (and,
+        // for cross-process fencing, the explicitly supplied P5 authority) is on, so an installation
+        // that never opted in behaves exactly as before.
+        return new RecoveryRequestAdmittedDataSource(migration, operations,
+            gate.getIfAvailable(RecoveryEffectGate::disabled));
     }
 
     /**

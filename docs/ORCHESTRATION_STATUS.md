@@ -6,43 +6,40 @@
 ```yaml
 date: 2026-09-29
 branch: codex/development
-head: 9d6dca2
+head: 0e5638d
 dirty_entries: 2
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-**R09 C2 B1-3 S9 收口：阶段 0 安全前置第一批——P5 根身份／围栏通道／进程记录接线（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。设计第 8–9 行的**应用侧接线**完成（第 10 行逐根发布/探针、第 11 行效果门接入 JDBC、第 12 行逐操作退役留作下一批）。记录见 [B1-3 S9 记录](history/R09_C2_B1_3_S9_P5_ROOT_WIRING_2026-09-29.md)；S9 开工前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S9_2026-09-29.md)；S8/S7 见 [S8](history/R09_C2_B1_3_S8_ENTRY_REBASE_2026-09-29.md)、[S7](history/R09_C2_B1_3_S7_REFUSAL_MAPPING_2026-09-29.md)。
+**R09 C2 B1-3 S10 收口：效果门接入真实 JDBC 入口（设计第 11 行）（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。应用自己的主数据源现在会挂效果门（默认仍关闭）⇒ 真实写入/提交/关系读在围栏后立即被冻结且到不了驱动。记录见 [B1-3 S10 记录](history/R09_C2_B1_3_S10_EFFECT_GATE_WIRING_2026-09-29.md)；S10 开工前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S10_2026-09-29.md)；S9/S8 见 [S9](history/R09_C2_B1_3_S9_P5_ROOT_WIRING_2026-09-29.md)、[S8](history/R09_C2_B1_3_S8_ENTRY_REBASE_2026-09-29.md)。
 
 ## Git、写权与范围
-- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD `33a5741`（S8 收口）；写者＝DSH（本会话）。
+- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD `0e5638d`（S9 收口）；写者＝DSH（本会话）。
 - **非本会话的未提交改动**（未代提交、未修改）：`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、未跟踪 `docs/PDA_UI_UX_REVIEW_2026-09-29.md`。
 - 共享树 r06-e2a-migration 保持 detached ea4d166；只读，未同步/清理/reset/提交/合并。
 
-## 本轮交付（S9：设计第 8–9 行应用侧接线；开关默认 false）
-- `RecoveryLeaseConfiguration`（新）：仅 `outbound.recovery.lease.enabled=true` 时装配；绑定 `outbound.recovery.lease.{root,closed-authority,identity-sha256,marker-sha256}`（缺项 ⇒ `RECOVERY_LEASE_ROOT_UNBOUND`）；装配**唯一** `RecoveryLeaseLifecycle` 及其持有的 `RecoveryFenceAuthority`（效果门 `ObjectProvider<Authority>` 取到的真实现）；同时 `@EnableConfigurationProperties` 准入与效果门 settings（否则生产启用必缺 bean——现场实测）。
-- `RecoveryLeaseLifecycle`（新）：显式 P5 绑定 → 锚点校验（`CONTROL_ANCHOR_REQUIRED`）→ `RecoveryFenceAuthority.validateStartup()`（围栏通道＋孤儿扫描＋进程记录与生命周期锁，均在本机 P3 协调锁内）→ fail-closed 启动；`close()` 由 Spring 关停调用。
-- `RecoveryFenceAuthority.retire()`（新）：干净关停的 F3（释放生命周期锁＋关通道，幂等），**不**声明围栏；F1–F5 序列未改。
-- 新增 `RecoveryLeaseConfigurationTest` 7 项（见记录 §3.1）：默认不取根、无锚点拒、绑定摘要不符拒、`fenced.lock` 缺失拒且不修复、进程记录+锁持有+退役后可复用、两进程共用同根各留记录（更正我最初错误预设）、发布后删除租约 ⇒ 下次启动 `RECOVERY_LEASE_OUTSTANDING`。
+## 本轮交付（S10：设计第 11 行；开关默认 false）
+- `RecoveryRequestAdmittedDataSource`：新增带门的构造器，`admit(...)` 建好 handler 后调用 `useEffectGate(effects)` ⇒ 本机层（`gate.fence()` 后本地拒绝）与跨进程层（authority 的 `checkEffect()`：探针＋孤儿扫描）都在**委托前**生效；旧构造器保持 `disabled()`（未 opt-in 行为完全不变）。
+- `RecoveryAdmissionConfiguration`：主数据源 bean 注入 `ObjectProvider<RecoveryEffectGate>`，取到即挂（缺省 `disabled()`）。
+- 新增 `RecoveryRequestAdmittedDataSourceGateTest` 5 项（逐效果委托前检查｜被拒效果到不了驱动｜**只读白名单严格性**：常量读不查、**关系读照查**（视图可写）、未识别 SQL `CONTROL_EFFECT_UNCLASSIFIED`、预备语句按自身 SQL 在执行时归类｜未挂门不查｜本机层先行不调 authority）＋`RecoveryIdentityFormatConflictTest` 3 项（钉住 §发现）。
 
 ## 运行与证据
-- 一级：全量单测（不带 `--tests` 白名单）**130 类 / 2825 项 / 0 失败 / 0 错误 / 1 既有无关 skip**。
-- 二级现场（`run2-s9-lease-wiring`，全新实例 19469／应用 19458，1 用例 0 失败）：`provision` 出真实 P5 树（`identitySha256`／`markerSha256` 落证）→ **真实应用启动成功**且 `gate enabled, checkEffect=ok`（真实 `fenced.lock` 探针＋孤儿扫描通过），树为 `[fenced.lock, lease-root.json, leases/index.json, processes/<uuid>.json]`；经真实 authority 发布租约（锚定索引同步）→ `retire` 释放生命周期锁 → 下一次启动因孤儿租约 **拒** `RECOVERY_LEASE_OUTSTANDING`。
-- 二级回归（`it-batch-25`，全新实例 19470；P5 基座对抗面）：**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空，TIME_WAIT 峰值 1410，正常 shutdown、端口释放。
-- 证据根（不入库）：`.local/r09-c2-b1-3-s2-…`…`…-s9-20260929-a/`；P5 夹具树保留在 `.local/control-java-cases/case-*/p5/`。
+- 一级：全量单测（不带 `--tests` 白名单）**132 类 / 2833 项 / 0 失败 / 0 错误 / 1 既有无关 skip**。
+- 二级现场（`run4-s10-effect-gate`，全新实例 19471／应用 19458，1 用例 0 失败）：真实应用（准入＋效果门开）里 —— `unfenced: constant read ok, write ok, commit ok, counter=1 checks=4`；authority 拒绝后 `fenced: write refused, relation read refused, commit refused, constant read ok`，`counterAfterFence=1`（**被拒效果没落到驱动**）。
+- 二级回归（`it-batch-25`，全新实例 19472；效果门/围栏对抗面）：**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空，TIME_WAIT 峰值 1432，正常 shutdown、端口释放。
+- 证据根（不入库）：`.local/r09-c2-b1-3-s2-…`…`…-s10-20260929-a/`（含 run1–run4 现场与失败轮、run6–run10 定向、全量、批次）。
 
-## 发现与边界（重要）
-1. **产品缺陷（现场发现，单测未暴露）**：`RecoveryLeaseConfiguration` 只启用自己的 settings，导致生产启用 lease 时 `RecoveryAdmissionConfiguration$Settings` 缺 bean ⇒ 启动必失败；已改为同时启用准入/效果门 settings。两级验证互补的实例，已入档。
-2. **P5 根是共享的**：进程记录/生命周期锁标识"本进程活着"，**不排斥**第二个进程；互斥由写者租约与租约记录仲裁（更正我最初"第二进程应被拒"的预设）。孤儿租约才是拒绝依据。
-3. **v2 初始权威供给缺失**：`RecoveryLeaseRoots.verify()` 要求 `identity.json` 为 v2 且带 `authorityKind/closedAuthority/leaseRoot`，而现有独立供给方（Python）仍写 v1；本轮现场由测试侧补成 v2（与既有 `RecoveryAuthorityPurposeTest` kind 补丁同法），**生产/独立供给方写 v2 仍是待办**（与 `closedAuthority` 身份文件同属 B9）。
-4. **锚点政策仍暂缓**（用户 2026-09-29 裁定）：本批只落实显式供给机制（仅提交 anchorId，秘密不入可写树）；保管/轮换未定，且不得把 F5/孤儿扫描当防伪依据。
-5. **第 11 行效果门尚未接入 JDBC 入口** ⇒ 开关打开也不冻结效果（`RecoveryRequestAdmittedDataSource`/`RecoveryConnectionHandler`/`RecoveryJdbcObjectHandler` 仍不查询门）；第 10 行逐根发布/探针与第 12 行逐操作退役协议同样待做。
+## 发现（必须记住）
+1. **准入层与跨进程 P5 层的身份字段集互斥**（现场撞到、已用两侧用例钉住）：准入的权威加载要求 **v1 字段集**（带 v2 追加字段即 `CONTROL_FIELDS`），而 P5 `provision/verify` 要求 **v2 字段集**（v1 身份即 `CONTROL_FIELDS`，字段集校验先于版本校验）⇒ **今天无法在同一上下文同时开启准入与跨进程 P5**（第 6/7 行 v2 初始权威属 B9）。因此**"跨进程效果门在生产形态下落库生效"仍未验**，被该冲突阻塞；本轮现场把证据拆成两条互不掩盖：真实 P5 authority 挂载＝S9 的 `RecoveryLeaseWiringRealIT`（`gate enabled, checkEffect=ok`），真实入口挂门与冻结＝本轮 `RecoveryEffectGateWiringRealIT`（authority 为测试侧实现，理由已写入用例注释与记录）。
+2. **只读白名单比"任意 SELECT"窄**：常量读是 `READ`（不查），**关系读是 `SOURCE_READ`（照查）**——因为视图/存储函数可能写；未识别 SQL 一律拒绝而非猜测。
+3. 现场 `checks=4`（单测把 `commit`＋写语句钉为 2）：差额未逐项归因，仅作观测记录、未用作判据。
 
 ## 保留边界与停止点
 - `admission.enabled`、`effect-gate.enabled`、`cross-process-enabled`、`lease.enabled` **全部默认 false**；未接生产、未部署、未合 main、未操作原库/现网；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`。
-- 未做（后续批次）：**效果门接入真实 JDBC 入口（第 11 行）＋逐根发布/退役（第 10/12 行）**（须与 S17/S19/S20/S21 对抗用例同批交付）、v2 初始权威与 `closedAuthority` 身份供给（第 6/7 行、B9）、C1/E2a 实验舱重跑、§5.6 退役协议、完整接纳门 S0–S4。
-- 未验：PDA 客户端对 503 envelope 的消费、并发拒绝计数、跨进程并发接纳、Linux/其他文件系统、断电/硬复位、现场组合。
+- 未做（后续批次）：**第 10 行逐根发布/探针与第 12 行逐操作退役**（`RecoveryOperationRegistry.admit` 仍未调 `authority.registerOperation()`，根关闭未写退役/unknown 记录）、**v2 初始权威与 `closedAuthority` 身份供给（第 6/7 行、B9；优先级上升）**、锚点保管/轮换政策（用户裁定暂缓）、C1/E2a 实验舱重跑、§5.6 退役协议、完整接纳门 S0–S4。
+- 未验：跨进程效果门在生产形态下落库生效（被 §发现 1 阻塞）、跨进程第二 JVM 新装配、PDA 对 503 envelope 消费、并发拒绝计数、Linux/其他文件系统、断电/硬复位、现场组合。
 - K1 仍未通过；单列：**窗口 W**、`DEBT-R09-C2-LEASE-ANCHOR`、UNCONFIRMED_NO_CROSS_PROCESS_BASIS（须外部隔离）、孤儿解除与生产释放、Java/Python 允许集差异、C1 历史未验项、**IT-DISCOVERY（21 类＝专用实验舱绑定）**、**IT-EVIDENCE-AUDIT（18 类历来仅"跳过型"证据）**、**TZ-GMT 时区显示不统一（待排期）**。
-- **下一步**：①**效果门接入真实 JDBC 入口＋逐根发布/退役**（第 10–12 行，独立批次，对抗面明确）；②v2 初始权威/`closedAuthority` 供给（需先定锚点政策）；③C1/E2a 实验舱重跑。均需独立授权/验收，不改默认开关。
+- **下一步**：①**第 10/12 行**（逐根发布/探针＋逐操作退役接入 registry/lease）；②**v2 初始权威供给（第 6/7 行、B9）**——它同时卡着跨进程效果门落地与"准入＋跨进程同开"，需先定锚点政策；③C1/E2a 实验舱重跑。均需独立授权/验收，不改默认开关。
 <!-- CURRENT_STATE_END -->
