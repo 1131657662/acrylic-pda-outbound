@@ -56,10 +56,19 @@ public class RecoveryAdmissionConfiguration {
      * The in-memory authority for operation roots. It fails context startup when the configured
      * control authority is missing or unreadable, which is what keeps a misconfigured instance from
      * degrading into an unguarded pool.
+     *
+     * <p>When the cross-process P5 layer is explicitly supplied, every admitted root publishes one
+     * lease record through it; without that authority nothing is published.
      */
     @Bean
-    RecoveryOperationRegistry recoveryOperationRegistry(Settings settings) {
-        return new RecoveryOperationRegistry(settings.location(), settings.checkpointPath());
+    RecoveryOperationRegistry recoveryOperationRegistry(Settings settings,
+            ObjectProvider<RecoveryFenceAuthority> authority) {
+        // The channel is resolved lazily at admission time: the authority is ordered after the
+        // initialization window, so resolving it here would close a cycle through that window.
+        return new RecoveryOperationRegistry(settings.location(), settings.checkpointPath(), () -> {
+            var fence = authority.getIfAvailable();
+            return fence == null ? null : fence.registerOperation();
+        });
     }
 
     /**

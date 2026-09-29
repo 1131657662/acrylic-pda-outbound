@@ -52,6 +52,10 @@ final class RecoveryLeaseProcess {
         RecoveryControlPaths.file(path);
         require(identity.equals(RecoveryWriterProtocol.fileIdentity(path)), "RECOVERY_LEASE_OUTSTANDING");
         var local = LOCAL.get(path);
+        // A record whose lifecycle lock this JVM already released belongs to a process that retired:
+        // it is gone, so its leases are orphans. Reading a released descriptor would only report the
+        // closed channel, which is not an answer about liveness.
+        if (local != null && !local.lock.isValid()) return false;
         JsonNode value = local == null ? RecoveryControlHistory.read(path) : local.readHeld();
         validate(value, path, digest, roots);
         if (local != null) {

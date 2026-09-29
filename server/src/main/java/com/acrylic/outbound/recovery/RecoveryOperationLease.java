@@ -25,6 +25,18 @@ public final class RecoveryOperationLease implements AutoCloseable {
     private final Map<RecoverySubOperation, Integer> open = new EnumMap<>(RecoverySubOperation.class);
     private RecoveryOperationPhase phase = RecoveryOperationPhase.SERVING;
     private boolean retired;
+    private java.util.UUID leaseId;
+
+    /**
+     * The P5 lease record this root published, when the cross-process layer is supplied. The record
+     * is <b>not</b> removed when the root closes: per the fence design lease records only grow until
+     * a later process's orphan scan retires the ones whose owner is gone.
+     */
+    public synchronized java.util.UUID leaseId() { return leaseId; }
+
+    synchronized void attachLease(java.util.UUID published) {
+        this.leaseId = Objects.requireNonNull(published, "published");
+    }
 
     RecoveryOperationLease(RecoveryOperationRegistry registry, RecoveryOperationToken token, RecoveryWriterLease writer) {
         this.registry = Objects.requireNonNull(registry);

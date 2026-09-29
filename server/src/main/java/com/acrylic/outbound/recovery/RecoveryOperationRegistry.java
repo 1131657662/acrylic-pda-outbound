@@ -39,13 +39,30 @@ public final class RecoveryOperationRegistry {
     private final RecoveryControlLocation location;
     private final Path checkpoint;
     private final RecoveryControlSnapshot startup;
+    private final LeaseChannel leases;
     private final Map<UUID, RecoveryOperationLease> roots = new HashMap<>();
     private final Map<Thread, Map<UUID, Binding>> bindings = new HashMap<>();
 
     public RecoveryOperationRegistry(RecoveryControlLocation location, Path checkpoint) {
+        this(location, checkpoint, null);
+    }
+
+    public RecoveryOperationRegistry(RecoveryControlLocation location, Path checkpoint, LeaseChannel leases) {
         this.location = Objects.requireNonNull(location);
         this.checkpoint = Objects.requireNonNull(checkpoint);
         this.startup = new RecoveryControlReader(location).read(checkpoint);
+        this.leases = leases;
+    }
+
+    /**
+     * Publishes one P5 lease record for an admitted root (design row 10). It is absent unless the
+     * cross-process layer is explicitly supplied, so an installation without a lease root publishes
+     * nothing. A publication that fails fails the whole admission: a root nobody can observe in P5
+     * must not serve.
+     */
+    @FunctionalInterface
+    public interface LeaseChannel {
+        UUID publish() throws java.sql.SQLException;
     }
 
     /** The authority identity this instance was started on; every later load must still match it. */
@@ -63,11 +80,30 @@ public final class RecoveryOperationRegistry {
      */
     public RecoveryOperationLease admit(RecoveryOperationToken token) {
         Objects.requireNonNull(token, "token");
+        RecoveryOperationLease root;
         try {
-            return RecoveryControlLock.lockedWaiting(location.checked().root(), ADMISSION_WAIT_MILLIS,
+            root = RecoveryControlLock.lockedWaiting(location.checked().root(), ADMISSION_WAIT_MILLIS,
                 () -> register(token));
         } catch (IOException error) {
             throw new RecoveryControlException("CONTROL_AUTHORITY_UNAVAILABLE", error);
+        }
+        // The P5 record is published outside this authority's critical section: the authority takes
+        // that lock itself, and a publication failure retires the root instead of letting it serve.
+        //
+        // The initialization window's own root is excluded: it exists only while the context is still
+        // starting, where the guard deliberately orders the P5 beans *after* that window, so
+        // publishing from inside it would close a startup cycle. Startup access is covered by the
+        // process record and the fence signal instead (rows 8–9); every serving root publishes.
+        if (leases == null || token.kind() == RecoveryOperationKind.INITIALIZATION) return root;
+        try {
+            java.util.UUID published = leases.publish();
+            if (published != null) root.attachLease(published);
+            return root;
+        } catch (java.sql.SQLException | RuntimeException refused) {
+            root.unbindAll();
+            root.close();
+            if (refused instanceof RecoveryControlException control) throw control;
+            throw new RecoveryControlException(refused.getMessage(), refused);
         }
     }
 

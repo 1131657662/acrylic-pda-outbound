@@ -24,7 +24,8 @@ final class RecoveryLeaseScan {
                 String operation = entry.asText();
                 require(operation.matches("[0-9a-f-]{36}"), "RECOVERY_LEASE_OUTSTANDING");
                 require(indexed.add(operation), "RECOVERY_LEASE_OUTSTANDING");
-                // Published but absent: the record was deleted after publication.
+                // Published but absent: the record was deleted after publication, and that evidence is
+                // never repaired by retiring the index entry.
                 require(Files.exists(roots.root().resolve("leases").resolve(operation + ".json"), LinkOption.NOFOLLOW_LINKS),
                     "RECOVERY_LEASE_OUTSTANDING");
             }
@@ -32,6 +33,7 @@ final class RecoveryLeaseScan {
             RecoveryFenceAudit.event("RECOVERY_LEASE_OUTSTANDING", "index|" + error.getMessage());
             throw new RecoveryControlException("RECOVERY_LEASE_OUTSTANDING", error);
         }
+        var orphans = new ArrayList<Path>();
         try (var entries = Files.list(roots.root().resolve("leases"))) {
             for (Path path : entries.sorted(Comparator.comparing(p -> p.getFileName().toString())).toList()) {
                 try {
@@ -42,11 +44,63 @@ final class RecoveryLeaseScan {
                     if (record.matches()) require(indexed.contains(record.group(1)), "RECOVERY_LEASE_OUTSTANDING");
                     checkRecord(path, roots);
                 } catch (IOException | RuntimeException error) {
+                    // Design §5.3/§5.1: a record whose owner is gone (unparseable, pending, missing or
+                    // unlockable owner) is an orphan: it is retired here — deleting the lease record and
+                    // its index entry, never a process record — and the caller still refuses. A failed
+                    // retirement propagates and fences through the authority's guarded wrapper.
+                    if (retirable(path, error)) {
+                        orphans.add(path);
+                        RecoveryFenceAudit.event("RECOVERY_LEASE_ORPHAN", path + "|" + error.getMessage());
+                        continue;
+                    }
                     RecoveryFenceAudit.event("RECOVERY_LEASE_OUTSTANDING", path + "|" + error.getMessage());
                     throw new RecoveryControlException("RECOVERY_LEASE_OUTSTANDING", error);
                 }
             }
         }
+        if (!orphans.isEmpty()) {
+            retireOrphans(roots, orphans);
+            throw new RecoveryControlException("RECOVERY_LEASE_OUTSTANDING",
+                new IOException("retired " + orphans.size() + " orphan lease record(s)"));
+        }
+    }
+
+    /** Only a lease record that exists and was judged an orphan may be retired. */
+    private static boolean retirable(Path path, Throwable error) {
+        var name = path.getFileName().toString();
+        return !name.equals("index.json") && !AUDIT_MARKER.matcher(name).matches()
+            && (LEASE_RECORD.matcher(name).matches() || name.endsWith(".json.pending"))
+            && error instanceof RecoveryControlException orphan
+            && "RECOVERY_LEASE_OUTSTANDING".equals(orphan.code());
+    }
+
+    /**
+     * Retirement of orphan lease records: the record is removed and the anchored index is rewritten
+     * without it, so the next admission sees a consistent tree. Process records are never touched —
+     * a dead process's record stays as the evidence that it existed.
+     */
+    static void retireOrphans(RecoveryLeaseRoots roots, List<Path> orphans) throws IOException {
+        RecoveryControlLock.requireOwner(roots.authorityRoot());
+        var retired = new HashSet<String>();
+        for (Path orphan : orphans) {
+            String name = orphan.getFileName().toString();
+            var operation = LEASE_RECORD.matcher(name);
+            require(operation.matches() || name.endsWith(".json.pending"), "RECOVERY_LEASE_OUTSTANDING");
+            String id = operation.matches() ? operation.group(1) : name.substring(0, name.length() - ".json.pending".length());
+            require(id.matches("[0-9a-f-]{36}"), "RECOVERY_LEASE_OUTSTANDING");
+            Files.deleteIfExists(orphan);
+            retired.add(id);
+        }
+        var index = readIndex(roots);
+        var kept = new ArrayList<JsonNode>();
+        for (JsonNode entry : index.path("entries")) if (!retired.contains(entry.asText())) kept.add(entry);
+        index.putArray("entries").addAll(kept);
+        index.remove("indexTag");
+        index.put("indexTag", hmac(roots.anchor(), index));
+        Path pending = roots.root().resolve("leases").resolve("index.json.pending");
+        Files.writeString(pending, canonical(index), StandardOpenOption.CREATE_NEW);
+        Files.move(pending, pending.resolveSibling("index.json"), StandardCopyOption.REPLACE_EXISTING,
+            StandardCopyOption.ATOMIC_MOVE);
     }
 
     /**
