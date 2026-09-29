@@ -6,40 +6,42 @@
 ```yaml
 date: 2026-09-29
 branch: codex/development
-head: 071dca6
+head: 5e3b6f8
 dirty_entries: 2
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-**R09 C2 B1-3 S10 收口：效果门接入真实 JDBC 入口（设计第 11 行）（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。应用自己的主数据源现在会挂效果门（默认仍关闭）⇒ 真实写入/提交/关系读在围栏后立即被冻结且到不了驱动。记录见 [B1-3 S10 记录](history/R09_C2_B1_3_S10_EFFECT_GATE_WIRING_2026-09-29.md)；S10 开工前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S10_2026-09-29.md)；S9/S8 见 [S9](history/R09_C2_B1_3_S9_P5_ROOT_WIRING_2026-09-29.md)、[S8](history/R09_C2_B1_3_S8_ENTRY_REBASE_2026-09-29.md)。
+**R09 C2 B1-3 S11 收口：v2 初始权威形状与显式供给（设计第 6–8 行）（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。S10 现场实测的"准入层（v1 字段集）与跨进程 P5 层（v2 字段集）互斥"已消解：权威形状校验改为版本感知，**生产形态整套 opt-in（准入＋跨进程＋效果门）首次在真实应用里启动成功**，真实 P5 authority 一旦围栏即冻结全部效果。记录见 [B1-3 S11 记录](history/R09_C2_B1_3_S11_INITIAL_AUTHORITY_V2_2026-09-29.md)；S11 开工前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S11_2026-09-29.md)；S10/S9 见 [S10](history/R09_C2_B1_3_S10_EFFECT_GATE_WIRING_2026-09-29.md)、[S9](history/R09_C2_B1_3_S9_P5_ROOT_WIRING_2026-09-29.md)。
 
 ## Git、写权与范围
-- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD `0e5638d`（S9 收口）；写者＝DSH（本会话）。
+- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD `5e3b6f8`（S10 收口）；写者＝DSH（本会话）。
 - **非本会话的未提交改动**（未代提交、未修改）：`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、未跟踪 `docs/PDA_UI_UX_REVIEW_2026-09-29.md`。
 - 共享树 r06-e2a-migration 保持 detached ea4d166；只读，未同步/清理/reset/提交/合并。
 
-## 本轮交付（S10：设计第 11 行；开关默认 false）
-- `RecoveryRequestAdmittedDataSource`：新增带门的构造器，`admit(...)` 建好 handler 后调用 `useEffectGate(effects)` ⇒ 本机层（`gate.fence()` 后本地拒绝）与跨进程层（authority 的 `checkEffect()`：探针＋孤儿扫描）都在**委托前**生效；旧构造器保持 `disabled()`（未 opt-in 行为完全不变）。
-- `RecoveryAdmissionConfiguration`：主数据源 bean 注入 `ObjectProvider<RecoveryEffectGate>`，取到即挂（缺省 `disabled()`）。
-- 新增 `RecoveryRequestAdmittedDataSourceGateTest` 5 项（逐效果委托前检查｜被拒效果到不了驱动｜**只读白名单严格性**：常量读不查、**关系读照查**（视图可写）、未识别 SQL `CONTROL_EFFECT_UNCLASSIFIED`、预备语句按自身 SQL 在执行时归类｜未挂门不查｜本机层先行不调 authority）＋`RecoveryIdentityFormatConflictTest` 3 项（钉住 §发现）。
+## 本轮交付（S11：设计第 6–8 行；开关默认 false）
+- `RecoveryInitialAuthority`（新，产品）：**版本感知**的初始权威形状校验 —— **v1**＝`formatVersion/installationId/restoreRoots/initialCommandSha256`（旧控制链形状，kind 可缺席，由 purpose 决定）；**v2**＝v1 字段＋`authorityKind/closedAuthority/leaseRoot`（P5 绑定所需）。两版字段集仍**精确匹配**（多/少字段⇒`CONTROL_FIELDS`），`leaseRoot`/`closedAuthority` 必须绝对非空且互不相同，未实现版本⇒`CONTROL_FORMAT_UNSUPPORTED`（绝不按 v1 读）；**kind 规则仍归 purpose**。
+- `RecoveryControlRecords.identity` 委托该校验（唯一入口不变）⇒ 准入路径接受 v2，v1 行为逐字不变。
+- `RecoveryInitialAuthorityProvision`（测试/离线作用域，显式供给方）：把 v1 权威**就地提升**为 v2（补 kind/closedAuthority/leaseRoot、formatVersion=2；`initialCommandSha256` 与已关闭链不动），随后 `RecoveryLeaseRoots.provision` 建 P5 树并返回 `identitySha256/markerSha256/anchor`；已有 kind 者不改形、`leaseRoot` 必须不存在。
+- 新增 `RecoveryInitialAuthorityTest` 6 项（替换 S10 的冲突用例）。
 
 ## 运行与证据
-- 一级：全量单测（不带 `--tests` 白名单）**132 类 / 2833 项 / 0 失败 / 0 错误 / 1 既有无关 skip**。
-- 二级现场（`run4-s10-effect-gate`，全新实例 19471／应用 19458，1 用例 0 失败）：真实应用（准入＋效果门开）里 —— `unfenced: constant read ok, write ok, commit ok, counter=1 checks=4`；authority 拒绝后 `fenced: write refused, relation read refused, commit refused, constant read ok`，`counterAfterFence=1`（**被拒效果没落到驱动**）。
-- 二级回归（`it-batch-25`，全新实例 19472；效果门/围栏对抗面）：**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空，TIME_WAIT 峰值 1432，正常 shutdown、端口释放。
-- 证据根（不入库）：`.local/r09-c2-b1-3-s2-…`…`…-s10-20260929-a/`（含 run1–run4 现场与失败轮、run6–run10 定向、全量、批次）。
+- 一级：全量单测（不带 `--tests` 白名单）**132 类 / 2836 项 / 0 失败 / 0 错误 / 1 既有无关 skip**。
+- 二级现场（`run1-s11-real-authority`，全新实例 19473／应用 19458，1 用例 0 失败）：`provision: identitySha256=2868f6b9…80ed markerSha256=be85628c…ec94`；**生产形态整套 opt-in 启动成功**（准入＋lease＋cross-process＋效果门，v2 身份、真实 `fenced.lock`）—— `unfenced: constant read ok, write ok, commit ok, counter=1`；`authority.fenceLocal()` 后 `fenced: write refused, relation read refused, commit refused, constant read ok`，`counterAfterFence=1`（被拒效果没落到驱动）。⇒ **S10 遗留的"跨进程效果门生产形态落库"缺口闭合**。
+- 二级回归（`it-batch-25`，全新实例 19474；本轮改的是所有入口共用的权威加载路径）：**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空，TIME_WAIT 峰值 1478，正常 shutdown、端口释放。
+- 证据根（不入库）：`.local/r09-c2-b1-3-s2-…`…`…-s11-20260929-a/`（含 run1–run3 定向与失败轮、现场、全量、批次）；P5 夹具树在 `.local/control-java-cases/case-*/p5/`。
 
-## 发现（必须记住）
-1. **准入层与跨进程 P5 层的身份字段集互斥**（现场撞到、已用两侧用例钉住）：准入的权威加载要求 **v1 字段集**（带 v2 追加字段即 `CONTROL_FIELDS`），而 P5 `provision/verify` 要求 **v2 字段集**（v1 身份即 `CONTROL_FIELDS`，字段集校验先于版本校验）⇒ **今天无法在同一上下文同时开启准入与跨进程 P5**（第 6/7 行 v2 初始权威属 B9）。因此**"跨进程效果门在生产形态下落库生效"仍未验**，被该冲突阻塞；本轮现场把证据拆成两条互不掩盖：真实 P5 authority 挂载＝S9 的 `RecoveryLeaseWiringRealIT`（`gate enabled, checkEffect=ok`），真实入口挂门与冻结＝本轮 `RecoveryEffectGateWiringRealIT`（authority 为测试侧实现，理由已写入用例注释与记录）。
-2. **只读白名单比"任意 SELECT"窄**：常量读是 `READ`（不查），**关系读是 `SOURCE_READ`（照查）**——因为视图/存储函数可能写；未识别 SQL 一律拒绝而非猜测。
-3. 现场 `checks=4`（单测把 `commit`＋写语句钉为 2）：差额未逐项归因，仅作观测记录、未用作判据。
+## 发现与协议语义
+1. **顺序有语义**（本轮被单测抓到，避免了一次现场空转）：写者协议把身份摘要钉住 ⇒ **必须先提升身份、再钉写者协议**；提升已运行/已钉协议的安装会被拒 `CONTROL_WRITER_PROTOCOL_MISMATCH`（正确的 fail-closed）。
+2. 各入口保留**各自**的 kind 拒绝码：准入为 `CONTROL_AUTHORITY_PURPOSE_FORBIDDEN`，P5 为 `CONTROL_AUTHORITY_KIND_FORBIDDEN`（设计明文，不统一）。
+3. **Python 侧供给仍是 v1**（`ops/control_paths.ControlLocation.identity()`）：v2 形状目前由 Java 侧供给方写入；Python 与 `closedAuthority` 身份文件同属 B9。
+4. **锚点保管/轮换仍未定**（用户 2026-09-29 裁定）：供给方以显式传入/随机锚点工作，只有 anchorId 进可写树；生产级 provision 工具留待政策裁定后的批次。
 
 ## 保留边界与停止点
 - `admission.enabled`、`effect-gate.enabled`、`cross-process-enabled`、`lease.enabled` **全部默认 false**；未接生产、未部署、未合 main、未操作原库/现网；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`。
-- 未做（后续批次）：**第 10 行逐根发布/探针与第 12 行逐操作退役**（`RecoveryOperationRegistry.admit` 仍未调 `authority.registerOperation()`，根关闭未写退役/unknown 记录）、**v2 初始权威与 `closedAuthority` 身份供给（第 6/7 行、B9；优先级上升）**、锚点保管/轮换政策（用户裁定暂缓）、C1/E2a 实验舱重跑、§5.6 退役协议、完整接纳门 S0–S4。
-- 未验：跨进程效果门在生产形态下落库生效（被 §发现 1 阻塞）、跨进程第二 JVM 新装配、PDA 对 503 envelope 消费、并发拒绝计数、Linux/其他文件系统、断电/硬复位、现场组合。
+- 未做（后续批次）：**第 10 行逐根发布/探针**（`registry.admit` 仍未调 `authority.registerOperation()`）、**第 12 行逐操作退役**（根关闭未写退役/unknown；F1–F5 与 `halt(70)` 路径未接请求根）、**Python 侧 v2 供给与 `closedAuthority` 身份文件（B9）**、生产级 provision 工具、C1/E2a 实验舱重跑、§5.6 退役协议、完整接纳门 S0–S4。
+- 未验：跨进程第二 JVM 的新装配、长稳/性能、断电与硬复位、现场组合、PDA 对 503 envelope 消费、并发拒绝计数、Linux/其他文件系统。
 - K1 仍未通过；单列：**窗口 W**、`DEBT-R09-C2-LEASE-ANCHOR`、UNCONFIRMED_NO_CROSS_PROCESS_BASIS（须外部隔离）、孤儿解除与生产释放、Java/Python 允许集差异、C1 历史未验项、**IT-DISCOVERY（21 类＝专用实验舱绑定）**、**IT-EVIDENCE-AUDIT（18 类历来仅"跳过型"证据）**、**TZ-GMT 时区显示不统一（待排期）**。
-- **下一步**：①**第 10/12 行**（逐根发布/探针＋逐操作退役接入 registry/lease）；②**v2 初始权威供给（第 6/7 行、B9）**——它同时卡着跨进程效果门落地与"准入＋跨进程同开"，需先定锚点政策；③C1/E2a 实验舱重跑。均需独立授权/验收，不改默认开关。
+- **下一步**：①**第 10/12 行**（逐根发布/探针＋逐操作退役，含 unknown 时的 F1–F5 与 `halt`）；②**Python 侧 v2 供给与 `closedAuthority` 身份（B9）**——需先定锚点保管/轮换政策；③C1/E2a 实验舱重跑。均需独立授权/验收，不改默认开关。
 <!-- CURRENT_STATE_END -->

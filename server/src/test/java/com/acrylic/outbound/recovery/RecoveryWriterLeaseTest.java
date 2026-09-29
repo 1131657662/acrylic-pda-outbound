@@ -49,8 +49,15 @@ class RecoveryWriterLeaseTest {
     }
 
     static RecoveryControlFixture protocol() throws Exception {
+        return protocol(fixture -> RecoveryControlHistory.read(fixture.root.resolve("identity.json")));
+    }
+
+    /** The identity the writer protocol pins is the one {@code reshape} leaves behind. */
+    interface Reshape { com.fasterxml.jackson.databind.JsonNode of(RecoveryControlFixture fixture) throws Exception; }
+
+    static RecoveryControlFixture protocol(Reshape reshape) throws Exception {
         var fixture = RecoveryControlFixture.create();
-        var identity = RecoveryControlHistory.read(fixture.root.resolve("identity.json"));
+        var identity = reshape.of(fixture);
         Files.writeString(fixture.root.resolve("writers.lock"), "0");
         Files.createDirectory(fixture.root.resolve("intents"));
         RecoveryControlFixture.write(fixture.root.resolve("admission.json"), RecoveryControlFixture.JSON.createObjectNode()

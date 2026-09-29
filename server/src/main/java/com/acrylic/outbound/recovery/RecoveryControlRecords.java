@@ -38,12 +38,8 @@ final class RecoveryControlRecords {
     }
 
     static void identity(JsonNode value, RecoveryControlLocation location) {
-        fields(value, "formatVersion installationId restoreRoots initialCommandSha256"); version(value);
-        require(location.installation().equals(uuid(value, "installationId")), "CONTROL_INSTALLATION_MISMATCH");
-        hashField(value, "initialCommandSha256");
-        var roots = value.path("restoreRoots");
-        require(roots.isArray() && roots.size() == location.restoreRoots().size(), "CONTROL_RESTORE_SET_MISMATCH");
-        for (int i = 0; i < roots.size(); i++) require(roots.get(i).isTextual()
-            && location.restoreRoots().get(i).toString().equals(roots.get(i).textValue()), "CONTROL_RESTORE_SET_MISMATCH");
+        // Version aware since the P5 layer needs the explicit v2 initial-authority shape; the field
+        // set stays exact in both versions and the purpose keeps owning the kind rule.
+        RecoveryInitialAuthority.validate(value, location);
     }
 }
