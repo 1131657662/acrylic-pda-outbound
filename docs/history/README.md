@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S16：E2a 闭合投影攻克 + 修正 schema 抽样](R09_C2_B1_3_S16_PROJECTION_2026-09-29.md)：`E2aClosedProjectionIT` 此前五轮失败（620/624–627）的**根因是供给清单不完整**（该类注释即要求运行器预分配 `${schema}{copy,conflict,missing,gap,overflow,rollback,instance,skip,mapping}` 且为空），非产品缺陷；工具改为精确集合＋`_restore` 后 **628 通过**（67.4s，产物含迁移/投影前后快照：193 872／622 952／624 628 B），并抽样 `E2aCorrectionSchemaIT`（629）通过。E2a 主树已验证 6 个 IT（604/621/622/623/628/629），C1 侧 611 通过。未做：其余约 30 个门控 IT、Python v2 供给（B9）。K1 仍未通过；另附 S16 开工前看板归档。
+
 - [R09 C2 B1-3 S15：E2a 其余 IT 首批重跑](R09_C2_B1_3_S15_E2A_BATCH_2026-09-29.md)：按 S14 配方分批跑 E2a 门控 IT，首批 4 个——`E2aRecoveryWriterTransactionIT`、`E2aLatestSchemaRegressionIT`、`E2aCrossSourceHttpIT` **在主树 B1-3 代码上通过**；`E2aClosedProjectionIT` 未通过（它按用例名运行期拼伴随 schema：copy/instance/conflict/missing…；工具已补 schema 族与一次性实例全局授权并声明该 harness 偏差，最终停在 `Unknown database '<schema>_missing'`；625 attempt 已产出接纳数据源/租约事务证据 ⇒ 失败在投影阶段后段，仍判未验）。未做：其余 30+ 门控 IT、`_missing` 期望判定、Python v2 供给。K1 仍未通过；另附 S15 开工前看板归档。
 
 - [R09 C2 B1-3 S14：C1 实验舱重跑（主树）](R09_C2_B1_3_S14_C1_RERUN_2026-09-29.md)：C1 与 E2a 共用主树 ROOT 与同一一次性布局，故复用 S13 工具，只需补导出 `SPRING_DATASOURCE_URL/USERNAME/PASSWORD`（C1 启动应用不带 datasource 参数）。**结果**：`C1InitialNormalHttpIT` 在**主树 B1-3 代码**上通过（1 用例/0 失败/23.3s），产物含真实 HTTP 判定、丢回执围栏、原字节快照 `before/after` **逐字节相等**，以及 `C1EntryRegression` 复用 attempt105 的入口语料（`rootRequired=RECOVERY_OPERATION_REQUIRED`、`closeWaitedMillis=2512 innodbTrx=0`、`CONTROL_WRITERS_ACTIVE`、丢回执 `committedCounter=2`）。失败轮 `610`（缺数据源环境变量）保留。未做：E2a 其余 IT、C1 smoke 自身仍需 pwsh 7、Python v2 供给。K1 仍未通过；另附 S14 开工前看板归档。

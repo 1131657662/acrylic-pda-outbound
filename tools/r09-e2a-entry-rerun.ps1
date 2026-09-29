@@ -56,7 +56,10 @@ New-Item -ItemType Directory -Path $attempt, (Join-Path $attempt 'private'), (Jo
 $data = Join-Path $attempt 'data'
 $password = -join (1..64 | ForEach-Object { '{0:x}' -f (Get-Random -Minimum 0 -Maximum 16) })
 [IO.File]::WriteAllText((Join-Path $attempt 'private/password.txt'), $password, $utf8)
-$suffixes = @('_copy', '_instance', '_conflict', '_restore', '_closed', '_shadow', '_provided', '_legacy')
+# RecoveryProjectionDatabases demands exactly these preallocated (and empty) negative-case schemas;
+# _restore is the archive ITs' companion schema.
+$suffixes = @('_copy', '_conflict', '_missing', '_gap', '_overflow', '_rollback', '_instance', '_skip', '_mapping',
+    '_restore')
 $bootstrap = "CREATE DATABASE $schema;`n" +
     "CREATE USER '$user'@'127.0.0.1' IDENTIFIED BY '$password';`n" +
     "GRANT ALL ON $schema.* TO '$user'@'127.0.0.1';`n" +
