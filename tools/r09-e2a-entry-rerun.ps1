@@ -122,6 +122,10 @@ $env:SPRING_DATASOURCE_URL = "jdbc:mysql://127.0.0.1:$port/$schema" +
     '?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
 $env:SPRING_DATASOURCE_USERNAME = $user
 $env:SPRING_DATASOURCE_PASSWORD = $password
+# The inventory ITs read the legacy OUTBOUND_DB_* names (FoundationEnvironment), so both sets are exported.
+$env:OUTBOUND_DB_URL = $env:SPRING_DATASOURCE_URL
+$env:OUTBOUND_DB_USER = $user
+$env:OUTBOUND_DB_PASSWORD = $password
 # Some E2a ITs start the application without renderer arguments; the harness supplies the install
 # distribution that lives in the tree under test (explicit --outbound.exports.* args still win).
 # The reference runner supplies the remaining harness environment: the attempt storage root, the

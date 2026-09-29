@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S29：树内 chromium 安装＋Android/夹具链根因定位](R09_C2_B1_3_S29_CHROMIUM_ANDROID_CHAIN_2026-09-29.md)：树内安装 Playwright chromium 成功（跨树回退不再需要）；Android 两项的阻塞链定位到 **8 个 inventory 夹具 IT 需要应用自跑迁移**（本 harness 沿用 `OUTBOUND_MIGRATE=false` ⇒ `server_state` 不存在 ⇒ Spring 上下文失败）⇒ 下一步仅需 `OUTBOUND_MIGRATE=true`；harness 补导出 `OUTBOUND_DB_*`（单靠它未通过，如实记录）；改坏运行器已用 `git checkout --` 恢复。E2a 主树已验 22 个不变。K1 仍未通过；另附 S29 开工前看板归档。
+
 - [R09 C2 B1-3 S28：V36 Audit 两 IT——1 通过、1 只差私钥物料](R09_C2_B1_3_S28_V36_AUDIT_2026-09-29.md)：两个 Audit IT 断言 **`@@log_bin == 0`**（与迁移类相反）⇒ 运行器改为按 item 决定 binlog；`E2aV36AuditPrefixIT` **通过**（E2a 主树已验 **21→22**），`E2aV36AuditArchiveIT` 只差私钥 `<attempt>/private/private.pk8`（与 `stopwriter` 的 `stop-it-private.pk8` 同类）。**待裁定**：①659 处置；②是否允许 harness 生成隔离用等价私钥（私钥不入库）。K1 仍未通过；另附 S28 开工前看板归档。
 
 - [R09 C2 B1-3 S27：V36 家族供给与首批运行](R09_C2_B1_3_S27_V36_FAMILY_2026-09-29.md)：新增 `tools/r09-e2a-v36-run.ps1`（datadir 置于 IT 断言的 `<attempt>/data`、导出 `E2A_<PREFIX>_*` 与 `E2A_CROSS_ROOT`、口令落盘复用、一次性拒绝重跑）；`E2aV36MigrationIT`／`E2aV36DeviceKeyIT`／`E2aV36PairedKeyIT` **通过**（E2a 主树已验 **18→21**）；`E2aV36StopWriterIT` 需预置私钥物料、两个 Audit IT 的身份断言仍与供给有差异（**均非产品问题**）。659 仍待裁定。K1 仍未通过；另附 S27 开工前看板归档。
