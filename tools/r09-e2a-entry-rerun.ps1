@@ -121,6 +121,15 @@ $env:SPRING_DATASOURCE_URL = "jdbc:mysql://127.0.0.1:$port/$schema" +
     '?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
 $env:SPRING_DATASOURCE_USERNAME = $user
 $env:SPRING_DATASOURCE_PASSWORD = $password
+# Some E2a ITs start the application without renderer arguments; the harness supplies the install
+# distribution that lives in the tree under test (explicit --outbound.exports.* args still win).
+$env:OUTBOUND_EXPORTS_RENDERER_HOME = Join-Path $Root 'report-rendering/build/install/acrylic-report-rendering'
+# PDF rendering needs a Playwright browser tree. The tree under test may not have one (it is a
+# network download: gradlew :report-rendering:installChromium); the E2a ITs themselves hard-code the
+# r08-export worktree's copy, so the harness prefers its own and falls back to that same path.
+$localBrowsers = Join-Path $Root 'report-rendering/build/browsers'
+$env:OUTBOUND_EXPORTS_BROWSERS = if (Test-Path $localBrowsers) { $localBrowsers }
+    else { 'D:/acrylic-pda-worktrees/r08-export/report-rendering/build/browsers' }
 $arguments = @('-p', 'server', 'recoveryControlClasspath', 'integrationTest', '--rerun-tasks', '--no-daemon',
     '--console=plain', '--tests', $TestClass)
 $ErrorActionPreference = 'Continue'
