@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S25：659 的 403 根因修复（测试侧）＋推进到业务级 409](R09_C2_B1_3_S25_DRIVER_CSRF_FIX_2026-09-29.md)：根因在 SPA 驱动——`web/tools/e2a-web-command-flow.mjs` 只在登录前取一次 `/auth/csrf`，登录后令牌被轮换而驱动仍用旧令牌发 POST ⇒ 安全层 403（不留审计行）。修法：`readCsrf(label)`＋**登录后重取**；run 661 显示 403 **消失**、`steps` 含 `csrf (after login)`，LINK 前进到 **409 `COMMAND_CONTEXT_CHANGED`**（业务级乐观并发守卫，产品按设计工作）⇒ 阻塞从"安全层"前移到"上下文新鲜度"。下一步：驱动在取回候选摘要后重读 facts 再发 LINK。E2a 主树已验 18 个不变。K1 仍未通过；另附 S25 开工前看板归档。
+
 - [R09 C2 B1-3 S24：659 的 403 定性——非业务层拒绝（安全/凭据）](R09_C2_B1_3_S24_659_SECURITY_LAYER_2026-09-29.md)：读源码排除"缺角色/仓库不匹配"（检查自己授予 `temporary_order:link` 且案卷同仓库）；run 660 的 `browser-command-flow.json` 给出 LINK 真实响应（`ACCESS_DENIED`＋"权限不足或安全凭据失效，请刷新后重试"）；660 datadir 审计**无任何拒绝事件** ⇒ 403 是**安全层（凭据/CSRF）**在业务之前拒绝，与 S22 同源（GET 通过、POST 被拒）⇒ 指向登录后 CSRF 令牌轮换。659 仍判未验但**不是产品缺陷**证据。下一步：查 CSRF 轮换配置或驱动是否重取 `/auth/csrf`。E2a 主树已验 18 个不变。K1 仍未通过；另附 S24 开工前看板归档。
 
 - [R09 C2 B1-3 S23：659 的权限/作用域查证与收窄](R09_C2_B1_3_S23_659_SCOPE_2026-09-29.md)：LINK 需要 `temporary_order:link`（与 IT 一致）；`role_permission`/`user_role` **无作用域列**；659 库中该码有 **2 条授予**；IT 已显式打开 `outbound.temporary.commands.enabled` ⇒ 排除"权限缺失/作用域列绑定"，剩三选一（actor 不持有该码角色／代码级仓库比对／真实产品差异）。下一步：读 `TemporaryCommandBrowserChecks` 的 LINK 构造＋一次查库判定；此前不得当作产品缺陷。E2a 主树已验 18 个不变。K1 仍未通过；另附 S23 开工前看板归档。

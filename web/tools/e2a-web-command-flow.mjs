@@ -22,11 +22,18 @@ try {
       const text = await response.text();
       try { return JSON.parse(text); } catch { return { raw: text }; }
     };
-    const csrfResponse = await json(await fetch('/api/v1/auth/csrf'));
-    const csrfHeader = csrfResponse.data.headerName;
-    const csrfToken = csrfResponse.data.token;
-    const epoch = csrfResponse.serverRecoveryEpoch;
-    log.push(`csrf ${csrfHeader} epoch=${epoch}`);
+    // Authentication rotates the CSRF token, so every POST after login must use the token that is
+    // current at that moment: re-read it instead of reusing the pre-login pair (a stale token is
+    // rejected as ACCESS_DENIED "security credential invalid" before any business logic runs).
+    let csrfHeader, csrfToken, epoch;
+    const readCsrf = async (label) => {
+      const csrfResponse = await json(await fetch('/api/v1/auth/csrf'));
+      csrfHeader = csrfResponse.data.headerName;
+      csrfToken = csrfResponse.data.token;
+      epoch = csrfResponse.serverRecoveryEpoch;
+      log.push(`csrf${label} ${csrfHeader} epoch=${epoch}`);
+    };
+    await readCsrf('');
     const login = await fetch('/api/v1/auth/web/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', [csrfHeader]: csrfToken },
@@ -35,6 +42,7 @@ try {
     const loginBody = await json(login);
     log.push(`login ${login.status} authenticated=${loginBody?.data?.authenticated}`);
     if (login.status !== 200) return { log, failed: 'login', loginStatus: login.status, loginBody };
+    await readCsrf(' (after login)');
 
     const factsUrl = `/api/v1/temporary-commands/facts?warehouseId=${warehouseId}&submissionId=${submissionId}`;
     const readFacts = async (label) => {
