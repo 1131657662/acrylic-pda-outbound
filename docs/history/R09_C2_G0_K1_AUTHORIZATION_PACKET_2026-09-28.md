@@ -44,13 +44,14 @@
 | 验收与阻断 | [R09_C2_G0_ACCEPTANCE](R09_C2_G0_ACCEPTANCE_2026-09-28.md) | 含五类分类表、覆盖率映射、证据口径更正 | 各轮同目录 |
 | G0-K1-1 真实驱动（独立有限授权） | [R09_C2_G0_K1_REAL_JDBC_REVERIFY](R09_C2_G0_K1_REAL_JDBC_REVERIFY_2026-09-29.md) | 定向单测 `test` **60 项 0 失败**；隔离库 `integrationTest` **13 项 0 失败 0 跳过**；27 条 `G0K1REAL` 记录 | `r09-c2-g0-k1-real-jdbc-20260929-a/` |
 | G0-K1-3 真实 FileLock（独立有限授权） | [R09_C2_G0_K1_3_REAL_FILELOCK_REVERIFY](R09_C2_G0_K1_3_REAL_FILELOCK_REVERIFY_2026-09-29.md) | `integrationTest` **10 场景×3 重复 0 失败**（47.96s）；52 行 TSV（REAL 46 / MODEL 6）；失败轮 3 次保留 | `r09-c2-g0-k1-3-filelock-20260929-a/` |
+| G0-K1-3 更正与闭合（独立有限授权） | [R09_C2_G0_K1_3_CORRECTION](R09_C2_G0_K1_3_CORRECTION_2026-09-29.md) | `integrationTest` **5 项 0 失败**（13.05s）；产品路径实测 `CONTROL_WRITER_LOCK_REPLACED` / `CONTROL_FILE_MISSING`（各 3/3）；16 行 TSV（REAL 12 / MODEL 4）；失败轮 2 次保留 | `r09-c2-g0-k1-3-correction-20260929-a/` |
 
 历史失败日志与第 2 轮 XML 缺失登记均保留；**未补造任何缺失文件**。
 
 ## 5. 未验边界（授权后也必须继续单列）
 
 1. 真实 JDBC 驱动的 SQL 分类（注释/多语句/`CALL` 调用体/厂商方言与 DDL 变体）与**真实隐式提交时机**：**驱动层已补证**（见 §3 与 [G0-K1-1 真实驱动验证](R09_C2_G0_K1_REAL_JDBC_REVERIFY_2026-09-29.md)：无参执行/批处理/`clearBatch`/可更新 `ResultSet` 均产生真实已提交效果；原始 `COMMIT`/`SET AUTOCOMMIT=1` 后驱动标志仍为 `false`；DDL 隐式提交；注释语句与会话 SET 被服务器接受而候选规则保守拒绝）。**仍未验**：这些形态经**生产效果门**（B1 未实现）后的行为、以及线上方言/字符集/权限差异。
-2. 真实 `FileLock`、跨进程共享锁（`fenced.lock`）与其他 JVM 的可见性；真实进程终止与 OS 释放：**Windows 11/NTFS 上已实测**（见 [G0-K1-3 真实 FileLock 验证](R09_C2_G0_K1_3_REAL_FILELOCK_REVERIFY_2026-09-29.md)：共享共存＋排他必失败、`release()`/正常退出可再获取、`destroyForcibly()` 与 `Runtime.halt(70)` 后 OS 释放、第三方只能靠 `tryLock` 推断）。**仍未验**：Linux 与其他文件系统、网络/共享盘、断电/硬复位；**新增矛盾阻断**：NTFS 允许持锁期间删除/重命名锁文件，删除后同路径可同时存在两个持锁者 ⇒ `fileIdentity` 校验必须承重（属 B1 决定）。
+2. 真实 `FileLock`、跨进程共享锁（`fenced.lock`）与其他 JVM 的可见性；真实进程终止与 OS 释放：**Windows 11/NTFS 上已实测**（见 [G0-K1-3 真实 FileLock 验证](R09_C2_G0_K1_3_REAL_FILELOCK_REVERIFY_2026-09-29.md)：共享共存＋排他必失败、`release()`/正常退出可再获取、`destroyForcibly()` 与 `Runtime.halt(70)` 后 OS 释放、第三方只能靠 `tryLock` 推断）。**锁文件删除/替换已按产品路径复验并更正**（[更正与闭合轮](R09_C2_G0_K1_3_CORRECTION_2026-09-29.md)：同名替换 ⇒ `CONTROL_WRITER_LOCK_REPLACED`、缺失 ⇒ `CONTROL_FILE_MISSING`、不自动重建、无第二持锁者 ⇒ `writers.lock` 为**已缓解/已覆盖**，原“矛盾阻断”定性撤回；`fenced.lock` 转 **B1 承重需求**）。**仍未验**：Linux 与其他文件系统、网络/共享盘、断电/硬复位；保留**可用性威胁**：外部删除锁文件会使后续写者失败关闭。
 3. 命名窗口 **W**：属主在其记录判定之后、扫描结束之前死亡时该次探针可能放行。
 4. F1′/F3/F5 **均未确认**时的跨进程阻断（`UNCONFIRMED_NO_CROSS_PROCESS_BASIS`，须外部隔离）。
 5. 生产默认 Session 清理入口（默认开启、自有线程）未覆盖。

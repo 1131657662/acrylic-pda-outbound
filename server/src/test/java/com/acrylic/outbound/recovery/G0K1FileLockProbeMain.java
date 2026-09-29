@@ -55,6 +55,9 @@ public final class G0K1FileLockProbeMain {
                     boolean deleted = Files.deleteIfExists(lockPath);
                     status(statusPath, "DELETE-FILE deleted=" + deleted + " existsAfter=" + Files.exists(lockPath));
                 }
+                case "product-lease-acquire" -> productLeaseAcquire(lockPath, statusPath, holdMillis);
+                case "product-lease-acquire-fail" -> productLeaseAcquireFail(lockPath, statusPath);
+                case "classpath-check" -> classpathCheck(lockPath, statusPath);
                 default -> {
                     status(statusPath, "ERROR unknown mode=" + mode);
                     System.exit(2);
@@ -164,6 +167,43 @@ public final class G0K1FileLockProbeMain {
 
     private static FileChannel open(Path path) throws Exception {
         return FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE);
+    }
+
+    // ---------------------------------------------------------------- 产品路径模式（G0-K1-3 更正轮）
+
+    /** 走产品路径：RecoveryControlLock.locked → RecoveryWriterLease.acquire（含原生身份校验）。 */
+    private static void productLeaseAcquire(Path root, Path statusPath, long holdMillis) throws Exception {
+        RecoveryWriterLease lease = RecoveryControlLock.locked(root, () -> RecoveryWriterLease.acquire(root));
+        String identity = RecoveryWriterProtocol.fileIdentity(RecoveryControlPaths.file(root.resolve("writers.lock")));
+        status(statusPath, "PRODUCT-LEASE-ACQUIRED identity=" + identity + " pid=" + ProcessHandle.current().pid());
+        sleep(holdMillis);
+        lease.close();
+        status(statusPath, "PRODUCT-LEASE-RELEASED identity=" + identity);
+    }
+
+    /** 走产品路径并捕获失败码与栈帧；成功也要显式记录（不得静默）。 */
+    private static void productLeaseAcquireFail(Path root, Path statusPath) throws Exception {
+        try {
+            RecoveryWriterLease lease = RecoveryControlLock.locked(root, () -> RecoveryWriterLease.acquire(root));
+            status(statusPath, "PRODUCT-LEASE-ACQUIRED-UNEXPECTED");
+            lease.close();
+        } catch (Throwable failure) {
+            status(statusPath, "PRODUCT-LEASE-FAILED type=" + failure.getClass().getName()
+                + " code=" + failure.getMessage() + " frames=" + firstFrames(failure));
+        }
+    }
+
+    /** 子 JVM 能否加载产品类与依赖（JNA/jackson），防止“静默降级为裸 FileLock”。 */
+    private static void classpathCheck(Path root, Path statusPath) throws Exception {
+        String probe = RecoveryWriterProtocol.fileIdentity(RecoveryControlPaths.file(root));
+        status(statusPath, "PRODUCT-CLASSES-OK identity=" + probe
+            + " jna=" + Class.forName("com.sun.jna.platform.win32.Kernel32").getName()
+            + " jackson=" + Class.forName("com.fasterxml.jackson.databind.ObjectMapper").getName());
+    }
+
+    private static String firstFrames(Throwable failure) {
+        return java.util.Arrays.stream(failure.getStackTrace()).limit(4)
+            .map(StackTraceElement::toString).reduce((a, b) -> a + " <- " + b).orElse("");
     }
 
     private static void sleep(long millis) throws InterruptedException {
