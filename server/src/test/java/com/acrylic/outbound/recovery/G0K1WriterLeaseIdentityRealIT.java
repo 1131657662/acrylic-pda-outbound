@@ -180,8 +180,18 @@ class G0K1WriterLeaseIdentityRealIT {
         model("v4-previous-f1-f3-f5",
             "上一轮（bc131c3）已成立的 F1′（跨进程共享共存＋排他必失败）、F3（release/正常退出可再获取）、"
                 + "F5（destroyForcibly/halt 后 OS 释放、第三方无持锁者查询）、S1/S3/S5/S6/S7/S10 结论本轮不改写，只引用");
-        assertThat(Files.exists(evidenceDir.getParent().resolve("r09-c2-g0-k1-3-filelock-20260929-a/filelock-records.tsv")))
-            .as("上一轮证据目录必须保留（不删除历史失败证据）").isTrue();
+        // 干净检出可复现：上一轮证据位于**未入库**的 .local ⇒ 此处只记录存在性，不做硬断言
+        // （历史失败证据未被删除；其校验属证据留档阶段，不属本 IT 的通过条件）
+        Path previousEvidence = evidenceDir.getParent()
+            .resolve("r09-c2-g0-k1-3-filelock-20260929-a/filelock-records.tsv");
+        boolean present = Files.exists(previousEvidence);
+        recordLocal("v4-previous-evidence-presence", 0, "证据留档",
+            "previous_round_evidence_present=" + present,
+            "路径=" + previousEvidence + "（未入库 ⇒ 干净检出下缺失属预期，仅记录不失败）");
+        assertThat(Files.readString(recordFile))
+            .as("存在性已写入本轮记录（缺失不构成失败）").contains("v4-previous-evidence-presence");
+        assertThat(Files.exists(Path.of("..", "docs", "history", "R09_WRITER_LEASE_ACCEPTANCE_2026-09-26.md")))
+            .as("历史验收文档（已入库）仍必须存在").isTrue();
     }
 
     // ------------------------------------------------------------------ 辅助

@@ -6,43 +6,40 @@
 ```yaml
 date: 2026-09-29
 branch: codex/development
-head: bc131c3
-dirty_entries: 12
+head: 25e6793
+dirty_entries: 7
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-本轮为 **R09 C2 G0-K1-3 更正与闭合轮**（独立有限授权；仅测试代码与文档）：以 `bc131c3` 为输入基线。源码版本事实只看上方生成块。
+本轮为 **R09 C2 G0-K1-3 遗留卫生修正轮**（纯文档/测试卫生，零 `src/main` 改动）：以 `25e6793` 为输入基线。源码版本事实只看上方生成块。
 
-## 本轮结论
-- **上一轮（`bc131c3`）§4「矛盾 A/B（阻断）」定性已更正**：该定性证据不足——用 `Files.readAttributes().fileKey()` 度量身份（**Windows 为空**，2026-09-26 已记录并改用原生身份）、**未走产品获取路径**（只用裸 `FileChannel`）、**用例只记录不断言**。
-- **走产品路径复验（真实独立 JVM，3/3 重复，`integrationTest` exit 0 / 5 项 0 失败）**：A 经 `RecoveryControlLock.locked`→`RecoveryWriterLease.acquire` 真实持有 `writers.lock` 时——①外部**同名替换**（新文件长度仍为 1）⇒ B 走同一产品路径得 **`CONTROL_WRITER_LOCK_REPLACED`**；②外部**删除** ⇒ **`CONTROL_FILE_MISSING`**，且**不自动重建**；两者**均无第二个持锁者**。⇒ 对已实现的 `writers.lock`：**已缓解/已覆盖（fail closed）**；该条是 2026-09-26 [写者租约验收](history/R09_WRITER_LEASE_ACCEPTANCE_2026-09-26.md)“同名替换拒绝、原件不自动修复、原生身份绑定”的**复测**，非新增缺陷。
-- **S8 重新定性**：NTFS 允许持锁期间删除/重命名锁文件（裸 FileLock 事实），但产品路径因身份校验**失败关闭** ⇒ 定性为**威胁/运维需求（可用性）**：外部删除锁文件会使后续写者全部失败关闭；**不是安全缺陷**。
-- **矛盾计数更正**：产品路径下 **0 项矛盾**；转为 **1 项 B1 承重需求**（`fenced.lock`：只创建不删除＋每次获取前校验原生身份＋不一致失败关闭＋审计事件；禁用 `fileKey()` 观测）＋**1 项可用性威胁**。欠债 C2 与看板的计数已同步更正。
-- **保留项不改写**：上一轮 F1′/F3/F5、S1/S3/S5/S6/S7/S10 结论与证据目录**全部保留**（V4）；历史对齐以 MODEL 记录声明为复测（V3）。
-- **K1 仍未通过**（K1-1 生产效果门未实现/未验、K1-2 窗口 W、K1-3 依条件分支）；**B1 产品实现仍待授权**；本轮**未改 `src/main`、未改默认开关、未开启 `outbound.recovery.admission.enabled`**。
+## 授权与停止状态（本轮最重要）
+- **B1-1（恢复准入效果门最小实现）未获授权**：用户本轮明确选择**暂不授权、保持停止**。因此本轮的 B1-1 指令（效果门第一切片、新开关、隔离库验收）**未执行**；**未改 `src/main`、未新增开关、未接 HTTP/Session、未开任何生产开关、未部署**。
+- **K1 仍未通过**：K1-1 生产效果门未实现/未验、K1-2 窗口 W、K1-3 依条件分支三项不变；**B1 整体未完成、仍待授权**。
 
-## 本轮产出
-- 测试代码（仅测试源集）：新增 `G0K1WriterLeaseIdentityRealIT`（V1a/V1b/V2/V3/V4，全部带断言）；扩展 `G0K1FileLockProbeMain`（产品路径模式 `product-lease-acquire`／`product-lease-acquire-fail`／`classpath-check`，后者防止静默降级为裸 FileLock）。
-- 新记录：[更正与闭合轮](history/R09_C2_G0_K1_3_CORRECTION_2026-09-29.md)（含 V1 原始输出、判定表、“已缓解/真实缺陷”结论、B1 需求清单、未验边界）。
-- **就地更正**：[真实 FileLock 记录](history/R09_C2_G0_K1_3_REAL_FILELOCK_REVERIFY_2026-09-29.md)（文首更正块＋§3 S8/S9 行＋§4 全文＋§5 需求表述）、[设计 §5.4/§5.5](history/R09_C2_G0_DESIGN_2026-09-28.md) 追加段、[验收记录 K1-3 行](history/R09_C2_G0_ACCEPTANCE_2026-09-28.md)、[授权包未验边界与证据清单](history/R09_C2_G0_K1_AUTHORIZATION_PACKET_2026-09-28.md)、[欠债 C2](history/R06_DEBT_LIST_2026-09-27.md)（矛盾计数＝0）、[进度索引](DEVELOPMENT_PROGRESS.md)、[历史索引](history/README.md)、看板当前区（旧区归档）。
-- 证据目录 `.local/r09-c2-g0-k1-3-correction-20260929-a/`（不入库）：`01-pre-*`、`lease-records.tsv`（16 行：REAL 12/MODEL 4）、`lease-work/`、`probe-logs/`、`probe-commands.txt`、`child-classpath.txt`、`run1-it`–`run3-it`（逐轮日志/退出码/XML/哈希）、`02-post-shared-tree-*`、`07-facts-*`。
+## 本轮完成的两处遗留卫生修正（不需要 B1 授权）
+1. **验收记录自相矛盾已修**（详见[遗留卫生修正记录](history/R09_C2_G0_K1_3_HYGIENE_2026-09-29.md)）：[验收与阻断记录](history/R09_C2_G0_ACCEPTANCE_2026-09-28.md) 中“G0-K1-3 真实 FileLock 轮”段落原写“**矛盾阻断**（删除后同路径出现两个持锁者 ⇒ `fileIdentity` 校验承重）”，与同文件结论表（`CONTROL_WRITER_LOCK_REPLACED`／`CONTROL_FILE_MISSING`、已缓解/已覆盖）冲突 ⇒ 已就地更正为**撤回该定性＋指向[更正与闭合轮](history/R09_C2_G0_K1_3_CORRECTION_2026-09-29.md)**，并说明原观测的证据缺陷（裸 `FileChannel`＋Windows 上为空的 `fileKey()`）。
+2. **IT 干净检出可复现已修**：`G0K1WriterLeaseIdentityRealIT.v4_…` 原对**未入库**的 `.local` 路径做硬断言（干净检出必失败）⇒ 改为**只记录存在性**（`previous_round_evidence_present=true|false`）并断言“记录已写入”，同时保留对**已入库**历史验收文档的存在性断言。**历史失败证据未删除**。
 
-## 运行与失败轮（全部保留）
-`gradlew -p server integrationTest --tests 'com.acrylic.outbound.recovery.G0K1WriterLeaseIdentityRealIT' --rerun-tasks --no-daemon --console=plain --info`：第 1 次 **exit 1**（`classpath-check` 传目录而非文件 ⇒ 子进程 `CONTROL_FILE_MISSING`）、第 2 次 **exit 1**（校验用 fixture 缺 `writers.lock`）、第 3 次 **exit 0 / 5 项 0 失败 0 跳过**（13.05s，16 行记录）。上一轮的 `filelock-records.tsv` 与三次失败轮日志/XML **一律保留**，本轮以新目录并存。
+## 本轮验证（三跑全绿，逐跑留档）
+- `runA-clean-sim`：证据目录嵌套（其父目录**不含**上一轮 `.local` 证据 ⇒ 模拟干净检出）→ **exit 0**，IT **5 项 0 失败**，记录 `previous_round_evidence_present=false` ⇒ **干净检出可复现**。
+- `runB-normal`：常规证据目录（父目录含上一轮证据）→ **exit 0**，IT **5 项 0 失败**，`previous_round_evidence_present=true` ⇒ 历史证据仍可检出、未被删除。
+- `runC-test`：定向单测回归 → **exit 0，60 项 0 失败**（围栏矩阵 10、JDBC 边界 17、时序 10、RecoveryAdmittedDataSource 17、RecoveryWriterLease 6）。
+- 命令：`gradlew -p server integrationTest --tests 'com.acrylic.outbound.recovery.G0K1WriterLeaseIdentityRealIT' --rerun-tasks --no-daemon --console=plain --info` 与 `gradlew -p server test --tests 'com.acrylic.outbound.recovery.G0K1*Test' --tests '…RecoveryAdmittedDataSourceTest' --tests '…RecoveryWriterLeaseTest' --rerun-tasks --no-daemon --console=plain`。
+- 证据：`.local/r09-c2-g0-k1-3-hygiene-20260929-a/`（不入库；含 `01-pre-*`、`runA/runB/runC` 的日志/退出码/XML/`files.sha256`、`02-post-shared-tree-*`、`07-facts-*`）。
 
 ## 交付状态与下一步
-- **R09 C2 仍未实施**：B1 未授权（授权包待批）；B9＝恢复链业务运行验收。
-- **下一步**：等待用户对 B1 授权包与 §6 B1 承重需求的决定；**不自动进入 B1**。
+- **R09 C2 仍未实施**：B1 未授权（授权包与 B1 承重需求清单待批）。
+- **下一步**：等待用户对 B1-1 的明确授权；**在授权前不改 `src/main`**、不进入 B1-2（`fenced.lock` 跨进程层）与后续切片。
 
 ## 树、写权与环境
-- 主树 `D:/acrylic-pda-outbound` / `codex/development`；输入 `bc131c3`＝实际远端；**修改前** status 为空、无 `.git/index.lock`、`0/0`、`diff --check` 通过；单写者已核。
-- **本轮不需要数据库与端口**：未连接任何 MySQL、未起监听；19387＝DSH、3306＝系统 mysqld（只读观察）；19330/19434/19437/23308/19438 空闲。
+- 主树 `D:/acrylic-pda-outbound` / `codex/development`；输入 `25e6793`＝实际远端；**修改前** status 为空、无 `.git/index.lock`、`0/0`、`diff --check` 通过；单写者已核。
+- **本轮不需要数据库与端口**：未连接任何 MySQL、未起监听（19387＝DSH、3306＝系统 mysqld 只读观察；19330/19434/19437/23308/19438 空闲）。
 - 共享树 `r06-e2a-migration` 保持 detached `ea4d166`、30 修改＋67 未跟踪＝97；状态列表哈希前后逐字节一致 `C76522C5…`；只读，未同步/清理/reset/提交/合并。
 
 ## 边界与未验
-- 未改 `src/main`／生产 Python／构建配置／迁移／契约／默认开关；未接 HTTP/Session；未实施效果门/P5/入口接线；**不开启** `outbound.recovery.admission.enabled`。未发布/部署/合 main/打标签；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`；未重开 C1、D 扩测、A3、526、R07。
-- 未发现新的真实产品缺陷（上一轮的“矛盾”已按产品路径更正为“已覆盖”）。
-- 继续单列：B1 效果门与入口接线、HTTP/Session、**窗口 W**、F1′/F3/F5 之外的围栏分支、**Linux 与其他文件系统（NTFS 之外）**、网络/共享盘、**断电与硬复位**、现场组合、Java/Python 允许集差异、C1 历史未验项、孤儿解除与生产释放、Session 默认清理。
+- 未改 `src/main`／生产 Python／构建配置／迁移／契约／默认开关；未接 HTTP/Session；未实施效果门/P5/锁协议/`fenced.lock`；未发布/部署/合 main/打标签；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`；未重开 C1、D 扩测、A3、526、R07。
+- 继续单列：B1 效果门与入口接线、`fenced.lock` 跨进程层（F1′/F3/F5 产品实现）、P5/租约/锁协议、HTTP/Session、**窗口 W**、Session 默认清理、孤儿解除与生产释放、Linux 与其他文件系统、网络/共享盘、断电与硬复位、现场组合、Java/Python 允许集差异、C1 历史未验项。
 <!-- CURRENT_STATE_END -->
