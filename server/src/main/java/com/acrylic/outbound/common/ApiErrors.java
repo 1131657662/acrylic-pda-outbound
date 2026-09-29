@@ -1,6 +1,8 @@
 package com.acrylic.outbound.common;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +32,35 @@ public class ApiErrors {
         return business(new BusinessException(400, "INVALID_REQUEST", "请求字段缺失或格式错误"), request);
     }
 
+    /**
+     * Refusals of a request that cannot be parsed write without reading the database: the instance
+     * may be unable to serve anything at all while it answers.
+     */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<?> tooLarge(HttpServletRequest request) {
-        return business(new BusinessException(413, "FILE_TOO_LARGE", "文件不得超过2MiB"), request);
+    public void tooLarge(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        responses.writeWithoutState(request, response, 413, "FILE_TOO_LARGE", "文件不得超过2MiB");
+    }
+
+    /**
+     * The servlet container enforces the part and request limits while it parses, and the framework
+     * reports that parse failure. A size limit stays a 413; any other parse failure is the client's
+     * malformed request; neither path reads the database.
+     */
+    @ExceptionHandler(org.springframework.web.multipart.MultipartException.class)
+    public void multipart(Exception error, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        if (sizeLimited(error)) {
+            responses.writeWithoutState(request, response, 413, "FILE_TOO_LARGE", "文件不得超过2MiB");
+        } else {
+            responses.writeWithoutState(request, response, 400, "INVALID_REQUEST", "请求字段缺失或格式错误");
+        }
+    }
+
+    private static boolean sizeLimited(Throwable error) {
+        for (Throwable current = error; current != null; current = current.getCause()) {
+            if (current instanceof MaxUploadSizeExceededException) return true;
+            if (current.getClass().getSimpleName().endsWith("SizeLimitExceededException")) return true;
+        }
+        return false;
     }
 
     @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)

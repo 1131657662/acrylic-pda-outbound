@@ -11,8 +11,8 @@ final class RecoveryRootObservation {
     /** One framework session save: was the saving thread inside a live root at that moment. */
     record Save(String outcome, int liveRoots) { }
 
-    /** One servlet multipart parse: was the request inside a live root, and how many staged files. */
-    record Parse(String bound, int stagedFiles) { }
+    /** One servlet multipart parse: was the request inside a live root, staged files, and outcome. */
+    record Parse(String bound, int stagedFiles, String outcome) { }
 
     private final List<Pass> passes = new CopyOnWriteArrayList<>();
     private final List<Save> saves = new CopyOnWriteArrayList<>();

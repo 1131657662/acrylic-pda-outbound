@@ -16,7 +16,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RecoveryStartupGateTest {
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
         .withUserConfiguration(RecoveryAdmissionConfiguration.class)
-        .withBean(DataSourceProperties.class, RecoveryStartupGateTest::unreachableProperties);
+        .withBean(DataSourceProperties.class, RecoveryStartupGateTest::unreachableProperties)
+        .withBean(com.acrylic.outbound.common.ApiResponses.class, () -> new com.acrylic.outbound.common.ApiResponses(
+            org.mockito.Mockito.mock(com.acrylic.outbound.common.ServerState.class),
+            new com.fasterxml.jackson.databind.ObjectMapper().registerModule(
+                new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())));
 
     @Test void anAdmittedInstanceRefusesToStartWhileTheSessionWriterIsEnabled() throws Exception {
         var fixture = RecoveryWriterLeaseTest.protocol();

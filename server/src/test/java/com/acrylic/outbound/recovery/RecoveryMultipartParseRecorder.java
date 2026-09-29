@@ -30,22 +30,29 @@ final class RecoveryMultipartParseRecorder implements BeanPostProcessor {
         if (!"multipartResolver".equals(name) || !(bean instanceof MultipartResolver)) return bean;
         return Proxy.newProxyInstance(MultipartResolver.class.getClassLoader(), new Class<?>[]{MultipartResolver.class},
             (proxy, method, args) -> {
+                Throwable failure = null;
                 try {
                     return method.invoke(bean, args);
+                } catch (java.lang.reflect.InvocationTargetException error) {
+                    // A proxy must not hide the real refusal behind a reflection wrapper: the
+                    // container's parse failure has to reach the application's own error mapping.
+                    failure = error.getCause();
+                    throw failure;
                 } finally {
-                    if (method.getName().equals("resolveMultipart")) observe();
+                    if (method.getName().equals("resolveMultipart")) observe(failure);
                 }
             });
     }
 
-    private void observe() {
+    private void observe(Throwable failure) {
         RecoveryOperationRegistry registry = operations.getIfAvailable();
         boolean bound = false;
         if (registry != null) {
             RecoveryOperationToken token = registry.bound(Thread.currentThread());
             bound = token != null && registry.live(token) != null;
         }
-        observation.parse(new RecoveryRootObservation.Parse(bound ? "BOUND" : "UNBOUND", stagedFiles()));
+        observation.parse(new RecoveryRootObservation.Parse(bound ? "BOUND" : "UNBOUND", stagedFiles(),
+            failure == null ? "OK" : failure.getClass().getSimpleName()));
     }
 
     private int stagedFiles() {

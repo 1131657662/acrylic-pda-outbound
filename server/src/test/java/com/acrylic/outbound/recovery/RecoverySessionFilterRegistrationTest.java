@@ -18,7 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RecoverySessionFilterRegistrationTest {
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
         .withUserConfiguration(RecoveryAdmissionConfiguration.class)
-        .withBean(DataSourceProperties.class, RecoverySessionFilterRegistrationTest::unreachableProperties);
+        .withBean(DataSourceProperties.class, RecoverySessionFilterRegistrationTest::unreachableProperties)
+        .withBean(com.acrylic.outbound.common.ApiResponses.class, () -> new com.acrylic.outbound.common.ApiResponses(
+            org.mockito.Mockito.mock(com.acrylic.outbound.common.ServerState.class),
+            new com.fasterxml.jackson.databind.ObjectMapper().registerModule(
+                new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())));
 
     @Test void theRequestEntryPrecedesTheSessionFilterForRequestAsyncAndError() throws Exception {
         var fixture = RecoveryWriterLeaseTest.protocol();

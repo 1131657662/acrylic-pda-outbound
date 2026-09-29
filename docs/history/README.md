@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S7：拒绝码 HTTP 映射与无状态拒绝写出口](R09_C2_B1_3_S7_REFUSAL_MAPPING_2026-09-29.md)：`ApiResponses.writeWithoutState`（拒绝不读库）＋`RecoveryRefusalAdvice`（服务中拒绝 ⇒ 503＋原码，排序承重）＋接纳拒绝由过滤器自写 503；超限 ⇒ 413、畸形 multipart ⇒ 400；`body(...)` 读状态失败改为降级报告。现场（实例 19466）：围栏 503 `RECOVERY_LEASE_FENCED`、超限 413、畸形 400、过期权威接纳 503 `CONTROL_INSTANCE_STALE` 且零根，四者 envelope 均 `unknown/UNAVAILABLE`；全量单测 2818 项 0 失败、恢复链 25 类 696 项 0 失败。**口径更正**：撤回 S4 记录"超限 500"定性（探针代理未解包 `InvocationTargetException`）。未做：入口 IT 重基、阶段 0 安全前置。开关仍默认 false，K1 仍未通过；另附 S7 开工前看板归档。
+
 - [R09 C2 B1-3 S6：控制锁按根可嵌套与有界等待](R09_C2_B1_3_S6_CONTROL_LOCK_2026-09-29.md)：`RecoveryControlLock` 改为按根信号量＋线程级根集合（P3=1/P2=2/P5=3），同根重入按误用拒绝（等待式 `CONTROL_COORDINATOR_REENTRANT`）、逆序 `CONTROL_LOCK_ORDER_VIOLATION`；新增 `lockedWaiting`（预算 1..10000ms，跨进程文件锁同预算重试）；`registry.admit` 用 2000ms 有界等待 ⇒ **4 路并发请求实测全部 200**（`concurrentRoots=[4,3,2,1]`，真重叠），S3 遗留的"并发 HTTP 未验"闭合。全量单测 2814 项 0 失败、恢复链 25 类 696 项 0 失败。未做：阶段 0 安全前置（第 8–12 行）、拒绝码 HTTP 映射、入口 IT 重基。开关仍默认 false，K1 仍未通过；另附 S6 开工前看板归档。
 
 - [R09 C2 B1-3 S5：启动守卫与初始化窗口](R09_C2_B1_3_S5_STARTUP_WINDOW_2026-09-29.md)：解决"开开关即起不来"——`RecoveryStartupGuard`（清理未禁用⇒`CONTROL_SESSION_CLEANUP_UNCOVERED`；应用 Bean 显式排到初始化窗口之后）＋`RecoveryInitializationWindow`（`INITIALIZATION` 根覆盖 bean 构造与启动 runner，就绪时退役）；未改启动消费者。现场（实例 19462，已删探针替身）带 admission **真实启动成功**且 S3/S4 判据全绿，同轮另证清理守卫启动失败且端口未占用；全量单测 2806 项 0 失败、恢复链 25 类 696 项 0 失败。未做：阶段 0 安全前置（第 8–12 行）、锁并发（第 13 行）、拒绝码 HTTP 映射、入口 IT 重基。开关仍默认 false，K1 仍未通过；另附 S5 开工前看板归档。

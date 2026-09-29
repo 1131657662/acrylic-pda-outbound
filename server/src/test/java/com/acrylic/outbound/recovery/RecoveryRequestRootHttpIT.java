@@ -54,13 +54,32 @@ class RecoveryRequestRootHttpIT {
                 transcript.append(step(client, "/__s3/async", 200));
                 transcript.append(multipartStep(client, multipart, "/__s3/multipart", 4096, 200))
                     .append(sessionRows(session, "s3-multipart"));
-                // Above the 2MiB part limit: the container stages the part inside the root and then
-                // refuses the request; the observed status is recorded (see the run record: the
-                // application's own 413 mapping does not apply to this container-level refusal).
-                transcript.append(multipartStep(client, multipart, "/__s3/multipart-too-large", 2_621_440, 500))
-                    .append(absentSessionAttribute(session, "s3-multipart-large"));
             }
+            // Refusals: a fenced root while serving, a container-level size limit, a malformed
+            // multipart body, and (last, because it moves the authority on) a stale authority at
+            // admission. All of them answer through the database-free refusal writer.
+            var fenced = refusalStep(client, "/__s3/fenced", "GET", null, 503);
+            transcript.append(fenced.transcript());
+            var tooLarge = multipartStep(client, multipart, "/__s3/multipart-too-large", 2_621_440, 413);
+            transcript.append(tooLarge);
+            try (var session = connection()) {
+                transcript.append(absentSessionAttribute(session, "s3-multipart-large"));
+            }
+            transcript.append(malformedMultipartStep(client, multipart, 400));
             transcript.append(concurrentStep(client));
+            control.append(control.next("RECOVERING"));
+            var stale = refusalStep(client, "/__s3/session", "GET", null, 503);
+            transcript.append(stale.transcript());
+
+            assertThat(fenced.body()).as("a fenced root refuses with its own code")
+                .contains("RECOVERY_LEASE_FENCED");
+            assertThat(tooLarge).as("a part above the limit is answered as too large").contains("413");
+            assertThat(stale.body()).as("an admission refusal names the stale instance")
+                .contains("CONTROL_INSTANCE_STALE");
+            for (Refusal refusal : new Refusal[]{fenced, stale}) {
+                assertThat(refusal.body()).as("refusals never read database state")
+                    .contains("\"serverRecoveryEpoch\":\"unknown\"").contains("\"serviceMode\":\"UNAVAILABLE\"");
+            }
 
             assertThat(observation.asyncBorrows())
                 .as("the async worker carries the request context but no dispatch binding")
@@ -76,11 +95,13 @@ class RecoveryRequestRootHttpIT {
             assertThat(observation.saves()).as("the framework saved the session at least once").isNotEmpty();
             assertThat(observation.saves()).as("every session save ran inside a live root")
                 .allMatch(save -> save.outcome().equals("BOUND"));
-            assertThat(observation.parses()).as("the servlet parsed the multipart requests").hasSize(2);
+            assertThat(observation.parses()).as("the servlet parsed three multipart requests").hasSize(3);
             assertThat(observation.parses()).as("every multipart parse ran inside a live root")
                 .allMatch(parse -> parse.bound().equals("BOUND"));
             assertThat(observation.parses()).as("the staged part was observed while the request was in flight")
                 .anyMatch(parse -> parse.stagedFiles() > 0);
+            assertThat(observation.parses()).as("the size limit is reported as a size failure")
+                .anyMatch(parse -> parse.outcome().contains("Size"));
             assertThat(observation.passes()).extracting(RecoveryRootObservation.Pass::dispatcherType)
                 .as("the real container dispatched REQUEST, ERROR and ASYNC through the entry")
                 .contains("REQUEST", "ERROR", "ASYNC");
@@ -103,6 +124,37 @@ class RecoveryRequestRootHttpIT {
             Files.writeString(evidence.resolve("s3-session-root.txt"), transcript.toString());
             EffectRealEnvironment.record("S3|REAL|" + transcript.toString().replace('\n', '|'));
         }
+    }
+
+    /** One refusal response: the status and the body the client received. */
+    private record Refusal(int status, String body) {
+        String transcript() { return "refusal -> " + status + " body=" + body.replace('\n', ' ') + "\n"; }
+    }
+
+    private static Refusal refusalStep(HttpClient client, String path, String method, String body, int expected)
+            throws Exception {
+        var builder = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + APP_PORT + path))
+            .timeout(Duration.ofSeconds(60));
+        HttpResponse<String> response = client.send(
+            body == null ? builder.GET().build() : builder.method(method, HttpRequest.BodyPublishers.ofString(body)).build(),
+            HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).as("refusal HTTP %s body=%s", path, response.body()).isEqualTo(expected);
+        return new Refusal(response.statusCode(), response.body());
+    }
+
+    /** A multipart body with a boundary but no closing delimiter: the container cannot parse it. */
+    private static String malformedMultipartStep(HttpClient client, Path multipart, int expected) throws Exception {
+        String boundary = "s3broken";
+        Path payload = Files.write(multipart.resolveSibling("upload-malformed.bin"),
+            ("--" + boundary + "\r\nContent-Disposition: form-data; name=\"file\"; filename=\"p.bin\"\r\n"
+                + "Content-Type: application/octet-stream\r\n\r\ntruncated").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        HttpResponse<String> response = client.send(HttpRequest.newBuilder(
+                URI.create("http://127.0.0.1:" + APP_PORT + "/__s3/multipart"))
+            .timeout(Duration.ofSeconds(60))
+            .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+            .POST(HttpRequest.BodyPublishers.ofFile(payload)).build(), HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).as("malformed multipart body=%s", response.body()).isEqualTo(expected);
+        return "step /__s3/multipart (malformed) -> " + response.statusCode() + " body=" + response.body() + "\n";
     }
 
     /** Real multipart upload: the parse and the handler must both stay inside the request's root. */

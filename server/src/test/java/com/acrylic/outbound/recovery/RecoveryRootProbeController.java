@@ -61,6 +61,21 @@ final class RecoveryRootProbeController {
     }
 
     /**
+     * A refusal raised while serving: the request's root is fenced first, so the borrow that follows
+     * must be refused and mapped to 503 without any database read by the refusal writer.
+     */
+    @GetMapping("/__s3/fenced")
+    String fenced() throws java.sql.SQLException {
+        RecoveryOperationToken token = operations.bound(Thread.currentThread());
+        RecoveryOperationLease root = token == null ? null : operations.live(token);
+        if (root != null) root.fence();
+        observation.duringRequest("/__s3/fenced", operations.liveRoots());
+        try (var connection = source.getConnection()) {
+            return "unexpectedly-admitted:" + connection;
+        }
+    }
+
+    /**
      * Overlapping requests: each one holds its own root for a moment, so an entry that admitted only
      * one request at a time would refuse the others instead of showing several live roots.
      */

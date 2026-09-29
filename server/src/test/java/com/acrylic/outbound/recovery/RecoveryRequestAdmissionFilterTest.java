@@ -165,11 +165,15 @@ class RecoveryRequestAdmissionFilterTest {
         var f = fixture();
         f.control.append(f.control.next("RECOVERING"));
         var request = new MockHttpServletRequest("GET", "/api/outbound/things");
+        var response = new MockHttpServletResponse();
 
-        assertThatThrownBy(() -> f.filter.doFilter(request, new MockHttpServletResponse(), (req, res) -> { }))
-            .hasMessage("CONTROL_INSTANCE_STALE");
+        f.filter.doFilter(request, response, (req, res) -> { });
+
+        assertThat(response.getStatus()).as("an admission refusal answers 503").isEqualTo(503);
+        assertThat(response.getContentAsString()).contains("CONTROL_INSTANCE_STALE");
         assertThat(token(request)).isNull();
         assertThat(f.registry.liveRoots()).isZero();
+        verifyNoInteractions(f.state);
     }
 
     /**
@@ -269,12 +273,17 @@ class RecoveryRequestAdmissionFilterTest {
         var connection = mock(Connection.class);
         when(connection.getAutoCommit()).thenReturn(true);
         when(source.getConnection()).thenReturn(connection);
+        var state = mock(com.acrylic.outbound.common.ServerState.class);
+        var responses = new com.acrylic.outbound.common.ApiResponses(state,
+            new com.fasterxml.jackson.databind.ObjectMapper().registerModule(
+                new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule()));
         return new Fixture(control, registry, source, new RecoveryRequestAdmittedDataSource(source, registry),
-            new RecoveryRequestAdmissionFilter(registry));
+            new RecoveryRequestAdmissionFilter(registry, responses), state);
     }
 
     private record Fixture(RecoveryControlFixture control, RecoveryOperationRegistry registry, DataSource source,
-            RecoveryRequestAdmittedDataSource adapter, RecoveryRequestAdmissionFilter filter) {
+            RecoveryRequestAdmittedDataSource adapter, RecoveryRequestAdmissionFilter filter,
+            com.acrylic.outbound.common.ServerState state) {
         void destroy(MockHttpServletRequest request) {
             new RecoveryRequestRootListener(registry)
                 .requestDestroyed(new ServletRequestEvent(new MockServletContext(), request));

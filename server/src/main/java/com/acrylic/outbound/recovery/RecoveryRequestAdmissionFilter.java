@@ -33,9 +33,12 @@ public final class RecoveryRequestAdmissionFilter extends OncePerRequestFilter {
     public static final int ORDER = org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 
     private final RecoveryOperationRegistry operations;
+    private final com.acrylic.outbound.common.ApiResponses responses;
 
-    public RecoveryRequestAdmissionFilter(RecoveryOperationRegistry operations) {
+    public RecoveryRequestAdmissionFilter(RecoveryOperationRegistry operations,
+            com.acrylic.outbound.common.ApiResponses responses) {
         this.operations = Objects.requireNonNull(operations);
+        this.responses = Objects.requireNonNull(responses);
     }
 
     @Override protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -60,7 +63,15 @@ public final class RecoveryRequestAdmissionFilter extends OncePerRequestFilter {
 
     private void dispatch(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        RecoveryOperationLease root = root(request);
+        RecoveryOperationLease root;
+        try {
+            root = root(request);
+        } catch (RecoveryControlException refused) {
+            // Admission happens before the framework, so this filter answers the refusal itself; it
+            // must not read the database, which may be exactly what cannot be served right now.
+            responses.writeWithoutState(request, response, 503, refused.code(), "服务器当前不可写入，请稍后重试");
+            return;
+        }
         Thread thread = Thread.currentThread();
         root.bindDispatch(thread);
         try {

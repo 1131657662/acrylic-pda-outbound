@@ -91,11 +91,19 @@ public class RecoveryAdmissionConfiguration {
      * The request entry: one operation root per request, bound for every dispatch of that request.
      * It is registered for REQUEST, ASYNC and ERROR so a re-dispatch reuses the root of its request,
      * and it precedes the framework session filter (order {@code -2147483598}) so the final session
-     * save is covered by the root.
+     * save is covered by the root. An admission refusal is answered here (503) without reading the
+     * database.
      */
     @Bean
-    RecoveryRequestAdmissionFilter recoveryRequestAdmissionFilter(RecoveryOperationRegistry operations) {
-        return new RecoveryRequestAdmissionFilter(operations);
+    RecoveryRequestAdmissionFilter recoveryRequestAdmissionFilter(RecoveryOperationRegistry operations,
+            com.acrylic.outbound.common.ApiResponses responses) {
+        return new RecoveryRequestAdmissionFilter(operations, responses);
+    }
+
+    /** Refusals raised while serving a request answer 503 through the database-free writer. */
+    @Bean
+    RecoveryRefusalAdvice recoveryRefusalAdvice(com.acrylic.outbound.common.ApiResponses responses) {
+        return new RecoveryRefusalAdvice(responses);
     }
 
     @Bean
