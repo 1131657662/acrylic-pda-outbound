@@ -7,6 +7,7 @@ param(
     [int]$SqlPortWarmupSeconds = 30,
     [string]$ClassDirBase = '',
     [string[]]$Only = @(),
+    [string[]]$Classes = @(),
     [switch]$Pinned
 )
 # R09 recovery-chain IT batch runner: one class per invocation, own attempt directory, one aggregate result.
@@ -119,7 +120,7 @@ $dynamic
 Write-Evidence 'instance-identity.txt' ($identity -join ' | ')
 
 # ---------------------------------------------------------------- batch
-$classes = @(
+$classList = @(
     'RecoveryEffectBatchIT', 'RecoveryEffectCommitIT', 'RecoveryEffectCursorIT', 'RecoveryEffectSqlIT',
     'RecoveryEffectAdversarialBatchIT', 'RecoveryEffectAdversarialCallableIT', 'RecoveryEffectAdversarialCleanupIT',
     'RecoveryEffectAdversarialDefaultOffIT', 'RecoveryEffectAdversarialDriverIT', 'RecoveryEffectAdversarialFenceIT',
@@ -132,7 +133,8 @@ $classes = @(
 $notAttempted = @(
     @{ name = 'C1InitialNormalHttpIT'; reason = 'needs a real HTTP/Session stack and its own environment' }
 )
-if ($Only.Count -gt 0) { $classes = $Only }
+# -Classes takes raw --tests patterns (wildcards allowed) so other packages need no lookup.
+if ($Classes.Count -gt 0) { $classList = $Classes } elseif ($Only.Count -gt 0) { $classList = $Only }
 $env:GIT_OPTIONAL_LOCKS = '0'
 $env:JAVA_HOME = 'C:\Program Files\Java\jdk-21.0.11'
 $env:OUTBOUND_DB_URL = "jdbc:mysql://127.0.0.1:$Port/${schema}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8"
@@ -140,17 +142,19 @@ $env:OUTBOUND_DB_USER = $account
 $env:OUTBOUND_DB_PASSWORD = $password
 $rows = @()
 $index = 0
-foreach ($class in $classes) {
+foreach ($class in $classList) {
     $index++
-    $fqcn = 'com.acrylic.outbound.recovery.' + $class
+    $pattern = $class
+    if ($class -notmatch '[.*]') { $pattern = 'com.acrylic.outbound.recovery.' + $class }
+    $slug = ($class.ToLower() -replace '[^a-z0-9-]', '-')
     # The recovery IT guards require a direct child of the pinned base whose name matches run<N>-<slug>.
-    $target = Join-Path $ClassDirBase ('run{0}-batch-{1}' -f (100 + $index), $class.ToLower())
+    $target = Join-Path $ClassDirBase ('run{0}-batch-{1}' -f (100 + $index), $slug)
     New-Item -ItemType Directory -Path $target | Out-Null
     $env:B11_EFFECT_EVIDENCE_DIR = $target
     $env:B12_FENCE_EVIDENCE_DIR = $target
     $env:G0K1_EVIDENCE_DIR = $target
     $arguments = @('-p', 'server', 'recoveryControlClasspath', 'integrationTest', '--rerun-tasks', '--no-daemon',
-        '--console=plain', '--tests', $fqcn)
+        '--console=plain', '--tests', $pattern)
     ($arguments -join ' ') | Set-Content -LiteralPath (Join-Path $target 'command.txt') -Encoding UTF8
     $twBefore = Get-TimeWaitCount
     $started = Get-Date
@@ -175,7 +179,7 @@ foreach ($class in $classes) {
     $rows += [pscustomobject][ordered]@{ index = $index; class = $class; exit = $code; tests = $tests; failures = $failures;
         errors = $errors; skipped = $skipped; seconds = $elapsed; timeWaitBefore = $twBefore; timeWaitAfter = $twAfter }
     Write-Output ('[{0:d2}/{1}] {2} exit={3} tests={4} failures={5} errors={6} skipped={7} {8}s tw={9}->{10}' -f
-        $index, $classes.Count, $class, $code, $tests, $failures, $errors, $skipped, $elapsed, $twBefore, $twAfter)
+        $index, $classList.Count, $class, $code, $tests, $failures, $errors, $skipped, $elapsed, $twBefore, $twAfter)
     Start-Sleep -Seconds $PacingSeconds
 }
 
@@ -184,13 +188,13 @@ $totalTests = ($rows | Measure-Object -Property tests -Sum).Sum
 $totalFailures = ($rows | Measure-Object -Property failures -Sum).Sum
 $totalErrors = ($rows | Measure-Object -Property errors -Sum).Sum
 $totalSkipped = ($rows | Measure-Object -Property skipped -Sum).Sum
-$failedClasses = @($rows | Where-Object { $_.exit -ne 0 })
+$failedClasses = @($rows | Where-Object { $_.exit -ne 0 })`n$skippedClasses = @($rows | Where-Object { $_.skipped -gt 0 })
 $summary = [ordered]@{
     time = (Get-Date).ToString('o'); pinned = [bool]$Pinned; port = $Port; schema = $schema; account = $account
-    instance = $instance; classesAttempted = $classes.Count; totalTests = $totalTests
+    instance = $instance; classesAttempted = $classList.Count; totalTests = $totalTests
     totalFailures = $totalFailures; totalErrors = $totalErrors; totalSkipped = $totalSkipped
     timeWaitLimit = $TimeWaitLimit; timeWaitBefore = $timeWaitBefore; timeWaitAfter = (Get-TimeWaitCount)
-    failedClasses = @($failedClasses | ForEach-Object { $_.class }); notAttempted = $notAttempted; rows = $rows
+    failedClasses = @($failedClasses | ForEach-Object { $_.class }); skippedClasses = @($skippedClasses | ForEach-Object { $_.class }); notAttempted = $notAttempted; rows = $rows
 }
 $summary | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $EvidenceRoot 'batch-summary.json') -Encoding UTF8
 $rows | Format-Table -AutoSize | Out-String -Width 400 | Set-Content -LiteralPath (Join-Path $EvidenceRoot 'batch-summary.txt') -Encoding UTF8
@@ -198,7 +202,7 @@ $shutdown = & "$bin/mysqladmin.exe" "--defaults-file=$instance/private/admin.cnf
 Start-Sleep -Seconds 3
 Write-Evidence 'db-shutdown.txt' ("exit=$LASTEXITCODE`n" + ($shutdown -join ' ') + "`nport_listening_after=" + (Get-ListenerCount $Port))
 Write-Output ('BATCH pinned={0} classes={1} tests={2} failures={3} errors={4} skipped={5} failedClasses={6} portReleased={7}' -f
-    [bool]$Pinned, $classes.Count, $totalTests, $totalFailures, $totalErrors, $totalSkipped, $failedClasses.Count,
+    [bool]$Pinned, $classList.Count, $totalTests, $totalFailures, $totalErrors, $totalSkipped, $failedClasses.Count,
     ((Get-ListenerCount $Port) -eq 0))
-if ($failedClasses.Count -gt 0) { exit 1 }
+Write-Output ('NOT-COVERED (conditions not met; skipped>0): ' + (($skippedClasses | ForEach-Object { $_.class }) -join ', '))`nif ($failedClasses.Count -gt 0) { exit 1 }
 exit 0
