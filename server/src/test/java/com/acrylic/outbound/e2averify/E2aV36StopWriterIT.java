@@ -11,7 +11,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 @EnabledIfEnvironmentVariable(named = "E2A_STOP_VERIFY", matches = "true")
 class E2aV36StopWriterIT {
-    private static final Path ROOT = Path.of("D:/acrylic-pda-worktrees/r06-e2a-migration");
+    private static final Path ROOT = E2aWorktree.ROOT;
     private static final Path ATTEMPT = ROOT.resolve(".local/e2a-v36-stop-attempt1");
     private static final String DATABASE = "acrylic_outbound_e2a_stop_20260924a";
     private static final String USER = "e2a_stop_20260924a";

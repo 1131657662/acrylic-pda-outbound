@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @EnabledIfEnvironmentVariable(named = "E2A_AUDIT_ARCHIVE_VERIFY", matches = "true")
 class E2aV36AuditArchiveIT {
-    private static final Path ROOT = Path.of("D:/acrylic-pda-worktrees/r06-e2a-migration");
+    private static final Path ROOT = E2aWorktree.ROOT;
     private static final Path ATTEMPT = ROOT.resolve(".local/e2a-v36-audit-attempt6");
     private static final String DATABASE = "acrylic_outbound_e2a_audit_20260924f";
     private static final String USER = "e2a_audit_20260924f";

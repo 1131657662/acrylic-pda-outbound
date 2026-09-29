@@ -8,7 +8,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 /** Test-only guard values; callers must invoke before any database or process action. */
 public final class E2aMigrationEnvironment {
-    private static final Path EXPECTED_WORKSPACE = Path.of("D:/acrylic-pda-worktrees/r06-e2a-migration");
+    private static final Path EXPECTED_WORKSPACE = E2aWorktree.ROOT;
     public static final String HOST = "127.0.0.1";
     public static final int PORT = 19329;
     public static final String DATABASE = "acrylic_outbound_e2a_migrate_20260923h";

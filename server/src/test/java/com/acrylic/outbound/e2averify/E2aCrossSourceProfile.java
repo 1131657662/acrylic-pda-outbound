@@ -13,8 +13,7 @@ final class E2aCrossSourceProfile {
      * {@code E2A_CROSS_ROOT} points it at the tree under test, and every other check (attempt under
      * that root, datadir identity, one-shot marker, port, credential) still applies.
      */
-    static final Path ROOT = Path.of(System.getenv().getOrDefault("E2A_CROSS_ROOT",
-        "D:/acrylic-pda-worktrees/r06-e2a-migration"));
+    static final Path ROOT = E2aWorktree.ROOT;
     final Path attempt;
     final String database, user, url;
 

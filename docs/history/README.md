@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S17：E2a 批次二 + 工作树根收敛](R09_C2_B1_3_S17_E2A_BATCH2_2026-09-29.md)：发现 12 个 E2a 测试文件各自硬编码旧共享工作树路径（632 的 NoSuchFileException 即此），新增单一来源 `E2aWorktree.ROOT`（`E2A_CROSS_ROOT` 覆盖）并替换全部；本批 630 作业围栏、631 决策协议、634 交接模型、635 确认 **通过**（632 失败→635 通过成对留证）；633 `E2aCorrectionChainIT` 未通过（导出/渲染断言，未定性）；636/637 V36 两个 IT **skip**（另有环境门，记未尝试）。E2a 主树已验证 **10 个** IT，C1 侧 611 通过。未做：其余约 25 个门控 IT、V36 环境门、渲染断言判定、Python v2 供给。K1 仍未通过；另附 S17 开工前看板归档。
+
 - [R09 C2 B1-3 S16：E2a 闭合投影攻克 + 修正 schema 抽样](R09_C2_B1_3_S16_PROJECTION_2026-09-29.md)：`E2aClosedProjectionIT` 此前五轮失败（620/624–627）的**根因是供给清单不完整**（该类注释即要求运行器预分配 `${schema}{copy,conflict,missing,gap,overflow,rollback,instance,skip,mapping}` 且为空），非产品缺陷；工具改为精确集合＋`_restore` 后 **628 通过**（67.4s，产物含迁移/投影前后快照：193 872／622 952／624 628 B），并抽样 `E2aCorrectionSchemaIT`（629）通过。E2a 主树已验证 6 个 IT（604/621/622/623/628/629），C1 侧 611 通过。未做：其余约 30 个门控 IT、Python v2 供给（B9）。K1 仍未通过；另附 S16 开工前看板归档。
 
 - [R09 C2 B1-3 S15：E2a 其余 IT 首批重跑](R09_C2_B1_3_S15_E2A_BATCH_2026-09-29.md)：按 S14 配方分批跑 E2a 门控 IT，首批 4 个——`E2aRecoveryWriterTransactionIT`、`E2aLatestSchemaRegressionIT`、`E2aCrossSourceHttpIT` **在主树 B1-3 代码上通过**；`E2aClosedProjectionIT` 未通过（它按用例名运行期拼伴随 schema：copy/instance/conflict/missing…；工具已补 schema 族与一次性实例全局授权并声明该 harness 偏差，最终停在 `Unknown database '<schema>_missing'`；625 attempt 已产出接纳数据源/租约事务证据 ⇒ 失败在投影阶段后段，仍判未验）。未做：其余 30+ 门控 IT、`_missing` 期望判定、Python v2 供给。K1 仍未通过；另附 S15 开工前看板归档。

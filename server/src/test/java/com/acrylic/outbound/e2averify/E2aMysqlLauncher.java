@@ -83,7 +83,7 @@ public final class E2aMysqlLauncher {
 
     public static void shutdown(Process process, Path workspace, String user, String password) throws IOException, InterruptedException {
         if (process == null) return;
-        if (!workspace.toAbsolutePath().normalize().equals(Path.of("D:/acrylic-pda-worktrees/r06-e2a-migration").toAbsolutePath().normalize())) {
+        if (!workspace.toAbsolutePath().normalize().equals(E2aWorktree.ROOT.toAbsolutePath().normalize())) {
             throw new IllegalStateException("Unexpected shutdown workspace");
         }
         requireTool(MYSQLADMIN);

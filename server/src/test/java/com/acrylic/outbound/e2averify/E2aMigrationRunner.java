@@ -67,7 +67,7 @@ public final class E2aMigrationRunner {
     }
 
     static Path workspace() {
-        return Path.of("D:/acrylic-pda-worktrees/r06-e2a-migration");
+        return E2aWorktree.ROOT;
     }
 
     static boolean portFree() {

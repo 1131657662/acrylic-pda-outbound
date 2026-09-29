@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Pure guard tests; no datasource, process, or filesystem initialization. */
 class E2aMigrationEnvironmentTest {
-    private static final Path WORKSPACE = Path.of("D:/acrylic-pda-worktrees/r06-e2a-migration");
+    private static final Path WORKSPACE = E2aWorktree.ROOT;
 
     private static Map<String, String> valid() {
         var env = new HashMap<>(Map.of(

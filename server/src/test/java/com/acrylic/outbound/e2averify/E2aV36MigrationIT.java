@@ -13,7 +13,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 @EnabledIfEnvironmentVariable(named = "E2A_V36_VERIFY", matches = "true")
 class E2aV36MigrationIT {
-    private static final Path ROOT = Path.of("D:/acrylic-pda-worktrees/r06-e2a-migration");
+    private static final Path ROOT = E2aWorktree.ROOT;
     private static final Path ATTEMPT = ROOT.resolve(".local/e2a-v36-attempt4");
     private static final String DATABASE = "acrylic_outbound_e2a_v36_20260924d";
     private static final String USER = "e2a_v36_20260924d";

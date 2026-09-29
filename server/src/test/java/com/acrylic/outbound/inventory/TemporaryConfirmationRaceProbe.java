@@ -57,7 +57,7 @@ final class TemporaryConfirmationRaceProbe {
     void save(String name) throws Exception {
         evidence.put("finalState",f.state());
         String run=System.getenv("E2A_CROSS_RUN");if(run==null || !run.matches("[1-9][0-9]{0,2}"))throw new IllegalStateException();
-        var path=Path.of("D:/acrylic-pda-worktrees/r06-e2a-migration/.local/e2a-cross-20260925-"+run,"confirmation-race-"+name+".json");
+        var path=com.acrylic.outbound.e2averify.E2aWorktree.ROOT.resolve(".local/e2a-cross-20260925-"+run).resolve("confirmation-race-"+name+".json");
         Files.writeString(path,f.bean(JsonText.class).encode(evidence),StandardOpenOption.CREATE_NEW);
     }
     static void gate(CountDownLatch latch) {
