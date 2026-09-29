@@ -13,7 +13,8 @@ param(
     [string]$Root = 'D:/acrylic-pda-outbound',
     [string]$TestClass = 'com.acrylic.outbound.e2averify.E2aRecoveryAdmissionEntryIT',
     [switch]$Shutdown,
-    [switch]$Reuse
+    [switch]$Reuse,
+    [switch]$GradleInfo
 )
 $ErrorActionPreference = 'Stop'
 $port = 19330
@@ -125,6 +126,10 @@ $env:SPRING_DATASOURCE_PASSWORD = $password
 # distribution that lives in the tree under test (explicit --outbound.exports.* args still win).
 # The reference runner supplies the remaining harness environment: the attempt storage root, the
 # explicit "no migration" switch, and the auth signing keys the setup writes into <attempt>/private.
+# Plain-HTTP harness: a Secure session/CSRF cookie is never sent back by the JDK HTTP client, which
+# makes Spring Security's CSRF check reject the login form with 403 before any auth logic runs (some
+# ITs pass this flag themselves; explicit --server.servlet... arguments still win).
+$env:SERVER_SERVLET_SESSION_COOKIE_SECURE = 'false'
 $env:OUTBOUND_MIGRATE = 'false'
 $env:OUTBOUND_STORAGE = Join-Path $attempt 'storage'
 $env:OUTBOUND_AUTH_SIGNING_PRIVATE_KEY = Join-Path $attempt 'private/server-private.der'
@@ -138,6 +143,9 @@ $env:OUTBOUND_EXPORTS_BROWSERS = if (Test-Path $localBrowsers) { $localBrowsers 
     else { 'D:/acrylic-pda-worktrees/r08-export/report-rendering/build/browsers' }
 $arguments = @('-p', 'server', 'recoveryControlClasspath', 'integrationTest', '--rerun-tasks', '--no-daemon',
     '--console=plain', '--tests', $TestClass)
+# With -GradleInfo the test JVM's stdout/stderr is forwarded into the harness log, which is the only
+# way to read an IT's own diagnostics (its `log=` fields, permission denials, renderer output).
+if ($GradleInfo) { $arguments += '-i' }
 $ErrorActionPreference = 'Continue'
 & (Join-Path $Root 'gradlew.bat') @arguments *> "$attempt/gradle.log"
 $testExit = $LASTEXITCODE
