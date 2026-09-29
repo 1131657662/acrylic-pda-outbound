@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S23：659 的权限/作用域查证与收窄](R09_C2_B1_3_S23_659_SCOPE_2026-09-29.md)：LINK 需要 `temporary_order:link`（与 IT 一致）；`role_permission`/`user_role` **无作用域列**；659 库中该码有 **2 条授予**；IT 已显式打开 `outbound.temporary.commands.enabled` ⇒ 排除"权限缺失/作用域列绑定"，剩三选一（actor 不持有该码角色／代码级仓库比对／真实产品差异）。下一步：读 `TemporaryCommandBrowserChecks` 的 LINK 构造＋一次查库判定；此前不得当作产品缺陷。E2a 主树已验 18 个不变。K1 仍未通过；另附 S23 开工前看板归档。
+
 - [R09 C2 B1-3 S22：Secure cookie／CSRF 根因——633 与 642 转为已验](R09_C2_B1_3_S22_SECURE_COOKIE_2026-09-29.md)：加 `-GradleInfo`（转发测试 stdout）后读源码与库诊断：655 的库里**无 `WEB_LOGIN_FAILED` 审计行** ⇒ 403 是**认证前的 CSRF 过滤器**拦的；对照通过的 640 显式传 cookie.secure=false ⇒ **Secure cookie 在明文 HTTP 下不被回送**。harness 补 `SERVER_SERVLET_SESSION_COOKIE_SECURE=false` 后 **657 `E2aCorrectionChainIT`、658 `E2aHandoverHttpLayerIT` 通过 ⇒ 633／642 转已验**（E2a 主树累计 **18 个**）；659 仍失败但性质澄清为**作用域/权限码**（登录 200 后 LINK 403，权限行与授予均在）。未做：659 判定、Android 工具链、V36 门＋供给、树内 chromium、Python v2 供给。K1 仍未通过；另附 S22 开工前看板归档。
 
 - [R09 C2 B1-3 S21：权限/角色前提第三次尝试＋决定性诊断](R09_C2_B1_3_S21_PERMISSION_DIAGNOSIS_2026-09-29.md)：补齐参考 runner 的四个环境变量后，651/652/653 的失败点**完全不变** ⇒ 排除"缺参考环境变量"；对 653 的保留 datadir 离线查库显示 `temporary_order:{confirm,create,link,manage}` **权限行 4、授予 7** ⇒ `LINK 403 ACCESS_DENIED` **不是权限缺失**，收窄到**作用域/权限码/临时模块开关**三选一。下一步：给 harness 加测试 stdout 转发（`showStandardStreams`／`--info`）取回 `log=` 与断言上下文再判定。633/642/645 仍判未验；E2a 已验 16 个不变。K1 仍未通过；另附 S21 开工前看板归档。
