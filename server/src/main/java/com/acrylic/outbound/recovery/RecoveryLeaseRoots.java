@@ -12,18 +12,23 @@ public final class RecoveryLeaseRoots {
                           String identitySha256) { }
     private final Binding binding;
     private final String markerSha256;
+    private final byte[] anchor;
 
-    public RecoveryLeaseRoots(Binding binding, String markerSha256) {
-        this.binding = binding; this.markerSha256 = markerSha256;
+    public RecoveryLeaseRoots(Binding binding, String markerSha256, byte[] anchor) {
+        this.binding = binding;
+        this.markerSha256 = markerSha256;
+        this.anchor = anchor.clone();
     }
     Path root() { return binding.leaseRoot(); }
     Path authorityRoot() { return binding.location().root(); }
     String installation() { return binding.location().installation().toString(); }
     String identityHash() { return binding.identitySha256(); }
+    /** Explicitly supplied secret; never persisted inside the writable P5/P3 trees. */
+    byte[] anchor() { return anchor.clone(); }
 
     /** Only an explicit supplier may call this, on a previously absent P5 directory. */
-    public static String provision(Binding binding) throws IOException {
-        var roots = new RecoveryLeaseRoots(binding, "");
+    public static String provision(Binding binding, byte[] anchor) throws IOException {
+        var roots = new RecoveryLeaseRoots(binding, "", anchor);
         roots.identity();
         Files.createDirectory(roots.root());
         Files.createDirectory(roots.root().resolve("processes"));
@@ -32,6 +37,7 @@ public final class RecoveryLeaseRoots {
         var marker = JsonNodeFactory.instance.objectNode().put("formatVersion", 1)
             .put("installationId", roots.installation()).put("authorityRoot", roots.authorityRoot().toString())
             .put("leaseRoot", roots.root().toString()).put("identitySha256", roots.identityHash())
+            .put("anchorId", sha256(anchor))
             .put("fenceFileIdentity", RecoveryWriterProtocol.fileIdentity(roots.root().resolve("fenced.lock")))
             .put("coordinatorFileIdentity", RecoveryWriterProtocol.fileIdentity(roots.authorityRoot().resolve("coordinator.lock")));
         marker.put("bindingSha256", hash(marker));
@@ -42,7 +48,7 @@ public final class RecoveryLeaseRoots {
     JsonNode verify() throws IOException {
         identity();
         var marker = RecoveryControlHistory.read(root().resolve("lease-root.json"));
-        fields(marker, "formatVersion installationId authorityRoot leaseRoot identitySha256 fenceFileIdentity coordinatorFileIdentity bindingSha256");
+        fields(marker, "formatVersion installationId authorityRoot leaseRoot identitySha256 anchorId fenceFileIdentity coordinatorFileIdentity bindingSha256");
         version(marker);
         require(hash(marker).equals(markerSha256), "RECOVERY_LEASE_ROOT_UNBOUND");
         var body = marker.deepCopy(); ((com.fasterxml.jackson.databind.node.ObjectNode)body).remove("bindingSha256");
@@ -51,6 +57,7 @@ public final class RecoveryLeaseRoots {
             && authorityRoot().toString().equals(text(marker, "authorityRoot"))
             && root().toString().equals(text(marker, "leaseRoot"))
             && identityHash().equals(text(marker, "identitySha256")), "RECOVERY_LEASE_ROOT_UNBOUND");
+        require(sha256(anchor).equals(text(marker, "anchorId")), "CONTROL_ANCHOR_MISMATCH");
         checkFile(root().resolve("fenced.lock"), text(marker, "fenceFileIdentity"), "FENCE");
         checkFile(authorityRoot().resolve("coordinator.lock"), text(marker, "coordinatorFileIdentity"), "COORDINATOR");
         for (String name : new String[]{"processes", "leases"})

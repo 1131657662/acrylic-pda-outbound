@@ -21,6 +21,10 @@ public class RecoveryEffectConfiguration {
         var supplied = authority.getIfAvailable();
         if (settings.isCrossProcessEnabled() && !(supplied instanceof RecoveryFenceAuthority))
             throw new SQLException("CONTROL_REAL_AUTHORITY_REQUIRED");
+        // The P5 anchor is an explicit supply: cross-process fencing must never run without it.
+        if (settings.isCrossProcessEnabled() && (settings.getAnchor() == null
+                || !settings.getAnchor().matches("(?:[a-f0-9]{2}){32}")))
+            throw new SQLException("CONTROL_ANCHOR_REQUIRED");
         if (supplied instanceof RecoveryFenceAuthority && !settings.isCrossProcessEnabled())
             throw new SQLException("CONTROL_CROSS_PROCESS_OPT_IN_REQUIRED");
         return RecoveryEffectGate.enabled(supplied);
@@ -30,9 +34,13 @@ public class RecoveryEffectConfiguration {
     public static class Settings {
         private boolean enabled = false;
         private boolean crossProcessEnabled = false;
+        private String anchor;
         public boolean isEnabled() { return enabled; }
         public void setEnabled(boolean enabled) { this.enabled = enabled; }
         public boolean isCrossProcessEnabled() { return crossProcessEnabled; }
         public void setCrossProcessEnabled(boolean enabled) { crossProcessEnabled = enabled; }
+        /** 32-byte hex secret supplied out of band; never read from the writable P5/P3 trees. */
+        public String getAnchor() { return anchor; }
+        public void setAnchor(String anchor) { this.anchor = anchor; }
     }
 }

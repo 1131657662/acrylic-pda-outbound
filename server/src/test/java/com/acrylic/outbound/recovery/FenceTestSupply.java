@@ -20,14 +20,17 @@ record FenceTestSupply(Path base, Path config, RecoveryLeaseRoots roots) {
         value.putArray("restoreRoots").add(business.toString());
         Files.writeString(authority.resolve("identity.json"), RecoveryControlFormat.canonical(value), StandardOpenOption.CREATE_NEW);
         Files.writeString(authority.resolve("coordinator.lock"), "0", StandardOpenOption.CREATE_NEW);
+        // The anchor secret is supplied out of band; only its id is committed inside the writable tree.
+        byte[] anchor = new byte[32];
+        new java.security.SecureRandom().nextBytes(anchor);
         var location = new RecoveryControlLocation(authority, installation, List.of(business));
         var binding = new RecoveryLeaseRoots.Binding(location, leases, closed, RecoveryControlFormat.hash(value));
-        String markerHash = RecoveryLeaseRoots.provision(binding);
+        String markerHash = RecoveryLeaseRoots.provision(binding, anchor);
         var config = value.deepCopy().put("root", authority.toString()).put("identitySha256", binding.identitySha256())
-            .put("markerSha256", markerHash);
+            .put("markerSha256", markerHash).put("anchor", RecoveryControlFormat.hex(anchor));
         Path file = base.resolve("trusted-config.json");
         Files.writeString(file, RecoveryControlFormat.canonical(config), StandardOpenOption.CREATE_NEW);
-        return new FenceTestSupply(base, file, new RecoveryLeaseRoots(binding, markerHash));
+        return new FenceTestSupply(base, file, new RecoveryLeaseRoots(binding, markerHash, anchor));
     }
 
     static FenceTestSupply read(Path config) throws Exception {
@@ -37,8 +40,11 @@ record FenceTestSupply(Path base, Path config, RecoveryLeaseRoots roots) {
             UUID.fromString(value.path("installationId").asText()), restored);
         var binding = new RecoveryLeaseRoots.Binding(location, Path.of(value.path("leaseRoot").asText()),
             Path.of(value.path("closedAuthority").asText()), value.path("identitySha256").asText());
-        return new FenceTestSupply(config.getParent(), config, new RecoveryLeaseRoots(binding, value.path("markerSha256").asText()));
+        return new FenceTestSupply(config.getParent(), config, new RecoveryLeaseRoots(binding,
+            value.path("markerSha256").asText(), RecoveryControlFormat.bytes(value.path("anchor").asText())));
     }
 
     RecoveryFenceAuthority authority() { return new RecoveryFenceAuthority(roots); }
+    /** The out-of-band anchor, as the configuration property carries it. */
+    String anchorHex() { return RecoveryControlFormat.hex(roots.anchor()); }
 }

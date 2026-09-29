@@ -35,6 +35,7 @@ final class RecoveryLeaseProcess {
             .put("installationId", roots.installation()).put("processIdentity", id.toString())
             .put("identitySha256", roots.identityHash()).put("pid", ProcessHandle.current().pid())
             .put("jvmVersion", System.getProperty("java.version")).put("createdAt", now());
+        value.put("anchorTag", RecoveryControlFormat.hmac(roots.anchor(), value));
         Files.writeString(path, canonical(value), StandardOpenOption.CREATE_NEW);
         String identity = RecoveryWriterProtocol.fileIdentity(path);
         var channel = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE, LinkOption.NOFOLLOW_LINKS);
@@ -69,7 +70,8 @@ final class RecoveryLeaseProcess {
     }
 
     private static void validate(JsonNode value, Path path, String digest, RecoveryLeaseRoots roots) {
-        fields(value, "formatVersion installationId processIdentity identitySha256 pid jvmVersion createdAt"); version(value);
+        fields(value, "formatVersion installationId processIdentity identitySha256 pid jvmVersion createdAt anchorTag"); version(value);
+        RecoveryControlFormat.anchorTag(roots.anchor(), value);
         require(hash(value).equals(digest) && text(value, "installationId").equals(roots.installation())
             && text(value, "identitySha256").equals(roots.identityHash())
             && path.getFileName().toString().equals(uuid(value, "processIdentity") + ".json"), "RECOVERY_LEASE_OUTSTANDING");

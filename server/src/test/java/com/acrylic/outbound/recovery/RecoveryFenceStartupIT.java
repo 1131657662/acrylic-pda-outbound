@@ -47,10 +47,20 @@ class RecoveryFenceStartupIT {
         var supply = FenceTestSupply.create(evidence);
         new ApplicationContextRunner().withUserConfiguration(RecoveryEffectConfiguration.class)
             .withBean(RecoveryEffectGate.Authority.class, supply::authority)
-            .withPropertyValues("outbound.recovery.effect-gate.enabled=true", "outbound.recovery.effect-gate.cross-process-enabled=true")
+            .withPropertyValues("outbound.recovery.effect-gate.enabled=true", "outbound.recovery.effect-gate.cross-process-enabled=true",
+                "outbound.recovery.effect-gate.anchor=" + supply.anchorHex())
             .run(context -> {
                 assertThat(context).hasNotFailed(); assertThat(context.getBean(RecoveryEffectGate.class).enabled()).isTrue();
                 assertThat(context.getBeansOfType(javax.sql.DataSource.class)).isEmpty();
             });
+    }
+    /** Cross-process fencing without the explicitly supplied P5 anchor must never start. */
+    @RepeatedTest(3) void crossProcessWithoutAnchorMustFailStartup() throws Exception {
+        var supply = FenceTestSupply.create(evidence);
+        new ApplicationContextRunner().withUserConfiguration(RecoveryEffectConfiguration.class)
+            .withBean(RecoveryEffectGate.Authority.class, supply::authority)
+            .withPropertyValues("outbound.recovery.effect-gate.enabled=true", "outbound.recovery.effect-gate.cross-process-enabled=true")
+            .run(context -> assertThat(context).hasFailed());
+        EffectRealEnvironment.record("REAL|startup-refused|case=missing-anchor|code=CONTROL_ANCHOR_REQUIRED|no-gate");
     }
 }

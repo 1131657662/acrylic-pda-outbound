@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | **H1** | `RecoveryLeaseProcess.alive()` 的**本机缓存按路径索引、从不比对缓存身份**。把 `processes/<id>.json` 移走再复制回同路径（新文件、无人持锁），并把租约的 `processFileIdentity` 改成新身份后，缓存以旧描述符作证 ⇒ 判"属主存活"⇒ **放行**（基线 run2：`delegate=1 observer=1`，3/3）。这违反已发布声明"锁可取 ⇒ OUTSTANDING"（当前路径上的锁确实可取）。 | **已修**：`alive()` 在缓存命中时要求 `local.nativeIdentity` 等于当前文件身份。修复后 `local-owner-identity-rebinding` **3/3 拒绝**（`RECOVERY_LEASE_OUTSTANDING`，`delegateDelta=0 observerDelta=0`），且攻击构造仍成立（`newLockAvailable=true`）。 |
 | **H2** | `RecoveryLeaseScan` 原按**文件名**跳过 `*.unknown.json(.pending)` ⇒ 把孤儿租约改名即可让扫描跳过它、效果被放行（run4：`ADMITTED_SECURITY_GAP`，`delegate=1 observer=1`，6/6）。 | **已修**：仅当**同前缀租约仍存在**、且内容确为审计形态（有 `operationId/event/at`、无 `processFileIdentity/processSha256`）时才跳过；否则按租约处理。修复后 unknown/unknown-pending 改名 **6/6 拒绝**。 |
-| **H3** | 孤儿租约的 `processIdentity/processFileIdentity/processSha256` 可被改写成**活属主**的值（摘要自洽）⇒ 孤儿隐形、效果被放行（run4：3/3 `ADMITTED_SECURITY_GAP`）。 | **未解决，登记 `DEBT-R09-C2-LEASE-ANCHOR`**：仅凭同一目录内、双方摘要均由写入方给出的文件，无法在**没有安装级秘密/HMAC 或外部权威**的前提下防伪。本轮不以"改成拒绝"假装修复；`forgedLeaseRepointingIsAdmittedAndTrackedAsAnOpenGap` 用例显式记录该放行行为并标注 `tracked=DEBT-R09-C2-LEASE-ANCHOR`，**不是接受**。同族的"直接删除租约记录"同理不可在不引入锚点时闭合。 |
+| **H3** | 孤儿租约的 `processIdentity/processFileIdentity/processSha256` 可被改写成**活属主**的值（摘要自洽）⇒ 孤儿隐形、效果被放行（run4：3/3 `ADMITTED_SECURITY_GAP`）。 | **已由认证锚点闭合**（同日补做，见 [P5 认证锚点补充规格](R09_C2_B1_2_ANCHOR_SPEC_2026-09-29.md)）：显式供给的 32 字节秘密绑定 `anchorId`，进程/租约记录均带 `anchorTag` 并在读取时校验，跨进程开启而锚点缺失即启动失败。用例翻转为 `orphan-live-owner-anchored` 后 **3/3 拒绝**（`delegateDelta=0 observerDelta=0`）。**仍未闭合**：**H3′＝直接删除租约记录**（需锚定操作索引），继续单列 `DEBT-R09-C2-LEASE-ANCHOR`。 |
 
 **另证（保持通过）**：12 条 payload 变异（truncate/extend/rewrite/move）全部拒绝且 `lifecycleLockStillHeld=true`（1GiB 生命周期锁不受载荷改写影响）。
 
@@ -42,6 +42,11 @@
 | run8-full-it | DSH | 1 | 662 / 3：并集暴露我的过紧修法破坏已发布用例 |
 | run9-full-it | DSH | 1 | 662 / 3：标记非规范形态 ⇒ 不可读 |
 | **run10-full-it** | DSH | **0** | **662 / 0 / 0**（22 套）最终并集回归 |
+| run11-anchor-durable | DSH | 1 | 连接失败：我上一轮已收尾关闭 19442（非产品问题；已按既有做法在同一保留 datadir 重启并核对身份） |
+| run12-anchor-durable | DSH | 0 | 24 / 0：**锚点生效，H3 用例翻转为必须拒绝**（orphan-live-owner-anchored 3/3 拒绝） |
+| run13-full-unit | DSH | 0 | 2038 / 0（锚点改动后无回退） |
+| run14-full-it | DSH | 1 | 662 / 3：新守卫（跨进程缺锚点即启动失败）使 RecoveryFenceStartupIT 需补锚点属性——**预期收紧** |
+| **run15-full-it** | DSH | **0** | **665 / 0 / 0**（22 套）最终并集回归；含新增 crossProcessWithoutAnchorMustFailStartup |
 
 ## 5. 环境、证据与哈希
 
@@ -54,6 +59,12 @@
 **窗口 W**（原证明保留、未消除）、**`DEBT-R09-C2-LEASE-ANCHOR`（租约/进程记录无认证锚点，实测可放行）**、`UNCONFIRMED_NO_CROSS_PROCESS_BASIS`（须外部隔离）、HTTP/Session 接线、生产默认 Session 清理、孤儿解除与生产释放、现场组合、Linux 与其他文件系统、网络/共享盘、断电与硬复位、Java/Python 允许集差异、C1 历史未验项、包装启用前外部取得的物理句柄、已开始执行的命令不可撤销。未运行全仓完整测试/构建、APK、模拟器、真机或真实 HTTP/Session 组合。
 
 **默认关闭、未接线、未部署、未开生产开关；K1 仍未通过；未进入 B1-3。** 不合 main、不操作原库/现网、不修改共享树；本轮完成即停。
+
+## 8. 锚点补做（同日，方案 A 记录锚点部分）
+
+- 实施：RecoveryControlFormat（hmac/anchorTag/hex/bytes/sha256）、RecoveryLeaseRoots（32 字节秘密绑定 nchorId，erify 不一致即 CONTROL_ANCHOR_MISMATCH）、RecoveryLeaseProcess/RecoveryLeaseScan（记录带 nchorTag 并在读取时校验）、RecoveryEffectConfiguration（新属性 outbound.recovery.effect-gate.anchor；**跨进程开启而锚点缺失或形状不符 ⇒ CONTROL_ANCHOR_REQUIRED 启动失败**）。
+- 验证：un12 H3 用例翻转 3/3 拒绝；un13 单测 2038/0；un15 并集 IT 665/0/0；新增 crossProcessWithoutAnchorMustFailStartup（3/3）。
+- **仍未闭合**：**H3′＝直接删除租约记录**（需"锚定的操作索引"，规格见 [P5 认证锚点补充规格](R09_C2_B1_2_ANCHOR_SPEC_2026-09-29.md) §3.2）⇒ DEBT-R09-C2-LEASE-ANCHOR 继续单列。锚点的强度等于**配置来源**的强度；秘密保管/轮换属运维政策，需与七类生产决定同级授权。
 
 ## 7. 后续（B1-3 之前必须先决定）
 

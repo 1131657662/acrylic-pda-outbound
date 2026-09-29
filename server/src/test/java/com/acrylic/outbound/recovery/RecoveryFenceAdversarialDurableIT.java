@@ -81,13 +81,12 @@ class RecoveryFenceAdversarialDurableIT {
         }
     }
     /**
-     * Declared open gap, tracked as DEBT-R09-C2-LEASE-ANCHOR: a lease whose owner reference is rewritten
-     * to point at a live process is admitted, because the lease-to-owner pairing carries no authentication
-     * anchor (no installation secret or external authority exists in this slice). This test documents the
-     * admitted behaviour; it must be replaced by a refusal assertion once an anchor is added. It is NOT an
-     * acceptance of the gap.
+     * H3 closure (B1-2 follow-up): with the explicitly supplied anchor in force, a lease whose owner
+     * reference was rewritten to a live process can no longer masquerade as a live owner. The
+     * delete-the-record variant additionally needs the anchored operation index described in
+     * [P5 认证锚点补充规格](R09_C2_B1_2_ANCHOR_SPEC_2026-09-29.md) and stays single-listed until then.
      */
-    @RepeatedTest(3) void forgedLeaseRepointingIsAdmittedAndTrackedAsAnOpenGap() throws Exception {
+    @RepeatedTest(3) void forgedLeaseRepointingMustNowBeRefusedByTheAnchor() throws Exception {
         var supply = FenceTestSupply.create(evidence);
         var authority = supply.authority();
         var gate = RecoveryEffectGate.enabled(authority);
@@ -98,13 +97,8 @@ class RecoveryFenceAdversarialDurableIT {
             dead.send("stop"); assertThat(dead.exit()).isEqualTo(70);
             assertThat(lockAvailable(owner(supply, deadLease))).isTrue();
             disguise(deadLease, liveLease, "live-owner");
-            int delegates = jdbc.calls.count("Statement.executeUpdate"), committed = jdbc.count();
-            old.executeUpdate(jdbc.insert(71));
-            int delta = jdbc.calls.count("Statement.executeUpdate") - delegates, rows = jdbc.count() - committed;
-            EffectRealEnvironment.record("REAL|declared-gap|forged-lease-repointing|delegateDelta=" + delta
-                + "|observerDelta=" + rows + "|anchor=absent|tracked=DEBT-R09-C2-LEASE-ANCHOR");
-            assertThat(delta).as("documented open gap: a repointed orphan lease is admitted").isEqualTo(1);
-            assertThat(rows).as("documented open gap: the admitted write is visible").isEqualTo(1);
+            EffectRealEnvironment.record("REAL|anchor-closure|forged-lease-repointing|liveOwnerIsThisJvm=true");
+            requireRefusal(jdbc, old, "orphan-live-owner-anchored");
         }
     }
     private static void disguise(Path dead, Path live, String kind) throws Exception {
