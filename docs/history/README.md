@@ -1,16 +1,18 @@
 # 历史归档
 
-- [R09 C2 G0-K1-1 真实 JDBC 驱动特征验证](R09_C2_G0_K1_REAL_JDBC_REVERIFY_2026-09-29.md)（独立有限授权）：隔离 MySQL 8.0.46＋Connector/J（端口19438、独立datadir/账号/schema；系统3306未使用）；`test`60项0失败、`integrationTest`**13项0失败**、27条`G0K1REAL`记录。实测`commit`/隐式提交/原始`COMMIT`/`SET AUTOCOMMIT=1`/无参执行/批处理与`clearBatch`/可更新`ResultSet`均产生真实已提交效果；**`getAutoCommit()`非提交证据**；**DDL隐式提交**；注释语句与会话SET被服务器接受而候选规则保守拒绝；多语句需`allowMultiQueries`。**K1仍未通过**（生产效果门未实现/未验、W、依条件分支）；不授权B1。
+- [R09 C2 G0-K1-3 真实跨进程 FileLock 验证](R09_C2_G0_K1_3_REAL_FILELOCK_REVERIFY_2026-09-29.md)（独立有限授权）：真实独立JVM子进程（Windows11/NTFS、Java21.0.11；stdout/stderr重定向到文件、无管道），10场景×3重复、`integrationTest` 0失败（52行TSV：REAL46/MODEL6；失败轮3次保留）。**通过**：跨进程共享共存＋排他必失败（F1′）、`release()`/正常退出可再获取（F3）、`destroyForcibly`/`Runtime.halt(70)`后OS释放且残留文件≠持锁（F5）、第三方无持锁者查询（`acquiredBy()`仅返回本JVM`Channel`）、同JVM重叠抛`OverlappingFileLockException`。**矛盾阻断**：NTFS可在持锁期间删除/重命名锁文件，删除后同路径出现两个持锁者 ⇒ `fileIdentity`校验必须承重（属B1）。**K1仍未通过**；不授权B1。
+- [R09 C2 G0-K1-1 真实 JDBC 驱动特征验证](R09_C2_G0_K1_REAL_JDBC_REVERIFY_2026-09-29.md)（独立有限授权）：隔离 MySQL 8.0.46＋Connector/J（端口19438、独立datadir/账号/schema；系统3306未使用）；`test`60项0失败、`integrationTest`**13项0失败**、27条`G0K1REAL`记录。实测`commit`/隐式提交/原始`COMMIT`/`SET AUTOCOMMIT=1`/无参执行/批处理与`clearBatch`/可更新`ResultSet`均产生真实已提交效果；**`getAutoCommit()`非提交证据**；**DDL隐式提交**（⇒close期rollback假设列入B1待实施需求）；注释语句与会话SET被服务器接受而候选规则保守拒绝。**K1仍未通过**。
 - [R09 C2-G0 K1 授权包（B1 授权前证据封存）](R09_C2_G0_K1_AUTHORIZATION_PACKET_2026-09-28.md)：纯文档封存`K1 仍未通过`的边界、五类验证分类、证据清单、未验边界、B1范围与排除（B9分离）、技术性前置条件与影响/风险边界。**为授权准备，不代表B1获批或运行验收**。
 - [R09 C2-G0 K1 模型最终复验](R09_C2_G0_K1_MODEL_FINAL_REVERIFY_2026-09-28.md)：围栏矩阵按**观察时状态**；时序三条轨迹严格断言；JDBC**规则行↔测试方法唯一映射**双向校验（20规则行/17方法/方法名唯一）；`run2` 60项0失败（G0K1 37方法，4组负控分存）。
 - [R09 C2-G0 K1 模型更正轮](R09_C2_G0_K1_MODEL_CORRECTION_2026-09-28.md)：围栏矩阵改状态迁移模型、时序加显式调度点、JDBC补可执行信息流；登记第2次失败XML缺失（未补造）；证据改逐轮独立目录。
 - [R09 C2-G0 K1 测试侧模型复验](R09_C2_G0_K1_MODEL_REVERIFY_2026-09-28.md)：四项反例（①②③现有代理实测、④文档静态矛盾）与W反例有效；**文首有更正块**。
 - [R09 C2-G0 v5 定向收敛与设计复验](R09_C2_G0_V5_REVERIFY_2026-09-28.md)：以`d656ab9`为基线仅收敛K1（冻结JDBC效果入口、`fenced.lock`原子观察、F3改用`FileLock.release()`、六行失败矩阵、逐记录事件语义与命名窗口W）。
-- [R09 C2-G0 设计定稿 v5](R09_C2_G0_DESIGN_2026-09-28.md)：经 K1 收敛、模型三轮、最终复验与真实驱动轮修订后的定稿（§4.2 效果门冻结表＋真实驱动证据、§5.3–§5.5 观察时依据与失败矩阵、§6.5 INITIAL 关闭意图、§9 真实入口清单、§10.2 S13/S17–S21/S20-u）。零生产代码；**K1 未通过，B1 未获授权**。
-- [R09 C2-G0 验收与阻断记录 v5](R09_C2_G0_ACCEPTANCE_2026-09-28.md)：**设计/规范验收，非运行验收**；含测试侧各轮执行表、**验证类别（五类必须分开）**、覆盖率映射、授权包轮与真实驱动轮声明。
+- [R09 C2-G0 设计定稿 v5](R09_C2_G0_DESIGN_2026-09-28.md)：经 K1 收敛、模型三轮、真实驱动轮与真实文件锁轮修订后的定稿（§4.2 效果门冻结表＋真实驱动证据、§5.3–§5.5 观察时依据与失败矩阵＋真实跨进程证据、§6.5 INITIAL 关闭意图、§9 真实入口清单、§10.2 S13/S17–S21/S20-u）。零生产代码；**K1 未通过，B1 未获授权**。
+- [R09 C2-G0 验收与阻断记录 v5](R09_C2_G0_ACCEPTANCE_2026-09-28.md)：**设计/规范验收，非运行验收**；含测试侧各轮执行表、**验证类别（五类必须分开）**、覆盖率映射、授权包轮／真实驱动轮／真实文件锁轮声明。
 - [R09 C2-G0 v4 定向补正与设计复验](R09_C2_G0_V4_REVERIFY_2026-09-28.md)：K1–K4 首轮（历史；K1 判定与章节检查表述已被取代/撤回）。
 - [R09 C2-G0 残余阻断补正与设计复验](R09_C2_G0_RESIDUAL_BLOCKERS_2026-09-28.md)：R1–R5（历史）。
 - [R09 C2-G0 定向纠错与设计复验](R09_C2_G0_CORRECTION_REVERIFY_2026-09-28.md)：B01–B06（历史）。
+- [真实文件锁轮前看板原文](ORCHESTRATION_STATE_before_R09_C2_G0_K1_3_REAL_FILELOCK_2026-09-29.md)：保留真实驱动轮断点原文。
 - [真实驱动轮前看板原文](ORCHESTRATION_STATE_before_R09_C2_G0_K1_REAL_JDBC_2026-09-29.md)：保留 K1 授权包轮断点原文。
 - [授权包轮前看板原文](ORCHESTRATION_STATE_before_R09_C2_G0_K1_AUTHORIZATION_2026-09-28.md)：保留 K1 模型最终复验轮断点原文。
 - [K1模型最终复验前看板原文](ORCHESTRATION_STATE_before_R09_C2_G0_K1_MODEL_FINAL_2026-09-28.md)：保留 K1 模型更正轮断点原文。
