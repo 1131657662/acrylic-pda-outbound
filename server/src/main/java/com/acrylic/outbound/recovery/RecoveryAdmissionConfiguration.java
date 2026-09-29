@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -17,6 +18,7 @@ import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
 
 /**
  * Opt-in application entry wiring for the recovery admission adapter.
@@ -57,6 +59,25 @@ public class RecoveryAdmissionConfiguration {
     @Bean
     RecoveryOperationRegistry recoveryOperationRegistry(Settings settings) {
         return new RecoveryOperationRegistry(settings.location(), settings.checkpointPath());
+    }
+
+    /**
+     * Startup guard: refuses to start when the framework session-expiry writer is enabled (it writes
+     * outside every root) and puts every application bean after the initialization window, so
+     * startup database access happens inside an explicit root.
+     */
+    @Bean
+    static BeanFactoryPostProcessor recoveryStartupGuard(Environment environment) {
+        return new RecoveryStartupGuard(environment);
+    }
+
+    /**
+     * The explicit initialization window: one {@code INITIALIZATION} root covering bean creation and
+     * the framework's startup runners, retired when the application is ready.
+     */
+    @Bean
+    RecoveryInitializationWindow recoveryInitializationWindow(RecoveryOperationRegistry operations) {
+        return new RecoveryInitializationWindow(operations);
     }
 
     /** The only primary data source: every borrow must resolve to a live operation root. */

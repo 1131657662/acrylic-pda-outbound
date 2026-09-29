@@ -20,10 +20,13 @@ import org.springframework.context.ConfigurableApplicationContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * S3 field run: a real container, a real Spring Session JDBC store and the admitted request entry
+ * S3/S4 field run: a real container, a real Spring Session JDBC store and the admitted request entry
  * enabled. Asserts one operation root per request while it is served, one session row per session
- * step, the error and async dispatches reusing the same root, no root left behind, and the session
- * save happening inside a live root.
+ * step, the error and async dispatches reusing the same root, the multipart parse inside the root,
+ * no root left behind, and the session save happening inside a live root.
+ *
+ * <p>Startup database access is covered by the product's own initialization window (it closes when
+ * the application is ready, before this method returns), so this run installs no stand-in.
  */
 class RecoveryRequestRootHttpIT {
     private static final int APP_PORT = Integer.getInteger("s3.http.port",
@@ -40,7 +43,6 @@ class RecoveryRequestRootHttpIT {
             var registry = context.getBean(RecoveryOperationRegistry.class);
             var observation = context.getBean(RecoveryRootObservation.class);
             var client = client();
-            retireStartupRoot(context);
             Path multipart = evidence.resolve("multipart");
             Files.createDirectories(multipart);
 
@@ -127,6 +129,38 @@ class RecoveryRequestRootHttpIT {
         }
     }
 
+    /**
+     * The other half of the startup guard, on the real entry: with the framework session writer left
+     * enabled the instance must refuse to start instead of running with an uncovered database writer.
+     */
+    @Test void anAdmittedInstanceRefusesToStartWhileTheSessionWriterIsEnabled() throws Exception {
+        EffectRealEnvironment.requireEnvironment();
+        var control = RecoveryWriterLeaseTest.protocol();
+        Path evidence = Path.of(System.getenv("B11_EFFECT_EVIDENCE_DIR"));
+        var failure = org.assertj.core.api.Assertions.catchThrowable(() -> {
+            var context = new SpringApplication(com.acrylic.outbound.OutboundApplication.class,
+                RecoveryRootProbeConfiguration.class).run("--server.address=127.0.0.1", "--server.port=" + APP_PORT,
+                    "--spring.profiles.active=s3-probe", "--spring.flyway.enabled=false",
+                    "--outbound.worker.enabled=false", "--outbound.bootstrap.enabled=false",
+                    "--outbound.storage=" + evidence.resolve("storage"),
+                    "--outbound.recovery.admission.enabled=true",
+                    "--outbound.recovery.root=" + control.root,
+                    "--outbound.recovery.installation-id=" + control.installation,
+                    "--outbound.recovery.restore-roots=" + control.restoreRoot,
+                    "--outbound.recovery.checkpoint=" + control.checkpoint);
+            context.close();
+        });
+
+        assertThat(failure).as("an uncovered session writer must stop the admitted entry")
+            .hasStackTraceContaining("CONTROL_SESSION_CLEANUP_UNCOVERED");
+        try (var socket = new java.net.ServerSocket()) {
+            socket.bind(new java.net.InetSocketAddress("127.0.0.1", APP_PORT));
+        }
+        Files.writeString(evidence.resolve("s5-cleanup-guard.txt"),
+            "cleanupCron=default(0 * * * * *) startupFailure=" + failure.getMessage() + " portFree=true\n");
+        EffectRealEnvironment.record("S5|REAL|cleanup-guard|failure=" + failure.getMessage());
+    }
+
     private ConfigurableApplicationContext start(RecoveryControlFixture control, Path evidence) {
         return new SpringApplication(com.acrylic.outbound.OutboundApplication.class,
             RecoveryRootProbeConfiguration.class)
@@ -145,15 +179,9 @@ class RecoveryRequestRootHttpIT {
     }
 
     /**
-     * The run's explicit initialization capability (see the probe configuration) is retired as soon
-     * as the context is up, so the request steps start from a state with no live root at all.
+     * The registration values the design's smoke assertion names: the request entry must precede the
+     * framework session filter, and the latter must keep its documented order and dispatcher types.
      */
-    private static void retireStartupRoot(ConfigurableApplicationContext context) {
-        RecoveryOperationLease root = context.getBean(RecoveryOperationLease.class);
-        root.unbindDispatch(Thread.currentThread());
-        root.close();
-    }
-
     private static String registration(ConfigurableApplicationContext context) {
         var entry = context.getBean("recoveryRequestAdmissionFilterRegistration",
             org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.class);

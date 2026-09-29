@@ -56,7 +56,8 @@ class RecoverySessionFilterRegistrationTest {
             "outbound.recovery.root=" + fixture.root,
             "outbound.recovery.installation-id=" + fixture.installation,
             "outbound.recovery.restore-roots=" + fixture.restoreRoot,
-            "outbound.recovery.checkpoint=" + fixture.checkpoint
+            "outbound.recovery.checkpoint=" + fixture.checkpoint,
+            "spring.session.jdbc.cleanup-cron=-"
         };
     }
 

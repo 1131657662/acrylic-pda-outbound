@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S5：启动守卫与初始化窗口](R09_C2_B1_3_S5_STARTUP_WINDOW_2026-09-29.md)：解决"开开关即起不来"——`RecoveryStartupGuard`（清理未禁用⇒`CONTROL_SESSION_CLEANUP_UNCOVERED`；应用 Bean 显式排到初始化窗口之后）＋`RecoveryInitializationWindow`（`INITIALIZATION` 根覆盖 bean 构造与启动 runner，就绪时退役）；未改启动消费者。现场（实例 19462，已删探针替身）带 admission **真实启动成功**且 S3/S4 判据全绿，同轮另证清理守卫启动失败且端口未占用；全量单测 2806 项 0 失败、恢复链 25 类 696 项 0 失败。未做：阶段 0 安全前置（第 8–12 行）、锁并发（第 13 行）、拒绝码 HTTP 映射、入口 IT 重基。开关仍默认 false，K1 仍未通过；另附 S5 开工前看板归档。
+
 - [R09 C2 B1-3 S4：multipart 与错误分派判据](R09_C2_B1_3_S4_MULTIPART_2026-09-29.md)：**无需产品改动**——真实容器观测证明 multipart 解析/暂存、handler、Session 保存与错误分派都在 S3 的同一请求根内（解析期 `BOUND`、暂存 1 个文件、请求后容器清理、根数＝请求数、14 次保存全 `BOUND`、无泄漏）；全量单测 2801 项 0 失败、恢复链 25 类 696 项 0 失败。发现：multipart 超限部件为容器级拒绝（观测 500 而非应用 413 映射）。**B1-3 S1–S4 全部完成**；开关仍默认 false，K1 仍未通过；另附 S4 开工前看板归档。
 
 - [R09 C2 B1-3 S3：请求根过滤器与真实 Session 覆盖](R09_C2_B1_3_S3_REQUEST_ROOT_SESSION_2026-09-29.md)：`RecoveryRequestAdmissionFilter`＋`RecoveryRequestRootListener`＋`registry.admit`（一请求一根、每次分派绑定、ASYNC/ERROR/嵌套重分派复用同根）；真实容器＋Spring Session JDBC 现场判据通过（session/error/async 三步、根数＝请求数、10 次 Session 保存全部在存活根内、轨迹 REQUEST→ERROR→ASYNC、无根泄漏）；全量单测 2800 项 0 失败、恢复链 25 类 696 项 0 失败。发现未修：启动期无根合法能力缺失（开关打开即 fail closed）、锁非嵌套致并发接纳受限、拒绝码 HTTP 映射未实现。**S4 未开工，开关仍默认 false，K1 仍未通过**；另附 S3 开工前看板归档。

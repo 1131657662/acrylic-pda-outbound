@@ -60,7 +60,8 @@ class RecoveryAdmissionConfigurationTest {
                 "outbound.recovery.root=" + authority,
                 "outbound.recovery.installation-id=" + java.util.UUID.randomUUID(),
                 "outbound.recovery.restore-roots=" + business,
-                "outbound.recovery.checkpoint=" + base.resolve("trusted.json"))
+                "outbound.recovery.checkpoint=" + base.resolve("trusted.json"),
+                "spring.session.jdbc.cleanup-cron=-")
             .run(context -> {
                 assertThat(context).hasFailed();
                 assertThat(context.getStartupFailure())
@@ -77,6 +78,12 @@ class RecoveryAdmissionConfigurationTest {
             DataSource primary = context.getBean(DataSource.class);
             var token = new RecoveryOperationToken(java.util.UUID.randomUUID(),
                 RecoveryOperationKind.HTTP_REQUEST, fixture.installation, registry.startup().recordSha256(), null);
+
+            // The initialization window is bound to this thread while the application starts; it is
+            // retired when the application is ready, which is when traffic begins.
+            context.publishEvent(new org.springframework.boot.context.event.ApplicationReadyEvent(
+                new org.springframework.boot.SpringApplication(), new String[0], context, java.time.Duration.ZERO));
+            assertThat(registry.liveRoots()).as("business traffic starts with no live root").isZero();
 
             // No thread binding and no root marker: the primary refuses, it never borrows a
             // connection-level lease for this thread.
@@ -97,7 +104,8 @@ class RecoveryAdmissionConfigurationTest {
             "outbound.recovery.root=" + fixture.root,
             "outbound.recovery.installation-id=" + fixture.installation,
             "outbound.recovery.restore-roots=" + fixture.restoreRoot,
-            "outbound.recovery.checkpoint=" + fixture.checkpoint
+            "outbound.recovery.checkpoint=" + fixture.checkpoint,
+            "spring.session.jdbc.cleanup-cron=-"
         };
     }
 
