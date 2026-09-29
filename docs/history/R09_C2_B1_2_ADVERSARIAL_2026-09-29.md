@@ -26,6 +26,7 @@
 2. 我（DSH）首次改造引入新缺陷：在记录行对**父进程自己的进程记录**调用 `lockAvailable()`，同 JVM 再取同一把 1GiB 锁 ⇒ `OverlappingFileLockException`，9 条被挡在断言之前（run3）。
 3. 我的 H2 修法首版**过紧**：要求审计标记内容可解析，导致 B1-2 已发布用例 `ownLiveRecordsAllowEffectsAndAuditAloneIsNotABasis`（写 `"audit only"` 的无主标记）失败（run8：662/3）。按"不得为让新用例通过而放宽断言"，采取**收紧而非放宽**的方式更新该用例：标记改为与真实租约成对、并用产品自身的 `canonical` 写法构造（run9 仍红因手写 JSON 非规范形态），并**新增**"无租约的标记不可忽略"断言。
 4. **教训**：本轮先用 `RecoveryEffect*IT` 过滤器跑全量（536/0），漏掉 `RecoveryFence*IT`——而改动恰好落在 Fence/Lease 逻辑；改用 `RecoveryEffect*IT|RecoveryFence*IT` 并集后才暴露 run8/run9 的问题。**覆盖过滤器本身也是被验证对象。**
+5. **我在收敛看板时把生成事实块一并删掉了**：事实块位于 `CURRENT_STATE_START/END` 之内，我整段替换当前区时漏掉它。`version_facts.ps1 -Check` 立即失败（"no FACTS_START/END markers"），说明该守卫有效；已恢复标记、重跑 `-Write`（`head=12f6e01`、`dirty_entries=1`）与 `-Check`（当前区 **39 行 / 2490 字符**通过），并以修正提交补回。**教训：重写看板当前区必须先保留事实块标记。**
 
 ## 4. 逐轮运行
 
