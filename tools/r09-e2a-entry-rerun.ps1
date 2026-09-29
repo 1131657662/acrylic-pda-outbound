@@ -56,6 +56,7 @@ New-Item -ItemType Directory -Path $attempt, (Join-Path $attempt 'private'), (Jo
 $data = Join-Path $attempt 'data'
 $password = -join (1..64 | ForEach-Object { '{0:x}' -f (Get-Random -Minimum 0 -Maximum 16) })
 [IO.File]::WriteAllText((Join-Path $attempt 'private/password.txt'), $password, $utf8)
+$suffixes = @('_copy', '_instance', '_conflict', '_restore', '_closed', '_shadow', '_provided', '_legacy')
 $bootstrap = "CREATE DATABASE $schema;`n" +
     "CREATE USER '$user'@'127.0.0.1' IDENTIFIED BY '$password';`n" +
     "GRANT ALL ON $schema.* TO '$user'@'127.0.0.1';`n" +
@@ -65,7 +66,15 @@ $bootstrap = "CREATE DATABASE $schema;`n" +
     # own loopback root account for administration and shutdown.
     "CREATE USER 'root'@'127.0.0.1' IDENTIFIED BY '';`n" +
     "GRANT ALL ON *.* TO 'root'@'127.0.0.1' WITH GRANT OPTION;`n" +
-    "GRANT SHUTDOWN ON *.* TO '$user'@'127.0.0.1';`nFLUSH PRIVILEGES;`n"
+    "GRANT SHUTDOWN ON *.* TO '$user'@'127.0.0.1';`n" +
+    # Some projection checks build their schema names at runtime; on this one-shot isolated instance
+    # the harness account gets the global grant so those cases can create what they need.
+    "GRANT ALL ON *.* TO '$user'@'127.0.0.1' WITH GRANT OPTION;`n" +
+    # Several E2a ITs work on companion schemas (closed projection copies/instances/conflicts, archive
+    # restore). Their names are built at runtime, so the harness provisions the known family up front.
+    (($suffixes | ForEach-Object {
+        "CREATE DATABASE ${schema}$_;`nGRANT ALL ON ${schema}$_.* TO '$user'@'127.0.0.1';`n" }) -join '') +
+    "FLUSH PRIVILEGES;`n"
 [IO.File]::WriteAllText((Join-Path $attempt 'private/bootstrap.sql'), $bootstrap, $utf8)
 [IO.File]::WriteAllText((Join-Path $attempt 'private/admin.cnf'),
     "[client]`nhost=127.0.0.1`nport=$port`nuser=root`nprotocol=tcp`n", $utf8)
