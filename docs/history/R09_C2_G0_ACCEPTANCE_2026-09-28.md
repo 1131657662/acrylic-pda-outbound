@@ -6,7 +6,7 @@
 >
 > **G0-K1-1 真实驱动轮（独立有限授权）**：见[真实 JDBC 驱动特征验证](R09_C2_G0_K1_REAL_JDBC_REVERIFY_2026-09-29.md)。该轮在**独立 MySQL 隔离实例**（端口 19438、独立 datadir/账号/schema；系统 3306 未使用）中补齐驱动层证据（13 项 IT 全绿、独立观察连接核对）。**该轮不授权 B1**，`K1 仍未通过`（生产效果门未实现/未验、窗口 W、F1′/F3/F5 全未确认分支）不变；驱动层通过不等于协议或产品通过。
 >
-> **G0-K1-3 真实 FileLock 轮（独立有限授权）**：见[真实跨进程 FileLock 验证](R09_C2_G0_K1_3_REAL_FILELOCK_REVERIFY_2026-09-29.md)。该轮用**真实独立 JVM 子进程**（Windows 11/NTFS、Java 21.0.11，10 场景×3 重复）实测 F1′/F3/F5 的文件锁语义：**通过**（共享共存＋排他必失败、正常释放、强杀/`halt` 后 OS 释放、第三方无持锁者查询）。**【更正】**该轮原写的“**矛盾阻断**（删除后同路径出现两个持锁者 ⇒ `fileIdentity` 校验承重）”**证据不足、已撤回**：原观测用裸 `FileChannel` 且以 Windows 上为空的 `fileKey()` 度量身份；走产品路径复验后为 `CONTROL_WRITER_LOCK_REPLACED`／`CONTROL_FILE_MISSING`（fail closed、不自动重建、无第二持锁者），对 `writers.lock` 为**已缓解/已覆盖**，`fenced.lock` 转 **B1 承重需求**（详见[更正与闭合轮](R09_C2_G0_K1_3_CORRECTION_2026-09-29.md) 与本文下方 §1 结论表）。**本轮不授权 B1、不改 `src/main`、不改设计结论**；`K1 仍未通过`。
+> **G0-K1-3 真实 FileLock 轮（独立有限授权）**：见[真实跨进程 FileLock 验证](R09_C2_G0_K1_3_REAL_FILELOCK_REVERIFY_2026-09-29.md)。该轮用**真实独立 JVM 子进程**（Windows 11/NTFS、Java 21.0.11，10 场景×3 重复）实测 F1′/F3/F5 的文件锁语义：**通过**（共享共存＋排他必失败、正常释放、强杀/`halt` 后 OS 释放、第三方无持锁者查询）。**【更正】**该轮原基于**裸 `FileChannel`** 观测且以 Windows 上为空的 `fileKey()` 度量文件身份而给出的“**矛盾阻断**”定性**证据不足、已撤回**（未走产品获取路径、用例只记录不断言）；走产品路径复验后为 `CONTROL_WRITER_LOCK_REPLACED`／`CONTROL_FILE_MISSING`（fail closed、不自动重建、无第二持锁者），对 `writers.lock` 为**已缓解/已覆盖**，`fenced.lock` 转 **B1 承重需求**（详见[更正与闭合轮](R09_C2_G0_K1_3_CORRECTION_2026-09-29.md) 与本文下方 §1 结论表）。**本轮不授权 B1、不改 `src/main`、不改设计结论**；`K1 仍未通过`。
 >
 > **本轮（K1 测试侧）性质更正**：自 [K1 模型复验](R09_C2_G0_K1_MODEL_REVERIFY_2026-09-28.md) 起，测试侧各轮**新增了测试代码并运行了定向单测**（只读代理特征＋测试侧模型），因此“零代码变更/未编译/未跑单测”的旧表述**仅对 v5 文档轮成立**，对测试侧各轮不成立。产品代码（`src/main`）、生产 Python 工具、构建配置、迁移、契约、默认开关仍未改动；未连接数据库、未启动服务、未分配 IT/SmokeRun/端口/数据库。
 >
