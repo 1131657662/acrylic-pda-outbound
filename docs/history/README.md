@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S31：夹具链——签名守卫的进程内证据](R09_C2_B1_3_S31_SIGNING_BINDING_2026-09-29.md)：`application.yml` L38–41 显示 `outbound.signing.*` 绑定 `OUTBOUND_AUTH_SIGNING_*`（一直在导出）⇒ 推翻"属性空白"；run 692 的进程内打印证明环境与密钥文件均正常（1191 B/294 B，0x30 开头）⇒ `OfflineSigner.keys()` 抛的是 **catch 分支**（try 块内载入/模长/自签验签失败）。下一步：测试侧反射调 `keys()` 打印 cause（不改产品），或授权产品侧仪表化。644／647＋8 个夹具 IT 判未验。E2a 主树已验 22 个不变。K1 仍未通过；另附 S31 开工前看板归档。
+
 - [R09 C2 B1-3 S30：夹具链推进——上下文可起、503=签名密钥守卫](R09_C2_B1_3_S30_FIXTURE_SIGNING_2026-09-29.md)：加 `-AppMigrates` 后 8 个夹具 IT 上下文可起（此前 `server_state` 不存在），但统一 503；MockMvc 输出显示 `SIGNING_KEY_UNAVAILABLE`（离线签名密钥不可用）。harness 已自动生成 PKCS#8/SPKI 密钥对（openssl，文件实测正常）并导出 `OUTBOUND_SIGNING_*`，守卫仍拒 ⇒ 下一步查该 IT 是否覆盖/置空 `outbound.signing.*`（`OfflineSigner.keys()` 空白即抛此码）。644／647 与 8 个夹具 IT 判未验。E2a 主树已验 22 个不变。K1 仍未通过；另附 S30 开工前看板归档。
 
 - [R09 C2 B1-3 S29：树内 chromium 安装＋Android/夹具链根因定位](R09_C2_B1_3_S29_CHROMIUM_ANDROID_CHAIN_2026-09-29.md)：树内安装 Playwright chromium 成功（跨树回退不再需要）；Android 两项的阻塞链定位到 **8 个 inventory 夹具 IT 需要应用自跑迁移**（本 harness 沿用 `OUTBOUND_MIGRATE=false` ⇒ `server_state` 不存在 ⇒ Spring 上下文失败）⇒ 下一步仅需 `OUTBOUND_MIGRATE=true`；harness 补导出 `OUTBOUND_DB_*`（单靠它未通过，如实记录）；改坏运行器已用 `git checkout --` 恢复。E2a 主树已验 22 个不变。K1 仍未通过；另附 S29 开工前看板归档。
