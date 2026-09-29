@@ -8,7 +8,13 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 /** One-shot local test profile. It cannot target a shared or previously seeded schema. */
 final class E2aCrossSourceProfile {
-    static final Path ROOT = Path.of("D:/acrylic-pda-worktrees/r06-e2a-migration");
+    /**
+     * The tree the harness provisions and verifies. It defaults to the shared migration worktree;
+     * {@code E2A_CROSS_ROOT} points it at the tree under test, and every other check (attempt under
+     * that root, datadir identity, one-shot marker, port, credential) still applies.
+     */
+    static final Path ROOT = Path.of(System.getenv().getOrDefault("E2A_CROSS_ROOT",
+        "D:/acrylic-pda-worktrees/r06-e2a-migration"));
     final Path attempt;
     final String database, user, url;
 
