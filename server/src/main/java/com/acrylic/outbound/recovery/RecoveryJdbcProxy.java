@@ -13,9 +13,21 @@ final class RecoveryJdbcProxy {
 
     static Object wrap(Object value, Object parent, RecoveryConnectionHandler owner) {
         if (value == null || !isJdbcObject(value)) return value;
+        if (owner.effectsEnabled() && owner.knownChild(value) != null) return owner.knownChild(value);
         Class<?>[] interfaces = interfaces(value);
-        return Proxy.newProxyInstance(interfaces[0].getClassLoader(), interfaces,
+        Object proxy = Proxy.newProxyInstance(interfaces[0].getClassLoader(), interfaces,
             new RecoveryJdbcObjectHandler(value, parent, owner));
+        if (owner.effectsEnabled()) owner.rememberChild(value, proxy);
+        return proxy;
+    }
+
+    static Object prepared(Object value, Object parent, RecoveryConnectionHandler owner, String sql) {
+        Class<?>[] interfaces = interfaces(value);
+        var handler = new RecoveryJdbcObjectHandler(value, parent, owner);
+        handler.rememberSql(sql);
+        Object proxy = Proxy.newProxyInstance(interfaces[0].getClassLoader(), interfaces, handler);
+        owner.rememberChild(value, proxy);
+        return proxy;
     }
 
     private static boolean isJdbcObject(Object value) {

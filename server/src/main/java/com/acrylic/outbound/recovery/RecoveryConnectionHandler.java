@@ -21,6 +21,9 @@ final class RecoveryConnectionHandler implements InvocationHandler {
     private boolean transactionActive;
     private boolean poisoned;
     private boolean closed;
+    private RecoveryEffectGate effects = RecoveryEffectGate.disabled();
+    private boolean effectClean;
+    private final java.util.Map<Object, Object> effectChildren = new java.util.IdentityHashMap<>();
 
     RecoveryConnectionHandler(Connection delegate, RecoveryWriterLease lease) throws SQLException {
         this(delegate, lease, RecoveryAdmissionProbe.NOOP);
@@ -45,10 +48,13 @@ final class RecoveryConnectionHandler implements InvocationHandler {
         if (name.equals("isClosed")) return isClosed();
         if (name.equals("close")) return close();
         assertUsable();
+        beforeConnectionEffect(name, args);
         probe.aroundDelegateCall();
         try {
             Object result = method.invoke(delegate, args);
             afterSuccess(name, args);
+            if (effects.enabled() && (name.equals("prepareStatement") || name.equals("prepareCall")))
+                return RecoveryJdbcProxy.prepared(result, proxy, this, (String) args[0]);
             return RecoveryJdbcProxy.wrap(result, proxy, this);
         } catch (Throwable error) {
             Throwable cause = unwrap(error);
@@ -59,15 +65,37 @@ final class RecoveryConnectionHandler implements InvocationHandler {
 
     synchronized void assertUsable() throws SQLException {
         if (closed) throw new SQLException("CONTROL_CONNECTION_CLOSED");
-        if (poisoned) throw new SQLException("CONTROL_CONNECTION_POISONED");
+        if (poisoned) throw new SQLException(effects.enabled() ? "RECOVERY_LEASE_FENCED" : "CONTROL_CONNECTION_POISONED");
     }
 
     synchronized void beforeJdbcCall(String name, Object[] args) throws SQLException { assertUsable(); }
+
+    void useEffectGate(RecoveryEffectGate gate) { effects = gate; }
+    boolean effectsEnabled() { return effects.enabled(); }
+    void checkEffect() throws SQLException { effects.check(); }
+    Object knownChild(Object value) { return effectChildren.get(value); }
+    void rememberChild(Object value, Object proxy) { effectChildren.put(value, proxy); }
+
+    void startingJdbcCall(String name) {
+        if (effects.enabled() && (name.startsWith("execute") || name.startsWith("update")
+                || name.equals("insertRow") || name.equals("deleteRow"))) effectClean = false;
+    }
+
+    private void beforeConnectionEffect(String name, Object[] args) throws SQLException {
+        if (!effects.enabled()) return;
+        if (name.equals("commit")) effects.check();
+        if (name.equals("setAutoCommit") && Boolean.TRUE.equals(args[0]) && !effectClean) effects.check();
+        if (name.equals("beginRequest") || name.equals("endRequest") || name.contains("ShardingKey"))
+            throw RecoveryEffectGate.unclassified();
+    }
 
     /** Test seam: the probe hook is shared by the connection path and the JDBC child objects. */
     void probeDelegateCall() { probe.aroundDelegateCall(); }
 
     synchronized void afterJdbcCall(String name, String sql) {
+        if (effects.enabled() && name.startsWith("execute")) effectClean = false;
+        if (effects.enabled() && !autoCommit && (name.equals("insertRow") || name.equals("updateRow")
+                || name.equals("deleteRow"))) transactionActive = true;
         if (!isExecution(name)) return;
         String command = sql == null ? "" : sql.trim().toUpperCase();
         if (isCommitSql(command) || isRollbackSql(command)) transactionActive = false;
@@ -80,6 +108,9 @@ final class RecoveryConnectionHandler implements InvocationHandler {
     }
 
     private void afterSuccess(String name, Object[] args) {
+        if (name.equals("commit") || (name.equals("rollback") && (args == null || args.length == 0)))
+            effectClean = true;
+        if (name.equals("setAutoCommit") && Boolean.FALSE.equals(args[0])) effectClean = false;
         if (name.equals("setAutoCommit")) {
             autoCommit = (Boolean) args[0];
             if (autoCommit) transactionActive = false;
@@ -110,6 +141,7 @@ final class RecoveryConnectionHandler implements InvocationHandler {
     }
 
     private void poison(String code, Throwable cause) {
+        effects.fence();
         poisoned = true;
         lease.poison();
     }

@@ -6,43 +6,39 @@
 ```yaml
 date: 2026-09-29
 branch: codex/development
-head: b2bff04
-dirty_entries: 6
+head: 9d218d4
+dirty_entries: 33
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-**DSH 收口与写权交接轮（2026-09-29）** —— 本轮停止推进，仅收敛仓库与看板。源码版本事实只看上方生成块。
+**R09 C2 B1-1 效果门第一切片收口（2026-09-29）**。实现、规则/用例/驱动对照和逐轮证据见[唯一验收记录](history/R09_C2_B1_1_EFFECT_GATE_2026-09-29.md)。旧区已[原样归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_1_2026-09-29.md)。
 
-## 交接状态
-- **分支 / HEAD / 远端**：`codex/development`；收口前 HEAD `b2bff04`（＝实际远端，`0/0`，工作区干净、无 `.git/index.lock`、`git diff --check` 退出 0）；收口提交见下。
-- **写权**：**DSH 停止推进，写权移交 Codex（2026-09-29）**。DSH 不再新增实验、不改产品代码；后续由 Codex 接续。
-- **共享树** `r06-e2a-migration`：detached `ea4d166`、30 修改＋67 未跟踪＝97、状态哈希 `C76522C5…`（前后逐字节一致）；**只读**，未同步/清理/reset/提交/合并/删除。
-- **重型任务 / 环境**：无在途构建（Gradle 单次 daemon 已停）；隔离 MySQL 已停，**19330/19434/19437/23308/19438 均无监听**；无遗留 mysqld/Java 子进程；19387＝DSH、3306＝系统 mysqld（**未连接/未查询/未使用**）。
+## Git、写权与变更
+- 树 `D:\acrylic-pda-outbound`；分支 `codex/development`；实现/验收输入 HEAD `9d218d4cf7561a2455718f0eeb85e74c8880e865`（开工时与实际远端一致，0/0、干净、无 index.lock）。本收口块随交付提交；交付 SHA/远端/0/0/干净回执见本轮 `.local/…/final-git.json`，不以生成块的提交前 HEAD 代替回执。
+- 当前 Codex 为唯一写者，本切片完成即停止推进；未发现第二活动写者，未创建代理/新树。
+- 全部改动为 9 个 recovery 产品文件、14 个对应测试文件和 10 个文档；精确清单见本轮 `change-paths.txt`/`staged-paths.txt`，已验证源码哈希见 `verified-source-hashes.json`；`.local`/凭据/数据库/业务数据/产物不暂存。
+- 共享树 `D:\acrylic-pda-worktrees\r06-e2a-migration`：detached `ea4d166`，30 修改＋67 未跟踪＝97；状态 SHA-256 `C76522C509FFCBA1D66436E290D6146E553D6761CC278D6022445FFD327BD9AC` 前后相同；只读，未同步/清理/reset/提交/合并。
 
-## 判定状态（K1–K4）
-- **K1 仍未通过**：**K1-1** 生产效果门未实现/未验（驱动层与文件锁语义已实测）；**K1-2** 命名窗口 **W** 保留；**K1-3** `UNCONFIRMED_NO_CROSS_PROCESS_BASIS` 依条件分支保留（须外部隔离）。
-- **K2/K3/K4** 维持设计级结论，本轮不动。
+## 授权与交付
+- 用户明确授权 B1-1 最小实现、对应隔离验收/文档、开发分支提交推送；保守拒绝确认为产品行为。Linux/其他文件系统、断电/硬复位、网络盘/现场组合不作为本切片验收条件，仍未验。
+- `outbound.recovery.effect-gate.enabled` 默认 false。连接和 Statement/PreparedStatement/CallableStatement/ResultSet 委托前门、SQL/批记忆与本机拒绝已实现；开启无权威启动失败。
+- 无生产 Authority 实现，未接数据源/HTTP/Session；原 `outbound.recovery.admission.enabled` 未开启。**默认关闭、未接线、未部署、未开生产开关、K1 仍未通过；B1 整体未完成。**
 
-## 已完成（本阶段，均有记录与证据）
-- **G0-K1-1 真实 JDBC 驱动验证**：隔离 MySQL 8.0.46＋Connector/J，`integrationTest` 13 项 0 失败；`getAutoCommit()` 非提交证据；DDL 隐式提交（⇒ close 期 rollback 假设入 B1）。
-- **G0-K1-3 真实跨进程 FileLock 验证**：真实独立 JVM，10 场景×3 重复 0 失败；F1′/F3/F5 通过。
-- **G0-K1-3 更正与闭合轮**：**“矛盾 A/B”已撤回**——走产品路径实测同名替换 ⇒ `CONTROL_WRITER_LOCK_REPLACED`、缺失 ⇒ `CONTROL_FILE_MISSING`（fail closed、不自动重建、无第二持锁者）⇒ **`writers.lock` 已缓解/已覆盖**；**`fenced.lock` 转 B1 承重需求**（只创建不删除＋每次获取前校验原生身份＋不一致失败关闭＋审计事件）；保留 **1 项可用性威胁**（外部删除锁文件 ⇒ 后续写者失败关闭）。
-- **遗留卫生**：验收记录冲突已就地更正（第 9 行与结论表、FileLock 记录更正块一致）；`G0K1WriterLeaseIdentityRealIT` 对未入库 `.local` 路径的硬断言已改为**只记录存在性**，并在收口证据目录重跑 **exit 0**。
+## 当次验证与失败
+- 作者开发/自审/运行；定向单测 **126 项＝既有 60＋新增 66**（run7-unit），四类真实库 IT **35 项**（run8-it）；均 exit 0、0 失败/错误/跳过。
+- `REAL|` 为真实 JDBC delegate 计数与独立 MySQL 观察连接的已提交效果；权威允许/拒绝和缺记忆故障输入为 `MODEL|`，不替代 P5/可信孤儿/跨进程围栏事实。
+- run1-unit：122 项/1 失败（INSERT 表名紧接列括号分类遗漏），已修；run3-it：34 项/1 失败（测试在自动提交开启后调用 rollback），已修；全部失败日志/XML/哈希保留。
+- 未运行全仓完整测试/完整构建、真实 HTTP、APK/模拟器/真机或部署；未重做已闭合的两项遗留。
 
-## 证据目录（`.local/…`，均不入库）
-- `r09-c2-handoff-20260929-a/`（本轮收口：前置/后置状态、共享树哈希对照、监听快照、IT 重跑日志与 XML、事实块 stdout、链接检查、最终状态）
-- `r09-c2-g0-k1-3-hygiene-20260929-a/`（卫生轮：三跑）
-- `r09-c2-g0-k1-3-correction-20260929-a/`、`r09-c2-g0-k1-3-filelock-20260929-a/`、`r09-c2-g0-k1-real-jdbc-20260929-a/`、`r09-c2-g0-k1-model*-20260928-a/`、`r09-c2-g0-v5-20260928/`（历史轮次，含**全部失败轮日志与 XML**，未删除）
+## 隔离环境与证据
+- 本轮新端口 19439；datadir `.local/mysql19439-b11/data/`；schema/账号 `b11_effect_20260929`；精确身份和运行前置见验收记录。
+- 本轮隔离实例已正常关闭（exit 0）；19330/19434/19437/23308/19438/19439 无监听；无在途 Gradle/Java/隔离 mysqld；19387＝DeepSeek Harness PID 23292，3306/33060＝系统 mysqld PID 5448（未连接/查询/使用）。首次关闭检查因启动器/子进程 PID 差异拒绝，核对身份后正常关闭，记录保留。
+- 证据根 `.local/r09-c2-b1-1-effect-gate-20260929-a/`：run1-unit～run8-it、命令/退出码/日志/XML/哈希、真实效果、源码清单、共享树快照、监听与 Git 回执；datadir 和失败证据保留、不入库。旧各轮证据保持。
 
-## 失败与未验
-- 失败轮证据已保留（编译失败、断言误判、fixture 缺失等），**未删除、未改写**。
-- **未验边界（原样）**：`fenced.lock` 跨进程层（F1′/F3/F5 产品实现）、P5/租约/锁协议、HTTP/Session 接线、生产默认 Session 清理、孤儿解除与生产释放、**窗口 W**、Linux 与其他文件系统、网络/共享盘、**断电/硬复位**、现场组合、Java/Python 允许集差异、C1 历史未验项。
-
-## 单一下一步
-- **B1-1 恢复准入效果门最小实现（默认关闭、隔离验收）——等待用户明确授权**。
-
-## 明确禁止项（授权前）
-- 不得开启 `outbound.recovery.admission.enabled` 或**任何**生产开关；不得接线 HTTP/Session；不得在未授权时修改 `src/main`；不得操作 `main`、共享树、原库/现网；不得发布/部署；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`。
+## 保留边界与停止点
+- **K1 仍未通过**：K1-1 只交付本切片；K1-2 窗口 W；K1-3 依条件分支 `UNCONFIRMED_NO_CROSS_PROCESS_BASIS`，须外部隔离。K2/K3/K4 保持设计级结论。
+- **未验边界**：`fenced.lock` 跨进程层（F1′/F3/F5 产品实现）、P5/租约/锁协议、HTTP/Session 接线、生产默认 Session 清理、孤儿解除与生产释放、**窗口 W**、Linux 与其他文件系统、网络/共享盘、**断电与硬复位**、现场组合、Java/Python 允许集差异、C1 历史未验项。
+- **停止于 B1-1，不进入 B1-2**。后续可信 Authority/协议/接线按范围另行授权；不合 main、不发布/部署、不操作原库/现网。七类生产决定、TEMP 生产归档、生产释放保持关闭，`localDeletionAllowed=false`。
 <!-- CURRENT_STATE_END -->

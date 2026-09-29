@@ -20,9 +20,11 @@ public final class RecoveryAdmittedDataSource implements DataSource {
     private final RecoveryControlLocation location;
     private final Path checkpoint;
     private final RecoveryControlSnapshot startup;
+    private final RecoveryEffectGate effects;
 
     public RecoveryAdmittedDataSource(DataSource delegate, RecoveryControlLocation location, Path checkpoint) {
         this.delegate = Objects.requireNonNull(delegate);
+        this.effects = RecoveryEffectGate.disabled();
         try {
             this.location = location.checked();
             this.checkpoint = this.location.checkpoint(checkpoint);
@@ -30,6 +32,15 @@ public final class RecoveryAdmittedDataSource implements DataSource {
         } catch (IOException error) {
             throw new RecoveryControlException("CONTROL_AUTHORITY_UNAVAILABLE", error);
         }
+    }
+
+    /** Explicit offline opt-in only; no Spring datasource/HTTP/Session wiring uses this constructor. */
+    public RecoveryAdmittedDataSource(RecoveryAdmittedDataSource admitted, RecoveryEffectGate effects) {
+        this.delegate = admitted.delegate;
+        this.location = admitted.location;
+        this.checkpoint = admitted.checkpoint;
+        this.startup = admitted.startup;
+        this.effects = Objects.requireNonNull(effects);
     }
 
     @Override public Connection getConnection() throws SQLException {
@@ -55,11 +66,13 @@ public final class RecoveryAdmittedDataSource implements DataSource {
         try { physical = supplier.get(); }
         catch (SQLException | RuntimeException error) { closeLease(lease, error); throw error; }
         if (physical == null) {
+            effects.fence();
             lease.poison();
             throw new SQLException("CONTROL_CONNECTION_UNAVAILABLE");
         }
         try { return wrap(physical, lease, probe); }
         catch (SQLException | RuntimeException error) {
+            effects.fence();
             lease.poison();
             try { physical.close(); } catch (SQLException close) { error.addSuppressed(close); }
             throw error;
@@ -80,9 +93,11 @@ public final class RecoveryAdmittedDataSource implements DataSource {
         } catch (IOException error) { throw new SQLException(error.getMessage(), error); }
     }
 
-    private static Connection wrap(Connection connection, RecoveryWriterLease lease, RecoveryAdmissionProbe probe) throws SQLException {
+    private Connection wrap(Connection connection, RecoveryWriterLease lease, RecoveryAdmissionProbe probe) throws SQLException {
+        var handler = new RecoveryConnectionHandler(connection, lease, probe);
+        handler.useEffectGate(effects);
         return (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(),
-            new Class<?>[]{Connection.class}, new RecoveryConnectionHandler(connection, lease, probe));
+            new Class<?>[]{Connection.class}, handler);
     }
 
     private static void closeLease(RecoveryWriterLease lease, Throwable original) {

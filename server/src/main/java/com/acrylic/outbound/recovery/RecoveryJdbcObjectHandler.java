@@ -10,10 +10,13 @@ final class RecoveryJdbcObjectHandler implements InvocationHandler {
     private final Object delegate;
     private final Object parent;
     private final RecoveryConnectionHandler owner;
+    private RecoveryEffectStatement statement = new RecoveryEffectStatement(null);
 
     RecoveryJdbcObjectHandler(Object delegate, Object parent, RecoveryConnectionHandler owner) {
         this.delegate = delegate; this.parent = parent; this.owner = owner;
     }
+
+    void rememberSql(String sql) { statement = new RecoveryEffectStatement(sql); }
 
     @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String name = method.getName();
@@ -28,17 +31,34 @@ final class RecoveryJdbcObjectHandler implements InvocationHandler {
             if (name.equals("close")) return invokeClose(method, args);
             owner.assertUsable();
             owner.beforeJdbcCall(name, args);
+            beforeEffect(name, args);
+            owner.startingJdbcCall(name);
             owner.probeDelegateCall();
             try {
                 Object result = method.invoke(delegate, args);
-                owner.afterJdbcCall(name, sql(args));
+                if (owner.effectsEnabled()) statement.succeeded(name, args);
+                owner.afterJdbcCall(name, owner.effectsEnabled() ? statement.sql(args) : sql(args));
                 if (name.equals("getConnection")) return parent;
                 return RecoveryJdbcProxy.wrap(result, parent, owner);
             } catch (Throwable error) {
                 Throwable cause = unwrap(error);
+                if (owner.effectsEnabled()) statement.failed(name);
                 owner.jdbcFailure(name, sql(args), cause);
                 throw cause;
             }
+        }
+    }
+
+    private void beforeEffect(String name, Object[] args) throws SQLException {
+        if (!owner.effectsEnabled()) return;
+        if (delegate instanceof java.sql.ResultSet) {
+            if (RecoveryEffectCalls.cursorEffect(name)) owner.checkEffect();
+        } else if (delegate instanceof java.sql.Statement) {
+            RecoveryEffectCalls.requireStatementMethod(name);
+            var kinds = statement.classify(name, args);
+            if (kinds.stream().anyMatch(kind -> kind != RecoveryEffectSql.Kind.READ
+                    && kind != RecoveryEffectSql.Kind.ROLLBACK))
+                owner.checkEffect();
         }
     }
 

@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-1 效果门第一切片](R09_C2_B1_1_EFFECT_GATE_2026-09-29.md)：独立有限授权；规则/实现/用例唯一映射、真实驱动对照、默认关闭与缺权威启动失败证明、隔离身份及逐轮失败保留。126 项定向单测、35 项真实库 IT 通过；MODEL 权威输入不代替跨进程事实。默认关闭、未接线、未部署、未开生产开关；K1 仍未通过，B1 整体未完成，不进入 B1-2。
+- [B1-1 前看板原文](ORCHESTRATION_STATE_before_R09_C2_B1_1_2026-09-29.md)：保留交接态原文及原相对链接，仅历史快照。
 - [交接前看板原文](ORCHESTRATION_STATE_before_R09_C2_HANDOFF_2026-09-29.md)：保留 DSH 收口前的看板当前区原文（**收口轮 2026-09-29：DSH 停止推进，写权移交 Codex**；K1 仍未通过；单一下一步＝B1-1 待用户明确授权）。
 - [R09 C2 G0-K1-3 遗留卫生修正](R09_C2_G0_K1_3_HYGIENE_2026-09-29.md)（纯文档/测试卫生；**B1-1 未获授权、保持停止**）：①[验收记录](R09_C2_G0_ACCEPTANCE_2026-09-28.md) 中“真实 FileLock 轮”段落的旧“矛盾阻断”表述**已就地更正**并指向更正轮；②`G0K1WriterLeaseIdentityRealIT.v4_…` 对**未入库** `.local` 路径的硬断言改为**只记录存在性** ⇒ 干净检出可复现。验证：`runA-clean-sim`（父目录不含上一轮证据）exit 0 / IT 5 项 0 失败 / `previous_round_evidence_present=false`；`runB-normal` exit 0 / 5 项 0 失败 / `=true`；`runC-test` 定向单测 **60 项 0 失败**。未改 `src/main`、未开生产开关；K1 仍未通过、B1 仍待授权。
 - [R09 C2 G0-K1-3 更正与闭合轮（锁文件删除/替换走产品路径复验）](R09_C2_G0_K1_3_CORRECTION_2026-09-29.md)（独立有限授权）：真实子JVM走**产品路径**（`RecoveryControlLock.locked`→`RecoveryWriterLease.acquire`→`RecoveryWriterProtocol.validate`原生身份校验），`integrationTest`**5项0失败**（16行TSV：REAL12/MODEL4；失败轮2次保留）。**V1a同名替换⇒`CONTROL_WRITER_LOCK_REPLACED`（3/3）**、**V1b缺失⇒`CONTROL_FILE_MISSING`（3/3）**、不自动重建、无第二持锁者 ⇒ `writers.lock`为**已缓解/已覆盖**，**上一轮“矛盾A/B（阻断）”定性撤回**（原因：`fileKey()`在Windows为空＋未走产品路径＋用例不断言）；`fenced.lock`转**B1承重需求**；保留**可用性威胁**。**K1仍未通过；B1待授权**。
