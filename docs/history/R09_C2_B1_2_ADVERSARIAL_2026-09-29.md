@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | **H1** | `RecoveryLeaseProcess.alive()` 的**本机缓存按路径索引、从不比对缓存身份**。把 `processes/<id>.json` 移走再复制回同路径（新文件、无人持锁），并把租约的 `processFileIdentity` 改成新身份后，缓存以旧描述符作证 ⇒ 判"属主存活"⇒ **放行**（基线 run2：`delegate=1 observer=1`，3/3）。这违反已发布声明"锁可取 ⇒ OUTSTANDING"（当前路径上的锁确实可取）。 | **已修**：`alive()` 在缓存命中时要求 `local.nativeIdentity` 等于当前文件身份。修复后 `local-owner-identity-rebinding` **3/3 拒绝**（`RECOVERY_LEASE_OUTSTANDING`，`delegateDelta=0 observerDelta=0`），且攻击构造仍成立（`newLockAvailable=true`）。 |
 | **H2** | `RecoveryLeaseScan` 原按**文件名**跳过 `*.unknown.json(.pending)` ⇒ 把孤儿租约改名即可让扫描跳过它、效果被放行（run4：`ADMITTED_SECURITY_GAP`，`delegate=1 observer=1`，6/6）。 | **已修**：仅当**同前缀租约仍存在**、且内容确为审计形态（有 `operationId/event/at`、无 `processFileIdentity/processSha256`）时才跳过；否则按租约处理。修复后 unknown/unknown-pending 改名 **6/6 拒绝**。 |
-| **H3** | 孤儿租约的 `processIdentity/processFileIdentity/processSha256` 可被改写成**活属主**的值（摘要自洽）⇒ 孤儿隐形、效果被放行（run4：3/3 `ADMITTED_SECURITY_GAP`）。 | **已由认证锚点闭合**（同日补做，见 [P5 认证锚点补充规格](R09_C2_B1_2_ANCHOR_SPEC_2026-09-29.md)）：显式供给的 32 字节秘密绑定 `anchorId`，进程/租约记录均带 `anchorTag` 并在读取时校验，跨进程开启而锚点缺失即启动失败。用例翻转为 `orphan-live-owner-anchored` 后 **3/3 拒绝**（`delegateDelta=0 observerDelta=0`）。**仍未闭合**：**H3′＝直接删除租约记录**（需锚定操作索引），继续单列 `DEBT-R09-C2-LEASE-ANCHOR`。 |
+| **H3** | 孤儿租约的 `processIdentity/processFileIdentity/processSha256` 可被改写成**活属主**的值（摘要自洽）⇒ 孤儿隐形、效果被放行（run4：3/3 `ADMITTED_SECURITY_GAP`）。 | **已由认证锚点闭合**（同日补做，见 [P5 认证锚点补充规格](R09_C2_B1_2_ANCHOR_SPEC_2026-09-29.md)）：显式供给的 32 字节秘密绑定 `anchorId`，进程/租约记录均带 `anchorTag` 并在读取时校验，跨进程开启而锚点缺失即启动失败。用例翻转为 `orphan-live-owner-anchored` 后 **3/3 拒绝**（`delegateDelta=0 observerDelta=0`）。**仍未闭合**：**H3′＝直接删除租约记录**（同日已由锚定操作索引闭合，3/3 拒绝），运维政策项另列； `DEBT-R09-C2-LEASE-ANCHOR`。 |
 
 **另证（保持通过）**：12 条 payload 变异（truncate/extend/rewrite/move）全部拒绝且 `lifecycleLockStillHeld=true`（1GiB 生命周期锁不受载荷改写影响）。
 
@@ -64,7 +64,18 @@
 
 - 实施：RecoveryControlFormat（hmac/anchorTag/hex/bytes/sha256）、RecoveryLeaseRoots（32 字节秘密绑定 nchorId，erify 不一致即 CONTROL_ANCHOR_MISMATCH）、RecoveryLeaseProcess/RecoveryLeaseScan（记录带 nchorTag 并在读取时校验）、RecoveryEffectConfiguration（新属性 outbound.recovery.effect-gate.anchor；**跨进程开启而锚点缺失或形状不符 ⇒ CONTROL_ANCHOR_REQUIRED 启动失败**）。
 - 验证：un12 H3 用例翻转 3/3 拒绝；un13 单测 2038/0；un15 并集 IT 665/0/0；新增 crossProcessWithoutAnchorMustFailStartup（3/3）。
-- **仍未闭合**：**H3′＝直接删除租约记录**（需"锚定的操作索引"，规格见 [P5 认证锚点补充规格](R09_C2_B1_2_ANCHOR_SPEC_2026-09-29.md) §3.2）⇒ DEBT-R09-C2-LEASE-ANCHOR 继续单列。锚点的强度等于**配置来源**的强度；秘密保管/轮换属运维政策，需与七类生产决定同级授权。
+- **仍未闭合**：**H3′＝直接删除租约记录**（需"锚定的操作索引"，规格见 [P5 认证锚点补充规格](R09_C2_B1_2_ANCHOR_SPEC_2026-09-29.md) §3.2）- **H3′ 亦已闭合（同日补做）**：新增**锚定操作索引** `leases/index.json`（`indexTag` 由同一秘密保护；`provision` 创建、`publish` 追加、`check` 先验标签再双向核对：索引列出而记录缺失 ⇒ 拒绝，记录不在索引 ⇒ 拒绝）。删除记录用例 3/3 拒绝。**剩余不再是技术缺口**，而是运维政策：锚点秘密的保管与轮换（谁能读、如何轮换、在途租约如何处理）需与七类生产决定同级授权 ⇒ DEBT-R09-C2-LEASE-ANCHOR 转为政策项。锚点强度等于**配置来源**的强度。
+
+## 9. 索引轮的运行与一次环境 flake（如实记录）
+
+| 轮 | 结果 |
+| --- | --- |
+| run16-index-durable | **0**：锚点 IT **27 / 0 / 0**（含新增的 H3′ 删除记录用例） |
+| run17-full-unit | **0**：定向单测 2038 / 0 |
+| run18-full-it | **1**：668 项中 1 项失败——`foreignHeldProcessMutationMustRefuse[6] kind=extend` 报 `CommunicationsException ← java.net.BindException`（连接阶段本地端口被占）；同刻实测 19442 上 **684 条 TIME_WAIT**、Windows 动态端口区间仅 16384 ⇒ 同一会话连跑 6 次全量 IT 造成的**瞬时端口耗尽**，与索引改动无关 |
+| **run19-full-it** | **0**：同代码、同用例复跑 **668 / 0 / 0**（22 套） ⇒ run18 判定为环境 flake；失败日志与 XML 均保留 |
+
+**教训（供后续会话）**：同一会话内反复跑全量 IT 会累积 TIME_WAIT 并可能触及动态端口上限；复跑前先看 `netstat` 的 TIME_WAIT 量，必要时等衰减或改用独立端口/连接复用。锚点的强度等于**配置来源**的强度；秘密保管/轮换属运维政策，需与七类生产决定同级授权。
 
 ## 7. 后续（B1-3 之前必须先决定）
 

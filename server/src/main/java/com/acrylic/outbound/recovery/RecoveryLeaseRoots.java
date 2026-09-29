@@ -34,6 +34,13 @@ public final class RecoveryLeaseRoots {
         Files.createDirectory(roots.root().resolve("processes"));
         Files.createDirectory(roots.root().resolve("leases"));
         Files.write(roots.root().resolve("fenced.lock"), new byte[]{48}, StandardOpenOption.CREATE_NEW);
+        // The anchored index is the authority for which lease records must exist: a deleted record is
+        // then detectable rather than invisible (see the B1-2 adversarial record, H3').
+        var index = JsonNodeFactory.instance.objectNode().put("formatVersion", 1)
+            .put("installationId", roots.installation());
+        index.putArray("entries");
+        index.put("indexTag", hmac(anchor, index));
+        Files.writeString(roots.root().resolve("leases").resolve("index.json"), canonical(index), StandardOpenOption.CREATE_NEW);
         var marker = JsonNodeFactory.instance.objectNode().put("formatVersion", 1)
             .put("installationId", roots.installation()).put("authorityRoot", roots.authorityRoot().toString())
             .put("leaseRoot", roots.root().toString()).put("identitySha256", roots.identityHash())

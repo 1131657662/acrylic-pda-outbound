@@ -101,6 +101,26 @@ class RecoveryFenceAdversarialDurableIT {
             requireRefusal(jdbc, old, "orphan-live-owner-anchored");
         }
     }
+    /**
+     * H3' closure (B1-2 follow-up): the anchored index lists every published operation, so deleting the
+     * lease record no longer makes the orphan invisible.
+     */
+    @RepeatedTest(3) void deletedLeaseRecordMustStillBeRefusedByTheAnchoredIndex() throws Exception {
+        var supply = FenceTestSupply.create(evidence);
+        var authority = supply.authority();
+        var gate = RecoveryEffectGate.enabled(authority);
+        authority.registerOperation(); // keep a live operation of our own in the index
+        try (var jdbc = new FenceRealJdbc(gate); var old = jdbc.connection.createStatement();
+                var dead = new FenceChild(supply, "adversarial-owner")) {
+            Path deadLease = lease(supply, childOperation(dead));
+            dead.send("stop"); assertThat(dead.exit()).isEqualTo(70);
+            assertThat(lockAvailable(owner(supply, deadLease))).isTrue();
+            Files.delete(deadLease);
+            assertThat(Files.exists(deadLease)).isFalse();
+            EffectRealEnvironment.record("REAL|index-closure|deleted-lease-record|recordAbsent=true|indexed=true");
+            requireRefusal(jdbc, old, "orphan-record-deleted");
+        }
+    }
     private static void disguise(Path dead, Path live, String kind) throws Exception {
         if (kind.startsWith("unknown")) {
             String name = dead.getFileName().toString().replace(".json", ".unknown.json");

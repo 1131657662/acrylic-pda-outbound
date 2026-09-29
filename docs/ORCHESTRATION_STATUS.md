@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-29
 branch: codex/development
-head: a92db61
-dirty_entries: 14
+head: 2d2d319
+dirty_entries: 10
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
@@ -24,11 +24,11 @@ server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ## 三处缺口与处置
 - **H1 已修**：RecoveryLeaseProcess.alive() 的本机缓存按路径索引且不绑定身份 ⇒ 路径上文件被替换后仍以旧描述符作证并放行（基线实测 delegate=1 observer=1，3/3，违反“锁可取即 OUTSTANDING”）。现要求缓存身份＝当前文件身份；修复后 3/3 拒绝。
 - **H2 已修**：RecoveryLeaseScan 原按文件名跳过 `*.unknown.json(.pending)` ⇒ 孤儿租约改名即隐形（实测 6/6 放行）。现仅当同前缀租约仍在**且**内容为审计形态时才跳过；修复后 6/6 拒绝。
-- **H3 已闭合（同日补做）**：显式供给 32 字节锚点秘密 ⇒ `anchorId` 入自哈希 marker、进程/租约记录带 `anchorTag` 并在读取时校验、**跨进程开启而锚点缺失即启动失败**（`CONTROL_ANCHOR_REQUIRED`）；H3 用例翻转为 `orphan-live-owner-anchored` 并 3/3 拒绝。**仍未闭合：H3′＝直接删除租约记录**（需锚定操作索引）⇒ `DEBT-R09-C2-LEASE-ANCHOR` 继续单列。
+- **H3 已闭合（同日补做）**：显式供给 32 字节锚点秘密 ⇒ `anchorId` 入自哈希 marker、进程/租约记录带 `anchorTag` 并在读取时校验、**跨进程开启而锚点缺失即启动失败**（`CONTROL_ANCHOR_REQUIRED`）；H3 用例翻转为 `orphan-live-owner-anchored` 并 3/3 拒绝。**H3′ 亦已闭合**：新增锚定操作索引 `leases/index.json`（`indexTag` 同锚点保护）——索引列出而记录缺失 ⇒ 拒绝、记录不在索引 ⇒ 拒绝，删除记录用例 3/3 拒绝；剩余仅运维政策（秘密保管/轮换）⇒ `DEBT-R09-C2-LEASE-ANCHOR` 继续单列。
 - 另证：12 条 payload 变异（truncate/extend/rewrite/move）全部拒绝，且 1GiB 生命周期锁不受载荷改写影响。
 
 ## 运行与证据
-- 最终：定向单测 **2038 / 0**（run13）；并集全量 IT（`RecoveryEffect*IT|RecoveryFence*IT`）**665 / 0 / 0**（22 套，run15）。锚点轮另含 run12（24/0）与 run14（3 失败＝新守卫被判预期收紧，已补测试）。过程失败轮 run2/run3/run4/run8/run9 全部保留（探针抢锁缺陷、我的自锁缺陷、过紧修法、非规范标记）。
+- 最终：定向单测 **2038 / 0**（run13）；并集全量 IT（`RecoveryEffect*IT|RecoveryFence*IT`）**665 / 0 / 0**（22 套，run15）。索引轮：run16（27/0）、run17（单测 2038/0）、run18（668 项 1 失败＝684 条 TIME_WAIT 端口耗尽，环境 flake）、run19（同代码复跑 668/0/0 绿）。锚点轮另含 run12（24/0）与 run14（3 失败＝新守卫被判预期收紧，已补测试）。过程失败轮 run2/run3/run4/run8/run9 全部保留（探针抢锁缺陷、我的自锁缺陷、过紧修法、非规范标记）。
 - 教训（已入记录）：本轮曾用 `RecoveryEffect*IT` 单过滤器跑“全量”（536/0）而漏掉 Fence 侧，改用并集后才暴露问题 ⇒ **覆盖过滤器本身也是被验证对象**。
 - 隔离库：端口 19442、datadir `.local/mysql19442-b12-adversarial/data`、schema/账号 `b12_adv_20260929`；收尾正常 shutdown、端口释放，datadir 与失败证据保留；3306/33060 未动。
 - 证据根 `.local/r09-c2-b1-2-adversarial-20260929-a/`（不入库）：run1–run10 逐轮 command/gradle.log/exit/XML/results/hash、real-records.tsv、逐子 JVM 回执、RESUME-DSH-handover.md 与最终回执。
@@ -36,6 +36,6 @@ server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ## 保留边界与停止点
 - `outbound.recovery.effect-gate.enabled` 与跨进程开关均默认 false；未注册/替换 DataSource、无 HTTP/Session 接线、无退役/孤儿解除/生产释放。
 - **K1 仍未通过**（K1-1 生产效果门未实现/未验收整体、K1-2 窗口 W、K1-3 依条件分支）；**未进入 B1-3**。
-- 单列：**窗口 W**、**DEBT-R09-C2-LEASE-ANCHOR**、UNCONFIRMED_NO_CROSS_PROCESS_BASIS（须外部隔离）、HTTP/Session、生产 Session 清理、孤儿解除与生产释放、Linux/其他文件系统、网络盘、断电/硬复位、现场组合、Java/Python 允许集差异、C1 历史未验项。
+- 单列：**窗口 W**、**DEBT-R09-C2-LEASE-ANCHOR**、UNCONFIRMED_NO_CROSS_PROCESS_BASIS（须外部隔离）、HTTP/Session、生产 Session 清理、孤儿解除与生产释放、Linux/其他文件系统、网络盘、断电/硬复位、现场组合、Java/Python 允许集差异、C1 历史未验项；**TZ-GMT 时区显示不统一（用户报告：PDA 显示 UTC、网页/Excel/PDF/图片需统一；已记录待排期，本轮不修）**。
 - **下一步**：进入 B1-3 之前**必须先决定**——为 P5 引入认证锚点，或书面确认“P5 目录被改写不在威胁模型内”并同步修订设计表述；其后各切片独立授权与验收。不合 main、不发布、不操作原库/现网；`localDeletionAllowed=false`。
 <!-- CURRENT_STATE_END -->

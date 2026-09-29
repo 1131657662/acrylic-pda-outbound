@@ -48,11 +48,13 @@ final class RecoveryControlFormat {
     }
 
     /** Verifies the anchor tag over the record body: every field except the tag itself. */
-    static void anchorTag(byte[] secret, JsonNode value) {
-        String tag = text(value, "anchorTag");
+    static void anchorTag(byte[] secret, JsonNode value) { anchorTag(secret, value, "anchorTag"); }
+
+    static void anchorTag(byte[] secret, JsonNode value, String field) {
+        String tag = text(value, field);
         require(tag.matches("[a-f0-9]{64}"), "CONTROL_ANCHOR_TAG");
         var body = value.deepCopy();
-        ((com.fasterxml.jackson.databind.node.ObjectNode) body).remove("anchorTag");
+        ((com.fasterxml.jackson.databind.node.ObjectNode) body).remove(field);
         require(tag.equals(hmac(secret, body)), "CONTROL_LEASE_ANCHOR_MISMATCH");
     }
 
