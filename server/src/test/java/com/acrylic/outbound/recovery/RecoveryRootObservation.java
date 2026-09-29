@@ -11,14 +11,19 @@ final class RecoveryRootObservation {
     /** One framework session save: was the saving thread inside a live root at that moment. */
     record Save(String outcome, int liveRoots) { }
 
+    /** One servlet multipart parse: was the request inside a live root, and how many staged files. */
+    record Parse(String bound, int stagedFiles) { }
+
     private final List<Pass> passes = new CopyOnWriteArrayList<>();
     private final List<Save> saves = new CopyOnWriteArrayList<>();
+    private final List<Parse> parses = new CopyOnWriteArrayList<>();
     private final List<String> asyncBorrows = new CopyOnWriteArrayList<>();
     private final List<Integer> liveRootsDuringRequests = new CopyOnWriteArrayList<>();
     private final List<String> endpoints = new CopyOnWriteArrayList<>();
 
     void pass(Pass pass) { passes.add(pass); }
     void save(Save save) { saves.add(save); }
+    void parse(Parse parse) { parses.add(parse); }
     void asyncBorrow(String code) { asyncBorrows.add(code); }
     void duringRequest(String endpoint, int liveRoots) {
         endpoints.add(endpoint);
@@ -27,6 +32,7 @@ final class RecoveryRootObservation {
 
     List<Pass> passes() { return List.copyOf(passes); }
     List<Save> saves() { return List.copyOf(saves); }
+    List<Parse> parses() { return List.copyOf(parses); }
     List<String> asyncBorrows() { return List.copyOf(asyncBorrows); }
     List<Integer> liveRootsDuringRequests() { return List.copyOf(liveRootsDuringRequests); }
     List<String> endpoints() { return List.copyOf(endpoints); }

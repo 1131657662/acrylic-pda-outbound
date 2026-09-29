@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S4：multipart 与错误分派判据](R09_C2_B1_3_S4_MULTIPART_2026-09-29.md)：**无需产品改动**——真实容器观测证明 multipart 解析/暂存、handler、Session 保存与错误分派都在 S3 的同一请求根内（解析期 `BOUND`、暂存 1 个文件、请求后容器清理、根数＝请求数、14 次保存全 `BOUND`、无泄漏）；全量单测 2801 项 0 失败、恢复链 25 类 696 项 0 失败。发现：multipart 超限部件为容器级拒绝（观测 500 而非应用 413 映射）。**B1-3 S1–S4 全部完成**；开关仍默认 false，K1 仍未通过；另附 S4 开工前看板归档。
+
 - [R09 C2 B1-3 S3：请求根过滤器与真实 Session 覆盖](R09_C2_B1_3_S3_REQUEST_ROOT_SESSION_2026-09-29.md)：`RecoveryRequestAdmissionFilter`＋`RecoveryRequestRootListener`＋`registry.admit`（一请求一根、每次分派绑定、ASYNC/ERROR/嵌套重分派复用同根）；真实容器＋Spring Session JDBC 现场判据通过（session/error/async 三步、根数＝请求数、10 次 Session 保存全部在存活根内、轨迹 REQUEST→ERROR→ASYNC、无根泄漏）；全量单测 2800 项 0 失败、恢复链 25 类 696 项 0 失败。发现未修：启动期无根合法能力缺失（开关打开即 fail closed）、锁非嵌套致并发接纳受限、拒绝码 HTTP 映射未实现。**S4 未开工，开关仍默认 false，K1 仍未通过**；另附 S3 开工前看板归档。
 
 - [R09 C2 B1-3 S2：请求根数据源](R09_C2_B1_3_S2_REQUEST_ROOT_2026-09-29.md)：`RecoveryRequestAdmittedDataSource` 成为唯一 `@Primary`（六码、永不回退旧连接层），旧类降级并由静态白名单强制；`RecoveryOperationRegistry/Lease/SubLease/Token/Kind/Phase/SubOperation` 提供根登记与分派绑定。两级验证：定向单测 47/0（旧类 17/17 仍绿）、全量单测 2790 项 0 失败（无白名单）、恢复链 IT 25 类 696 项 0 失败 / 0 跳过（全新实例 19453）。**S3/S4 未开工，开关仍默认 false，K1 仍未通过**；入口 IT live/unknown 检查待 S3 重基。另附 S2 开工前看板归档。

@@ -68,4 +68,12 @@ public class RecoveryRootProbeConfiguration {
             RecoveryRootObservation observation) {
         return new RecoverySessionSaveRecorder(operations, observation);
     }
+
+    /** Records the servlet multipart parse, which must happen inside the request's root. */
+    @Bean static BeanPostProcessor recoveryMultipartParseRecorder(ObjectProvider<RecoveryOperationRegistry> operations,
+            RecoveryRootObservation observation,
+            @org.springframework.beans.factory.annotation.Value("${spring.servlet.multipart.location:}") String location) {
+        return new RecoveryMultipartParseRecorder(operations, observation,
+            location.isBlank() ? null : java.nio.file.Path.of(location));
+    }
 }

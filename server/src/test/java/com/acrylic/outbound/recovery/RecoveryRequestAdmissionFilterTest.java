@@ -187,6 +187,34 @@ class RecoveryRequestAdmissionFilterTest {
         assertThat(f.registry.liveRoots()).isZero();
     }
 
+    /**
+     * A multipart request is admitted like any other dispatch: the container stages the parts inside
+     * this very chain (verified with the real container by the S4 field run), so exactly one root
+     * covers the parse and the handler, and the root is retired with the request.
+     */
+    @Test void multipartRequestIsCoveredByTheSameSingleRootAndRetiredWithItsRequest() throws Exception {
+        var f = fixture();
+        var request = new org.springframework.mock.web.MockMultipartHttpServletRequest();
+        request.setMethod("POST");
+        request.setRequestURI("/api/outbound/import");
+        request.addFile(new org.springframework.mock.web.MockMultipartFile("file", "probe.bin",
+            "application/octet-stream", new byte[64]));
+        var observed = new AtomicReference<Object>();
+
+        f.filter.doFilter(request, new MockHttpServletResponse(), (req, res) -> {
+            observed.set(f.registry.bound(Thread.currentThread()));
+            assertThat(((org.springframework.web.multipart.MultipartHttpServletRequest) req).getFileMap())
+                .as("the dispatch still sees the multipart request").isNotEmpty();
+            borrows(f.adapter);
+        });
+
+        var token = token(request);
+        assertThat(observed.get()).isEqualTo(token);
+        assertThat(f.registry.liveRoots()).as("a multipart request creates one root, not one per part").isEqualTo(1);
+        f.destroy(request);
+        assertThat(f.registry.liveRoots()).isZero();
+    }
+
     private static RecoveryOperationToken token(MockHttpServletRequest request) {
         return (RecoveryOperationToken) request.getAttribute(RecoveryOperationRegistry.REQUEST_ROOT_ATTRIBUTE);
     }

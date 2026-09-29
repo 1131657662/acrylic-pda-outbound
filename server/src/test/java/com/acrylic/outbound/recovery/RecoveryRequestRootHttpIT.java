@@ -41,6 +41,8 @@ class RecoveryRequestRootHttpIT {
             var observation = context.getBean(RecoveryRootObservation.class);
             var client = client();
             retireStartupRoot(context);
+            Path multipart = evidence.resolve("multipart");
+            Files.createDirectories(multipart);
 
             try (var session = connection()) {
                 transcript.append(resetSessionStore(session));
@@ -48,6 +50,13 @@ class RecoveryRequestRootHttpIT {
                     .append(sessionRows(session, "s3-session"));
                 transcript.append(step(client, "/__s3/error", 500)).append(sessionRows(session, "s3-error"));
                 transcript.append(step(client, "/__s3/async", 200));
+                transcript.append(multipartStep(client, multipart, "/__s3/multipart", 4096, 200))
+                    .append(sessionRows(session, "s3-multipart"));
+                // Above the 2MiB part limit: the container stages the part inside the root and then
+                // refuses the request; the observed status is recorded (see the run record: the
+                // application's own 413 mapping does not apply to this container-level refusal).
+                transcript.append(multipartStep(client, multipart, "/__s3/multipart-too-large", 2_621_440, 500))
+                    .append(absentSessionAttribute(session, "s3-multipart-large"));
             }
 
             assertThat(observation.asyncBorrows())
@@ -58,22 +67,63 @@ class RecoveryRequestRootHttpIT {
             assertThat(observation.saves()).as("the framework saved the session at least once").isNotEmpty();
             assertThat(observation.saves()).as("every session save ran inside a live root")
                 .allMatch(save -> save.outcome().equals("BOUND"));
+            assertThat(observation.parses()).as("the servlet parsed the multipart requests").hasSize(2);
+            assertThat(observation.parses()).as("every multipart parse ran inside a live root")
+                .allMatch(parse -> parse.bound().equals("BOUND"));
+            assertThat(observation.parses()).as("the staged part was observed while the request was in flight")
+                .anyMatch(parse -> parse.stagedFiles() > 0);
             assertThat(observation.passes()).extracting(RecoveryRootObservation.Pass::dispatcherType)
                 .as("the real container dispatched REQUEST, ERROR and ASYNC through the entry")
                 .contains("REQUEST", "ERROR", "ASYNC");
             assertThat(observation.passes()).as("every pass saw the request's root marker")
                 .allMatch(RecoveryRootObservation.Pass::rootMarker);
+            assertThat(stagedFiles(multipart)).as("the container cleaned the multipart staging area")
+                .isZero();
             assertThat(registry.liveRoots()).as("no root survives its request").isZero();
             assertThat(springSessionThreads()).as("session cleanup stays disabled in this run").isEmpty();
 
             transcript.append("asyncBorrow=").append(observation.asyncBorrows())
                 .append("\nliveRootsDuringRequests=").append(observation.liveRootsDuringRequests())
                 .append("\nsaves=").append(observation.saves())
+                .append("\nparses=").append(observation.parses())
                 .append("\npasses=").append(observation.passes())
+                .append("\nmultipartStagedAfter=").append(stagedFiles(multipart))
                 .append("\nspringSessionThreads=").append(springSessionThreads())
                 .append("\nliveRootsAfter=").append(registry.liveRoots()).append('\n');
             Files.writeString(evidence.resolve("s3-session-root.txt"), transcript.toString());
             EffectRealEnvironment.record("S3|REAL|" + transcript.toString().replace('\n', '|'));
+        }
+    }
+
+    /** Real multipart upload: the parse and the handler must both stay inside the request's root. */
+    private static String multipartStep(HttpClient client, Path multipart, String path, int size, int expected)
+            throws Exception {
+        String boundary = "s3probe" + size;
+        byte[] head = ("--" + boundary + "\r\nContent-Disposition: form-data; name=\"file\"; filename=\"probe.bin\"\r\n"
+            + "Content-Type: application/octet-stream\r\n\r\n").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] tail = ("\r\n--" + boundary + "--\r\n").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        var body = new java.io.ByteArrayOutputStream();
+        body.write(head);
+        body.write(new byte[size]);
+        body.write(tail);
+        // A length-delimited body: the container parses multipart parts from a known length and
+        // refuses a chunked body before any staging would happen.
+        Path payload = multipart.resolveSibling("upload-" + size + ".bin");
+        Files.write(payload, body.toByteArray());
+        HttpResponse<String> response = client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + APP_PORT + path))
+            .timeout(Duration.ofSeconds(60))
+            .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+            .POST(HttpRequest.BodyPublishers.ofFile(payload)).build(),
+            HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).as("real multipart HTTP %s bytes=%s body=%s", path, size, response.body())
+            .isEqualTo(expected);
+        return "step " + path + " bytes=" + size + " -> " + response.statusCode()
+            + " body=" + response.body().replace('\n', ' ') + "\n";
+    }
+
+    private static int stagedFiles(Path multipart) throws Exception {
+        try (var entries = Files.list(multipart)) {
+            return (int) entries.count();
         }
     }
 
@@ -84,6 +134,7 @@ class RecoveryRequestRootHttpIT {
                 "--spring.profiles.active=s3-probe",
                 "--server.servlet.session.cookie.secure=false",
                 "--spring.flyway.enabled=false", "--spring.session.jdbc.cleanup-cron=-",
+                "--spring.servlet.multipart.location=" + evidence.resolve("multipart"),
                 "--outbound.worker.enabled=false", "--outbound.bootstrap.enabled=false",
                 "--outbound.storage=" + evidence.resolve("storage"),
                 "--outbound.recovery.admission.enabled=true",
@@ -133,6 +184,14 @@ class RecoveryRequestRootHttpIT {
         assertThat(rows).as("one session row per served request").isEqualTo(1);
         assertThat(attributes).as("the request's session write reached the store: " + attribute).isEqualTo(1);
         return "session rows=" + rows + " " + attribute + "=" + attributes + '\n';
+    }
+
+    /** A refused upload must not reach the handler, so its would-be session attribute stays absent. */
+    private static String absentSessionAttribute(Connection connection, String attribute) throws Exception {
+        int attributes = count(connection, "SELECT COUNT(*) FROM SPRING_SESSION_ATTRIBUTES WHERE ATTRIBUTE_NAME='"
+            + attribute + "'");
+        assertThat(attributes).as("the refused upload never reached the handler: " + attribute).isZero();
+        return "refusedUpload " + attribute + "=" + attributes + '\n';
     }
 
     private static int count(Connection connection, String sql) throws Exception {

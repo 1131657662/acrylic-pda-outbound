@@ -4,6 +4,7 @@ param(
     [int]$Port = 19454,
     [int]$AppPort = 19458,
     [int]$Attempt = 1,
+    [string]$Label = 's3-session',
     [int]$SqlPortWarmupSeconds = 30,
     [switch]$Shutdown
 )
@@ -85,7 +86,7 @@ $settings = Get-Content -LiteralPath (Join-Path $instance 'settings.json') -Raw 
 $password = $settings.password
 
 # ---------------------------------------------------------------- attempt
-$target = Join-Path $EvidenceRoot ('run{0}-s3-session' -f $Attempt)
+$target = Join-Path $EvidenceRoot ('run{0}-{1}' -f $Attempt, $Label)
 if (Test-Path -LiteralPath $target) { throw "Attempt directory exists; preserve it: $target" }
 New-Item -ItemType Directory -Path $target | Out-Null
 $env:GIT_OPTIONAL_LOCKS = '0'

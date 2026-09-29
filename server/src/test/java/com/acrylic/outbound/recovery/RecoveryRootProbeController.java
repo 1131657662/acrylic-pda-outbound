@@ -8,7 +8,10 @@ import java.util.concurrent.Callable;
 import javax.sql.DataSource;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Real-HTTP probe endpoints for the S3 run: one session write, one error dispatch and one async
@@ -55,6 +58,22 @@ final class RecoveryRootProbeController {
             observation.duringRequest("/__s3/async", operations.liveRoots());
             return "async-ok";
         };
+    }
+
+    /** Multipart staging happens inside the dispatch, so the root must already cover it. */
+    @PostMapping("/__s3/multipart")
+    String multipart(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
+        request.getSession(true).setAttribute("s3-multipart", file.getOriginalFilename() + ":" + file.getSize());
+        observation.duringRequest("/__s3/multipart", operations.liveRoots());
+        return "multipart-ok:" + file.getSize();
+    }
+
+    /** A part above the configured limit must be refused without creating a second root. */
+    @PostMapping("/__s3/multipart-too-large")
+    String multipartTooLarge(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
+        request.getSession(true).setAttribute("s3-multipart-large", "unexpectedly-accepted");
+        observation.duringRequest("/__s3/multipart-too-large", operations.liveRoots());
+        return "unexpectedly-accepted:" + file.getSize();
     }
 
     private String borrow() {
