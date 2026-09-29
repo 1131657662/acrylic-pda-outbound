@@ -36,14 +36,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class G0K1RealJdbcBoundaryIT {
 
-    static final int PORT = 19438;
-    static final String DATABASE = "g0k1_jdbc_20260929";
-    static final String USER = "g0k1_jdbc_20260929";
-    static final String BASE = "jdbc:mysql://127.0.0.1:" + PORT + "/" + DATABASE;
-    static final String URL = BASE
-        + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8";
+    /** Explicit environment contract instead of a literal pin: any isolated instance in the reserved band. */
+    private static final java.util.regex.Pattern URL_PATTERN = java.util.regex.Pattern.compile(
+        "jdbc:mysql://127\\.0\\.0\\.1:(19[4-9][0-9]{2})/([a-z0-9_]+)\\?([^\\s]+)");
+    private static final java.util.regex.Pattern EVIDENCE_NAME = java.util.regex.Pattern.compile("run[0-9]+-[a-z0-9-]+");
+    static int PORT;
+    static String DATABASE;
+    static String USER;
+    static String BASE;
+    static String URL;
     /** 同一实例、同一 schema，仅额外允许一次提交多条语句，用于多语句形态。 */
-    static final String MULTI_URL = URL + "&allowMultiQueries=true";
+    static String MULTI_URL;
 
     private static String password;
     private static Path recordFile;
@@ -51,27 +54,53 @@ class G0K1RealJdbcBoundaryIT {
     @BeforeAll
     static void requireExactEnvironment() throws Exception {
         String url = System.getenv("OUTBOUND_DB_URL");
-        String user = System.getenv("OUTBOUND_DB_USER");
+        USER = System.getenv("OUTBOUND_DB_USER");
         password = System.getenv("OUTBOUND_DB_PASSWORD");
-        if (url == null || user == null || password == null || password.isEmpty()) {
+        if (url == null || USER == null || password == null || password.isEmpty()) {
             throw new IllegalStateException(
                 "G0K1RealJdbcBoundaryIT requires OUTBOUND_DB_URL/USER/PASSWORD of the isolated instance");
         }
-        if (!URL.equals(url) || !USER.equals(user)) {
-            throw new IllegalStateException("refusing to run: expected the round-isolated URL/account, got "
-                + url + " / " + user);
+        Path candidate = Path.of("").toRealPath();
+        while (candidate != null && !Files.isDirectory(candidate.resolve(".local"))) candidate = candidate.getParent();
+        if (candidate == null) throw new IllegalStateException("refusing to run: repository root with .local not reachable");
+        Path local = candidate.resolve(".local").toRealPath();
+        var matched = URL_PATTERN.matcher(url);
+        if (!matched.matches()) {
+            throw new IllegalStateException("refusing to run: OUTBOUND_DB_URL must be a loopback isolated URL on "
+                + "port 19400-19999, got " + url);
         }
-        if (url.contains(":3306")) throw new IllegalStateException("refusing to run against system 3306");
+        PORT = Integer.parseInt(matched.group(1));
+        DATABASE = matched.group(2);
+        if (PORT == 3306) throw new IllegalStateException("refusing to run against system 3306");
+        if (!USER.equals(DATABASE)) {
+            throw new IllegalStateException("refusing to run: the schema and the account must be the same isolated identity");
+        }
+        String parameters = matched.group(3);
+        if (!parameters.contains("useSSL=false") || !parameters.contains("allowPublicKeyRetrieval=true")
+            || !parameters.contains("serverTimezone=UTC")) {
+            throw new IllegalStateException("refusing to run: URL parameters are part of the contract");
+        }
+        BASE = "jdbc:mysql://127.0.0.1:" + PORT + "/" + DATABASE;
+        URL = url;
+        MULTI_URL = URL + "&allowMultiQueries=true";
         String evidence = System.getenv("G0K1_EVIDENCE_DIR");
         if (evidence != null && !evidence.isBlank()) {
-            recordFile = Path.of(evidence).resolve("it-records.tsv");
+            Path directory = Path.of(evidence);
+            if (!Files.isDirectory(directory) || !directory.toRealPath().startsWith(local)
+                || !EVIDENCE_NAME.matcher(directory.getFileName().toString()).matches()) {
+                throw new IllegalStateException("refusing to run: evidence must be a run<N>-<slug> directory inside "
+                    + "the repository .local tree");
+            }
+            recordFile = directory.resolve("it-records.tsv");
             Files.writeString(recordFile, "kind\titem\tcall\tsql\tparams\ttx_before\ttx_after\tobservation\n");
         }
         // 记录实例身份（不含凭据）
         try (Connection c = open(URL); Statement s = c.createStatement()) {
             ResultSet rs = s.executeQuery("SELECT @@port, @@version, @@datadir, CURRENT_USER(), @@transaction_isolation, @@autocommit");
             assertThat(rs.next()).isTrue();
-            assertThat(rs.getInt(1)).isEqualTo(PORT);
+            assertThat(rs.getInt(1)).as("the server must be the instance the contract names").isEqualTo(PORT);
+            Path datadir = Path.of(rs.getString(3).replace('\\', '/')).toRealPath();
+            assertThat(datadir).as("the server datadir must be an isolated .local instance").startsWith(local);
             record("DRIVER", "instance-identity", "SELECT @@port,@@version,@@datadir,CURRENT_USER()", "-",
                 "url=" + BASE.replace("jdbc:mysql://127.0.0.1:" + PORT + "/", "…/"), "-", "-",
                 "port=" + rs.getInt(1) + " version=" + rs.getString(2) + " datadir=" + rs.getString(3)

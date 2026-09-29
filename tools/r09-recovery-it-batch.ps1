@@ -127,11 +127,10 @@ $classes = @(
     'RecoveryEffectAdversarialPoolIT', 'RecoveryEffectAdversarialSqlSurfaceIT', 'RecoveryEffectAdversarialViewIT',
     'RecoveryFenceAdversarialDurableIT', 'RecoveryFenceConnectionIT', 'RecoveryFenceCrossProcessIT',
     'RecoveryFenceIntegrityIT', 'RecoveryFenceStartupIT', 'RecoveryFenceUnknownIT',
-    'G0K1RealFileLockIT', 'G0K1WriterLeaseIdentityRealIT'
+    'G0K1RealFileLockIT', 'G0K1WriterLeaseIdentityRealIT', 'G0K1RealJdbcBoundaryIT'
 )
 $notAttempted = @(
-    @{ name = 'C1InitialNormalHttpIT'; reason = 'needs a real HTTP/Session stack and its own environment' },
-    @{ name = 'G0K1RealJdbcBoundaryIT'; reason = 'its fail-closed guard pins the JDBC URL to that round schema/port 19438' }
+    @{ name = 'C1InitialNormalHttpIT'; reason = 'needs a real HTTP/Session stack and its own environment' }
 )
 if ($Only.Count -gt 0) { $classes = $Only }
 $env:GIT_OPTIONAL_LOCKS = '0'
