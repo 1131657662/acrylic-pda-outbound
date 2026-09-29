@@ -9,14 +9,24 @@ public final class RecoveryFenceChildMain {
     public static void main(String[] args) throws Exception {
         directory = Path.of(args[1]);
         status("java=" + System.getProperty("java.version") + "|pid=" + ProcessHandle.current().pid());
+        EffectRealEnvironment.requireEnvironment(); // Parent and every child share exact isolated guards.
         var supply = FenceTestSupply.read(Path.of(args[0]));
         switch (args[2]) {
             case "signal" -> signal(supply);
+            case "adversarial-owner" -> adversarialOwner(supply);
             case "matrix" -> matrix(supply, args[3]);
             case "effect" -> effect(supply, args[3]);
             case "unknown" -> unknown(supply, args[3]);
             default -> throw new IllegalArgumentException(args[2]);
         }
+    }
+    private static void adversarialOwner(FenceTestSupply supply) throws Exception {
+        var authority = supply.authority();
+        RecoveryEffectGate.enabled(authority);
+        var operation = authority.registerOperation();
+        status("OWNER|operation=" + operation);
+        waitFor("stop");
+        Runtime.getRuntime().halt(70);
     }
     private static void signal(FenceTestSupply supply) throws Exception {
         RecoveryFenceLock.forRoots(supply.roots()).hold(supply.roots());

@@ -69,11 +69,20 @@ class RecoveryFenceIntegrityIT {
     @RepeatedTest(3) void ownLiveRecordsAllowEffectsAndAuditAloneIsNotABasis() throws Exception {
         var supply = FenceTestSupply.create(evidence);
         var authority = supply.authority(); var gate = RecoveryEffectGate.enabled(authority);
-        authority.registerOperation(); authority.registerOperation();
-        Files.writeString(supply.roots().root().resolve("leases").resolve(UUID.randomUUID() + ".unknown.json"), "audit only");
+        UUID first = authority.registerOperation(); authority.registerOperation();
+        // An audit marker is ignorable only while the lease it annotates survives, and only in the shape
+        // RecoveryFenceAuthority.writeUnknown writes (B1-2 adversarial round tightened the former name-only skip).
+        var marker = com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.objectNode()
+            .put("operationId", first.toString()).put("event", "RECOVERY_LEASE_FENCED")
+            .put("at", RecoveryLeaseProcess.now());
+        Files.writeString(supply.roots().root().resolve("leases").resolve(first + ".unknown.json"),
+            RecoveryControlFormat.canonical(marker));
         try (var jdbc = new FenceRealJdbc(gate); var statement = jdbc.connection.createStatement()) {
             statement.executeUpdate(jdbc.insert(1)); assertThat(jdbc.count()).isEqualTo(1);
             EffectRealEnvironment.record("REAL|own-live-records|delegate=1|observer=1|audit-not-a-blocking-basis");
+            // Tightened expectation: a marker with no lease beside it is not ignorable any more.
+            Files.writeString(supply.roots().root().resolve("leases").resolve(UUID.randomUUID() + ".unknown.json"), "audit only");
+            jdbc.rejected(statement, "RECOVERY_LEASE_OUTSTANDING");
         }
     }
     @RepeatedTest(3) void preexistingResultSetAndSourceReadRemainGated() throws Exception {

@@ -4,25 +4,42 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
+import java.util.regex.Pattern;
 import static com.acrylic.outbound.recovery.RecoveryControlFormat.*;
 
 /** Each owner is observed separately. A successful scan does NOT eliminate window W. */
 final class RecoveryLeaseScan {
+    private static final Pattern AUDIT_MARKER = Pattern.compile("([0-9a-f-]{36})[.]unknown[.]json([.]pending)?");
     private RecoveryLeaseScan() { }
 
     static void check(RecoveryLeaseRoots roots) throws IOException {
         RecoveryControlLock.requireOwner(roots.authorityRoot());
         try (var entries = Files.list(roots.root().resolve("leases"))) {
             for (Path path : entries.sorted(Comparator.comparing(p -> p.getFileName().toString())).toList()) {
-                String name = path.getFileName().toString();
-                if (name.matches("[0-9a-f-]{36}[.]unknown[.]json([.]pending)?")) continue; // Audit is not a blocking basis.
-                try { checkRecord(path, roots); }
-                catch (IOException | RuntimeException error) {
+                try {
+                    if (auditMarkerBesideItsLease(path)) continue; // Not a blocking basis only while its lease survives.
+                    checkRecord(path, roots);
+                } catch (IOException | RuntimeException error) {
                     RecoveryFenceAudit.event("RECOVERY_LEASE_OUTSTANDING", path + "|" + error.getMessage());
                     throw new RecoveryControlException("RECOVERY_LEASE_OUTSTANDING", error);
                 }
             }
         }
+    }
+
+    /**
+     * A lease renamed (or reshaped) into the audit file name must never be dismissed by its name alone:
+     * the marker is ignorable only when the lease it annotates is still present and the content is
+     * the audit shape written on an UNKNOWN outcome, not a lease record.
+     */
+    private static boolean auditMarkerBesideItsLease(Path path) throws IOException {
+        var match = AUDIT_MARKER.matcher(path.getFileName().toString());
+        if (!match.matches()) return false;
+        Path lease = path.resolveSibling(match.group(1) + ".json");
+        if (!Files.exists(lease, LinkOption.NOFOLLOW_LINKS)) return false;
+        var value = RecoveryControlHistory.read(path);
+        return value.has("operationId") && value.has("event") && value.has("at")
+            && !value.has("processFileIdentity") && !value.has("processSha256");
     }
 
     private static void checkRecord(Path path, RecoveryLeaseRoots roots) throws IOException {

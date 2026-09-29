@@ -53,7 +53,12 @@ final class RecoveryLeaseProcess {
         var local = LOCAL.get(path);
         JsonNode value = local == null ? RecoveryControlHistory.read(path) : local.readHeld();
         validate(value, path, digest, roots);
-        if (local != null) return local.lock.isValid(); // Never open/close a second local descriptor.
+        if (local != null) {
+            // The cache is keyed by path: a file replaced at that path is a different file whose
+            // lifecycle lock nobody holds. Never vouch for it from the descriptor we locked earlier.
+            require(local.nativeIdentity.equals(identity), "RECOVERY_LEASE_OUTSTANDING");
+            return local.lock.isValid(); // Never open/close a second local descriptor.
+        }
         try (var channel = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE, LinkOption.NOFOLLOW_LINKS)) {
             require(identity.equals(RecoveryWriterProtocol.fileIdentity(path)), "RECOVERY_LEASE_OUTSTANDING");
             try (var probe = channel.tryLock(LOCK_BYTE, 1, false)) { return probe == null; }
