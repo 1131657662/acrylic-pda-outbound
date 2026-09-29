@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S27：V36 家族供给与首批运行](R09_C2_B1_3_S27_V36_FAMILY_2026-09-29.md)：新增 `tools/r09-e2a-v36-run.ps1`（datadir 置于 IT 断言的 `<attempt>/data`、导出 `E2A_<PREFIX>_*` 与 `E2A_CROSS_ROOT`、口令落盘复用、一次性拒绝重跑）；`E2aV36MigrationIT`／`E2aV36DeviceKeyIT`／`E2aV36PairedKeyIT` **通过**（E2a 主树已验 **18→21**）；`E2aV36StopWriterIT` 需预置私钥物料、两个 Audit IT 的身份断言仍与供给有差异（**均非产品问题**）。659 仍待裁定。K1 仍未通过；另附 S27 开工前看板归档。
+
 - [R09 C2 B1-3 S26：659 的 409 两次驱动实验](R09_C2_B1_3_S26_659_CONTEXT_409_2026-09-29.md)：①把取候选摘要提到 `facts#1` 之前、②命令改用快照自身的 `candidateContextSha256`（并打日志）——**两次仍 `LINK 409 COMMAND_CONTEXT_CHANGED`**，且日志无 `digest mismatch`（两来源一致）⇒ 排除"候选顺序"与"摘要覆盖"；663 审计**无该 409 事件** ⇒ 字段级差异不在审计中。S25 的 CSRF 修复保留有效；659 仍未验。定位字段须**产品侧仪表化运行（需授权）**，未授权前不做也不当产品缺陷。E2a 主树已验 18 个不变。K1 仍未通过；另附 S26 开工前看板归档。
 
 - [R09 C2 B1-3 S25：659 的 403 根因修复（测试侧）＋推进到业务级 409](R09_C2_B1_3_S25_DRIVER_CSRF_FIX_2026-09-29.md)：根因在 SPA 驱动——`web/tools/e2a-web-command-flow.mjs` 只在登录前取一次 `/auth/csrf`，登录后令牌被轮换而驱动仍用旧令牌发 POST ⇒ 安全层 403（不留审计行）。修法：`readCsrf(label)`＋**登录后重取**；run 661 显示 403 **消失**、`steps` 含 `csrf (after login)`，LINK 前进到 **409 `COMMAND_CONTEXT_CHANGED`**（业务级乐观并发守卫，产品按设计工作）⇒ 阻塞从"安全层"前移到"上下文新鲜度"。下一步：驱动在取回候选摘要后重读 facts 再发 LINK。E2a 主树已验 18 个不变。K1 仍未通过；另附 S25 开工前看板归档。
