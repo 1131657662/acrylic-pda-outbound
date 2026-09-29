@@ -42,7 +42,7 @@ public final class RecoveryWriterProcess {
 
     private static RecoveryWriterLease acquire(RecoveryControlLocation location, Path trusted) throws java.io.IOException {
         return RecoveryControlLock.locked(location.root(), () -> {
-            RecoveryControlHistory.load(location, trusted);
+            RecoveryControlHistory.load(location, trusted, RecoveryControlPurpose.NORMAL_ADMISSION);
             return RecoveryWriterLease.acquire(location.root());
         });
     }

@@ -15,7 +15,7 @@ public final class RecoveryControlReader {
         try {
             var location = configured.checked();
             Path trusted = location.checkpoint(trustedCheckpoint);
-            return RecoveryControlLock.locked(location.root(), () -> RecoveryControlHistory.load(location, trusted));
+            return RecoveryControlLock.locked(location.root(), () -> RecoveryControlHistory.load(location, trusted, RecoveryControlPurpose.NORMAL_ADMISSION));
         } catch (IOException error) {
             throw new RecoveryControlException("CONTROL_AUTHORITY_UNAVAILABLE", error);
         }

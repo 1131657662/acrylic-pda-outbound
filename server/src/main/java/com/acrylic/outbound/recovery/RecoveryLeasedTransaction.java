@@ -45,7 +45,7 @@ public final class RecoveryLeasedTransaction {
         var current = location.checked();
         Path witness = current.checkpoint(trusted);
         return RecoveryControlLock.locked(current.root(), () -> {
-            require(startup.equals(RecoveryControlHistory.load(current, witness)), "CONTROL_INSTANCE_STALE");
+            require(startup.equals(RecoveryControlHistory.load(current, witness, RecoveryControlPurpose.NORMAL_ADMISSION)), "CONTROL_INSTANCE_STALE");
             return RecoveryWriterLease.acquire(current.root());
         });
     }

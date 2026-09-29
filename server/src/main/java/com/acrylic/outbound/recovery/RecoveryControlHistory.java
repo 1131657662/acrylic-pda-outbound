@@ -10,8 +10,11 @@ import static com.acrylic.outbound.recovery.RecoveryControlFormat.*;
 final class RecoveryControlHistory {
     private RecoveryControlHistory() { }
 
-    static RecoveryControlSnapshot load(RecoveryControlLocation location, Path trusted) throws IOException {
+    static RecoveryControlSnapshot load(RecoveryControlLocation location, Path trusted, RecoveryControlPurpose purpose)
+            throws IOException {
         var identity = read(location.root().resolve("identity.json"));
+        // The single entry point: the declared purpose decides which authority kind may be loaded.
+        purpose.requireKind(identity);
         RecoveryControlRecords.identity(identity, location);
         var records = history(location);
         require(!records.isEmpty(), "CONTROL_NOT_INITIALIZED");

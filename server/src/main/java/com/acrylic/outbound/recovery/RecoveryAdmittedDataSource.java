@@ -86,7 +86,7 @@ public final class RecoveryAdmittedDataSource implements DataSource {
                 RecoveryControlLocation current = location.checked();
                 RecoveryControlFormat.require(checked.equals(current), "CONTROL_AUTHORITY_CHANGED");
                 Path trustedCheckpoint = current.checkpoint(checkpoint);
-                RecoveryControlSnapshot now = RecoveryControlHistory.load(current, trustedCheckpoint);
+                RecoveryControlSnapshot now = RecoveryControlHistory.load(current, trustedCheckpoint, RecoveryControlPurpose.NORMAL_ADMISSION);
                 RecoveryControlFormat.require(startup.equals(now), "CONTROL_INSTANCE_STALE");
                 return RecoveryWriterLease.acquire(current.root());
             });
