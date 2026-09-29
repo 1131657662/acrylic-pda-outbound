@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-09-29
 branch: codex/development
-head: 5e3b6f8
+head: fcf8feb
 dirty_entries: 2
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
