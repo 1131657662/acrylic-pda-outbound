@@ -12,11 +12,16 @@ import java.sql.SQLException;
  * connection and on the statements, result sets and metadata it handed out takes this instance's
  * monitor, so an admitted execution and a connection-level close cannot overlap and the recorded
  * transaction/poison state is visible to the close that decides whether to release the lease.
+ *
+ * <p>When the connection belongs to an admitted operation root, its retained {@code CONNECTION}
+ * sub-operation is released as well, at the same terminal point, so a root never keeps counting a
+ * connection that is already gone.
  */
 final class RecoveryConnectionHandler implements InvocationHandler {
     private final Connection delegate;
     private final RecoveryWriterLease lease;
     private final RecoveryAdmissionProbe probe;
+    private final RecoverySubLease connectionOperation;
     private boolean autoCommit;
     private boolean transactionActive;
     private boolean poisoned;
@@ -30,7 +35,18 @@ final class RecoveryConnectionHandler implements InvocationHandler {
     }
 
     RecoveryConnectionHandler(Connection delegate, RecoveryWriterLease lease, RecoveryAdmissionProbe probe) throws SQLException {
+        this(delegate, lease, probe, null);
+    }
+
+    /**
+     * @param connectionOperation the retained sub-operation this connection belongs to, released when
+     *     the connection reaches its terminal state; {@code null} on the legacy connection-level path,
+     *     which has no operation root above it.
+     */
+    RecoveryConnectionHandler(Connection delegate, RecoveryWriterLease lease, RecoveryAdmissionProbe probe,
+            RecoverySubLease connectionOperation) throws SQLException {
         this.delegate = delegate; this.lease = lease; this.probe = probe;
+        this.connectionOperation = connectionOperation;
         try {
             autoCommit = delegate.getAutoCommit();
             transactionActive = !autoCommit;
@@ -131,6 +147,7 @@ final class RecoveryConnectionHandler implements InvocationHandler {
         try { delegate.close(); }
         catch (SQLException error) { poison("CONTROL_CONNECTION_CLOSE_UNCONFIRMED", error); failure = combine(failure, error); }
         closed = true;
+        endConnectionOperation();
         if (poisoned) {
             if (failure != null) throw failure;
             return null;
@@ -138,6 +155,13 @@ final class RecoveryConnectionHandler implements InvocationHandler {
         try { lease.close(); }
         catch (IOException error) { poison("CONTROL_WRITER_RELEASE_UNCONFIRMED", error); throw new SQLException(error); }
         return null;
+    }
+
+    /** The connection is terminal, so the retained sub-operation under this root ends with it. */
+    private void endConnectionOperation() {
+        if (connectionOperation == null) return;
+        try { connectionOperation.close(); }
+        catch (RuntimeException error) { poison("CONTROL_SUBLEASE_RELEASE_UNCONFIRMED", error); }
     }
 
     private void poison(String code, Throwable cause) {

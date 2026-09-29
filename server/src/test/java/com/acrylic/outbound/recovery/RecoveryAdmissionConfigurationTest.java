@@ -13,7 +13,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/** Entry wiring: the admitted writer is primary, the raw pool serves Flyway only. */
+/** Entry wiring: the request-root writer is primary, the raw pool serves Flyway only. */
 class RecoveryAdmissionConfigurationTest {
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
         .withUserConfiguration(RecoveryAdmissionConfiguration.class)
@@ -25,9 +25,13 @@ class RecoveryAdmissionConfigurationTest {
             assertThat(context).hasNotFailed();
             DataSource primary = context.getBean(DataSource.class);
             DataSource migration = context.getBean(RecoveryAdmissionConfiguration.MIGRATION_DATASOURCE, DataSource.class);
-            assertThat(primary).isInstanceOf(RecoveryAdmittedDataSource.class);
+            assertThat(primary).isInstanceOf(RecoveryRequestAdmittedDataSource.class);
             assertThat(migration).isInstanceOf(HikariDataSource.class).isNotSameAs(primary);
             assertThat(context.getBeansOfType(DataSource.class)).hasSize(2);
+            assertThat(context.getBean(RecoveryOperationRegistry.class)).isNotNull();
+            assertThat(context.getBeanNamesForType(RecoveryAdmittedDataSource.class))
+                .as("the legacy connection-level adapter is not a bean of the application entry")
+                .isEmpty();
             // Flyway resolves its pool by this qualifier, so it must sit on the raw pool alone.
             var definition = (AnnotatedBeanDefinition) ((BeanDefinitionRegistry) context.getBeanFactory())
                 .getBeanDefinition(RecoveryAdmissionConfiguration.MIGRATION_DATASOURCE);
@@ -39,6 +43,8 @@ class RecoveryAdmissionConfigurationTest {
     @Test void absentFlagLeavesTheEntryWithoutAnAdmittedWriter() {
         runner.run(context -> {
             assertThat(context).hasNotFailed();
+            assertThat(context.getBeanNamesForType(RecoveryRequestAdmittedDataSource.class)).isEmpty();
+            assertThat(context.getBeanNamesForType(RecoveryOperationRegistry.class)).isEmpty();
             assertThat(context.getBeanNamesForType(RecoveryAdmittedDataSource.class)).isEmpty();
             assertThat(context.getBeanNamesForType(DataSource.class)).isEmpty();
         });
@@ -58,19 +64,30 @@ class RecoveryAdmissionConfigurationTest {
             .run(context -> {
                 assertThat(context).hasFailed();
                 assertThat(context.getStartupFailure())
-                    .hasStackTraceContaining("recoveryAdmittedDataSource")
+                    .hasStackTraceContaining("recoveryOperationRegistry")
                     .hasStackTraceContaining("CONTROL_FILE_MISSING");
             });
     }
 
-    @Test void staleInstanceRefusesABorrowThroughTheEntry() throws Exception {
+    @Test void borrowWithoutAnOperationRootIsRefusedWhileAStaleInstanceCannotGetOne() throws Exception {
         var fixture = RecoveryWriterLeaseTest.protocol();
         runner.withPropertyValues(options(fixture)).run(context -> {
             assertThat(context).hasNotFailed();
+            var registry = context.getBean(RecoveryOperationRegistry.class);
             DataSource primary = context.getBean(DataSource.class);
+            var token = new RecoveryOperationToken(java.util.UUID.randomUUID(),
+                RecoveryOperationKind.HTTP_REQUEST, fixture.installation, registry.startup().recordSha256(), null);
+
+            // No thread binding and no root marker: the primary refuses, it never borrows a
+            // connection-level lease for this thread.
+            assertThatThrownBy(primary::getConnection).hasMessage("RECOVERY_OPERATION_REQUIRED");
+            assertThat(registry.liveRoots()).isZero();
+
+            // An authority that moved on since startup cannot hand out an operation root either.
             fixture.append(fixture.next("RECOVERING"));
-            assertThat(context.getBean(DataSource.class)).isSameAs(primary);
-            assertThatThrownBy(primary::getConnection).hasMessage("CONTROL_INSTANCE_STALE");
+            assertThatThrownBy(() -> RecoveryControlLock.locked(fixture.root, () -> registry.register(token)))
+                .hasMessage("CONTROL_INSTANCE_STALE");
+            assertThat(registry.liveRoots()).isZero();
         });
     }
 

@@ -6,37 +6,37 @@
 ```yaml
 date: 2026-09-29
 branch: codex/development
-head: 131c1d8
-dirty_entries: 4
+head: be52f06
+dirty_entries: 3
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-**R09 C2 B1-2 对抗性复核收口（2026-09-29；DSH 接手 Codex 被 403 中断的会话）**。完整记录与逐轮证据见 [B1-2 对抗性复核记录](history/R09_C2_B1_2_ADVERSARIAL_2026-09-29.md)。
+**R09 C2 B1-3 S2 请求根数据源收口（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。完整记录、逐条拒绝码与逐轮证据见 [B1-3 S2 记录](history/R09_C2_B1_3_S2_REQUEST_ROOT_2026-09-29.md)；替换前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S2_2026-09-29.md)。
 
 ## Git、写权与范围
-- 树 D:/acrylic-pda-outbound；分支 codex/development；输入 8c723015e67cfe31af1819cefb254e211b45bdaf；开工 HEAD＝实际远端、0/0、干净、无 index.lock。
-- 写者＝DSH（本会话）。Codex 会话被模型中转商按会话触发安全策略 403 屏蔽，其 4 项在途改动由本轮采纳/修正后并入（见记录 §3）。
-- **口径：同一会话实施＋自审＋运行，非独立第三方验收**；600 签名判定表无新增/变更行。
-- 共享树 r06-e2a-migration 保持 detached ea4d166、97 项；只读，未同步/清理/reset/提交/合并。
+- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD 90c924d；写者＝DSH（本会话）。
+- **非本会话的未提交改动**（未代提交、未修改）：`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、未跟踪 `docs/PDA_UI_UX_REVIEW_2026-09-29.md`。
+- 共享树 r06-e2a-migration 保持 detached ea4d166；只读，未同步/清理/reset/提交/合并。
 
-## 三处缺口与处置
-- **H1 已修**：RecoveryLeaseProcess.alive() 的本机缓存按路径索引且不绑定身份 ⇒ 路径上文件被替换后仍以旧描述符作证并放行（基线实测 delegate=1 observer=1，3/3，违反“锁可取即 OUTSTANDING”）。现要求缓存身份＝当前文件身份；修复后 3/3 拒绝。
-- **H2 已修**：RecoveryLeaseScan 原按文件名跳过 `*.unknown.json(.pending)` ⇒ 孤儿租约改名即隐形（实测 6/6 放行）。现仅当同前缀租约仍在**且**内容为审计形态时才跳过；修复后 6/6 拒绝。
-- **H3 已闭合（同日补做）**：显式供给 32 字节锚点秘密 ⇒ `anchorId` 入自哈希 marker、进程/租约记录带 `anchorTag` 并在读取时校验、**跨进程开启而锚点缺失即启动失败**（`CONTROL_ANCHOR_REQUIRED`）；H3 用例翻转为 `orphan-live-owner-anchored` 并 3/3 拒绝。**H3′ 亦已闭合**：新增锚定操作索引 `leases/index.json`（`indexTag` 同锚点保护）——索引列出而记录缺失 ⇒ 拒绝、记录不在索引 ⇒ 拒绝，删除记录用例 3/3 拒绝；剩余仅运维政策（秘密保管/轮换）⇒ `DEBT-R09-C2-LEASE-ANCHOR` 继续单列。
-- 另证：12 条 payload 变异（truncate/extend/rewrite/move）全部拒绝，且 1GiB 生命周期锁不受载荷改写影响。
+## B1-3 S2 交付（只接线、不开开关）
+- 新增（`recovery` 包）：`RecoveryRequestAdmittedDataSource`（`@Primary`，六码）、`RecoveryOperationRegistry`、`RecoveryOperationLease`、`RecoverySubLease`、`RecoveryOperationToken`、`RecoveryOperationKind`、`RecoveryOperationPhase`、`RecoverySubOperation`。
+- 修改：`RecoveryAdmissionConfiguration`（`@Primary` 改到请求根数据源＋新增 registry bean；权威缺失即启动失败；旧类不再是 bean）、`RecoveryWriterLease.reference()`（同一已持描述符的独立引用）、`RecoveryConnectionHandler`（终态释放该根的 `CONNECTION` 子操作）。
+- 六码：①绑定有效且根存活→借用并登记 `CONNECTION`；②有根标记但线程未绑定→`RECOVERY_OPERATION_CONTEXT_LOST`；③两者都无→`RECOVERY_OPERATION_REQUIRED`（**拒绝，不回退**）；④令牌失效→`CONTROL_OPERATION_RELEASED`；⑤越集子操作→`CONTROL_SUBOPERATION_FORBIDDEN`；⑥根 FENCED→`RECOVERY_LEASE_FENCED`。
+- `@Primary` 唯一性：主代码仅一处；测试侧仅冻结的 `RecoveryEntryLostCommitConfiguration`（其上下文与主入口互斥）；静态白名单测试 3 项强制。**新增生命周期内部码待回填设计 §4.4 码表**（见记录 §2.2）。
 
 ## 运行与证据
-- 最终：定向单测 **2038 / 0**（run13）；并集全量 IT（`RecoveryEffect*IT|RecoveryFence*IT`）**665 / 0 / 0**（22 套，run15）。索引轮：run16（27/0）、run17（单测 2038/0）、run18（668 项 1 失败＝684 条 TIME_WAIT 端口耗尽，环境 flake）、run19（同代码复跑 668/0/0 绿）；**分批跑批**（tools/r09-recovery-it-batch.ps1，run101–run124）：**24 类 / 683 项 / 0 失败**，TIME_WAIT 峰值 1664；**契约化后全新专用实例复跑 25 类 / 696 项 / 0 失败**（含 G0K1RealJdbcBoundaryIT；恢复链 26 类仅 C1 HTTP 类不在批内）。锚点轮另含 run12（24/0）与 run14（3 失败＝新守卫被判预期收紧，已补测试）。过程失败轮 run2/run3/run4/run8/run9 全部保留（探针抢锁缺陷、我的自锁缺陷、过紧修法、非规范标记）。
-- 教训（已入记录）：本轮曾用 `RecoveryEffect*IT` 单过滤器跑“全量”（536/0）而漏掉 Fence 侧，改用并集后才暴露问题 ⇒ **覆盖过滤器本身也是被验证对象**。
-- 隔离库：端口 19442、datadir `.local/mysql19442-b12-adversarial/data`、schema/账号 `b12_adv_20260929`；收尾正常 shutdown、端口释放，datadir 与失败证据保留；3306/33060 未动。
-- 证据根 `.local/r09-c2-b1-2-adversarial-20260929-a/`（不入库）：run1–run10 逐轮 command/gradle.log/exit/XML/results/hash、real-records.tsv、逐子 JVM 回执、RESUME-DSH-handover.md 与最终回执。
+- 定向单测（run1）：**6 类 / 45 项 / 0 失败**；旧 `RecoveryAdmittedDataSourceTest` **17/17 仍绿**，新数据源 10 项（含六码），静态白名单 3 项，入口配置 4 项。
+- 全量单测（run3，`gradlew -p server test`，**不带 `--tests` 白名单**）：**123 类 / 2789 项 / 0 失败 / 0 错误 / 1 既有无关 skip**；`com.acrylic.outbound.recovery.*` **28 类 / 2151 项 / 0 失败 / 0 跳过**。
+- 恢复链 25 类 IT 批次（含 S1 后继增量复验）：全新专用实例 19453，**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空；TIME_WAIT 峰值 1521；正常 shutdown、端口释放。中止轮 `it-batch-25b-aborted-javadoc-edit`（注释改动后主动重跑）原样保留。
+- 证据根 `.local/r09-c2-b1-3-s2-20260929-a/`（不入库）：`run1-unit-targeted/`、`run3-unit-full-final/`、`it-batch-25/`（逐类 run101–run125＋batch-summary.json）、前置快照。
 
 ## 保留边界与停止点
-- `outbound.recovery.effect-gate.enabled` 与跨进程开关均默认 false；未注册/替换 DataSource、无 HTTP/Session 接线、无退役/孤儿解除/生产释放。
-- **K1 仍未通过**（K1-1 生产效果门未实现/未验收整体、K1-2 窗口 W、K1-3 依条件分支）；**未进入 B1-3**。
-- 单列：**窗口 W**、**DEBT-R09-C2-LEASE-ANCHOR**、UNCONFIRMED_NO_CROSS_PROCESS_BASIS（须外部隔离）、HTTP/Session、生产 Session 清理、孤儿解除与生产释放、Linux/其他文件系统、网络盘、断电/硬复位、现场组合、Java/Python 允许集差异、C1 历史未验项、**IT-DISCOVERY（21 类＝**专用实验舱绑定**：自我跳过 11＋硬失败 9＋未跑 1，**无一类跑绿 ⇒ 均不构成覆盖**；需实验舱供给或跨树运行，**须授权/协同**）、**IT-EVIDENCE-AUDIT（1816 份 XML/391 类中 18 类历来仅"跳过型"证据 ⇒ 从未覆盖；"退出码 0≠覆盖"）****、**IT-BATCH-PIN 已修（守卫契约化：端口区间/schema=账号/证据目录契约；全新实例 19445 复跑 24 类/683 项/0 失败）**；**TZ-GMT 时区显示不统一（用户报告：PDA 显示 UTC、网页/Excel/PDF/图片需统一；已记录待排期，本轮不修）**。
-- **下一步**：进入 B1-3 之前**必须先决定**——为 P5 引入认证锚点，或书面确认“P5 目录被改写不在威胁模型内”并同步修订设计表述；其后各切片独立授权与验收。不合 main、不发布、不操作原库/现网；`localDeletionAllowed=false`。
-- **B1-3 已授权开工（只接线、不开开关）**：四子切片 S1 purpose 接线 → S2 `RecoveryRequestAdmittedDataSource`（`@Primary`，6 拒绝码）→ S3 Session 过滤器（`{ASYNC,ERROR,REQUEST}`，顺序 -2147483598）→ S4 multipart/错误分派（**S1 已完成并两级验证**；**S2 规格已核实待实现**：`RecoveryRequestAdmittedDataSource` 尚不存在、`@Primary` 现于 `RecoveryAdmissionConfiguration:46` 且测试侧另有一处须防重复）；分解与验收见[开工说明](history/R09_C2_B1_3_PLAN_2026-09-29.md)。**S1 已实现并在单测级验证**（干净重建后 14 suite/0 失败；新 `RecoveryAuthorityPurposeTest` 5 项）；**恢复链 IT 复验通过**（全新实例 19450：25 类 / 696 项 / 0 失败 / 0 跳过，NOT-COVERED 空）。后继已做：kind 校验已集中到同一 purpose 规则并落到 fence/租约根基座入口（错误码不变，run25 单测 2044/0）；跑批白名单须持续维护，否则新测试类静默不跑。
+- `outbound.recovery.admission.enabled`、`effect-gate.enabled`、跨进程开关**全部默认 false**；未接生产、未部署、未合 main、未操作原库/现网；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`。
+- **S3/S4 未开工**：尚无请求接纳过滤器，生产入口没有"创建根／绑定分派／发布请求根标记"的代码 ⇒ 现在即使打开开关，真实 HTTP 也按③被拒（切片顺序，非本切片宣称可用）。
+- 未做（后续批次）：完整接纳门 S0–S4 与 P5 前后探针、租约发布、孤儿/围栏通道、效果门接线、离线登记写侧、启动门与 Session 清理守卫、§5.6 退役协议（含退役失败即隔离＋halt）；`openSubOperations()` 目前只是观察值。
+- **入口 IT 重基保留项**：`E2aRecoveryAdmissionEntryIT`、`C1EntryRegression` 的 live/unknown 检查按 S2 语义已过时（primary 现为请求根数据源，绑定根的过滤器属 S3）⇒ 本轮**未运行**，待 S3 重基复验；lost-commit 检查仍走测试配置旧类。
+- K1 仍未通过（K1-1/K1-2/K1-3 不变）；单列：**窗口 W**、`DEBT-R09-C2-LEASE-ANCHOR`、UNCONFIRMED_NO_CROSS_PROCESS_BASIS（须外部隔离）、HTTP/Session、生产 Session 清理、孤儿解除与生产释放、Linux/其他文件系统、网络盘、断电/硬复位、现场组合、Java/Python 允许集差异、C1 历史未验项、**IT-DISCOVERY（21 类＝专用实验舱绑定，无一跑绿）**、**IT-EVIDENCE-AUDIT（18 类历来仅"跳过型"证据）**、**TZ-GMT 时区显示不统一（待排期）**。
+- **下一步**：S3 Session 过滤器（`{ASYNC,ERROR,REQUEST}`、顺序 -2147483598、请求根覆盖、每类 Session 写在同一根内、ERROR/ASYNC 重分派根复用），并把根标记发布与 `bindDispatch/unbindDispatch` 接到真实分派生命周期；随后重基入口 IT。
 <!-- CURRENT_STATE_END -->
