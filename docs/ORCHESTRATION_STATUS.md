@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-09-29
 branch: codex/development
-head: 6089304
-dirty_entries: 12
+head: c2ab1c8
+dirty_entries: 4
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
@@ -38,5 +38,5 @@ server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 - **K1 仍未通过**（K1-1 生产效果门未实现/未验收整体、K1-2 窗口 W、K1-3 依条件分支）；**未进入 B1-3**。
 - 单列：**窗口 W**、**DEBT-R09-C2-LEASE-ANCHOR**、UNCONFIRMED_NO_CROSS_PROCESS_BASIS（须外部隔离）、HTTP/Session、生产 Session 清理、孤儿解除与生产释放、Linux/其他文件系统、网络盘、断电/硬复位、现场组合、Java/Python 允许集差异、C1 历史未验项、**IT-DISCOVERY（21 类＝**专用实验舱绑定**：自我跳过 11＋硬失败 9＋未跑 1，**无一类跑绿 ⇒ 均不构成覆盖**；需实验舱供给或跨树运行，**须授权/协同**）、**IT-EVIDENCE-AUDIT（1816 份 XML/391 类中 18 类历来仅"跳过型"证据 ⇒ 从未覆盖；"退出码 0≠覆盖"）****、**IT-BATCH-PIN 已修（守卫契约化：端口区间/schema=账号/证据目录契约；全新实例 19445 复跑 24 类/683 项/0 失败）**；**TZ-GMT 时区显示不统一（用户报告：PDA 显示 UTC、网页/Excel/PDF/图片需统一；已记录待排期，本轮不修）**。
 - **下一步**：进入 B1-3 之前**必须先决定**——为 P5 引入认证锚点，或书面确认“P5 目录被改写不在威胁模型内”并同步修订设计表述；其后各切片独立授权与验收。不合 main、不发布、不操作原库/现网；`localDeletionAllowed=false`。
-- **B1-3 已授权开工（只接线、不开开关）**：四子切片 S1 purpose 接线 → S2 `RecoveryRequestAdmittedDataSource`（`@Primary`，6 拒绝码）→ S3 Session 过滤器（`{ASYNC,ERROR,REQUEST}`，顺序 -2147483598）→ S4 multipart/错误分派；分解与验收见[开工说明](history/R09_C2_B1_3_PLAN_2026-09-29.md)。**S1 已实现并在单测级验证**（干净重建后 14 suite/0 失败；新 `RecoveryAuthorityPurposeTest` 5 项）；**恢复链 IT 复验进行中**。后继：kind 校验应落在 fence/租约根基座入口（control 身份无 `authorityKind`）；跑批白名单须持续维护，否则新测试类静默不跑。
+- **B1-3 已授权开工（只接线、不开开关）**：四子切片 S1 purpose 接线 → S2 `RecoveryRequestAdmittedDataSource`（`@Primary`，6 拒绝码）→ S3 Session 过滤器（`{ASYNC,ERROR,REQUEST}`，顺序 -2147483598）→ S4 multipart/错误分派；分解与验收见[开工说明](history/R09_C2_B1_3_PLAN_2026-09-29.md)。**S1 已实现并在单测级验证**（干净重建后 14 suite/0 失败；新 `RecoveryAuthorityPurposeTest` 5 项）；**恢复链 IT 复验通过**（全新实例 19450：25 类 / 696 项 / 0 失败 / 0 跳过，NOT-COVERED 空）。后继：kind 校验应落在 fence/租约根基座入口（control 身份无 `authorityKind`）；跑批白名单须持续维护，否则新测试类静默不跑。
 <!-- CURRENT_STATE_END -->
