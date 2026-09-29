@@ -13,30 +13,34 @@ android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-**R09 C2 B1-3 S2 请求根数据源收口（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。完整记录、逐条拒绝码与逐轮证据见 [B1-3 S2 记录](history/R09_C2_B1_3_S2_REQUEST_ROOT_2026-09-29.md)；替换前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S2_2026-09-29.md)。
+**R09 C2 B1-3 S3 请求根过滤器与真实 Session 覆盖收口（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。完整记录、逐轮证据与三项发现见 [B1-3 S3 记录](history/R09_C2_B1_3_S3_REQUEST_ROOT_SESSION_2026-09-29.md)；S3 开工前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S3_2026-09-29.md)。
 
 ## Git、写权与范围
-- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD 90c924d；写者＝DSH（本会话）。
+- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD `47db883`（S2 收口）；写者＝DSH（本会话）。
 - **非本会话的未提交改动**（未代提交、未修改）：`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、未跟踪 `docs/PDA_UI_UX_REVIEW_2026-09-29.md`。
 - 共享树 r06-e2a-migration 保持 detached ea4d166；只读，未同步/清理/reset/提交/合并。
 
-## B1-3 S2 交付（只接线、不开开关）
-- 新增（`recovery` 包）：`RecoveryRequestAdmittedDataSource`（`@Primary`，六码）、`RecoveryOperationRegistry`、`RecoveryOperationLease`、`RecoverySubLease`、`RecoveryOperationToken`、`RecoveryOperationKind`、`RecoveryOperationPhase`、`RecoverySubOperation`。
-- 修改：`RecoveryAdmissionConfiguration`（`@Primary` 改到请求根数据源＋新增 registry bean；权威缺失即启动失败；旧类不再是 bean）、`RecoveryWriterLease.reference()`（同一已持描述符的独立引用）、`RecoveryConnectionHandler`（终态释放该根的 `CONNECTION` 子操作）。
-- 六码：①绑定有效且根存活→借用并登记 `CONNECTION`；②有根标记但线程未绑定→`RECOVERY_OPERATION_CONTEXT_LOST`；③两者都无→`RECOVERY_OPERATION_REQUIRED`（**拒绝，不回退**）；④令牌失效→`CONTROL_OPERATION_RELEASED`；⑤越集子操作→`CONTROL_SUBOPERATION_FORBIDDEN`；⑥根 FENCED→`RECOVERY_LEASE_FENCED`。
-- `@Primary` 唯一性：主代码仅一处；测试侧仅冻结的 `RecoveryEntryLostCommitConfiguration`（其上下文与主入口互斥）；静态白名单测试 3 项强制。**新增生命周期内部码待回填设计 §4.4 码表**（见记录 §2.2）。
+## B1-3 S3 交付（只接线、不开开关）
+- 新增 `RecoveryRequestAdmissionFilter`（一请求一根；每次分派绑定；ASYNC/ERROR/嵌套重分派复用同根并补绑定；根标记入请求属性）、`RecoveryRequestRootListener`（容器最后边界：清该根全部线程绑定并退役）。
+- `RecoveryOperationRegistry.admit(token)`：请求入口在 P3 协调锁内建根（设计 §4.1 S0–S4 的真子集；P2 证据、P5 发布/前后探针属后续批次）；`RecoveryAdmissionConfiguration` 新增过滤器/注册/监听器 Bean，**仅 `admission.enabled=true` 时装配**。
+- 注册顺序 `Ordered.HIGHEST_PRECEDENCE`（先于会话过滤器 `-2147483598`）、分派范围 `{REQUEST, ASYNC, ERROR}`。
 
 ## 运行与证据
-- 定向单测（run5，自审后）：**6 类 / 47 项 / 0 失败**；旧 `RecoveryAdmittedDataSourceTest` **17/17 仍绿**，新数据源 11 项（六码＋失败借用路径），静态白名单 3 项，入口配置 4 项。
-- 全量单测（run4，`gradlew -p server test`，**不带 `--tests` 白名单**）：**123 类 / 2790 项 / 0 失败 / 0 错误 / 1 既有无关 skip**；`com.acrylic.outbound.recovery.*` **28 类 / 2152 项 / 0 失败 / 0 跳过**。自审补测的首版失败轮（测试自身打桩缺陷，已修）保留在证据根。
-- 恢复链 25 类 IT 批次（含 S1 后继增量复验）：全新专用实例 19453，**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空；TIME_WAIT 峰值 1521；正常 shutdown、端口释放。中止轮 `it-batch-25b-aborted-javadoc-edit`（注释改动后主动重跑）原样保留；自审补测仅改测试代码，批次对应的产品代码未变。
-- 证据根 `.local/r09-c2-b1-3-s2-20260929-a/`（不入库）：`run1-unit-targeted/`、`run3-unit-full-final/`、`run4-unit-full-postreview/`、`run5-unit-targeted-postreview/`、`it-batch-25/`（逐类 run101–run125＋batch-summary.json）、前置快照。
+- 一级（`run10-unit-full`）：全量单测 **125 类 / 2800 项 / 0 失败 / 0 错误 / 1 既有无关 skip**；`recovery` 包 **30 类 / 2162 项 / 0 失败**。新增 S3 单测 10 项（过滤器 8＋注册 2）全绿；S2 的六码与旧类 17 项继续全绿。
+- 二级（现场判据，真实容器＋Spring Session JDBC＋隔离 MySQL；`run11-s3-session`，全新实例 19456／应用 19458，`migrate executed=49/version=49`）：`/__s3/session` 200＋`SPRING_SESSION` 行 1＋属性 1；`/__s3/error` 500＋行 1＋属性 1（**错误分派被同一根覆盖且未新建根**）；`/__s3/async` 200 且轨迹含 **ASYNC** 分派；`liveRootsDuringRequests=[1,1,1]`（**根数＝请求数**）；10 次 Session 保存**全部 `BOUND`**；轨迹 `REQUEST→ERROR→ASYNC` 每趟带根标记；`liveRootsAfter=0`；`springSessionThreads=[]`。注册值：`-2147483648` 先于 `-2147483598`（`{REQUEST,ASYNC,ERROR}`）。
+- 回归（`it-batch-25`，全新实例 19457）：**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空，TIME_WAIT 峰值 1445，正常 shutdown、端口释放。
+- 证据根 `.local/r09-c2-b1-3-s2-20260929-a/`、`.local/r09-c2-b1-3-s3-20260929-a/`（不入库；S3 逐轮失败 run1–run8 与中止轮全部保留）。
+
+## 本轮发现（未修，须排入后续批次）
+- **开开关时应用起不来（fail closed）**：`JobRecoveryFence` 构造期读 `server_state` 走主数据源 ⇒ `RECOVERY_OPERATION_REQUIRED`（`run1` 实测）。属设计第 19 行启动门／第 22 行无根合法能力清单未实现；本轮现场运行**未替换产品 Bean**，由探针提供一条显式 `INITIALIZATION` 根作为缺失能力的临时替身。
+- **并发接纳受限**：现有 `RecoveryControlLock` 非嵌套且 `tryAcquire` 无等待 ⇒ 同时刻只能一个请求取根（确定性单测：临界区内再接纳⇒`CONTROL_COORDINATOR_BUSY`）；设计第 13 行未实现 ⇒ **并发 HTTP 未验**（现场运行为顺序请求）。
+- 拒绝码到 HTTP 503 的映射未实现（拒绝现表现为容器错误响应）。
+- 文档更正：分派范围 getter 是 `determineDispatcherTypes()`；`sessionRepositoryFilterRegistration` 实际类型为 `DelegatingFilterProxyRegistrationBean`。
 
 ## 保留边界与停止点
-- `outbound.recovery.admission.enabled`、`effect-gate.enabled`、跨进程开关**全部默认 false**；未接生产、未部署、未合 main、未操作原库/现网；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`。
-- **S3/S4 未开工**：尚无请求接纳过滤器，生产入口没有"创建根／绑定分派／发布请求根标记"的代码 ⇒ 现在即使打开开关，真实 HTTP 也按③被拒（切片顺序，非本切片宣称可用）。
-- 未做（后续批次）：完整接纳门 S0–S4 与 P5 前后探针、租约发布、孤儿/围栏通道、效果门接线、离线登记写侧、启动门与 Session 清理守卫、§5.6 退役协议（含退役失败即隔离＋halt）；`openSubOperations()` 目前只是观察值。
-- **入口 IT 重基保留项**：`E2aRecoveryAdmissionEntryIT`、`C1EntryRegression` 的 live/unknown 检查按 S2 语义已过时（primary 现为请求根数据源，绑定根的过滤器属 S3）⇒ 本轮**未运行**，待 S3 重基复验；lost-commit 检查仍走测试配置旧类。
-- K1 仍未通过（K1-1/K1-2/K1-3 不变）；单列：**窗口 W**、`DEBT-R09-C2-LEASE-ANCHOR`、UNCONFIRMED_NO_CROSS_PROCESS_BASIS（须外部隔离）、HTTP/Session、生产 Session 清理、孤儿解除与生产释放、Linux/其他文件系统、网络盘、断电/硬复位、现场组合、Java/Python 允许集差异、C1 历史未验项、**IT-DISCOVERY（21 类＝专用实验舱绑定，无一跑绿）**、**IT-EVIDENCE-AUDIT（18 类历来仅"跳过型"证据）**、**TZ-GMT 时区显示不统一（待排期）**。
-- **下一步**：S3 Session 过滤器（`{ASYNC,ERROR,REQUEST}`、顺序 -2147483598、请求根覆盖、每类 Session 写在同一根内、ERROR/ASYNC 重分派根复用），并把根标记发布与 `bindDispatch/unbindDispatch` 接到真实分派生命周期；随后重基入口 IT。
+- `admission.enabled`、`effect-gate.enabled`、跨进程开关**全部默认 false**；未接生产、未部署、未合 main、未操作原库/现网；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`。
+- **S4 未开工**：multipart 纳入请求根范围、S4a/S4b 的保存期阻塞屏障与新根拒绝用例未做；入口 IT（`E2aRecoveryAdmissionEntryIT`、`C1EntryRegression` live/unknown）重基仍未做。
+- 未做（后续批次）：完整接纳门 S0–S4 与 P5 前后探针/租约发布/孤儿与围栏通道、效果门接线、启动门与 Session 清理守卫、§5.6 退役协议（含退役失败即隔离＋halt）、锁的按根嵌套与有界等待、无根合法能力清单。
+- K1 仍未通过；单列：**窗口 W**、`DEBT-R09-C2-LEASE-ANCHOR`、UNCONFIRMED_NO_CROSS_PROCESS_BASIS（须外部隔离）、生产 Session 清理自有根、孤儿解除与生产释放、Worker/文件/渲染入口、Linux/其他文件系统、网络盘、断电/硬复位、现场组合、Java/Python 允许集差异、C1 历史未验项、**IT-DISCOVERY（21 类＝专用实验舱绑定）**、**IT-EVIDENCE-AUDIT（18 类历来仅"跳过型"证据）**、**TZ-GMT 时区显示不统一（待排期）**。
+- **下一步**：S4（multipart 与错误分派范围收尾判据，按需补保存期屏障与新根拒绝用例），随后处理上述三项发现；入口 IT 重基与 S4 并行或紧随其后。
 <!-- CURRENT_STATE_END -->

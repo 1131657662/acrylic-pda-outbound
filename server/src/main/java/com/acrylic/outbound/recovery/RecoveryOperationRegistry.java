@@ -50,6 +50,23 @@ public final class RecoveryOperationRegistry {
     public RecoveryControlSnapshot startup() { return startup; }
 
     /**
+     * The request-entry admission: the caller is a dispatch thread that does not hold the
+     * coordinator lock, so this takes the serialized control critical section and creates exactly
+     * one root inside it. It is the subset of the design's admission sequence (S0–S4) that the
+     * request wiring needs today: authority identity, the token's binding to it, and the shared
+     * writer lease. The remaining admission steps (P2 evidence, P5 lease publication and probes)
+     * belong to the admission gate of a later slice and are not claimed here.
+     */
+    public RecoveryOperationLease admit(RecoveryOperationToken token) {
+        Objects.requireNonNull(token, "token");
+        try {
+            return RecoveryControlLock.locked(location.checked().root(), () -> register(token));
+        } catch (IOException error) {
+            throw new RecoveryControlException("CONTROL_AUTHORITY_UNAVAILABLE", error);
+        }
+    }
+
+    /**
      * Creates the root of one operation and takes its writer lease. Must be called by the thread
      * that already holds this authority's coordinator lock; otherwise the writer lease refuses with
      * {@code CONTROL_COORDINATOR_REQUIRED}.

@@ -132,6 +132,7 @@ $classList = @(
 )
 $notAttempted = @(
     @{ name = 'C1InitialNormalHttpIT'; reason = 'needs a real HTTP/Session stack and its own environment' }
+    @{ name = 'RecoveryRequestRootHttpIT'; reason = 'needs its own app port and the s3-probe profile; run by tools/r09-c2-b1-3-s3-session.ps1' }
 )
 # -Classes takes raw --tests patterns (wildcards allowed) so other packages need no lookup.
 if ($Classes.Count -gt 0) { $classList = $Classes } elseif ($Only.Count -gt 0) { $classList = $Only }

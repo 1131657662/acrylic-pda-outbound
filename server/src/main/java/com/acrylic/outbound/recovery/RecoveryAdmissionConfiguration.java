@@ -1,6 +1,7 @@
 package com.acrylic.outbound.recovery;
 
 import com.zaxxer.hikari.HikariDataSource;
+import jakarta.servlet.DispatcherType;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
@@ -11,6 +12,8 @@ import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -61,6 +64,33 @@ public class RecoveryAdmissionConfiguration {
     RecoveryRequestAdmittedDataSource recoveryAdmittedDataSource(
             @Qualifier(MIGRATION_DATASOURCE) DataSource migration, RecoveryOperationRegistry operations) {
         return new RecoveryRequestAdmittedDataSource(migration, operations);
+    }
+
+    /**
+     * The request entry: one operation root per request, bound for every dispatch of that request.
+     * It is registered for REQUEST, ASYNC and ERROR so a re-dispatch reuses the root of its request,
+     * and it precedes the framework session filter (order {@code -2147483598}) so the final session
+     * save is covered by the root.
+     */
+    @Bean
+    RecoveryRequestAdmissionFilter recoveryRequestAdmissionFilter(RecoveryOperationRegistry operations) {
+        return new RecoveryRequestAdmissionFilter(operations);
+    }
+
+    @Bean
+    FilterRegistrationBean<RecoveryRequestAdmissionFilter> recoveryRequestAdmissionFilterRegistration(
+            RecoveryRequestAdmissionFilter filter) {
+        var registration = new FilterRegistrationBean<>(filter);
+        registration.setOrder(RecoveryRequestAdmissionFilter.ORDER);
+        registration.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.ASYNC, DispatcherType.ERROR);
+        return registration;
+    }
+
+    /** The container's last boundary: it clears the root's bindings and retires the root. */
+    @Bean
+    ServletListenerRegistrationBean<RecoveryRequestRootListener> recoveryRequestRootListener(
+            RecoveryOperationRegistry operations) {
+        return new ServletListenerRegistrationBean<>(new RecoveryRequestRootListener(operations));
     }
 
     /** Trusted control identity. There is no automatic bootstrap: every value must be explicit. */
