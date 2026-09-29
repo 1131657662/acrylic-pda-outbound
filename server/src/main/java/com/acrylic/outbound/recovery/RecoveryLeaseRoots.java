@@ -84,7 +84,8 @@ public final class RecoveryLeaseRoots {
         var value = RecoveryControlHistory.read(authorityRoot().resolve("identity.json"));
         fields(value, "formatVersion authorityKind installationId restoreRoots closedAuthority leaseRoot initialCommandSha256");
         require(value.path("formatVersion").isInt() && value.path("formatVersion").asInt() == 2, "RECOVERY_INITIAL_AUTHORITY_REQUIRED");
-        require(text(value, "authorityKind").equals("INITIAL_NORMAL_INSTALL"), "CONTROL_AUTHORITY_KIND_FORBIDDEN");
+        // Same purpose rule set as the control entry point; this entry keeps its own refusal code.
+        RecoveryControlPurpose.NORMAL_ADMISSION.requireKind(value, "CONTROL_AUTHORITY_KIND_FORBIDDEN");
         require(hash(value).equals(identityHash()), "CONTROL_AUTHORITY_IDENTITY_CHANGED");
         require(uuid(value, "installationId").equals(location.installation()), "CONTROL_INSTALLATION_MISMATCH");
         require(text(value, "leaseRoot").equals(lease.toString())

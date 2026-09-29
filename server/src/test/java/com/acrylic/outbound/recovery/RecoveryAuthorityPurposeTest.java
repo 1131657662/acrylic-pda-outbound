@@ -64,6 +64,16 @@ class RecoveryAuthorityPurposeTest {
         assertThat(missing).as("every load call site must name its purpose").isEmpty();
     }
 
+    /** The fence/lease-root entry does carry authorityKind: the same rule applies, its code unchanged. */
+    @Test void theFenceAuthorityKindIsValidatedThroughTheSamePurposeRule() throws Exception {
+        var supply = FenceTestSupply.create(Path.of("").toRealPath().getParent().resolve(".local"));
+        assertThat(supply.roots().verify()).isNotNull();
+        Path identity = supply.base().resolve("authority/identity.json");
+        var value = (ObjectNode)RecoveryControlHistory.read(identity);
+        value.put("authorityKind", "CLOSED_AUTHORITY");
+        RecoveryControlFixture.write(identity, value);
+        assertThatThrownBy(() -> supply.roots().verify()).hasMessage("CONTROL_AUTHORITY_KIND_FORBIDDEN");
+    }
     private static void kind(RecoveryControlFixture fixture, String value) throws Exception {
         var identity = (ObjectNode)RecoveryControlHistory.read(fixture.root.resolve("identity.json"));
         identity.put("authorityKind", value);

@@ -28,9 +28,14 @@ enum RecoveryControlPurpose {
         this.kinds = kinds;
     }
 
-    void requireKind(JsonNode identity) {
+    void requireKind(JsonNode identity) { requireKind(identity, "CONTROL_AUTHORITY_PURPOSE_FORBIDDEN"); }
+
+    /**
+     * The same rule set serves every authority entry point; each entry keeps its own refusal code, so a
+     * caller-visible code never changes merely because the rule was centralised.
+     */
+    void requireKind(JsonNode identity, String code) {
         String kind = identity.has("authorityKind") ? text(identity, "authorityKind") : "";
-        RecoveryControlFormat.require(kind.isEmpty() ? absentKindAllowed : kinds.contains(kind),
-            "CONTROL_AUTHORITY_PURPOSE_FORBIDDEN");
+        RecoveryControlFormat.require(kind.isEmpty() ? absentKindAllowed : kinds.contains(kind), code);
     }
 }
