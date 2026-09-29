@@ -5,6 +5,7 @@ param(
     [int]$AppPort = 19458,
     [int]$Attempt = 1,
     [string]$Label = 's3-session',
+    [string]$TestClass = 'com.acrylic.outbound.recovery.RecoveryRequestRootHttpIT',
     [int]$SqlPortWarmupSeconds = 30,
     [switch]$Shutdown
 )
@@ -19,7 +20,7 @@ $bin = 'C:\Program Files\MySQL\MySQL Server 8.0\bin'
 $instance = Join-Path $Root ('.local/mysql' + $Port + '-s3session')
 $schema = 'r09_s3_session_' + $Port
 $runnerBuild = Join-Path $Root 'server/build/test-results/integrationTest'
-$testClass = 'com.acrylic.outbound.recovery.RecoveryRequestRootHttpIT'
+$testClass = $TestClass
 
 function Get-ListenerCount([int]$p) {
     return @(netstat -ano | Select-String -Pattern (':' + $p + '\s') | Select-String 'LISTENING').Count
@@ -66,7 +67,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $instance 'data/mysql'))) {
     @{ user = $schema; password = $password; port = $Port; datadir = "$instance/data" } |
         ConvertTo-Json | Set-Content -LiteralPath (Join-Path $instance 'settings.json') -Encoding UTF8
     $sql = "ALTER USER 'root'@'localhost' IDENTIFIED BY '$rootPassword';`nCREATE DATABASE $schema;`n" +
-        "CREATE USER '$schema'@'127.0.0.1' IDENTIFIED BY '$password';`nGRANT ALL ON $schema.* TO '$schema'@'127.0.0.1';`n"
+        "CREATE USER '$schema'@'127.0.0.1' IDENTIFIED BY '$password';`nGRANT ALL ON $schema.* TO '$schema'@'127.0.0.1';`nGRANT PROCESS ON *.* TO '$schema'@'127.0.0.1';`n"
     [IO.File]::WriteAllText((Join-Path $instance 'private/init.sql'), $sql, $encoding)
     [IO.File]::WriteAllText((Join-Path $instance 'private/admin.cnf'),
         "[client]`nuser=root`npassword=$rootPassword`nhost=127.0.0.1`nport=$Port`nprotocol=tcp`n", $encoding)
@@ -96,6 +97,10 @@ $env:OUTBOUND_DB_USER = $schema
 $env:OUTBOUND_DB_PASSWORD = $password
 $env:B11_EFFECT_EVIDENCE_DIR = $target
 $env:S3_HTTP_PORT = "$AppPort"
+$env:S3_INSTANCE_DIR = $instance
+# The independent Python originals writer must emit UTF-8, not the console codepage.
+$env:PYTHONUTF8 = '1'
+$env:PYTHONIOENCODING = 'utf-8'
 $arguments = @('-p', 'server', 'recoveryControlClasspath', 'integrationTest', '--rerun-tasks', '--no-daemon',
     '--console=plain', '--tests', $testClass)
 ($arguments -join ' ') | Set-Content -LiteralPath (Join-Path $target 'command.txt') -Encoding UTF8

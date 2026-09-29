@@ -48,7 +48,10 @@ class E2aCrossSourceHttpIT {
             "--outbound.storage=" + profile.attempt.resolve("storage"),
             "--outbound.signing.private-key=" + profile.attempt.resolve("private/server-private.der"),
             "--outbound.signing.public-key=" + profile.attempt.resolve("private/server-public.der"),
-            "--outbound.worker.enabled=false", "--outbound.bootstrap.enabled=false"),java.util.Arrays.stream(overrides))
+            "--outbound.worker.enabled=false", "--outbound.bootstrap.enabled=false",
+            // The admitted entry refuses to start while the framework session-expiry writer is
+            // enabled: every start of this harness has to carry the disabled value (guard, S5).
+            "--spring.session.jdbc.cleanup-cron=-"),java.util.Arrays.stream(overrides))
             .forEach(option->{int split=option.indexOf('=');if(split<3)throw new IllegalArgumentException("Test option requires a value");
                 options.put(option.substring(0,split),option.substring(split+1));});
         var types=new java.util.ArrayList<Class<?>>();types.add(OutboundApplication.class);types.addAll(java.util.List.of(sources));

@@ -33,10 +33,17 @@ public final class RecoveryAdmissionEntryChecks {
         PlatformTransactionManager manager = context.getBean(PlatformTransactionManager.class);
         var transcript = new StringBuilder();
 
-        transcript.append(wiring(context, admitted, entry, manager));
-        transcript.append(roundTrip(entry, manager, raw));
-        transcript.append(closeRace(admitted, raw, evidence));
-        transcript.append(fenceAndClosingIntent(admitted, entry, fixture, evidence));
+        // The entry serves one operation root, exactly like a request does: everything below runs
+        // inside the root the entry admits, and the no-root refusal is checked on its own thread.
+        RecoveryOperationLease root = admit(context);
+        try {
+            transcript.append(wiring(context, admitted, entry, manager));
+            transcript.append(roundTrip(entry, manager, raw));
+            transcript.append(closeRace(admitted, raw, evidence));
+            transcript.append(fenceAndClosingIntent(context, admitted, entry, fixture, evidence));
+        } finally {
+            retire(root);
+        }
 
         Files.writeString(evidence.resolve("admission-entry-checks.txt"), transcript.toString());
     }
@@ -46,12 +53,17 @@ public final class RecoveryAdmissionEntryChecks {
             Path evidence) throws Exception {
         DataSource admitted = context.getBean(DataSource.class);
         JdbcTemplate entry = context.getBean(JdbcTemplate.class);
-        assertThat(admitted).isInstanceOf(RecoveryAdmittedDataSource.class);
+        assertThat(admitted).isInstanceOf(RecoveryRequestAdmittedDataSource.class);
         assertThat(entry.getDataSource()).isSameAs(admitted);
         var transcript = new StringBuilder("wiring: primary=" + admitted.getClass().getSimpleName()
-            + " JdbcTemplate=admitted\n");
-        transcript.append(connectionLossDuringCommit(entry,
-            new TransactionTemplate(context.getBean(PlatformTransactionManager.class)), raw, evidence));
+            + " JdbcTemplate=admitted root=request-accepted\n");
+        RecoveryOperationLease root = admit(context);
+        try {
+            transcript.append(connectionLossDuringCommit(entry,
+                new TransactionTemplate(context.getBean(PlatformTransactionManager.class)), raw, evidence));
+        } finally {
+            retire(root);
+        }
         Files.writeString(evidence.resolve("admission-entry-unknown-commit-checks.txt"), transcript.toString());
     }
 
@@ -61,27 +73,50 @@ public final class RecoveryAdmissionEntryChecks {
         DataSource admitted = context.getBean(DataSource.class);
         JdbcTemplate entry = context.getBean(JdbcTemplate.class);
         var template = new TransactionTemplate(context.getBean(PlatformTransactionManager.class));
-        assertThat(admitted).isInstanceOf(RecoveryAdmittedDataSource.class);
-        int before = counter(raw);
+        assertThat(admitted).isInstanceOf(RecoveryRequestAdmittedDataSource.class);
+        RecoveryOperationLease root = admit(context);
+        try {
+            int before = counter(raw);
 
-        NestedRuntimeException failure = catchThrowableOfType(() -> template.executeWithoutResult(status ->
-            entry.update("UPDATE recovery_entry_probe SET counter=counter+1 WHERE id=1")), NestedRuntimeException.class);
-        assertThat(failure).as("a lost commit acknowledgement must surface as a failure").isNotNull();
-        assertThat(counter(raw)).as("the real server commit happened, only its acknowledgement was lost")
-            .isEqualTo(before + 1);
-        assertThatThrownBy(() -> entry.update("INSERT INTO recovery_entry_probe VALUES(3,0)"))
-            .as("an unknown outcome must hold the writer fence for the whole entry")
-            .hasStackTraceContaining("CONTROL_WRITERS_ACTIVE");
-        assertThat(raw.queryForObject("SELECT COUNT(*) FROM information_schema.INNODB_TRX", Integer.class)).isZero();
-        Files.writeString(evidence.resolve("admission-entry-lost-commit.txt"),
-            "observed=" + failure.getClass().getName() + ": " + failure.getMessage()
-                + "\ncommittedCounter=" + (before + 1) + "\nsubsequentEntryWrite=CONTROL_WRITERS_ACTIVE"
-                + "\ninnodbTrx=0\n");
+            NestedRuntimeException failure = catchThrowableOfType(() -> template.executeWithoutResult(status ->
+                entry.update("UPDATE recovery_entry_probe SET counter=counter+1 WHERE id=1")), NestedRuntimeException.class);
+            assertThat(failure).as("a lost commit acknowledgement must surface as a failure").isNotNull();
+            assertThat(counter(raw)).as("the real server commit happened, only its acknowledgement was lost")
+                .isEqualTo(before + 1);
+            assertThatThrownBy(() -> entry.update("INSERT INTO recovery_entry_probe VALUES(3,0)"))
+                .as("an unknown outcome must hold the writer fence for the whole entry")
+                .hasStackTraceContaining("CONTROL_WRITERS_ACTIVE");
+            assertThat(raw.queryForObject("SELECT COUNT(*) FROM information_schema.INNODB_TRX", Integer.class)).isZero();
+            Files.writeString(evidence.resolve("admission-entry-lost-commit.txt"),
+                "observed=" + failure.getClass().getName() + ": " + failure.getMessage()
+                    + "\ncommittedCounter=" + (before + 1) + "\nsubsequentEntryWrite=CONTROL_WRITERS_ACTIVE"
+                    + "\ninnodbTrx=0\n");
+        } finally {
+            retire(root);
+        }
+    }
+
+    /**
+     * The entry's operations belong to one admitted root, so the checks admit one the way a request
+     * does: through the registry, inside the serialized control section, with a bounded wait.
+     */
+    static RecoveryOperationLease admit(ConfigurableApplicationContext context) {
+        var registry = context.getBean(RecoveryOperationRegistry.class);
+        var token = new RecoveryOperationToken(java.util.UUID.randomUUID(), RecoveryOperationKind.HTTP_REQUEST,
+            registry.startup().installationId(), registry.startup().recordSha256(), null);
+        RecoveryOperationLease root = registry.admit(token);
+        root.bindDispatch(Thread.currentThread());
+        return root;
+    }
+
+    static void retire(RecoveryOperationLease root) {
+        root.unbindAll();
+        root.close();
     }
 
     private static String wiring(ConfigurableApplicationContext context, DataSource admitted,
-            JdbcTemplate entry, PlatformTransactionManager manager) throws SQLException {
-        assertThat(admitted).isInstanceOf(RecoveryAdmittedDataSource.class);
+            JdbcTemplate entry, PlatformTransactionManager manager) throws Exception {
+        assertThat(admitted).isInstanceOf(RecoveryRequestAdmittedDataSource.class);
         assertThat(entry.getDataSource()).as("JdbcTemplate must not bypass the admitted writer").isSameAs(admitted);
         assertThat(manager).isInstanceOf(JdbcTransactionManager.class);
         assertThat(((JdbcTransactionManager) manager).getDataSource())
@@ -91,6 +126,10 @@ public final class RecoveryAdmissionEntryChecks {
         assertThat(pools.get(RecoveryAdmissionConfiguration.MIGRATION_DATASOURCE)).isInstanceOf(HikariDataSource.class);
         assertThat(pools.get(RecoveryAdmissionConfiguration.MIGRATION_DATASOURCE))
             .as("the migration-only pool must not be the entry datasource").isNotSameAs(admitted);
+        // A thread without an operation root is refused instead of being served: the entry has no
+        // connection-level fallback any more.
+        assertThat(borrowWithoutRoot(admitted)).as("a thread without a root must be refused")
+            .isEqualTo("RECOVERY_OPERATION_REQUIRED");
         // Deliberate bypass attempts have to fail instead of handing out the vendor object.
         assertThatThrownBy(() -> admitted.unwrap(HikariDataSource.class))
             .hasMessage("CONTROL_DATASOURCE_UNWRAP_FORBIDDEN");
@@ -105,7 +144,19 @@ public final class RecoveryAdmissionEntryChecks {
         }
         return "wiring: primary=" + admitted.getClass().getSimpleName()
             + " migration=" + RecoveryAdmissionConfiguration.MIGRATION_DATASOURCE
-            + " JdbcTemplate/transactionManager=admitted unwrap=rejected\n";
+            + " JdbcTemplate/transactionManager=admitted unwrap=rejected rootRequired=RECOVERY_OPERATION_REQUIRED\n";
+    }
+
+    private static String borrowWithoutRoot(DataSource admitted) throws Exception {
+        var pool = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "entry-without-root"));
+        try {
+            return pool.submit(() -> {
+                try (Connection borrowed = admitted.getConnection()) { return "ADMITTED:" + borrowed; }
+                catch (RuntimeException | SQLException error) { return error.getMessage(); }
+            }).get(30, TimeUnit.SECONDS);
+        } finally {
+            pool.shutdownNow();
+        }
     }
 
     private static String roundTrip(JdbcTemplate entry, PlatformTransactionManager manager, JdbcTemplate raw) {
@@ -162,23 +213,49 @@ public final class RecoveryAdmissionEntryChecks {
         return "closeRace: closeWaitedMillis=" + waited + " execution=ok innodbTrx=0\n";
     }
 
-    private static String fenceAndClosingIntent(DataSource admitted, JdbcTemplate entry,
-            RecoveryAdmissionEntryFixture fixture, Path evidence) throws Exception {
+    /**
+     * A pending closing intent refuses <b>new roots</b>; the root this entry already holds keeps
+     * serving its own work (design §6.4), which is the behaviour the entry checks now pin.
+     */
+    private static String fenceAndClosingIntent(ConfigurableApplicationContext context, DataSource admitted,
+            JdbcTemplate entry, RecoveryAdmissionEntryFixture fixture, Path evidence) throws Exception {
         try (Connection held = admitted.getConnection()) {
             // The independent writer records its durable stop intent first and then has to wait for
             // the lease this entry holds; no command record is written while the lease is held.
             fixture.assertIndependentWriterBlocked();
-            // From that point on the durable intent refuses every new admission through the entry.
-            assertThatThrownBy(admitted::getConnection).hasMessage("CONTROL_CLOSING_INTENT");
-            assertThatThrownBy(() -> entry.update("INSERT INTO recovery_entry_probe VALUES(4,0)"))
-                .hasStackTraceContaining("CONTROL_CLOSING_INTENT");
+            // The admitted root keeps working: closing intent does not cut off retained work.
+            try (Connection alsoHeld = admitted.getConnection()) {
+                assertThat(alsoHeld).isNotNull();
+            }
+            entry.update("INSERT INTO recovery_entry_probe VALUES(4,0)");
+            // A new root, however, is refused from that point on.
+            assertThat(newRootRefusal(context)).isEqualTo("CONTROL_CLOSING_INTENT");
         }
         Files.writeString(evidence.resolve("admission-entry-fence.txt"),
             "heldLeaseVersusIndependentWriter=CONTROL_WRITERS_ACTIVE\n"
-                + "newAdmissionWithPendingIntent=CONTROL_CLOSING_INTENT\n"
-                + "entryWriteWithPendingIntent=CONTROL_CLOSING_INTENT\n");
+                + "admittedRootKeepsBorrowing=allowed\n"
+                + "admittedRootKeepsWriting=allowed\n"
+                + "newRootWithPendingIntent=CONTROL_CLOSING_INTENT\n");
         return "fence: independentWriterBlocked=CONTROL_WRITERS_ACTIVE"
-            + " pendingIntentRefusesNewAdmission=CONTROL_CLOSING_INTENT\n";
+            + " admittedRootStillServes=allowed newRootWithPendingIntent=CONTROL_CLOSING_INTENT\n";
+    }
+
+    private static String newRootRefusal(ConfigurableApplicationContext context) throws Exception {
+        var pool = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "entry-new-root"));
+        try {
+            return pool.submit(() -> {
+                try {
+                    var registry = context.getBean(RecoveryOperationRegistry.class);
+                    var token = new RecoveryOperationToken(java.util.UUID.randomUUID(), RecoveryOperationKind.HTTP_REQUEST,
+                        registry.startup().installationId(), registry.startup().recordSha256(), null);
+                    return "ADMITTED:" + registry.admit(token);
+                } catch (RuntimeException error) {
+                    return error.getMessage();
+                }
+            }).get(30, TimeUnit.SECONDS);
+        } finally {
+            pool.shutdownNow();
+        }
     }
 
     private static String connectionLossDuringCommit(JdbcTemplate entry, TransactionTemplate template,

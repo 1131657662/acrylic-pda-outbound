@@ -6,42 +6,42 @@
 ```yaml
 date: 2026-09-29
 branch: codex/development
-head: a5a6169
+head: d414273
 dirty_entries: 2
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-**R09 C2 B1-3 S7 收口：拒绝码 HTTP 映射与无状态拒绝写出口（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。恢复拒绝一律 503 且**不读数据库**（无根/围栏/关闭意图/令牌）；超限 413、畸形 multipart 400。记录见 [B1-3 S7 记录](history/R09_C2_B1_3_S7_REFUSAL_MAPPING_2026-09-29.md)（含 **S4 记录"超限 500"定性的撤回**：那是探针代理未解包 `InvocationTargetException` 造成的仪表缺陷）；S7 开工前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S7_2026-09-29.md)；S5/S6 见 [S6](history/R09_C2_B1_3_S6_CONTROL_LOCK_2026-09-29.md)、[S5](history/R09_C2_B1_3_S5_STARTUP_WINDOW_2026-09-29.md)。
+**R09 C2 B1-3 S8 收口：入口 IT 重基到请求根语义（2026-09-29；同一会话实施＋自审＋运行，非独立第三方）**。三处入口验证共用语料已按"一个请求＝一个操作根"重写，并新增可在隔离实例运行的第三处调用者（live／unknown／lost 三上下文同轮全绿）。记录见 [B1-3 S8 记录](history/R09_C2_B1_3_S8_ENTRY_REBASE_2026-09-29.md)；S8 开工前的看板当前区归档为 [归档](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S8_2026-09-29.md)；S7/S6 见 [S7](history/R09_C2_B1_3_S7_REFUSAL_MAPPING_2026-09-29.md)、[S6](history/R09_C2_B1_3_S6_CONTROL_LOCK_2026-09-29.md)。
 
 ## Git、写权与范围
-- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD `7d0ae5f`（S6 收口）；写者＝DSH（本会话）。
+- 树 D:/acrylic-pda-outbound；分支 codex/development；本轮起点 HEAD `d414273`（S7 收口）；写者＝DSH（本会话）。
 - **非本会话的未提交改动**（未代提交、未修改）：`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、未跟踪 `docs/PDA_UI_UX_REVIEW_2026-09-29.md`。
 - 共享树 r06-e2a-migration 保持 detached ea4d166；只读，未同步/清理/reset/提交/合并。
 
-## 本轮交付（S7：设计 §4.4／第 20 行）
-- `ApiResponses.writeWithoutState(...)`（新）：拒绝 envelope 同形状但 `serverRecoveryEpoch=unknown`／`serviceMode=UNAVAILABLE`，**不调用 `ServerState`**；`body(...)` 的状态读取 catch 由 `DataAccessException` 放宽到 `RuntimeException`（报告状态不得把一次失败变成另一次失败）。
-- `RecoveryRefusalAdvice`（新，`@Order(HIGHEST_PRECEDENCE)`）：服务中抛出的 `RecoveryControlException` ⇒ **503 ＋ 原拒绝码**、无状态写出口。排序承重——否则通用 `ApiErrors.unexpected`（读库）先匹配，在被围栏的库上二次失败（现场 run1 实测）。
-- `RecoveryRequestAdmissionFilter`：接纳在框架之前，故由过滤器自己写 **503**（同一无状态写出口）并直接返回，不再把拒绝冒到容器。
-- `ApiErrors`：超限 ⇒ 无状态 **413**；新增 `MultipartException` 处理器：尺寸限制 ⇒ 413，其他解析失败 ⇒ **400 `INVALID_REQUEST`**。
-- 新增 `ApiResponsesTest` 4 项（行 20 点名）；过滤器接纳拒绝用例改为断言 503＋码＋不读库。
+## 本轮交付（S8：看板长期单列的"入口 IT 重基"；**无产品代码改动**）
+- `RecoveryAdmissionEntryChecks`：三处检查改为**在入口接纳的操作根内**运行（`registry.admit` 有界等待＋`bindDispatch`，收尾 `retire`）；主源断言改 `RecoveryRequestAdmittedDataSource`；新增**无根拒绝**证据（`RECOVERY_OPERATION_REQUIRED`）；关闭意图检查改为区分"**已接纳根继续服务＝allowed**"与"**新根＝`CONTROL_CLOSING_INTENT`**"（旧检查钉的是旧连接级模型）。
+- `RecoveryEntryLostCommitConfiguration`：丢回执故障下沉到**请求根数据源之下**；补齐生产启动覆盖（注册表／初始化窗口／守卫），窗口与注册表用 **static** 工厂（否则守卫的 `dependsOn=窗口` 会把配置类自己卷成环）。
+- `RecoveryAdmissionEntryRebaseIT`（新）：隔离实例上跑同一批检查（live／unknown／lost）。
+- `C1MainProfile`／`E2aCrossSourceHttpIT`：启动参数补 `--spring.session.jdbc.cleanup-cron=-`（S5 守卫要求；**不补则两实验舱连启动都被拒**——本轮发现的重基缺口）。
+- `tools/r09-c2-b1-3-s3-session.ps1`：`-TestClass` 参数化；账号补 `GRANT PROCESS`（读 `INNODB_TRX`）；导出 `S3_INSTANCE_DIR`（夹具恢复根＝实例真实 datadir）与 `PYTHONUTF8`／`PYTHONIOENCODING=utf-8`。
 
 ## 运行与证据
-- 一级：定向 `run3-s7-targeted` **6 类 / 24 项 / 0 失败**；全量 `run5-unit-full`（不带 `--tests` 白名单）**129 类 / 2818 项 / 0 失败 / 0 错误 / 1 既有无关 skip**（recovery＋ApiResponsesTest 34 类 2180 项 0 失败）。
-- 二级现场（`run4-s7-refusals`，全新实例 19466／应用 19458，`migrate executed=49`，2 用例 0 失败）：服务中围栏 ⇒ **503 `RECOVERY_LEASE_FENCED`**；部件超限 ⇒ **413**（此前 500）；畸形 multipart ⇒ **400 `INVALID_REQUEST`**；权威过期后的接纳 ⇒ **503 `CONTROL_INSTANCE_STALE` 且零根登记**；四者 envelope 均 `unknown/UNAVAILABLE`（证明未读库）；同轮 4 路并发、S3/S4 判据、清理守卫复绿，`liveRootsAfter=0`、`springSessionThreads=[]`。解析期观测记录真实异常类名（`MaxUploadSizeExceededException`／`MultipartException`）。
-- 二级回归（`it-batch-25`，全新实例 19467）：**25 类 / 696 项 / 0 失败 / 0 错误 / 0 跳过**，NOT-COVERED 空，TIME_WAIT 峰值 1423，正常 shutdown、端口释放。
-- 证据根（不入库）：`.local/r09-c2-b1-3-s2-…`…`…-s7-20260929-a/`；逐轮失败轮全部保留。
+- 一级：全量单测（不带 `--tests` 白名单）**129 类 / 2818 项 / 0 失败 / 0 错误 / 1 既有无关 skip**。
+- 二级现场（`run9-s8-entry-rebase`，全新实例 19468／应用 19458，1 用例 0 失败，三上下文同轮）：`wiring primary=RecoveryRequestAdmittedDataSource … rootRequired=RECOVERY_OPERATION_REQUIRED`；`roundTrip committed=1 rolledBack=1`；`closeRace closeWaitedMillis=2500 innodbTrx=0`；`fence independentWriterBlocked=CONTROL_WRITERS_ACTIVE admittedRootStillServes=allowed newRootWithPendingIntent=CONTROL_CLOSING_INTENT`；提交期连接丢失 `TransactionSystemException`＋`counterAfterKilledTransaction=1`＋后续写 `CONTROL_WRITERS_ACTIVE`；丢回执 `committedCounter=2`（真实提交发生、仅回执丢失）＋后续写 `CONTROL_WRITERS_ACTIVE`；`restoreData=…mysql19468-s3session\data instanceBound=true`。
+- 产品代码未改，故恢复链 25 类批次沿用 S7 轮同产品 HEAD 证据（实例 19467：25 类 / 696 项 / 0 失败 / 0 跳过）。
+- 证据根（不入库）：`.local/r09-c2-b1-3-s2-…`…`…-s8-20260929-a/`（含 run1–run8 失败轮、run9 现场、全量）；夹具目录保留在 `.local/mysql19468-s3session/entry-*-<stamp>`。
 
-## 口径更正与已知限制
-1. **撤回 S4 记录的"超限 ⇒ 500"定性**：真因是 S4 轮的 `RecoveryMultipartParseRecorder` 代理未解包 `InvocationTargetException`，把 `MaxUploadSizeExceededException` 包成 `UndeclaredThrowableException` ⇒ 绕过 413 处理器。修正探针后超限即 413；S4 记录已就地标注撤回并指向本记录。教训：测试侧观测代理必须透明转抛原始异常。
-2. **行为变更**：`ApiResponses.body` 读状态失败时报告 `unknown/UNAVAILABLE`（不再是错误响应二次失败）；状态可读时行为不变。
-3. **已知限制**：接纳拒绝的 `requestId` 可能为空（请求根过滤器为 `HIGHEST_PRECEDENCE`，先于 `RequestIdFilter` 取号）；拒绝码/状态不受影响，未调整其他组件顺序。
+## 语义澄清与发现
+1. 旧检查钉住的是**旧模型**："关闭意图⇒下一次借用即拒"与"任意线程可借用"在新模型下都不成立；已改写为"保留根继续服务／新根被拒"与"无根必拒"。
+2. **实验舱重基缺口**：`C1MainProfile`／`E2aCrossSourceHttpIT` 的启动参数缺 `cleanup-cron=-`，且故障入口配置缺启动覆盖——B1-3 后这两个实验舱**连启动都会失败**；本轮已补齐，但**实验舱本身仍未重跑**（需各自专属环境）。
+3. 隔离 harness 需求（已写入工具）：账号需 `PROCESS`（入口检查读 `INNODB_TRX`）；独立 Python 写者需 UTF-8；夹具恢复根指向实例真实 datadir。
 
 ## 保留边界与停止点
 - `admission.enabled`、`effect-gate.enabled`、跨进程开关**全部默认 false**；未接生产、未部署、未合 main、未操作原库/现网；七类生产决定、TEMP 生产归档、生产释放继续关闭，`localDeletionAllowed=false`。
-- 未做（后续批次）：**入口 IT 重基**（`E2aRecoveryAdmissionEntryIT`／`C1EntryRegression` live/unknown；启动阻塞已在 S5 解除）、**阶段 0 安全前置**（设计第 8–12 行：`leaseRoot` 三方一致/`lease-root.json`、P5 进程记录与锁、孤儿租约、FENCED 残留；需 `outbound.recovery.lease-root`／锚点秘密／`closedAuthority` 配置与 provision 协议）、效果门接线、§5.6 退役协议、完整接纳门 S0–S4 与 P5 前后探针/租约发布。
-- 未验：并发拒绝（多请求同时被拒的计数/日志）、PDA 客户端对 503 envelope 的消费、跨进程并发接纳、Linux/其他文件系统、断电/硬复位、现场组合。
+- 未做（后续批次）：**阶段 0 安全前置**（设计第 8–12 行：`leaseRoot` 三方一致/`lease-root.json`、P5 进程记录与锁、孤儿租约、FENCED 残留；需 `outbound.recovery.lease-root`／锚点秘密／`closedAuthority` 配置与 provision 协议）、效果门接线、§5.6 退役协议、完整接纳门 S0–S4 与 P5 前后探针/租约发布、C1/E2a 实验舱重跑。
+- 未验：PDA 客户端对 503 envelope 的消费、并发拒绝计数、跨进程并发接纳、Linux/其他文件系统、断电/硬复位、现场组合。
 - K1 仍未通过；单列：**窗口 W**、`DEBT-R09-C2-LEASE-ANCHOR`、UNCONFIRMED_NO_CROSS_PROCESS_BASIS（须外部隔离）、孤儿解除与生产释放、Java/Python 允许集差异、C1 历史未验项、**IT-DISCOVERY（21 类＝专用实验舱绑定）**、**IT-EVIDENCE-AUDIT（18 类历来仅"跳过型"证据）**、**TZ-GMT 时区显示不统一（待排期）**。
-- **下一步（按优先级）**：①**入口 IT 重基**（按"请求根 ＋ 503 拒绝"重写 live/unknown 检查，保留失败证据）；②**阶段 0 安全前置（第 8–12 行）**作为独立批次。均需独立授权/验收，不改默认开关。
+- **下一步**：①**阶段 0 安全前置（设计第 8–12 行）**作为独立批次（需 `leaseRoot`／锚点秘密／`closedAuthority` 配置与 provision 协议、独立授权与验收）；②C1/E2a 实验舱重跑（环境相关，需协调）；③效果门接线与 §5.6 退役协议。均不改默认开关。
 <!-- CURRENT_STATE_END -->

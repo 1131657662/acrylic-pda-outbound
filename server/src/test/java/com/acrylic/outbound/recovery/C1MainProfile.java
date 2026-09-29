@@ -44,7 +44,10 @@ final class C1MainProfile {
 
     org.springframework.context.ConfigurableApplicationContext start(Class<?> extra, String... options) {
         var args = new java.util.ArrayList<>(java.util.List.of("--server.address=127.0.0.1", "--server.port=19437",
-            "--spring.flyway.enabled=false", "--outbound.worker.enabled=false", "--outbound.bootstrap.enabled=false"));
+            "--spring.flyway.enabled=false", "--outbound.worker.enabled=false", "--outbound.bootstrap.enabled=false",
+            // The admitted entry refuses to start while the framework session-expiry writer is enabled:
+            // every start of this profile has to carry the disabled value (guard, S5).
+            "--spring.session.jdbc.cleanup-cron=-"));
         args.addAll(java.util.List.of(options));
         return new org.springframework.boot.SpringApplication(com.acrylic.outbound.OutboundApplication.class, extra)
             .run(args.toArray(String[]::new));
