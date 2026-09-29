@@ -34,8 +34,8 @@ class RecoveryEffectStatementTest {
     @Test void s20ReadOnlyPreparedExecutionSkipsAuthority() throws Exception {
         try (var f = new EffectUnitFixture(true)) {
             var raw = mock(PreparedStatement.class);
-            when(f.physical.prepareStatement("SELECT id FROM t WHERE id=?")).thenReturn(raw);
-            var statement = f.connection.prepareStatement("SELECT id FROM t WHERE id=?");
+            when(f.physical.prepareStatement("SELECT ?")).thenReturn(raw);
+            var statement = f.connection.prepareStatement("SELECT ?");
             f.gate.fence(); statement.executeQuery();
             verify(raw).executeQuery();
             assertThat(f.authority.checks).isZero();

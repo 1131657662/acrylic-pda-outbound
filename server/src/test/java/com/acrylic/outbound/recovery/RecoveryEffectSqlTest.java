@@ -5,10 +5,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.*;
 
 class RecoveryEffectSqlTest {
-    @ParameterizedTest @ValueSource(strings = {"SELECT 1", "select id,val from t", "SELECT COUNT(*) FROM t",
-        "SELECT id FROM t WHERE id = ?", "SHOW TABLES", "DESC t", "EXPLAIN SELECT id FROM t"})
+    @ParameterizedTest @ValueSource(strings = {"SELECT 1", "SHOW TABLES"})
     void provenReadGrammar(String sql) throws Exception {
         assertThat(RecoveryEffectSql.classify(sql)).isEqualTo(RecoveryEffectSql.Kind.READ);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"select id,val from t", "SELECT COUNT(*) FROM t",
+        "SELECT id FROM t WHERE id = ?", "DESC t", "EXPLAIN SELECT id FROM t"})
+    void sourceSyntaxCannotProveAbsenceOfEffects(String sql) throws Exception {
+        assertThat(RecoveryEffectSql.classify(sql)).isEqualTo(RecoveryEffectSql.Kind.SOURCE_READ);
     }
 
     @ParameterizedTest @ValueSource(strings = {"COMMIT", "SET AUTOCOMMIT=1", "START TRANSACTION", "BEGIN",

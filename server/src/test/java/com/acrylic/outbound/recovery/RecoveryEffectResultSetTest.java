@@ -33,7 +33,7 @@ class RecoveryEffectResultSetTest {
             assertThatThrownBy(result::refreshRow).hasMessage("CONTROL_EFFECT_UNCLASSIFIED");
             verifyNoInteractions(raw);
             result.next(); result.getInt(1);
-            assertThat(f.authority.checks).isZero();
+            assertThat(f.authority.checks).isEqualTo(1);
         }
     }
 }

@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 /** Deliberately small grammar. Unrecognised SQL is rejected, never delegated on a guess. */
 final class RecoveryEffectSql {
-    enum Kind { READ, WRITE, COMMIT, ROLLBACK, BEGIN, AUTO_ON, DDL }
+    enum Kind { READ, SOURCE_READ, WRITE, COMMIT, ROLLBACK, BEGIN, AUTO_ON, DDL }
     private static final String ID = "(?:[A-Z_][A-Z_0-9]*|`[A-Z_][A-Z_0-9]*`)(?:\\.(?:[A-Z_][A-Z_0-9]*|`[A-Z_][A-Z_0-9]*`))?";
     private static final String COLUMN = "(?:" + ID + "|\\*|COUNT\\s*\\(\\s*\\*\\s*\\))";
     private static final String VALUE = "(?:\\?|[0-9]+|NULL|TRUE|FALSE)";
@@ -27,9 +27,11 @@ final class RecoveryEffectSql {
     }
 
     private static Kind statement(String text) throws SQLException {
-        if (SELECT.matcher(text).matches()) return Kind.READ;
-        if (text.matches("(?:SHOW (?:TABLES|DATABASES)|(?:DESC|DESCRIBE) " + ID + ")")) return Kind.READ;
-        if (text.startsWith("EXPLAIN ") && SELECT.matcher(text.substring(8)).matches()) return Kind.READ;
+        // A relation can be a view invoking a mutating stored function. Syntax is not read-only proof.
+        if (SELECT.matcher(text).matches()) return text.contains(" FROM ") ? Kind.SOURCE_READ : Kind.READ;
+        if (text.matches("SHOW (?:TABLES|DATABASES)")) return Kind.READ;
+        if (text.matches("(?:DESC|DESCRIBE) " + ID)) return Kind.SOURCE_READ;
+        if (text.startsWith("EXPLAIN ") && SELECT.matcher(text.substring(8)).matches()) return Kind.SOURCE_READ;
         if (text.matches("(?:INSERT INTO|REPLACE INTO|MERGE INTO|DELETE FROM|UPDATE) " + ID + "(?:[ (].*)?"))
             return Kind.WRITE;
         if (text.matches("(?:CREATE TABLE|ALTER TABLE|DROP TABLE|TRUNCATE TABLE) " + ID + "(?:[ (].*)?"))

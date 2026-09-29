@@ -6,9 +6,9 @@ import static org.assertj.core.api.Assertions.*;
 
 /** Exact isolated coordinates, checked before any connection is opened. No skip/fallback. */
 final class EffectRealEnvironment {
-    static final String URL = "jdbc:mysql://127.0.0.1:19439/b11_effect_20260929"
+    static final String URL = "jdbc:mysql://127.0.0.1:19440/b11_adv_20260929"
         + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8";
-    static final String USER = "b11_effect_20260929";
+    static final String USER = "b11_adv_20260929";
     private static Path records;
     private static String password;
 
@@ -20,6 +20,9 @@ final class EffectRealEnvironment {
         String evidence = System.getenv("B11_EFFECT_EVIDENCE_DIR");
         assertThat(evidence).isNotBlank();
         assertThat(Path.of(evidence)).isDirectory();
+        Path expected = Path.of("D:/acrylic-pda-outbound/.local/r09-c2-b1-1-adversarial-20260929-a");
+        assertThat(Path.of(evidence).toRealPath().getParent()).isEqualTo(expected.toRealPath());
+        assertThat(Path.of(evidence).getFileName().toString()).matches("run[0-9]+-[a-z0-9-]+");
         records = Path.of(evidence).resolve("real-records.tsv");
         identity();
     }
@@ -28,9 +31,9 @@ final class EffectRealEnvironment {
         try (var connection = open(false); var statement = connection.createStatement();
                 var rows = statement.executeQuery("SELECT @@port,@@datadir,@@version,CURRENT_USER(),@@server_uuid")) {
             assertThat(rows.next()).isTrue();
-            assertThat(rows.getInt(1)).isEqualTo(19439);
+            assertThat(rows.getInt(1)).isEqualTo(19440);
             assertThat(rows.getString(2).replace('\\', '/'))
-                .isEqualToIgnoringCase("D:/acrylic-pda-outbound/.local/mysql19439-b11/data/");
+                .isEqualToIgnoringCase("D:/acrylic-pda-outbound/.local/mysql19440-b11-adversarial/data/");
             assertThat(rows.getString(4)).isEqualTo(USER + "@127.0.0.1");
             record("REAL|identity|port=" + rows.getInt(1) + "|datadir=" + rows.getString(2)
                 + "|server=" + rows.getString(3) + "|user=" + rows.getString(4) + "|uuid=" + rows.getString(5)
@@ -42,6 +45,10 @@ final class EffectRealEnvironment {
 
     static Connection open(boolean multi) throws SQLException {
         return DriverManager.getConnection(URL + (multi ? "&allowMultiQueries=true" : ""), USER, password);
+    }
+
+    static Connection locators() throws SQLException {
+        return DriverManager.getConnection(URL + "&emulateLocators=true", USER, password);
     }
 
     static synchronized void record(String message) throws Exception {

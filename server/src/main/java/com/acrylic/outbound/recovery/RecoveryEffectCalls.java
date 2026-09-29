@@ -10,7 +10,7 @@ final class RecoveryEffectCalls {
         "close", "clearWarnings", "setFetchSize", "setFetchDirection", "cancelRowUpdates", "moveToCurrentRow");
     private static final Set<String> CURSOR_WRITE = Set.of("insertRow", "updateRow", "deleteRow", "moveToInsertRow");
     private static final Set<String> UNSAFE_VALUES = Set.of("getBlob", "getClob", "getNClob", "getSQLXML",
-        "getArray", "getRef");
+        "getArray", "getRef", "getObject");
     private static final Set<String> STATEMENT_LOCAL = Set.of("close", "clearBatch", "clearParameters", "clearWarnings",
         "cancel", "closeOnCompletion", "registerOutParameter");
 
@@ -24,6 +24,10 @@ final class RecoveryEffectCalls {
     }
 
     static void requireStatementMethod(String name) throws SQLException {
+        // Callable OUT getters have the same opaque/mutable escape surface as ResultSet.
+        if (UNSAFE_VALUES.contains(name)) throw RecoveryEffectGate.unclassified();
+        // Client prepared metadata may execute the original SQL, including a mutating function.
+        if (name.equals("getMetaData")) throw RecoveryEffectGate.unclassified();
         if (name.startsWith("execute") || name.equals("addBatch") || STATEMENT_LOCAL.contains(name)) return;
         if (name.startsWith("get") || name.startsWith("set") || name.startsWith("is")) return;
         throw RecoveryEffectGate.unclassified();
