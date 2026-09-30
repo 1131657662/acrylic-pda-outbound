@@ -6,16 +6,25 @@
 ```yaml
 date: 2026-09-30
 branch: codex/development
-head: 2d9322f
+head: 1cbda5f
 dirty_entries: 2
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V49, migrations: 49 }
 ```
 <!-- FACTS_END -->
-**R09 C2 B1-3 S43 鏀跺彛锛欰5鈥斺€斾袱鏍戞暣鍚?I1锛婭2锛堝彧璇伙級锛?B7 搂4 鍙楀奖鍝嶅洖褰掞紙2026-09-30锛?*銆傝褰曡 [S43](history/R09_C2_B1_3_S43_A5_TWO_TREE_I1_I2_2026-09-30.md)锛汼43 鍓嶇殑鐪嬫澘褰撳墠鍖哄綊妗ｄ负 [褰掓。](history/ORCHESTRATION_STATE_before_R09_C2_B1_3_S43_2026-09-30.md)锛涙彁妗堣 [B7](history/R09_C2_B7_TWO_TREE_INTEGRATION_PROPOSAL_2026-09-30.md)銆?
+**R09 C2 B1 K1-1 璇佹嵁鏍稿疄鏀跺彛锛欵1鈥揈6 浜嬪疄琛ㄩ噸寤猴紙鐪熷疄椹卞姩褰㈡€佺己鍙ｅ凡鏀舵暃涓?4鈥? 绫伙級锛?026-09-30锛?*銆傝褰曡 [K1-1 鏍稿疄](history/R09_C2_B1_K1_1_EVIDENCE_VERIFICATION_2026-09-30.md)锛涙牳瀹炲墠鐨勭湅鏉垮綋鍓嶅尯褰掓。涓?[褰掓。](history/ORCHESTRATION_STATE_before_K1_1_VERIFICATION_2026-09-30.md)锛涘垽鎹 [K1 鍒ゆ嵁鎻愭](history/R09_C2_B1_K1_PASS_CRITERIA_PROPOSAL_2026-09-30.md)銆乕K1-2 楠屾敹](history/R09_C2_B1_K1_2_WINDOW_W_ACCEPTANCE_2026-09-30.md)銆?
 ## Git銆佸啓鏉冧笌鑼冨洿
-- 鏍?D:/acrylic-pda-outbound锛涘垎鏀?codex/development锛涙湰娈佃捣鐐?HEAD `7866686`锛涘啓鑰咃紳DSH锛堟湰浼氳瘽锛夈€?- 鏈壒鏀瑰姩锛?*鏃犱骇鍝?娴嬭瘯浠ｇ爜鏀瑰姩**锛涗粎鏂板 3 浠芥枃妗ｏ紙S43 璁板綍銆丼43 鍓嶇湅鏉垮綊妗ｃ€佺储寮曪級锛嬬湅鏉垮綋鍓嶅尯銆傚叡浜爲**鏈悓姝?鏈竻鐞?鏈?reset/鏈垹闄?*銆?- **闈炴湰浼氳瘽鐨勬湭鎻愪氦鏀瑰姩**锛堟湭浠ｆ彁浜ゃ€佹湭淇敼锛夛細`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`銆佹湭璺熻釜 `docs/PDA_UI_UX_REVIEW_2026-09-29.md`銆?
-## A5锛堜袱鏍戞暣鍚堬級鏈疆缁撹
-- **I1锛濅笉骞跺叆**锛氬叡浜爲涓庝富鏍戝敮涓€瀹炶川宸紓鏄?`temporary/command/CommandReceiptIntegrity.java` 澶?5 琛岃嚜杩?`TEMPORARY DIAGNOSTIC (attempt 117)`锛坄System.err.println`锛媊printStackTrace`锛夛紱涓绘爲/HEAD 鐗堟湰骞插噣锛坓rep `DIAGNOSTIC|attempt 117|printStackTrace|System.err` 涓虹┖锛夈€傚叡浜爲鍘熶欢淇濈暀鏈姩銆?- **I2锛濅富鏍戝綋鍓?run 璺緞涓嶄緷璧栧叡浜爲**锛氬彲鎵ц璺緞鎵弿锛坄server/src`銆乣android/app/src`銆乣web/tools`銆乣tools`銆乣report-rendering/src`锛夊懡涓?9 鏂囦欢鈥斺€擿e2averify/E2aWorktree.java:15` 鏄?`E2A_CROSS_ROOT` 鐨?*鍙鐩栭粯璁ゅ€?*锛堜袱涓?r09 runner 鎭掑鍑?`E2A_CROSS_ROOT=<琚祴鏍?`锛夛紱`tools/r08-provision-and-run.ps1` 涓?`tools/e2a-android-link-l4.ps1` 鏄?`-Workspace` 榛樿鍊硷紱鍏朵綑 6 涓负鏃?e2a/batch 宸ュ叿鏃忓洖閫€璺緞銆?*鑻ユ棩鍚庡缃叡浜爲锛岄』鍏堣縼绉?鏇存柊杩?8 涓?tools 鑴氭湰**銆?- **B7 搂4 鍥炲綊锛堝疄娴嬶級**锛欵2a 闂ㄦ帶鎶芥牱 `E2aRecoveryAdmissionEntryIT`锛坮un 757锛?*1/0/0/0**锛沄36 杩佺Щ锛坄E2A_V36_ATTEMPT=e2a-v36-attempt5`锛?*1/0/0/0**锛堝吋璇?attempt 鍙厤缃湪鐪熻窇涓敓鏁堬級銆俁-1/R-2/R-4/R-6/R-7 涓?*鍚屼竴 HEAD 鐨勬棦鏈夎瘉鎹€佹湰鎵逛笉閲嶈窇**锛堟湰鎵规棤浠讳綍鍙墽琛屼唬鐮佹敼鍔級銆?- **I3 鍏变韩鏍戝缃湭鍋?*锛坄git worktree remove`锛忓綊妗ｉ渶**鍗曠嫭鎺堟潈**锛夈€?
-## 鏈獙涓庝笅涓€姝?1. **寰呮巿鏉?*锛欼3锛堝叡浜爲澶勭疆锛夛紱B4 瀹炴柦绾э紙鈬?A4.3/B9锛夛紱A2.1 涓荤鈫旀潈闄愮爜鏄犲皠锛沇-2-d 鏈喅瀛ゅ効璁℃暟銆?2. **涓嶉渶鏂版巿鏉冨嵆鍙仛**锛?*K1-1 璇佹嵁鏍稿疄**锛圼K1 鍒ゆ嵁鎻愭](history/R09_C2_B1_K1_PASS_CRITERIA_PROPOSAL_2026-09-30.md) 搂6 鐨?E1鈥揈6 浜嬪疄琛ㄩ噸寤猴級锛?*K1-3** 琛ヤ竴鏉＄湡瀹炶法杩涚▼鐢ㄤ緥銆?3. 鍏朵綑鎸塠鍓╀綑璁″垝](../REMAINING_DEVELOPMENT_PLAN.md)鎺ㄨ繘锛汻07 缂哄彛锛堝簱瀛樺樊寮傚鎵归棬銆佽ˉ鎵ｅ叆鍙ｃ€乣MOVEMENT_DATE`/閿佹湡渚嬪銆佹晠闅滄崲鏈哄垎鏀€佹挙閿€鍗犵敤鍥為€€銆佹洿姝ｈ〃瑙﹀彂鍣ㄣ€侀檮浠剁湡瀹炲瓨鍌級淇濇寔鍗曞垪銆?- 闀挎湡鍗曞垪锛歚DEBT-R09-C2-LEASE-ANCHOR`銆佸鍎胯В闄や笌鐢熶骇閲婃斁銆丣ava/Python 鍏佽闆嗗樊寮傘€両T-DISCOVERY锛坄E2aMigrationExecutionIT` 浠嶅彧鏈?skipped 璇佹嵁銆侀』 19329 涓撶敤鑸憋級銆両T-EVIDENCE-AUDIT銆乀Z-GMT 鏄剧ず銆丷06 FORMAL 澶瑰叿銆乣R08PreviewSeedIT` 鏈皾璇曘€佹棦鏈夊鎵归樆鏂€?- **K1 浠嶆湭閫氳繃**锛沗admission.enabled`锛廯effect-gate.enabled`锛廯cross-process-enabled`锛廯lease.enabled`锛廯outbound.handover.commands.enabled`锛廯outbound.corrections.commands.enabled` **鍏ㄩ儴榛樿 false**锛涙湭鎺ョ敓浜с€佹湭閮ㄧ讲銆佹湭鍚?main銆佹湭鎿嶄綔鍘熷簱/鐜扮綉锛沗localDeletionAllowed=false`銆?<!-- CURRENT_STATE_END -->
+- 鏍?D:/acrylic-pda-outbound锛涘垎鏀?codex/development锛涙湰娈佃捣鐐?HEAD `1cbda5f`锛涘啓鑰咃紳DSH锛堟湰浼氳瘽锛夈€?- 鏈壒鏀瑰姩锛?*鏃犱唬鐮佹敼鍔?*锛涘彧璇绘牳瀹烇紜澶嶇敤鏈細璇濆凡钀界洏璇佹嵁锛涙柊澧?3 浠芥枃妗ｏ紙K1-1 鏍稿疄璁板綍銆佹牳瀹炲墠鐪嬫澘褰掓。銆佺储寮曪級锛嬬湅鏉垮綋鍓嶅尯銆?*鏈窇鏂版祴璇?*銆?- **闈炴湰浼氳瘽鐨勬湭鎻愪氦鏀瑰姩**锛堟湭浠ｆ彁浜ゃ€佹湭淇敼锛夛細`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`銆佹湭璺熻釜 `docs/PDA_UI_UX_REVIEW_2026-09-29.md`銆?
+## K1-1 浜嬪疄琛紙閲嶅缓锛屽叏閮ㄥ彇鑷?2026-09-30 鏈細璇?run锛涘潎 0 澶辫触/0 閿欒/0 璺宠繃锛?| 璇佹嵁 | 绫?| 椤规暟 |
+| --- | --- | --- |
+| E1 鐪熷疄璺ㄨ繘绋嬫枃浠堕攣 | `G0K1RealFileLockIT` | 10 |
+| E2 鐪熷疄浜у搧璺緞锛嬪師鐢熻韩浠?| `G0K1WriterLeaseIdentityRealIT` | 5 |
+| E3 鐪熷疄 JDBC 杈圭晫 | `G0K1RealJdbcBoundaryIT` | 13 |
+| E4 鐪熷疄椹卞姩 SQL 褰㈡€佷笌鎷掔粷 | `RecoveryEffectAdversarial*` 鍏ㄥ鏃忥紙12 绫伙級 | **501** |
+| E5 鏁堟灉闂ㄦ帴绾跨湡瀹炶矾寰?| `RecoveryEffectGateWiringRealIT`锛堬紜`SqlIT` 11锛廯CommitIT` 14锛廯CursorIT` 7锛廯BatchIT` 3锛?| 1锛堬紜35锛?|
+| E6 鏁堟灉闂ㄩ粯璁ゅ叧闂?| `RecoveryEffectAdversarialDefaultOffIT` | 15 |
+
+## K1-1 鍒ゆ嵁閫愭潯缁撹
+- **鈶￠殣寮忔彁浜や簨瀹炰笂婊¤冻**锛歚G0K1RealJdbcBoundaryIT:381` 鍦?*鐪熷疄 MySQL** 瑙傛祴 `CREATE TABLE` 鐨勯殣寮忔彁浜わ紝鍏跺悗 `rollback()` **鏃犳硶鎾ら攢**锛坄observation_after_ddl` 涓?`observation_after_later_rollback`锛夛紱`:134` 鍙︽湁 `setAutoCommit(true)` 鍚岀被鐢ㄤ緥銆?- **鈶犫憿閮ㄥ垎婊¤冻**锛?*缂洪棬寮€鍚ā寮忚瘉鎹殑鐪熷疄椹卞姩褰㈡€?*锛濃憼`CallableStatement` **璋冪敤浣撴枃鏈?*锛坄CallableIT` 鐨?45 椤瑰疄涓?`Blob/Clob/NClob/SQLXML/Array/Ref/Object` 鍙傛暟 setter锛夛紱鈶?*澶氳鍙?*锛涒憿**甯︽敞閲婅鍙?*锛涒懀**`SET SESSION 鈥**锛涒懁鍘傚晢鏂硅█/DDL 鍙樹綋銆俙RecoveryEffectAdversarialDefaultOffIT` 鐨?`comment/multi/session` 涓夐」鏄?*闂ㄥ叧鏃舵斁琛?*鐨勭洿杩炲熀绾匡紙`authority.checks=0`銆佽瀵熷€煎惈鐪熷疄鍐欏叆锛夛紝**涓嶆槸鎷掔粷璇佹嵁**锛沗SqlSurfaceIT` 鐨?102 渚嬮€愭潯 `deny=<bool>`锛屼絾鍚嶅崟鍐?*娌℃湁** `CALL`锛忓璇彞锛忔敞閲婏紡`SET SESSION`銆?- 鈬?**K1-1 浠嶄笉閫氳繃**锛涚己鍙ｅ凡鏀舵暃涓?*鍙灇涓剧殑 4鈥? 绫诲舰鎬?*锛?*琛ラ綈鍙渶娴嬭瘯渚ф柊澧?*锛堝湪鏃㈡湁 `RecoveryEffectAdversarial*` 瀹舵棌鍐呮墿灞曪紝澶嶇敤 `EffectRealEnvironment`锛廯EffectTestAuthority`锛夛紝涓嶆敼浜у搧浠ｇ爜銆?- **K1-2**锛氬凡鎸?W-2 璁?**宸叉帴鍙椾负鏈夌晫宸茬煡杈圭晫锛堥檮 W-2-d 缂哄彛锛?*"銆?*K1-3**锛歚UNCONFIRMED_NO_CROSS_PROCESS_BASIS` 鍘熸牱淇濈暀銆佺湡瀹炶法杩涚▼鐢ㄤ緥**鏈ˉ**銆傗噿 **K1 鏁翠綋浠嶆湭閫氳繃**銆?
+## 鏈獙涓庝笅涓€姝?1. **琛?K1-1 鐨?4鈥? 绫诲舰鎬?*锛堟祴璇曚晶锛屼笉闇€鏂版巿鏉冿級锛氶棬寮€鍚ā寮忎笅 `CALL` 璋冪敤浣撱€佸璇彞銆佸甫娉ㄩ噴璇彞銆乣SET SESSION 鈥銆佹柟瑷€/DDL 鍙樹綋鍚勪竴鏉＄湡瀹為┍鍔ㄧ敤渚嬨€?2. **K1-3**锛氳ˉ涓€鏉＄湡瀹炶法杩涚▼鐢ㄤ緥锛堥殧绂绘祴璇曪紝涓嶉渶浜у搧鏀瑰姩锛夈€?3. **寰呮巿鏉?*锛欼3锛堝叡浜爲澶勭疆锛夛紱B4 瀹炴柦绾э紙鈬?A4.3/B9锛夛紱A2.1 涓荤鈫旀潈闄愮爜鏄犲皠锛沇-2-d 鏈喅瀛ゅ効璁℃暟銆?4. R07 鍏朵綑缂哄彛淇濇寔鍗曞垪锛堝簱瀛樺樊寮傚鎵归棬銆佽ˉ鎵ｅ叆鍙ｃ€乣MOVEMENT_DATE`/閿佹湡渚嬪銆佹晠闅滄崲鏈哄垎鏀€佹挙閿€鍗犵敤鍥為€€銆佹洿姝ｈ〃瑙﹀彂鍣ㄣ€侀檮浠剁湡瀹炲瓨鍌級銆?- 闀挎湡鍗曞垪锛歚DEBT-R09-C2-LEASE-ANCHOR`銆佸鍎胯В闄や笌鐢熶骇閲婃斁銆丣ava/Python 鍏佽闆嗗樊寮傘€両T-DISCOVERY锛坄E2aMigrationExecutionIT` 浠嶅彧鏈?skipped 璇佹嵁銆侀』 19329 涓撶敤鑸憋級銆両T-EVIDENCE-AUDIT銆乀Z-GMT 鏄剧ず銆丷06 FORMAL 澶瑰叿銆乣R08PreviewSeedIT` 鏈皾璇曘€佹棦鏈夊鎵归樆鏂€?- **K1 浠嶆湭閫氳繃**锛沗admission.enabled`锛廯effect-gate.enabled`锛廯cross-process-enabled`锛廯lease.enabled`锛廯outbound.handover.commands.enabled`锛廯outbound.corrections.commands.enabled` **鍏ㄩ儴榛樿 false**锛涙湭鎺ョ敓浜с€佹湭閮ㄧ讲銆佹湭鍚?main銆佹湭鎿嶄綔鍘熷簱/鐜扮綉锛沗localDeletionAllowed=false`銆?<!-- CURRENT_STATE_END -->
