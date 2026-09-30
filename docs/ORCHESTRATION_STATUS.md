@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: c43525e
-dirty_entries: 13
+head: 6d5ee2a
+dirty_entries: 9
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V51, migrations: 51 }
@@ -33,5 +33,6 @@ server: { contract: 0.37.0, paths: 131, flyway: V51, migrations: 51 }
 - A1.1 不覆盖真实竞态、生产部署、原库/现网、main、标签/Release；开关全默认 false，localDeletionAllowed=false。
 
 ## 下一步
-- 先更新 A1.1 历史与进度索引并完成开发分支提交推送；后续再按路线进入 A1.2 来源事实与候选消费。
+- A1.1 本批已提交并推送；下一项按路线进入 A1.2 来源事实与候选消费。
 <!-- CURRENT_STATE_END -->
+
