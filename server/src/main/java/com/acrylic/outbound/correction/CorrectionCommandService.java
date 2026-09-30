@@ -45,7 +45,9 @@ public class CorrectionCommandService {
         if (requestId==null || !requestId.matches("[A-Za-z0-9._:-]{1,64}"))
             throw new BusinessException(400,"INVALID_REQUEST_ID","请求追踪标识无效");
         var input=CorrectionCommand.Input.parse(utf8);
-        var actor=identities.current(input.uuid("warehouseId"));
+        // The gate is kind-aware (P-R07-03): approvals are authorised by correction:approve alone, every other
+        // command by outbound:correct. Resolved before the operation lookup, so the kind itself decides.
+        var actor=identities.current(input.uuid("warehouseId"),CorrectionCommand.requiresApproval(input.kind()));
         byte[] committed=read.execute(s->replay(input));if (committed!=null) return committed;
         var operation=operations.stream().filter(o->o.commandType().equals(input.kind())).findFirst()
             .orElseThrow(CorrectionCommand::notOpen);

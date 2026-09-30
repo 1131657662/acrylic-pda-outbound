@@ -30,6 +30,13 @@ final class CorrectionCommand {
     static final String ROUTE_SCOPE = "r07.correction.v1";
     static final List<String> KINDS = List.of("CREATE", "APPROVE", "WITHDRAW", "WITHDRAW_CONFIRM", "RECONCILE_OPEN", "RECONCILE_ADVANCE");
     static final Set<String> KINDS_SET = Set.copyOf(KINDS);
+    /**
+     * The two kinds whose decision is a <b>supervisor</b> decision (P-R07-03). One definition only: the kind-aware
+     * identity gate uses it before an {@code Operation} is even resolved, so it cannot drift from
+     * {@link Operation#requiresApproval()}. Confirming a withdrawal is the requester's act (P-R07-08) and
+     * reconciliation cases have no gate at all (design 搂5), so neither is an approval here.
+     */
+    static boolean requiresApproval(String kind) { return kind.equals("APPROVE") || kind.equals("WITHDRAW"); }
     /** Both codes are registered by V45 - the R07-1 lesson was an approval gate whose code was never registered. */
     static final String CORRECT_PERMISSION = "outbound:correct";
     static final String APPROVE_PERMISSION = "correction:approve";
@@ -38,6 +45,8 @@ final class CorrectionCommand {
     static BusinessException stale() { return new BusinessException(409, "CORRECTION_CONTEXT_CHANGED", "更正上下文已变化，请重新核对"); }
     static BusinessException missing() { return new BusinessException(404, "CORRECTION_DOCUMENT_NOT_FOUND", "更正单不存在或无权访问"); }
     static BusinessException denied() { return new BusinessException(403, "CORRECTION_PERMISSION_DENIED", "没有执行此更正命令的权限"); }
+    /** Maker-checker (P-R07-03): the body that created the document may not also approve it. */
+    static BusinessException selfApproval() { return new BusinessException(403, "CORRECTION_SELF_APPROVAL_DENIED", "建档人不得审批他自己建立的更正单"); }
     static BusinessException conflict() { return new BusinessException(409, "IDEMPOTENCY_CONTENT_MISMATCH", "同一原键对应不同命令，请保留原意图"); }
     static BusinessException corrupt() { return new BusinessException(409, "CORRECTION_RECEIPT_INTEGRITY_FAILURE", "原命令证据不可核验，请保留资料"); }
     // Draft §5 codes, ready for the effect/approval/reconciliation steps. None is reachable while the surface is off.
@@ -80,7 +89,7 @@ final class CorrectionCommand {
     static final class Identity {
         private final Access web;private final PdaAccess pda;private final IdentityStore identities;
         Identity(Access web,PdaAccess pda,IdentityStore identities) { this.web=web;this.pda=pda;this.identities=identities; }
-        Actor current(UUID warehouse) {
+        Actor current(UUID warehouse,boolean approval) {
             var authentication=org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
             PdaSessions.Principal principal=authentication!=null && authentication.getPrincipal() instanceof PdaSessions.Principal?pda.current():null;
             SessionUser user=principal==null?web.current():identities.loadUserByUsername(principal.username());
@@ -88,7 +97,10 @@ final class CorrectionCommand {
             var warehouses=identities.warehouses(user.id()).stream().map(w->w.id().toString()).sorted().toList();
             if (!warehouses.contains(warehouse.toString())) throw missing();
             var permissions=identities.permissions(user.id());
-            if (!permissions.contains(CORRECT_PERMISSION)) throw denied();
+            // P-R07-03 separation: an approval command is authorised by the approval body alone; every other
+            // command still needs the correction body. Requiring both would force the approver to also hold the
+            // document-creation body, which is exactly what maker-checker separation forbids.
+            if (!permissions.contains(approval?APPROVE_PERMISSION:CORRECT_PERMISSION)) throw denied();
             return new Actor(user.id(),warehouse,Long.toString(user.authVersion()),principal,List.copyOf(permissions),warehouses);
         }
     }
@@ -163,7 +175,7 @@ final class CorrectionCommand {
          * Only the two supervisor decisions carry the approval gate. Confirming a withdrawal is the requester's act
          * (P-R07-08), and reconciliation cases have no gate at all (design §5).
          */
-        default boolean requiresApproval() { return commandType().equals("APPROVE")||commandType().equals("WITHDRAW"); }
+        default boolean requiresApproval() { return CorrectionCommand.requiresApproval(commandType()); }
     }
 
     record Write(UUID requestId,UUID receiptId,UUID eventId,UUID documentId,UUID orderId,Instant recordedAt,Input command,

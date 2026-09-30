@@ -232,6 +232,12 @@ public final class CorrectionOperations {
             UUID documentId=write.documentId();
             if(documentId==null) throw new BusinessException(400,"INVALID_CORRECTION_COMMAND","审批必须指定更正单");
             var facts=write.anchor();
+            // Maker-checker (P-R07-03): the body that created the document may not be the one that approves it,
+            // even when that person holds correction:approve. Checked before the status/precondition gates so the
+            // refusal is never masked by a stale document, and it carries its own code so it cannot be confused
+            // with a missing permission.
+            if(write.actor().path("principalId").asText().equals(facts.path("requestedBy").asText()))
+                throw CorrectionCommand.selfApproval();
             if(!"SUBMITTED".equals(facts.path("status").asText())) throw CorrectionCommand.stale();
             UUID orderId=write.orderId();
             String type=facts.path("type").asText();

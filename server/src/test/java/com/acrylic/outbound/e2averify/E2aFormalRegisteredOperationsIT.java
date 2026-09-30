@@ -282,12 +282,12 @@ class E2aFormalRegisteredOperationsIT {
         jdbc.update("INSERT INTO app_user(id,username,display_name,password_hash,created_at) VALUES(?,?,?,?,UTC_TIMESTAMP(3))",
             Ids.bytes(id),username,"交接运维","x");
         jdbc.update("INSERT INTO user_warehouse VALUES(?,?)",Ids.bytes(id),Ids.bytes(warehouse));
-        jdbc.update("INSERT INTO user_role SELECT ?,id FROM role WHERE code='WAREHOUSE_ADMIN'",Ids.bytes(id));
+        jdbc.update("INSERT INTO user_role SELECT ?,id FROM role WHERE code='SUPERVISOR'",Ids.bytes(id));
         if (permission != null) {
             // The vendor migrations may already grant this code to WAREHOUSE_ADMIN (V44 does), so the grant is
             // idempotent: what matters here is "the actor's role holds the permission", not "insert a row".
             jdbc.update("INSERT IGNORE INTO role_permission SELECT r.id,p.id FROM role r CROSS JOIN permission p "
-                + "WHERE r.code='WAREHOUSE_ADMIN' AND p.code=?",permission);
+                + "WHERE r.code='SUPERVISOR' AND p.code=?",permission);
         }
         return id;
     }
