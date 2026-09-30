@@ -73,11 +73,11 @@ public class CorrectionStore {
     }
 
     /**
-     * Server-side recompute of one line's "before" values. There is no {@code order_effective_scan} table in this
-     * repository (design §2 assumed one; step 5 added it), so the current effective values are read from the scan
-     * snapshot of the order's current version when that version has one, and only otherwise from the original dispatch
-     * plus its ledger row. Without this preference a second correction on an already corrected dispatch would compute
-     * its "before" side from v1 and silently offer a wrong delta.
+     * Server-side recompute of one line's "before" values. {@code order_effective_scan} holds the per-dispatch
+     * effective values of a result version (V46 added the table), so the current effective values are preferred from
+     * that scan for the order's current version, and only otherwise from the original dispatch plus its ledger row.
+     * Without this preference a second correction on an already corrected dispatch would compute its "before" side
+     * from v1 and silently offer a wrong delta.
      */
     public JsonNode dispatchFacts(UUID orderId,UUID dispatchId) {
         var rows=jdbc.queryForList("""
