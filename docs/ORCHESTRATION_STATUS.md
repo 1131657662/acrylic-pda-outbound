@@ -6,37 +6,36 @@
 ```yaml
 date: 2026-09-30
 branch: codex/development
-head: 7f61b2e
-dirty_entries: 5
+head: f892586
+dirty_entries: 9
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V50, migrations: 50 }
 ```
 <!-- FACTS_END -->
-**R06→R07 无人值守目标已标记 blocked：连续三轮同一产品改动授权阻断，阶段一未收口，R07 未启动。**
-完整范围、决策及恢复条件见 [进度与停报记录](history/R06_R07_PROGRESS_2026-09-30.md)。A1.1 保持[既定范围收口](history/R06_A1_1_CODEX_2026-09-30.md)；状态调整前看板已[归档](history/ORCHESTRATION_STATE_before_R06_R07_BLOCKED_2026-09-30.md)。
+**自主开发：S1 关联回执独立消费已验并推送；下一项 S2 来源可信事实。**
+[方案](history/AUTONOMOUS_PLAN_2026-09-30.md) / [自主进度与证据](history/AUTONOMOUS_PROGRESS_2026-09-30.md)。旧授权阻断已归档，新授权允许新增能力/测试/隔离配置，禁止改变已验业务/默认值。
 
-## Git、写权与改动
-- 树 `D:/acrylic-pda-outbound`，分支 `codex/development`；三轮阻断复核时 HEAD/远端为 `7f61b2ee9376d7195cd82f64021ae39918fece8d`（首次源码基线为 A1.1 收口提交 `801050baf7cae3ef8e9a7774d72fe96c4ee72efb`）。本次状态文档提交取进度记录最后提交，实际远端 SHA 见 `.local/r06-r07-goal-20260930/blocked-closeout/git-final.txt`。
-- Codex 单助手；只同步报告/看板并归档旧断点。未改产品、测试、契约、历史迁移或任何开关；没有数据库/HTTP/device attempt。
-- 非本会话 `docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、`docs/PDA_UI_UX_REVIEW_2026-09-29.md` 未改未暂存，SHA-256 一致；最终全部未提交清单见 `blocked-closeout/status-final.txt`。
+## Git、写权与资源
+- 主树 D:/acrylic-pda-outbound，codex/development；S1 实现及已核远端 f892586580423abedbe5b38721cbf89b3e908245。文档同步提交取自主进度最后提交，不追写自身 SHA。
+- Codex 单助手；本批仅新增四份 Python 独立消费者/测试和四份 Java 测试，加本方案/进度/看板及历史索引。精确范围见 .local/autonomous-20260930/s1-closeout/。
+- 两份非本会话 PDA 文档未动未暂存、摘要一致。无在途构建/AVD/本批 MySQL/HTTP；19330/19434 已释放，原服务保持。
+- 真机 22D2910042 设备清单前后一致；无目标设备命令。S1 清理后 D 可用 33925169152 字节；完整前后磁盘/进程/状态在证据根。
 
-## 阻断审计结论
-- 首轮源码核对、第二/第三轮摘要复核均证实同一阻断：候选排除需要新增产品能力，TEMP 高轮次记账仍受 `s.work_round=1` 限制；没有新的产品改动或开关授权。
-- CommandUnitOfWork 执行允许集仅 NORMAL_CONFIRM/SHORT_APPROVE/LINK；排除缺权限映射/处理器，多候选关联与确认明确拒绝。REJECT/PHYSICAL_DISPOSITION/REOPEN_WORK 亦不在实际执行允许集。
-- 当前已有 CONTROLLED_LINK 与关联后确认分支；不照抄旧“完全未实现”。上述静态核对不等于运行通过，也不据此判定新产品缺陷。
-- 用户的“需改产品代码/开任何开关/改已验业务”止损线使后续业务实施不可继续；第三轮后已实际调用目标状态更新并确认 blocked，未标完成。三轮是阻断观测次数，**不是三次测试失败**。
-- 恢复条件：明确批准 A1.2/A1.3 必需产品改动及相应隔离验证范围；候选排除权限未定项继续单列。不能以泛称无人值守、测试需要或另起入口绕过技术边界。
+## 已验与下一步
+- A1.1 保持 801050baf7cae3ef8e9a7774d72fe96c4ee72efb 的[既定范围收口](history/R06_A1_1_CODEX_2026-09-30.md)，不重跑已验设备批次。
+- S1：attempt792 真实非空 MySQL/TCP HTTP IT 1/0/0/0，Python 40/40、无跳过；原件、唯一非零候选、受控 mapping2、原键重放、目标记账、语义反例均通过。旧首映射消费者仍拒绝 mapping2。
+- 仅新增测试/消费者；合成账号/session/隔离签名不替代现场身份或真实配对；单候选/完整数量/首轮/mapping2 范围，不代表 A1.2/R06 整体完成。
+- S2 先核对其他未提交/归档来源既有实现及较新证据，再补可信事实/不误占 K 的真实缺口；S3 处置/续作、S4 R07 未启动。候选排除权限未知只跳过该项；FORMAL 另立时间盒。
 
-## 证据与资源
-- 证据根 `.local/r06-r07-goal-20260930/`：`preflight/`、`boundary-audit/`、`revalidation-2/`、`revalidation-3/`、`goal-status-blocked.json`；提交/磁盘/最终环境见 `blocked-closeout/`。
-- 关键七份源码与受保护文件三轮摘要一致；第三轮没有在途构建或 AVD，D 盘可用 33930932224 字节，高于 20 GiB 门槛。前后磁盘见原报告及最终快照。
-- 本目标期间业务测试/编译/IT/HTTP/device/MySQL attempt 均为 0。没有新 datadir 可清理，历史数据与失败证据全部保持；没有对真机或模拟器下发目标设备命令。
+## 失败与保全
+- 791 前置短参数探针误解析、792 前置斜线路径比较误拒均留证，均在业务断言前；792 核验空实例后接续首次建库。没有业务失败或隐去失败自动重跑。
+- 791/792 已认证停库。仅新 datadir 在证据保全后清理：791 完整压缩并逐文件摘要验证，792 全库 SQL dump/向量/XML/记录/日志/marker 保留。历史 .local 未删。
+- 证据：.local/autonomous-20260930/、.local/e2a-cross-20260925-791/、.local/e2a-cross-20260925-792/；上一看板已归档到 ORCHESTRATION_STATE_before_AUTONOMOUS_S1_CLOSED_2026-09-30.md。
 
-## 未完成与硬边界
-- A1.2 来源事实/候选消费、A1.3 处置/续作/成功链均未取得本批完整验收；R07 全部范围未启动。A1.4 FORMAL 排除且未触碰。
-- 长期目标范围完整保留，不以文档/静态核对替代交付。再次恢复后须重新核对授权与源码，不盲目沿旧计数继续。
-- A1.1 已验 G1 可重复、②、G4-2/G4-3 重复及⑤一次专项；真实竞态、真机重启、配对/Keystore、实际 HTTP 故障、现场身份及旧 pkg=null 根因等限制保留。
-- 长期单列：R05 原资料/旧 BCD 与 C 档；R07 既有未验/政策；`DEBT-R09-C2-LEASE-ANCHOR`、孤儿解除/生产释放、Java/Python 允许集差异、IT-DISCOVERY、IT-EVIDENCE-AUDIT、TZ-GMT、`R08PreviewSeedIT`、历史 keyring。B4 暂缓，K1 保留 W-2 边界。
-- 默认开关全 false、`localDeletionAllowed=false`；不部署、不接原库现网、不合 main、不打标签/Release；不改已验业务、ConfirmedV1Adapter 或历史迁移；七类生产决定与 TEMP 归档边界不变。
+## 未验与硬边界
+- A1.2/A1.3/R07 均未整体收口；A1.1 真实竞态、真机重启、配对/Keystore、实际 HTTP 故障、现场身份及旧 pkg=null 根因保留；本批未跑全仓回归/APK/lint。
+- R05 原资料/旧 BCD/C 档、R09 lease 锚点/孤儿解除/生产释放、Java/Python 允许集差异、IT-DISCOVERY、IT-EVIDENCE-AUDIT、TZ-GMT、R08PreviewSeedIT、历史 keyring、K1 W-2 边界继续单列。
+- 不改已验业务、ConfirmedV1Adapter、历史迁移、生产默认值；开关默认 false、localDeletionAllowed=false。不部署、不接原库现网、不合 main、不打标签/Release。
+- 同项连续三次失败、真实产品缺陷、需改已验逻辑/默认值或磁盘低于 20 GiB 即停报；政策未知只跳过相应项。
 <!-- CURRENT_STATE_END -->
