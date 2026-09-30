@@ -133,3 +133,15 @@ R2a 已实际提交并推送 67af2c542143552a092f55262268454b233baede，closeout
 - 自主决定：只补已有明确审批政策的真实证据，不把声明附件视作存储、不把成功审批视作现场恢复。R1 frozen Primary 失败、抬头撤销缺陷及业务待决保持单列。
 
 本批提交/远端结果见 resume-supervisor/closeout/git-final.json；整体目标 active、未完成，下一步继续核 R06/R07 独立缺口，不扩 R08/R09/R10。
+
+## 15. R3b 分离身份下误批撤销真实 HTTP 通过
+
+R3a 已推送 8eede2e1a95579a070a6a489e0227dcdaa304e8f。以该提交为输入，针对 P-R07-08“审批人发起撤销→申请人确认”补迁移后 SUPERVISOR/建档人真实 HTTP 证据；详见专项验收 R07_SUPERVISOR_WITHDRAWAL_HTTP_2026-10-01.md。
+
+- attempt798 一次通过 1/0/0/0：原审批人 WITHDRAW、原申请人 WITHDRAW_CONFIRM 成功；建档人、另一主管、主管确认、另一建档人四类越权均403；pending阶段无账务/结果变化。
+- 确认后结果 version=3，包数仍2、重量恢复601500g；原 WEIGHT_DIFF 行保留，新增一条 WD reversal 指向原行，四条回执、一条 effect；同键重放原字节一致，异字节均409。
+- 离线编译、脚本 parseErrors=0、隔离守卫3/0/0/0；最终全量134 suites / 2847 tests / 0 failures / 0 errors / 1既有skip。未改产品源码、既有测试、迁移、契约或默认开关。
+- SQL dump 与290文件ZIP逐项回读通过后才清理798新 datadir；D 收尾前/后33522900992/33723797504字节；真机快照一致，目标设备命令/AVD均0，保护文档不变。
+- 待验保持：占用回退、append-only触发器、撤销过期/拒绝语义、真实附件存储、故障换机、R1写后回滚及R06高轮次。
+
+本批证据与实际提交见 resume-withdrawal/closeout/；整体目标 active、未完成，下一步继续 R06/R07 独立缺口，不扩 R08/R09/R10。

@@ -337,3 +337,5 @@
 - [R06 正式单反向候选独立消费](R06_REVERSE_CANDIDATE_CONSUMER_2026-10-01.md)：真实 HTTP 与原始关系消费、失败/保全、回归及未验边界。
 - [恢复前看板](ORCHESTRATION_STATE_before_RESUMED_2026-10-01.md)：旧 blocked 原结论保留，不恢复为现行授权。
 - [R07 迁移后主管真实签名审批 HTTP 专项](R07_SUPERVISOR_SIGNED_HTTP_2026-10-01.md)：真实 HTTP 验收、资源与未验边界。
+
+- [R07 分离身份误批撤销 HTTP 专项](R07_SUPERVISOR_WITHDRAWAL_HTTP_2026-10-01.md)：两阶段撤销真实 HTTP 验收、资源与未验边界。

@@ -28,3 +28,5 @@
 保持全部生产默认开关、localDeletionAllowed=false、原库/现网/main/发布边界。真机仅枚举；两个受保护 PDA 文档不动。磁盘低于 20GB 停止；仅本批新 datadir 在完整保全后清理。多步执行存 .ps1，文件整写，单助手/单数据库写者。
 
 R3a 按既有主管审批政策完成迁移后真实签名 HTTP 增量；结果及明确未验范围见 [专项验收](R07_SUPERVISOR_SIGNED_HTTP_2026-10-01.md)。不重复历史全矩阵，继续 R3 内其他独立缺口。
+
+R3b 按 P-R07-08 完成分离身份下真实 HTTP 撤销增量；结果及未验范围见专项验收 R07_SUPERVISOR_WITHDRAWAL_HTTP_2026-10-01.md。

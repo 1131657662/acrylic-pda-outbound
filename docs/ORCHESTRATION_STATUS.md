@@ -6,38 +6,38 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: 67af2c5
-dirty_entries: 14
+head: 8eede2e
+dirty_entries: 12
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V50, migrations: 50 }
 ```
 <!-- FACTS_END -->
 **修订自主目标 active、未完成；旧固定三次失败全局停止线已取消。**
-[方案](history/AUTONOMOUS_PLAN_2026-10-01.md) / [当日报告 §11 起](history/AUTONOMOUS_PROGRESS_2026-10-01.md) / [反向候选](history/R06_REVERSE_CANDIDATE_CONSUMER_2026-10-01.md) / [主管签名审批](history/R07_SUPERVISOR_SIGNED_HTTP_2026-10-01.md) / [替换前看板](history/ORCHESTRATION_STATE_before_SUPERVISOR_2026-10-01.md)。日期按 Asia/Shanghai；旧失败历史保留。
+[方案](history/AUTONOMOUS_PLAN_2026-10-01.md) / [当日报告 §11 起](history/AUTONOMOUS_PROGRESS_2026-10-01.md) / [反向候选](history/R06_REVERSE_CANDIDATE_CONSUMER_2026-10-01.md) / [主管签名审批](history/R07_SUPERVISOR_SIGNED_HTTP_2026-10-01.md) / [主管撤销](history/R07_SUPERVISOR_WITHDRAWAL_HTTP_2026-10-01.md) / [替换前看板](history/ORCHESTRATION_STATE_before_WITHDRAWAL_2026-10-01.md)。日期按 Asia/Shanghai；旧失败历史保留。
 
 ## Git、写权与环境
-- 主树 D:/acrylic-pda-outbound，codex/development；输入及已核远端 67af2c542143552a092f55262268454b233baede。该增量实际提交/远端见 resume-supervisor/closeout/git-final.json 或本页最后一次 Git 提交，不预写自身 SHA。
-- Codex 单助手。新增五份 Java 测试域文件及本批文档；精确清单见 .local/autonomous-20261001/resume-supervisor/closeout/status.txt 与暂存清单。无产品源码、既有测试、迁移、契约或默认开关改动。
+- 主树 D:/acrylic-pda-outbound，codex/development；输入及已核远端 8eede2e1a95579a070a6a489e0227dcdaa304e8f。该增量实际提交/远端见 resume-withdrawal/closeout/git-final.json 或本页最后一次 Git 提交，不预写自身 SHA。
+- Codex 单助手。新增三份 Java 测试域文件及本批文档；精确清单见 .local/autonomous-20261001/resume-withdrawal/closeout/status.txt 与暂存清单。无产品源码、既有测试、迁移、契约或默认开关改动。
 - 两份非本会话 PDA 文档不动、未暂存、摘要一致。无在途构建/AVD/本批 MySQL；19330/19434 已释放，原服务不动。
-- 真机 22D2910042 各轮及总收尾枚举逐字节一致；目标设备命令 0、AVD 0。D 收尾前 33592737792、保全清理后 33793564672 字节。
+- 真机 22D2910042 各轮及总收尾枚举逐字节一致；目标设备命令0、AVD0。D 收尾前33522900992、保全清理后33723797504字节。
 
 ## 已验增量与历史复用
 - A1.1 保持 801050baf7cae3ef8e9a7774d72fe96c4ee72efb 的验收范围，不重复设备批次；S1 保持 f892586580423abedbe5b38721cbf89b3e908245：792 IT 1/0/0/0、Python 40/40，单候选/首轮/mapping2。
-- R2a 已提交 67af2c542143552a092f55262268454b233baede：796 Java IT 1/0/0/0、Python 18/18；已成功 TEMP 后建正式单、真实 HTTP 反向候选由原始关系独立消费。成功确认是服务装配前置；A1.2 未整体完成。
-- R3a 本增量797：迁移后 SUPERVISOR 无创建码仍真实 HTTP 签名审批 EFFECTIVE；建档人无审批码、主管无创建码、自批三类拒绝成立；同字节重放、异字节拒绝、精确一次及所列原事实投影不变。IT 1/0/0/0；JCA 独立验签，非完整协议独立消费者。
-- 最终全量：134 suites / 2847 tests / 0 failures / 0 errors / 1 既有 skip；resume-supervisor/full-regression/。离线编译与隔离守卫3/3通过，脚本 parseErrors=0。
-- R07 outbox/主管角色分离有较新实现与历史验收，不恢复旧“全未实现”；附件声明校验不等于真实字节上传/存储完成。
+- R2a 已提交 67af2c542143552a092f55262268454b233baede：796 Java IT 1/0/0/0、Python18/18；已成功 TEMP 后建正式单、真实 HTTP 反向候选由原始关系独立消费。A1.2 未整体完成。
+- R3a 已提交 8eede2e1a95579a070a6a489e0227dcdaa304e8f：迁移后 SUPERVISOR 无创建码仍真实 HTTP 签名审批 EFFECTIVE；建档人无审批码、主管无创建码、自批三类拒绝成立；JCA独立验签。
+- R3b 本增量798：原审批人/原申请人真实 HTTP 两阶段撤销 EFFECTIVE→WITHDRAW_PENDING→WITHDRAWN；四类越权拒绝、逐笔 reversal、原键重放与异字节拒绝成立；IT1/0/0/0，结果version3恢复原重量。
+- 最终全量：134 suites / 2847 tests / 0 failures / 0 errors / 1 既有 skip；resume-withdrawal/full-regression/。离线编译与隔离守卫3/3通过，脚本 parseErrors=0。
+- R07 outbox/主管角色分离有较新实现与历史验收；附件声明校验不等于真实字节上传/存储完成。
 
 ## 停止子项与失败保全
 - R1/S4b 快照单测10/0/0/0；完整回归2857项中1项既有隔离守卫失败：新增Primary违反冻结白名单。已停止该子项，七份草稿核摘要保全移出活动发现，不改白名单；恢复守卫3/3。未建R1库，写后回滚仍未验。
 - R1证据：resume-s4b/guard-failure.json、blocked-source/、offline-1/、baseline-restored/。793/794等旧失败全部保留。
-- 795登录前置403，未到候选断言；仅新增IT补本机Cookie参数后独立796通过，失败源码/XML/dump/ZIP仍在。
-- 795/796/797均认证停库、完整dump/ZIP，各290文件回读一致后仅清理本批新datadir；历史attempt不碰。.local证据不入Git。
+- 795登录前置403，未到候选断言；796通过，失败源码/XML/dump/ZIP仍在；797/798均认证停库、完整dump/ZIP，各290文件回读一致后仅清理本批新datadir；历史attempt不碰。.local证据不入Git。
 
 ## 下一步与未验
 - 按方案继续R06处置/高轮次及R07真实缺口，先核源码与已有证据，选择不依赖R1的子项。A1.2/A1.3/A2.4/R07均未整体收口。
-- TEMP REJECT写权、候选排除授权仍缺依据；已知抬头撤销缺陷待决。故障换机、真实附件存储、写后回滚继续未验。
-- mapping3+、高轮次、短装关联组合、跨来源续作、FORMAL独立时间盒、现场身份/Keystore/断电保持未验；R05原资料/旧BCD及R09既有恢复/审批边界不被覆盖。
+- P-R07-08的占用回退、append-only触发器、撤销过期/拒绝语义仍缺；附件真实存储、故障换机、R1写后回滚继续未验；TEMP REJECT写权、候选排除授权与已知抬头撤销缺陷待决。
+- mapping3+、高轮次、短装关联组合、跨来源续作、FORMAL独立时间盒、现场身份/Keystore/断电保持未验；R05原资料/旧BCD及R09既有恢复边界不被覆盖。
 - 未做Android/APK/lint、模拟器/真机或部署。生产默认开关全false、localDeletionAllowed=false；不接原库现网、不合main、不打标签/Release，不扩到R08/R09/R10。
 <!-- CURRENT_STATE_END -->
