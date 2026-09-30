@@ -170,6 +170,18 @@ public class HandoverActivation {
             UUID approver=UUID.fromString(write.actor().path("principalId").asText());
             store.advanceCase(write.caseId(),write.caseVersion(),"ACTIVATED",null,null,null,null,null,null,null,null,null,
                 receipt,approver,write.recordedAt());
+            // Outbound notification: activation is the handover's order-state change, so it is the event the PDA sync
+            // stream has to learn about. It rides the command's own transaction (see HandoverStore.insertOutbox).
+            long epoch=store.serverRecoveryEpoch();
+            long entityVersion=store.nextOutboxEntityVersion(order,epoch);
+            store.insertOutbox(order,epoch,entityVersion,"HANDOVER_ACTIVATED",
+                SubmissionJson.canonical(SubmissionJson.object().put("caseId",write.caseId().toString())
+                    .put("orderId",order.toString()).put("workRound",facts.path("toWorkRound").asText())
+                    .put("assignmentId",activated.assignmentId().toString())
+                    .put("assignmentEpoch",Long.toString(activated.epoch()))
+                    .put("targetDeviceId",device.toString()).put("targetUserId",user.toString())
+                    .put("activatedAt",write.recordedAt().toString())),
+                write.recordedAt());
             return SubmissionJson.object().put("caseId",write.caseId().toString()).put("status","ACTIVATED")
                 .put("assignmentId",activated.assignmentId().toString()).put("assignmentEpoch",Long.toString(activated.epoch()))
                 .put("expiresAt",activated.expires().toString()).put("targetDeviceId",device.toString())

@@ -99,6 +99,11 @@ public class HandoverStore {
     public void advanceCase(UUID id,long expectedVersion,String status,UUID approvedBy,Long highWatermark,String stopState,
         String integrityState,String originalResultState,String physicalState,UUID targetDevice,UUID targetUser,
         byte[] preparedTicket,byte[] activationReceipt,UUID actor,Instant now) {
+        // Both *_sha256 columns are BINARY(32), so they hold a digest and never the artifact itself: `preparedTicket`
+        // arrives as the ticket bytes and is hashed here, while `activationReceipt` already arrives as a digest (the
+        // activation path passes sha256(receipt) and keeps the receipt bytes for the caller). Writing the raw ticket
+        // into a BINARY(32) column is a data-truncation failure, which is why PREPARE never completed.
+        byte[] preparedTicketSha256=preparedTicket==null?null:unhex(HandoverCommand.sha(preparedTicket));
         String activationHex=activationReceipt==null?null:HandoverCommand.sha(activationReceipt);
         int changed=jdbc.update("""
             UPDATE handover_case SET status=?,
@@ -117,7 +122,7 @@ public class HandoverStore {
             """,status,stopState,integrityState,originalResultState,physicalState,highWatermark,
             approvedBy==null?null:Ids.bytes(approvedBy),approvedBy==null?null:Timestamp.from(now),
             targetDevice==null?null:Ids.bytes(targetDevice),targetUser==null?null:Ids.bytes(targetUser),
-            preparedTicket,preparedTicket==null?null:Timestamp.from(now),
+            preparedTicketSha256,preparedTicket==null?null:Timestamp.from(now),
             activationReceipt,activationHex==null?null:unhex(activationHex),
             activationReceipt==null?null:Timestamp.from(now),Timestamp.from(now),
             Ids.bytes(id),expectedVersion);
@@ -154,6 +159,37 @@ public class HandoverStore {
     public List<Map<String,Object>> audits(UUID receiptId) {
         return jdbc.queryForList("SELECT actor_id,details,event_type FROM operation_event WHERE entity_type='HANDOVER_COMMAND' AND entity_id=?",
             Ids.bytes(receiptId));
+    }
+
+    /**
+     * The next free state version of this order in the shared {@code order_sync_outbox} space. The version space is
+     * shared with the R05/R06 order events and the R07-3 correction events, so a handover must take the next free
+     * version instead of reusing a business version that another chain already claimed. The order row is locked by
+     * the caller's transaction, so this read-then-insert cannot race.
+     */
+    public long nextOutboxEntityVersion(UUID orderId,long epoch) {
+        Long next=jdbc.queryForObject("SELECT IFNULL(MAX(entity_version),0)+1 FROM order_sync_outbox"
+            + " WHERE recovery_epoch=? AND order_id=?",Long.class,epoch,Ids.bytes(orderId));
+        return next==null?1:next;
+    }
+
+    /**
+     * One outbound handover notification. It is written on the command's own transaction, so the notification and the
+     * case/qualification change either both land or both roll back; a crash after commit leaves the row pending
+     * ({@code published_seq IS NULL}) and therefore recoverable by the outbox reader.
+     */
+    public void insertOutbox(UUID orderId,long epoch,long entityVersion,String eventType,String payload,Instant now) {
+        jdbc.update("""
+            INSERT INTO order_sync_outbox(id,recovery_epoch,warehouse_id,order_id,entity_version,event_type,payload,
+              published_seq,created_at)
+            SELECT ?,?,o.warehouse_id,o.id,?,?,CAST(? AS JSON),NULL,?
+            FROM outbound_order o WHERE o.id=?
+            """,Ids.bytes(Ids.next()),epoch,entityVersion,eventType,payload,Timestamp.from(now),Ids.bytes(orderId));
+    }
+
+    /** The recovery epoch the server state is currently in; handover notifications belong to that generation. */
+    public long serverRecoveryEpoch() {
+        return jdbc.queryForObject("SELECT recovery_epoch FROM server_state WHERE id=1",Long.class);
     }
 
     private static byte[] unhex(String hex) {
