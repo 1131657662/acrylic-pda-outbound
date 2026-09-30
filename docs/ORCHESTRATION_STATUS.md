@@ -6,33 +6,39 @@
 ```yaml
 date: 2026-09-30
 branch: codex/development
-head: 19c5080
-dirty_entries: 7
+head: 2786813
+dirty_entries: 6
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V50, migrations: 50 }
 ```
 <!-- FACTS_END -->
-**R06 A1.1 阶段备份：G1 旧种子重复与②坏件通过；G4/⑤前置阻断，新 attempt 待确认。**
-实测见 [Codex 接续记录](history/R06_A1_1_CODEX_2026-09-30.md)；上一断点已[归档](history/ORCHESTRATION_STATE_before_CODEX_A11_DEVICE_FINAL_2026-09-30.md)。A1.1 整体未收口，A1.2 未进入。
+**R06 A1.1 按 DSH 分层验收范围收口：G1 可重复、②、G4-2/G4-3 重复与⑤专项均通过。**
+详见 [Codex 收口记录](history/R06_A1_1_CODEX_2026-09-30.md)；批准前断点已[归档](history/ORCHESTRATION_STATE_before_CODEX_A11_APPROVED_CLOSURE_2026-09-30.md)。A1.2 未实施；局部通过不等于生产就绪。
 
 ## Git、写权与改动
-- 树 `D:/acrylic-pda-outbound`；分支 `codex/development`；接管输入 `9669e9048946a12eac18342e0facf34e79739e39`，测试阶段提交 `19c50809331135c4441b1fea9d56633afc7c6343`。文档提交/推送 SHA 见本记录最后提交与 `.local/r06-a11-codex-20260930/git-final.txt`，不追逐文档自身 SHA。
-- 写者＝Codex 单助手，用户已从 DSH 移交。新增 10 个 androidTest 文件，完整清单见 `staged-tests.txt`；文档涉及本看板、接续记录、两份断点归档与验收索引。无产品、契约、历史迁移改动。
-- 非本会话两份 PDA 文档未改、未暂存，保护 SHA-256 一致；最终未提交清单见 `status-final.txt`。
+- 树 `D:/acrylic-pda-outbound`；分支 `codex/development`；批准执行输入 `2786813d87ec7cc79992830c2b8285db6ce67604`，测试提交 `19c50809331135c4441b1fea9d56633afc7c6343`。本收口提交取记录最后提交，推送实际 SHA 见 `.local/r06-a11-codex-20260930/approved-closeout/git-final.txt`，不追逐文档自身 SHA。
+- 写者＝Codex 单助手；本次批准续跑未改源码，只更新本看板、收口记录、批准前断点归档及验收索引；新增诊断/证据在 `.local`，不提交。原新增 10 个 androidTest 已在测试提交中。
+- 非本会话 `docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md` 与 `docs/PDA_UI_UX_REVIEW_2026-09-29.md` 未改未暂存，SHA-256 一致；完整状态清单见 `approved-closeout/status-final.txt`。
 
-## 当次结果与环境
-- **G1 重复通过**：安装前从旧库确认 stop/event 各 1，再安装测试；两阶段各 1 项，真实 force-stop；四组断言与 Guard 三步通过。
-- **②坏件 4 项通过**：坏原件/请求阻断、非法签名回执原字节保留、后置坏回执阻断前方未知请求。真实 Room/产品 verifier；身份、密钥和传输边界为合成夹具，GET/POST 计数不是实际 HTTP。
-- **G4-2、⑤前置失败，实际用例未执行**：安装前 staging 包不可见；失败目录 `G42/`、`Loss/` 保留，无自动重跑。G4-3 本批未启动。
-- 只读启动诊断两台 AVD 各 7 个采样，约 30 秒仍未列出包；原因未确定，不认定原库丢失。修正驱动与自包含前置已编译、解析通过，未上设备。
-- 离线回归 7 类 47 项零失败零跳过；最终 staging/测试 APK 编译通过。中文文档脚本在 PowerShell 5.1 的 parse 红已保留，按 PowerShell 7 解析通过。
-- 证据根 `.local/r06-a11-codex-20260930/`；每个设备/诊断目录都有磁盘前后和真机快照，全部相同。`22D2910042` 仅只读取证；模拟器命令锁定 `-s emulator-5554`＋ANDROID_SERIAL。
-- 重型任务结束、模拟器退出；原服务/数据库未动。源码/监听/进程/磁盘清单见该目录最终快照；没有全套/lint/真 HTTP/真机/部署验收。
+## 验收结果与证据
+- **G1 重复通过、②坏件 4 项通过**：用户明确接受。G1 安装前旧库 stop/event 各 1，真实 force-stop 后四组断言及 Guard 三步通过；②产品 verifier/Room 实跑，坏回执保留原字节且不能重启传输。
+- **G4-2/G4-3 各一次批准重复通过**：先安装、前置 seed 两次，受控非干净库中各两阶段真跑；52 表指纹、NONEMPTY、停止族 1/2/1/1/1、FK 干净。不是对旧不可见包历史状态的恢复声明。
+- **⑤一次专项通过**：OPEN/ITEM/VERIFY 丢回执分别落 RESULT_UNKNOWN；force-stop 后新 PID 以原键恢复，丢回执键无重复 POST、无补签，原字节/事件数保持，全部 VERIFIED/ORIGINALS_STORED。两阶段各 1 项，覆盖三个场景。
+- 批准项共 6 次验收方法调用、另 2 次 setup，各 `OK (1 test)`/`numtests=1`，没有零测试或失败标记。证据根 `.local/r06-a11-codex-20260930/`：`g4-approved-1/`、`loss-approved-1/`；汇总 `approved-audit/summary.json`。
+- 只读启动诊断：本轮早期服务未就绪，约 6 秒包/runner 可见、约 20 秒全部就绪；旧轮保留 installed=true 但 pkg=null，原因仍未确定，不能统称缺包/启动慢/数据丢失。正确有界等待与原始/派生表更正在收口记录 §4。
+- 旧 `G42/`、`Loss/` 为安装前 harness 阻断，实际测试未执行；失败轮、G1 原重复红、假通过轮、e2a-cross 与所有 `.local` 证据保留。
+- 离线 7 类 47 项零失败/错误/跳过及 APK 编译为前阶段证据；批准续跑重新核对源码/APK 摘要、parseErrors=0，并实际使用最终 APK。没有重跑或冒称完整全套/lint/真实 HTTP。
+
+## 设备与环境收尾
+- 每个设备/诊断目录均保留磁盘前后与真机包列表/安装元数据快照；`22D2910042` 全部前后一致，仅只读。每条模拟器命令锁定 `-s emulator-5554`＋ANDROID_SERIAL，一次仅一台 AVD。
+- D 可用字节：G4 34029580288→34012704768；⑤ 34012712960→33963274240；只读诊断 33963257856→33932365824。此前各轮资源表见收口记录。
+- 设备执行与诊断已结束，模拟器退出，无在途构建；既有服务/数据库未动。最终进程/监听/磁盘/未提交快照见 `approved-closeout/`。
 
 ## 下一步与保留边界
-1. 收到确认后用 `run-reviewed.ps1 -Scenario Migrations` 建受控非空前置并各跑一次 G4-2/G4-3；2. 确认后 `-Scenario Loss` 首次执行⑤用例；失败即停。3. 优先项通过后按 R06 主线接 A1.2。
-- G1 仍为合成行、结构签名占位与手写会话 JSON；②新增的产品 verifier/有效测试签名不等于真实 Keystore、配对、现场身份或原来源事实。真实竞态/真机重启及 A1.4 FORMAL 未验。
-- 长期单列：R05 原资料/旧 BCD 与 C 档现场；R07 既有未验与政策编码；`DEBT-R09-C2-LEASE-ANCHOR`、孤儿解除/生产释放、Java/Python 允许集差异、IT-DISCOVERY、IT-EVIDENCE-AUDIT、TZ-GMT 显示、`R08PreviewSeedIT`、历史 keyring。B4 暂缓；K1 已通过但保留 W-2 边界。
-- 开关全默认 false；不部署、不接原库现网、不合 main、不打标签/Release；`localDeletionAllowed=false`。不改 R05/R06/R07 已验业务、ConfirmedV1Adapter 或历史迁移；全部失败证据保留。
+1. A1.1 本批范围收口；下一步沿既有 R06 主线核对 A1.2 来源事实与候选消费，本次未开实现。
+2. 保留真实扫码/停止竞态、真机重启/断电、真实配对/Keystore/现场身份、实际 HTTP 丢回执与 A1.4 FORMAL；G1 仍是合成行/占位签名/手写 JSON，②/⑤合成签名及传输边界不能替代现场。
+3. G4 device 请求/回执表为空，不外推其非空迁移；⑤仅一次专项，不声称重复验收。旧包 pkg=null 根因留作环境专项。
+- 长期单列：R05 原资料/旧 BCD 与 C 档现场；R07 既有未验/政策编码；`DEBT-R09-C2-LEASE-ANCHOR`、孤儿解除/生产释放、Java/Python 允许集差异、IT-DISCOVERY、IT-EVIDENCE-AUDIT、TZ-GMT 显示、`R08PreviewSeedIT`、历史 keyring。B4 暂缓；K1 已通过但保留 W-2 边界。
+- 开关全默认 false；`localDeletionAllowed=false`；不部署、不接原库现网、不合 main、不打标签/Release；不改 R05/R06/R07 已验业务、ConfirmedV1Adapter 或历史迁移。七类生产决定及 TEMP 生产归档不因内部验收开放。
 <!-- CURRENT_STATE_END -->
