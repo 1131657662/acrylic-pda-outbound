@@ -159,6 +159,34 @@ class E2aFormalRegisteredOperationsIT {
         // R07-1 outbox lands; recording it here keeps the seam visible without claiming the transaction is complete.
         notes.append("M13-1 note: activation object present=").append(activation!=null)
             .append("; full activation+outbox atomicity deferred to A2.3\n");
+
+        // --- M7: activation refuses a publication from a different recovery epoch --------------------------------
+        // The guard lives in HandoverActivation.activate: it compares the publication's recovery epoch with the
+        // caller's. Driving the activation object directly is the same seam the ACTIVATE command reaches, without
+        // fabricating an APPROVED+TARGET_PREPARED case first.
+        UUID targetDevice = device;
+        UUID targetUser = UUID.fromString(host.get("operator_id").toString());
+        String publicationEpoch = jdbc.queryForObject(
+            "SELECT CAST(a.recovery_epoch AS CHAR) FROM order_assignment a WHERE a.order_id=? AND a.status='ACTIVE' LIMIT 1",
+            String.class,Ids.bytes(order));
+        String wrongEpoch = publicationEpoch.equals("1") ? "2" : "1";
+        String m7;
+        try { activation.activate(warehouse,order,targetDevice,targetUser,wrongEpoch,"M7 旧代次"); m7="NO_ERROR"; }
+        catch (BusinessException error) { m7=error.code(); }
+        notes.append("M7 恢复代次不符 -> ").append(m7).append('\n');
+        assertThat(m7).as("M7 recovery epoch mismatch").isEqualTo("ORDER_RECOVERY_REQUIRED");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM order_assignment WHERE order_id=? AND status='ACTIVE'",Integer.class,Ids.bytes(order)))
+            .as("M7 a refused activation must not disturb the active round").isEqualTo(1);
+
+        // --- M7 control: with the matching epoch the guard lets the activation through ---------------------------
+        activation.terminateActive(warehouse,order);
+        var activated = activation.activate(warehouse,order,targetDevice,targetUser,publicationEpoch,"M7 对照");
+        notes.append("M7 对照（代次相符）-> activated=").append(activated!=null)
+            .append(" assignment=").append(activated.assignmentId()).append('\n');
+        assertThat(activated).as("M7 control activation").isNotNull();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM order_assignment WHERE order_id=? AND status='ACTIVE'",Integer.class,Ids.bytes(order)))
+            .as("M7 control leaves exactly one active round").isEqualTo(1);
+
         Files.writeString(attempt.resolve("operations.txt"),notes.toString());
     }
 
