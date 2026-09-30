@@ -6,38 +6,32 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: 73297ae
-dirty_entries: 3
+head: c43525e
+dirty_entries: 13
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
-server: { contract: 0.37.0, paths: 131, flyway: V50, migrations: 50 }
+server: { contract: 0.37.0, paths: 131, flyway: V51, migrations: 51 }
 ```
 <!-- FACTS_END -->
-**修订自主目标 active、未完成；旧固定三次失败全局停止线已取消。**
-[方案](history/AUTONOMOUS_PLAN_2026-10-01.md) / [当日报告 §11 起](history/AUTONOMOUS_PROGRESS_2026-10-01.md) / [反向候选](history/R06_REVERSE_CANDIDATE_CONSUMER_2026-10-01.md) / [主管签名审批](history/R07_SUPERVISOR_SIGNED_HTTP_2026-10-01.md) / [主管撤销](history/R07_SUPERVISOR_WITHDRAWAL_HTTP_2026-10-01.md) / [替换前看板](history/ORCHESTRATION_STATE_before_WITHDRAWAL_2026-10-01.md)。日期按 Asia/Shanghai；旧失败历史保留。
+**R06 A1.1 已按用户批准范围完成设备层收口；本区只记录可复核事实，不外推生产就绪。**
 
 ## Git、写权与环境
-- 主树 D:/acrylic-pda-outbound，codex/development；输入及已核远端 8eede2e1a95579a070a6a489e0227dcdaa304e8f。该增量实际提交/远端见 resume-withdrawal/closeout/git-final.json 或本页最后一次 Git 提交，不预写自身 SHA。
-- Codex 单助手。新增三份 Java 测试域文件及本批文档；精确清单见 .local/autonomous-20261001/resume-withdrawal/closeout/status.txt 与暂存清单。无产品源码、既有测试、迁移、契约或默认开关改动。
-- 两份非本会话 PDA 文档不动、未暂存、摘要一致。无在途构建/AVD/本批 MySQL；19330/19434 已释放，原服务不动。
-- 真机 22D2910042 各轮及总收尾枚举逐字节一致；目标设备命令0、AVD0。D 收尾前33522900992、保全清理后33723797504字节。
+- 主树 D:/acrylic-pda-outbound，codex/development；Codex 单助手写入。本批只收口 A1.1 设备证据与文档；受保护的两份 PDA 文档不动、不暂存。
+- G1、G4-2/G4-3、②、⑤ 的设备 attempt 已结束；模拟器已退出，真实设备 22D2910042 前后快照一致，未触碰真机。
+- 本批 .local 证据只增不删；历史失败轮保留。R07 P08 草稿文件仍在工作区，未纳入本批 A1.1 提交。
 
-## 已验增量与历史复用
-- A1.1 保持 801050baf7cae3ef8e9a7774d72fe96c4ee72efb 的验收范围，不重复设备批次；S1 保持 f892586580423abedbe5b38721cbf89b3e908245：792 IT 1/0/0/0、Python 40/40，单候选/首轮/mapping2。
-- R2a 已提交 67af2c542143552a092f55262268454b233baede：796 Java IT 1/0/0/0、Python18/18；已成功 TEMP 后建正式单、真实 HTTP 反向候选由原始关系独立消费。A1.2 未整体完成。
-- R3a 已提交 8eede2e1a95579a070a6a489e0227dcdaa304e8f：迁移后 SUPERVISOR 无创建码仍真实 HTTP 签名审批 EFFECTIVE；建档人无审批码、主管无创建码、自批三类拒绝成立；JCA独立验签。
-- R3b 本增量798：原审批人/原申请人真实 HTTP 两阶段撤销 EFFECTIVE→WITHDRAW_PENDING→WITHDRAWN；四类越权拒绝、逐笔 reversal、原键重放与异字节拒绝成立；IT1/0/0/0，结果version3恢复原重量。
-- 最终全量：134 suites / 2847 tests / 0 failures / 0 errors / 1 既有 skip；resume-withdrawal/full-regression/。离线编译与隔离守卫3/3通过，脚本 parseErrors=0。
-- R07 outbox/主管角色分离有较新实现与历史验收；附件声明校验不等于真实字节上传/存储完成。
+## A1.1 已验
+- G1：在已 seed 设备上重复通过；两阶段各 1 test，固定事件键 DELETE 幂等修复生效，四组停止保全断言与 (C) 身份切换三步均通过。
+- ②：坏原件、坏请求、坏回执 device 专项通过；不启传、不重签，停止状态与原字节保持。
+- G4-2/G4-3：g4-approved-2b 非干净重复运行通过；Migrations PASS，physicalDiff=False，verdict=NONEMPTY，停止族五表 1/2/1/1/1，FK 违规数为 0。
+- ⑤：loss-approved-2 通过；OPEN/ITEM/VERIFY 均 RESULT_UNKNOWN→ORIGINALS_STORED，每场景 droppedKeyPosts=1、stopSigns=0、requests=11。
+- 包可见性只读诊断已定性为启动早期服务未就绪与目标包缺失的可区分分支；后续按 boot、package service、user unlock、精确包名/APK/runner 的有界等待门执行。
 
-## 停止子项与失败保全
-- R1/S4b 快照单测10/0/0/0；完整回归2857项中1项既有隔离守卫失败：新增Primary违反冻结白名单。已停止该子项，七份草稿核摘要保全移出活动发现，不改白名单；恢复守卫3/3。未建R1库，写后回滚仍未验。
-- R1证据：resume-s4b/guard-failure.json、blocked-source/、offline-1/、baseline-restored/。793/794等旧失败全部保留。
-- 795登录前置403，未到候选断言；796通过，失败源码/XML/dump/ZIP仍在；797/798均认证停库、完整dump/ZIP，各290文件回读一致后仅清理本批新datadir；历史attempt不碰。.local证据不入Git。
+## 失败保全与未验
+- g4-approved-2 保留 emulator offline 的前置失败；不得把它计为测试断言失败，也不得删除证据。
+- 真实 HTTP 服务故障与真实 POST 审计、真机重启/断电、真实登录/配对、设备 Keystore、真实来源事实、A1.2 候选消费仍未验。
+- A1.1 不覆盖真实竞态、生产部署、原库/现网、main、标签/Release；开关全默认 false，localDeletionAllowed=false。
 
-## 下一步与未验
-- 按方案继续R06处置/高轮次及R07真实缺口，先核源码与已有证据，选择不依赖R1的子项。A1.2/A1.3/A2.4/R07均未整体收口。
-- P-R07-08的占用回退、append-only触发器、撤销过期/拒绝语义仍缺；附件真实存储、故障换机、R1写后回滚继续未验；TEMP REJECT写权、候选排除授权与已知抬头撤销缺陷待决。
-- mapping3+、高轮次、短装关联组合、跨来源续作、FORMAL独立时间盒、现场身份/Keystore/断电保持未验；R05原资料/旧BCD及R09既有恢复边界不被覆盖。
-- 未做Android/APK/lint、模拟器/真机或部署。生产默认开关全false、localDeletionAllowed=false；不接原库现网、不合main、不打标签/Release，不扩到R08/R09/R10。
+## 下一步
+- 先更新 A1.1 历史与进度索引并完成开发分支提交推送；后续再按路线进入 A1.2 来源事实与候选消费。
 <!-- CURRENT_STATE_END -->
