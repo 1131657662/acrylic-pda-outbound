@@ -164,3 +164,4 @@
 ## 修订目标接续验收（2026-10-01）
 
 - [R06 正式单反向候选独立消费](history/R06_REVERSE_CANDIDATE_CONSUMER_2026-10-01.md)：实际 HTTP/原始关系消费者、失败轮与回归证据；[接续报告 §11 起](history/AUTONOMOUS_PROGRESS_2026-10-01.md)区分 R1 守卫失败与 R2 通过，不作为整体完成。
+- [R07 迁移后主管真实签名审批 HTTP 专项](history/R07_SUPERVISOR_SIGNED_HTTP_2026-10-01.md)：权限分离、签名生效、拒绝与原键重放的验收及边界。

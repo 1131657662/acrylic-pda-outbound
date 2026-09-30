@@ -122,3 +122,14 @@ A1.2/A1.3/R07 均未整体收口；mapping3+、高轮次、候选排除、短装
 证据根：resume-reverse/、resume-reverse-http/ 与 .local/e2a-cross-20260925-795/、796/。本批两库认证停机，完整 dump 与各 290 文件 ZIP 逐字节校验后才清理新 datadir；历史证据未删。D 从 resume-check 的 33901223936，到两库收尾前 33447997440，再到保全清理后的 33848803328 字节；均高于阈值。各轮及总收尾真机枚举一致，目标设备命令/AVD 均 0；两份保护文档 SHA-256 一致。
 
 本增量提交/推送的实际结果见 resume-reverse-http/closeout/git-final.json；实现与文档 SHA 在后续 Git 核验补充中记录。不预写成功、不标总体完成。
+## 14. R3a 迁移后主管真实签名审批通过
+
+R2a 已实际提交并推送 67af2c542143552a092f55262268454b233baede，closeout/git-final.json 核本地与远端相同。以此为 R3a 输入，针对裁定 B 的主管仅到签名不可用、旧 schema 成功不能替代迁移后角色的证据差距，新增五份测试域文件；详见[验收](R07_SUPERVISOR_SIGNED_HTTP_2026-10-01.md)。
+
+- attempt797 一次通过 1/0/0/0：真实 Web 会话/CSRF、主管签名审批 EFFECTIVE、无权限/自批三类拒绝、同字节重放和异字节拒绝、精确一笔效果。JCA 独立公钥验签；协议 JSON 工具仍复用产品，不冒称全协议独立消费。
+- 离线编译、脚本 parseErrors=0 与既有守卫 3/0/0/0；最终全量 134 suites / 2847 tests / 0 failures / 0 errors / 1 既有 skip。未改产品或既有测试。
+- SQL dump 与完整 ZIP 的 290 个文件摘要回读通过后才清理797新 datadir；失败轮及所有历史 attempt 不动。证据：resume-supervisor/ 和 .local/e2a-cross-20260925-797/。
+- D 执行前/后 33844604928/33629073408，最终收尾前/后 33592737792/33793564672 字节；真机各快照一致，目标设备命令/AVD 均0，两份保护文档不变。
+- 自主决定：只补已有明确审批政策的真实证据，不把声明附件视作存储、不把成功审批视作现场恢复。R1 frozen Primary 失败、抬头撤销缺陷及业务待决保持单列。
+
+本批提交/远端结果见 resume-supervisor/closeout/git-final.json；整体目标 active、未完成，下一步继续核 R06/R07 独立缺口，不扩 R08/R09/R10。
