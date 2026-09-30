@@ -61,6 +61,10 @@ public class HandoverCommandService {
         if (row==null) return null;
         byte[] stored=(byte[])row.get("canonical_command_bytes");
         if (!Arrays.equals(stored,input.bytes())) throw HandoverCommand.conflict();
+        // A retry may only receive a receipt that can still be re-proved: the stored response must be the object the
+        // row's digests and identifiers describe, and its signature must verify. Anything else is an integrity
+        // failure (HANDOVER_RECEIPT_INTEGRITY_FAILURE), not a replay of a trusted answer.
+        codec.verify(row);
         return (byte[])row.get("response_bytes");
     }
 

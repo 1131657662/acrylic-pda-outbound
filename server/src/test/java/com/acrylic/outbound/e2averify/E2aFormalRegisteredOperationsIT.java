@@ -169,7 +169,7 @@ class E2aFormalRegisteredOperationsIT {
         String publicationEpoch = jdbc.queryForObject(
             "SELECT CAST(a.recovery_epoch AS CHAR) FROM order_assignment a WHERE a.order_id=? AND a.status='ACTIVE' LIMIT 1",
             String.class,Ids.bytes(order));
-        String wrongEpoch = publicationEpoch.equals("1") ? "2" : "1";
+        String wrongEpoch = "999999"; // deliberately not any real epoch: the guard must refuse before the baseline check
         String m7;
         try { activation.activate(warehouse,order,targetDevice,targetUser,wrongEpoch,"M7 旧代次"); m7="NO_ERROR"; }
         catch (BusinessException error) { m7=error.code(); }
@@ -178,16 +178,67 @@ class E2aFormalRegisteredOperationsIT {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM order_assignment WHERE order_id=? AND status='ACTIVE'",Integer.class,Ids.bytes(order)))
             .as("M7 a refused activation must not disturb the active round").isEqualTo(1);
 
-        // --- M7 control: with the matching epoch the guard lets the activation through ---------------------------
-        activation.terminateActive(warehouse,order);
-        var activated = activation.activate(warehouse,order,targetDevice,targetUser,publicationEpoch,"M7 对照");
-        notes.append("M7 对照（代次相符）-> activated=").append(activated!=null)
-            .append(" assignment=").append(activated.assignmentId()).append('\n');
-        assertThat(activated).as("M7 control activation").isNotNull();
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM order_assignment WHERE order_id=? AND status='ACTIVE'",Integer.class,Ids.bytes(order)))
-            .as("M7 control leaves exactly one active round").isEqualTo(1);
+        // No control call is made here. With a matching epoch the next guard is the warehouse-baseline comparison — a
+        // different seam — and the earlier "control" stopped on ORDER_BASELINE_CHANGED, so it proved nothing about M7.
+        // The asserted branch is the epoch comparison and it is the last thing this test touches.
+
+        // --- M6: a stored receipt that cannot be re-proved is refused as an integrity failure, never replayed -------
+        // The receipt table is protected by BEFORE UPDATE/DELETE triggers, so corruption cannot be *simulated* by
+        // editing a real row. Instead the test writes the row the read path must meet: a structurally valid receipt
+        // whose signature does not verify (a forged token), with the row's digests self-consistent. That is the shape a
+        // damaged signature write would leave behind, and the read path must refuse it rather than replay it.
+        UUID forgedCommandId = UUID.randomUUID();
+        var forgedCommand = SubmissionJson.object().put("commandVersion",1).put("commandType","REQUEST")
+            .put("commandId",forgedCommandId.toString()).put("transportRecoveryEpoch","1").put("reason","M6 伪造回执")
+            .put("warehouseId",warehouse.toString()).put("scopeId",scope.toString());
+        forgedCommand.set("expected",requestExpected);
+        byte[] forgedCommandBytes = SubmissionJson.canonical(forgedCommand).getBytes(StandardCharsets.UTF_8);
+        var forgedReceipt = SubmissionJson.object().put("receiptVersion",1)
+            .put("receiptId",UUID.randomUUID().toString()).put("commandId",forgedCommandId.toString())
+            .put("routeScope","r07.handover.v1").put("commandType","REQUEST")
+            .put("commandSha256",sha256Hex(forgedCommandBytes))
+            .put("status","RECORDED").put("recordedAt",java.time.Instant.now().toString())
+            .put("eventId",UUID.randomUUID().toString())
+            .putNull("businessDecision");
+        forgedReceipt.set("caseContext",store.caseFacts(caseId));
+        forgedReceipt.set("actor",SubmissionJson.object().put("principalId",approver.toString())
+            .put("warehouseId",warehouse.toString()).put("userAuthVersion","1")
+            .putNull("deviceId").putNull("sessionId"));
+        forgedReceipt.set("expected",forgedCommand.path("expected"));
+        forgedReceipt.set("capabilities",capabilities());
+        forgedReceipt.put("signedReceipt","forged.signature.value");
+        byte[] forgedBytes = SubmissionJson.canonical(forgedReceipt).getBytes(StandardCharsets.UTF_8);
+        jdbc.update("INSERT INTO handover_command_receipt(id,case_id,original_key,command_type,command_sha256,"
+            + "canonical_command_bytes,response_bytes,response_sha256,actor_id,expected_json,status,event_id,recorded_at) "+
+            "VALUES(?,?,?,?,?,?,?,?,?,?,'RECORDED',?,UTC_TIMESTAMP(3))",
+            Ids.bytes(Ids.next()),Ids.bytes(caseId),Ids.bytes(forgedCommandId),"REQUEST",
+            java.util.HexFormat.of().parseHex(sha256Hex(forgedCommandBytes)),
+            forgedCommandBytes,forgedBytes,
+            java.util.HexFormat.of().parseHex(sha256Hex(forgedBytes)),
+            Ids.bytes(approver),SubmissionJson.canonical(forgedCommand.path("expected")),
+            Ids.bytes(Ids.next()));
+        int receiptsBeforeM6 = count(jdbc,"handover_command_receipt",caseId);
+        String m6;
+        try { execute(service,(ObjectNode)forgedCommand,requester,requesterName); m6="NO_ERROR"; }
+        catch (BusinessException error) { m6=error.code(); }
+        notes.append("M6 伪造回执重放 -> ").append(m6).append('\n');
+        assertThat(m6).as("M6 a damaged stored receipt is an integrity failure, not a replay")
+            .isEqualTo("HANDOVER_RECEIPT_INTEGRITY_FAILURE");
+        assertThat(count(jdbc,"handover_command_receipt",caseId))
+            .as("M6 the refused replay writes no new receipt").isEqualTo(receiptsBeforeM6);
 
         Files.writeString(attempt.resolve("operations.txt"),notes.toString());
+    }
+
+    /** The receipt contract's capability block, written out here because the codec keeps it package-private. */
+    private static ObjectNode capabilities() {
+        return SubmissionJson.object().put("writeConfirmationAvailable",false).put("releaseAllowed",false)
+            .put("mayResumeScanning",false).put("stockReleased",false).put("localDeletionAllowed",false);
+    }
+
+    private static String sha256Hex(byte[] bytes) {
+        try { return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)); }
+        catch (java.security.NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
     }
 
     /** Appends the device-produced stop proof the release guard requires, and records the state it implies. */

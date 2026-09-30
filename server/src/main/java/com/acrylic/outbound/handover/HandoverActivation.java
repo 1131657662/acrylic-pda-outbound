@@ -83,14 +83,17 @@ public class HandoverActivation {
     }
 
     private TargetDevice targetDevice(UUID device,UUID warehouse) {
-        var rows=jdbc.query("SELECT row_version FROM device WHERE id=? AND warehouse_id=? AND disabled_at IS NULL",
+        // The device table carries its lifecycle in `status` (V7: CHECK(status IN ('ACTIVE','DISABLED'))); there is no
+        // `disabled_at` column anywhere in the schema, so the guard has to read the column that actually exists.
+        var rows=jdbc.query("SELECT row_version FROM device WHERE id=? AND warehouse_id=? AND status='ACTIVE'",
             (rs,n)->rs.getString(1),Ids.bytes(device),Ids.bytes(warehouse));
         if(rows.isEmpty()) throw new com.acrylic.outbound.common.BusinessException(409,"HANDOVER_TARGET_DEVICE_INVALID",
             "目标设备无效、已停用或不属于本仓，不能激活");
         return new TargetDevice(device,rows.getFirst());
     }
     private TargetUser targetUser(UUID user) {
-        var rows=jdbc.query("SELECT username,CAST(auth_version AS CHAR) FROM app_user WHERE id=? AND disabled_at IS NULL",
+        // Same correction for app_user: its lifecycle column is `status`, not `disabled_at`.
+        var rows=jdbc.query("SELECT username,CAST(auth_version AS CHAR) FROM app_user WHERE id=? AND status='ACTIVE'",
             (rs,n)->new String[]{rs.getString(1),rs.getString(2)},Ids.bytes(user));
         if(rows.isEmpty()) throw new com.acrylic.outbound.common.BusinessException(409,"HANDOVER_TARGET_USER_INVALID",
             "目标人员无效或已停用，不能激活");

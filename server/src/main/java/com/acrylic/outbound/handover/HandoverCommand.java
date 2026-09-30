@@ -33,6 +33,8 @@ final class HandoverCommand {
     static BusinessException denied() { return new BusinessException(403, "PERMISSION_DENIED", "没有执行此交接命令的权限"); }
     static BusinessException conflict() { return new BusinessException(409, "IDEMPOTENCY_CONTENT_MISMATCH", "同一原键对应不同命令，请保留原意图"); }
     static BusinessException corrupt() { return new BusinessException(409, "HANDOVER_RECEIPT_INTEGRITY_FAILURE", "原命令证据不可核验，请保留资料"); }
+    /** One integrity assertion: a stored receipt that cannot be re-proved is a refusal, never a silent retry. */
+    static void corruptUnless(boolean valid) { if (!valid) throw corrupt(); }
 
     /** Parsed command body: the original key is the client-minted commandId, as in the R06 command chain. */
     static final class Input {
