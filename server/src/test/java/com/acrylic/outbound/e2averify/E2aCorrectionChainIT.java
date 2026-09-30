@@ -51,6 +51,10 @@ class E2aCorrectionChainIT {
         var notes = new StringBuilder("验证层级=真服 19434 + 真 HTTP（PDA 通道）+ 真 MySQL\n");
         var token = mintSession(jdbc, order);
         grant(jdbc, order.operatorId(), "outbound:correct");
+        // P-R07-03: the approval body must be a different person from the creator, so the chain carries its own
+        // approver. Nothing is granted to it beyond the existing role's bindings.
+        UUID approverId = approverUser(jdbc, order);
+        var approverToken = mintSessionFor(jdbc, order, approverId);
         var expected = expectedBlock(order, "1");
         var create = createBody(order, expected, "0", "0");
 
@@ -111,12 +115,12 @@ class E2aCorrectionChainIT {
             var approve = approveBody(order, documentId, documentSha256, "SUBMITTED", order.resultVersion());
             var supervisorRoles = jdbc.queryForList("SELECT BIN_TO_UUID(rp.role_id) FROM role_permission rp"
                 + " JOIN permission p ON p.id=rp.permission_id JOIN user_role ur ON ur.role_id=rp.role_id"
-                + " WHERE ur.user_id=? AND p.code='correction:approve'", String.class, Ids.bytes(order.operatorId()));
-            assertThat(supervisorRoles).as("V45 must bind correction:approve to this actor's role").isNotEmpty();
+                + " WHERE ur.user_id=? AND p.code='correction:approve'", String.class, Ids.bytes(approverId));
+            assertThat(supervisorRoles).as("V45 must bind correction:approve to the approver's role").isNotEmpty();
             jdbc.update("DELETE rp FROM role_permission rp JOIN permission p ON p.id=rp.permission_id"
                 + " JOIN user_role ur ON ur.role_id=rp.role_id WHERE ur.user_id=? AND p.code='correction:approve'",
-                Ids.bytes(order.operatorId()));
-            var denied = post(token, approve);
+                Ids.bytes(approverId));
+            var denied = post(approverToken, approve);
             notes.append("⑥APPROVE（撤销 correction:approve 后）-> ").append(denied.statusCode()).append(' ')
                 .append(SubmissionJson.parse(denied.body()).path("code").asText()).append(" (期望 403)\n");
             assertThat(denied.statusCode()).isEqualTo(403);
@@ -127,8 +131,19 @@ class E2aCorrectionChainIT {
                 jdbc.update("INSERT INTO role_permission VALUES(?,(SELECT id FROM permission WHERE code='correction:approve'))",
                     Ids.bytes(UUID.fromString(role)));
 
+            // (c2) maker-checker (P-R07-03): the body that created the document may not approve it, even though it
+            // holds correction:approve. A fresh key so this is a real decision, not a replay of the denial above.
+            var selfApprove = post(token, freshKey(approve));
+            notes.append("⑥b 建档人自批 -> ").append(selfApprove.statusCode()).append(' ')
+                .append(SubmissionJson.parse(selfApprove.body()).path("code").asText())
+                .append(" (期望 403 CORRECTION_SELF_APPROVAL_DENIED)\n");
+            assertThat(selfApprove.statusCode()).as(shortBody(selfApprove.body())).isEqualTo(403);
+            assertThat(SubmissionJson.parse(selfApprove.body()).path("code").asText())
+                .isEqualTo("CORRECTION_SELF_APPROVAL_DENIED");
+            assertThat(jdbc.queryForObject("SELECT status FROM correction_document WHERE id=UUID_TO_BIN(?)",
+                String.class, documentId)).as("a self-approval attempt changes nothing").isEqualTo("SUBMITTED");
             // (d) with the supervisor code the document is approved and effected in one transaction (§3).
-            var approved = post(token, approve);
+            var approved = post(approverToken, approve);
             notes.append("⑦APPROVE（有 correction:approve）-> ").append(approved.statusCode()).append(' ')
                 .append(shortBody(approved.body())).append('\n');
             assertThat(approved.statusCode()).as(shortBody(approved.body())).isEqualTo(200);
@@ -176,7 +191,7 @@ class E2aCorrectionChainIT {
             assertThat(jdbc.queryForObject("SELECT IFNULL(SUM(actual_count),-1) FROM order_effective_line"
                 + " WHERE order_id=UUID_TO_BIN(?) AND result_version=2", Integer.class, order.orderId()))
                 .as("effective lines are the scan aggregate, so 0/0 as well").isZero();
-            assertThat(post(token, approve).body()).as("APPROVE replay returns the stored original")
+            assertThat(post(approverToken, approve).body()).as("APPROVE replay returns the stored original")
                 .isEqualTo(approved.body());
             // (d2) D 片1：更正净结果（v>1）快照能被组装（服务端只读，不渲染），逐条对照库内 v2 事实。
             CorrectionExportSnapshotChecks.verify((WebApplicationContext) open, order.orderId(), 2L);
@@ -191,7 +206,7 @@ class E2aCorrectionChainIT {
             assertThat(stale.statusCode()).isEqualTo(409);
             assertThat(codeOf(stale.body())).isEqualTo("CORRECTION_CONTEXT_CHANGED");
             // (f) and a repeated approval under a fresh key is refused the same way.
-            var again = post(token, approveBody(order, documentId, documentSha256, "SUBMITTED",
+            var again = post(approverToken, approveBody(order, documentId, documentSha256, "SUBMITTED",
                 order.resultVersion()));
             notes.append("⑨重复审批（新原键、旧 expected）-> ").append(again.statusCode()).append(' ')
                 .append(codeOf(again.body())).append(" (期望 409 CONTEXT_CHANGED)\n");
@@ -200,7 +215,7 @@ class E2aCorrectionChainIT {
 
             // (g) WITHDRAW (P-R07-08) first half: the original approver initiates, and nothing is rolled back yet.
             var withdraw = withdrawBody(order, documentId, documentSha256, "EFFECTIVE");
-            var initiated = post(token, withdraw);
+            var initiated = post(approverToken, withdraw);
             notes.append("⑩WITHDRAW 发起（原审批人）-> ").append(initiated.statusCode()).append(' ')
                 .append(shortBody(initiated.body())).append('\n');
             assertThat(initiated.statusCode()).as(shortBody(initiated.body())).isEqualTo(200);
@@ -273,7 +288,7 @@ class E2aCorrectionChainIT {
             assertThat(post(token, confirm).body()).as("WITHDRAW_CONFIRM replay returns the stored original")
                 .isEqualTo(withdrawn.body());
             // (h) a second withdrawal under a fresh key is refused: the document is no longer EFFECTIVE.
-            var twice = post(token, freshKey(withdrawBody(order, documentId, documentSha256, "EFFECTIVE")));
+            var twice = post(approverToken, freshKey(withdrawBody(order, documentId, documentSha256, "EFFECTIVE")));
             notes.append("⑪重复撤销 -> ").append(twice.statusCode()).append(' ').append(codeOf(twice.body()))
                 .append(" (期望 409 CONTEXT_CHANGED)\n");
             assertThat(twice.statusCode()).isEqualTo(409);
@@ -284,7 +299,7 @@ class E2aCorrectionChainIT {
             var cancelCreate = post(token, lineBody(jdbc, order, "DISPATCH_CANCELLATION", "3", List.of(cancelled), "0", "0", true));
             assertThat(cancelCreate.statusCode()).as(shortBody(cancelCreate.body())).isEqualTo(200);
             var cancelDecision = SubmissionJson.parse(cancelCreate.body()).path("businessDecision");
-            var cancelApprove = post(token, approveBody(order, cancelDecision.path("documentId").asText(),
+            var cancelApprove = post(approverToken, approveBody(order, cancelDecision.path("documentId").asText(),
                 cancelDecision.path("documentSha256").asText(), "SUBMITTED", "3"));
             notes.append("⑫DISPATCH_CANCELLATION APPROVE -> ").append(cancelApprove.statusCode()).append(' ')
                 .append(shortBody(cancelApprove.body())).append('\n');
@@ -312,7 +327,7 @@ class E2aCorrectionChainIT {
             var againCancel = post(token, lineBody(jdbc, order, "DISPATCH_CANCELLATION", "4", List.of(cancelled), "0", "500", true));
             assertThat(againCancel.statusCode()).as(shortBody(againCancel.body())).isEqualTo(200);
             var againDecision = SubmissionJson.parse(againCancel.body()).path("businessDecision");
-            var reopenTwice = post(token, approveBody(order, againDecision.path("documentId").asText(),
+            var reopenTwice = post(approverToken, approveBody(order, againDecision.path("documentId").asText(),
                 againDecision.path("documentSha256").asText(), "SUBMITTED", "4"));
             notes.append("⑬再次重开同一 dispatch -> ").append(reopenTwice.statusCode()).append(' ')
                 .append(codeOf(reopenTwice.body())).append(" (期望 409 CYCLE_REOPENING_EXISTS)\n");
@@ -431,7 +446,7 @@ class E2aCorrectionChainIT {
             assertThat(headerCreate.statusCode()).as(shortBody(headerCreate.body())).isEqualTo(200);
             var headerDecision = SubmissionJson.parse(headerCreate.body()).path("businessDecision");
             assertThat(headerDecision.path("lineCount").asInt()).isZero();
-            var headerApprove = post(token, approveBody(order, headerDecision.path("documentId").asText(),
+            var headerApprove = post(approverToken, approveBody(order, headerDecision.path("documentId").asText(),
                 headerDecision.path("documentSha256").asText(), "SUBMITTED", "4"));
             assertThat(headerApprove.statusCode()).as(shortBody(headerApprove.body())).isEqualTo(200);
             assertThat(jdbc.queryForObject("SELECT JSON_UNQUOTE(JSON_EXTRACT(header_snapshot,'$.orderNo'))"
@@ -669,6 +684,34 @@ class E2aCorrectionChainIT {
             .put("commandId", UUID.randomUUID().toString()).put("transportRecoveryEpoch", "1")
             .put("warehouseId", order.warehouseId()).put("documentId", documentId)
             .put("reason", "主管核对后批准").set("expected", expected);
+    }
+
+    /**
+     * The independent approver for P-R07-03 (ruling B, 2026-09-30): a different person from the document's creator.
+     * Fixture-level only - it rides an existing product role that carries correction:approve in a V48 schema, so the
+     * product gains no new role for this test.
+     */
+    private UUID approverUser(JdbcTemplate jdbc, Order order) {
+        UUID id = Ids.next();
+        jdbc.update("INSERT INTO app_user(id,username,display_name,password_hash,created_at)"
+            + " VALUES(?,?,?,'x',UTC_TIMESTAMP(3))", Ids.bytes(id), "corr-approver-" + id, "更正审批人");
+        jdbc.update("INSERT INTO user_warehouse VALUES(?,?)", Ids.bytes(id),
+            Ids.bytes(UUID.fromString(order.warehouseId())));
+        jdbc.update("INSERT INTO user_role SELECT ?,id FROM role WHERE code='WAREHOUSE_ADMIN'", Ids.bytes(id));
+        return id;
+    }
+
+    /** A PDA session for an arbitrary bound user on the order's device (the approver is not the operator). */
+    String mintSessionFor(JdbcTemplate jdbc, Order order, UUID userId) {
+        String token = DeviceCrypto.secret();
+        jdbc.update("""
+            INSERT INTO pda_session(id,device_id,user_id,user_auth_version,device_version,access_hash,refresh_hash,
+              access_expires_at,expires_at,created_at)
+            VALUES(?,?,?,1,1,?,?,DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 1 DAY),
+              DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 2 DAY),UTC_TIMESTAMP(3))
+            """, Ids.bytes(UUID.randomUUID()), Ids.bytes(order.deviceId()), Ids.bytes(userId),
+            DeviceCrypto.sha(token), DeviceCrypto.sha(DeviceCrypto.secret()));
+        return token;
     }
 
     String mintSession(JdbcTemplate jdbc, Order order) {

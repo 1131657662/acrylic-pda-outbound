@@ -67,3 +67,21 @@ WAREHOUSE_ADMIN holds 23 code(s)
 - 开关**全默认 false**（含 `outbound.corrections.commands.enabled`，仅在本 IT 进程内以参数打开）；未部署、不接原库现网、未合 `main`、未打标签；`localDeletionAllowed=false`。
 - **未删除任何 `.local` 证据**（含本次复用库与全部 `e2a-cross-*`）；失败轮保留。
 - 本页的验证是**真实服务层 + 复用真实库**；**不是** HTTP 端到端，也不是真机 PDA。
+
+## 7. 收口：`E2aCorrectionChainIT` 已更新并**一次 provision 通过**（2026-09-30，用户授权一次）
+
+**改动**：
+- 引入**夹具层独立审批主体** `approverUser(...)`＋`mintSessionFor(jdbc, order, userId)`：新建一个用户、绑到**既有**产品角色 `WAREHOUSE_ADMIN`（在 V48 schema 下它经 V45 持有 `correction:approve`）并加 `user_warehouse`，再为它签发同一设备上的 PDA 会话。**未新增任何产品角色**。
+- 全部**审批类**（APPROVE/WITHDRAW）HTTP 调用改用 `approverToken`（7 处 `post(token, approve` ＋ `post(token, withdraw)` ＋ withdraw 重放）；**建档/对账/证据/WITHDRAW_CONFIRM 仍用原 `token`**（后者的进门码是 `outbound:correct`，且要求由建档人本人确认）。
+- (c) 的"撤权即 403"改为**撤销审批人**的 `correction:approve` 绑定（原语义保留），不再撤销建档人的。
+- **新增反例 ⑥b**：建档人（`token`）用**新键**发 APPROVE ⇒ 期望 `403 CORRECTION_SELF_APPROVAL_DENIED`，且断言文档状态不变。
+- **重要约束**：该 IT 只迁移到 **V48** ⇒ `SUPERVISOR`（V50 建）**不存在**，故独立审批主体必须走夹具层；同时**上一轮我把三个只迁到 V44 的夹具改绑 `SUPERVISOR` 是错的**（那些 schema 里该角色不存在，`INSERT ... SELECT` 会插 0 行、用户无任何角色），本轮**已修回 `WAREHOUSE_ADMIN`**（它们本就应如此，V50 不适用于它们）。
+
+**结果（唯一一次 provision，run 790，`testExit=0`）**：
+```text
+tests=1 skipped=0 failures=0 errors=0 time=49.76
+⑥APPROVE（撤销 correction:approve 后）-> 403 CORRECTION_PERMISSION_DENIED
+⑥b 建档人自批 -> 403 CORRECTION_SELF_APPROVAL_DENIED   ← 新增反例
+⑦APPROVE（有 correction:approve）-> 200 ... EFFECTIVE
+```
+**新增 attempt 目录：1 个**（`.local/e2a-cross-20260925-790/`）；运行后端口 19330 已释放；**未删除任何 `.local` 证据**；未因失败重跑。
