@@ -163,4 +163,65 @@ final class RecoveryLeaseScan {
             StandardCopyOption.ATOMIC_MOVE);
         return operation;
     }
+
+    /**
+     * Visibility snapshot of one scan (W-2-d, layer 1; ruling 2026-09-30).
+     *
+     * <p>This is a <b>read-only observation</b>: it never retires, rewrites or deletes anything, and it never
+     * changes what {@link #check} decides. {@code check} stays the authority; if the two ever disagreed, the refusal
+     * decision would still be {@code check}'s.
+     *
+     * @param indexedEntries        entries the anchored index lists, after de-duplication
+     * @param indexedMissingRecords indexed entries whose lease record is absent (deleted after publication)
+     * @param indexMismatches       the two above put together - what the scan calls an index/disk disagreement
+     * @param orphanRecords         lease records whose owner is gone (unparseable, pending, missing/unlockable owner)
+     * @param retirableOrphans      the subset of {@code orphanRecords} that {@link #retireOrphans} may retire
+     * @param refusedOrphans        the subset that is <b>not</b> retirable - the ones that keep the refusal standing
+     */
+    record Counts(int indexedEntries, int indexedMissingRecords, int indexMismatches, int orphanRecords,
+                  int retirableOrphans, int refusedOrphans) {
+        /** True when this snapshot would make the next {@code check} refuse (an orphan or a disagreement exists). */
+        boolean outstanding() { return indexMismatches > 0 || orphanRecords > 0; }
+    }
+
+    /**
+     * Counts what a scan would find, without touching the tree. Runs under the coordinator lock so the numbers
+     * belong to one consistent moment, exactly like {@code check}.
+     */
+    static Counts counts(RecoveryLeaseRoots roots) throws IOException {
+        return RecoveryControlLock.locked(roots.authorityRoot(), () -> {
+            var indexed = new LinkedHashSet<String>();
+            int missing = 0;
+            try {
+                var index = readIndex(roots);
+                for (JsonNode entry : index.path("entries")) {
+                    String operation = entry.asText();
+                    if (!operation.matches("[0-9a-f-]{36}") || !indexed.add(operation)) { missing++; continue; }
+                    if (!Files.exists(roots.root().resolve("leases").resolve(operation + ".json"),
+                            LinkOption.NOFOLLOW_LINKS)) missing++;
+                }
+            } catch (IOException | RuntimeException error) {
+                // An unreadable or unverifiable index is itself a disagreement; report it instead of guessing.
+                missing++;
+            }
+            int orphans = 0, retirable = 0;
+            try (var entries = Files.list(roots.root().resolve("leases"))) {
+                for (Path path : entries.sorted(Comparator.comparing(p -> p.getFileName().toString())).toList()) {
+                    try {
+                        if (auditMarkerBesideItsLease(path)) continue;
+                        if (path.getFileName().toString().equals("index.json")) continue;
+                        var record = LEASE_RECORD.matcher(path.getFileName().toString());
+                        if (record.matches() && !indexed.contains(record.group(1))) {
+                            orphans++; continue; // Not published by this installation: a disagreement, not an orphan.
+                        }
+                        checkRecord(path, roots);
+                    } catch (IOException | RuntimeException error) {
+                        orphans++;
+                        if (retirable(path, error)) retirable++;
+                    }
+                }
+            }
+            return new Counts(indexed.size(), missing, missing, orphans, retirable, orphans - retirable);
+        });
+    }
 }
