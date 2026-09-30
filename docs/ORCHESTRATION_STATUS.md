@@ -6,37 +6,37 @@
 ```yaml
 date: 2026-09-30
 branch: codex/development
-head: 801050b
-dirty_entries: 6
+head: 7f61b2e
+dirty_entries: 5
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V50, migrations: 50 }
 ```
 <!-- FACTS_END -->
-**R06→R07 无人值守目标：A1.2 开局核对触发技术止损，需产品代码授权；阶段一未收口，R07 未启动。**
-详情见 [无人值守进度与停报](history/R06_R07_PROGRESS_2026-09-30.md)。A1.1 保持[既定范围收口](history/R06_A1_1_CODEX_2026-09-30.md)；旧断点已[归档](history/ORCHESTRATION_STATE_before_R06_R07_GOAL_2026-09-30.md)。
+**R06→R07 无人值守目标已标记 blocked：连续三轮同一产品改动授权阻断，阶段一未收口，R07 未启动。**
+完整范围、决策及恢复条件见 [进度与停报记录](history/R06_R07_PROGRESS_2026-09-30.md)。A1.1 保持[既定范围收口](history/R06_A1_1_CODEX_2026-09-30.md)；状态调整前看板已[归档](history/ORCHESTRATION_STATE_before_R06_R07_BLOCKED_2026-09-30.md)。
 
-## Git、写权与本轮范围
-- 树 `D:/acrylic-pda-outbound`，分支 `codex/development`；本轮输入与远端 SHA 均为 `801050baf7cae3ef8e9a7774d72fe96c4ee72efb`。本次文档提交取进度记录最后提交，实际远端 SHA 见 `.local/r06-r07-goal-20260930/closeout/git-final.txt`。
-- 写者＝Codex 单助手。只读源码/Git/环境核对，新增进度记录、归档与索引并更新本看板；本轮未改产品/测试/契约/迁移，没有数据库或设备 attempt。
-- 非本会话 `docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、`docs/PDA_UI_UX_REVIEW_2026-09-29.md` 保持原样、不暂存；最终状态和摘要见 `closeout/`。
+## Git、写权与改动
+- 树 `D:/acrylic-pda-outbound`，分支 `codex/development`；三轮阻断复核时 HEAD/远端为 `7f61b2ee9376d7195cd82f64021ae39918fece8d`（首次源码基线为 A1.1 收口提交 `801050baf7cae3ef8e9a7774d72fe96c4ee72efb`）。本次状态文档提交取进度记录最后提交，实际远端 SHA 见 `.local/r06-r07-goal-20260930/blocked-closeout/git-final.txt`。
+- Codex 单助手；只同步报告/看板并归档旧断点。未改产品、测试、契约、历史迁移或任何开关；没有数据库/HTTP/device attempt。
+- 非本会话 `docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、`docs/PDA_UI_UX_REVIEW_2026-09-29.md` 未改未暂存，SHA-256 一致；最终全部未提交清单见 `blocked-closeout/status-final.txt`。
 
-## 已证实阻断与未完成
-- **A1.2 候选排除需要产品实现**：协议包含 DUPLICATE_EXCLUDE，但 CommandUnitOfWork 执行允许集仅含 NORMAL_CONFIRM/SHORT_APPROVE/LINK，权限映射/处理器不支持排除；多候选关联与确认仍明确拒绝。
-- **高轮次链需要产品改动**：TEMP 记账查询仍要求 `s.work_round=1`。不能靠追加测试或删守卫冒充实现；这是已有限制/缺口，本轮没有运行证据判定新产品缺陷。
-- 当前源码已有 CONTROLLED_LINK 与关联后确认分支；不恢复旧文档“完全未实现”的说法。来源事实、归档信任、非零候选消费者有历史证据，但本轮无新跑数，不计完成。
-- A1.3 未启动；REJECT/PHYSICAL_DISPOSITION/REOPEN_WORK 亦不在 TEMP 实际执行允许集。R07 全部剩余项未启动，不能越过阶段一门槛。A1.4 FORMAL 明确排除且未碰。
-- 用户无人值守授权同时要求“需改产品代码/开任何开关/改已验业务”停报，已按该技术止损线停止实施。下一动作须获得具体产品改动及必要隔离测试开关范围；业务政策未定项按止损线 5 单列，不臆造权限。
+## 阻断审计结论
+- 首轮源码核对、第二/第三轮摘要复核均证实同一阻断：候选排除需要新增产品能力，TEMP 高轮次记账仍受 `s.work_round=1` 限制；没有新的产品改动或开关授权。
+- CommandUnitOfWork 执行允许集仅 NORMAL_CONFIRM/SHORT_APPROVE/LINK；排除缺权限映射/处理器，多候选关联与确认明确拒绝。REJECT/PHYSICAL_DISPOSITION/REOPEN_WORK 亦不在实际执行允许集。
+- 当前已有 CONTROLLED_LINK 与关联后确认分支；不照抄旧“完全未实现”。上述静态核对不等于运行通过，也不据此判定新产品缺陷。
+- 用户的“需改产品代码/开任何开关/改已验业务”止损线使后续业务实施不可继续；第三轮后已实际调用目标状态更新并确认 blocked，未标完成。三轮是阻断观测次数，**不是三次测试失败**。
+- 恢复条件：明确批准 A1.2/A1.3 必需产品改动及相应隔离验证范围；候选排除权限未定项继续单列。不能以泛称无人值守、测试需要或另起入口绕过技术边界。
 
-## 证据、测试和资源
-- 证据根 `.local/r06-r07-goal-20260930/`：`preflight/` 含 Git/保护摘要/进程/监听/磁盘；`boundary-audit/` 含七份源码副本、SHA-256、搜索与首次止损记录；`closeout/` 含文档校验/提交/最终状态。
-- 本轮业务测试、编译、HTTP、设备、MySQL attempt 均为 0；没有伪称通过或重跑历史验收。仅做静态核对和文档检查；报告为停报记录，不是 A1.2/A1.3 验收。
-- C/D 起始可用字节 47202725888/33931317248，未触及 20 GiB 门槛；最终实测见 `closeout/disk-after.json`。未产生新 datadir、未清理任何历史 attempt。
-- 无在途构建或 AVD；原服务/数据库未动。只执行主机 adb 连接枚举，没有目标设备操作，无新设备轮次；不以旧真机快照替代本轮测试。
+## 证据与资源
+- 证据根 `.local/r06-r07-goal-20260930/`：`preflight/`、`boundary-audit/`、`revalidation-2/`、`revalidation-3/`、`goal-status-blocked.json`；提交/磁盘/最终环境见 `blocked-closeout/`。
+- 关键七份源码与受保护文件三轮摘要一致；第三轮没有在途构建或 AVD，D 盘可用 33930932224 字节，高于 20 GiB 门槛。前后磁盘见原报告及最终快照。
+- 本目标期间业务测试/编译/IT/HTTP/device/MySQL attempt 均为 0。没有新 datadir 可清理，历史数据与失败证据全部保持；没有对真机或模拟器下发目标设备命令。
 
-## 保留边界与接续
-- 长期目标保持 A1.2+A1.3 全部真实验收后再串行 R07；当前首次技术阻断，目标未完成。不得在授权不变时继续产品改动，也不得用只读报告缩小目标。
-- A1.1：G1 可重复、②、G4-2/G4-3 重复、⑤一次专项已收口；真实竞态/真机重启/配对/Keystore/实际 HTTP 故障、高轮次与现场限制继续。旧包 pkg=null 根因未定，失败目录全部保留。
-- 长期单列：R05 原资料/旧 BCD 与 C 档；R07 既有未验/政策编码；`DEBT-R09-C2-LEASE-ANCHOR`、孤儿解除/生产释放、Java/Python 允许集差异、IT-DISCOVERY、IT-EVIDENCE-AUDIT、TZ-GMT 显示、`R08PreviewSeedIT`、历史 keyring。B4 暂缓；K1 通过但 W-2 边界保留。
-- 默认开关全 false、`localDeletionAllowed=false`；不部署、不接原库现网、不合 main、不打标签/Release；不改已验业务、ConfirmedV1Adapter 或历史迁移。七类生产决定与 TEMP 归档不因内部证据开放。
+## 未完成与硬边界
+- A1.2 来源事实/候选消费、A1.3 处置/续作/成功链均未取得本批完整验收；R07 全部范围未启动。A1.4 FORMAL 排除且未触碰。
+- 长期目标范围完整保留，不以文档/静态核对替代交付。再次恢复后须重新核对授权与源码，不盲目沿旧计数继续。
+- A1.1 已验 G1 可重复、②、G4-2/G4-3 重复及⑤一次专项；真实竞态、真机重启、配对/Keystore、实际 HTTP 故障、现场身份及旧 pkg=null 根因等限制保留。
+- 长期单列：R05 原资料/旧 BCD 与 C 档；R07 既有未验/政策；`DEBT-R09-C2-LEASE-ANCHOR`、孤儿解除/生产释放、Java/Python 允许集差异、IT-DISCOVERY、IT-EVIDENCE-AUDIT、TZ-GMT、`R08PreviewSeedIT`、历史 keyring。B4 暂缓，K1 保留 W-2 边界。
+- 默认开关全 false、`localDeletionAllowed=false`；不部署、不接原库现网、不合 main、不打标签/Release；不改已验业务、ConfirmedV1Adapter 或历史迁移；七类生产决定与 TEMP 归档边界不变。
 <!-- CURRENT_STATE_END -->
