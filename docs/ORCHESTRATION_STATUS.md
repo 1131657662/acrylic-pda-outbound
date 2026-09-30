@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: c6bac92
-dirty_entries: 10
+head: e615156
+dirty_entries: 4
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V50, migrations: 50 }
@@ -41,4 +41,9 @@ server: { contract: 0.37.0, paths: 131, flyway: V50, migrations: 50 }
 - A1.2/A1.3/R07 未整体收口；S4b 回滚/同键/重启/占用守恒未验；本轮没有真实业务 HTTP、worker、全仓回归、Android/APK/lint、模拟器/真机验收。
 - mapping3+、高轮次、候选排除权限、跨来源续作、FORMAL 独立时间盒；R05 原资料/旧 BCD/C 档；R09 lease/keyring/W-2、IT-DISCOVERY/IT-EVIDENCE-AUDIT/TZ-GMT 等既有边界保持。
 - 不改已验业务、ConfirmedV1Adapter、历史迁移、生产默认值；开关默认 false、localDeletionAllowed=false。不部署、不接原库现网、不合 main、不打标签/Release。
+
+## 止损复核（第二轮目标观测）
+- 已核 HEAD/远端 e615156645073ab287d6d228494db7ee73e037d8；三份失败 XML、七份草稿及两个失败库保全摘要一致；795 不存在，无活动重型任务或测试监听。
+- 没有新增恢复授权，本轮测试 0；真机及保护文档摘要不变，D 可用 33896501248 字节。证据 .local/autonomous-20261001/revalidation-2/；完整记录见停报 §9。
+- 同一停止条件累计两轮目标观测，保持 active/未完成；未达三轮 blocked 审计门槛，不重新执行或转项绕过止损。
 <!-- CURRENT_STATE_END -->
