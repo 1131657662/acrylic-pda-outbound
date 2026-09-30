@@ -6,24 +6,32 @@
 ```yaml
 date: 2026-09-30
 branch: codex/development
-head: bd49ccf
-dirty_entries: 2
+head: 72d787b
+dirty_entries: 11
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V50, migrations: 50 }
 ```
 <!-- FACTS_END -->
-**R06 A1.1 绗?2 姝ユ敹鍙ｏ細鍋滄淇濆叏涓?闈炵┖杩佺Щ 27鈫?8"鍗曟祴鍙栬瘉锛堝瓙姝ワ紝A1.1 鏈敹鍙ｏ級锛?026-09-30锛?*銆傚瓙姝ヨ褰曡 [R06 A1.1 绗?2 姝(history/R06_A1_1_STEP2_UNIT_COVERAGE_2026-09-30.md)锛涙敹鍙ｅ墠鐨勭湅鏉垮綋鍓嶅尯褰掓。涓?[褰掓。](history/ORCHESTRATION_STATE_before_R06_A1_1_STEP2_2026-09-30.md)锛汚2.1 瑁佸畾 B 瑙?[瀹炴柦璁板綍](history/R09_C2_A2_1_RULING_B_IMPLEMENTATION_2026-09-30.md)銆?
-## Git銆佸啓鏉冧笌鑼冨洿
-- 鏍?D:/acrylic-pda-outbound锛涘垎鏀?codex/development锛涘啓鑰咃紳DSH锛堟湰浼氳瘽锛夈€?- 鏈壒鎻愪氦 `a87d437`锛?*浠呮柊澧炴祴璇曚笌鏂囨。**锛? 涓?Android 鍗曟祴绫伙紜瀛愭璁板綍锛嬬储寮曪級銆?*鏈敼浜у搧浠ｇ爜**銆?- **闈炴湰浼氳瘽鐨勬湭鎻愪氦鏀瑰姩**锛堟湭浠ｆ彁浜ゃ€佹湭淇敼锛夛細`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`锛堣鏂囨。鏄湰鎵?A1.1 鐨勮璁′緷鎹級銆佹湭璺熻釜 `docs/PDA_UI_UX_REVIEW_2026-09-29.md`銆?
-## R06 A1.1锛氫簲鏉℃爣鍑嗙殑瀹炵幇绋嬪害锛堢 1 姝ヤ笁鍒嗙被缁撹锛?| 鏍囧噯 | 鍗曟祴灞?| device 灞?|
-| --- | --- | --- |
-| 鈶?鍏堟嫆鏂拌緭鍏モ啋鑰愪箙淇濆瓨鈫掑け璐ヤ笉绛惧仠姝?| **宸叉弧瓒?*锛堟湰杞柊澧?4 椤癸紝鍚?鏃犵鍚?鏈叆闃?琛ラ綈锛?| **缂?*锛圙1锛?|
-| 鈶?鍧忓師浠?璇锋眰/鍥炴墽涓嶅惎浼?| **宸叉弧瓒?*锛坄LocalDraftQueueTest` 7銆乣LocalDraftStopIntegrityTest` 9銆乣LocalDraftReceiptVerifierTest` 4锛?| **缂?*锛圙1锛?|
-| 鈶?韬唤/浠撳簱/璁惧鍒囨崲鍚庝笉鑷姩缁紶 | **宸叉弧瓒?*锛坄LocalDraftQueueIdentityTest` 8锛屼笓涓鸿鏉¤€屽啓锛?| **缂?*锛圙1锛?|
-| 鈶?闈炵┖杩佺Щ淇濈暀鍘熼敭/璇锋眰/鍥炴墽 | **宸叉弧瓒?*锛堟湰杞ˉ 27鈫?8锛?2鈫?7 鍚勬鍘熷凡鏈夛級 | **缂?*锛圙4锛?|
-| 鈶?閲嶅惎涓㈠洖鎵ф寜鍘熼敭鎭㈠ | **宸叉弧瓒?*锛坄LocalDraftRecoveryTest` 6锛屽惈"涓嶉噸鍙戜笉閲嶇""鎸夊師閿仮澶?锛?| **缂?*锛圙1锛?|
-- **鍗曟祴璺戠殑鏄湡瀹?Room/SQLite**锛圧obolectric `SQLiteMode.NATIVE`锛?14 涓祴璇曟枃浠跺甫 runner锛夛紝闈炲亣瀵硅薄銆?- **device 灞傚杩欎簲鏉?PATH 瑕嗙洊涓?0**锛坄androidTest` 鍐?grep `LocalDraftStop|LocalDraftQueueIdentity|changedUser|changedDevice|changedWarehouse` 鏃犲懡涓級鈬?杩欐槸鏈壒**鏈€涓昏鐨勭己鍙栬瘉**銆?- **鏃犻渶 Room v29 杩佺Щ**锛歚LocalDraftQueue` 瀹炰綋宸插惈 guard 鎵€闇€鍏ㄩ儴瀛楁锛屼笉鏂板鍒椼€?
-## 鏈壒瀹炴祴涓庡け璐ヨ疆
-- `LocalDraftStopWriterTest` **4/0/0/0**銆乣LocalDraftSourceBindingMigrationTest` **1/0/0/0**锛宍BUILD SUCCESSFUL`锛坄gradlew -p android :app:testDebugUnitTest --tests 鈥锛?*鏈窇 AVD**锛夈€?- 澶辫触杞繚鐣欙細`.local/r06-a11-step2{,b,c,d}.log`锛堣矾寰勫啓閿?鈫?`submit` 閲嶈浇姝т箟缂栬瘧閿?鈫?涓ゆ鍒ゆ嵁閿欙級銆?- **"6 浜嬩欢 vs 4 灏濊瘯"鏈€缁堝畾鎬э紳鍒ゆ嵁璇敤**锛坄LocalDraftStopDao.count(id)` 鏁?`local_draft_stop_item` **鏄庣粏椤?*锛沗local_draft_stop` PK=`clientOrderId` 鈬?鑷冲涓€琛岋紱`TemporaryWorkStore.event()` 棣栬 `check(db.inTransaction())` 鈬?浜嬩欢涓庡仠姝㈠悓鍘熷瓙锛夆噿 鎭㈠涓ユ牸鏂█"浜嬩欢==1"鍦?4 骞跺彂涓?*閫氳繃** 鈬?**鏃犱骇鍝佺己闄枫€佹棤闇€闃绘柇**銆?- 骞跺彂绾у瀹炴爣娉細3 鏉?*椤哄簭浜ょ粐妯℃嫙**锛堜笉楠岃瘉绔炴€侊級锛? 鏉?*鐪熷疄 4 绾跨▼**锛圫QLite 鍗曞啓鑰?鈬?鍙瘉涓茶鍖?骞傜瓑锛夈€?
-## 鏈獙涓庝笅涓€姝?1. **R06 A1.1 绗?3 姝ワ紙device 灞傦紝寰呮巿鏉冨惎鍔?AVD锛?*锛?*G1**锛濆仠姝?閲嶅惎鍚庡師浠朵笌鍋滄璇佹嵁浠嶅湪涓?*涓嶈嚜鍔ㄧ画浼?*銆佸潖鍘熶欢/鍥炴墽涓嶅惎浼犮€佽韩浠藉垏鎹㈠悗涓嶈嚜鍔ㄧ画浼犮€佷涪鍥炴墽鎸夊師閿仮澶嶏紱**G4**锛濆甫 stop/queue 鐨?*鐪熷疄鍗囩骇**鏂█銆傛柟妗堝緟鐢ㄦ埛纭锛堝惈鐢ㄥ摢涓?AVD銆佹潃杩涚▼/閲嶅惎鐨勬ā鎷熸柟寮忋€佹垚鏈笌鏇夸唬鍙ｅ緞锛夈€?2. **A1.1 鏈敹鍙?*锛氣憼鈶♀憿鈶?鐨?device 鍙栬瘉涓?鈶?鐨?device 鍗囩骇鏂█鏈仛锛沗docs/history/R06_A1_1_<鏃ユ湡>.md` 楠屾敹璁板綍鎸夌邯寰?*鏈骇鐢?*銆?3. **B4 浠嶆殏缂?*锛堝緟鐪熷疄鐢熶骇鏉℃暟锛?澶栭儴鍚屾椂鎻愪緵鏂版棫閿?杩愮淮娴佺▼锛夛紱**A1.4 FORMAL 澶瑰叿**鍗曠嫭绔嬮」锛屼笉濉炴棩甯歌疆娆°€?4. R07 鍏朵綑缂哄彛鍗曞垪锛堝簱瀛樺樊寮傚鎵归棬銆佽ˉ鎵ｅ叆鍙ｃ€乣MOVEMENT_DATE`/閿佹湡渚嬪銆佹晠闅滄崲鏈哄垎鏀€佹挙閿€鍗犵敤鍥為€€銆佹洿姝ｈ〃瑙﹀彂鍣ㄣ€侀檮浠剁湡瀹炲瓨鍌級銆?- 闀挎湡鍗曞垪锛歚DEBT-R09-C2-LEASE-ANCHOR`銆佸鍎胯В闄や笌鐢熶骇閲婃斁銆丣ava/Python 鍏佽闆嗗樊寮傘€両T-DISCOVERY銆両T-EVIDENCE-AUDIT銆乀Z-GMT 鏄剧ず銆乣R08PreviewSeedIT` 鏈皾璇曘€丆 妗ｇ幇鍦洪」銆佸巻鍙?keyring銆?- **K1 宸查€氳繃**锛堥檮 W-2 杈圭晫锛夈€?*K1 閫氳繃 鈮?鐢熶骇灏辩华**锛歚admission.enabled`锛廯effect-gate.enabled`锛廯cross-process-enabled`锛廯lease.enabled`锛廯outbound.handover.commands.enabled`锛廯outbound.corrections.commands.enabled` **鍏ㄩ儴榛樿 false**锛涙湭鎺ョ敓浜с€佹湭閮ㄧ讲銆佹湭鍚?main銆佹湭鎿嶄綔鍘熷簱/鐜扮綉锛沗localDeletionAllowed=false`銆?<!-- CURRENT_STATE_END -->
+**R06 A1.1 收口：停止保全 device 层实质通过（可重复性未建立）（2026-09-30）**。收口记录见 [A1.1 收口记录](history/R06_A1_1_2026-09-30.md)；上一断点归档 [归档](history/ORCHESTRATION_STATE_before_R06_A1_1_FINAL_2026-09-30.md)。
+
+## Git、写权与范围
+- 树 D:/acrylic-pda-outbound；分支 codex/development；写者＝DSH（本会话）。
+- 本批新增（仅测试与文档，**未改产品代码**，Room 仍 v28）：`R06A11SyntheticStopDataset.kt`、`LocalDraftStopDurabilityDeviceTest.kt`、`LocalDraftStopUpgradeDeviceTest.kt`（新增 G4-3 种子化 phase）、`androidTest/assets/room-27.json`。
+- 非本会话的未提交项未代提交。
+
+## R06 A1.1 device 层三层证据
+- **G4-2 成立**：指纹式 27→28；52 张表 count+sha256 逐字节不变、`local_source_binding` 建出为空、FK 干净。**但 `local_draft_stop=0 verdict=EMPTY`** ⇒ 按既定硬门槛**不算非空交付**。
+- **G4-3 成立**：`R06A11_G4_NONEMPTY local_draft_stop=1 verdict=NONEMPTY`；五张表 `1/2/1/1/1` 迁移前后相同；**非空写成断言**（空库迁移会直接失败）。
+- **G1 单次通过**：四组断言（stop/签名仍在且 evidenceId 一致、`rawBytes` 逐字节相等、`LOCAL_EVIDENCE_STOP` 事件数不变、队列不自动续传）＋ (C) 身份切换三步；两阶段各 `numtests=1`（真跑非空跑），中间执行真 `am force-stop`。
+- **G1 可重复性未建立**：第二次在**已被 seed 过**的设备上失败——根因是**测试自身不幂等**（合成事件固定主键、插入前未删；`-no-snapshot-save` 只禁快照、不阻止 userdata 落盘）。缺陷已离线修复，**未重跑验证**。
+
+## 未验边界（不得被本记录覆盖）
+真实竞态、真机重启、"停止动作由产品在设备产生"、对端 POST 计数、真实会话切换/配对、**G1 可重复性**、设备侧验签；②坏件专项与⑤丢回执专项设备用例未做；A1.4 FORMAL 夹具未纳入。
+**口径**：签名行结构性占位（未做设备侧验签）；`LOCAL_EVIDENCE_STOP` 事件 `captureId=NULL` 合成；身份切换用手写会话 JSON（仅测 Guard 逻辑）。
+
+## 下一步（交接 Codex）
+1. 重跑 G1 验证幂等修复（**须在已 seed 设备上**跑，条件即第二次失败的条件）；2. 补 G4-2/G4-3 各一次重复运行；3. 补 ②坏件、⑤丢回执设备专项；4. 真实竞态/真机属 C 档现场条件；真实"停止由产品产生"需把 `TemporaryWorkFixture` 及签名/授权装置移植进 `androidTest`，建议单独立项。
+- 长期单列：`DEBT-R09-C2-LEASE-ANCHOR`、孤儿解除与生产释放、Java/Python 允许集差异、IT-DISCOVERY、IT-EVIDENCE-AUDIT、TZ-GMT 显示、`R08PreviewSeedIT`、C 档现场项、历史 keyring。**B4 暂缓**（待真实生产条数＋"外部同时提供新旧锚"运维流程）。**K1 已通过**（附 W-2 边界）。
+- **K1 通过 ≠ 生产就绪**：`admission.enabled`／`effect-gate.enabled`／`cross-process-enabled`／`lease.enabled`／`outbound.handover.commands.enabled`／`outbound.corrections.commands.enabled` **全部默认 false**；未接生产、未部署、未合 main、未操作原库/现网；`localDeletionAllowed=false`。
+<!-- CURRENT_STATE_END -->
