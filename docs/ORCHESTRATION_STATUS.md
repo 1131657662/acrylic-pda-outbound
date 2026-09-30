@@ -6,25 +6,24 @@
 ```yaml
 date: 2026-09-30
 branch: codex/development
-head: 222d7f3
-dirty_entries: 2
+head: a87d437
+dirty_entries: 5
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V50, migrations: 50 }
 ```
 <!-- FACTS_END -->
-**R09 C2 A2.1 瑁佸畾 B 宸插疄鏂藉苟楠岃瘉锛氭洿姝ｈ繘闂ㄧ爜鎸夊懡浠ょ被鍨嬪垎绂?锛?maker-checker锛?026-09-30锛?*銆傚疄鏂借 [A2.1 瑁佸畾 B 瀹炴柦](history/R09_C2_A2_1_RULING_B_IMPLEMENTATION_2026-09-30.md)锛涘疄鏂藉墠鐨勭湅鏉垮綋鍓嶅尯褰掓。涓?[褰掓。](history/ORCHESTRATION_STATE_before_A21_RULING_B_2026-09-30.md)锛汭3 瑙?[I3 鎵ц璁板綍](history/R09_C2_I3_EXECUTION_2026-09-30.md)銆?
+**R06 A1.1 绗?2 姝ユ敹鍙ｏ細鍋滄淇濆叏涓?闈炵┖杩佺Щ 27鈫?8"鍗曟祴鍙栬瘉锛堝瓙姝ワ紝A1.1 鏈敹鍙ｏ級锛?026-09-30锛?*銆傚瓙姝ヨ褰曡 [R06 A1.1 绗?2 姝(history/R06_A1_1_STEP2_UNIT_COVERAGE_2026-09-30.md)锛涙敹鍙ｅ墠鐨勭湅鏉垮綋鍓嶅尯褰掓。涓?[褰掓。](history/ORCHESTRATION_STATE_before_R06_A1_1_STEP2_2026-09-30.md)锛汚2.1 瑁佸畾 B 瑙?[瀹炴柦璁板綍](history/R09_C2_A2_1_RULING_B_IMPLEMENTATION_2026-09-30.md)銆?
 ## Git銆佸啓鏉冧笌鑼冨洿
-- 鏍?D:/acrylic-pda-outbound锛涘垎鏀?codex/development锛涘啓鑰咃紳DSH锛堟湰浼氳瘽锛夈€?- **鏈壒鏀瑰姩**锛氭洿姝ｅ唴鏍告巿鏉冨垽鍐筹紙`CorrectionCommand`锛廯CorrectionCommandService`锛廯CorrectionOperations`锛夛紜鏂板 `V50__supervisor_approval_separation.sql`锛? 涓鎵瑰す鍏锋敼缁?`SUPERVISOR`锛嬫柊澧?`E2aCorrectionApprovalGateIT`锛涙枃妗ｄ笌绱㈠紩銆?- **`.local/parked-a21-20260930/` 浠嶇暀**锛氭棭鍓嶉偅鐗?`E2aSupervisorApprovalSeparationIT`锛堝叾"闅忔満 documentId 鏂█ admin 寰?PERMISSION_DENIED"鐨勫墠鎻愪笉鎴愮珛锛屽洜鏂囨。閿佸厛浜庢潈闄愰椄锛?*宸茶鏂扮殑 `E2aCorrectionApprovalGateIT` 鍙栦唬**锛屼繚鐣欎粎浣滃巻鍙层€?- **闈炴湰浼氳瘽鐨勬湭鎻愪氦鏀瑰姩**锛堟湭浠ｆ彁浜ゃ€佹湭淇敼锛夛細`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`銆佹湭璺熻釜 `docs/PDA_UI_UX_REVIEW_2026-09-29.md`銆?
-## A2.1 瑁佸畾 B锛氭敼浜嗕粈涔?- `CorrectionCommand`锛氭柊澧?*鍞竴**鍒ゅ畾 `requiresApproval(kind)`锛圓PPROVE/WITHDRAW锛夛紝`Operation.requiresApproval()` 濮旀墭瀹冿紙闃蹭袱澶勫畾涔夋紓绉伙級銆?- 韬唤闂?`current(warehouse, approval)`锛?*瀹℃壒绫诲彧瑕佹眰 `correction:approve`锛涘叾浣欙紙CREATE/RECONCILE_*锛変粛瑕佹眰 `outbound:correct`**锛涜皟鐢ㄧ偣鍦?operation 瑙ｆ瀽**涔嬪墠**锛屾寜鍛戒护绫诲瀷瑁佸喅銆?- `Approve.execute`锛?*鏂板 maker-checker 瀹堝崼**锛坄principalId == requestedBy` 鈬?**鏂扮爜** `CORRECTION_SELF_APPROVAL_DENIED`锛?03锛夛紝妫€鏌ョ偣鍦ㄧ姸鎬?鍓嶇疆鏍￠獙涔嬪墠浠ュ厤琚?`stale()` 鎺╃洊銆?- **鏄庣ず**锛氬弽渚嬧憿 鏄?*鏂板瑙勫垯**锛堟敼鍓嶆棤姝ゅ畧鍗紱鏃㈡湁鐩歌繎閫昏緫鍙湁 `WITHDRAW_CONFIRM` 瑕佹眰寤烘。浜烘湰浜虹‘璁わ紝鏂瑰悜鐩稿弽锛夈€?
-## 涓夋潯鍙嶄緥瀹炴祴锛堝鐢?773 datadir 璧峰悓涓€ mysqld锛?*闆舵柊澧?provision**锛?```text
-SUPERVISOR=[correction:approve, order:handover, order:resume]
-WAREHOUSE_ADMIN holds 23 code(s)
-鈶燱AREHOUSE_ADMIN(correct-only) 鎵瑰崟 -> CORRECTION_PERMISSION_DENIED
-鈶UPERVISOR(approve-only) 鎵瑰崟 -> SIGNING_KEY_UNAVAILABLE (鏈熸湜锛氫笉鏄潈闄愭嫆缁?
-鈶UPERVISOR 鎵硅嚜宸卞缓绔嬬殑鍗?-> CORRECTION_SELF_APPROVAL_DENIED
-```
-- 鈶′箣鎵€浠ュ己锛歚executeOnce` 椤哄簭锛漙杩涢棬鐮佲啋replay鈫抩peration鈫掔姸鎬侀椄鈫掗攣鈫掍粨搴撯啋Expected.validate鈫抦ayApprove鈫抏xecute`锛涜兘璧板埌 `SIGNING_KEY_UNAVAILABLE` 璇存槑**鎺堟潈涓庡叏閮ㄤ笟鍔℃牎楠屽潎宸查€氳繃**锛屼粎鍦ㄧ鍚嶇幆鑺傛姝ャ€?- **澶辫触杞繚鐣?*锛氶杞?`CORRECTION_COMMAND_NOT_OPEN`锛坄Approve` 鐨?bean 鍙?`outbound.corrections.commands.enabled` 鎺у埗锛孖T 鏈墦寮€璇ュ紑鍏筹級銆?
-## 杩炲甫褰卞搷锛?*宸茬櫥璁帮紝鏈噯鏀?*锛?- **`E2aCorrectionChainIT` 蹇呴』鏀?*锛氬畠鐢?*鍚屼竴 actor** 鍏堝缓妗ｏ紙L61锛夊啀鎵瑰崟锛圠111 璧凤級锛岀幇浼氳鑷壒瀹堝崼鎷掔粷鈥斺€?*杩欐槸瑁佸畾鈶㈢殑鏃㈠畾鍚庢灉**锛岄潪缂洪櫡銆備慨娉曪紳寮曞叆鐙珛瀹℃壒涓讳綋锛堢粦瀹?`SUPERVISOR` 鎴栨妸 `correction:approve` 鎺堜簣鍙︿竴 actor锛夈€?*鏈洸鏀?*锛氳 IT 14+ 姝ヤ笖鏈疆绂佹璧峰叏濂?provision锛岀洸鏀逛細璁╂祴璇曚互閿欒鐞嗙敱閫氳繃锛?*寰呬竴娆¤鎺堟潈鐨?provision 鍐嶆敼骞堕獙璇?*銆?- 璇?IT 鍙縼绉诲埌 **V48** 鈬?**涓嶅彈 V50 瑙掕壊鏀圭粦褰卞搷**锛堝凡鏍稿锛岄伩鍏嶄袱浠朵簨娣锋穯锛夈€?- **D 鏍囨敞锛堢敤鎴锋寚瀹氾紝閫愬瓧锛?*锛歚E2aMigrationEnvironmentTest` 鐨勬敼鍔紳銆屽洜鍏变韩鏍戠Щ闄ゅ鑷村師娴嬭瘯鍓嶆彁锛堜富鏍戞槸"鍙︿竴涓?worktree"锛夊け鏁堬紝鏀逛负缁撴瀯鎬?sibling 鍓嶆彁锛?*涓嶆槸鍓婂急鏂█**銆嶃€?
-## 鍥炲綊涓庣姸鎬?- 涓€绾у叏閲忓崟娴?**134 XML / 2847 椤?/ 0 澶辫触 / 0 閿欒 / 1 鏃㈡湁璺宠繃**銆?- 鏈楠岃瘉**鏈垱寤轰换浣?`e2a-cross-*` 鐩綍**锛涚鍙?19330 宸查噴鏀撅紱D 鐩樺彲鐢ㄧ害 32 GB銆?- **鏈垹闄や换浣?`.local` 璇佹嵁**锛堝惈 773 澶嶇敤搴撲笌鍏ㄩ儴 `e2a-cross-*`锛夈€?
-## 鏈獙涓庝笅涓€姝?1. **寰呬竴娆¤鎺堟潈鐨?provision**锛氭寜涓婅妭淇硶鏇存柊 `E2aCorrectionChainIT` 骞剁湡璺戦獙璇侊紙鍚?寤烘。浜鸿嚜鎵硅鎷?鍙嶄緥锛夈€?2. **B4 浠嶆殏缂?*锛氬緟鈶犵湡瀹炵敓浜ц褰曟潯鏁帮紙鍙渶鏁板瓧锛夆憽"澶栭儴鍚屾椂鎻愪緵鏂版棫閿?杩愮淮娴佺▼銆?3. R07 鍏朵綑缂哄彛鍗曞垪锛堝簱瀛樺樊寮傚鎵归棬銆佽ˉ鎵ｅ叆鍙ｃ€乣MOVEMENT_DATE`/閿佹湡渚嬪銆佹晠闅滄崲鏈哄垎鏀€佹挙閿€鍗犵敤鍥為€€銆佹洿姝ｈ〃瑙﹀彂鍣ㄣ€侀檮浠剁湡瀹炲瓨鍌級銆?- 闀挎湡鍗曞垪锛歚DEBT-R09-C2-LEASE-ANCHOR`銆佸鍎胯В闄や笌鐢熶骇閲婃斁銆丣ava/Python 鍏佽闆嗗樊寮傘€両T-DISCOVERY銆両T-EVIDENCE-AUDIT銆乀Z-GMT 鏄剧ず銆丷06 FORMAL 澶瑰叿銆乣R08PreviewSeedIT` 鏈皾璇曘€丆 妗ｇ幇鍦洪」銆佸巻鍙?keyring銆?- **K1 宸查€氳繃**锛堥檮 W-2 杈圭晫锛夈€?*K1 閫氳繃 鈮?鐢熶骇灏辩华**锛歚admission.enabled`锛廯effect-gate.enabled`锛廯cross-process-enabled`锛廯lease.enabled`锛廯outbound.handover.commands.enabled`锛廯outbound.corrections.commands.enabled` **鍏ㄩ儴榛樿 false**锛涙湭鎺ョ敓浜с€佹湭閮ㄧ讲銆佹湭鍚?main銆佹湭鎿嶄綔鍘熷簱/鐜扮綉锛沗localDeletionAllowed=false`銆?<!-- CURRENT_STATE_END -->
+- 鏍?D:/acrylic-pda-outbound锛涘垎鏀?codex/development锛涘啓鑰咃紳DSH锛堟湰浼氳瘽锛夈€?- 鏈壒鎻愪氦 `a87d437`锛?*浠呮柊澧炴祴璇曚笌鏂囨。**锛? 涓?Android 鍗曟祴绫伙紜瀛愭璁板綍锛嬬储寮曪級銆?*鏈敼浜у搧浠ｇ爜**銆?- **闈炴湰浼氳瘽鐨勬湭鎻愪氦鏀瑰姩**锛堟湭浠ｆ彁浜ゃ€佹湭淇敼锛夛細`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`锛堣鏂囨。鏄湰鎵?A1.1 鐨勮璁′緷鎹級銆佹湭璺熻釜 `docs/PDA_UI_UX_REVIEW_2026-09-29.md`銆?
+## R06 A1.1锛氫簲鏉℃爣鍑嗙殑瀹炵幇绋嬪害锛堢 1 姝ヤ笁鍒嗙被缁撹锛?| 鏍囧噯 | 鍗曟祴灞?| device 灞?|
+| --- | --- | --- |
+| 鈶?鍏堟嫆鏂拌緭鍏モ啋鑰愪箙淇濆瓨鈫掑け璐ヤ笉绛惧仠姝?| **宸叉弧瓒?*锛堟湰杞柊澧?4 椤癸紝鍚?鏃犵鍚?鏈叆闃?琛ラ綈锛?| **缂?*锛圙1锛?|
+| 鈶?鍧忓師浠?璇锋眰/鍥炴墽涓嶅惎浼?| **宸叉弧瓒?*锛坄LocalDraftQueueTest` 7銆乣LocalDraftStopIntegrityTest` 9銆乣LocalDraftReceiptVerifierTest` 4锛?| **缂?*锛圙1锛?|
+| 鈶?韬唤/浠撳簱/璁惧鍒囨崲鍚庝笉鑷姩缁紶 | **宸叉弧瓒?*锛坄LocalDraftQueueIdentityTest` 8锛屼笓涓鸿鏉¤€屽啓锛?| **缂?*锛圙1锛?|
+| 鈶?闈炵┖杩佺Щ淇濈暀鍘熼敭/璇锋眰/鍥炴墽 | **宸叉弧瓒?*锛堟湰杞ˉ 27鈫?8锛?2鈫?7 鍚勬鍘熷凡鏈夛級 | **缂?*锛圙4锛?|
+| 鈶?閲嶅惎涓㈠洖鎵ф寜鍘熼敭鎭㈠ | **宸叉弧瓒?*锛坄LocalDraftRecoveryTest` 6锛屽惈"涓嶉噸鍙戜笉閲嶇""鎸夊師閿仮澶?锛?| **缂?*锛圙1锛?|
+- **鍗曟祴璺戠殑鏄湡瀹?Room/SQLite**锛圧obolectric `SQLiteMode.NATIVE`锛?14 涓祴璇曟枃浠跺甫 runner锛夛紝闈炲亣瀵硅薄銆?- **device 灞傚杩欎簲鏉?PATH 瑕嗙洊涓?0**锛坄androidTest` 鍐?grep `LocalDraftStop|LocalDraftQueueIdentity|changedUser|changedDevice|changedWarehouse` 鏃犲懡涓級鈬?杩欐槸鏈壒**鏈€涓昏鐨勭己鍙栬瘉**銆?- **鏃犻渶 Room v29 杩佺Щ**锛歚LocalDraftQueue` 瀹炰綋宸插惈 guard 鎵€闇€鍏ㄩ儴瀛楁锛屼笉鏂板鍒椼€?
+## 鏈壒瀹炴祴涓庡け璐ヨ疆
+- `LocalDraftStopWriterTest` **4/0/0/0**銆乣LocalDraftSourceBindingMigrationTest` **1/0/0/0**锛宍BUILD SUCCESSFUL`锛坄gradlew -p android :app:testDebugUnitTest --tests 鈥锛?*鏈窇 AVD**锛夈€?- 澶辫触杞繚鐣欙細`.local/r06-a11-step2{,b,c,d}.log`锛堣矾寰勫啓閿?鈫?`submit` 閲嶈浇姝т箟缂栬瘧閿?鈫?涓ゆ鍒ゆ嵁閿欙級銆?- **"6 浜嬩欢 vs 4 灏濊瘯"鏈€缁堝畾鎬э紳鍒ゆ嵁璇敤**锛坄LocalDraftStopDao.count(id)` 鏁?`local_draft_stop_item` **鏄庣粏椤?*锛沗local_draft_stop` PK=`clientOrderId` 鈬?鑷冲涓€琛岋紱`TemporaryWorkStore.event()` 棣栬 `check(db.inTransaction())` 鈬?浜嬩欢涓庡仠姝㈠悓鍘熷瓙锛夆噿 鎭㈠涓ユ牸鏂█"浜嬩欢==1"鍦?4 骞跺彂涓?*閫氳繃** 鈬?**鏃犱骇鍝佺己闄枫€佹棤闇€闃绘柇**銆?- 骞跺彂绾у瀹炴爣娉細3 鏉?*椤哄簭浜ょ粐妯℃嫙**锛堜笉楠岃瘉绔炴€侊級锛? 鏉?*鐪熷疄 4 绾跨▼**锛圫QLite 鍗曞啓鑰?鈬?鍙瘉涓茶鍖?骞傜瓑锛夈€?
+## 鏈獙涓庝笅涓€姝?1. **R06 A1.1 绗?3 姝ワ紙device 灞傦紝寰呮巿鏉冨惎鍔?AVD锛?*锛?*G1**锛濆仠姝?閲嶅惎鍚庡師浠朵笌鍋滄璇佹嵁浠嶅湪涓?*涓嶈嚜鍔ㄧ画浼?*銆佸潖鍘熶欢/鍥炴墽涓嶅惎浼犮€佽韩浠藉垏鎹㈠悗涓嶈嚜鍔ㄧ画浼犮€佷涪鍥炴墽鎸夊師閿仮澶嶏紱**G4**锛濆甫 stop/queue 鐨?*鐪熷疄鍗囩骇**鏂█銆傛柟妗堝緟鐢ㄦ埛纭锛堝惈鐢ㄥ摢涓?AVD銆佹潃杩涚▼/閲嶅惎鐨勬ā鎷熸柟寮忋€佹垚鏈笌鏇夸唬鍙ｅ緞锛夈€?2. **A1.1 鏈敹鍙?*锛氣憼鈶♀憿鈶?鐨?device 鍙栬瘉涓?鈶?鐨?device 鍗囩骇鏂█鏈仛锛沗docs/history/R06_A1_1_<鏃ユ湡>.md` 楠屾敹璁板綍鎸夌邯寰?*鏈骇鐢?*銆?3. **B4 浠嶆殏缂?*锛堝緟鐪熷疄鐢熶骇鏉℃暟锛?澶栭儴鍚屾椂鎻愪緵鏂版棫閿?杩愮淮娴佺▼锛夛紱**A1.4 FORMAL 澶瑰叿**鍗曠嫭绔嬮」锛屼笉濉炴棩甯歌疆娆°€?4. R07 鍏朵綑缂哄彛鍗曞垪锛堝簱瀛樺樊寮傚鎵归棬銆佽ˉ鎵ｅ叆鍙ｃ€乣MOVEMENT_DATE`/閿佹湡渚嬪銆佹晠闅滄崲鏈哄垎鏀€佹挙閿€鍗犵敤鍥為€€銆佹洿姝ｈ〃瑙﹀彂鍣ㄣ€侀檮浠剁湡瀹炲瓨鍌級銆?- 闀挎湡鍗曞垪锛歚DEBT-R09-C2-LEASE-ANCHOR`銆佸鍎胯В闄や笌鐢熶骇閲婃斁銆丣ava/Python 鍏佽闆嗗樊寮傘€両T-DISCOVERY銆両T-EVIDENCE-AUDIT銆乀Z-GMT 鏄剧ず銆乣R08PreviewSeedIT` 鏈皾璇曘€丆 妗ｇ幇鍦洪」銆佸巻鍙?keyring銆?- **K1 宸查€氳繃**锛堥檮 W-2 杈圭晫锛夈€?*K1 閫氳繃 鈮?鐢熶骇灏辩华**锛歚admission.enabled`锛廯effect-gate.enabled`锛廯cross-process-enabled`锛廯lease.enabled`锛廯outbound.handover.commands.enabled`锛廯outbound.corrections.commands.enabled` **鍏ㄩ儴榛樿 false**锛涙湭鎺ョ敓浜с€佹湭閮ㄧ讲銆佹湭鍚?main銆佹湭鎿嶄綔鍘熷簱/鐜扮綉锛沗localDeletionAllowed=false`銆?<!-- CURRENT_STATE_END -->
