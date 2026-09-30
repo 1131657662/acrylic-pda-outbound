@@ -14,7 +14,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 @EnabledIfEnvironmentVariable(named = "E2A_V36_VERIFY", matches = "true")
 class E2aV36MigrationIT {
     private static final Path ROOT = E2aWorktree.ROOT;
-    private static final Path ATTEMPT = ROOT.resolve(".local/e2a-v36-attempt4");
+    private static final Path ATTEMPT = E2aV36Attempts.migration();
     private static final String DATABASE = "acrylic_outbound_e2a_v36_20260924d";
     private static final String USER = "e2a_v36_20260924d";
     private static final String URL = "jdbc:mysql://127.0.0.1:19330/" + DATABASE

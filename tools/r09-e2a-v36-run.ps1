@@ -22,24 +22,39 @@ $Mysqld = Join-Path $Bin 'mysqld.exe'
 $Mysql = Join-Path $Bin 'mysql.exe'
 $MysqlAdmin = Join-Path $Bin 'mysqladmin.exe'
 
-# 每个 IT 的常量（与源码一一对应，见记录 S27）
+# Each IT is a one-shot experiment: it creates test-started.marker and refuses to run again, and its
+# attempt path defaults to a fixed name. Fresh attempts are supplied without editing the test class:
+#   E2A_V36_ATTEMPT / E2A_DEVICE_KEY_ATTEMPT / E2A_KEY_ATTEMPT / E2A_STOP_ATTEMPT /
+#   E2A_AUDIT_PREFIX_ATTEMPT / E2A_AUDIT_ARCHIVE_ATTEMPT   (directory name under <root>/.local, or absolute)
+# plus, when a fresh schema/account is wanted:
+#   E2A_V36_DATABASE / E2A_V36_USER
 $table = @{
-    migration    = @{ gate = 'E2A_V36_VERIFY'; prefix = 'E2A_V36'; cls = 'E2aV36MigrationIT'; db = 'acrylic_outbound_e2a_v36_20260924d'; user = 'e2a_v36_20260924d'; attempt = '.local/e2a-v36-attempt4' }
-    devicekey    = @{ gate = 'E2A_DEVICE_KEY_VERIFY'; prefix = 'E2A_DEVICE_KEY'; cls = 'E2aV36DeviceKeyIT'; db = 'acrylic_outbound_e2a_key_20260924c'; user = 'e2a_key_20260924c'; attempt = '.local/e2a-v36-key-attempt3' }
-    pairedkey    = @{ gate = 'E2A_KEY_VERIFY'; prefix = 'E2A_KEY'; cls = 'E2aV36PairedKeyIT'; db = 'acrylic_outbound_e2a_key_20260924a'; user = 'e2a_key_20260924a'; attempt = '.local/e2a-v36-key-attempt1' }
-    stopwriter   = @{ gate = 'E2A_STOP_VERIFY'; prefix = 'E2A_STOP'; cls = 'E2aV36StopWriterIT'; db = 'acrylic_outbound_e2a_stop_20260924a'; user = 'e2a_stop_20260924a'; attempt = '.local/e2a-v36-stop-attempt1' }
-    auditprefix  = @{ gate = 'E2A_AUDIT_PREFIX_VERIFY'; prefix = 'E2A_AUDIT_PREFIX'; cls = 'E2aV36AuditPrefixIT'; db = 'acrylic_outbound_e2a_audit_20260924e'; user = 'e2a_audit_20260924e'; attempt = '.local/e2a-v36-audit-attempt5' }
-    auditarchive = @{ gate = 'E2A_AUDIT_ARCHIVE_VERIFY'; prefix = 'E2A_AUDIT_ARCHIVE'; cls = 'E2aV36AuditArchiveIT'; db = 'acrylic_outbound_e2a_audit_20260924f'; user = 'e2a_audit_20260924f'; attempt = '.local/e2a-v36-audit-attempt6' }
+    migration    = @{ gate = 'E2A_V36_VERIFY'; prefix = 'E2A_V36'; cls = 'E2aV36MigrationIT'; db = 'acrylic_outbound_e2a_v36_20260924d'; user = 'e2a_v36_20260924d'; attempt = '.local/e2a-v36-attempt4'; attemptVar = 'E2A_V36_ATTEMPT' }
+    devicekey    = @{ gate = 'E2A_DEVICE_KEY_VERIFY'; prefix = 'E2A_DEVICE_KEY'; cls = 'E2aV36DeviceKeyIT'; db = 'acrylic_outbound_e2a_key_20260924c'; user = 'e2a_key_20260924c'; attempt = '.local/e2a-v36-key-attempt3'; attemptVar = 'E2A_DEVICE_KEY_ATTEMPT' }
+    pairedkey    = @{ gate = 'E2A_KEY_VERIFY'; prefix = 'E2A_KEY'; cls = 'E2aV36PairedKeyIT'; db = 'acrylic_outbound_e2a_key_20260924a'; user = 'e2a_key_20260924a'; attempt = '.local/e2a-v36-key-attempt1'; attemptVar = 'E2A_KEY_ATTEMPT' }
+    stopwriter   = @{ gate = 'E2A_STOP_VERIFY'; prefix = 'E2A_STOP'; cls = 'E2aV36StopWriterIT'; db = 'acrylic_outbound_e2a_stop_20260924a'; user = 'e2a_stop_20260924a'; attempt = '.local/e2a-v36-stop-attempt1'; attemptVar = 'E2A_STOP_ATTEMPT' }
+    auditprefix  = @{ gate = 'E2A_AUDIT_PREFIX_VERIFY'; prefix = 'E2A_AUDIT_PREFIX'; cls = 'E2aV36AuditPrefixIT'; db = 'acrylic_outbound_e2a_audit_20260924e'; user = 'e2a_audit_20260924e'; attempt = '.local/e2a-v36-audit-attempt5'; attemptVar = 'E2A_AUDIT_PREFIX_ATTEMPT' }
+    auditarchive = @{ gate = 'E2A_AUDIT_ARCHIVE_VERIFY'; prefix = 'E2A_AUDIT_ARCHIVE'; cls = 'E2aV36AuditArchiveIT'; db = 'acrylic_outbound_e2a_audit_20260924f'; user = 'e2a_audit_20260924f'; attempt = '.local/e2a-v36-audit-attempt6'; attemptVar = 'E2A_AUDIT_ARCHIVE_ATTEMPT' }
 }
 $c = $table[$Item]
-$attempt = Join-Path $Root $c.attempt
+# A fresh attempt is a name under <root>/.local (or an absolute path); the default stays untouched.
+$attemptName = [Environment]::GetEnvironmentVariable($c.attemptVar)
+if (-not [string]::IsNullOrWhiteSpace($attemptName)) {
+    $attempt = if ([IO.Path]::IsPathRooted($attemptName)) { $attemptName } else { Join-Path $Root (".local/" + $attemptName) }
+} else {
+    $attempt = Join-Path $Root $c.attempt
+}
+# A fresh schema/account keeps the one-shot target distinct when the attempt directory is replaced.
+$attemptDb = [Environment]::GetEnvironmentVariable('E2A_V36_DATABASE')
+$attemptUser = [Environment]::GetEnvironmentVariable('E2A_V36_USER')
 $data = Join-Path $attempt 'data'
-$schema = $c.db
-$user = $c.user
+$schema = if ([string]::IsNullOrWhiteSpace($attemptDb)) { $c.db } else { $attemptDb }
+$user = if ([string]::IsNullOrWhiteSpace($attemptUser)) { $c.user } else { $attemptUser }
 $password = -join (1..64 | ForEach-Object { '0123456789abcdef'[(Get-Random -Maximum 16)] })
 
-# A consumed datadir is reused with the password it was created with (the ITs read it from the env).
-New-Item -ItemType Directory -Force -Path $attempt | Out-Null
+# The ITs write their isolated keypair and private artifacts into <attempt>/private (e.g.
+# stop-it-private.pk8 / private.pk8); the directory must exist before the test runs.
+New-Item -ItemType Directory -Force -Path $attempt, (Join-Path $attempt 'private') | Out-Null
 $pwFile = Join-Path $attempt 'password.txt'
 if ($Reuse -and (Test-Path $pwFile)) { $password = ([IO.File]::ReadAllText($pwFile)).Trim() }
 else { [IO.File]::WriteAllText($pwFile, $password, (New-Object Text.UTF8Encoding($false))) }
@@ -132,4 +147,4 @@ if ($xml) {
     if ($failed) { $stats = $stats + ' :: ' + (($failed.failure.message -split "`n")[0]) }
 }
 "item=$Item class=$($c.cls) testExit=$testExit $stats"
-"attempt=$attempt listening=" + @(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -eq $Port }).Count
+"attempt=$attempt schema=$schema user=$user listening=" + @(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -eq $Port }).Count

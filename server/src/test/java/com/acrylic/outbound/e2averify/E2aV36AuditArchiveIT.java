@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @EnabledIfEnvironmentVariable(named = "E2A_AUDIT_ARCHIVE_VERIFY", matches = "true")
 class E2aV36AuditArchiveIT {
     private static final Path ROOT = E2aWorktree.ROOT;
-    private static final Path ATTEMPT = ROOT.resolve(".local/e2a-v36-audit-attempt6");
+    private static final Path ATTEMPT = E2aV36Attempts.auditArchive();
     private static final String DATABASE = "acrylic_outbound_e2a_audit_20260924f";
     private static final String USER = "e2a_audit_20260924f";
     private static final String URL = "jdbc:mysql://127.0.0.1:19330/" + DATABASE

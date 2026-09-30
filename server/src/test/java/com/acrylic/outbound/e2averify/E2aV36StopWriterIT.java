@@ -12,7 +12,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 @EnabledIfEnvironmentVariable(named = "E2A_STOP_VERIFY", matches = "true")
 class E2aV36StopWriterIT {
     private static final Path ROOT = E2aWorktree.ROOT;
-    private static final Path ATTEMPT = ROOT.resolve(".local/e2a-v36-stop-attempt1");
+    private static final Path ATTEMPT = E2aV36Attempts.stopWriter();
     private static final String DATABASE = "acrylic_outbound_e2a_stop_20260924a";
     private static final String USER = "e2a_stop_20260924a";
     private static final String URL = "jdbc:mysql://127.0.0.1:19330/" + DATABASE
