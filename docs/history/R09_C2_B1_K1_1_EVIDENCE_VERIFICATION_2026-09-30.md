@@ -1,10 +1,12 @@
-# R09 C2 B1-3 S44：K1-1 证据核实（E1–E6 事实表重建；真实驱动形态缺口逐条定位）（2026-09-30）
+# R09 C2 B1-3 S44：K1 判据证据核实与补齐（E1–E6 事实表；不可归类形态 102→135；K1-3 真实用例更正）（2026-09-30）
 
 > 轮次身份：主树 `D:/acrylic-pda-outbound`、分支 `codex/development`；写者＝DSH 本会话。
 >
-> 依据：用户 2026-09-30 裁定"按提案建议执行**已授权部分**"，[K1 通过判据提案](R09_C2_B1_K1_PASS_CRITERIA_PROPOSAL_2026-09-30.md) §6 明确 **E1–E6 的重建只需验证、不需新授权**。本批**只读＋复用本会话实测证据**，**未改代码、未跑新测试**（所有计数均取自本会话已落盘的 XML/记录）。
+> 依据：用户 2026-09-30 裁定"按提案建议执行**已授权部分**"，[K1 通过判据提案](R09_C2_B1_K1_PASS_CRITERIA_PROPOSAL_2026-09-30.md) §6 明确 **E1–E6 的重建只需验证、不需新授权**。
 >
-> 口径：每条证据给出**当次可核**的类名、项数（tests/failures/errors/skipped）与证据路径。**不引用历史通过**替代本次证据（下述计数全部来自 2026-09-30 本会话的 run）。
+> 本页三段：**§1–§3 只读重建**（未改代码、未跑新测试，计数全部取自本会话已落盘的 XML/记录）；**§3a–§3b 缺口补齐**（**测试侧新增**，`RecoveryEffectAdversarialSqlSurfaceIT` 102→135）；**§4 K1-3 复核实测**（据源码与真实记录**更正**此前"未补"的台账）。
+>
+> 口径：每条证据给出**当次可核**的类名、项数（tests/failures/errors/skipped）与证据路径；**不引用历史通过**替代本次证据。
 
 ## 1. E1–E6 事实表（重建结果）
 
@@ -99,20 +101,43 @@ REAL|sql-callable-body|repeat=1|sql={call p_$T(?)}|refusal=CONTROL_EFFECT_UNCLAS
 | 历史 keyring | 未实现（属 K1 之外，见 §4） | 不阻断 K1-1 |
 | K1-2 的 W-2-d（未决孤儿计数） | 未实现（需产品改动＋授权） | 不阻断 K1-1 |
 
-## 4. 与 K1-2／K1-3 的关系（不因本批改变）
+## 4. K1-3 复核实测：**真实跨进程用例已交付**（此前登记为"未补"，本轮更正）
 
-- **K1-2**：已按 W-2 记"**已接受为有界已知边界（附 W-2-d 缺口）**"，见 [K1-2 验收页](R09_C2_B1_K1_2_WINDOW_W_ACCEPTANCE_2026-09-30.md)。
-- **K1-3**：`UNCONFIRMED_NO_CROSS_PROCESS_BASIS` **原样保留**；真实跨进程用例**未补**（本批未做）。
-- 因此 **K1 整体仍未通过**；本批把 K1-1 的剩余缺口从"待核实"收敛为**可枚举的 4–5 类形态**。
+原登记"K1-3 缺一条真实跨进程用例"。本轮核实**该用例实际已存在并有真实记录**：
+
+- 用例：`RecoveryFenceCrossProcessIT.everyFailureMatrixBranchUsesObservedState`（`server/src/test/java/com/acrylic/outbound/recovery/RecoveryFenceCrossProcessIT.java:59` 起），以 `bits` 遍历 **8 种围栏组合**，每个组合 **repeat 0–2**。
+- **`bits="000"`（F1′/F3/F5 三者都未确认）分支的断言**（源码原文）：子 JVM 的 stderr **必须包含** `UNCONFIRMED_NO_CROSS_PROCESS_BASIS`；随后**金丝雀委托被允许**且**恰好发生一次**（`Statement.executeUpdate` 计数＝1、`jdbc.count()==1`）——即"**没有跨进程依据 ⇒ 拒绝把该状态当作 BLOCKED，而交外部隔离**"，与冻结规格一致。
+- **真实记录原文**（本轮 `.local/r09-k11-final-20260930/run119-batch-recoveryfencecrossprocessit/real-records.tsv`，3/3）：
+
+```text
+REAL|matrix|repeat=0|steps=000|basis=UNCONFIRMED_NO_CROSS_PROCESS_BASIS: external isolation required; canary delegate=1 observer=1|childAlive=true|observer=1
+REAL|matrix|repeat=1|steps=000|basis=UNCONFIRMED_NO_CROSS_PROCESS_BASIS: external isolation required; canary delegate=1 observer=1|childAlive=true|observer=1
+REAL|matrix|repeat=2|steps=000|basis=UNCONFIRMED_NO_CROSS_PROCESS_BASIS: external isolation required; canary delegate=1 observer=1|childAlive=true|observer=1
+```
+
+- 八种组合在本轮**各 3/3 完整**（`111/110/101/100/011/010/001/000` 各 3 条），该类计 **33 项 / 0 失败 / 0 错误 / 0 跳过**。
+
+**⇒ K1-3 更正**：**真实跨进程用例已交付**（真实子 JVM、真实文件锁、真实 MySQL 观察者、含 `basis`／`childAlive`／`observer` 记录）。`UNCONFIRMED_NO_CROSS_PROCESS_BASIS` 的原始表述**保持不变**（它仍是"无跨进程依据"的标签，且后续处置＝外部隔离）。此前"未补"的登记是**台账滞后**，本轮据源码与真实记录更正。
 
 ## 5. 边界声明
 
-- 本批**未改任何代码**；未部署、不接原库/现网、未合 main、未打标签/Release；`localDeletionAllowed=false`。
+- §1–§3（重建）**未改任何代码**；§3a（补齐）**只新增测试**。均未部署、不接原库/现网、未合 main、未打标签/Release；`localDeletionAllowed=false`。
 - 开关全默认 **false**（含 `effect-gate.enabled`／`cross-process-enabled`／`lease.enabled`／`admission.enabled`）。
-- 证据路径均在 `.local/`（不入库）；失败轮与跳过轮未删未改。
+- 证据路径均在 `.local/`（不入库）；失败轮与跳过轮未删未改（`.local/r09-k11-20260930/` 的 33 项失败轮保留）。
 
-## 6. 下一步
+## 6. K1 判据现状汇总（供裁定；本页不单方面改判）
 
-1. **补 K1-1 的 4–5 类形态**（测试侧，不需新授权）：门开启模式下 `CALL` 调用体、多语句、带注释语句、`SET SESSION …`、方言/DDL 变体各一条真实驱动用例。
-2. **K1-3**：补一条真实跨进程用例（隔离测试，不需产品改动）。
-3. 待授权项不变：I3（共享树处置）、B4 实施级（⇒ A4.3/B9）、A2.1 主管↔权限码映射、W-2-d 未决孤儿计数。
+| 判据 | 现状 |
+| --- | --- |
+| **K1-1 ②** 隐式提交事实（真实驱动） | **满足**（`G0K1RealJdbcBoundaryIT:381`＋`:134`） |
+| **K1-1 ①③** 形态分类与"不可归类即拒绝" | **原缺口四类已补齐实测**（§3a：`delegate=0`、无效果）；**残余**＝厂商方言/DDL 变体未逐条单列（§3b） |
+| **K1-2** 窗口 W | **已按 W-2 接受为有界已知边界**（附 W-2-d 缺口，见 [K1-2 验收](R09_C2_B1_K1_2_WINDOW_W_ACCEPTANCE_2026-09-30.md)） |
+| **K1-3** `UNCONFIRMED_NO_CROSS_PROCESS_BASIS` | **真实跨进程用例已交付**（§4：8 组合 ×3、`steps=000` 的 `basis`／`canary delegate=1` 记录齐备） |
+
+⇒ 三项判据中 **K1-2、K1-3 已有落地结论**，**K1-1 只剩"方言/DDL 变体是否需逐条单列"一处裁定**。
+
+## 7. 下一步
+
+1. **K1-1 残余**：厂商方言/DDL 变体**是否需逐条单列**——**请裁定**（可裁定"同一 `unclassified` 分支＋四条代表形态已足够"）。
+2. 待授权项不变：I3（共享树处置）、B4 实施级（⇒ A4.3/B9）、A2.1 主管↔权限码映射、W-2-d 未决孤儿计数。
+3. R07 其余缺口保持单列。
