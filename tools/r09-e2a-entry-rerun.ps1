@@ -142,12 +142,13 @@ $env:OUTBOUND_STORAGE = Join-Path $attempt 'storage'
 # signing keypair; generate the same PKCS#8 / SPKI encodings with the bundled openssl when absent.
 $keyPath = Join-Path $attempt 'private/server-private.der'
 $pubPath = Join-Path $attempt 'private/server-public.der'
-if (-not (Test-Path $keyPath)) {
-    $openssl = 'C:\Program Files\Git\usr\bin\openssl.exe'
-    if (Test-Path $openssl) {
+if ($AppMigrates -and -not (Test-Path $keyPath)) {
+    # openssl's DER is not the PKCS#8/SPKI pair the JVM decodes (verified: InvalidKeySpecException
+    # "Unable to decode key"), so the JDK generates the keypair in the exact encodings the app reads.
+    $keyTool = Join-Path $Root 'tools/GenSigningKey.java'
+    if (Test-Path $keyTool) {
         $keyPreference = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
-        & $openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -outform DER -out $keyPath *> $null
-        & $openssl pkey -in $keyPath -inform DER -pubout -outform DER -out $pubPath *> $null
+        & 'C:\Program Files\Java\jdk-21.0.11\bin\java.exe' $keyTool $keyPath $pubPath *> (Join-Path $attempt 'keygen.log')
         $ErrorActionPreference = $keyPreference
     }
 }
