@@ -1,9 +1,9 @@
-param([Parameter(Mandatory=$true)][ValidateRange(1,999)][int]$Run)
+param([Parameter(Mandatory=$true)][ValidateRange(1,999)][int]$Run, [string]$Root = 'D:\acrylic-pda-outbound')
 # Falsification harness for the M2b-2b manual-confirmation guard.
 # It byte-removes ONLY the reviewed-candidate digest comparison from TemporaryLinkOperation.java,
 # runs the isolated link IT (which must then fail its rejection case), and restores the file by bytes.
 $ErrorActionPreference = 'Stop'
-$root = 'D:\acrylic-pda-worktrees\r06-e2a-migration'
+$root = $Root
 $source = Join-Path $root 'server\src\main\java\com\acrylic\outbound\temporary\command\TemporaryLinkOperation.java'
 $guard = @'
         if(!reviewed.snapshot().path("contextSha256").equals(command.expected().path("candidateContextSha256"))

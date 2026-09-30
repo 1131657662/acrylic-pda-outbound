@@ -1,6 +1,6 @@
-param([Parameter(Mandatory=$true)][ValidateRange(1,999)][int]$Run, [switch]$Android, [switch]$Abort, [switch]$PartialAbort, [switch]$Accounting, [switch]$Confirmation, [switch]$SuccessConsumer, [switch]$Archive, [switch]$Candidates, [switch]$DecisionProtocol, [switch]$ArchiveRecovery, [switch]$Export, [switch]$DraftEvidence, [switch]$UnsubmittedSource, [switch]$JobFence, [switch]$Link)
+param([Parameter(Mandatory=$true)][ValidateRange(1,999)][int]$Run, [switch]$Android, [switch]$Abort, [switch]$PartialAbort, [switch]$Accounting, [switch]$Confirmation, [switch]$SuccessConsumer, [switch]$Archive, [switch]$Candidates, [switch]$DecisionProtocol, [switch]$ArchiveRecovery, [switch]$Export, [switch]$DraftEvidence, [switch]$UnsubmittedSource, [switch]$JobFence, [switch]$Link, [string]$Root = 'D:\acrylic-pda-outbound')
 $ErrorActionPreference = 'Stop'
-$root = 'D:\acrylic-pda-worktrees\r06-e2a-migration'
+$root = $Root
 $attempt = Join-Path $root ".local\e2a-cross-20260925-$Run"
 $database = "acrylic_e2a_cross_20260925_$Run"
 $dbUser = "e2a_cross_20260925_$Run"

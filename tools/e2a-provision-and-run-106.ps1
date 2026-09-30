@@ -26,7 +26,7 @@
 param(
     [int]$Run = 106,
     [string]$Tests = '*E2aTemporaryLinkConfirmIT',
-    [string]$Workspace = 'D:\acrylic-pda-worktrees\r06-e2a-migration',
+    [string]$Workspace = 'D:\acrylic-pda-outbound',
     [string]$MySqlBase = 'C:\Program Files\MySQL\MySQL Server 8.0',
     [int]$Port = 19330,
     [switch]$ProvisionOnly,

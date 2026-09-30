@@ -28,7 +28,7 @@
 param(
     [Parameter(Mandatory=$true)][string[]]$Classes,
     [Parameter(Mandatory=$true)][int]$StartRun,
-    [string]$Workspace = 'D:\acrylic-pda-worktrees\r06-e2a-migration',
+    [string]$Workspace = 'D:\acrylic-pda-outbound',
     # Do NOT default this to (Join-Path $PSScriptRoot ...): under Windows PowerShell 5.1 $PSScriptRoot is empty while
     # parameter defaults are evaluated, so the script dies before running. Resolved below instead.
     [string]$Constructor = '',

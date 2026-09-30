@@ -37,7 +37,7 @@
 param(
     [int]$Run = 1,
     [string]$Tests = '*R08ExportIT',
-    [string]$Workspace = 'D:\acrylic-pda-worktrees\r06-e2a-migration',
+    [string]$Workspace = 'D:\acrylic-pda-outbound',
     [string]$MySqlBase = 'C:\Program Files\MySQL\MySQL Server 8.0',
     [int]$Port = 23308,
     [string]$DatabasePrefix = 'acrylic_r08_it',

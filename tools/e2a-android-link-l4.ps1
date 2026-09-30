@@ -25,7 +25,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)][int]$Run,
-    [string]$Workspace = 'D:\acrylic-pda-worktrees\r06-e2a-migration',
+    [string]$Workspace = 'D:\acrylic-pda-outbound',
     [string]$MainRoot = 'D:\acrylic-pda-outbound',
     [string]$Constructor = '',
     [int]$HandshakeTimeoutSeconds = 420,

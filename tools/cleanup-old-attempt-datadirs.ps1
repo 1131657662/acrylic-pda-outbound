@@ -37,7 +37,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Local = 'D:\acrylic-pda-worktrees\r06-e2a-migration\.local',
+    [string]$Local = 'D:\acrylic-pda-outbound\.local',
     [int]$Keep = 50,
     [switch]$DryRun,
     [switch]$CleanupAfterRun

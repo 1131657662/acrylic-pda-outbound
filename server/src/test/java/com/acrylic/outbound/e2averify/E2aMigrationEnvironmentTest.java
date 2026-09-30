@@ -39,8 +39,11 @@ class E2aMigrationEnvironmentTest {
 
     @Test
     void rejectsAnotherWorktreeBeforeAnyDatabaseAction() {
+        // A sibling of the workspace is guaranteed not to BE the workspace, whatever the harness root resolves to.
+        // This used to hardcode the main tree as "the other worktree", which stopped being true once the shared
+        // migration worktree was archived and removed and E2aWorktree.ROOT became the main tree.
         assertThatThrownBy(() -> E2aMigrationEnvironment.requireExact(valid(), true,
-                Path.of("D:/acrylic-pda-outbound")))
+                WORKSPACE.resolveSibling(WORKSPACE.getFileName().toString() + "-not-the-workspace")))
             .isInstanceOf(IllegalStateException.class);
     }
 

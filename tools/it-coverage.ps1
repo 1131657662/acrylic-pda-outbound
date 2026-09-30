@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 <#
 .SYNOPSIS
   汇总"哪些 IT 已经在哪些 attempt 上跑过、结果如何"——从 JUnit XML 反推，取代人工统计。
@@ -26,7 +26,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Workspace = 'D:\acrylic-pda-worktrees\r06-e2a-migration',
+    [string]$Workspace = 'D:\acrylic-pda-outbound',
     [string]$ReportRoot = 'D:\acrylic-pda-outbound\.local\it-batches',
     [string]$Csv = ''
 )
