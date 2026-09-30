@@ -329,3 +329,10 @@
 
 - [S2/S4a 范围核对](AUTONOMOUS_SCOPE_AUDIT_2026-10-01.md)：历史复用与权限边界，不重复旧已验工作。
 - [S4b 三次失败停报](AUTONOMOUS_PROGRESS_2026-10-01.md)：未完成源码、两次 IT 与一次单测失败、磁盘/设备及提交证据。
+
+
+## 修订目标恢复（2026-10-01）
+
+- [接续方案](AUTONOMOUS_PLAN_2026-10-01.md)与[恢复后报告 §11 起](AUTONOMOUS_PROGRESS_2026-10-01.md)：取消旧固定失败停止线，R1 既有守卫失败单列。
+- [R06 正式单反向候选独立消费](R06_REVERSE_CANDIDATE_CONSUMER_2026-10-01.md)：真实 HTTP 与原始关系消费、失败/保全、回归及未验边界。
+- [恢复前看板](ORCHESTRATION_STATE_before_RESUMED_2026-10-01.md)：旧 blocked 原结论保留，不恢复为现行授权。

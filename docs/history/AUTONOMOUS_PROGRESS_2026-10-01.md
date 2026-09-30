@@ -90,3 +90,35 @@ A1.2/A1.3/R07 均未整体收口；mapping3+、高轮次、候选排除、短装
 - 两份受保护 PDA 文档 SHA-256 不变；真机 22D2910042 前后设备枚举及首次停报快照逐字节一致，目标设备命令 0、AVD 启动 0。D 可用空间从 33896431616 到 33896423424 字节，均高于 20 GiB。
 - 复核脚本为 .local/autonomous-20261001/revalidate-stop-3.ps1，parseErrors=0；本轮只做文档和证据核对，不作为业务测试通过。证据在 revalidation-3/stop-condition.json、rechecked-results.json、protected.json、active-work.json、ports.json、adb-before/after.txt、disk-before/after.json。
 - 看板替换前结论已[归档](ORCHESTRATION_STATE_before_BLOCKED_2026-10-01.md)。本轮只提交看板、该归档和本报告，提交/推送结果及最终保护摘要、磁盘、设备快照见 revalidation-3/git-final.json 与对应 final 文件。此前 docs 提交 e615156645073ab287d6d228494db7ee73e037d8、378ba5a394ddc9c01b0f9483b8580610027edf61 均已推送；均不是 S4b 业务交付。
+
+
+## 11. 修订目标恢复：R1 已验行为守卫失败，子项停止
+
+本节及后续为新授权下的接续；§1–10 保留旧目标停止的原记录。活动目标已明确取消固定三次失败全局停止线，要求报告阻断后继续独立工作。输入与远端 7fb315cdd5938b7e17e2f2ffd09b4571ee148704；新[方案](AUTONOMOUS_PLAN_2026-10-01.md)先落盘后执行，没有用普通“继续”臆解旧停止条件。
+
+- R1 恢复七份原草稿时逐一核原摘要，再改为测试域独立 typed JSON：排序列名/行，保留二进制、时间精度、null、大整数/小数；不调用或修改产品 SubmissionJson。新单测 10/0/0/0。
+- 完整回归实际 135 suites / 2857 tests / 1 failure / 0 errors / 1 既有 skip。失败为 RecoveryLegacyPathIsolationTest.testOnlyPrimariesAreFrozenAndKeptOutOfTheApplicationEntry：新 HandoverAuditFaultConfiguration 的 Primary 违反冻结白名单。
+- 按“不得使既有通过测试失败”的硬边界立即停止 R1；不改白名单、不隐藏注解、不继续数据库尝试。七份修订草稿保全于 resume-s4b/blocked-source/ 并核摘要，移出活动测试发现范围；恢复后隔离守卫 3/0/0/0。
+- 证据：.local/autonomous-20261001/resume-s4b/guard-failure.json、guard-failure-source-manifest.json、offline-1/、baseline-restored/。本轮 R1 未建数据库 attempt，既有 793/794 不动；R1 写后回滚仍未验。
+
+## 12. R2a 正式单反向候选：独立消费通过
+
+[详细验收与边界](R06_REVERSE_CANDIDATE_CONSUMER_2026-10-01.md)。源码已有反向查询；依据 A1.2 与 M2b 的成功 TEMP 可见要求补实际消费者，不重复开发产品查询。服务层成功确认前置、真实 HTTP 会话/建正式单/候选 GET 分开记录。
+
+- 新增三份 Java 测试域文件与两份 Python 消费文件；原始 SQL 关系独立重建候选，失败关闭反例和查询所列业务投影不变。
+- 795 首次 1/1/0/0，登录阶段因遗漏本机 HTTP 会话 Cookie 前置返回 403，未进入候选断言。失败源、日志、XML、dump/ZIP 保留。
+- 修正仅新增 IT 的本机测试 Cookie 参数，离线编译与已有守卫通过后在新库 796 运行：Java 1/0/0/0；Python 18/18、无跳过。
+- 最终完整回归 134 suites / 2847 tests / 0 failures / 0 errors / 1 既有 skip。R1 红轮仍单列；其未完成草稿不作为已验实现提交。
+- 本增量只证明首轮成功 TEMP 仍能被稍后正式单提示、跨仓拒绝、独立消费与反例；不是 A1.2 全完成，不替代原身份/现场、mapping3+、高轮次、排除授权、跨来源续作及 FORMAL 时间盒。
+
+## 13. 本轮自主决定、待决与收尾
+
+1. 新活动目标取代旧三次失败停止线；R1 触发的是另一条仍有效的既有回归硬边界，保留为被阻断子项，不阻止 R2。
+2. 用源码/历史消除“正式单侧反向查询还未整合”“R07 全未实现/全未跑”等旧文字；历史通过不记为本轮重跑。
+3. 795 是新增夹具的安全 Cookie 与回环 HTTP 不匹配。以既有通过夹具为依据补显式本机参数；不修改生产安全默认值、不增加盲目重试。
+4. 待决保留：TEMP REJECT 独立写授权、候选排除授权、已知更正抬头撤销缺陷；R1 的冻结 Primary 白名单不自动放宽。已定卸货释放、人工关联、主管审批政策不重新询问。
+5. 下一步按新方案核 R06 处置/高轮次和 R07 真实缺口，继续独立可执行工作。整体目标 active、未完成；不转 R08/R09/R10。
+
+证据根：resume-reverse/、resume-reverse-http/ 与 .local/e2a-cross-20260925-795/、796/。本批两库认证停机，完整 dump 与各 290 文件 ZIP 逐字节校验后才清理新 datadir；历史证据未删。D 从 resume-check 的 33901223936，到两库收尾前 33447997440，再到保全清理后的 33848803328 字节；均高于阈值。各轮及总收尾真机枚举一致，目标设备命令/AVD 均 0；两份保护文档 SHA-256 一致。
+
+本增量提交/推送的实际结果见 resume-reverse-http/closeout/git-final.json；实现与文档 SHA 在后续 Git 核验补充中记录。不预写成功、不标总体完成。
