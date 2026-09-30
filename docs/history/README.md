@@ -1,5 +1,7 @@
 # 历史归档
 
+- [R09 C2 B1-3 S33：可执行清单固化与用户裁定/授权登记](R09_C2_B1_3_S33_EXECUTION_CHECKLIST_2026-09-29.md)：纯文档轮（未开工）。把十步完成度盘点固化为[可执行清单](../REMAINING_DEVELOPMENT_PLAN.md)（A0 主线收尾／A1 R06／A2 R07／A3 R08／A4 R09／A5 两树整合／C 现场条件项），并登记用户 2026-09-29 裁定/授权七项（K1 判据提案先行、B2 提案先行、允许隔离用等价私钥、锚点提案先行、659 授权一次仪表化、生产边界全关、整合提案先行），同时给出**新会话接续指令**。看板当前区已改为换会话交接态。K1 仍未通过；开关仍全默认 false。
+
 - [R09 C2 B1-3 S32：夹具链与 Android 打通（10 个库存 IT ＋ Android 两项）](R09_C2_B1_3_S32_FIXTURES_ANDROID_2026-09-29.md)：探针证明 openssl 的 DER **无法被 JVM 解码**（`Unable to decode key`）⇒ 改用 JDK 生成 PKCS#8/SPKI 后 `SIGNING_KEY_UNAVAILABLE` 消失；harness 加 `-AppMigrates`＋`tools/GenSigningKey.java`，4 个 Android 测试去掉硬编码旧工作树守卫。结果：库存家族 **10 个 IT 通过**＋**11 个夹具**生成；**Android 两项关闭**（710/711 ✔，Android 套件 0 失败）⇒ **E2a 主树已验证 22→24 个**。未验：659（待裁定）、V36 stopwriter／auditarchive（待裁定私钥物料）。K1 仍未通过；另附 S32 开工前看板归档。
 
 - [R09 C2 B1-3 S31：夹具链——签名守卫的进程内证据](R09_C2_B1_3_S31_SIGNING_BINDING_2026-09-29.md)：`application.yml` L38–41 显示 `outbound.signing.*` 绑定 `OUTBOUND_AUTH_SIGNING_*`（一直在导出）⇒ 推翻"属性空白"；run 692 的进程内打印证明环境与密钥文件均正常（1191 B/294 B，0x30 开头）⇒ `OfflineSigner.keys()` 抛的是 **catch 分支**（try 块内载入/模长/自签验签失败）。下一步：测试侧反射调 `keys()` 打印 cause（不改产品），或授权产品侧仪表化。644／647＋8 个夹具 IT 判未验。E2a 主树已验 22 个不变。K1 仍未通过；另附 S31 开工前看板归档。
