@@ -80,3 +80,13 @@ A1.2/A1.3/R07 均未整体收口；mapping3+、高轮次、候选排除、短装
 - 七份草稿摘要、两份失败库 ZIP/dump 摘要与三份 1/1/0/0 XML 均一致；795 不存在，活动重型任务和测试端口监听均为 0。不是等待仍在运行的测试，也没有重开已终止的会话。
 - 真机清单相同、目标设备命令 0；两份受保护文档摘要一致。D 可用 33896501248 字节。
 - 同一阻断累计两轮目标观测，未达三轮 blocked 审计门槛；目标保持 active、未完成。本轮仅保存文档复核，不修源码、不跑测试、不另换子项绕过止损。提交结果见 revalidation-2/git-final.json。
+
+## 10. 第三轮止损复核与正式 blocked 登记
+
+- 第三轮输入及已核远端 378ba5a394ddc9c01b0f9483b8580610027edf61；本地复核时间为 2026-10-01T00:39:46+08:00。前一轮及本轮均无业务推进，仅状态复核和文档；不存在待结束的测试进程。
+- 同一 SUBITEM_THREE_CONSECUTIVE_FAILURES 停止条件连续三个目标轮次均未改变。一般接续没有解除三次失败止损；本轮没有修改草稿、运行第四次验证、创建 795 或转其他子项。
+- 实际调用 update_goal(status=blocked) 成功，工具返回目标状态 **blocked**；完整返回保存在 .local/autonomous-20261001/revalidation-3/goal-status.json。总体目标未完成，不标 complete；后续须用户明确解除该停止点后再进入测试修复。
+- 三份失败 XML 仍各 1/1/0/0，文件摘要与第二轮一致；七份源码草稿及两份失败库 ZIP/dump 摘要一致。795 不存在，活动重型任务和测试监听为 0。
+- 两份受保护 PDA 文档 SHA-256 不变；真机 22D2910042 前后设备枚举及首次停报快照逐字节一致，目标设备命令 0、AVD 启动 0。D 可用空间从 33896431616 到 33896423424 字节，均高于 20 GiB。
+- 复核脚本为 .local/autonomous-20261001/revalidate-stop-3.ps1，parseErrors=0；本轮只做文档和证据核对，不作为业务测试通过。证据在 revalidation-3/stop-condition.json、rechecked-results.json、protected.json、active-work.json、ports.json、adb-before/after.txt、disk-before/after.json。
+- 看板替换前结论已[归档](ORCHESTRATION_STATE_before_BLOCKED_2026-10-01.md)。本轮只提交看板、该归档和本报告，提交/推送结果及最终保护摘要、磁盘、设备快照见 revalidation-3/git-final.json 与对应 final 文件。此前 docs 提交 e615156645073ab287d6d228494db7ee73e037d8、378ba5a394ddc9c01b0f9483b8580610027edf61 均已推送；均不是 S4b 业务交付。

@@ -6,44 +6,40 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: e615156
-dirty_entries: 4
+head: 378ba5a
+dirty_entries: 5
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V50, migrations: 50 }
 ```
 <!-- FACTS_END -->
-**自主开发在 S4b 连续三次失败止损；目标未完成。**
-[方案](history/AUTONOMOUS_PLAN_2026-09-30.md) / [本日停报](history/AUTONOMOUS_PROGRESS_2026-10-01.md) / [范围核对](history/AUTONOMOUS_SCOPE_AUDIT_2026-10-01.md)。本日指 Asia/Shanghai 2026-10-01，对应失败时间为 UTC 2026-09-30。
+**自主目标已正式标记 blocked，未完成；S4b 连续三次失败止损未解除。**
+[方案](history/AUTONOMOUS_PLAN_2026-09-30.md) / [停报与第三轮复核](history/AUTONOMOUS_PROGRESS_2026-10-01.md) / [范围核对](history/AUTONOMOUS_SCOPE_AUDIT_2026-10-01.md) / [替换前结论](history/ORCHESTRATION_STATE_before_BLOCKED_2026-10-01.md)。日期按 Asia/Shanghai 2026-10-01，失败时间对应 UTC 2026-09-30。
 
 ## Git、写权与环境
-- 主树 D:/acrylic-pda-outbound，codex/development；输入与已核远端 c6bac92b02dc525e1d5b02cbcfaef892e0199bd6。停报文档自身提交以 git-final.json/报告最后提交为准，不追写自身 SHA。
-- Codex 单助手；本次仅提交范围审计、停报、方案/前阶段进度补充、看板归档和两个索引。七份未完成测试草稿已逐文件校验移到 .local/autonomous-20261001/stopped-source/，不入默认测试发现或 Git。
-- 两份非本会话 PDA 文档未改未暂存、SHA-256 一致。无在途构建/AVD/本批 MySQL/HTTP；19330/19434 已释放，原服务保持。
-- 真机 22D2910042 起止设备清单逐字节一致；目标设备命令 0、AVD 启动 0。D 保全清理后可用 33896718336 字节，提交后快照另存。
+- 主树 D:/acrylic-pda-outbound，codex/development；第三轮输入及已核远端 378ba5a394ddc9c01b0f9483b8580610027edf61。收尾提交实际 SHA 见 .local/autonomous-20261001/revalidation-3/git-final.json 或本页最后一次 Git 提交，不追写自身 SHA。
+- Codex 单助手；本轮只更新看板、停报和看板结论归档。七份未完成测试草稿保存在 .local/autonomous-20261001/stopped-source/，不在活动源码或 Git 中。全部改动前后清单见 revalidation-3/status-before.txt、status-final.txt。
+- 两份非本会话 PDA 文档保持原改动，未暂存且 SHA-256 一致。活动重型任务/AVD/本批 MySQL 为 0，19330/19434 无监听；未操作原服务。
+- 真机 22D2910042 本轮前后及首次停报清单逐字节一致，目标设备命令 0。本轮 D 可用字节：前 33896431616，后 33896423424；提交后另存快照。
 
-## 既定验收与范围核对
+## 已验范围与来源
 - A1.1 保持 801050baf7cae3ef8e9a7774d72fe96c4ee72efb 的既定收口，不重跑设备批次。
-- S1 实现 f892586580423abedbe5b38721cbf89b3e908245：attempt792 IT 1/0/0/0、Python 40/40；单候选/首轮/mapping2 独立消费。合成身份不替代现场，A1.2 不整体完成。
-- S2 未提交来源/历史归档可信校验复用既有源码与历史实测；未提交 TEMP 完整计划与跨来源续作仍未验。本轮未重做、未重跑，不能写作新验收。
-- S3a TEMP REJECT 缺独立写授权依据，暂跳过；已定卸货释放政策不重新询问。处置/续作已定码不等于能力已实现。
-- S4a 确认 R07 outbox、主管角色分离已有较新实现及历史实测，不照抄旧“全未实现”；全 R07 清单审计未完成。
+- S1 实现 f892586580423abedbe5b38721cbf89b3e908245：attempt792 IT 1/0/0/0、Python 40/40；范围限单候选/首轮/mapping2 独立消费，A1.2 不整体完成。
+- S2 未提交来源/历史归档可信校验复用既有源码与历史实测；未提交 TEMP 完整计划、现场身份及跨来源续作仍未验。本轮无新增 S2 验收。
+- S3a TEMP REJECT 缺独立写授权依据，暂跳过；已定卸货释放政策不重新询问。处置/续作权限码存在不等于完整能力已实现。
+- S4a 确认 R07 outbox、主管角色分离已有较新实现及历史实测；全 R07 清单审计未完成。
 
-## 三次失败与停止点
-- S4b 目标是 outbox/资格/回执/审计真实写后故障注入、16 表逐值回滚、同键恢复；没有取得通过证据。
-- 793：新夹具查询未占用包返回零行，尚未 REQUEST；794：准备完成后 baseline snapshot 日期序列化失败，未 ACTIVATE；随后离线单测：原数据库值误用业务 JSON 规范化器，1/1/0/0。两次 IT 均 1/1/0/0。
-- 已触发同一子项三次失败止损；795 未创建，不运行第四次、不转其他子项绕过。尚无产品缺陷证据；产品规范化器不能为测试放宽。
-- 七份草稿、全部红日志/XML及两份失败库保留。只在认证停库、完整 dump/ZIP 与各 290 文件 SHA-256 回读一致后清理本轮新 datadir；历史 .local 未删。
-- 证据根 .local/autonomous-20261001/，数据库 .local/e2a-cross-20260925-793/、794/；stop-closeout 保存停止条件、源码摘要、磁盘、真机和最终 Git。旧看板已归档。
-- 接续需解除本次止损；先修测试独立数据库快照编码并离线验证，不能修改已验 SubmissionJson 允许集。总体目标未完成，本轮首次止损观测不冒标 complete。
+## S4b 停止条件与目标状态
+- 目标为 outbox/资格/回执/审计真实写后故障注入、16 表逐值回滚及同键恢复；没有取得通过证据。
+- 793：夹具缺包，尚未 REQUEST；794：前置准备完成后日期快照序列化失败，未 ACTIVATE；离线单测：数据库原始值误用业务 JSON 规范化器。三份 XML 各 1/1/0/0。
+- 三次失败全部计入同一子项；没有 ACTIVATE 故障注入、回滚、同键恢复或重启验收。795 不存在，本轮测试 0，没有转项绕过止损；尚无产品缺陷证据。
+- 七份草稿、三份 XML、两份失败库 ZIP/dump 摘要复核一致。前轮仅在认证停库、完整保全及各 290 文件回读一致后清理新 datadir；本轮无清理，历史 .local 不动。
+- 同一停止条件已连续三个目标轮次确认；前一轮及本轮均为“无业务推进，仅状态复核与文档”。不是等待活动进程。update_goal 实际返回 blocked，结果原文已存 revalidation-3/goal-status.json。
+- 证据根 .local/autonomous-20261001/；失败库 .local/e2a-cross-20260925-793/、794/。第三轮 stop-condition.json、protected.json、adb-before/after.txt、磁盘和进程快照均在 revalidation-3/。
+- 接续需要用户明确解除本次三次失败止损。恢复后先核草稿摘要，再修独立、确定性的数据库快照编码并离线验证；不能改已验 SubmissionJson 允许集迁就测试。
 
 ## 未验与硬边界
-- A1.2/A1.3/R07 未整体收口；S4b 回滚/同键/重启/占用守恒未验；本轮没有真实业务 HTTP、worker、全仓回归、Android/APK/lint、模拟器/真机验收。
-- mapping3+、高轮次、候选排除权限、跨来源续作、FORMAL 独立时间盒；R05 原资料/旧 BCD/C 档；R09 lease/keyring/W-2、IT-DISCOVERY/IT-EVIDENCE-AUDIT/TZ-GMT 等既有边界保持。
+- A1.2/A1.3/R07 未整体收口；S4b 写后回滚/占用守恒/同键恢复/重启仍未验。本轮无业务测试、全仓回归、Android/APK/lint、模拟器/真机或部署。
+- mapping3+、高轮次、候选排除授权、跨来源续作、FORMAL 独立时间盒；R05 原资料/旧 BCD/C 档；R09 lease/keyring/W-2、IT-DISCOVERY/IT-EVIDENCE-AUDIT/TZ-GMT 等既有边界保持。
 - 不改已验业务、ConfirmedV1Adapter、历史迁移、生产默认值；开关默认 false、localDeletionAllowed=false。不部署、不接原库现网、不合 main、不打标签/Release。
-
-## 止损复核（第二轮目标观测）
-- 已核 HEAD/远端 e615156645073ab287d6d228494db7ee73e037d8；三份失败 XML、七份草稿及两个失败库保全摘要一致；795 不存在，无活动重型任务或测试监听。
-- 没有新增恢复授权，本轮测试 0；真机及保护文档摘要不变，D 可用 33896501248 字节。证据 .local/autonomous-20261001/revalidation-2/；完整记录见停报 §9。
-- 同一停止条件累计两轮目标观测，保持 active/未完成；未达三轮 blocked 审计门槛，不重新执行或转项绕过止损。
 <!-- CURRENT_STATE_END -->
