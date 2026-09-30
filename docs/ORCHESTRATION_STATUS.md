@@ -6,32 +6,33 @@
 ```yaml
 date: 2026-09-30
 branch: codex/development
-head: 81a76ea
-dirty_entries: 2
+head: 19c5080
+dirty_entries: 7
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V50, migrations: 50 }
 ```
 <!-- FACTS_END -->
-**R06 A1.1 收口：停止保全 device 层实质通过（可重复性未建立）（2026-09-30）**。收口记录见 [A1.1 收口记录](history/R06_A1_1_2026-09-30.md)；上一断点归档 [归档](history/ORCHESTRATION_STATE_before_R06_A1_1_FINAL_2026-09-30.md)。
+**R06 A1.1 阶段备份：G1 旧种子重复与②坏件通过；G4/⑤前置阻断，新 attempt 待确认。**
+实测见 [Codex 接续记录](history/R06_A1_1_CODEX_2026-09-30.md)；上一断点已[归档](history/ORCHESTRATION_STATE_before_CODEX_A11_DEVICE_FINAL_2026-09-30.md)。A1.1 整体未收口，A1.2 未进入。
 
-## Git、写权与范围
-- 树 D:/acrylic-pda-outbound；分支 codex/development；写者＝DSH（本会话）。
-- 本批新增（仅测试与文档，**未改产品代码**，Room 仍 v28）：`R06A11SyntheticStopDataset.kt`、`LocalDraftStopDurabilityDeviceTest.kt`、`LocalDraftStopUpgradeDeviceTest.kt`（新增 G4-3 种子化 phase）、`androidTest/assets/room-27.json`。
-- 非本会话的未提交项未代提交。
+## Git、写权与改动
+- 树 `D:/acrylic-pda-outbound`；分支 `codex/development`；接管输入 `9669e9048946a12eac18342e0facf34e79739e39`，测试阶段提交 `19c50809331135c4441b1fea9d56633afc7c6343`。文档提交/推送 SHA 见本记录最后提交与 `.local/r06-a11-codex-20260930/git-final.txt`，不追逐文档自身 SHA。
+- 写者＝Codex 单助手，用户已从 DSH 移交。新增 10 个 androidTest 文件，完整清单见 `staged-tests.txt`；文档涉及本看板、接续记录、两份断点归档与验收索引。无产品、契约、历史迁移改动。
+- 非本会话两份 PDA 文档未改、未暂存，保护 SHA-256 一致；最终未提交清单见 `status-final.txt`。
 
-## R06 A1.1 device 层三层证据
-- **G4-2 成立**：指纹式 27→28；52 张表 count+sha256 逐字节不变、`local_source_binding` 建出为空、FK 干净。**但 `local_draft_stop=0 verdict=EMPTY`** ⇒ 按既定硬门槛**不算非空交付**。
-- **G4-3 成立**：`R06A11_G4_NONEMPTY local_draft_stop=1 verdict=NONEMPTY`；五张表 `1/2/1/1/1` 迁移前后相同；**非空写成断言**（空库迁移会直接失败）。
-- **G1 单次通过**：四组断言（stop/签名仍在且 evidenceId 一致、`rawBytes` 逐字节相等、`LOCAL_EVIDENCE_STOP` 事件数不变、队列不自动续传）＋ (C) 身份切换三步；两阶段各 `numtests=1`（真跑非空跑），中间执行真 `am force-stop`。
-- **G1 可重复性未建立**：第二次在**已被 seed 过**的设备上失败——根因是**测试自身不幂等**（合成事件固定主键、插入前未删；`-no-snapshot-save` 只禁快照、不阻止 userdata 落盘）。缺陷已离线修复，**未重跑验证**。
+## 当次结果与环境
+- **G1 重复通过**：安装前从旧库确认 stop/event 各 1，再安装测试；两阶段各 1 项，真实 force-stop；四组断言与 Guard 三步通过。
+- **②坏件 4 项通过**：坏原件/请求阻断、非法签名回执原字节保留、后置坏回执阻断前方未知请求。真实 Room/产品 verifier；身份、密钥和传输边界为合成夹具，GET/POST 计数不是实际 HTTP。
+- **G4-2、⑤前置失败，实际用例未执行**：安装前 staging 包不可见；失败目录 `G42/`、`Loss/` 保留，无自动重跑。G4-3 本批未启动。
+- 只读启动诊断两台 AVD 各 7 个采样，约 30 秒仍未列出包；原因未确定，不认定原库丢失。修正驱动与自包含前置已编译、解析通过，未上设备。
+- 离线回归 7 类 47 项零失败零跳过；最终 staging/测试 APK 编译通过。中文文档脚本在 PowerShell 5.1 的 parse 红已保留，按 PowerShell 7 解析通过。
+- 证据根 `.local/r06-a11-codex-20260930/`；每个设备/诊断目录都有磁盘前后和真机快照，全部相同。`22D2910042` 仅只读取证；模拟器命令锁定 `-s emulator-5554`＋ANDROID_SERIAL。
+- 重型任务结束、模拟器退出；原服务/数据库未动。源码/监听/进程/磁盘清单见该目录最终快照；没有全套/lint/真 HTTP/真机/部署验收。
 
-## 未验边界（不得被本记录覆盖）
-真实竞态、真机重启、"停止动作由产品在设备产生"、对端 POST 计数、真实会话切换/配对、**G1 可重复性**、设备侧验签；②坏件专项与⑤丢回执专项设备用例未做；A1.4 FORMAL 夹具未纳入。
-**口径**：签名行结构性占位（未做设备侧验签）；`LOCAL_EVIDENCE_STOP` 事件 `captureId=NULL` 合成；身份切换用手写会话 JSON（仅测 Guard 逻辑）。
-
-## 下一步（交接 Codex）
-1. 重跑 G1 验证幂等修复（**须在已 seed 设备上**跑，条件即第二次失败的条件）；2. 补 G4-2/G4-3 各一次重复运行；3. 补 ②坏件、⑤丢回执设备专项；4. 真实竞态/真机属 C 档现场条件；真实"停止由产品产生"需把 `TemporaryWorkFixture` 及签名/授权装置移植进 `androidTest`，建议单独立项。
-- 长期单列：`DEBT-R09-C2-LEASE-ANCHOR`、孤儿解除与生产释放、Java/Python 允许集差异、IT-DISCOVERY、IT-EVIDENCE-AUDIT、TZ-GMT 显示、`R08PreviewSeedIT`、C 档现场项、历史 keyring。**B4 暂缓**（待真实生产条数＋"外部同时提供新旧锚"运维流程）。**K1 已通过**（附 W-2 边界）。
-- **K1 通过 ≠ 生产就绪**：`admission.enabled`／`effect-gate.enabled`／`cross-process-enabled`／`lease.enabled`／`outbound.handover.commands.enabled`／`outbound.corrections.commands.enabled` **全部默认 false**；未接生产、未部署、未合 main、未操作原库/现网；`localDeletionAllowed=false`。
+## 下一步与保留边界
+1. 收到确认后用 `run-reviewed.ps1 -Scenario Migrations` 建受控非空前置并各跑一次 G4-2/G4-3；2. 确认后 `-Scenario Loss` 首次执行⑤用例；失败即停。3. 优先项通过后按 R06 主线接 A1.2。
+- G1 仍为合成行、结构签名占位与手写会话 JSON；②新增的产品 verifier/有效测试签名不等于真实 Keystore、配对、现场身份或原来源事实。真实竞态/真机重启及 A1.4 FORMAL 未验。
+- 长期单列：R05 原资料/旧 BCD 与 C 档现场；R07 既有未验与政策编码；`DEBT-R09-C2-LEASE-ANCHOR`、孤儿解除/生产释放、Java/Python 允许集差异、IT-DISCOVERY、IT-EVIDENCE-AUDIT、TZ-GMT 显示、`R08PreviewSeedIT`、历史 keyring。B4 暂缓；K1 已通过但保留 W-2 边界。
+- 开关全默认 false；不部署、不接原库现网、不合 main、不打标签/Release；`localDeletionAllowed=false`。不改 R05/R06/R07 已验业务、ConfirmedV1Adapter 或历史迁移；全部失败证据保留。
 <!-- CURRENT_STATE_END -->
