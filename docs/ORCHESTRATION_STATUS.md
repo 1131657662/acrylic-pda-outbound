@@ -35,4 +35,3 @@ server: { contract: 0.37.0, paths: 131, flyway: V51, migrations: 51 }
 ## 下一步
 - A1.1 本批已提交并推送；下一项按路线进入 A1.2 来源事实与候选消费。
 <!-- CURRENT_STATE_END -->
-
