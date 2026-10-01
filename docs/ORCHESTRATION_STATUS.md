@@ -6,31 +6,36 @@
 ```yaml
 date: 2026-10-02
 branch: codex/development
-head: dce5fe7
-dirty_entries: 17
+head: 458a943
+dirty_entries: 18
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
-server: { contract: 0.37.0, paths: 131, flyway: V53, migrations: 53 }
+server: { contract: 0.37.0, paths: 131, flyway: V54, migrations: 54 }
 ```
 <!-- FACTS_END -->
-交接同步修复已验证，按独立范围收口；R06/R07整体未完成，goal active。
+R07实际账务贡献已验证提交推送；单助手继续Web原命令恢复，goal active。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound、codex/development，单助手写入；输入dce5fe7，精确提交/远端见.local/autonomous-20261002/sync-status-closeout/git-final.json。
-- 全部未提交/未跟踪清单与patch见sync-status-closeout/git-before.json/working-tree.patch/untracked-hashes.json；预存PDA文档、更正链IT和旧脚本保持。
-- 826至829认证停机，原datadir/dump/日志及全部历史失败证据保留，删除0。19330/19434释放，无在途重型任务；系统MySQL不动。磁盘精确值见git-final.json，高于20GiB才继续。
-- 826/827仅adb枚举、前后相同，828/829无设备动作，定向设备/AVD0；[旧看板](history/ORCHESTRATION_STATE_before_SYNC_STATUS_2026-10-02.md)已归档。
+- 主树D:/acrylic-pda-outbound、codex/development，产品提交458a9433d5ab2f27c4aaf2c9dae5b8be61834497，远端一致；文档提交自身SHA见Git回执。
+- 单助手写入，旧audit_model无写权；无在途重型任务。resume-audit核对测试写者、19330/19434监听均0；系统MySQL不动。
+- 全部差异/工作树/写者/监听见.local/autonomous-20261002/web-recovery/resume-audit/；保护预存PDA文档、更正链IT、旧历史/PDA文档及tools/r07_p08_run_803.ps1。
+- D盘可用24,965,824,512 bytes；每新任务复核20GiB阈值，证据删除0。
 
-## 验收与下一步
-- [R06分页](history/R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)：单测5项、822真实HTTP55来源跨页无重漏；33533e4已推送。
-- [R07原键](history/R07_FIRST_REPLAY_REPAIR_2026-10-02.md)：823真实MySQL首次并发原字节相等、单份激活及重启回放；824/825冲突与完整性拒绝；dce5fe7已推送。HTTP并发未验。
-- [R07同步](history/R07_HANDOVER_SYNC_STATUS_REPAIR_2026-10-02.md)：新消息补status、历史缺字段读取兼容；826服务层1/0/0/0、827真实HTTP新旧发布/增量/重试1/0/0/0、829既有MockMvc+MySQL5/0/0/0。
-- 最终离线146套件2943项0失败0错误1既有skip，主/test编译通过；源码哈希一致。828脚本URL失败原库与日志保留，5项未进入业务。
-- 下一项账务贡献按实际原扣，随后Web耐久原意图、mapping3+/R1；更正outbox同步字段风险继续查验。
+## 已验与失败
+- P08主键6faf322、R06分页33533e4、R07首次原键dce5fe7、交接同步bfcf471已验证推送；不重复已验工作。
+- 实际账务贡献458a943已推送：无扣不虚构、增重负差、归零逐笔反向；撤回独立恢复引用，沿不可变链找当前代表，拒绝ABA/重复引用/账务冲突。
+- full-11完整离线148套件2956项0失败0错误1既有skip；源码/测试编译及哈希通过。非空账链完全冲销反例先红后绿。
+- 832账务真实HTTP、833非空真实MySQL迁移、834主管更正HTTP、835主管撤回HTTP、836身份撤回、839撤回更正导出各1项通过；原库/dump/日志保全并认证停机。
+- 839包含Web登录及真实XLSX/PDF下载；TEMP确认前置为测试内完整服务组装，更正/撤回/导出走真实HTTP，生产operations仍为空。
+- 830缺renderer、831确认凭据、837审批身份缺pda:login、838隔离HTTP Secure cookie失败均保留；仅修测试夹具。full-2中断、full-3编码、full-5编译失败保留。
+- 证据：accounting-repair/offline-full-11、isolated-suite-832/results.json、closeout/及.local/e2a-cross-20260925-839/result.json。
 
-## 未验与边界
-- TEMP政策/高轮次/跨来源/处置续作、抬头撤销/526、R05原资料/旧BCD、R09限制保持；PDA真实绑定/身份/Keystore、独立JVM/OS死亡、断电/长时、现场与完整UI未验。
-- 用户修订自主授权优先，详见[日报](history/AUTONOMOUS_PROGRESS_2026-10-02.md)；默认开关false、localDeletionAllowed=false。不合main/标签/Release/部署，不接原库/现网，不删.local，磁盘低于20GB停报。
+## 下一步、未验与边界
+- Web原命令持久原键/完整正文，存储失败不POST；核对身份隔离、恢复epoch、未知结果和清理失败，再定向/回归验证提交。
+- 后续更正原键actor、mapping3+/R1及R06/R07余项。
+- HEADER撤回、历史无引用REVERSAL、旧更正outbox、CYCLE_REOPENED未覆盖；TEMP政策/高轮次/跨来源/处置、526、R05原资料/旧BCD、R09恢复限制单列。
+- PDA真实绑定/身份/Keystore、独立JVM/OS死亡、断电/长时、现场与完整UI未验；完整服务端integrationTest尚无可解读全量通过。fixture/MockMvc/服务层/HTTP分别记录。
+- 自主决策见[日报](history/AUTONOMOUS_PROGRESS_2026-10-02.md)；生产默认false、localDeletionAllowed=false。不合main/标签/Release/部署、不接原库/现网、不删.local。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实见生成块；提交自身SHA以本地回执及Git历史核对。
