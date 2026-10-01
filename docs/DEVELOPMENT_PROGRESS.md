@@ -202,3 +202,5 @@
 ## R07 更正查询与原回执恢复（2026-10-01）
 
 - [查询验收](history/R07_CORRECTION_READS_2026-10-01.md)：产品GET上下文/原文/原键响应，810真实Web HTTP与重启恢复、全服务端回归；[账务贡献静态缺口](history/R07_CORRECTION_ACCOUNTING_GAP_2026-10-01.md)独立停报，GET通过不恢复完整账务验收。
+
+- R07 首次同键激活并发：[811失败与停报](history/R07_HANDOVER_FIRST_REPLAY_FAILURE_2026-10-01.md)、[同步消息静态缺口](history/R07_HANDOVER_SYNC_STATUS_GAP_2026-10-01.md)；保留反例，不计交付。

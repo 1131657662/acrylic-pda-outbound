@@ -6,37 +6,37 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: a9e926a
-dirty_entries: 26
+head: c1ef870
+dirty_entries: 18
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V52, migrations: 52 }
 ```
 <!-- FACTS_END -->
-R07 更正查询与原回执恢复闭环通过；R06/R07整体未完成，持续目标active。
+R07首次同键激活并发811失败，产品竞态已实证并停报；R06/R07整体未完成，持续目标active。
 
 ## Git、写权与环境
-- 树D:/acrylic-pda-outbound，codex/development；本批输入/已核远端a9e926ad3b9e5d1c5993a39c55d9d5f3a534284a，附件批次已推送。Codex单写者；本批实际提交/远端回执见.local/autonomous-20261001/correction-reads/commit-review/git-final.json。
-- 新增5份查询/验签主代码和5份测试；旧产品、旧测试、迁移和默认开关未改。八项保护路径/摘要在before/protected.json；完整差异与清单在本批commit-review，保护项未暂存。
-- 810认证停库；dump与292文件ZIP逐项SHA回读后只清本批新datadir。历史attempt/失败/.local证据保留。无在途测试/AVD，19330/19434释放，系统MySQL未动。
-- 真机22D2910042仅枚举且前后相同，定向设备命令/AVD均0；D31797604352→31724699648字节，高于20GiB。
-- [前看板](history/ORCHESTRATION_STATE_before_CORRECTION_READS_2026-10-01.md)已先归档；证据根.local/autonomous-20261001/correction-reads/及.local/e2a-cross-20260925-810/。
+- 树D:/acrylic-pda-outbound，codex/development；本批输入/已核远端c1ef8707bb50ac8477d3bf56033bd5339c6447d6。Codex单助手写入；实际提交/推送见.local/autonomous-20261001/handover-first-race/commit-review/git-final.json。
+- 新增3份受环境门控的失败复现测试及本批文档；既有产品/测试/迁移/开关未改。八项保护路径摘要见本批before/protected.json；完整差异/暂存清单见commit-review。
+- 811认证停库；dump及292文件ZIP逐项SHA回读后仅清本批新datadir，历史失败/.local证据保留。无在途测试/AVD，19330/19434释放；系统MySQL未动。
+- 真机22D2910042只枚举、前后快照一致；定向设备命令/AVD均0。D31724154880→31653187584字节，高于20GiB。
+- [替换前看板](history/ORCHESTRATION_STATE_before_HANDOVER_FIRST_RACE_2026-10-01.md)先归档；证据根.local/autonomous-20261001/handover-first-race/及.local/e2a-cross-20260925-811/。
 
-## 本批实现与实测
-- [查询验收](history/R07_CORRECTION_READS_2026-10-01.md)、[接口](parallel/R07/CORRECTION_READS.md)：GET命令上下文/验签CREATE原文、原请求人按原键取精确回执；身份/仓库/摘要/签名/行绑定核验，坏件失败关闭。只读一致快照，不执行命令/重签，能力位全false，默认路由关闭。
-- 新19单测通过；最终全服务端140套件/2893项/0失败/0错误/1既有skip，主/test编译、脚本parse0；旧断言与冻结守卫未改。
-- 810一次1/0/0/0：21业务HTTP请求（19GET/2POST，200×10/403×4/404×7），GET上下文→CREATE→主管GET原文→APPROVE→原件恢复；上下文重启后重登录取回原字节。4组查询前后15业务表typed全行不变，原来源/原结果保持。
-- 合成身份/来源前置，真实Web HTTP；非PDA/真机/独立JVM/断电。PDA绑定、撤权竞态、真库坏件、全种类GET、前端/完整账务预览等未验或未实现，范围详见验收。
+## 本批实测与发现
+- [811停报](history/R07_HANDOVER_FIRST_REPLAY_FAILURE_2026-10-01.md)：同一原键/正文首次ACTIVATE，两个真实MySQL事务在同一案件行等待；解锁后结果HANDOVER_CONTEXT_CHANGED/OK，1测试/1失败/0错误/0跳过，未重跑/修产品。
+- 失败前确认资格/回执/审计/outbox各仅一次，轮次仅推进一次，非空占用不变；缺陷是后到同键调用未返回原回执，不是已发生重复激活。因失败，本轮后续顺序/重启恢复未执行。
+- 根因：锁前两个replay均未见回执，锁内先Expected.validate拒绝已变化版本，未再次查原键。旧M12是预存回执后的并发重放，807是顺序恢复，均不能覆盖首次投递竞态。
+- 主/test编译、脚本parse0；全服务端离线140套件/2893项/0失败/0错误/1既有skip。811为新增独立IT红测，不将离线绿写成全验证通过。
+- [同步消息缺字段](history/R07_HANDOVER_SYNC_STATUS_GAP_2026-10-01.md)：HANDOVER_ACTIVATED payload缺status而SyncOrderStatus要求它；按源码会阻断消费。仅静态确认，未新跑HTTP/消费反例或修产品。
 
-## 停报与保留边界
-- 新[账务贡献静态缺口](history/R07_CORRECTION_ACCOUNTING_GAP_2026-10-01.md)：Approve无条件以结果差额记账，未按实际原扣贡献决定是否/逐笔反向。仅源码确认、未新跑反例/修算法；依赖它的补扣暂停，库存差异审批调整仍未完成。
-- [806分页](history/R06_MAPPING_HIGH_ROUND_AUDIT_2026-10-01.md)、[P08](history/R07_P08_REVIEW_STOP_2026-10-01.md)、抬头撤销与526专项继续停报；未被本批GET通过覆盖。
-- [A1.1](history/R06_A1_1_CODEX_2026-09-30.md)、[设备非空迁移](history/R06_DRAFT_RECEIPT_MIGRATION_DEVICE_2026-10-01.md)、[交接回滚807](history/R07_HANDOVER_SQL_ROLLBACK_2026-10-01.md)、[附件809](history/R07_CORRECTION_ATTACHMENTS_2026-10-01.md)沿原验收范围复用，不重跑。
-- TEMP REJECT/排除写授权未决、高轮次/跨来源、故障换机/范围恢复、真实现场/原资料/旧BCD/长时留存继续未完成；旧政策页“无主管/outbox/附件”的过时状态按源码和较新记录处理。
+## 保留边界
+- [更正读取810](history/R07_CORRECTION_READS_2026-10-01.md)、[附件809](history/R07_CORRECTION_ATTACHMENTS_2026-10-01.md)、[交接回滚807](history/R07_HANDOVER_SQL_ROLLBACK_2026-10-01.md)、[A1.1](history/R06_A1_1_CODEX_2026-09-30.md)、[设备非空迁移](history/R06_DRAFT_RECEIPT_MIGRATION_DEVICE_2026-10-01.md)沿原验收范围复用，未重跑。
+- [账务贡献](history/R07_CORRECTION_ACCOUNTING_GAP_2026-10-01.md)、[分页806](history/R06_MAPPING_HIGH_ROUND_AUDIT_2026-10-01.md)、[P08](history/R07_P08_REVIEW_STOP_2026-10-01.md)、抬头撤销及526继续停报，不在本批修算法。
+- TEMP REJECT/排除权限未决、高轮次/跨来源、故障换机/恢复、真实HTTP交接/现场身份/Keystore/断电/长时、原资料/旧BCD和R09历史限制继续单列；合成fixture/服务层不代替现场证据。
 
 ## 下一步
-- 继续R06/R07独立闭环：原机可用交接/受控更正的客户端查询、页面和耐久原键恢复；缺陷依赖项单列，明确政策可执行项持续实现验证。不得以只读接口替代完整业务/UI交付。
-- 全开关默认false，localDeletionAllowed=false；不部署、不接原库/现网、不合main、不打标签/Release，不进R08/R09/R10。[本批方案](history/AUTONOMOUS_PLAN_2026-10-01_CORRECTION_READS.md)、[自主报告](history/AUTONOMOUS_PROGRESS_2026-10-01.md)。
+- 继续不依赖上述缺陷的R06/R07闭环；先核对交接客户端上下文/原回执查询缺口，形成有界方案再实现验证。不得以新接口掩盖原命令竞态或消息消费缺陷；811停止，无自动重跑。
+- 全开关默认false，localDeletionAllowed=false；不部署、不接原库/现网、不合main、不打标签/Release，不进R08/R09/R10。[本批方案](history/AUTONOMOUS_PLAN_2026-10-01_HANDOVER_FIRST_RACE.md)、[自主报告](history/AUTONOMOUS_PROGRESS_2026-10-01.md)。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实由脚本生成。

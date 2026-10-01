@@ -221,3 +221,13 @@ R1b 服务层有界范围通过；不扩大到 HTTP/PDA/worker/硬死亡、真�
 - PDA设备绑定实跑/撤权竞态/真库坏件/独立JVM/断电/UI/完整账务预览/全命令类型GET未验；旧分页/P08/抬头缺陷、REJECT/排除权限与高轮次/故障等边界仍在。总体active，不进R08/R09/R10。
 
 证据.local/autonomous-20261001/correction-reads/和.local/e2a-cross-20260925-810/；提交/推送实际SHA见本文件Git历史及本批commit-review/git-final.json。不预写成功，不把GET通过扩大为R07完成。
+
+## 23. R07 首次同键激活并发811失败与独立消息缺口
+
+输入/已核远端c1ef8707bb50ac8477d3bf56033bd5339c6447d6。依[方案](AUTONOMOUS_PLAN_2026-10-01_HANDOVER_FIRST_RACE.md)补旧M12未覆盖的首次投递重叠；新增3份受环境门控测试，产品和既有测试未改。[停报记录](R07_HANDOVER_FIRST_REPLAY_FAILURE_2026-10-01.md)给出完整边界。
+
+- 811一次1/1/0/0：MySQL锁表证明两个事务等待同一案件行；相同原键/正文得到HANDOVER_CONTEXT_CHANGED和OK。仅一份资格/回执/审计/outbox，轮次一次、保留占用不变；真实缺陷是锁内版本校验先于原键复查。未自动重跑、未修产品，后续本轮顺序/重启检查未执行。
+- 完整离线140套件/2893项/0失败/0错误/1既有skip，编译与脚本解析通过。离线绿不覆盖独立IT红；旧M12预存回执/807恢复不冒充首次并发通过。
+- 独立[同步缺字段](R07_HANDOVER_SYNC_STATUS_GAP_2026-10-01.md)：HANDOVER_ACTIVATED缺status，消费者要求它，只有静态确认。遵目标停该依赖子项后才选独立并发验证，未修改消息或消费者。
+- D31724154880→31653187584字节；811认证停库，dump与292文件ZIP逐项摘要一致后仅清新datadir，失败证据保留。真机仅枚举且前后一致，定向设备命令/AVD0；八项保护及全部server主代码/资源摘要不变。
+- 本批为失败复现阶段备份，非功能完成。整体goal active；后续继续独立交接查询/客户端消费必要能力，先核源码和方案，不修既有缺陷、不重跑811，不进入R08/R09/R10。实际提交/推送见.local/autonomous-20261001/handover-first-race/commit-review/git-final.json。
