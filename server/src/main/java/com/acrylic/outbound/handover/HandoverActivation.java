@@ -177,6 +177,7 @@ public class HandoverActivation {
             store.insertOutbox(order,epoch,entityVersion,"HANDOVER_ACTIVATED",
                 SubmissionJson.canonical(SubmissionJson.object().put("caseId",write.caseId().toString())
                     .put("orderId",order.toString()).put("workRound",facts.path("toWorkRound").asText())
+                    .put("status","ASSIGNED")
                     .put("assignmentId",activated.assignmentId().toString())
                     .put("assignmentEpoch",Long.toString(activated.epoch()))
                     .put("targetDeviceId",device.toString()).put("targetUserId",user.toString())

@@ -1,4 +1,4 @@
-# Project current state
+# 协作断点看板
 
 <!-- CURRENT_STATE_START -->
 <!-- FACTS_START -->
@@ -6,26 +6,27 @@
 ```yaml
 date: 2026-10-02
 branch: codex/development
-head: 33533e4
-dirty_entries: 13
+head: dce5fe7
+dirty_entries: 17
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V53, migrations: 53 }
 ```
 <!-- FACTS_END -->
-分页已推送；交接首次同键修复与拒绝回归已验证，按独立范围收口。R06/R07整体未完成，goal active。
+交接同步修复已验证，按独立范围收口；R06/R07整体未完成，goal active。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound、codex/development，单助手写入；输入33533e4，精确提交/远端见.local/autonomous-20261002/handover-closeout/git-final.json。
-- 全部未提交/未跟踪清单与patch见handover-closeout/git-before.json/working-tree.patch；预存PDA文档、更正链IT和旧脚本保持。
-- 823至825认证停机，原datadir/dump/日志及全部历史失败证据保留，删除0。19330/19434释放，无在途重型任务；系统MySQL不动。磁盘精确值见git-final.json，高于20GiB才继续。
-- 仅adb枚举，前后相同，定向设备/AVD0；[旧看板](history/ORCHESTRATION_STATE_before_HANDOVER_REPLAY_2026-10-02.md)已归档。
+- 主树D:/acrylic-pda-outbound、codex/development，单助手写入；输入dce5fe7，精确提交/远端见.local/autonomous-20261002/sync-status-closeout/git-final.json。
+- 全部未提交/未跟踪清单与patch见sync-status-closeout/git-before.json/working-tree.patch/untracked-hashes.json；预存PDA文档、更正链IT和旧脚本保持。
+- 826至829认证停机，原datadir/dump/日志及全部历史失败证据保留，删除0。19330/19434释放，无在途重型任务；系统MySQL不动。磁盘精确值见git-final.json，高于20GiB才继续。
+- 826/827仅adb枚举、前后相同，828/829无设备动作，定向设备/AVD0；[旧看板](history/ORCHESTRATION_STATE_before_SYNC_STATUS_2026-10-02.md)已归档。
 
 ## 验收与下一步
-- [R06分页修复](history/R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)：单测5项，822真实HTTP55来源跨页无重漏，边界/身份反例与全表不变；33533e4已推送。
-- [R07原键修复](history/R07_FIRST_REPLAY_REPAIR_2026-10-02.md)：823两个真实MySQL事务同时等待同一case行后均OK、原字节相等、单份激活及重启回放通过；824异文冲突/原键恢复，825过期及损坏回执拒绝，分别1/0/0/0。服务层，HTTP并发未验。
-- 离线145套件2931项0失败0错误1既有skip，主/test编译通过；源码哈希与此次修复一致。组合回归不代替独立消费者或现场。
-- 下一项同步payload补订单status并验证真实发布/读取；随后账务贡献、Web耐久原意图、mapping3+/R1。
+- [R06分页](history/R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)：单测5项、822真实HTTP55来源跨页无重漏；33533e4已推送。
+- [R07原键](history/R07_FIRST_REPLAY_REPAIR_2026-10-02.md)：823真实MySQL首次并发原字节相等、单份激活及重启回放；824/825冲突与完整性拒绝；dce5fe7已推送。HTTP并发未验。
+- [R07同步](history/R07_HANDOVER_SYNC_STATUS_REPAIR_2026-10-02.md)：新消息补status、历史缺字段读取兼容；826服务层1/0/0/0、827真实HTTP新旧发布/增量/重试1/0/0/0、829既有MockMvc+MySQL5/0/0/0。
+- 最终离线146套件2943项0失败0错误1既有skip，主/test编译通过；源码哈希一致。828脚本URL失败原库与日志保留，5项未进入业务。
+- 下一项账务贡献按实际原扣，随后Web耐久原意图、mapping3+/R1；更正outbox同步字段风险继续查验。
 
 ## 未验与边界
 - TEMP政策/高轮次/跨来源/处置续作、抬头撤销/526、R05原资料/旧BCD、R09限制保持；PDA真实绑定/身份/Keystore、独立JVM/OS死亡、断电/长时、现场与完整UI未验。

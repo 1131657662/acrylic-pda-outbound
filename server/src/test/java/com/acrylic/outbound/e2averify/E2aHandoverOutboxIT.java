@@ -131,11 +131,13 @@ class E2aHandoverOutboxIT {
         var row = jdbc.queryForMap("SELECT event_type,entity_version,published_seq,recovery_epoch,"
             + "JSON_UNQUOTE(JSON_EXTRACT(payload,'$.caseId')) case_id,"
             + "JSON_UNQUOTE(JSON_EXTRACT(payload,'$.workRound')) work_round,"
+            + "JSON_UNQUOTE(JSON_EXTRACT(payload,'$.status')) payload_status,"
             + "JSON_UNQUOTE(JSON_EXTRACT(payload,'$.targetDeviceId')) target_device "
             + "FROM order_sync_outbox WHERE order_id=? ORDER BY entity_version DESC LIMIT 1",Ids.bytes(order));
         notes.append("outbox -> event=").append(row.get("event_type")).append(" version=").append(row.get("entity_version"))
             .append(" published_seq=").append(row.get("published_seq")).append(" case=").append(row.get("case_id")).append('\n');
         assertThat(row.get("event_type")).as("event type").isEqualTo("HANDOVER_ACTIVATED");
+        assertThat(row.get("payload_status")).as("payload carries the order status for sync consumers").isEqualTo("ASSIGNED");
         assertThat(row.get("published_seq")).as("a fresh notification is still pending (recoverable)").isNull();
         assertThat(row.get("case_id")).as("payload carries the case").isEqualTo(caseId.toString());
         assertThat(String.valueOf(row.get("work_round"))).as("payload carries the new work round").isEqualTo("2");
