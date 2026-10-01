@@ -6,38 +6,38 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: 787f494
-dirty_entries: 16
+head: fffb364
+dirty_entries: 31
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
-server: { contract: 0.37.0, paths: 131, flyway: V51, migrations: 51 }
+server: { contract: 0.37.0, paths: 131, flyway: V52, migrations: 52 }
 ```
 <!-- FACTS_END -->
-R06 nonempty request/receipt device migration assertions and independent host SQLite audit passed. The successful assertion round's wrapper retains FAILED for an emulator exit race; subsequent read-only teardown verification passed. Overall R06/R07 remains incomplete.
+R07 受控更正附件服务闭环通过；R06/R07整体未完成，持续目标active。
 
-## Git, writer, and environment
-- Tree `D:/acrylic-pda-outbound`, branch `codex/development`, input HEAD/verified remote `787f494adf453aee53bd82e0c82859f4a776ee94`; sole writer Codex. This batch adds three androidTest files plus docs; actual resulting commit/remote goes in `.local/autonomous-20261001/draft-receipt-migration/commit-review/git-final.json`.
-- Seven pre-existing changes remain protected/unstaged. Complete paths and unchanged SHA-256 are in this batch's `before/protected.json` and `closeout/protected.json`; includes both PDA docs and E2aCorrectionChainIT.
-- No active AVD or test executor after closeout; system mysqld untouched. Device commands target emulator-5554 with ANDROID_SERIAL only. Real device 22D2910042 received no targeted command; before/after enumeration identical.
-- D free bytes `32024870912 → 31944601600`, above 20 GiB. No MySQL attempt/datadir cleanup. All old/new .local evidence remains.
-- Old board conclusions are [archived verbatim](history/ORCHESTRATION_STATE_before_RECEIPT_MIGRATION_2026-10-01.md); full changes/inputs/environment in this batch's before/offline-4/closeout.
+## Git、写权与环境
+- 树 D:/acrylic-pda-outbound，codex/development；输入HEAD/已核远端 fffb3643002b2f343a89b1a1144b6e6a56ceb42c；Codex单写者。实际提交/远端回执在 .local/autonomous-20261001/correction-attachments/commit-review/git-final.json。
+- 本批新增附件字节/上传/消费/路由/引用、新迁移与测试；只修改既有装配文件。完整差异与七项保护路径见本批review/all-changes.txt、before/protected.json及closeout-809/protected.json；七项未暂存、摘要不变。
+- 808/809已认证停库；各292文件ZIP逐项SHA回读与dump保全后只清新datadir。历史attempt、失败日志/.local原证据不删；系统MySQL未动，19330/19434空闲，无在途测试/AVD。
+- 真机22D2910042仅设备枚举、前后一致，定向设备命令/AVD均0。D总可用31943995392→31798108160字节，均高于20GiB。
+- [旧看板归档](history/ORCHESTRATION_STATE_before_CORRECTION_ATTACHMENTS_2026-10-01.md)在本次替换前保存；证据根 .local/autonomous-20261001/correction-attachments/。
 
-## Actual validation
-- [Device migration acceptance](history/R06_DRAFT_RECEIPT_MIGRATION_DEVICE_2026-10-01.md): receipt-migration-3 before/after methods each OK(1 test), numtests=1; one separate setup. Two UUID databases each 11 requests, 1/11 verified receipts. PID 2863→3483, Room runs production Migration; 51 existing business tables keep all typed rows, FK clean, new binding table empty.
-- Host sqlite3 independently checks four captured database files: integrity/FK, original keys, nonempty receipt BLOB/public key, counts and full rows unchanged. Product checked validates preserved receipts; paused queue stays paused, signing/transport calls 0.
-- APK compile and PowerShell parseErrors=0. Related existing migration/queue/identity tests 16/0/0/0 in offline-2; later compile-only fixture corrections explicitly reuse those unchanged product/unit results. No full Android/lint/server regression claim.
-- Failures retained: offline RoomDatabase.use compile error; device-1 unsupported readiness command, zero tests; device-2 bad SyncRun fixture parameter, 1/1; device-3 wrapper FAILED because emulator exit had not settled. Post-teardown supplemental evidence confirms no AVD, same phone enumeration and host audit PASS; no assertion rerun.
-- Product-created rows with synthetic authority/session/signers/peer. Predecessor structure is a controlled downgrade fixture, not an old APK installation. No real HTTP/PDA identity/Keystore/reboot/power-loss claim.
+## 实现与实测
+- [附件验收](history/R07_CORRECTION_ATTACHMENTS_2026-10-01.md)：数据库原字节/元数据/上传审计同事务；上传幂等，归属/仓库隔离；CREATE重读实际大小/SHA并原子绑定引用；主管只能读已绑定原件。两开关同时显式启用，默认关闭；[接口说明](parallel/R07/CORRECTION_ATTACHMENTS.md)。
+- 定向新17+既有2项通过；全服务端138套件/2874项/0失败/0错误/1既有skip，编译和脚本解析通过。fixture角色修正后仅重编译；产品/单测摘要不变，复用全量证据不冒称再次运行。
+- 808为新增fixture缺权限：403未进入预期归属404，1/1/0/0；保留失败。修正为既定WAREHOUSE_ADMIN及权限断言后，新809一次1/0/0/0。
+- 809实际31次业务HTTP请求：上传上限/坏件/原键、跨人跨仓、主管草稿拒绝、CREATE反例/写后回滚/原键恢复、合法消费及重启原件读回。迁移124旧表typed全行不变（63非空），6条SQL反例逐条精确SQLSTATE/消息，新两表反例前后不变。
+- 合成业务/身份、loopback Web HTTP；非PDA Bearer、真机/Keystore、独立JVM/断电或现场证据。未改历史迁移、已验账务算法/adapter、生产默认值；旧附件元数据模式不追补真实字节保证。
 
-## Retained evidence and stopped items
-- Original approved G1 repeat/②/G4 repeat/⑤ scope stays in [A1.1](history/R06_A1_1_CODEX_2026-09-30.md); those rounds were not rerun. Their empty request/receipt limitation is supplemented only by the new acceptance.
-- [807 handover rollback](history/R07_HANDOVER_SQL_ROLLBACK_2026-10-01.md) remains service-layer 1/0/0/0; full server 2857 tests has its original input/scope, not rerun here.
-- [806 pagination](history/R06_MAPPING_HIGH_ROUND_AUDIT_2026-10-01.md) remains stopped 1/1: 55 sources/50 returned/no cursor. [R07-P08](history/R07_P08_REVIEW_STOP_2026-10-01.md) acceptance remains withdrawn for identity protection/trigger attribution/nonempty-upgrade gaps. Neither product defect was fixed or rerun.
-- Mapping arithmetic does not establish repeat LINK; TEMP high rounds/cross-source continuation incomplete. Candidate exclusion/TEMP REJECT permissions remain undecided. Prior header-withdrawal, lock and field/old-material boundaries stay open.
+## 保留边界与停报
+- [A1.1既定收口](history/R06_A1_1_CODEX_2026-09-30.md)、[设备非空请求/回执增量](history/R06_DRAFT_RECEIPT_MIGRATION_DEVICE_2026-10-01.md)、[807交接回滚](history/R07_HANDOVER_SQL_ROLLBACK_2026-10-01.md)沿原输入范围复用，未重跑。
+- [806来源分页](history/R06_MAPPING_HIGH_ROUND_AUDIT_2026-10-01.md)55来源/50返回无游标缺陷、[P08验收撤回](history/R07_P08_REVIEW_STOP_2026-10-01.md)身份保护/归因/非空升级缺口仍停报，未修未重跑。
+- TEMP REJECT/候选排除写授权未决；高轮次/跨来源续作、抬头撤销、锁专项及原资料/旧BCD/现场边界继续保留。新附件通过不恢复P08整体验收。
+- 附件前端/抬头/交接故障、PDA Bearer、跨实例配额、权限撤销竞态、精确5件/50MiB成功组合、长时留存未验或未实现；不把元数据/上传当实物审核。
 
-## Next step and boundaries
-- Continue independent R06/R07 work with definite policy; real attachment storage/consumption, inventory discrepancy approval/adjustment, fault replacement and TEMP high rounds/cross-source audit remain open. Do not repeat closed device batches or drift into R08/R09/R10.
-- Default flags false; localDeletionAllowed=false. No deployment, original/live DB, main merge, tag or release. Existing verified business/adapter/history migrations unchanged; all failures retained.
+## 下一步
+- 继续明确政策下的R06/R07独立工作：完整处置/续作证据链、库存差异审批调整、原机不可用交接等按真实依赖拆分；不重复关闭批次，不进R08/R09/R10。
+- 开关全默认false，localDeletionAllowed=false；不部署、不接原库/现网、不合main、不打标签/Release；总体未完成。[自主报告](history/AUTONOMOUS_PROGRESS_2026-10-01.md)与[本批方案](history/AUTONOMOUS_PLAN_2026-10-01_CORRECTION_ATTACHMENTS.md)。
 <!-- CURRENT_STATE_END -->
 
-> Long-lived rules are in AGENTS.md; code-derived version facts are generated above.
+> 长期规则见AGENTS.md；版本事实由脚本生成。

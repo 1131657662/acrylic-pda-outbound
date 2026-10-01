@@ -196,3 +196,16 @@ R1b 服务层有界范围通过；不扩大到 HTTP/PDA/worker/硬死亡、真�
 - A1.1旧G4本身的空请求/回执事实不改写，本增量补其设备非空字节证据。A1.2/A1.3、R06分页/R07-P08停报缺陷、TEMP高轮次/跨来源、附件与差异审批等仍未完成；goal保持active，不进入R08/R09/R10。
 
 证据根 `.local/autonomous-20261001/draft-receipt-migration/`，实际提交/推送见 commit-review/git-final.json。此前9f843fa/787f494保持原范围，不称本轮重跑。
+
+## 21. R07 受控更正附件字节闭环（2026-10-01）
+
+输入/已核远端 fffb3643002b2f343a89b1a1144b6e6a56ceb42c。依据P-R07-09与接口提案“受控上传、权限核验及hash”，完成[方案](AUTONOMOUS_PLAN_2026-10-01_CORRECTION_ATTACHMENTS.md)所列服务闭环；[验收](R07_CORRECTION_ATTACHMENTS_2026-10-01.md)、[接口](../parallel/R07/CORRECTION_ATTACHMENTS.md)。
+
+- 新增BLOB原件/不可变引用迁移、上传/读取/CREATE消费；只调整既有命令装配，默认双开关关闭。实际字节核验/同人同仓/10MiB文件/50MiB命令/每行5件；原键重放及失败回滚。旧元数据模式不追补真实附件保证。
+- 新17项+既有装配2项通过；全服务端138套件/2874项/0失败/0错误/1既有skip。808因新fixture OPERATOR缺权限返回403而失败；修为既定WAREHOUSE_ADMIN并断言权限，产品/单测不变、离线再编译后809为1/0/0/0。
+- 809实际31次更正/附件HTTP请求，含正反例与故障注入500；124旧表typed全行迁移保持（63非空）；引用写入故障后8表回到原状、同键成功；上下文重启读回原字节，6条精确SQLSTATE/消息反例。没有改既有断言/白名单刷绿。
+- 两库认证停机，dump与各292文件ZIP逐项摘要回读通过后才清理本批新datadir。808失败源/日志均保留；D总31943995392→31798108160字节，真机枚举相同、目标设备命令/AVD为0、七项保护和旧迁移摘要不变。
+- 接续初期曾误改旧A1.1收口文档；错误草稿在resume-v2保留，已恢复输入原文，未重跑旧device。该过程和编码/转义失败不算业务进展。实际附件实现通过后才登记本节。
+- 同一作者/自审/执行；未做PDA Bearer/前端/抬头附件/故障附件/真实内容审核/跨实例配额/断电/长时留存。精确5件/50MiB成功组合与撤权竞态未单独专项；P08和分页缺陷、REJECT/排除权限未决继续单列。R06/R07整体goal active，不进R08/R09/R10。
+
+证据 .local/autonomous-20261001/correction-attachments/、.local/e2a-cross-20260925-808/、809/；实际提交推送见commit-review/git-final.json。本批不开生产、localDeletionAllowed=false、不合main、不部署或打标签。
