@@ -6,35 +6,37 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: 9fe52fd
-dirty_entries: 13
+head: 2068b69
+dirty_entries: 20
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V51, migrations: 51 }
 ```
 <!-- FACTS_END -->
-R06 A1.1 approved device scope remains closed. R06-BIND-PAGE attempt 806 failed; R07-P08-A acceptance remains stopped after review.
+R1b-SQL handover write-after-insert rollback and original-key recovery passed in isolated attempt 807. R06 A1.1 remains closed for its approved device scope; R06-BIND-PAGE and R07-P08 defects remain stopped.
 
 ## Git, writer, and environment
-- Tree `D:/acrylic-pda-outbound`, branch `codex/development`, input HEAD/verified remote `9fe52fdc4c932b38e0f382805a7ecac5a500031b`; Codex is sole active writer. This batch stages only six documentation paths; exact status/paths/hashes are in `.local/autonomous-20261001/r06-bindings-page/commit-review/`.
-- Seven pre-existing changes stay protected and unstaged; complete paths/hashes are in `r06-bindings-page/before/protected.json` and `after/protected.json`. Both PDA documents and all seven hashes match.
-- 806 MySQL was identity-checked and stopped; Spring exited. Ports 19330/19434 clear, no AVD/targeted device commands. Only idle Gradle daemon remains; system MySQL/3306/33060 untouched.
-- SDK adb before/after enumeration is identical: `22D2910042 device product:m71 model:m71 device:m71 transport_id:1`. Snapshots: `.local/autonomous-20261001/r06-bindings-page/{before,after}/`.
-- Total D free bytes `32110628864 → 32095174656`; attempt `32110567424 → 31894368256`; archive cleanup `31894269952 → 32095174656`, above 20 GiB. Dump and 290-file verified ZIP retained; only this new datadir cleaned.
+- Tree `D:/acrylic-pda-outbound`, branch `codex/development`, input HEAD/verified remote `2068b6952fb7677b8bd8ad610975ba6b82221f80`; sole writer Codex. Seven new test files plus six docs are this batch. Exact changes/hashes: `.local/autonomous-20261001/handover-sql-rollback/commit-review/`.
+- Seven pre-existing changes stay protected/unstaged; full paths and unchanged hashes are in `handover-sql-rollback/before/protected.json` and `closeout/protected.json`, including both PDA documents.
+- 807 MySQL authenticated-stopped, Spring contexts closed, 19330/19434 clear; system MySQL/3306/33060 untouched. No AVD or targeted device command. SDK adb before/after identical: `22D2910042 device product:m71 model:m71 device:m71 transport_id:1`.
+- D total free bytes `32094982144 → 32025157632`, attempt `32039673856 → 31824330752`, above 20 GiB. Dump/290-file verified ZIP retained, only this new datadir cleaned; old attempts unchanged.
+- Before replacing this board its exact contents were [archived](history/ORCHESTRATION_STATE_before_HANDOVER_SQL_ROLLBACK_2026-10-01.md).
 
-## Evidence and limitations
-- Approved G1 repeat, bad-input, G4-2/G4-3 repeat and lost-receipt results remain in [A1.1 record](history/R06_A1_1_CODEX_2026-09-30.md); no device rerun this batch.
-- 806 seeded 55 own sources in a new isolated database. Real synthetic PDA bearer GET returned 50 rows, `hasMore=false`, `nextCursor=null`; 1 test / 1 failure / 0 errors / 0 skipped. No rerun/product edit. `page-0.json` contains response data only, not raw HTTP envelope/headers.
-- Root cause: `TemporarySourceBindingQueries.mine` pre-truncates limit+1 before `Page.from`. Evidence `.local/e2a-cross-20260925-806/`; [audit](history/R06_MAPPING_HIGH_ROUND_AUDIT_2026-10-01.md) includes hashes and scope. Failed source retained outside active tests.
-- Offline testClasses/PS parsing passed; the planned frozen Primary whitelist tests were not run. No full regression this batch; closeout checks docs/links/facts/staging only.
-- Mapping version arithmetic does not establish repeat LINK: original canonical must be PDA_TEMP/REVIEW_REQUIRED and becomes WEB. Only once-linked mapping2 is verified; TEMP confirmation/accounting requires round 1; formal handover/continuation cannot establish TEMP support.
-- [P08 stop](history/R07_P08_REVIEW_STOP_2026-10-01.md): identity protection, trigger attribution and pre-migration nonempty preservation remain open. Prior test execution is retained without restoring withdrawn acceptance.
-- Old board was recovered exactly from input commit after the missed pre-overwrite archive; [archive](history/ORCHESTRATION_STATE_before_BINDING_PAGE_2026-10-01.md) is historical, its old next-step wording is superseded.
+## Actual validation
+- [807 service-layer acceptance](history/R07_HANDOVER_SQL_ROLLBACK_2026-10-01.md): 1 test / 0 failures / 0 errors / 0 skipped, 14.610s. AFTER INSERT trigger verifies activation/assignments/rounds/outbox/receipt/nonempty reservation before exact SQLSTATE 45000 / 1644 / dedicated signal. Sixteen typed table snapshots revert exactly; original command recovers, repeats and replays after application-context restart with identical bytes/no extra rows.
+- Full server compile/unit run: 135 suites / 2857 tests / 0 failures / 0 errors / 1 existing skip; includes snapshot 10/10 and frozen Primary whitelist 3/3. Scripts parseErrors=0. No product, historical migration, default flag or whitelist change.
+- Evidence `.local/e2a-cross-20260925-807/`, `.local/autonomous-20261001/handover-sql-rollback/{before,offline,closeout}/`; source hashes pinned before execution. Older 793/794/Primary failures retained; 807 ran once.
+- Synthetic FORMAL source/identity/stop evidence only. HTTP/PDA/worker/hard death/actual inventory not verified; context restart is not database restart. This resolves the bounded R1b service atomicity gap, not all R07.
+
+## Other evidence and stops
+- Approved G1 repeat, bad-input, G4 repeat and lost-receipt scope remains in [A1.1](history/R06_A1_1_CODEX_2026-09-30.md); no device rerun.
+- [806 pagination](history/R06_MAPPING_HIGH_ROUND_AUDIT_2026-10-01.md) remains 1/1/0/0: 55 sources, 50 returned, null continuation. Pre-truncation before Page.from is still unfixed; no rerun. Response data JSON/dump/ZIP and failed source retained.
+- [P08 stop](history/R07_P08_REVIEW_STOP_2026-10-01.md): missing identity protection, trigger attribution, pre-migration nonempty preservation remain unresolved; withdrawn acceptance not restored.
+- Mapping arithmetic does not establish repeat LINK; original canonical must be PDA_TEMP/REVIEW_REQUIRED and becomes WEB. Mapping3+, TEMP high-round and cross-source continuation still incomplete; formal paths cannot substitute.
 
 ## Next step and boundaries
-- Skip stopped pagination/P08 defects and continue independent R06/R07 implementation and validation under the autonomous goal; do not reduce the whole goal to read-only work.
-- Mapping3+, TEMP high-round/cross-source continuation, write-after-rollback evidence, fault replacement, real attachments, inventory approval/adjustment and field/Keystore conditions remain incomplete. Candidate exclusion/TEMP REJECT authorization stays undecided.
-- Default flags false; `localDeletionAllowed=false`; no deployment, original/live database, main merge, tag or release. Existing verified business/adapter/history migrations unchanged; failures retained.
+- Continue independent R06/R07 implementation/validation; skip stopped pagination/P08 defects. Real attachment storage, fault replacement, inventory discrepancy approval/adjustment, TEMP high rounds/cross-source audit and field/Keystore boundaries remain open. Candidate exclusion/TEMP REJECT permissions remain undecided.
+- Default flags false; `localDeletionAllowed=false`; no deployment, original/live DB, main merge, tag or release. Existing verified business/adapter/history migrations unchanged; failures retained.
 <!-- CURRENT_STATE_END -->
 
 > Long-lived rules are in AGENTS.md; code-derived version facts are generated above.

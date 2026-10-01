@@ -174,3 +174,13 @@ The earlier A2.1 wording about missing SUPERVISOR mapping was corrected: V50 est
 806 dump 与 ZIP 保留，290 文件逐项回读摘要相同后清理本轮新 datadir；历史 attempt 不动。总 D 可用 32110628864 → 32095174656 字节，真机 22D2910042 前后枚举一致，AVD/目标设备命令均 0，七项保护摘要一致。证据 `.local/e2a-cross-20260925-806/`、`.local/autonomous-20261001/r06-bindings-page/{before,after,archive-closeout}/`。旧看板漏先归档已从输入提交精确恢复并明示顺序偏差。
 
 自主目标保持 active：跳过分页和 P08 缺陷，继续独立 R06/R07 实现与验证，不限为只读；mapping3+、TEMP 高轮次、跨来源续作与其他缺口继续未完成。提交实际 SHA 从本文件 Git 历史及本轮本地提交回执核对，不手填未发生的 SHA。
+
+## 19. R1b-SQL 交接实际写后回滚与原键恢复（2026-10-01）
+
+本批从已推送 `2068b6952fb7677b8bd8ad610975ba6b82221f80` 接续。自主决定使用新隔离库 AFTER INSERT 故障触发器：不恢复失败 Primary 注入、不放宽白名单。依据 A2.3 同事务/可恢复与 A1.3 原请求/占用一致性完成标准；[方案](AUTONOMOUS_PLAN_2026-10-01_HANDOVER_SQL_ROLLBACK.md)、[验收](R07_HANDOVER_SQL_ROLLBACK_2026-10-01.md)。
+
+807 一次实跑 **1/0/0/0，14.610s**：激活状态、资格切换、轮次、outbox、回执和占用验证后 SIGNAL；精确 SQLSTATE/错误码/消息识别，16 表 typed 快照回到写前；同一原键恢复及上下文重启重放均字节相等、无重复写，非空占用不变。完整服务端 **135 suites/2857 tests/0 failures/0 errors/1 既有 skip**，内含快照 10/10、冻结守卫 3/3；编译/脚本解析通过。新增七份测试，无产品或迁移修改。
+
+证据 `.local/e2a-cross-20260925-807/`、`.local/autonomous-20261001/handover-sql-rollback/`。新库认证停机、完整 dump/ZIP 保全，290 文件逐项回读通过后只清新 datadir；总 D 可用 32094982144 → 32025157632 字节，真机/七项保护摘要前后一致，AVD/目标设备命令均 0。旧失败轮保留。
+
+R1b 服务层有界范围通过；不扩大到 HTTP/PDA/worker/硬死亡、真实身份/停止证明、TEMP 或更正/库存调整回滚。分页和 P08 缺陷继续跳过，整体 goal active。提交实际 SHA 由本文件 Git 历史和本地 `commit-review/commit-receipt.json` 核对。
