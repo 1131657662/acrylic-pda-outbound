@@ -15,12 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.*;
 import org.springframework.transaction.support.*;
 
-/**
- * Outer commit boundary for the handover chain, mirroring the R06 command service: an original-key replay happens
- * before any work, the write path is a single transaction, and a duplicate-key collision is resolved by reading
- * the stored original bytes instead of executing twice. The command surface is assembled only when
- * {@code outbound.handover.commands.enabled=true}.
- */
+/** Owns the outer commit boundary; replays the original receipt before work and after its serialising row lock. */
 @Service
 public class HandoverCommandService {
     private final HandoverCommand.Identity identities;private final HandoverCommand.Locks locks;
@@ -61,25 +56,21 @@ public class HandoverCommandService {
         if (row==null) return null;
         byte[] stored=(byte[])row.get("canonical_command_bytes");
         if (!Arrays.equals(stored,input.bytes())) throw HandoverCommand.conflict();
-        // A retry may only receive a receipt that can still be re-proved: the stored response must be the object the
-        // row's digests and identifiers describe, and its signature must verify. Anything else is an integrity
-        // failure (HANDOVER_RECEIPT_INTEGRITY_FAILURE), not a replay of a trusted answer.
+        // A retry may only receive a receipt whose stored bytes, identifiers, digests and signature still verify.
         codec.verify(row);
         return (byte[])row.get("response_bytes");
     }
 
     private byte[] executeOnce(HandoverCommand.Input input,HandoverCommand.Actor actor,HandoverCommand.Operation operation,String requestId) {
         state.requireWritable(input.text("transportRecoveryEpoch"));
-        JsonNode anchor;UUID caseId;
-        if (input.kind().equals("REQUEST")) {
-            UUID scope=input.uuid("scopeId");locks.scope(scope);anchor=store.scopeFacts(scope);caseId=Ids.next();
-        } else {
-            caseId=input.uuid("caseId");locks.kase(caseId);anchor=store.caseFacts(caseId);
-        }
+        boolean request=input.kind().equals("REQUEST");
+        UUID caseId=request?Ids.next():input.uuid("caseId");
+        if (request) locks.scope(input.uuid("scopeId"));else locks.kase(caseId);
+        byte[] committed=replay(input);if (committed!=null) return committed;
+        JsonNode anchor=request?store.scopeFacts(input.uuid("scopeId")):store.caseFacts(caseId);
         if (!anchor.path("warehouseId").asText().equals(actor.warehouse().toString())) throw HandoverCommand.missing();
-        var current=input.kind().equals("REQUEST")
-            ? HandoverCommand.Expected.forRequest(anchor,Long.parseLong(actor.authVersion()))
-            : HandoverCommand.Expected.forCase(anchor,Long.parseLong(actor.authVersion()));
+        var current=request?HandoverCommand.Expected.forRequest(anchor,Long.parseLong(actor.authVersion()))
+            :HandoverCommand.Expected.forCase(anchor,Long.parseLong(actor.authVersion()));
         HandoverCommand.Expected.validate(input.expected(),current);
         if (operation.requiresApproval() && !actor.mayApprove()) throw HandoverCommand.denied();
         var write=new HandoverCommand.Write(Ids.next(),Ids.next(),Ids.next(),caseId,

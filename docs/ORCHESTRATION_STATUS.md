@@ -6,25 +6,26 @@
 ```yaml
 date: 2026-10-02
 branch: codex/development
-head: 6faf322
-dirty_entries: 17
+head: 33533e4
+dirty_entries: 13
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V53, migrations: 53 }
 ```
 <!-- FACTS_END -->
-R06来源分页已验证，按范围收口；R07首次同键产品修复与823实测通过待独立提交。R06/R07整体未完成，goal active。
+分页已推送；交接首次同键修复与拒绝回归已验证，按独立范围收口。R06/R07整体未完成，goal active。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound、codex/development，单助手写入；本批输入6faf322，实际提交/远端见.local/autonomous-20261002/bindings-closeout/git-final.json。
-- 全部未提交/未跟踪清单与patch在bindings-closeout/git-before.json/working-tree.patch；预存PDA文档、更正链IT及旧脚本保持，未混入分页提交。
-- 820/821失败、822/823原库、dump/日志均保留，删除0；测试端口19330/19434释放，无在途重型任务，系统MySQL不动。D收口前高于20GiB，精确值见git-final.json。
-- 仅adb枚举、前后相同，定向设备/AVD0；[旧看板](history/ORCHESTRATION_STATE_before_BINDINGS_REPAIR_2026-10-02.md)先归档。
+- 主树D:/acrylic-pda-outbound、codex/development，单助手写入；输入33533e4，精确提交/远端见.local/autonomous-20261002/handover-closeout/git-final.json。
+- 全部未提交/未跟踪清单与patch见handover-closeout/git-before.json/working-tree.patch；预存PDA文档、更正链IT和旧脚本保持。
+- 823至825认证停机，原datadir/dump/日志及全部历史失败证据保留，删除0。19330/19434释放，无在途重型任务；系统MySQL不动。磁盘精确值见git-final.json，高于20GiB才继续。
+- 仅adb枚举，前后相同，定向设备/AVD0；[旧看板](history/ORCHESTRATION_STATE_before_HANDOVER_REPLAY_2026-10-02.md)已归档。
 
 ## 验收与下一步
-- [R06分页修复](history/R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)：完整limit+1交Page.from，单测5项；822真实HTTP55来源跨页无重漏、边界/身份反例及全表不变，1/0/0/0。
-- 组合离线145套件2931项0失败0错误1既有skip、主/test编译通过；包括尚未独立提交的交接修复，不将组合绿冒充现场或独立消费者。
-- 823真实MySQL两事务等待同一case行后均OK、原回执字节相同、单份激活/审计/outbox/回执及重启恢复通过；这是服务层，HTTP未验。先补拒绝回归并独立提交，再处理status、账务贡献、Web原意图、mapping3+/R1。
+- [R06分页修复](history/R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)：单测5项，822真实HTTP55来源跨页无重漏，边界/身份反例与全表不变；33533e4已推送。
+- [R07原键修复](history/R07_FIRST_REPLAY_REPAIR_2026-10-02.md)：823两个真实MySQL事务同时等待同一case行后均OK、原字节相等、单份激活及重启回放通过；824异文冲突/原键恢复，825过期及损坏回执拒绝，分别1/0/0/0。服务层，HTTP并发未验。
+- 离线145套件2931项0失败0错误1既有skip，主/test编译通过；源码哈希与此次修复一致。组合回归不代替独立消费者或现场。
+- 下一项同步payload补订单status并验证真实发布/读取；随后账务贡献、Web耐久原意图、mapping3+/R1。
 
 ## 未验与边界
 - TEMP政策/高轮次/跨来源/处置续作、抬头撤销/526、R05原资料/旧BCD、R09限制保持；PDA真实绑定/身份/Keystore、独立JVM/OS死亡、断电/长时、现场与完整UI未验。
