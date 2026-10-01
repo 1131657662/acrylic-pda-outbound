@@ -175,3 +175,9 @@
 ## R07-P08 review stop (2026-10-01)
 
 - [P08 review correction and product-gap stop](history/R07_P08_REVIEW_STOP_2026-10-01.md): 805 XML and regression artifacts remain preserved, but acceptance is stopped for missing primary-key immutability, incomplete trigger attribution, and untested migration preservation. Product fix authorization is required before a new attempt.
+
+## 2026-10-01 来源绑定边界记录
+
+| 范围 | 验收入口 |
+| --- | --- |
+| R06 来源绑定分页（attempt 806 失败停止） | [源码与实测审计](history/R06_MAPPING_HIGH_ROUND_AUDIT_2026-10-01.md)：真实 HTTP 列表缺少下一页游标，1 test / 1 failure；失败证据保全，无产品修复或复跑。mapping3+、TEMP 高轮次及跨来源续作仍未验。 |

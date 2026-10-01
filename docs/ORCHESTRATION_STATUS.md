@@ -6,39 +6,35 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: 45bd83a
+head: 9fe52fd
 dirty_entries: 13
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V51, migrations: 51 }
 ```
 <!-- FACTS_END -->
-R06 A1.1 remains closed for its approved device scope. R07-P08-A review found a product database integrity gap; its acceptance is stopped.
+R06 A1.1 approved device scope remains closed. R06-BIND-PAGE attempt 806 failed; R07-P08-A acceptance remains stopped after review.
 
-## Git, write owner, and environment
-- Main tree D:/acrylic-pda-outbound, branch codex/development; Codex is the sole writer. The review only updates evidence and state documentation after the already pushed P08 change.
-- No AVD was started during review. Review-stop SDK adb snapshots recorded the real device 22D2910042 before and after the read-only enumeration; no device test was run.
-- Ports 19330 and 19434 are clear. Existing MySQL service processes and port 3306 were not touched.
+## Git, writer, and environment
+- Tree `D:/acrylic-pda-outbound`, branch `codex/development`, input HEAD/verified remote `9fe52fdc4c932b38e0f382805a7ecac5a500031b`; Codex is sole active writer. This batch stages only six documentation paths; exact status/paths/hashes are in `.local/autonomous-20261001/r06-bindings-page/commit-review/`.
+- Seven pre-existing changes stay protected and unstaged; complete paths/hashes are in `r06-bindings-page/before/protected.json` and `after/protected.json`. Both PDA documents and all seven hashes match.
+- 806 MySQL was identity-checked and stopped; Spring exited. Ports 19330/19434 clear, no AVD/targeted device commands. Only idle Gradle daemon remains; system MySQL/3306/33060 untouched.
+- SDK adb before/after enumeration is identical: `22D2910042 device product:m71 model:m71 device:m71 transport_id:1`. Snapshots: `.local/autonomous-20261001/r06-bindings-page/{before,after}/`.
+- Total D free bytes `32110628864 → 32095174656`; attempt `32110567424 → 31894368256`; archive cleanup `31894269952 → 32095174656`, above 20 GiB. Dump and 290-file verified ZIP retained; only this new datadir cleaned.
 
-## Verified history
-- R06 A1.1 approved results remain valid: seeded-device G1 repeat, bad-input device checks, non-clean G4-2/G4-3 repeat, and three lost-receipt scenarios. See history/R06_A1_1_CODEX_2026-09-30.md.
-- R07 A2.1 correction: V50 establishes the separate SUPERVISOR role and approval mapping; recent supervisor approval and withdrawal HTTP records cover the separated identities. Inventory discrepancy approval/adjustment, fault replacement, real attachments, and commitment rollback remain open.
-- P08-A 805 XML remains tests=1 failures=0 errors=0 skipped=0 on an isolated non-empty MySQL database. This is retained as an execution result, but the acceptance conclusion is withdrawn after review.
+## Evidence and limitations
+- Approved G1 repeat, bad-input, G4-2/G4-3 repeat and lost-receipt results remain in [A1.1 record](history/R06_A1_1_CODEX_2026-09-30.md); no device rerun this batch.
+- 806 seeded 55 own sources in a new isolated database. Real synthetic PDA bearer GET returned 50 rows, `hasMore=false`, `nextCursor=null`; 1 test / 1 failure / 0 errors / 0 skipped. No rerun/product edit. `page-0.json` contains response data only, not raw HTTP envelope/headers.
+- Root cause: `TemporarySourceBindingQueries.mine` pre-truncates limit+1 before `Page.from`. Evidence `.local/e2a-cross-20260925-806/`; [audit](history/R06_MAPPING_HIGH_ROUND_AUDIT_2026-10-01.md) includes hashes and scope. Failed source retained outside active tests.
+- Offline testClasses/PS parsing passed; the planned frozen Primary whitelist tests were not run. No full regression this batch; closeout checks docs/links/facts/staging only.
+- Mapping version arithmetic does not establish repeat LINK: original canonical must be PDA_TEMP/REVIEW_REQUIRED and becomes WEB. Only once-linked mapping2 is verified; TEMP confirmation/accounting requires round 1; formal handover/continuation cannot establish TEMP support.
+- [P08 stop](history/R07_P08_REVIEW_STOP_2026-10-01.md): identity protection, trigger attribution and pre-migration nonempty preservation remain open. Prior test execution is retained without restoring withdrawn acceptance.
+- Old board was recovered exactly from input commit after the missed pre-overwrite archive; [archive](history/ORCHESTRATION_STATE_before_BINDING_PAGE_2026-10-01.md) is historical, its old next-step wording is superseded.
 
-## Review stop
-- P08-ID: V51 correction_document_facts_immutable and reconciliation_facts_immutable do not compare OLD.id with NEW.id. The source review found no child foreign key that makes an id rewrite impossible for these rows. This is a product database integrity gap; no exploit SQL was executed.
-- P08-TEST: E2aCorrectionAppendOnlyIT only asserts DataAccessException. Some negative cases can be rejected by existing foreign keys or CHECK constraints, so 805 does not prove each new trigger fired. No SQLSTATE/message or trigger-missing counterexample was run.
-- P08-UPGRADE: the non-empty correction facts are inserted after migration in the test. Migration preservation of pre-existing correction rows was not verified.
-- No product fix, new database attempt, AVD, deployment, production connection, main merge, tag, or release was performed after this finding. Failed rounds and .local evidence remain intact.
-
-## Evidence and resources
-- Review stop report: docs/history/R07_P08_REVIEW_STOP_2026-10-01.md.
-- Review snapshots: .local/autonomous-20261001/p08-review-stop/before/ and after/. P08 execution evidence remains under p08-a-803, p08-a-804, p08-a-805 and e2a-cross-20260925-803/804/805.
-- P08-A disk bytes were 32380432384 -> 32150048768. The 805 adb files were adb=UNAVAILABLE and are not treated as a real-device proof.
-- Default flags remain false and localDeletionAllowed=false.
-
-## Next step
-- Obtain product-fix authorization for the V51 identity guard and trigger-attribution test corrections. Until then, keep P08 stopped and continue only independent read-only audits.
+## Next step and boundaries
+- Skip stopped pagination/P08 defects and continue independent R06/R07 implementation and validation under the autonomous goal; do not reduce the whole goal to read-only work.
+- Mapping3+, TEMP high-round/cross-source continuation, write-after-rollback evidence, fault replacement, real attachments, inventory approval/adjustment and field/Keystore conditions remain incomplete. Candidate exclusion/TEMP REJECT authorization stays undecided.
+- Default flags false; `localDeletionAllowed=false`; no deployment, original/live database, main merge, tag or release. Existing verified business/adapter/history migrations unchanged; failures retained.
 <!-- CURRENT_STATE_END -->
 
-> This document is stateful through the generated facts block; long-lived rules are in AGENTS.md.
+> Long-lived rules are in AGENTS.md; code-derived version facts are generated above.

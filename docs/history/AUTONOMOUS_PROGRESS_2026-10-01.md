@@ -164,3 +164,13 @@ A post-commit self-review found that V51 does not protect the primary id in corr
 The 805 XML, idempotence marker, server regression, 803/804 failure rounds, and all .local evidence remain preserved. No exploit SQL, new database attempt, AVD, product edit, deployment, or production connection was performed after discovery. The review-stop SDK adb enumeration recorded real device 22D2910042 before/after; it does not repair the 805 adb=UNAVAILABLE evidence.
 
 The earlier A2.1 wording about missing SUPERVISOR mapping was corrected: V50 establishes the separate role and approval mapping, and the supervisor approval/withdrawal HTTP records cover separated identities. Inventory discrepancy approval/adjustment, fault replacement, real attachment storage, and commitment rollback remain open. See R07_P08_REVIEW_STOP_2026-10-01.md and .local/autonomous-20261001/p08-review-stop/.
+
+## 18. R06 来源绑定分页缺陷与 mapping/高轮次审计（2026-10-01）
+
+一次隔离 MySQL attempt 806 构造 55 个同设备来源，经真实合成 PDA bearer HTTP 首页仅返回 50 项，且 `hasMore=false`、`nextCursor=null`。结果 1 test / 1 failure / 0 errors / 0 skipped、exit 1，未重跑/修产品；根因为 `TemporarySourceBindingQueries.mine` 传给 `Page.from` 前先截断。保留的 page-0.json 是 HTTP data JSON，不是完整原始响应。失败源码保全并移出活动测试目录，本提交仅文档。离线编译/脚本解析通过，原方案冻结白名单守卫未执行，无本轮全量回归。
+
+只读审计纠正：`TemporaryLinkMapping` 虽加一版本，但要求原 canonical 为 PDA_TEMP/REVIEW_REQUIRED，首次关联后已切 WEB，不能推出 mapping3+ 可再次成功。TEMP 确认/记账固定第一轮；正式交接/续作不能替代 TEMP。详细根因、源码锚点、证据和未验边界见 [审计记录](R06_MAPPING_HIGH_ROUND_AUDIT_2026-10-01.md)。
+
+806 dump 与 ZIP 保留，290 文件逐项回读摘要相同后清理本轮新 datadir；历史 attempt 不动。总 D 可用 32110628864 → 32095174656 字节，真机 22D2910042 前后枚举一致，AVD/目标设备命令均 0，七项保护摘要一致。证据 `.local/e2a-cross-20260925-806/`、`.local/autonomous-20261001/r06-bindings-page/{before,after,archive-closeout}/`。旧看板漏先归档已从输入提交精确恢复并明示顺序偏差。
+
+自主目标保持 active：跳过分页和 P08 缺陷，继续独立 R06/R07 实现与验证，不限为只读；mapping3+、TEMP 高轮次、跨来源续作与其他缺口继续未完成。提交实际 SHA 从本文件 Git 历史及本轮本地提交回执核对，不手填未发生的 SHA。
