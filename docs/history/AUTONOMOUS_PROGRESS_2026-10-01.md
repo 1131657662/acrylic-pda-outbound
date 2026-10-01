@@ -184,3 +184,15 @@ The earlier A2.1 wording about missing SUPERVISOR mapping was corrected: V50 est
 证据 `.local/e2a-cross-20260925-807/`、`.local/autonomous-20261001/handover-sql-rollback/`。新库认证停机、完整 dump/ZIP 保全，290 文件逐项回读通过后只清新 datadir；总 D 可用 32094982144 → 32025157632 字节，真机/七项保护摘要前后一致，AVD/目标设备命令均 0。旧失败轮保留。
 
 R1b 服务层有界范围通过；不扩大到 HTTP/PDA/worker/硬死亡、真实身份/停止证明、TEMP 或更正/库存调整回滚。分页和 P08 缺陷继续跳过，整体 goal active。提交实际 SHA 由本文件 Git 历史和本地 `commit-review/commit-receipt.json` 核对。
+
+## 20. R06 设备非空请求/回执迁移增量（2026-10-01）
+
+输入/已核远端 787f494adf453aee53bd82e0c82859f4a776ee94。按 A1.1“非空迁移保留原键/请求/回执”和既有验收 §7.3 的设备空表限制，新增三个 androidTest，优先补 R06 独立缺口，没有继续纯审计。详见 [专项验收](R06_DRAFT_RECEIPT_MIGRATION_DEVICE_2026-10-01.md)。
+
+- receipt-migration-3 两个验收方法各1项通过，另setup1项；两个UUID库各11请求、回执1/11。PID 2863→3483，生产Migration经Room实跑，51张既有业务表typed全行不变；宿主四库独立只读核验通过。队列仍暂停，恢复阶段签名/传输调用0。
+- 失败如实保留：offline 首次编译错误；device-1 就绪命令不支持、零测试；device-2 非法SyncRun测试参数、1/1；device-3 断言通过但收尾进程退出竞态导致包装器FAILED。只读补核确认无AVD，未重跑通过用例，原FAILED不改写。
+- 离线APK编译/脚本解析通过；相关既有三类单测16/0/0/0。后续仅fixture修正没有改产品；未重跑完整Android全套/lint/服务端IT。合成会话/授权/签名者/对端与受控旧结构，不代替旧APK升级、现场身份、Keystore、真实HTTP/断电。
+- D 32024870912→31944601600字节；真机仅枚举、前后一致；七项保护文件摘要一致。无产品/历史迁移/默认开关变更，无数据库服务动作，所有.local证据保留。
+- A1.1旧G4本身的空请求/回执事实不改写，本增量补其设备非空字节证据。A1.2/A1.3、R06分页/R07-P08停报缺陷、TEMP高轮次/跨来源、附件与差异审批等仍未完成；goal保持active，不进入R08/R09/R10。
+
+证据根 `.local/autonomous-20261001/draft-receipt-migration/`，实际提交/推送见 commit-review/git-final.json。此前9f843fa/787f494保持原范围，不称本轮重跑。
