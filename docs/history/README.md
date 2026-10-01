@@ -343,3 +343,7 @@
 ## R07-P08-A (2026-10-01)
 
 - [Correction append-only acceptance](AUTONOMOUS_PROGRESS_2026-10-01.md#16-r07-p08-a-append-only-guards-passed-2026-10-01): preserved 803/804 failures, 805 isolated MySQL 1/0/0/0, idempotence probe, offline checks, and server regression. P08-B commitment rollback and field/attachment boundaries remain unverified.
+
+## R07-P08 review stop (2026-10-01)
+
+- [P08 review correction and product-gap stop](R07_P08_REVIEW_STOP_2026-10-01.md): 805 execution artifacts are retained, but the acceptance conclusion is withdrawn because V51 omits primary-key immutability and the negative IT did not attribute rejection to the new triggers. No product fix or new attempt was run.

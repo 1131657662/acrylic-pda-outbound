@@ -156,3 +156,11 @@ This batch added V51 correction append-only triggers, E2aCorrectionAppendOnlyIT,
 - Offline check: testClasses compiled, all PowerShell scripts parsed with zero errors, and the migration static checks passed. Server regression was 134 reports, 2847 tests, 0 failures, 0 errors, 1 skipped. Disk bytes were 32380432384 -> 32150048768; adb snapshots were both adb=UNAVAILABLE; no AVD was started and MySQL was authenticated-shutdown.
 
 This closes only the database append-only guard and test-domain evidence. Real HTTP/field identity, attachment storage, fault replacement, commitment rollback, R06 A1.2/A1.3, and the other R07 gaps remain unverified. P08-B moves to read-only assessment. Failed evidence and .local data are retained.
+
+## 17. P08 review stop and acceptance correction (2026-10-01)
+
+A post-commit self-review found that V51 does not protect the primary id in correction_document or inventory_reconciliation UPDATE triggers. The negative IT only asserted DataAccessException, so existing FK/CHECK failures may have masked trigger behavior. The non-empty correction facts were inserted after migration, so upgrade preservation was not tested. These are product integrity and evidence attribution gaps; the P08-A acceptance conclusion is withdrawn pending an authorized product fix.
+
+The 805 XML, idempotence marker, server regression, 803/804 failure rounds, and all .local evidence remain preserved. No exploit SQL, new database attempt, AVD, product edit, deployment, or production connection was performed after discovery. The review-stop SDK adb enumeration recorded real device 22D2910042 before/after; it does not repair the 805 adb=UNAVAILABLE evidence.
+
+The earlier A2.1 wording about missing SUPERVISOR mapping was corrected: V50 establishes the separate role and approval mapping, and the supervisor approval/withdrawal HTTP records cover separated identities. Inventory discrepancy approval/adjustment, fault replacement, real attachment storage, and commitment rollback remain open. See R07_P08_REVIEW_STOP_2026-10-01.md and .local/autonomous-20261001/p08-review-stop/.

@@ -171,3 +171,7 @@
 ## R07-P08-A acceptance entry (2026-10-01)
 
 - [Correction append-only acceptance](history/AUTONOMOUS_PROGRESS_2026-10-01.md#16-r07-p08-a-append-only-guards-passed-2026-10-01): 803/804 failures preserved and classified; 805 isolated MySQL 1/0/0/0, idempotence rejection, offline compilation/parsing, and server regression passed. P08-B commitment rollback, real attachments/fault replacement, and other R06/R07 gaps remain open.
+
+## R07-P08 review stop (2026-10-01)
+
+- [P08 review correction and product-gap stop](history/R07_P08_REVIEW_STOP_2026-10-01.md): 805 XML and regression artifacts remain preserved, but acceptance is stopped for missing primary-key immutability, incomplete trigger attribution, and untested migration preservation. Product fix authorization is required before a new attempt.

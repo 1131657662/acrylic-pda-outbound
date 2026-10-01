@@ -1,4 +1,4 @@
-# 项目当前状态
+# Project current state
 
 <!-- CURRENT_STATE_START -->
 <!-- FACTS_START -->
@@ -6,38 +6,39 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: 7ebc05b
-dirty_entries: 7
+head: 45bd83a
+dirty_entries: 13
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V51, migrations: 51 }
 ```
 <!-- FACTS_END -->
-R06 A1.1 已按批准范围收口；R07-P08-A 已取得隔离数据库证据。本区只记录可复核事实，不外推生产就绪。
+R06 A1.1 remains closed for its approved device scope. R07-P08-A review found a product database integrity gap; its acceptance is stopped.
 
-## Git、写权与环境
-- 主树 D:/acrylic-pda-outbound，分支 codex/development；Codex 单助手写入。P08-A 只暂存迁移、IT、检查、脚本和索引；两份受保护 PDA 文档保持原样且不暂存。
-- A1.1 的 G1、G4-2/G4-3、坏件专项设备 attempt 已结束；证据与失败轮均保留。
-- P08-A 未启动 AVD；805 的 adb 前后快照均为 `adb=UNAVAILABLE`。隔离 MySQL 已认证关停，19330 端口已清空。
+## Git, write owner, and environment
+- Main tree D:/acrylic-pda-outbound, branch codex/development; Codex is the sole writer. The review only updates evidence and state documentation after the already pushed P08 change.
+- No AVD was started during review. Review-stop SDK adb snapshots recorded the real device 22D2910042 before and after the read-only enumeration; no device test was run.
+- Ports 19330 and 19434 are clear. Existing MySQL service processes and port 3306 were not touched.
 
-## 已验
-- R06 A1.1：已 seed 设备上的 G1 重复通过；坏原件/请求/回执通过；非干净 G4-2/G4-3 迁移重复通过；丢回执三种场景通过。包可见性诊断区分启动早期未就绪与包状态缺失。见 `history/R06_A1_1_CODEX_2026-09-30.md`。
-- R07 A2.1：源码审计完成。仍缺主管权限映射确认、库存差异审批/补扣入口、故障换机、日期/锁期例外、占用回退和真实附件处理。见 `history/R07_A2_1_SOURCE_AUDIT_2026-10-01.md`。
-- R07-P08-A：`E2aCorrectionAppendOnlyIT` 在非空隔离 MySQL 上一次通过，XML 为 `tests=1 failures=0 errors=0 skipped=0`。更正事实、子表、账本、周期重开、命令回执和对账表 UPDATE/DELETE 负向断言通过；合法生命周期推进及 REJECTED 终态守卫通过。
-- 离线检查通过：testClasses、PowerShell parseErrors=0、迁移静态检查；服务端回归 `reports=134 tests=2847 failures=0 errors=0 skipped=1`。
+## Verified history
+- R06 A1.1 approved results remain valid: seeded-device G1 repeat, bad-input device checks, non-clean G4-2/G4-3 repeat, and three lost-receipt scenarios. See history/R06_A1_1_CODEX_2026-09-30.md.
+- R07 A2.1 correction: V50 establishes the separate SUPERVISOR role and approval mapping; recent supervisor approval and withdrawal HTTP records cover the separated identities. Inventory discrepancy approval/adjustment, fault replacement, real attachments, and commitment rollback remain open.
+- P08-A 805 XML remains tests=1 failures=0 errors=0 skipped=0 on an isolated non-empty MySQL database. This is retained as an execution result, but the acceptance conclusion is withdrawn after review.
 
-## 失败保全与未验边界
-- P08-A 803 保留“错误要求 EFFECTIVE→SUBMITTED 拒绝”的测试断言失败；804 保留 Java UUID 对象直接绑定 `UUID_TO_BIN(?)` 导致 JDBC 序列化失败。两轮均未改产品行为，也未自动重跑。
-- 真实 HTTP/现场身份、真实附件字节与存储、故障换机、占用回退、R06 A1.2 来源事实与候选消费、R06 TEMP 处置续作及真实竞态/断电仍未验。
-- P08-B 仅做只读评估；开关保持 false，`localDeletionAllowed=false`，不部署、不合 main、不打标签或发布。
+## Review stop
+- P08-ID: V51 correction_document_facts_immutable and reconciliation_facts_immutable do not compare OLD.id with NEW.id. The source review found no child foreign key that makes an id rewrite impossible for these rows. This is a product database integrity gap; no exploit SQL was executed.
+- P08-TEST: E2aCorrectionAppendOnlyIT only asserts DataAccessException. Some negative cases can be rejected by existing foreign keys or CHECK constraints, so 805 does not prove each new trigger fired. No SQLSTATE/message or trigger-missing counterexample was run.
+- P08-UPGRADE: the non-empty correction facts are inserted after migration in the test. Migration preservation of pre-existing correction rows was not verified.
+- No product fix, new database attempt, AVD, deployment, production connection, main merge, tag, or release was performed after this finding. Failed rounds and .local evidence remain intact.
 
-## 证据与资源
-- P08-A 805：`.local/autonomous-20261001/p08-a-805/` 与 `.local/e2a-cross-20260925-805/`；803/804 失败轮同级保留。
-- 805 磁盘可用字节 `32380432384 → 32150048768`，均高于 20 GB；MySQL 连接与关停身份写入 805 证据。
-- 其他既有未提交文件不属于本次收口；实际 `git status` 为准。
+## Evidence and resources
+- Review stop report: docs/history/R07_P08_REVIEW_STOP_2026-10-01.md.
+- Review snapshots: .local/autonomous-20261001/p08-review-stop/before/ and after/. P08 execution evidence remains under p08-a-803, p08-a-804, p08-a-805 and e2a-cross-20260925-803/804/805.
+- P08-A disk bytes were 32380432384 -> 32150048768. The 805 adb files were adb=UNAVAILABLE and are not treated as a real-device proof.
+- Default flags remain false and localDeletionAllowed=false.
 
-## 下一步
-- 先做 P08-B 更正撤销后的逐笔占用回退只读评估；若模型或政策不足，登记待决并继续 R06 A1.2 只读审计。
+## Next step
+- Obtain product-fix authorization for the V51 identity guard and trigger-attribution test corrections. Until then, keep P08 stopped and continue only independent read-only audits.
 <!-- CURRENT_STATE_END -->
 
-> 本文的当前事实只通过生成事实块表达；长期规则见 `AGENTS.md`。
+> This document is stateful through the generated facts block; long-lived rules are in AGENTS.md.
