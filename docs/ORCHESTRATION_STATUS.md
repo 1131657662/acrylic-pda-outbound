@@ -6,38 +6,35 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: 9986166
-dirty_entries: 23
+head: b74f4d4
+dirty_entries: 15
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V52, migrations: 52 }
 ```
 <!-- FACTS_END -->
-R07交接上下文与原回执GET完成本批Web范围；812真实HTTP通过。R06/R07整体未完成，持续目标active。
+R06 Web原命令恢复反例已实测并停报：同页内存重试可保持字节，但编辑、重挂载、存储失败、候选刷新、恢复代次变化均不满足原键恢复要求。R06/R07整体未完成，持续目标active。
 
 ## Git、写权与环境
-- 树D:/acrylic-pda-outbound，codex/development；本批输入/已核远端99861666ee796841c5ed72d07aa2c20e9e3b0c15。Codex单助手写入；实际提交/推送见.local/autonomous-20261001/handover-reads/commit-review/git-final.json。
-- 新增4份主代码、5份测试与3份接口/方案/验收文档，另更新看板/归档/进度索引/自主报告；精确16路径及全树差异见commit-review。八项保护路径见before/protected.json，摘要未变、不暂存；既有主代码/资源/迁移/默认开关未改。
-- 812认证停库；dump与292文件ZIP逐项SHA回读后仅清本批新datadir，历史失败/.local证据保留。无在途测试/AVD，19330/19434释放；系统MySQL未动。
-- 真机22D2910042仅adb devices枚举、前后快照一致；定向设备命令/AVD均0。D31652630528→31579275264字节（812收尾），收口复核31579246592，高于20GiB；最终磁盘/设备回执随提交留证。
-- [替换前看板](history/ORCHESTRATION_STATE_before_HANDOVER_READS_2026-10-01.md)先归档；证据根.local/autonomous-20261001/handover-reads/及.local/e2a-cross-20260925-812/。
+- 树D:/acrylic-pda-outbound，codex/development；本批输入/已核远端b74f4d468cce022fcd5acac3f638f3d3f5e51c76。单助手写入；实际提交/推送见.local/autonomous-20261001/temp-web-recovery/commit-review/git-final.json。
+- 新增有界失败复现方案与显式环境门控Web测试，未改产品/契约/迁移/默认开关；八项保护路径及既有源码摘要不变。
+- 本批无数据库、HTTP服务、AVD或定向设备执行；真机仅adb devices枚举且前后快照一致。D31578689536→31578468352字节，高于20GiB；无监听测试端口。
+- [替换前看板](history/ORCHESTRATION_STATE_before_TEMP_WEB_RECOVERY_2026-10-01.md)先归档；证据根.local/autonomous-20261001/temp-web-recovery/。
 
-## 本批实测与交付
-- [交接读取验收](history/R07_HANDOVER_READS_2026-10-01.md)、[接口](parallel/R07/HANDOVER_READS.md)：GET来源/案件上下文、原REQUEST正文及四种命令精确原响应；同仓、实时权限、原动作人/设备绑定重验，坏件失败关闭，无业务写入/重签。
-- 新入口仅随既有commands.enabled显式开启；能力全false。GET的expected实际供REQUEST/APPROVE/PREPARE/ACTIVATE消费，不代替命令最终校验；不新增PDA别名/页面/完整恢复包。
-- 主/test编译成功，脚本parse0；定向2套件22项全过，完整离线142套件2915项0失败0错误1既有skip，源码摘要与编译输入一致，未重复跑测试。
-- 812一次1/0/0/0，18.961s；32次业务HTTP（28GET/4POST），200×16、401×1、403×2、404×13。四种原回执初次/Boot上下文重建后读取字节相等；6组16业务表typed全行无变化，独立脚本回读通过。
-- 作者/自审/执行均同一助手；合成FORMAL/停止证明/身份，真实Web传输。无PDA绑定实跑、并发撤权、真库坏件、独立JVM/OS断电或现场证据；会话表不属于无业务写入声明。
+## 本批实测与停报
+- [方案](history/AUTONOMOUS_PLAN_2026-10-01_TEMP_WEB_RECOVERY.md)依据R06 D12/E06及交互设计，检查useTemporaryCommand的原键、原正文、存储失败和重挂载恢复。
+- Web build通过，JS与PowerShell parseErrors=0。一次显式attempt共10项：2项控制通过、8项失败、0错误、0跳过；失败证据保留在attempt-1/tests.log及每个场景JSON，不自动重跑。
+- 控制组同页同意图重试保持同一commandId和完整JSON字节；失败组证明reason可改写、页面重挂载生成新键、浏览器存储不可写仍POST、候选摘要刷新可改写expected、恢复代次变化可改写transportRecoveryEpoch。
+- 这是客户端产品缺陷证据，依赖该hook的恢复子项停止；未证明真实HTTP重复账务或服务端已产生重复结果。未改产品以刷绿，未将失败计为功能交付。
 
 ## 保留缺陷与未验
-- [811首次同键激活](history/R07_HANDOVER_FIRST_REPLAY_FAILURE_2026-10-01.md)1/1/0/0：两事务同键首次投递，一成功一HANDOVER_CONTEXT_CHANGED；锁内先expected校验，未再查原键。仅一次激活/回执/outbox，不等于原键恢复通过；失败保全，未修/未重跑。
-- [交接同步消息](history/R07_HANDOVER_SYNC_STATUS_GAP_2026-10-01.md)缺status阻断消费，仅静态确认；本批未消费消息。[账务贡献](history/R07_CORRECTION_ACCOUNTING_GAP_2026-10-01.md)、[分页806](history/R06_MAPPING_HIGH_ROUND_AUDIT_2026-10-01.md)、[P08](history/R07_P08_REVIEW_STOP_2026-10-01.md)、抬头撤销及526继续停报。
-- [A1.1](history/R06_A1_1_CODEX_2026-09-30.md)、[设备非空迁移](history/R06_DRAFT_RECEIPT_MIGRATION_DEVICE_2026-10-01.md)、[交接回滚807](history/R07_HANDOVER_SQL_ROLLBACK_2026-10-01.md)、[附件809](history/R07_CORRECTION_ATTACHMENTS_2026-10-01.md)、[更正读取810](history/R07_CORRECTION_READS_2026-10-01.md)按各自范围复用，未重跑。
-- TEMP REJECT/排除权限未决，高轮次/跨来源、PDA完整交接/故障换机/恢复、现场身份/Keystore/断电/长时、原资料/旧BCD和R09历史限制继续保留；局部GET绿不覆盖旧缺陷或完整流程。
+- Web原命令发送前没有持久保存键/正文，hook只在内存Map保留键；页面关闭/重建、存储失败和意图字段变化均未满足R06原键恢复。需产品修复后再验，当前不自动进入第二轮。
+- R06来源分页806、候选排除权限、TEMP拒绝/处置续作、高轮次/跨来源，R07 811首次同键、同步消息缺status、账务贡献、P08/抬头/526继续停报。
+- PDA真实绑定、真实HTTP/服务器账务、独立JVM/OS死亡、现场身份/Keystore、断电/长时和完整UI未由本批覆盖；A1.1设备验收按原记录复用。
 
 ## 下一步
-- 继续独立R06/R07闭环；核对原申请/审批在客户端的耐久存储与展示并分段消费已验GET，先核源码与有界方案。缺陷相关执行动作仍阻断，不用UI掩盖并发/消息/账务问题。
-- 全开关默认false，localDeletionAllowed=false；不部署、不接原库/现网、不合main、不打标签/Release，不进R08/R09/R10。[本批方案](history/AUTONOMOUS_PLAN_2026-10-01_HANDOVER_READS.md)、[自主报告](history/AUTONOMOUS_PROGRESS_2026-10-01.md)。
+- 跳过本缺陷依赖，继续独立R06/R07源码核对与可执行子项；若进入Web恢复修复，先持久保存原键/正文、存储失败不发送、页面重建恢复和意图不可变，再重新验这组标准。
+- 全开关默认false，localDeletionAllowed=false；不部署、不接原库/现网、不合main、不打标签/Release，不进R08/R09。[本批方案](history/AUTONOMOUS_PLAN_2026-10-01_TEMP_WEB_RECOVERY.md)、[自主报告](history/AUTONOMOUS_PROGRESS_2026-10-01.md)。
 <!-- CURRENT_STATE_END -->
 
-> 长期规则见AGENTS.md；版本事实由脚本生成，提交自身坐标以本批git-final.json/Git历史核对，不循环追逐文档SHA。
+> 长期规则见AGENTS.md；版本事实由脚本生成，实际SHA以本批git-final.json/Git历史核对。
