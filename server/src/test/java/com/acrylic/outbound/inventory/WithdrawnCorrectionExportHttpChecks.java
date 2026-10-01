@@ -12,7 +12,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static com.acrylic.outbound.inventory.CorrectionExportHttpClient.data;
 
-/** Captures successful rollback facts before requiring a real HTTP export of that resulting version. */
+/** Captures rollback facts before requiring a real HTTP export of the restored version. */
 public final class WithdrawnCorrectionExportHttpChecks {
     private final WebApplicationContext context;
     private final ExportModels.Scope scope;
@@ -64,8 +64,9 @@ public final class WithdrawnCorrectionExportHttpChecks {
         var receipts=jdbc.queryForList("SELECT BIN_TO_UUID(id) id,BIN_TO_UUID(actor_id) actor,canonical_command_bytes"
                 +" FROM correction_command_receipt WHERE document_id=UUID_TO_BIN(?) AND command_type='WITHDRAW_CONFIRM'",document);
         assertThat(receipts).hasSize(1);var receipt=receipts.getFirst();
-        var rows=jdbc.queryForList("SELECT BIN_TO_UUID(id) id,BIN_TO_UUID(reverses_entry_id) reversesId"
-                +" FROM correction_ledger WHERE correction_line_id=UUID_TO_BIN(?) AND reverses_entry_id IS NOT NULL",lineId);
+        var rows=jdbc.queryForList("SELECT BIN_TO_UUID(id) id,BIN_TO_UUID(restores_entry_id) restoresId"
+                +" FROM correction_ledger WHERE correction_line_id=UUID_TO_BIN(?) AND restores_entry_id IS NOT NULL",lineId);
+        assertThat(rows).hasSize(1);
         return Map.of("lineId",lineId,"receiptId",receipt.get("id"),"confirmer",receipt.get("actor"),"entries",rows,
                 "reason",SubmissionJson.parse((byte[])receipt.get("canonical_command_bytes")).path("reason").asText());
     }
@@ -80,29 +81,37 @@ public final class WithdrawnCorrectionExportHttpChecks {
         Files.write(destination.resolve("create-"+format+".json"),response.body());
         Files.writeString(destination.resolve("http-status-"+format+".txt"),Integer.toString(response.statusCode()));
         UUID id=UUID.fromString(data(response,200).path("id").asText());
-        var store=context.getBean(BackgroundJobStore.class);var queries=context.getBean(ExportJobQueries.class);
-        BackgroundJob job=null;
+        var job=completed(id,format,destination);var payload=context.getBean(ExportJobQueries.class).payload(job);
+        var files=context.getBean(ExportFiles.class);
+        var snapshot=SubmissionJson.parse(Files.readString(files.snapshot(payload.snapshotHash())));
+        Files.writeString(destination.resolve("snapshot-"+payload.format().extension+".json"),snapshot.toPrettyString());
+        assertVersion(snapshot,version);
+        var download=wire.get("/exports/"+id+"/file");assertThat(download.statusCode()).isEqualTo(200);
+        assertThat(download.body()).isEqualTo(Files.readAllBytes(files.artifact(id,payload.artifact().token(),payload.format())));
+        Files.write(destination.resolve("withdrawn."+payload.format().extension),download.body());
+    }
+
+    private BackgroundJob completed(UUID id,String format,Path destination) throws Exception {
         for(int index=0;index<30;index++) {
             var status=data(wire.get("/exports/"+id),200);
             Files.writeString(destination.resolve("status-"+format+".json"),status.toPrettyString());
             assertThat(status.path("status").asText()).as("withdrawn export status: %s",status).isNotIn("FAILED","EXPIRED","INVALIDATED");
-            if(status.path("status").asText().equals("SUCCEEDED")){job=store.find(id).orElseThrow();break;}
+            if(status.path("status").asText().equals("SUCCEEDED")) return context.getBean(BackgroundJobStore.class).find(id).orElseThrow();
             assertThat(context.getBean(BackgroundJobWorker.class).runOnce("d-withdraw-boundary")).isPresent();
         }
-        assertThat(job).isNotNull();var payload=queries.payload(job);var files=context.getBean(ExportFiles.class);
-        var snapshot=SubmissionJson.parse(Files.readString(files.snapshot(payload.snapshotHash())));
-        Files.writeString(destination.resolve("snapshot-"+payload.format().extension+".json"),snapshot.toPrettyString());
-        if(version==3)assertSnapshot(snapshot);
-        else if(version==2) assertThat(snapshot.path("orders")).isEqualTo(SubmissionJson.parse(Files.readString(output.resolve("pre-withdraw-v2.json"))).path("orders"));
-        else {
-            assertThat(snapshot.at("/metadata/basis").asText()).isEqualTo("ORIGINAL_CONFIRMED");
-            assertThat(snapshot.at("/orders/0/resultVersion").asLong()).isEqualTo(1);
-            assertThat(snapshot.at("/orders/0/adjustments")).isEmpty();
-            assertThat(snapshot.at("/orders/0/originalLines")).hasSize(2);
+        throw new AssertionError("Withdrawal export did not complete");
+    }
+
+    private void assertVersion(JsonNode snapshot,long version) throws Exception {
+        if(version==3) { assertSnapshot(snapshot); return; }
+        if(version==2) {
+            assertThat(snapshot.path("orders")).isEqualTo(SubmissionJson.parse(Files.readString(output.resolve("pre-withdraw-v2.json"))).path("orders"));
+            return;
         }
-        var download=wire.get("/exports/"+id+"/file");assertThat(download.statusCode()).isEqualTo(200);
-        assertThat(download.body()).isEqualTo(Files.readAllBytes(files.artifact(id,payload.artifact().token(),payload.format())));
-        Files.write(destination.resolve("withdrawn."+payload.format().extension),download.body());
+        assertThat(snapshot.at("/metadata/basis").asText()).isEqualTo("ORIGINAL_CONFIRMED");
+        assertThat(snapshot.at("/orders/0/resultVersion").asLong()).isEqualTo(1);
+        assertThat(snapshot.at("/orders/0/adjustments")).isEmpty();
+        assertThat(snapshot.at("/orders/0/originalLines")).hasSize(2);
     }
 
     private void assertSnapshot(JsonNode snapshot) {
@@ -135,7 +144,7 @@ public final class WithdrawnCorrectionExportHttpChecks {
                 .containsExactly(HexFormat.of().parseHex(facts.at("/documents/0/approvedByHex").asText()));
         assertThat(reverse.path("evidenceReference").asText()).contains(facts.at("/withdrawal/receiptId").asText(),facts.at("/withdrawal/confirmer").asText());
         for(var entry:facts.at("/withdrawal/entries"))
-            assertThat(reverse.path("evidenceReference").asText()).contains(entry.path("id").asText(),entry.path("reversesId").asText());
+            assertThat(reverse.path("evidenceReference").asText()).contains(entry.path("id").asText(),entry.path("restoresId").asText());
         assertThat(java.time.Instant.parse(reverse.path("occurredAt").asText()))
                 .isEqualTo(java.time.Instant.parse(facts.at("/documents/0/withdrawal_confirmed_at").asText()+"Z"));
     }

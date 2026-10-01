@@ -26,7 +26,7 @@ public final class SupervisorWithdrawalChecks {
         var before = fixture.immutableSource();
         byte[] created = maker.command(fixture.create(), 200);
         var receipt = SupervisorCorrectionReceipt.verify(created, attempt.resolve("private/server-public.der"));
-        String document = receipt.path("documentId").asText();
+        String document = receipt.at("/businessDecision/documentId").asText(); assertThat(document).isNotBlank();
         byte[] approved = checker.command(fixture.approve(document), 200);
         SupervisorCorrectionReceipt.verify(approved, attempt.resolve("private/server-public.der"));
         var originalLedger = facts.ledger(); var effective = fixture.result();

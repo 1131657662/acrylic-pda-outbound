@@ -13,7 +13,7 @@ final class SupervisorWithdrawalFacts {
         var rows = SubmissionJson.object().putArray("rows");
         fixture.jdbc.queryForList("SELECT JSON_OBJECT('id',BIN_TO_UUID(id),'dispatch',BIN_TO_UUID(dispatch_id),"
             + "'line',BIN_TO_UUID(correction_line_id),'kind',entry_kind,'quantity',CAST(quantity_delta AS CHAR),"
-            + "'weightG',CAST(weight_delta_g AS CHAR),'reverses',BIN_TO_UUID(reverses_entry_id),'businessKey',business_key)"
+            + "'weightG',CAST(weight_delta_g AS CHAR),'restores',BIN_TO_UUID(restores_entry_id),'businessKey',business_key)"
             + " FROM correction_ledger ORDER BY id", String.class).forEach(row -> rows.add(SubmissionJson.parse(row)));
         return rows;
     }
@@ -34,13 +34,14 @@ final class SupervisorWithdrawalFacts {
         var all = ledger(); assertThat(original.size()).isEqualTo(1); assertThat(all.size()).isEqualTo(2);
         var forward = original.get(0); int originals = 0, reversals = 0;
         for (var row : all) {
-            if (row.path("reverses").isNull()) { assertThat(row).isEqualTo(forward); originals++; continue; }
-            reversals++; assertThat(row.path("reverses").asText()).isEqualTo(forward.path("id").asText());
+            if (row.path("restores").isNull()) { assertThat(row).isEqualTo(forward); originals++; continue; }
+            reversals++; assertThat(row.path("restores").asText()).isEqualTo(forward.path("id").asText());
+            assertThat(row.path("kind").asText()).isEqualTo("WITHDRAWAL_RESTORE");
             assertThat(row.path("dispatch")).isEqualTo(forward.path("dispatch"));
             assertThat(row.path("line")).isEqualTo(forward.path("line"));
             assertThat(row.path("quantity").asLong()).isEqualTo(-forward.path("quantity").asLong());
             assertThat(row.path("weightG").asLong()).isEqualTo(-forward.path("weightG").asLong());
-            assertThat(row.path("businessKey").asText()).isEqualTo("WD:" + document + ":" + forward.path("id").asText());
+            assertThat(row.path("businessKey").asText()).isEqualTo("WD:" + forward.path("line").asText() + ":" + forward.path("id").asText());
         }
         assertThat(originals).isEqualTo(1); assertThat(reversals).isEqualTo(1);
         var state = state(document); assertThat(state.path("receipts").asInt()).isEqualTo(4);

@@ -3,7 +3,6 @@ package com.acrylic.outbound.inventory;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.file.*;
-import java.util.*;
 import org.springframework.web.context.WebApplicationContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,9 +15,10 @@ public final class SupervisorCorrectionChecks {
         var maker = new SupervisorCorrectionHttp(fixture.source.operator().username());
         var checker = new SupervisorCorrectionHttp(fixture.checker.user().username());
         var before = fixture.immutableSource();
-        var create = fixture.create(); byte[] created = maker.command(create, 200);
+        byte[] created = maker.command(fixture.create(), 200);
         var receipt = SupervisorCorrectionReceipt.verify(created, attempt.resolve("private/server-public.der"));
-        String document = receipt.path("documentId").asText(); var approve = fixture.approve(document);
+        String document = receipt.at("/businessDecision/documentId").asText();
+        assertThat(document).isNotBlank(); var approve = fixture.approve(document);
         var denials = denials(maker, checker, approve);
         byte[] approved = checker.command(approve, 200);
         var signed = SupervisorCorrectionReceipt.verify(approved, attempt.resolve("private/server-public.der"));
@@ -33,8 +33,8 @@ public final class SupervisorCorrectionChecks {
         output.set("result", fixture.result()); output.set("receipt", signed);
         Files.writeString(attempt.resolve("supervisor-evidence.json"), SubmissionJson.canonical(output));
         Files.write(attempt.resolve("create-response.json"), created); Files.write(attempt.resolve("approve-response.json"), approved);
-        Files.writeString(attempt.resolve("real-records.tsv"), String.join(String.valueOf((char) 9), fixture.order, document,
-            fixture.checker.user().id().toString()) + System.lineSeparator());
+        Files.writeString(attempt.resolve("real-records.tsv"), fixture.order + "\t" + document + "\t"
+            + fixture.checker.user().id() + System.lineSeparator());
     }
 
     private ObjectNode denials(SupervisorCorrectionHttp maker, SupervisorCorrectionHttp checker, ObjectNode approve) throws Exception {
@@ -60,7 +60,7 @@ public final class SupervisorCorrectionChecks {
         var entries = fixture.jdbc.queryForList("SELECT quantity_delta,weight_delta_g,entry_kind FROM correction_ledger");
         assertThat(entries).hasSize(1); var entry = entries.getFirst();
         assertThat(((Number) entry.get("quantity_delta")).longValue()).isZero();
-        assertThat(((Number) entry.get("weight_delta_g")).longValue()).isEqualTo(1);
+        assertThat(((Number) entry.get("weight_delta_g")).longValue()).isEqualTo(-1);
         assertThat(entry.get("entry_kind")).isEqualTo("WEIGHT_DIFF");
         assertThat(fixture.jdbc.queryForObject("SELECT COUNT(*) FROM correction_command_receipt WHERE document_id=UUID_TO_BIN(?)",
             Integer.class, document)).isEqualTo(2);

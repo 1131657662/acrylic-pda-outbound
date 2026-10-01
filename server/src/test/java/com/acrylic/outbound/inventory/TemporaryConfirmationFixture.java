@@ -9,6 +9,7 @@ import com.acrylic.outbound.temporary.review.TemporaryDecisionCandidates;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Consumer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,19 +20,24 @@ import org.springframework.web.context.WebApplicationContext;
 final class TemporaryConfirmationFixture {
     final WebApplicationContext context;final JdbcTemplate jdbc;final TemporarySubmissionFixture source;
     final TemporaryAccountingChecks transport;final TemporaryCommandService service;
+    record Setup(boolean shortShipment,boolean deduct,Consumer<TemporarySubmissionFixture> prepare) { }
+
     TemporaryConfirmationFixture(WebApplicationContext context,boolean shortShipment) throws Exception {
-        this(context,shortShipment,source->{});
+        this(context,new Setup(shortShipment,true,source->{}));
     }
-    TemporaryConfirmationFixture(WebApplicationContext context,boolean shortShipment,java.util.function.Consumer<TemporarySubmissionFixture> prepare) throws Exception {
+    TemporaryConfirmationFixture(WebApplicationContext context,boolean shortShipment,Consumer<TemporarySubmissionFixture> prepare) throws Exception {
+        this(context,new Setup(shortShipment,true,prepare));
+    }
+    TemporaryConfirmationFixture(WebApplicationContext context,Setup setup) throws Exception {
         this.context=context;jdbc=bean(JdbcTemplate.class);transport=new TemporaryAccountingChecks(context);
-        source=transport.fixture(true);
-        // Existing shared fixture creates a distinct old formal order; leave it outside the documented candidate window.
+        source=transport.fixture(setup.deduct());
+        // Keep the fixture's distinct old formal order outside the documented candidate window.
         jdbc.update("UPDATE outbound_order SET created_at=DATE_SUB(created_at,INTERVAL 30 DAY) WHERE id=UUID_TO_BIN(?)",source.f.order);
-        if(shortShipment) {
+        if(setup.shortShipment()) {
             ((ObjectNode)source.body.at("/temporaryOrder/lines/0")).put("plannedCount","2");
             source.body.put("planSha256",SubmissionJson.sha(source.body.path("temporaryOrder"))).put("shortShipmentReason","原车实际短装");
         }
-        prepare.accept(source);transport.http(source,"/pda/temporary-orders/submissions",source.body);
+        setup.prepare().accept(source);transport.http(source,"/pda/temporary-orders/submissions",source.body);
         grant(operator(),List.of("temporary_order:confirm","submission:review"));
         service=service(bean(CommandReceiptCodec.class),bean(AuditWriter.class));
     }
@@ -87,9 +93,7 @@ final class TemporaryConfirmationFixture {
         for(String p:permissions)jdbc.update("INSERT INTO role_permission SELECT ?,id FROM permission WHERE code=?",Ids.bytes(role),p);
         jdbc.update("INSERT INTO user_role VALUES(?,?)",Ids.bytes(actor.id()),Ids.bytes(role));
     }
-    Map<String,Object> state() {
-        return TemporaryConfirmationState.read(this);
-    }
+    Map<String,Object> state() { return TemporaryConfirmationState.read(this); }
     CommandReadService.View read(ObjectNode command,SessionUser actor) {
         authenticate(actor);try { return bean(CommandReadService.class).read(source.f.web.identity().warehouse(),command.path("commandId").asText()); }
         finally { SecurityContextHolder.clearContext(); }
