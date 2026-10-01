@@ -145,3 +145,14 @@ R3a 已推送 8eede2e1a95579a070a6a489e0227dcdaa304e8f。以该提交为输入�
 - 待验保持：占用回退、append-only触发器、撤销过期/拒绝语义、真实附件存储、故障换机、R1写后回滚及R06高轮次。
 
 本批证据与实际提交见 resume-withdrawal/closeout/；整体目标 active、未完成，下一步继续 R06/R07 独立缺口，不扩 R08/R09/R10。
+
+## 16. R07-P08-A append-only guards passed (2026-10-01)
+
+This batch added V51 correction append-only triggers, E2aCorrectionAppendOnlyIT, and isolated execution/offline-check scripts against the existing correction model. Correction facts, child rows, ledger, reopening, command receipts, and reconciliation facts reject rewrites and deletes; legal lifecycle advances remain allowed, while REJECTED/WITHDRAWN terminal states cannot reopen.
+
+- 803: XML 1/1/0/0. The test incorrectly required EFFECTIVE -> SUBMITTED to fail; V51 guards REJECTED/WITHDRAWN terminal reopening instead. Evidence and classification: .local/autonomous-20261001/p08-a-803/ and .local/e2a-cross-20260925-803/. No automatic rerun.
+- 804: XML 1/1/0/0. A Java UUID object was bound directly to UUID_TO_BIN(?), so JDBC serialized it as Java bytes and MySQL rejected it. Evidence: .local/autonomous-20261001/p08-a-804/ and .local/e2a-cross-20260925-804/. The fix changed only test binding to UUID text.
+- 805: one non-empty isolated MySQL attempt passed with XML tests=1 failures=0 errors=0 skipped=0 and both test markers. UPDATE/DELETE rejection, SUBMITTED -> APPROVED -> EFFECTIVE lifecycle, and an independent REJECTED terminal guard passed. The second invocation was rejected before database/test work by the one-shot guard; see p08-a-805/idempotence-verified.marker.
+- Offline check: testClasses compiled, all PowerShell scripts parsed with zero errors, and the migration static checks passed. Server regression was 134 reports, 2847 tests, 0 failures, 0 errors, 1 skipped. Disk bytes were 32380432384 -> 32150048768; adb snapshots were both adb=UNAVAILABLE; no AVD was started and MySQL was authenticated-shutdown.
+
+This closes only the database append-only guard and test-domain evidence. Real HTTP/field identity, attachment storage, fault replacement, commitment rollback, R06 A1.2/A1.3, and the other R07 gaps remain unverified. P08-B moves to read-only assessment. Failed evidence and .local data are retained.

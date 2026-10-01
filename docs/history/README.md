@@ -339,3 +339,7 @@
 - [R07 迁移后主管真实签名审批 HTTP 专项](R07_SUPERVISOR_SIGNED_HTTP_2026-10-01.md)：真实 HTTP 验收、资源与未验边界。
 
 - [R07 分离身份误批撤销 HTTP 专项](R07_SUPERVISOR_WITHDRAWAL_HTTP_2026-10-01.md)：两阶段撤销真实 HTTP 验收、资源与未验边界。
+
+## R07-P08-A (2026-10-01)
+
+- [Correction append-only acceptance](AUTONOMOUS_PROGRESS_2026-10-01.md#16-r07-p08-a-append-only-guards-passed-2026-10-01): preserved 803/804 failures, 805 isolated MySQL 1/0/0/0, idempotence probe, offline checks, and server regression. P08-B commitment rollback and field/attachment boundaries remain unverified.
