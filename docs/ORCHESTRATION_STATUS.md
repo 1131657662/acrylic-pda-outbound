@@ -6,35 +6,35 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: b74f4d4
-dirty_entries: 15
+head: 009b9d0
+dirty_entries: 30
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V52, migrations: 52 }
 ```
 <!-- FACTS_END -->
-R06 Web原命令恢复反例已实测并停报：同页内存重试可保持字节，但编辑、重挂载、存储失败、候选刷新、恢复代次变化均不满足原键恢复要求。R06/R07整体未完成，持续目标active。
+R07订单内交接查询闭环通过并收口；用户已授权自主修复产品及已验业务，要求逐项回归/提交推送。R06/R07整体未完成，goal active。
 
 ## Git、写权与环境
-- 树D:/acrylic-pda-outbound，codex/development；本批输入/已核远端b74f4d468cce022fcd5acac3f638f3d3f5e51c76。单助手写入；实际提交/推送见.local/autonomous-20261001/temp-web-recovery/commit-review/git-final.json。
-- 新增有界失败复现方案与显式环境门控Web测试，未改产品/契约/迁移/默认开关；八项保护路径及既有源码摘要不变。
-- 本批无数据库、HTTP服务、AVD或定向设备执行；真机仅adb devices枚举且前后快照一致。D31578689536→31578468352字节，高于20GiB；无监听测试端口。
-- [替换前看板](history/ORCHESTRATION_STATE_before_TEMP_WEB_RECOVERY_2026-10-01.md)先归档；证据根.local/autonomous-20261001/temp-web-recovery/。
+- 树D:/acrylic-pda-outbound，codex/development；输入/已核远端009b9d05af463339f623a6b7ecbf62a7ca07edf7。单助手写入，实际提交推送见.local/autonomous-20261001/handover-list/commit-review/git-final.json。
+- 全部差异/源码摘要/远端/监听/设备见该commit-review；八项预存保护路径见final-before/protected.json，摘要不变。预存更正IT及两份PDA文档不纳入本批。
+- 四库认证停机，测试端口19330/19434/5173无监听；各292文件ZIP摘要验证通过，原datadir保留，删除0。保全后D30587985920字节，高于20GiB。
+- 真机仅adb devices枚举、各轮前后一致；定向设备命令0、AVD0。无在途重型任务；原服务/库未动。[替换前结论](history/ORCHESTRATION_STATE_before_HANDOVER_LIST_2026-10-01.md)已归档。
 
-## 本批实测与停报
-- [方案](history/AUTONOMOUS_PLAN_2026-10-01_TEMP_WEB_RECOVERY.md)依据R06 D12/E06及交互设计，检查useTemporaryCommand的原键、原正文、存储失败和重挂载恢复。
-- Web build通过，JS与PowerShell parseErrors=0。一次显式attempt共10项：2项控制通过、8项失败、0错误、0跳过；失败证据保留在attempt-1/tests.log及每个场景JSON，不自动重跑。
-- 控制组同页同意图重试保持同一commandId和完整JSON字节；失败组证明reason可改写、页面重挂载生成新键、浏览器存储不可写仍POST、候选摘要刷新可改写expected、恢复代次变化可改写transportRecoveryEpoch。
-- 这是客户端产品缺陷证据，依赖该hook的恢复子项停止；未证明真实HTTP重复账务或服务端已产生重复结果。未改产品以刷绿，未将失败计为功能交付。
+## 本批验收
+- [交接列表](history/R07_HANDOVER_LIST_2026-10-01.md)：订单入口、真实分页、四维详情、返回原页及切仓旧响应保护；权限/仓库/订单与游标绑定，既有开关默认关闭。
+- 813夹具缺order:read及选择器失败，814切仓定位失败，815浏览器6过但快照误拒合法登录审计；816 Java1/0/0/0、浏览器6/6，15业务表不变，只增加本合成身份6条WEB_LOGIN审计。失败原件/数据库不覆盖。
+- 完整服务端144套件/2926项/0失败/0错误/1既有skip；夹具修正后33项定向、Web构建/解析通过；最终IT编译和816实跑通过。接续自审不冒称重跑。
+- 真实HTTP空/整/多页与同时间排序无重漏、权限反例；浏览器边界拦截与真实链路分列。不等同PDA、现场或完整命令流程交付。
 
-## 保留缺陷与未验
-- Web原命令发送前没有持久保存键/正文，hook只在内存Map保留键；页面关闭/重建、存储失败和意图字段变化均未满足R06原键恢复。需产品修复后再验，当前不自动进入第二轮。
-- R06来源分页806、候选排除权限、TEMP拒绝/处置续作、高轮次/跨来源，R07 811首次同键、同步消息缺status、账务贡献、P08/抬头/526继续停报。
-- PDA真实绑定、真实HTTP/服务器账务、独立JVM/OS死亡、现场身份/Keystore、断电/长时和完整UI未由本批覆盖；A1.1设备验收按原记录复用。
+## 待修与未验
+- 下一项P08主键保护：新增前向迁移，精确SQLSTATE/消息、无子引用主键反例及非空迁移；不改已提交历史迁移。接着R06分页806、R07首次同键811、同步status、账务贡献、R06Web原命令恢复、mapping3+/R1。
+- TEMP拒绝/候选排除授权、处置续作、高轮次/跨来源、抬头撤销/526与R05原资料/旧BCD、R09既有边界继续保留；按源码及新证据逐项核对。
+- PDA真实绑定/身份/Keystore、独立JVM/OS死亡、断电/长时、现场及完整UI未验；A1.1和后续非空请求/回执迁移按各原记录范围复用。
 
-## 下一步
-- 跳过本缺陷依赖，继续独立R06/R07源码核对与可执行子项；若进入Web恢复修复，先持久保存原键/正文、存储失败不发送、页面重建恢复和意图不可变，再重新验这组标准。
-- 全开关默认false，localDeletionAllowed=false；不部署、不接原库/现网、不合main、不打标签/Release，不进R08/R09。[本批方案](history/AUTONOMOUS_PLAN_2026-10-01_TEMP_WEB_RECOVERY.md)、[自主报告](history/AUTONOMOUS_PROGRESS_2026-10-01.md)。
+## 接续与边界
+- [修订授权与修复顺序](history/AUTONOMOUS_PLAN_2026-10-01_DEFECT_REPAIR.md)、[自主记录§26](history/AUTONOMOUS_PROGRESS_2026-10-01.md)。每项修复→定向/回归→证据→提交推送→更新断点，无需逐步停等。
+- 全开关默认false，localDeletionAllowed=false；不部署、不接原库/现网、不合main、不打标签/Release、不删.local证据。磁盘低于20GB停报，不进入R08/R09/R10新范围。
 <!-- CURRENT_STATE_END -->
 
-> 长期规则见AGENTS.md；版本事实由脚本生成，实际SHA以本批git-final.json/Git历史核对。
+> 长期规则见AGENTS.md；版本事实由脚本生成，提交自身SHA以git-final.json及Git历史核对。

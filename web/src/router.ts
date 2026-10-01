@@ -17,6 +17,7 @@ export const router = createRouter({
     { path: '/temporary-reviews', component: () => import('./temporary-review/TemporaryReviewsPage.vue') },
     { path: '/temporary-reviews/:id', component: () => import('./temporary-review/TemporaryReviewPage.vue') },
     { path: '/orders/:id', component: () => import('./orders/OrderDetailPage.vue') },
+    { path: '/orders/:id/handovers/:caseId?', component: () => import('./handover/HandoverCasesPage.vue') },
     { path: '/orders/:id/pc-outbound', component: () => import('./pc/PcOutboundPage.vue') },
     { path: '/orders/:id/pc-outbound/exception', component: () => import('./pc/PcExceptionPage.vue') },
     { path: '/policies', component: () => import('./policies/PoliciesPage.vue') },
@@ -45,6 +46,8 @@ export function loginDestination(value: unknown, permissions: string[]): string 
   if (typeof value === 'string' && /^\/review-reminders(?:\?|$)/.test(value) && permissions.some(p => ['submission:review', 'temporary_order:confirm'].includes(p))) return value;
   if (typeof value === 'string' && /^\/temporary-reviews(?:\/[0-9a-f-]+)?(?:\?|$)/.test(value) && permissions.includes('temporary_order:confirm')) return value;
   if (typeof value === 'string' && /^\/exports(?:\?|$)/.test(value) && permissions.includes('order:read')) return value;
+  if (typeof value === 'string' && /^\/orders\/[0-9a-f-]+\/handovers(?:\/[0-9a-f-]+)?(?:\?|$)/.test(value)
+      && permissions.includes('order:read') && permissions.some(p => p === 'order:handover' || p === 'order:resume')) return value;
   if (typeof value === 'string' && /^\/(orders(?:\/[^/?#]+(?:\/pc-outbound(?:\/exception)?)?)?|inventory\/(imports|bales|mappings)|policies|devices|users)(?:\?|$)/.test(value)) {
     const route = router.resolve(value);
     const permission = route.path.startsWith('/orders') || route.path === '/policies' ? 'order:read' : route.path === '/devices' ? 'device:manage' : route.path === '/users' ? 'user:manage' : 'inventory:read';

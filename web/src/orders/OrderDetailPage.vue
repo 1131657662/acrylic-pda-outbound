@@ -35,6 +35,7 @@ let cancelBody = ''; let cancelKey = ''; let generation = 0;
 const canWrite = computed(() => session.identity?.permissions.includes('order:write'));
 const canCancel = computed(() => session.identity?.permissions.includes('order:cancel'));
 const canPublish = computed(() => session.identity?.permissions.includes('order:publish'));
+const canReadHandover = computed(() => session.identity?.permissions.some(p => p === 'order:handover' || p === 'order:resume'));
 const unassigned = computed(() => detail.value && ['DRAFT', 'READY'].includes(detail.value.order.status));
 async function check(id: string, params: URLSearchParams, current: number): Promise<void> {
   try { const result = await request(`/orders/${id}/preflight?${params}`, preflightSchema); if (current === generation) preflight.value = result; }
@@ -93,6 +94,7 @@ onBeforeUnmount(() => { generation++; });
       <template #status><template v-if="detail"><OrderStatus :status="detail.order.status" /><el-tooltip content="复制订单号"><el-button text :icon="CopyDocument" aria-label="复制订单号" @click="copyOrder" /></el-tooltip></template></template>
       <template v-if="detail">
         <PcOrderLink :key="detail.order.id" :order="detail.order.id" :warehouse="session.warehouseId" :version="detail.order.rowVersion" :status="detail.order.status" :disabled="busy || locked || !!error" @channel="pcChannel = $event" />
+        <el-button v-if="canReadHandover" :disabled="busy || locked || !!error" @click="router.push({ path: `/orders/${detail.order.id}/handovers`, query: { ...route.query, warehouse: session.warehouseId } })">查看换机交接</el-button>
         <el-button v-if="canPublish && detail.order.status === 'DRAFT'" type="primary" :disabled="busy || locked || !!error || !preflight?.checksPassed" @click="publishDialog = true">发布订单</el-button>
         <el-button v-if="canWrite && unassigned && (detail.order.status === 'DRAFT' || canPublish)" :disabled="busy || locked || !!error" @click="editor = true">{{ detail.order.status === 'READY' ? '修订并重新发布' : '修订草稿' }}</el-button>
         <el-button v-if="canCancel && unassigned" type="danger" plain :disabled="busy || locked || !!error" @click="cancelDialog = true">作废订单</el-button>
