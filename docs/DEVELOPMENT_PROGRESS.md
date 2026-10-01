@@ -217,3 +217,6 @@
 ## R07 订单内交接列表（2026-10-01）
 
 - [列表与浏览器验收](history/R07_HANDOVER_LIST_2026-10-01.md)：813–815失败保留，816真实MySQL/HTTP与浏览器6场景通过；分页无重漏、权限及晚响应保护、业务表不变。其余缺陷按[修订修复方案](history/AUTONOMOUS_PLAN_2026-10-01_DEFECT_REPAIR.md)接续，未将局部通过计作R07完成。
+
+
+- R06 来源绑定分页修复：[验收](history/R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)，单测及822真实HTTP通过，旧失败保留；只收分页范围。
