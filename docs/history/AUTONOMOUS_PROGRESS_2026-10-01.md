@@ -268,3 +268,14 @@ R1b 服务层有界范围通过；不扩大到 HTTP/PDA/worker/硬死亡、真�
 - 现场/身份/Keystore/独立JVM/OS死亡/断电/长时、真实PDA链及全UI未验；其他缺陷、TEMP权限未决与高轮次/跨来源等仍未解决。开关默认false、localDeletionAllowed=false，R06/R07整体goal active。
 
 证据.local/autonomous-20261001/handover-list/与.local/e2a-cross-20260925-813/至816/；本批实际SHA和远端见commit-review/git-final.json。不合main、不发布/部署、不接原库/现网、不删.local证据。
+
+## 27. P08 原主键保护自主修复（2026-10-01）
+
+输入 d20ea6409862c00f27cc1de3b3400339e557caa9。新增前向主键守卫迁移及四份测试域文件，保留已提交历史迁移。版本事实见看板生成块；本节不改写旧失败结论。
+
+- 自主决策记录：采用独立 BEFORE UPDATE 触发器并 PRECEDES 旧事实守卫；用 OLD.id <=> NEW.id 保护身份，无临时拆除窗口，不修Flyway校验和。childless控制组排除外键遮蔽，精确SQLSTATE 45000、错误码1644与消息归因。
+- 离线144套件/2926测试/0失败/0错误/1既有skip；主/test编译、迁移静态检查和PowerShell解析通过。818非空升级、旧身份允许改写控制回滚、重复迁移、事实/删除/生命周期1/0/0/0；819既有签名审批/两阶段撤回/权限/原键重放1/0/0/0。
+- 817启动/流程失败证据保留，未覆写；818/819数据库均认证停止、原datadir保留，删除0；测试端口已释放。D盘可用 29887725568 字节；无设备定向命令/AVD/原库/现网/部署动作。
+- 作者/自审/执行为同一助手；819为合成身份的服务端签名链，不能替代现场或PDA身份、Keystore、独立JVM/断电/长时。其他R06/R07缺陷及历史边界仍未解决，goal active。
+
+证据索引：.local/autonomous-20261001/p08-id/{offline-reviewed-2,allocation-818,allocation-819,commit-review}/，.local/e2a-cross-20260925-817/至819/。本子项状态为已验证、待本脚本提交；提交推送后精确SHA写入commit-review/git-final.json并在下一子项补核。下一项来源分页。

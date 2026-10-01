@@ -6,35 +6,35 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: 009b9d0
-dirty_entries: 30
+head: d20ea64
+dirty_entries: 16
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
-server: { contract: 0.37.0, paths: 131, flyway: V52, migrations: 52 }
+server: { contract: 0.37.0, paths: 131, flyway: V53, migrations: 53 }
 ```
 <!-- FACTS_END -->
-R07订单内交接查询闭环通过并收口；用户已授权自主修复产品及已验业务，要求逐项回归/提交推送。R06/R07整体未完成，goal active。
+P08 原身份保护修复已完成隔离验证；逐项自主修复继续，R06/R07 整体未完成，goal active。
 
 ## Git、写权与环境
-- 树D:/acrylic-pda-outbound，codex/development；输入/已核远端009b9d05af463339f623a6b7ecbf62a7ca07edf7。单助手写入，实际提交推送见.local/autonomous-20261001/handover-list/commit-review/git-final.json。
-- 全部差异/源码摘要/远端/监听/设备见该commit-review；八项预存保护路径见final-before/protected.json，摘要不变。预存更正IT及两份PDA文档不纳入本批。
-- 四库认证停机，测试端口19330/19434/5173无监听；各292文件ZIP摘要验证通过，原datadir保留，删除0。保全后D30587985920字节，高于20GiB。
-- 真机仅adb devices枚举、各轮前后一致；定向设备命令0、AVD0。无在途重型任务；原服务/库未动。[替换前结论](history/ORCHESTRATION_STATE_before_HANDOVER_LIST_2026-10-01.md)已归档。
+- 树 D:/acrylic-pda-outbound，codex/development；本批输入 d20ea6409862c00f27cc1de3b3400339e557caa9。单助手写入，提交及远端实际结果见 .local/autonomous-20261001/p08-id/commit-review/git-final.json。
+- 全部未提交/未跟踪清单、差异快照及远端见该 commit-review；预存文档、更正链 IT 和旧执行脚本不混入本批。
+- 隔离 817/818/819 证据和数据库保留，删除0；19330/19434无监听，无在途重型任务；原服务与原库未动。D盘可用 29887725568 字节，高于20GiB。
+- 仅 adb 枚举，目标设备命令/AVD为0；[替换前结论](history/ORCHESTRATION_STATE_before_P08_ID_2026-10-01.md)已归档。
 
 ## 本批验收
-- [交接列表](history/R07_HANDOVER_LIST_2026-10-01.md)：订单入口、真实分页、四维详情、返回原页及切仓旧响应保护；权限/仓库/订单与游标绑定，既有开关默认关闭。
-- 813夹具缺order:read及选择器失败，814切仓定位失败，815浏览器6过但快照误拒合法登录审计；816 Java1/0/0/0、浏览器6/6，15业务表不变，只增加本合成身份6条WEB_LOGIN审计。失败原件/数据库不覆盖。
-- 完整服务端144套件/2926项/0失败/0错误/1既有skip；夹具修正后33项定向、Web构建/解析通过；最终IT编译和816实跑通过。接续自审不冒称重跑。
-- 真实HTTP空/整/多页与同时间排序无重漏、权限反例；浏览器边界拦截与真实链路分列。不等同PDA、现场或完整命令流程交付。
+- 新前向主键守卫保留旧迁移校验和，使用 OLD/NEW ID null-safe 比较；精确 SQLSTATE/错误码/消息拒绝 childless 身份改写。
+- 818 迁移IT 1/0/0/0：旧结构允许改ID控制组回滚，非空迁移全表保持、重复迁移安全、原事实/删除守卫及合法生命周期通过。
+- 819 既有签名审批/两阶段撤回/身份与原键重放链 1/0/0/0；完整服务端144套件/2926项/0失败/0错误/1既有skip，编译/脚本解析通过。
+- 817启动失败原件保留；通过报告在 p08-id/offline-reviewed-2、allocation-818/819 和各 attempt。接续核源码摘要/报告，未将读报告冒称重跑。
 
 ## 待修与未验
-- 下一项P08主键保护：新增前向迁移，精确SQLSTATE/消息、无子引用主键反例及非空迁移；不改已提交历史迁移。接着R06分页806、R07首次同键811、同步status、账务贡献、R06Web原命令恢复、mapping3+/R1。
-- TEMP拒绝/候选排除授权、处置续作、高轮次/跨来源、抬头撤销/526与R05原资料/旧BCD、R09既有边界继续保留；按源码及新证据逐项核对。
-- PDA真实绑定/身份/Keystore、独立JVM/OS死亡、断电/长时、现场及完整UI未验；A1.1和后续非空请求/回执迁移按各原记录范围复用。
+- 下一项 R06来源分页：完整limit+1交给Page.from，真实HTTP多页无重漏及身份反例。随后首次同键并发、同步status、账务贡献、Web原命令恢复、mapping3+/R1。
+- TEMP拒绝/候选排除政策、处置续作、高轮次/跨来源、抬头撤销/526、R05原资料/旧BCD、R09既有边界保留。
+- PDA真实绑定/身份/Keystore、独立JVM/OS死亡、断电/长时、现场与完整UI未验；本轮服务端合成身份不覆盖现场。
 
 ## 接续与边界
-- [修订授权与修复顺序](history/AUTONOMOUS_PLAN_2026-10-01_DEFECT_REPAIR.md)、[自主记录§26](history/AUTONOMOUS_PROGRESS_2026-10-01.md)。每项修复→定向/回归→证据→提交推送→更新断点，无需逐步停等。
-- 全开关默认false，localDeletionAllowed=false；不部署、不接原库/现网、不合main、不打标签/Release、不删.local证据。磁盘低于20GB停报，不进入R08/R09/R10新范围。
+- [修订授权](history/AUTONOMOUS_PLAN_2026-10-01_DEFECT_REPAIR.md)、[自主记录§27](history/AUTONOMOUS_PROGRESS_2026-10-01.md)：实现→定向/回归→证据→提交推送→更新断点，无需停等。
+- 默认开关false、localDeletionAllowed=false；不合main/标签/Release/部署，不接原库/现网，不删.local，磁盘低于20GB停报，不扩R08/R09/R10。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实由脚本生成，提交自身SHA以git-final.json及Git历史核对。
