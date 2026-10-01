@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: 2068b69
-dirty_entries: 20
+head: 9f843fa
+dirty_entries: 8
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V51, migrations: 51 }
@@ -16,7 +16,7 @@ server: { contract: 0.37.0, paths: 131, flyway: V51, migrations: 51 }
 R1b-SQL handover write-after-insert rollback and original-key recovery passed in isolated attempt 807. R06 A1.1 remains closed for its approved device scope; R06-BIND-PAGE and R07-P08 defects remain stopped.
 
 ## Git, writer, and environment
-- Tree `D:/acrylic-pda-outbound`, branch `codex/development`, input HEAD/verified remote `2068b6952fb7677b8bd8ad610975ba6b82221f80`; sole writer Codex. Seven new test files plus six docs are this batch. Exact changes/hashes: `.local/autonomous-20261001/handover-sql-rollback/commit-review/`.
+- Tree `D:/acrylic-pda-outbound`, branch `codex/development`, HEAD/verified remote `9f843fa306dd1f216fc08e0964a17945aef30638`; sole writer Codex. Seven new test files plus six docs are this batch. Exact changes/hashes: `.local/autonomous-20261001/handover-sql-rollback/commit-review/`.
 - Seven pre-existing changes stay protected/unstaged; full paths and unchanged hashes are in `handover-sql-rollback/before/protected.json` and `closeout/protected.json`, including both PDA documents.
 - 807 MySQL authenticated-stopped, Spring contexts closed, 19330/19434 clear; system MySQL/3306/33060 untouched. No AVD or targeted device command. SDK adb before/after identical: `22D2910042 device product:m71 model:m71 device:m71 transport_id:1`.
 - D total free bytes `32094982144 → 32025157632`, attempt `32039673856 → 31824330752`, above 20 GiB. Dump/290-file verified ZIP retained, only this new datadir cleaned; old attempts unchanged.
