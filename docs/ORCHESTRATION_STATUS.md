@@ -6,38 +6,37 @@
 ```yaml
 date: 2026-10-01
 branch: codex/development
-head: fffb364
-dirty_entries: 31
+head: a9e926a
+dirty_entries: 26
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V52, migrations: 52 }
 ```
 <!-- FACTS_END -->
-R07 受控更正附件服务闭环通过；R06/R07整体未完成，持续目标active。
+R07 更正查询与原回执恢复闭环通过；R06/R07整体未完成，持续目标active。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，codex/development；输入HEAD/已核远端 fffb3643002b2f343a89b1a1144b6e6a56ceb42c；Codex单写者。实际提交/远端回执在 .local/autonomous-20261001/correction-attachments/commit-review/git-final.json。
-- 本批新增附件字节/上传/消费/路由/引用、新迁移与测试；只修改既有装配文件。完整差异与七项保护路径见本批review/all-changes.txt、before/protected.json及closeout-809/protected.json；七项未暂存、摘要不变。
-- 808/809已认证停库；各292文件ZIP逐项SHA回读与dump保全后只清新datadir。历史attempt、失败日志/.local原证据不删；系统MySQL未动，19330/19434空闲，无在途测试/AVD。
-- 真机22D2910042仅设备枚举、前后一致，定向设备命令/AVD均0。D总可用31943995392→31798108160字节，均高于20GiB。
-- [旧看板归档](history/ORCHESTRATION_STATE_before_CORRECTION_ATTACHMENTS_2026-10-01.md)在本次替换前保存；证据根 .local/autonomous-20261001/correction-attachments/。
+- 树D:/acrylic-pda-outbound，codex/development；本批输入/已核远端a9e926ad3b9e5d1c5993a39c55d9d5f3a534284a，附件批次已推送。Codex单写者；本批实际提交/远端回执见.local/autonomous-20261001/correction-reads/commit-review/git-final.json。
+- 新增5份查询/验签主代码和5份测试；旧产品、旧测试、迁移和默认开关未改。八项保护路径/摘要在before/protected.json；完整差异与清单在本批commit-review，保护项未暂存。
+- 810认证停库；dump与292文件ZIP逐项SHA回读后只清本批新datadir。历史attempt/失败/.local证据保留。无在途测试/AVD，19330/19434释放，系统MySQL未动。
+- 真机22D2910042仅枚举且前后相同，定向设备命令/AVD均0；D31797604352→31724699648字节，高于20GiB。
+- [前看板](history/ORCHESTRATION_STATE_before_CORRECTION_READS_2026-10-01.md)已先归档；证据根.local/autonomous-20261001/correction-reads/及.local/e2a-cross-20260925-810/。
 
-## 实现与实测
-- [附件验收](history/R07_CORRECTION_ATTACHMENTS_2026-10-01.md)：数据库原字节/元数据/上传审计同事务；上传幂等，归属/仓库隔离；CREATE重读实际大小/SHA并原子绑定引用；主管只能读已绑定原件。两开关同时显式启用，默认关闭；[接口说明](parallel/R07/CORRECTION_ATTACHMENTS.md)。
-- 定向新17+既有2项通过；全服务端138套件/2874项/0失败/0错误/1既有skip，编译和脚本解析通过。fixture角色修正后仅重编译；产品/单测摘要不变，复用全量证据不冒称再次运行。
-- 808为新增fixture缺权限：403未进入预期归属404，1/1/0/0；保留失败。修正为既定WAREHOUSE_ADMIN及权限断言后，新809一次1/0/0/0。
-- 809实际31次业务HTTP请求：上传上限/坏件/原键、跨人跨仓、主管草稿拒绝、CREATE反例/写后回滚/原键恢复、合法消费及重启原件读回。迁移124旧表typed全行不变（63非空），6条SQL反例逐条精确SQLSTATE/消息，新两表反例前后不变。
-- 合成业务/身份、loopback Web HTTP；非PDA Bearer、真机/Keystore、独立JVM/断电或现场证据。未改历史迁移、已验账务算法/adapter、生产默认值；旧附件元数据模式不追补真实字节保证。
+## 本批实现与实测
+- [查询验收](history/R07_CORRECTION_READS_2026-10-01.md)、[接口](parallel/R07/CORRECTION_READS.md)：GET命令上下文/验签CREATE原文、原请求人按原键取精确回执；身份/仓库/摘要/签名/行绑定核验，坏件失败关闭。只读一致快照，不执行命令/重签，能力位全false，默认路由关闭。
+- 新19单测通过；最终全服务端140套件/2893项/0失败/0错误/1既有skip，主/test编译、脚本parse0；旧断言与冻结守卫未改。
+- 810一次1/0/0/0：21业务HTTP请求（19GET/2POST，200×10/403×4/404×7），GET上下文→CREATE→主管GET原文→APPROVE→原件恢复；上下文重启后重登录取回原字节。4组查询前后15业务表typed全行不变，原来源/原结果保持。
+- 合成身份/来源前置，真实Web HTTP；非PDA/真机/独立JVM/断电。PDA绑定、撤权竞态、真库坏件、全种类GET、前端/完整账务预览等未验或未实现，范围详见验收。
 
-## 保留边界与停报
-- [A1.1既定收口](history/R06_A1_1_CODEX_2026-09-30.md)、[设备非空请求/回执增量](history/R06_DRAFT_RECEIPT_MIGRATION_DEVICE_2026-10-01.md)、[807交接回滚](history/R07_HANDOVER_SQL_ROLLBACK_2026-10-01.md)沿原输入范围复用，未重跑。
-- [806来源分页](history/R06_MAPPING_HIGH_ROUND_AUDIT_2026-10-01.md)55来源/50返回无游标缺陷、[P08验收撤回](history/R07_P08_REVIEW_STOP_2026-10-01.md)身份保护/归因/非空升级缺口仍停报，未修未重跑。
-- TEMP REJECT/候选排除写授权未决；高轮次/跨来源续作、抬头撤销、锁专项及原资料/旧BCD/现场边界继续保留。新附件通过不恢复P08整体验收。
-- 附件前端/抬头/交接故障、PDA Bearer、跨实例配额、权限撤销竞态、精确5件/50MiB成功组合、长时留存未验或未实现；不把元数据/上传当实物审核。
+## 停报与保留边界
+- 新[账务贡献静态缺口](history/R07_CORRECTION_ACCOUNTING_GAP_2026-10-01.md)：Approve无条件以结果差额记账，未按实际原扣贡献决定是否/逐笔反向。仅源码确认、未新跑反例/修算法；依赖它的补扣暂停，库存差异审批调整仍未完成。
+- [806分页](history/R06_MAPPING_HIGH_ROUND_AUDIT_2026-10-01.md)、[P08](history/R07_P08_REVIEW_STOP_2026-10-01.md)、抬头撤销与526专项继续停报；未被本批GET通过覆盖。
+- [A1.1](history/R06_A1_1_CODEX_2026-09-30.md)、[设备非空迁移](history/R06_DRAFT_RECEIPT_MIGRATION_DEVICE_2026-10-01.md)、[交接回滚807](history/R07_HANDOVER_SQL_ROLLBACK_2026-10-01.md)、[附件809](history/R07_CORRECTION_ATTACHMENTS_2026-10-01.md)沿原验收范围复用，不重跑。
+- TEMP REJECT/排除写授权未决、高轮次/跨来源、故障换机/范围恢复、真实现场/原资料/旧BCD/长时留存继续未完成；旧政策页“无主管/outbox/附件”的过时状态按源码和较新记录处理。
 
 ## 下一步
-- 继续明确政策下的R06/R07独立工作：完整处置/续作证据链、库存差异审批调整、原机不可用交接等按真实依赖拆分；不重复关闭批次，不进R08/R09/R10。
-- 开关全默认false，localDeletionAllowed=false；不部署、不接原库/现网、不合main、不打标签/Release；总体未完成。[自主报告](history/AUTONOMOUS_PROGRESS_2026-10-01.md)与[本批方案](history/AUTONOMOUS_PLAN_2026-10-01_CORRECTION_ATTACHMENTS.md)。
+- 继续R06/R07独立闭环：原机可用交接/受控更正的客户端查询、页面和耐久原键恢复；缺陷依赖项单列，明确政策可执行项持续实现验证。不得以只读接口替代完整业务/UI交付。
+- 全开关默认false，localDeletionAllowed=false；不部署、不接原库/现网、不合main、不打标签/Release，不进R08/R09/R10。[本批方案](history/AUTONOMOUS_PLAN_2026-10-01_CORRECTION_READS.md)、[自主报告](history/AUTONOMOUS_PROGRESS_2026-10-01.md)。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实由脚本生成。

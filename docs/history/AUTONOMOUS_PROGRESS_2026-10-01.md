@@ -209,3 +209,15 @@ R1b 服务层有界范围通过；不扩大到 HTTP/PDA/worker/硬死亡、真�
 - 同一作者/自审/执行；未做PDA Bearer/前端/抬头附件/故障附件/真实内容审核/跨实例配额/断电/长时留存。精确5件/50MiB成功组合与撤权竞态未单独专项；P08和分页缺陷、REJECT/排除权限未决继续单列。R06/R07整体goal active，不进R08/R09/R10。
 
 证据 .local/autonomous-20261001/correction-attachments/、.local/e2a-cross-20260925-808/、809/；实际提交推送见commit-review/git-final.json。本批不开生产、localDeletionAllowed=false、不合main、不部署或打标签。
+
+
+## 22. R07 更正查询与原键回执恢复（2026-10-01）
+
+上批附件已推送a9e926ad3b9e5d1c5993a39c55d9d5f3a534284a。本批据[方案](AUTONOMOUS_PLAN_2026-10-01_CORRECTION_READS.md)补产品GET上下文、原CREATE及原响应；[验收](R07_CORRECTION_READS_2026-10-01.md)与[接口](../parallel/R07/CORRECTION_READS.md)。新增5份主代码/5份测试，旧算法/迁移/默认开关未改。
+
+- 19定向通过；最终全服务端140套件/2893项/0失败/0错误/1既有skip，编译/脚本解析通过。810一次1/0/0/0，21次真实Web业务HTTP；GET上下文进入CREATE/APPROVE，原文核验、权限拒绝、上下文重启后GET原字节恢复；4组15业务表完整typed行相等。
+- 自主决定：库存补扣前核对发现[账务实际贡献缺口](R07_CORRECTION_ACCOUNTING_GAP_2026-10-01.md)，按目标停该子项，不新增不兼容补扣。只读接口是客户端完整闭环必要依赖，直接实现验证，不缩为纯审计。
+- D31797604352→31724699648字节；810认证停库、dump/292文件ZIP逐项回读相等后只清新datadir；真机仅枚举且一致，AVD/目标设备命令0；八项保护/旧迁移摘要不变。原失败轮全部保留。
+- PDA设备绑定实跑/撤权竞态/真库坏件/独立JVM/断电/UI/完整账务预览/全命令类型GET未验；旧分页/P08/抬头缺陷、REJECT/排除权限与高轮次/故障等边界仍在。总体active，不进R08/R09/R10。
+
+证据.local/autonomous-20261001/correction-reads/和.local/e2a-cross-20260925-810/；提交/推送实际SHA见本文件Git历史及本批commit-review/git-final.json。不预写成功，不把GET通过扩大为R07完成。

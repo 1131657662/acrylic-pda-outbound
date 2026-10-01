@@ -197,3 +197,8 @@
 ## R07 受控更正附件增量（2026-10-01）
 
 - [附件字节闭环验收](history/R07_CORRECTION_ATTACHMENTS_2026-10-01.md)：真实Web HTTP上传/原键/权限/CREATE消费/回滚与重启，非空迁移及精确SQL反例；808夹具失败保留、809通过。前端/PDA/现场/留存等边界见记录，不代表R07整体完成。
+
+
+## R07 更正查询与原回执恢复（2026-10-01）
+
+- [查询验收](history/R07_CORRECTION_READS_2026-10-01.md)：产品GET上下文/原文/原键响应，810真实Web HTTP与重启恢复、全服务端回归；[账务贡献静态缺口](history/R07_CORRECTION_ACCOUNTING_GAP_2026-10-01.md)独立停报，GET通过不恢复完整账务验收。
