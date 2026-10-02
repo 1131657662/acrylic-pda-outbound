@@ -1,7 +1,9 @@
 package com.acrylic.outbound.temporary.command;
 
 import com.acrylic.outbound.submissions.SubmissionAccounting;
+import com.acrylic.outbound.submissions.SubmissionEvents;
 import com.acrylic.outbound.submissions.SubmissionStock;
+import com.acrylic.outbound.submissions.SubmissionStore;
 import com.acrylic.outbound.temporary.review.TemporaryDecisionCandidates;
 import com.acrylic.outbound.temporary.review.TemporaryLinkTarget;
 import java.util.List;
@@ -19,6 +21,8 @@ class TemporaryCommandConfigurationTest {
         .withBean(TemporaryShortApprovals.class, () -> mock(TemporaryShortApprovals.class))
         .withBean(SubmissionStock.class, () -> mock(SubmissionStock.class))
         .withBean(SubmissionAccounting.class, () -> mock(SubmissionAccounting.class))
+        .withBean(SubmissionStore.class, () -> mock(SubmissionStore.class))
+        .withBean(SubmissionEvents.class, () -> mock(SubmissionEvents.class))
         .withBean(TemporaryLinkTarget.class, () -> mock(TemporaryLinkTarget.class))
         .withBean(TemporaryLinkMapping.class, () -> mock(TemporaryLinkMapping.class))
         .withBean(TemporaryCommandService.class, () -> mock(TemporaryCommandService.class));
@@ -42,11 +46,11 @@ class TemporaryCommandConfigurationTest {
         runner.withPropertyValues("outbound.temporary.commands.enabled=true").run(context -> {
             assertThat(context).hasNotFailed();
             List<CommandOperation> operations = List.copyOf(context.getBeansOfType(CommandOperation.class).values());
-            assertThat(operations).hasSize(3);
+            assertThat(operations).hasSize(4);
             assertThat(operations.stream().map(CommandOperation::commandType))
-                .containsExactlyInAnyOrder("NORMAL_CONFIRM", "SHORT_APPROVE", "LINK");
+                .containsExactlyInAnyOrder("NORMAL_CONFIRM", "SHORT_APPROVE", "LINK", "REJECT");
             // Ambiguity is rejected by CommandUnitOfWork, so one operation per kind is the contract.
-            assertThat(operations.stream().map(CommandOperation::commandType).distinct().count()).isEqualTo(3);
+            assertThat(operations.stream().map(CommandOperation::commandType).distinct().count()).isEqualTo(4);
             assertThat(context.getBeanNamesForType(TemporaryCommandController.class)).hasSize(1);
         });
     }

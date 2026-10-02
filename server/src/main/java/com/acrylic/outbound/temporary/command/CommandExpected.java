@@ -19,7 +19,7 @@ public final class CommandExpected {
         validate(input,facts,actor,false);
     }
     static void validate(CommandInput input,CommandContext facts,CommandIdentity.Actor actor,boolean candidateContext) {
-        if(!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK").contains(input.kind()))throw CommandErrors.unsupported();
+        if(!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT").contains(input.kind()))throw CommandErrors.unsupported();
         for(String key:UNIMPLEMENTED)if(!(candidateContext && key.equals("candidateContextSha256")) && !input.expected().get(key).isNull())throw CommandErrors.unsupported();
         var expected=current(facts,actor.authVersion());
         if(candidateContext) {

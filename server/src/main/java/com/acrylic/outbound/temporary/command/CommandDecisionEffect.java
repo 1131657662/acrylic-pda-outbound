@@ -46,7 +46,7 @@ public class CommandDecisionEffect {
         // link changes exactly the canonical/mapping/slot context it recorded; neither loses the decision's force.
         boolean superseded=reasons.stream().anyMatch(reason->!reason.startsWith("ACTOR_CONTEXT_CHANGED:")
             && !(applied && reason.startsWith("CONTEXT_CHANGED:")));
-        String evaluation=kind.equals("NORMAL_CONFIRM")?"COMMITTED":kind.equals("LINK")
+        String evaluation=kind.equals("NORMAL_CONFIRM")?"COMMITTED":kind.equals("REJECT")?"REJECTED":kind.equals("LINK")
             ?(superseded?"CONTEXT_CHANGED":applied?"LINK_IN_FORCE":"LINK_DECISION_CURRENT")
             :reasons.isEmpty()?"CURRENT_CONTEXT_MATCHES":"CONTEXT_CHANGED";
         result.put("evaluation",evaluation);

@@ -51,8 +51,10 @@ final class TemporaryConfirmationFixture {
     TemporaryCommandService service(Assembly components) {
         var dependencies=new TemporaryConfirmationOperation.Dependencies(components.source(),
             bean(TemporaryDecisionCandidates.class),bean(TemporaryShortApprovals.class),bean(SubmissionStock.class),components.accounting());
+        var rejection=new TemporaryRejectionOperation.Dependencies(components.source(),bean(TemporaryDecisionCandidates.class),
+            bean(SubmissionStore.class),bean(SubmissionEvents.class));
         List<CommandOperation> operations=List.of(new TemporaryConfirmationOperation("NORMAL_CONFIRM",dependencies),
-            new TemporaryConfirmationOperation("SHORT_APPROVE",dependencies));
+            new TemporaryConfirmationOperation("SHORT_APPROVE",dependencies),new TemporaryRejectionOperation(rejection));
         return assemble(components,operations);
     }
     TemporaryCommandService assemble(Assembly components,List<CommandOperation> operations) {

@@ -30,12 +30,22 @@ public class CommandBusinessIntegrity {
             && candidates.authentic(uuid(context,"warehouseId"),uuid(context,"submissionId"),body,decision.path("candidates")));
         boolean shortShipment=false;for(var product:decision.path("products"))shortShipment|=product.path("shortCount").asLong()>0;
         if(CommandDecision.kind(receipt).equals("LINK")) { link(context,decision);return; }
+        if(CommandDecision.kind(receipt).equals("REJECT")) { rejected(context);return; }
         if(CommandDecision.kind(receipt).equals("SHORT_APPROVE")) {
             CommandErrors.integrity(shortShipment && !decision.path("shortShipmentReason").asText().isBlank()
                 && !receipt.path("actor").path("principalId").equals(context.path("originalOperatorId")));return;
         }
         CommandErrors.integrity(shortShipment!=decision.path("shortApprovalReceiptId").isNull());
         success(context,decision.path("submissionReceipt"),body);
+    }
+    private void rejected(JsonNode context) {
+        var rows=jdbc.queryForList("SELECT status,issues_json FROM submission WHERE id=?",Ids.bytes(uuid(context,"submissionId")));
+        CommandErrors.integrity(rows.size()==1 && "REJECTED".equals(rows.getFirst().get("status")));
+        var issues=rows.getFirst().get("issues_json");
+        CommandErrors.integrity(issues!=null && issues.toString().contains("SUPERVISOR_REJECTED"));
+        var reservations=jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE submission_id=? AND state='REVIEW_RESERVED'",
+            Integer.class,Ids.bytes(uuid(context,"submissionId")));
+        CommandErrors.integrity(reservations>0);
     }
     private void link(JsonNode context,JsonNode decision) {
         var link=decision.path("submissionReceipt");

@@ -46,4 +46,12 @@ public class TemporaryCommandConfiguration {
         return new TemporaryLinkOperation(
             new TemporaryLinkOperation.Dependencies(source, candidates, targets, mappings));
     }
+
+    @Bean
+    CommandOperation temporaryRejection(TemporaryConfirmationSource source, TemporaryDecisionCandidates candidates,
+            com.acrylic.outbound.submissions.SubmissionStore submissions,
+            com.acrylic.outbound.submissions.SubmissionEvents events) {
+        return new TemporaryRejectionOperation(
+            new TemporaryRejectionOperation.Dependencies(source, candidates, submissions, events));
+    }
 }

@@ -18,7 +18,7 @@ final class CommandDecision {
         require(receipt.path("status").asText().equals("RECORDED") && decision.isObject());
         fields(decision,"kind candidates products shortShipmentReason shortApprovalReceiptId shortApprovalSha256 submissionReceipt");
         String kind=receipt.path("commandType").asText();
-        require(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK").contains(kind) && decision.path("kind").asText().equals(kind));
+        require(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT").contains(kind) && decision.path("kind").asText().equals(kind));
         var candidates=decision.path("candidates");
         fields(candidates,"policyVersion fromDate throughDate total fingerprint contextSha256");
         require(candidates.path("policyVersion").asText().equals("REVIEW_DEFAULT_V1"));
@@ -33,6 +33,12 @@ final class CommandDecision {
                 && decision.path("shortApprovalReceiptId").isNull() && decision.path("shortApprovalSha256").isNull()
                 && decision.path("shortShipmentReason").asText().isEmpty());
             link(decision.path("submissionReceipt"),candidates.path("contextSha256"));
+            return;
+        }
+        if(kind.equals("REJECT")) {
+            require(decision.path("submissionReceipt").isNull()
+                && decision.path("shortApprovalReceiptId").isNull()
+                && decision.path("shortApprovalSha256").isNull());
             return;
         }
         if(kind.equals("SHORT_APPROVE"))require(decision.path("submissionReceipt").isNull() && decision.path("shortApprovalReceiptId").isNull() && decision.path("shortApprovalSha256").isNull());
