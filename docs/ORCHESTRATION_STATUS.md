@@ -6,41 +6,36 @@
 ```yaml
 date: 2026-10-02
 branch: codex/development
-head: f60d150
-dirty_entries: 14
+head: 17099e1
+dirty_entries: 19
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V55, migrations: 55 }
 ```
 <!-- FACTS_END -->
-R07更正原键actor回放、HEADER撤回入口保护、历史更正outbox同步兼容与周期重开占用迁移已验证提交推送；R06 TEMP拒绝保留占用已完成离线、命令与真实隔离MySQL回归；R1写后回滚已在843/844隔离MySQL通过并完成回归；mapping3+保持fail-closed审计，目标按用户指令暂停。
+自主目标接续；六项优先缺陷有历史真实验证，R1白名单及写后回滚已验，mapping3+保持fail-closed。实物处置仍未完成。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound、codex/development，产品HEAD及远端以事实块和Git回执核对；周期重开占用迁移与TEMP拒绝提交已推送，事实块由脚本生成。
-- 单助手root写入；旧audit_model已中断无写权，无在途重型任务，842/843/844/846/847/848/849/850/851/852/856认证停机；19330/19434测试监听0，系统MySQL不动。
-- 全部差异/工作树/写者/监听见.local/autonomous-20261002/及closeout/；周期重开证据见.local/e2a-cross-20260925-852/；保护预存PDA文档、更正链IT、旧历史和tools/r07_p08_run_803.ps1。
-- D盘清理后可用约34.1GiB，高于20GiB；删除三份未引用 Demo 快照及主树/旧worktree再生缓存，`.local`证据删除0，目标暂停。
+- 树D:/acrylic-pda-outbound，codex/development；产品17099e1已提交推送，HEAD/远端以Git及事实块核对。
+- 另一同名目标会话01a0f7e2-ea38-75d0-8fb8-c76469c9b7e5曾在途写入/运行884；已只读确认该轮结束及进程退出。本会话01a0fd33-b28f-7e93-a78c-fe6ccc1d4b75单写接续，未发送跨会话消息。
+- 原在途修改保全，未代提交：PDA分析/旧历史、更正链IT、处置HTTP测试/runner、原旧脚本及本机请求JSON；完整清单与哈希见.local/autonomous-20261002/disposition-compat-checkpoint/。
+- 无本轮在途Gradle/隔离库；19330/19434监听无，系统MySQL不动；884失败日志保留。D盘约52GiB，高于20GiB；.local删除0。
 
 ## 已验与失败
-- P08主键6faf322、R06分页33533e4、R07首次原键dce5fe7、同步status bfcf471、实际账务458a943已验证推送，不重复已验工作。
-- 账务full-11完整离线2956项0失败0错误1既有skip；832至836及839隔离验证成功，原库/dump/日志保全停机。
-- e2fa8e8 Web按身份/仓库/提交/类型保存原JSON及键，读回后才POST；原恢复代次、跨页锁、CSRF后身份复核、匹配回执持久完成；恒false写能力契约已收紧。
-- Web final-2：hook35、temporary-review7、Chrome10、typecheck/build/OpenAPI通过；Chrome真实组件/原生存储和锁、合成HTTP。840真实隔离MySQL+MockMvc契约样本1项通过。
-- 880808e更正回放绑定actor_id并校验原字节/完整回执；841真实HTTP四类命令原 actor 回放、同仓库 outsider 404、改正文409、状态不变，1项零失败/错误/跳过。
-- R1测试配置不新增Primary；842歧义失败保留，843/844各1项真实隔离MySQL写后回滚与原键重放通过；完整server test 2956项0失败0错误1既有skip。详见`docs/history/R1_HANDOVER_WRITE_AFTER_ROLLBACK_2026-10-02.md`。
-- mapping3+审计确认现有一次人工关联后的前置条件使重复关联保持stale；没有定义旧目标失效/重链政策，继续fail-closed，详见`docs/history/R06_MAPPING3_FAIL_CLOSED_AUDIT_2026-10-02.md`。
-- HEADER撤回入口在发起端提前返回`CORRECTION_LEDGER_CONFLICT`，真实隔离HTTP与导出回归通过；表头实际恢复语义未定义，继续fail-closed，详见`docs/history/R07_3_HEADER_WITHDRAW_BLOCKER_2026-10-02.md`。
-- 历史更正outbox缺`status`只对三个已知更正事件回退`COMPLETED`，显式坏值和未知事件继续拒绝；b87433d已推送，run 849真实HTTP通过，run 848夹具失败保留，详见`docs/history/R07_LEGACY_CORRECTION_OUTBOX_COMPAT_2026-10-02.md`。
-- 周期重开按取消派发校验周期/订单/状态，锁定并删除旧包占用、推进包周期，账务或冲突事务回滚；38ff2ba已推送，run 852真实HTTP通过，run 850旧夹具迁移不足与run 851渲染器缺失失败均保留。
-- R06 TEMP拒绝命令在完整候选上下文和复核权限下写入REJECTED与原因，保留REVIEW_RESERVED占用；eb7ac94/f015954已推送，离线2969项、命令47项与attempt 856真实隔离MySQL 1项通过，详见`docs/history/R06_TEMP_REJECTION_2026-10-02.md`。
-- `CYCLE_REOPENED`取消派发路径已有真实更正链断言；PHYSICAL_RETURN是否重开、重开后PDA重扫和历史无引用`REVERSAL`归属没有政策依据，保持fail-closed，详见`docs/history/R07_CYCLE_REOPENED_REVERSAL_AUDIT_2026-10-02.md`。
-- regression-1、browser-1、final-1失败证据及830/831/837/838/848/850/851/853/854/855历史失败均保留；Web/841/849/852/856证据根见日报。
+- P08主键6faf322、R06分页33533e4、R07同键dce5fe7、同步status bfcf471、实际账务458a943及Web原命令e2fa8e8均有验证与推送证据，接续不重做。
+- R07原actor回放880808e、HEADER撤回入口8b203d0、历史outbox b87433d、重开占用38ff2ba，R06拒绝eb7ac94/f015954有离线和隔离证据，细节见自主日报与历史验收。
+- R1测试无新增Primary，843/844真实MySQL写后回滚通过；mapping3+没有可安全重链政策，继续fail-closed，未标完成。
+- 17099e1修复实物处置扩展造成的旧命令解析退化：非处置兼容字段缺省/显式null、保持原字节和摘要，无槽位只对处置适用。
+- 当次红灯：协议13项2失败、原命令3项3失败；修复后完整server test 2981项0失败0错误1既有skip，编译通过。证据.local/autonomous-20261002/disposition-compat-*。
+- 实物处置884真实HTTP失败COMMAND_CONTEXT_CHANGED，清单构造已由原会话修正但未复验；本轮确认expected把非空清单摘要与空值比较、store把清单摘要当证据集摘要，均待修。
+- 实物处置SOURCE_RESERVED→QUARANTINED不等于已定“卸货并释放占用”；停止验证测试直接改result，不能代替可信停止链，均不标完成。
+- regression-1、browser-1、final-1、830/831/837/838/842/846/848/850/851/853/854/855及884失败保留；既有现场未验边界未覆盖。
 
 ## 下一步、未验与边界
-- mapping3+与R06/R07余项按优先级接续；PHYSICAL_DISPOSITION及完整停止证据仍未验；目标已暂停，R1隔离事务和TEMP拒绝真实IT已验但现场身份、PDA/Keystore、断电/长时和全量integrationTest仍未替代。
-- HEADER撤回实际恢复语义、历史无引用REVERSAL的归属、PHYSICAL_RETURN周期策略、CYCLE_REOPENED后的PDA重扫、526、R05原资料/旧BCD、R09恢复限制单列。
-- 合成hook/Chrome边界、MockMvc、隔离HTTP/SQL不代替现场；浏览器主动清空/驱逐记录、跨页重新认证仍是限制。
-- 自主决策见`docs/history/AUTONOMOUS_PROGRESS_2026-10-02.md`；生产默认false、localDeletionAllowed=false。不合main/标签/Release/部署、不接原库/现网、不删.local。
+- 先修处置清单摘要/上下文校验并实际回归；再补拒绝→可信停止→卸货释放占用链及原键回放/反例。只用隔离库、测试开关。
+- 原身份/PDA/Keystore、断电/长时、跨来源/高轮次、mapping3+、HEADER实际恢复、历史REVERSAL、PHYSICAL_RETURN策略及重开后PDA重扫、526、R05原资料/旧BCD、R09恢复限制仍单列。
+- HTTP/SQL/合成身份不替代现场，未跑成测试不标完成。每项提交推送后更新断点，详细自主决策和证据见docs/history/AUTONOMOUS_PROGRESS_2026-10-02.md。
+- 生产默认false、localDeletionAllowed=false；不合main/标签/Release/部署、不接原库/现网、不删.local，磁盘低于20GB停下。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实见生成块；提交自身SHA以Git回执核对。
