@@ -6,34 +6,33 @@
 ```yaml
 date: 2026-10-02
 branch: codex/development
-head: e2fa8e8
+head: 880808e
 dirty_entries: 11
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V54, migrations: 54 }
 ```
 <!-- FACTS_END -->
-Web原命令恢复已验证提交推送；单助手继续更正原键actor、mapping3+/R1，goal active。
+R07更正原键actor回放已验证提交推送；单助手继续mapping3+/R1及R06/R07余项，goal active。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound、codex/development，产品HEAD及远端e2fa8e88883aac03b8abe64316b3b5547e2bd68c，断点文档提交自身SHA见Git回执。
-- 单助手root写入；旧audit_model已中断无写权，无在途重型任务，840认证停机；19330/19434测试监听0，系统MySQL不动。
-- 全部差异/工作树/写者/监听见.local/autonomous-20261002/web-recovery/resume-continued/及closeout/；保护预存PDA文档、更正链IT、旧历史和tools/r07_p08_run_803.ps1。
-- D盘产品提交可用24,747,720,704 bytes；每新任务复核20GiB阈值，证据删除0。
+- 主树D:/acrylic-pda-outbound、codex/development，产品HEAD及远端880808ede4284d8ac26eac795de964c01c48c9b9，断点文档提交自身SHA见Git回执。
+- 单助手root写入；旧audit_model已中断无写权，无在途重型任务，841认证停机；19330/19434测试监听0，系统MySQL不动。
+- 全部差异/工作树/写者/监听见.local/autonomous-20261002/correction-replay/及closeout/；保护预存PDA文档、更正链IT、旧历史和tools/r07_p08_run_803.ps1。
+- D盘接续可用值以841 closeout为证，高于20GiB；每新任务复核阈值，证据删除0。
 
 ## 已验与失败
 - P08主键6faf322、R06分页33533e4、R07首次原键dce5fe7、同步status bfcf471、实际账务458a943已验证推送，不重复已验工作。
 - 账务full-11完整离线2956项0失败0错误1既有skip；832至836及839隔离验证成功，原库/dump/日志保全停机。
 - e2fa8e8 Web按身份/仓库/提交/类型保存原JSON及键，读回后才POST；原恢复代次、跨页锁、CSRF后身份复核、匹配回执持久完成；恒false写能力契约已收紧。
-- final-2：hook 35项、temporary-review 7项、Chrome 10项、typecheck/build/OpenAPI通过；Chrome真实组件/原生存储和锁、合成HTTP。840真实隔离MySQL+MockMvc契约样本1项通过；无真实HTTP浏览器组合。
-- regression-1缺样本、browser-1清理断言竞态、final-1写能力契约反例失败均保留；830/831/837/838及离线失败历史见日报。
-- Web证据：.local/autonomous-20261002/web-recovery/final-2、closeout/及.local/e2a-cross-20260925-840/。
+- Web final-2：hook35、temporary-review7、Chrome10、typecheck/build/OpenAPI通过；Chrome真实组件/原生存储和锁、合成HTTP。840真实隔离MySQL+MockMvc契约样本1项通过。
+- 880808e更正回放绑定actor_id并校验原字节/完整回执；841真实HTTP四类命令原 actor 回放、同仓库 outsider 404、改正文409、状态不变，1项零失败/错误/跳过。
+- regression-1、browser-1、final-1失败证据及830/831/837/838历史失败均保留；Web/841证据根见日报。
 
 ## 下一步、未验与边界
-- 更正原键replay未核对actor，下一项补原身份保护/锁内重查/可信回执验证，定向及回归后提交。
-- 随后mapping3+/R1及R06/R07余项。浏览器主动清空/驱逐原记录、跨页重新认证不是本次现场验证范围。
-- HEADER撤回、历史无引用REVERSAL、旧更正outbox、CYCLE_REOPENED未覆盖；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。
-- PDA真实绑定/身份/Keystore、独立JVM/OS死亡、断电/长时、现场/完整UI及全量integrationTest未验；合成边界/MockMvc/HTTP/SQL分别记录。
+- mapping3+/R1及R06/R07余项按优先级接续；TEMP高轮次/跨来源/处置、现场身份、PDA/Keystore、断电/长时和全量integrationTest未验。
+- HEADER撤回、历史无引用REVERSAL、旧更正outbox、CYCLE_REOPENED、526、R05原资料/旧BCD、R09恢复限制单列。
+- 合成hook/Chrome边界、MockMvc、隔离HTTP/SQL不代替现场；浏览器主动清空/驱逐记录、跨页重新认证仍是限制。
 - 自主决策见日报；生产默认false、localDeletionAllowed=false。不合main/标签/Release/部署、不接原库/现网、不删.local。
 <!-- CURRENT_STATE_END -->
 

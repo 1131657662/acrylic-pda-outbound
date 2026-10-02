@@ -10,7 +10,8 @@
 | R07交接同步status兼容 | 已验证推送，远端一致 | bfcf471；sync-status-closeout/git-final.json |
 | R07实际账务贡献 | 离线、迁移、HTTP与导出验证通过，已推送 | 458a943；accounting-repair/closeout/git-final.json |
 | R06 Web原命令恢复 | 构建、hook/契约/Chrome回归通过，已推送 | e2fa8e8；web-recovery/closeout/git-final.json |
-| 更正原键actor、mapping3+/R1及R06/R07余项 | 未完成 | 沿优先级接续 |
+| R07更正原键actor回放 | 编译、离线全量、真实隔离HTTP通过，已推送 | 880808e；e2a-cross-20260925-841、correction-replay/offline-2 |
+| mapping3+/R1及R06/R07余项 | 未完成 | 沿优先级接续 |
 
 ## 自主决策记录
 
@@ -35,24 +36,28 @@
 19. 839完成Web登录及真实恢复结果XLSX/PDF下载后再收口；明确暂存37文件，排除预存更正链IT及PDA差异，458a943提交推送。
 20. Web恢复把身份、仓库、提交和命令类型纳入localStorage键；保存原JSON并读回核对，未确认回执时禁止换键，Web Locks缺失时拒绝发送。
 21. 重试只回放保存的原JSON和原恢复代次；CSRF异步读取后再次校验身份，跨页并发保留首个原请求，匹配回执才持久完成。
-22. 自审发现UI打开时会在存储读取失败后继续拉取事实并清除错误，改为仅无错误时加载；hook读失败反例证明不POST，UI错误保留未单列浏览器反例。
+22. 自审发现UI打开时会在存储读取失败后继续拉取事实并清除错误，改为仅无错误时加载；hook读失败反例证明不POST。
 23. 真实契约测试缺失样本导致首轮回归2项失败；隔离MySQL分配840，MockMvc生成真实样本，认证停机并保全dump/日志。
 24. Web schema原先允许writeConfirmationAvailable=true，契约反例先红；按服务端恒false政策收紧，最终7项契约回归通过。
 25. Chrome回归首次在异步清理完成前读取localStorage造成2项假失败；改为等待可观察结果后10项全部通过，失败证据保留。
-26. e2fa8e8提交推送15文件；校验最终源码哈希及远端。临时提交正文含字面换行转义、归档重复版本事实已在推送前用整文件脚本及body-file纠正；后续长命令全部放脚本。
+26. e2fa8e8提交推送15文件；校验最终源码哈希及远端。后续长命令全部放脚本。
+27. 更正回放原实现只按原键读取，不绑定actor且不校验完整回执；修为actor_id绑定、规范化原字节比较及签名/存储完整性验证，保留统一404防止身份枚举。
+28. 841真实HTTP反例覆盖原 actor 四类命令回放、同仓库 outsider、改正文冲突和前后状态不变；产品提交880808e并推送。
 
 ## 验证与证据索引
 
-已交付：[分页验收](R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)、[原键验收](R07_FIRST_REPLAY_REPAIR_2026-10-02.md)、[同步验收](R07_HANDOVER_SYNC_STATUS_REPAIR_2026-10-02.md)、[账务验收](R07_ACTUAL_ACCOUNTING_REPAIR_2026-10-02.md)、[Web原命令验收](R06_WEB_ORIGINAL_COMMAND_REPAIR_2026-10-02.md)。分页单测5项、822真实HTTP1项；823至825服务层MySQL各1项；826服务层、827真实HTTP各1项；829既有MockMvc+MySQL5项。
+已交付：[分页验收](R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)、[原键验收](R07_FIRST_REPLAY_REPAIR_2026-10-02.md)、[同步验收](R07_HANDOVER_SYNC_STATUS_REPAIR_2026-10-02.md)、[账务验收](R07_ACTUAL_ACCOUNTING_REPAIR_2026-10-02.md)、[Web原命令验收](R06_WEB_ORIGINAL_COMMAND_REPAIR_2026-10-02.md)、[更正回放验收](R07_CORRECTION_REPLAY_ACTOR_REPAIR_2026-10-02.md)。
 
 账务证据根.local/autonomous-20261002/accounting-repair/：offline-full-9/10/11各148套件2956项0失败0错误1既有skip。832至836各1项零失败/错误/跳过；839撤回更正导出1项complete=true。830/831/837/838、离线中断/编码/编译失败全部保留。
 
-Web证据根.local/autonomous-20261002/web-recovery/：final-2/unit为35项通过；final-2/regression包含build、7项temporary-review、OpenAPI及Chrome 10项，均exit 0。840为TemporaryReviewContractIT真实隔离MySQL+MockMvc 1项，零失败/错误/跳过；样本SHA、dump和认证停机日志保全。regression-1缺样本、browser-1断言竞态、final-1契约反例失败保留；closeout保存已提交范围、原始补丁、Git/推送回执。
+Web证据根.local/autonomous-20261002/web-recovery/：final-2/unit为35项通过；final-2/regression包含build、7项temporary-review、OpenAPI及Chrome 10项，均exit 0。840为TemporaryReviewContractIT真实隔离MySQL+MockMvc 1项，零失败/错误/跳过；失败证据保留。
+
+更正回放证据根.local/autonomous-20261002/correction-replay/：compile-1成功、offline-2为2956项0失败0错误1既有skip；841为真实隔离HTTP 1项零失败/错误/跳过，dump、XML、原回执和认证停机记录保全。
 
 ## 仍未解决与边界
 
-更正原键actor、mapping3+/R1、R06/R07余项。HEADER撤回、历史无引用REVERSAL、旧更正outbox、CYCLE_REOPENED未覆盖；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。完整服务端integrationTest尚无可解读全量通过，goal active。
+mapping3+/R1、R06/R07余项。HEADER撤回、历史无引用REVERSAL、旧更正outbox、CYCLE_REOPENED未覆盖；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。完整服务端integrationTest尚无可解读全量通过，goal active。
 
 ## 磁盘与环境
 
-840隔离库已保全停机；无在途重型任务，19330/19434测试监听0，系统MySQL不动，删除0，设备动作0。D盘产品提交回执24,747,720,704 bytes；每新任务复核20GiB阈值。未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。
+841隔离库已保全停机；无在途重型任务，19330/19434测试监听0，系统MySQL不动，删除0，设备动作0。D盘接续可用值以本轮closeout回执为证，仍高于20GiB；未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。
