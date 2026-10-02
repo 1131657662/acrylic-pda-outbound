@@ -55,10 +55,9 @@ public class TemporaryCommandConfiguration {
             new TemporaryRejectionOperation.Dependencies(source, candidates, submissions, events));
     }
 
-    /* Physical disposition remains an isolated operation until its command facts and receipt FK are wired. */
-    /* @Bean
+    @Bean
     CommandOperation temporaryPhysicalDisposition(PhysicalDispositionVerification verification,
             PhysicalDispositionStore store) {
         return new PhysicalDispositionOperation(verification, store);
-    } */
+    }
 }

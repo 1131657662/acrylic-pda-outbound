@@ -25,6 +25,8 @@ class TemporaryCommandConfigurationTest {
         .withBean(SubmissionEvents.class, () -> mock(SubmissionEvents.class))
         .withBean(TemporaryLinkTarget.class, () -> mock(TemporaryLinkTarget.class))
         .withBean(TemporaryLinkMapping.class, () -> mock(TemporaryLinkMapping.class))
+        .withBean(PhysicalDispositionVerification.class, () -> mock(PhysicalDispositionVerification.class))
+        .withBean(PhysicalDispositionStore.class, () -> mock(PhysicalDispositionStore.class))
         .withBean(TemporaryCommandService.class, () -> mock(TemporaryCommandService.class));
 
     @Test void disabledByDefaultRegistersNoOperationAndNoRoute() {
@@ -46,11 +48,11 @@ class TemporaryCommandConfigurationTest {
         runner.withPropertyValues("outbound.temporary.commands.enabled=true").run(context -> {
             assertThat(context).hasNotFailed();
             List<CommandOperation> operations = List.copyOf(context.getBeansOfType(CommandOperation.class).values());
-            assertThat(operations).hasSize(4);
+            assertThat(operations).hasSize(5);
             assertThat(operations.stream().map(CommandOperation::commandType))
-                .containsExactlyInAnyOrder("NORMAL_CONFIRM", "SHORT_APPROVE", "LINK", "REJECT");
+                .containsExactlyInAnyOrder("NORMAL_CONFIRM", "SHORT_APPROVE", "LINK", "REJECT", "PHYSICAL_DISPOSITION");
             // Ambiguity is rejected by CommandUnitOfWork, so one operation per kind is the contract.
-            assertThat(operations.stream().map(CommandOperation::commandType).distinct().count()).isEqualTo(4);
+            assertThat(operations.stream().map(CommandOperation::commandType).distinct().count()).isEqualTo(5);
             assertThat(context.getBeanNamesForType(TemporaryCommandController.class)).hasSize(1);
         });
     }
@@ -60,7 +62,9 @@ class TemporaryCommandConfigurationTest {
             assertThat(context.getBeansOfType(CommandOperation.class).values())
                 .allSatisfy(operation -> {
                     assertThat(operation.recordsDecision()).isTrue();
-                    assertThat(operation.requiresCandidateContext()).isTrue();
+                    if (operation.commandType().equals("PHYSICAL_DISPOSITION"))
+                        assertThat(operation.requiresCandidateContext()).isFalse();
+                    else assertThat(operation.requiresCandidateContext()).isTrue();
                 });
         });
     }
