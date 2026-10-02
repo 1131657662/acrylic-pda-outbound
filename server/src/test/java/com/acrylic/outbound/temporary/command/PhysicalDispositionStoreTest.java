@@ -19,4 +19,16 @@ class PhysicalDispositionStoreTest {
         assertThat(error).isInstanceOf(com.acrylic.outbound.common.BusinessException.class);
         verifyNoInteractions(jdbc);
     }
+
+    @Test void rejectsManifestHashBeforeWriting() {
+        var jdbc = mock(JdbcTemplate.class);
+        var store = new PhysicalDispositionStore(jdbc);
+        UUID bale = UUID.randomUUID();
+        var verified = new PhysicalDispositionVerification.Verified(UUID.randomUUID(),UUID.randomUUID(),UUID.randomUUID(),1,
+            UUID.randomUUID(),UUID.randomUUID(),"a".repeat(64),1,1,List.of(bale));
+        var error = org.assertj.core.api.Assertions.catchThrowable(() ->
+            store.apply(verified,"b".repeat(64),1,List.of(bale),Instant.now()));
+        assertThat(error).isInstanceOf(com.acrylic.outbound.common.BusinessException.class);
+        verifyNoInteractions(jdbc);
+    }
 }

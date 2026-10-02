@@ -48,6 +48,7 @@ param(
     # command means "start empty DB -> run the chosen gated IT (which starts the real server and drives real HTTP)
     # -> report -> stop". Pass -KeepServerRunning to inspect the instance afterwards.
     [switch]$KeepServerRunning
+    ,[switch]$SkipFontPreparation
 )
 
 $ErrorActionPreference = 'Continue'
@@ -210,7 +211,8 @@ try {
     # --rerun-tasks is required: a repeated run with the SAME --tests filter is UP-TO-DATE for Gradle, so the task is
     # skipped and the attempt silently produces no XML at all (observed 2026-09-27, attempt 186). With the filter in
     # place only the named tests execute, so forcing the task cannot widen the run.
-    & (Join-Path $Workspace 'gradlew.bat') -p server integrationTest @testArgs --rerun-tasks --console=plain 2>&1 |
+    $skipArgs = if ($SkipFontPreparation) { @('-x', ':report-rendering:prepareFont') } else { @() }
+    & (Join-Path $Workspace 'gradlew.bat') -p server integrationTest @testArgs @skipArgs --rerun-tasks --console=plain 2>&1 |
         Tee-Object -FilePath $runLog
     $gradleExit = $LASTEXITCODE
 } finally {

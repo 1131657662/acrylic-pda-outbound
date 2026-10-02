@@ -20,6 +20,9 @@ public class PhysicalDispositionStore {
     @Transactional(propagation = Propagation.MANDATORY)
     public UUID apply(PhysicalDispositionVerification.Verified verified, String manifestHash, long manifestVersion,
         List<UUID> orderedBales, Instant recordedAt) {
+        if (!verified.setHash().equals(manifestHash) || manifestVersion <= 0) {
+            throw conflict("DISPOSITION_MANIFEST_VERSION_CONFLICT");
+        }
         if (!verified.activeBales().equals(orderedBales)) throw conflict("DISPOSITION_MANIFEST_SET_CONFLICT");
         UUID disposition = Ids.next();
         int header = jdbc.update("""

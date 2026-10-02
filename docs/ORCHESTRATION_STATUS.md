@@ -6,11 +6,11 @@
 ```yaml
 date: 2026-10-02
 branch: codex/development
-head: 251a9df
-dirty_entries: 8
+head: f60d150
+dirty_entries: 14
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
-server: { contract: 0.37.0, paths: 131, flyway: V54, migrations: 54 }
+server: { contract: 0.37.0, paths: 131, flyway: V55, migrations: 55 }
 ```
 <!-- FACTS_END -->
 R07更正原键actor回放、HEADER撤回入口保护、历史更正outbox同步兼容与周期重开占用迁移已验证提交推送；R06 TEMP拒绝保留占用已完成离线、命令与真实隔离MySQL回归；R1写后回滚已在843/844隔离MySQL通过并完成回归；mapping3+保持fail-closed审计，目标按用户指令暂停。

@@ -26,11 +26,11 @@ class E2aPhysicalDispositionStoreIT {
         assertThat(verified.activeBales()).containsExactly(UUID.fromString(bale));
         var store = new PhysicalDispositionStore(jdbc);
         UUID disposition = new TransactionTemplate(new org.springframework.jdbc.datasource.DataSourceTransactionManager(jdbc.getDataSource())).execute(status ->
-            store.apply(verified,"a".repeat(64),1,verified.activeBales(),Instant.now()));
+            store.apply(verified,verified.setHash(),verified.verificationVersion(),verified.activeBales(),Instant.now()));
         assertThat(jdbc.queryForObject("SELECT state FROM bale_commitment WHERE bale_id=UUID_TO_BIN(?)",String.class,bale)).isEqualTo("QUARANTINED");
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM temporary_physical_disposition_item WHERE disposition_id=?",Integer.class,Ids.bytes(disposition))).isEqualTo(1);
         assertThatThrownBy(() -> new TransactionTemplate(new org.springframework.jdbc.datasource.DataSourceTransactionManager(jdbc.getDataSource())).execute(status ->
-            store.apply(verified,"a".repeat(64),1,verified.activeBales(),Instant.now())))
+            store.apply(verified,verified.setHash(),verified.verificationVersion(),verified.activeBales(),Instant.now())))
             .isInstanceOf(RuntimeException.class);
         Files.writeString(profile.attempt.resolve("test-completed.marker"),"V55 real MySQL disposition transfer and replay rejection\n");
     }
