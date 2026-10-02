@@ -7,7 +7,7 @@ import static com.acrylic.outbound.temporary.protocol.ProtocolJson.require;
 /** All fields participate in the command hash; no values are filled from headers. */
 final class TemporaryCommandShape {
     private static final Set<String> BODY=Set.of("commandVersion","commandType","commandId","warehouseId","source",
-        "submissionId","workRound","authorizationId","freezeDeviceId","sourceRecoveryEpoch","transportRecoveryEpoch","expected","reason");
+        "submissionId","workRound","authorizationId","freezeDeviceId","sourceRecoveryEpoch","transportRecoveryEpoch","expected","dispositionManifest","reason");
     private static final Set<String> EXPECTED=Set.of("canonicalOrderId","mappingVersion","currentSubmissionId","scopeRound",
         "slotVersion","decisionVersion","receivedPayloadSha256","declaredUploadSha256","planSha256","targetRevision",
         "candidateContextSha256","userAuthVersion","evidenceSetId","evidenceSetSha256","verificationId","verificationVersion",
@@ -25,6 +25,9 @@ final class TemporaryCommandShape {
         var source=body.get("source");fields(source,Set.of("kind","creatorDeviceId","clientOrderId"));
         require(text(source,"kind").equals("TEMP"),"SOURCE_KIND_INVALID");uuid(source,"creatorDeviceId");uuid(source,"clientOrderId");
         expected(body.get("expected"),kind);
+        if (kind.equals("PHYSICAL_DISPOSITION")) {
+            require(body.get("dispositionManifest").isObject(),"DISPOSITION_MANIFEST_REQUIRED");
+        } else require(body.get("dispositionManifest").isNull(),"DISPOSITION_MANIFEST_NOT_APPLICABLE");
     }
     private static void expected(JsonNode value,String kind) {
         fields(value,EXPECTED);uuid(value,"currentSubmissionId");

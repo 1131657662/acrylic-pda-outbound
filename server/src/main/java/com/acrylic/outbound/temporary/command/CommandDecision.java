@@ -19,6 +19,15 @@ final class CommandDecision {
         fields(decision,"kind candidates products shortShipmentReason shortApprovalReceiptId shortApprovalSha256 submissionReceipt");
         String kind=receipt.path("commandType").asText();
         require(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION").contains(kind) && decision.path("kind").asText().equals(kind));
+        if (kind.equals("PHYSICAL_DISPOSITION")) {
+            fields(decision,"kind products shortShipmentReason shortApprovalReceiptId shortApprovalSha256 submissionReceipt dispositionId evidenceSetId verificationId manifestSha256 manifestVersion");
+            require(decision.path("products").isArray() && decision.path("shortShipmentReason").asText().isEmpty()
+                && decision.path("shortApprovalReceiptId").isNull() && decision.path("shortApprovalSha256").isNull()
+                && decision.path("submissionReceipt").isNull());
+            uuid(decision.path("dispositionId")); uuid(decision.path("evidenceSetId")); uuid(decision.path("verificationId"));
+            hash(decision.path("manifestSha256")); require(decision.path("manifestVersion").asText().matches("[1-9][0-9]*"));
+            return;
+        }
         var candidates=decision.path("candidates");
         fields(candidates,"policyVersion fromDate throughDate total fingerprint contextSha256");
         require(candidates.path("policyVersion").asText().equals("REVIEW_DEFAULT_V1"));
@@ -27,16 +36,6 @@ final class CommandDecision {
         for(String key:List.of("fingerprint","contextSha256"))hash(candidates.path(key));
         require(candidates.path("contextSha256").equals(receipt.path("expected").path("candidateContextSha256")));
         require(decision.path("products").isArray() && !decision.path("products").isEmpty() && decision.path("shortShipmentReason").isTextual());
-        if(kind.equals("PHYSICAL_DISPOSITION")) {
-            require(decision.path("submissionReceipt").isNull() && decision.path("shortApprovalReceiptId").isNull()
-                && decision.path("shortApprovalSha256").isNull());
-            require(decision.path("dispositionId").isTextual() && decision.path("evidenceSetId").isTextual()
-                && decision.path("verificationId").isTextual() && decision.path("manifestSha256").isTextual()
-                && decision.path("manifestVersion").isTextual());
-            uuid(decision.path("dispositionId")); uuid(decision.path("evidenceSetId")); uuid(decision.path("verificationId"));
-            hash(decision.path("manifestSha256")); require(decision.path("manifestVersion").asText().matches("[1-9][0-9]*"));
-            return;
-        }
         if(kind.equals("LINK")) {
             // A link is only ever a human decision over a complete, uniquely resolvable candidate set.
             require(decision.path("submissionReceipt").isObject() && candidates.path("total").asText().equals("1")

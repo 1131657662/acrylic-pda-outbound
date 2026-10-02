@@ -24,7 +24,10 @@ public final class CommandExpected {
         for(String key:List.of("evidenceSetId","evidenceSetSha256","verificationId","verificationVersion","verificationAlgorithmVersion",
             "dispositionManifestSha256","dispositionManifestVersion"))
             if(physical != !input.expected().get(key).isNull()) throw CommandErrors.unsupported();
-        for(String key:UNIMPLEMENTED)if(!(candidateContext && key.equals("candidateContextSha256")) && !input.expected().get(key).isNull())throw CommandErrors.unsupported();
+        for(String key:UNIMPLEMENTED)if(!(candidateContext && key.equals("candidateContextSha256"))
+            && !(physical && Set.of("evidenceSetId","evidenceSetSha256","verificationId","verificationVersion",
+                "verificationAlgorithmVersion","dispositionManifestSha256","dispositionManifestVersion").contains(key))
+            && !input.expected().get(key).isNull())throw CommandErrors.unsupported();
         var expected=current(facts,actor.authVersion());
         if(candidateContext) {
             // No human-reviewed candidate binding means no decision, and never an automatic one.
