@@ -37,7 +37,11 @@ public class CommandFacts {
              'decisionVersion',CAST(d.decision_version AS CHAR),'slotVersion',CAST(l.slot_version AS CHAR),
              'slotScopeId',BIN_TO_UUID(l.scope_id),'slotSubmissionId',BIN_TO_UUID(l.current_submission_id),
              'slotRound',CAST(l.work_round AS CHAR),'targetRevision',CAST(o.current_revision AS CHAR),
-             'receivedPayloadSha256',p.payload_sha256,'declaredUploadSha256',u.payload_sha256)
+             'receivedPayloadSha256',p.payload_sha256,'declaredUploadSha256',u.payload_sha256,
+             'evidenceSetId',BIN_TO_UUID(es.id),'evidenceSetSha256',es.set_sha256,
+             'verificationId',BIN_TO_UUID(ev.id),'verificationVersion',CAST(ev.verification_version AS CHAR),
+             'verificationAlgorithmVersion',CAST(ev.algorithm_version AS CHAR),'dispositionManifestSha256',NULL,
+             'dispositionManifestVersion',NULL)
             FROM submission s JOIN submission_scope c ON c.id=s.scope_id
             JOIN temporary_work_origin t ON t.creator_device_id=c.creator_device_id AND t.client_order_id=c.client_order_id
             JOIN temporary_authorization a ON a.id=t.authorization_id AND a.id=s.temporary_authorization_id
@@ -48,6 +52,8 @@ public class CommandFacts {
             LEFT JOIN outbound_order o ON o.id=c.canonical_order_id AND o.warehouse_id=c.warehouse_id
             LEFT JOIN order_submission_slot l ON l.order_id=o.id
             LEFT JOIN submission_payload p ON p.submission_id=s.id LEFT JOIN submission_upload u ON u.submission_id=s.id
+            LEFT JOIN source_evidence_set es ON es.scope_id=c.id AND es.submission_id=s.id AND es.work_round=s.work_round
+            LEFT JOIN source_evidence_verification ev ON ev.set_id=es.id AND ev.scope_id=es.scope_id
             WHERE s.id=? AND c.source_order_id IS NULL AND s.assignment_id IS NULL AND s.continuation_id IS NULL
             """,String.class,Ids.bytes(submission));
         if(rows.size()!=1)throw CommandErrors.missing();

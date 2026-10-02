@@ -29,6 +29,10 @@ public final class CommandExpected {
                 "verificationAlgorithmVersion","dispositionManifestSha256","dispositionManifestVersion").contains(key))
             && !input.expected().get(key).isNull())throw CommandErrors.unsupported();
         var expected=current(facts,actor.authVersion());
+        if (physical) {
+            for (String key : List.of("evidenceSetId","evidenceSetSha256","verificationId","verificationVersion","verificationAlgorithmVersion"))
+                expected.set(key, facts.json().get(key));
+        }
         if(candidateContext) {
             // No human-reviewed candidate binding means no decision, and never an automatic one.
             if(!input.expected().path("candidateContextSha256").isTextual())throw CommandErrors.confirmationRequired();
