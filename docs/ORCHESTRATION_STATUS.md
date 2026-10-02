@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-02
 branch: codex/development
-head: c22538e
-dirty_entries: 8
+head: cad8db9
+dirty_entries: 11
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V54, migrations: 54 }
@@ -31,11 +31,13 @@ R07更正原键actor回放、HEADER撤回入口保护与历史更正outbox同步
 - mapping3+审计确认现有一次人工关联后的前置条件使重复关联保持stale；没有定义旧目标失效/重链政策，继续fail-closed，详见`docs/history/R06_MAPPING3_FAIL_CLOSED_AUDIT_2026-10-02.md`。
 - HEADER撤回入口在发起端提前返回`CORRECTION_LEDGER_CONFLICT`，真实隔离HTTP与导出回归通过；表头实际恢复语义未定义，继续fail-closed，详见`docs/history/R07_3_HEADER_WITHDRAW_BLOCKER_2026-10-02.md`。
 - 历史更正outbox缺`status`只对三个已知更正事件回退`COMPLETED`，显式坏值和未知事件继续拒绝；b87433d已推送，run 849真实HTTP通过，run 848夹具失败保留，详见`docs/history/R07_LEGACY_CORRECTION_OUTBOX_COMPAT_2026-10-02.md`。
+- 历史更正outbox缺`status`只对三个已知更正事件回退`COMPLETED`，显式坏值和未知事件继续拒绝；b87433d已推送，run 849真实HTTP通过，run 848夹具失败保留，详见`docs/history/R07_LEGACY_CORRECTION_OUTBOX_COMPAT_2026-10-02.md`。
+- `CYCLE_REOPENED`取消派发路径已有真实更正链断言；PHYSICAL_RETURN是否重开、重开后PDA重扫和历史无引用`REVERSAL`归属没有政策依据，保持fail-closed，详见`docs/history/R07_CYCLE_REOPENED_REVERSAL_AUDIT_2026-10-02.md`。
 - regression-1、browser-1、final-1失败证据及830/831/837/838/848历史失败均保留；Web/841/849证据根见日报。
 
 ## 下一步、未验与边界
 - mapping3+与R06/R07余项按优先级接续；R1隔离事务已验但现场身份、PDA/Keystore、断电/长时和全量integrationTest仍未替代。
-- HEADER撤回实际恢复语义、历史无引用REVERSAL、占用回退、CYCLE_REOPENED历史兼容的真实组合、526、R05原资料/旧BCD、R09恢复限制单列。
+- HEADER撤回实际恢复语义、历史无引用REVERSAL的归属、占用回退、PHYSICAL_RETURN周期策略、CYCLE_REOPENED后的PDA重扫、526、R05原资料/旧BCD、R09恢复限制单列。
 - 合成hook/Chrome边界、MockMvc、隔离HTTP/SQL不代替现场；浏览器主动清空/驱逐记录、跨页重新认证仍是限制。
 - 自主决策见日报；生产默认false、localDeletionAllowed=false。不合main/标签/Release/部署、不接原库/现网、不删.local。
 <!-- CURRENT_STATE_END -->

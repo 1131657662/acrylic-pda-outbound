@@ -13,6 +13,7 @@
 | R07更正原键actor回放 | 编译、离线全量、真实隔离HTTP通过，已推送 | 880808e；e2a-cross-20260925-841、correction-replay/offline-2 |
 | R07 HEADER撤回入口保护 | 编译、离线全量、真实隔离HTTP与导出回归通过，已推送 | 8b203d0；e2a-cross-20260925-847；R07_3_HEADER_WITHDRAW_BLOCKER_2026-10-02.md |
 | R07历史更正outbox同步兼容 | 单测、真实隔离HTTP、完整服务端回归通过，已推送 | b87433d；e2a-cross-20260925-849；R07_LEGACY_CORRECTION_OUTBOX_COMPAT_2026-10-02.md |
+| R07 CYCLE_REOPENED/历史 REVERSAL 审计 | 已核对；取消派发重开有组合证据，历史无引用账务保持 fail-closed | R07_CYCLE_REOPENED_REVERSAL_AUDIT_2026-10-02.md |
 | mapping3+/R1及R06/R07余项 | 未完成 | 沿优先级接续 |
 
 ## 自主决策记录
@@ -50,6 +51,7 @@
 31. mapping3+ 只记录 fail-closed：版本字段可表达高值，但没有安全的重复关联/旧目标失效政策；不凭字段或自动重链入口宣称完成。
 32. HEADER 撤回沿确认端既有 `CORRECTION_LEDGER_CONFLICT` 在发起端提前拒绝，避免生成必然无法确认的 `WITHDRAW_PENDING`；实际表头恢复语义未定义，保持 fail-closed。run 846 的渲染器缺失失败保留，run 847 配置渲染器后 1/0/0/0 通过。
 33. 历史更正 outbox 缺少 `status` 时只对三个已知更正事件回退 `COMPLETED`，显式坏值和未知事件继续拒绝；依据原订单保持 `COMPLETED` 的 R07 规则。run 848 夹具占位符失败保留，run 849 真实 HTTP 1/0/0/0 通过，完整回归为 148 套件/2964 项/0 失败/0 错误/1 既有 skip。
+34. `CYCLE_REOPENED` 只按已编码的 `DISPATCH_CANCELLATION` 收口；历史无引用 `REVERSAL` 没有可审计归属政策，继续由贡献图返回 `CORRECTION_LEDGER_CONFLICT`，不回填、不猜测、不把取消派发覆盖成完整重扫能力。
 
 ## 验证与证据索引
 
@@ -67,9 +69,11 @@ HEADER撤回证据根`.local/e2a-cross-20260925-847/`：E2aCorrectionAccountingH
 
 历史更正 outbox 兼容证据根`.local/e2a-cross-20260925-849/`：`E2aHandoverSyncHttpIT`为1项通过、0失败、0错误、0 skip；新/旧交接消息与缺 `status` 的历史 `CORRECTION_EFFECTIVE` 均只发布一次，回放响应相同，投影状态为`COMPLETED`；首轮848的夹具失败证据保留。专项记录见[R07历史更正outbox同步兼容](R07_LEGACY_CORRECTION_OUTBOX_COMPAT_2026-10-02.md)。
 
+周期/历史账务审计见[R07 CYCLE_REOPENED 与历史 REVERSAL 审计](R07_CYCLE_REOPENED_REVERSAL_AUDIT_2026-10-02.md)：取消派发重开、不可用快照和重复重开已有更正链断言；PHYSICAL_RETURN 触发与 PDA 重扫未定义/未验，历史无引用 REVERSAL 保持 fail-closed。
+
 ## 仍未解决与边界
 
-mapping3+及R06/R07余项。HEADER撤回实际恢复语义、历史无引用REVERSAL、占用回退、CYCLE_REOPENED历史兼容的真实组合仍未完成；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。R1写后回滚已完成隔离验收，但不替代现场边界，goal active。
+mapping3+及R06/R07余项。HEADER撤回实际恢复语义、历史无引用REVERSAL的归属、占用回退、PHYSICAL_RETURN周期策略与CYCLE_REOPENED后的 PDA 重扫仍未完成；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。R1写后回滚已完成隔离验收，但不替代现场边界，goal active。
 
 ## 磁盘与环境
 
