@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-02
 branch: codex/development
-head: 0615d85
-dirty_entries: 8
+head: 8740b65
+dirty_entries: 9
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V54, migrations: 54 }
@@ -19,7 +19,7 @@ R07更正原键actor回放、HEADER撤回入口保护、历史更正outbox同步
 - 主树D:/acrylic-pda-outbound、codex/development，产品HEAD及远端以事实块和Git回执核对；周期重开占用迁移与TEMP拒绝提交已推送，事实块由脚本生成。
 - 单助手root写入；旧audit_model已中断无写权，无在途重型任务，842/843/844/846/847/848/849/850/851/852认证停机；19330/19434测试监听0，系统MySQL不动。
 - 全部差异/工作树/写者/监听见.local/autonomous-20261002/及closeout/；周期重开证据见.local/e2a-cross-20260925-852/；保护预存PDA文档、更正链IT、旧历史和tools/r07_p08_run_803.ps1。
-- D盘清理后可用约21.47GiB，高于20GiB；构建缓存已清理，`.local`证据删除0，目标暂停。
+- D盘清理后可用约30.85GiB，高于20GiB；主树及旧worktree再生缓存已清理，`.local`证据删除0，目标暂停。
 
 ## 已验与失败
 - P08主键6faf322、R06分页33533e4、R07首次原键dce5fe7、同步status bfcf471、实际账务458a943已验证推送，不重复已验工作。
