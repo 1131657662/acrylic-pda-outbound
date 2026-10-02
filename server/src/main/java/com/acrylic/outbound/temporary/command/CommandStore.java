@@ -45,11 +45,14 @@ public class CommandStore {
              original_canonical_order_id,original_mapping_id,evidence_set_id,evidence_verification_id,
              command_version,command_type,canonical_command_bytes,command_sha256,receipt_version,
              original_response_bytes,original_response_sha256,unsigned_receipt_sha256,signature_key_id,signed_receipt,recorded_at)
-            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,NULL,NULL,1,?,?,?,1,?,?,?,?,?,?)
+             VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,CASE WHEN ?='PHYSICAL_DISPOSITION' THEN ? ELSE NULL END,
+             CASE WHEN ?='PHYSICAL_DISPOSITION' THEN ? ELSE NULL END,1,?,?,?,1,?,?,?,?,?,?)
             """,Ids.bytes(w.receiptId()),Ids.bytes(w.requestId()),Ids.bytes(c.id("warehouseId")),Ids.bytes(c.id("scopeId")),
             Ids.bytes(c.id("submissionId")),c.version("workRound"),Ids.bytes(c.id("creatorDeviceId")),Ids.bytes(c.id("clientOrderId")),
             Ids.bytes(c.id("authorizationId")),Ids.bytes(c.id("originalOperatorId")),c.version("sourceRecoveryEpoch"),
             c.id("canonicalOrderId")==null?null:Ids.bytes(c.id("canonicalOrderId")),Ids.bytes(c.id("mappingId")),
+            w.command().kind(),w.command().expected().path("evidenceSetId").isNull()?null:Ids.bytes(UUID.fromString(w.command().expected().path("evidenceSetId").asText())),
+            w.command().kind(),w.command().expected().path("verificationId").isNull()?null:Ids.bytes(UUID.fromString(w.command().expected().path("verificationId").asText())),
             w.command().kind(),w.command().bytes(),w.command().digest(),r.original(),r.originalSha256(),r.unsignedSha256(),
             r.keyId(),r.token(),Timestamp.from(w.recordedAt()));
     }
