@@ -15,7 +15,7 @@ class PhysicalDispositionStoreTest {
         var jdbc = mock(JdbcTemplate.class);
         var bales = List.of(UUID.randomUUID(), UUID.randomUUID());
         var error = catchThrowable(() -> new PhysicalDispositionStore(jdbc)
-            .apply(verified(bales), "b".repeat(64), 1, bales.reversed(), Instant.now()));
+            .apply(verified(bales), "b".repeat(64), 1, items(bales.reversed(), "RELEASE"), Instant.now()));
         assertThat(error).isInstanceOf(BusinessException.class);
         verifyNoInteractions(jdbc);
     }
@@ -24,7 +24,7 @@ class PhysicalDispositionStoreTest {
         var jdbc = mock(JdbcTemplate.class);
         var bales = List.of(UUID.randomUUID());
         assertThatThrownBy(() -> new PhysicalDispositionStore(jdbc)
-            .apply(verified(bales), "not-a-sha256", 1, bales, Instant.now()))
+            .apply(verified(bales), "not-a-sha256", 1, items(bales, "RELEASE"), Instant.now()))
             .isInstanceOf(BusinessException.class);
         verifyNoInteractions(jdbc);
     }
@@ -36,7 +36,8 @@ class PhysicalDispositionStoreTest {
         when(jdbc.queryForObject(anyString(), eq(Long.class), any(Object[].class))).thenReturn(1L);
         TransactionSynchronizationManager.setActualTransactionActive(true);
         try {
-            UUID id = new PhysicalDispositionStore(jdbc).apply(verified(bales), "b".repeat(64), 1, bales, Instant.now());
+            UUID id = new PhysicalDispositionStore(jdbc).apply(verified(bales), "b".repeat(64), 1,
+                items(bales, "QUARANTINE"), Instant.now());
             assertThat(id).isNotNull();
             var headers = mockingDetails(jdbc).getInvocations().stream()
                 .filter(call -> call.getArgument(0).toString().contains("INSERT INTO temporary_physical_disposition\n"))
@@ -44,6 +45,24 @@ class PhysicalDispositionStoreTest {
             assertThat(headers).hasSize(1);
             assertThat(Arrays.asList(headers.getFirst().getArguments())).contains("b".repeat(64));
         } finally { TransactionSynchronizationManager.setActualTransactionActive(false); }
+    }
+
+    @Test void releaseDeletesOnlyTheVerifiedSourceReservation() {
+        var jdbc = mock(JdbcTemplate.class);
+        var bale = UUID.randomUUID();
+        when(jdbc.update(anyString(), any(Object[].class))).thenReturn(1);
+        when(jdbc.queryForObject(anyString(), eq(Long.class), any(Object[].class))).thenReturn(7L);
+        TransactionSynchronizationManager.setActualTransactionActive(true);
+        try {
+            new PhysicalDispositionStore(jdbc).apply(verified(List.of(bale)), "b".repeat(64), 1,
+                items(List.of(bale), "RELEASE"), Instant.now());
+            assertThat(mockingDetails(jdbc).getInvocations()).anyMatch(call -> call.getArgument(0).toString().contains("DELETE FROM bale_commitment"));
+            assertThat(mockingDetails(jdbc).getInvocations()).anyMatch(call -> call.getArgument(0).toString().contains("temporary_physical_disposition_item") && Arrays.asList(call.getArguments()).contains("RELEASE"));
+        } finally { TransactionSynchronizationManager.setActualTransactionActive(false); }
+    }
+
+    private static List<PhysicalDispositionManifest.Item> items(List<UUID> bales, String action) {
+        return bales.stream().map(bale -> new PhysicalDispositionManifest.Item(bale, action)).toList();
     }
 
     private PhysicalDispositionVerification.Verified verified(List<UUID> bales) {

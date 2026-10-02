@@ -11,17 +11,34 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Atomically records disposition evidence and transfers every source reservation. */
+/** Atomically records disposition evidence and releases or quarantines every source reservation. */
 @Repository
 public class PhysicalDispositionStore {
+    private static final Set<String> ACTIONS = Set.of("RELEASE", "QUARANTINE");
     private final JdbcTemplate jdbc;
     public PhysicalDispositionStore(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
     @Transactional(propagation = Propagation.MANDATORY)
     public UUID apply(PhysicalDispositionVerification.Verified verified, String manifestHash, long manifestVersion,
-        List<UUID> orderedBales, Instant recordedAt) {
-        validate(verified, manifestHash, manifestVersion, orderedBales);
+        List<PhysicalDispositionManifest.Item> items, Instant recordedAt) {
+        validate(verified, manifestHash, manifestVersion, items);
         UUID disposition = Ids.next();
+        insertHeader(disposition, verified, manifestHash, manifestVersion, recordedAt);
+        for (var item : items) applyBale(verified, disposition, item);
+        return disposition;
+    }
+
+    private void validate(PhysicalDispositionVerification.Verified verified, String manifestHash, long manifestVersion,
+        List<PhysicalDispositionManifest.Item> items) {
+        if (verified == null || items == null || manifestHash == null || !manifestHash.matches("[a-f0-9]{64}")
+            || manifestVersion <= 0 || items.stream().anyMatch(item -> item == null || !ACTIONS.contains(item.action())))
+            throw conflict("DISPOSITION_MANIFEST_VERSION_CONFLICT");
+        var actual = items.stream().map(PhysicalDispositionManifest.Item::baleId).toList();
+        if (!verified.activeBales().equals(actual)) throw conflict("DISPOSITION_MANIFEST_SET_CONFLICT");
+    }
+
+    private void insertHeader(UUID disposition, PhysicalDispositionVerification.Verified verified,
+        String manifestHash, long manifestVersion, Instant recordedAt) {
         int header = jdbc.update("""
             INSERT INTO temporary_physical_disposition
             (id,warehouse_id,scope_id,submission_id,work_round,evidence_set_id,evidence_verification_id,manifest_sha256,manifest_version,recorded_at)
@@ -30,31 +47,36 @@ public class PhysicalDispositionStore {
             verified.round(), Ids.bytes(verified.set()), Ids.bytes(verified.verification()), manifestHash, manifestVersion,
             Timestamp.from(recordedAt));
         if (header != 1) throw new IllegalStateException("DISPOSITION_HEADER_INSERT");
-        for (UUID bale : orderedBales) applyBale(verified, disposition, bale);
-        return disposition;
     }
 
-    private void validate(PhysicalDispositionVerification.Verified verified, String manifestHash, long manifestVersion,
-        List<UUID> orderedBales) {
-        if (manifestHash == null || !manifestHash.matches("[a-f0-9]{64}") || manifestVersion <= 0)
-            throw conflict("DISPOSITION_MANIFEST_VERSION_CONFLICT");
-        if (!verified.activeBales().equals(orderedBales)) throw conflict("DISPOSITION_MANIFEST_SET_CONFLICT");
-    }
-
-    private void applyBale(PhysicalDispositionVerification.Verified verified, UUID disposition, UUID bale) {
+    private void applyBale(PhysicalDispositionVerification.Verified verified, UUID disposition,
+        PhysicalDispositionManifest.Item item) {
+        UUID bale = item.baleId();
         long cycle = jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=? FOR UPDATE", Long.class, Ids.bytes(bale));
-        int item = jdbc.update("INSERT INTO temporary_physical_disposition_item(disposition_id,bale_id,dispatch_cycle,disposition) VALUES(?,?,?,'PHYSICAL_DISPOSED')",
-            Ids.bytes(disposition), Ids.bytes(bale), cycle);
-        if (item != 1) throw conflict("DISPOSITION_ITEM_INSERT");
-        int changed = jdbc.update("""
+        int inserted = jdbc.update("INSERT INTO temporary_physical_disposition_item(disposition_id,bale_id,dispatch_cycle,disposition,action) VALUES(?,?,?,'PHYSICAL_DISPOSED',?)",
+            Ids.bytes(disposition), Ids.bytes(bale), cycle, item.action());
+        if (inserted != 1) throw conflict("DISPOSITION_ITEM_INSERT");
+        int changed = item.action().equals("RELEASE") ? release(verified, bale, cycle) : quarantine(verified, disposition, bale, cycle);
+        if (changed != 1) throw conflict("DISPOSITION_RESERVATION_CHANGED");
+        BarcodeChanges.bale(jdbc, bale);
+    }
+
+    private int release(PhysicalDispositionVerification.Verified verified, UUID bale, long cycle) {
+        return jdbc.update("""
+            DELETE FROM bale_commitment
+            WHERE bale_id=? AND state='SOURCE_RESERVED' AND source_scope_id=? AND source_evidence_set_id=?
+              AND source_warehouse_id=? AND dispatch_cycle=? AND disposition_id IS NULL
+            """, Ids.bytes(bale), Ids.bytes(verified.scope()), Ids.bytes(verified.set()), Ids.bytes(verified.warehouse()), cycle);
+    }
+
+    private int quarantine(PhysicalDispositionVerification.Verified verified, UUID disposition, UUID bale, long cycle) {
+        return jdbc.update("""
             UPDATE bale_commitment SET state='QUARANTINED',disposition_id=?
             WHERE bale_id=? AND state='SOURCE_RESERVED' AND source_scope_id=? AND source_evidence_set_id=?
               AND source_warehouse_id=? AND dispatch_cycle=? AND disposition_id IS NULL
             """, Ids.bytes(disposition), Ids.bytes(bale), Ids.bytes(verified.scope()), Ids.bytes(verified.set()),
             Ids.bytes(verified.warehouse()), cycle);
-        if (changed != 1) throw conflict("DISPOSITION_RESERVATION_CHANGED");
-        BarcodeChanges.bale(jdbc, bale);
     }
 
-    private static BusinessException conflict(String code) { return new BusinessException(409, code, "逐包处置未能整体提交"); }
+    private static BusinessException conflict(String code) { return new BusinessException(409, code, "disposition item cannot be committed"); }
 }
