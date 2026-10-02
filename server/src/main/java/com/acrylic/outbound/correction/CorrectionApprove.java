@@ -22,7 +22,8 @@ final class CorrectionApprove implements CorrectionCommand.Operation {
         if (CorrectionResultSnapshots.number(current, "result_version") != expected
             || store.resultVersionExists(write.orderId(), version) != 0) throw CorrectionCommand.stale();
         var lines = store.lines(write.documentId());
-        store.dispatchesForUpdate(write.orderId());
+        var dispatches = store.dispatchesForUpdate(write.orderId());
+        store.lockBalesAndCommitments(dispatches);
         var result = result(write, current, lines, version);
         snapshots.version(write, current, result);
         var applied = effects.apply(write, version, lines); result.setAll(applied);

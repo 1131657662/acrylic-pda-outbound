@@ -234,6 +234,16 @@ public class CorrectionStore {
             """,Ids.bytes(orderId));
     }
 
+    /** Locks every affected bale and its current commitment in stable bale-id order before effects begin. */
+    public void lockBalesAndCommitments(List<Map<String,Object>> dispatches) {
+        dispatches.stream().map(row -> UUID.fromString(row.get("bale_id").toString())).distinct().sorted()
+            .forEach(bale -> {
+                if (jdbc.queryForList("SELECT id FROM bale WHERE id=? FOR UPDATE", Ids.bytes(bale)).size() != 1)
+                    throw CorrectionCommand.missing();
+                jdbc.queryForList("SELECT bale_id FROM bale_commitment WHERE bale_id=? FOR UPDATE", Ids.bytes(bale));
+            });
+    }
+
     public void insertEffectiveScan(UUID orderId,long version,UUID dispatchId,UUID captureId,long sequence,
         boolean effective,long weightG,UUID lineId) {
         jdbc.update("""
@@ -333,6 +343,27 @@ public class CorrectionStore {
         Integer found=jdbc.queryForObject("SELECT COUNT(*) FROM cycle_reopening WHERE original_dispatch_id=?",
             Integer.class,Ids.bytes(originalDispatchId));
         return found!=null && found>0;
+    }
+
+    /** Removes the old dispatch owner and advances the bale cycle after all expected facts are locked. */
+    public void reopenDispatchOccupancy(UUID orderId, UUID baleId, int cycleBefore, int cycleAfter) {
+        if (cycleAfter != cycleBefore + 1) throw CorrectionCommand.ledgerConflict();
+        Long current = jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=? FOR UPDATE", Long.class, Ids.bytes(baleId));
+        if (current == null || current != cycleBefore) throw CorrectionCommand.ledgerConflict();
+        var owners = jdbc.queryForList("""
+            SELECT BIN_TO_UUID(order_id) order_id,state,dispatch_cycle
+            FROM bale_commitment WHERE bale_id=? FOR UPDATE
+            """, Ids.bytes(baleId));
+        if (owners.size() != 1) throw CorrectionCommand.ledgerConflict();
+        var owner = owners.getFirst();
+        if (!orderId.toString().equals(String.valueOf(owner.get("order_id")))
+            || !"DISPATCHED".equals(String.valueOf(owner.get("state")))
+            || !(owner.get("dispatch_cycle") instanceof Number value) || value.longValue() != cycleBefore)
+            throw CorrectionCommand.ledgerConflict();
+        if (jdbc.update("DELETE FROM bale_commitment WHERE bale_id=? AND order_id=? AND dispatch_cycle=? AND state='DISPATCHED'",
+            Ids.bytes(baleId), Ids.bytes(orderId), cycleBefore) != 1) throw CorrectionCommand.ledgerConflict();
+        if (jdbc.update("UPDATE bale SET dispatch_cycle=? WHERE id=? AND dispatch_cycle=?", cycleAfter,
+            Ids.bytes(baleId), cycleBefore) != 1) throw CorrectionCommand.ledgerConflict();
     }
 
     /** One reopening per original dispatch (UNIQUE); cycle_after = cycle_before + 1 is enforced by CHECK as well. */

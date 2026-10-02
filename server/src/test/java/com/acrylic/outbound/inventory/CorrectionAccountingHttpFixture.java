@@ -76,6 +76,13 @@ final class CorrectionAccountingHttpFixture {
         return body;
     }
 
+    ObjectNode cancellation(long targetWeight) {
+        var body = create(dispatch, 0, targetWeight).put("type", "DISPATCH_CANCELLATION");
+        var line = (ObjectNode) body.path("lines").get(0);
+        line.put("evidenceId", UUID.randomUUID().toString()).put("evidenceSha256", "c".repeat(64));
+        return body;
+    }
+
     ObjectNode headerCreate() {
         var current = store.orderFacts(UUID.fromString(order)); var expected = SubmissionJson.object();
         for (String key : List.of("orderId", "currentResultVersion", "currentResultEffectiveCount", "currentResultEffectiveWeightG"))

@@ -10,7 +10,31 @@ import static org.assertj.core.api.Assertions.assertThat;
 public final class CorrectionAccountingHttpChecks {
     public static void verify(WebApplicationContext context, Path attempt) throws Exception {
         chain(context, attempt, true); chain(context, attempt, false);
+        cycleReopening(context, attempt);
         new CorrectionAccountingConflictChecks(context, attempt).verify();
+    }
+
+    private static void cycleReopening(WebApplicationContext context, Path attempt) throws Exception {
+        var f = new CorrectionAccountingHttpFixture(context, attempt, true, "cycle-reopened");
+        String bale = f.facts(f.dispatch).path("baleId").asText();
+        long before = f.jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=UUID_TO_BIN(?)", Long.class, bale);
+        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE bale_id=UUID_TO_BIN(?)"
+            + " AND order_id=UUID_TO_BIN(?) AND state='DISPATCHED' AND dispatch_cycle=?", Integer.class, bale, f.order, before)).isEqualTo(1);
+        String document = f.signed(f.maker, f.cancellation(0)).path("documentId").asText();
+        f.signed(f.checker, f.command(document, "APPROVE"));
+        assertThat(f.jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=UUID_TO_BIN(?)", Long.class, bale))
+            .isEqualTo(before + 1);
+        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE bale_id=UUID_TO_BIN(?)", Integer.class, bale)).isZero();
+        assertThat(f.jdbc.queryForObject("SELECT book_status FROM inventory_position WHERE bale_id=UUID_TO_BIN(?)", String.class, bale))
+            .isEqualTo("DEDUCTED");
+        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM cycle_reopening WHERE original_dispatch_id=UUID_TO_BIN(?)",
+            Integer.class, f.dispatch)).isEqualTo(1);
+        String duplicate = f.signed(f.maker, f.cancellation(500)).path("documentId").asText();
+        byte[] refused = f.checker.command(f.command(duplicate, "APPROVE"), 409);
+        assertThat(SubmissionJson.parse(refused).path("code").asText()).isEqualTo("CYCLE_REOPENING_EXISTS");
+        assertThat(f.jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=UUID_TO_BIN(?)", Long.class, bale))
+            .isEqualTo(before + 1);
+        Files.write(f.evidence.resolve("cycle-reopening-completed.json"), refused);
     }
 
     private static void chain(WebApplicationContext context, Path attempt, boolean deduct) throws Exception {
