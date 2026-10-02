@@ -76,6 +76,19 @@ final class CorrectionAccountingHttpFixture {
         return body;
     }
 
+    ObjectNode headerCreate() {
+        var current = store.orderFacts(UUID.fromString(order)); var expected = SubmissionJson.object();
+        for (String key : List.of("orderId", "currentResultVersion", "currentResultEffectiveCount", "currentResultEffectiveWeightG"))
+            expected.set(key, current.get(key));
+        expected.put("userAuthVersion", "1");
+        String snapshot = jdbc.queryForObject("SELECT CAST(header_snapshot AS CHAR) FROM order_result_version"
+            + " WHERE order_id=UUID_TO_BIN(?) ORDER BY result_version DESC LIMIT 1", String.class, order);
+        String orderNo = SubmissionJson.parse(snapshot).path("orderNo").asText();
+        var body = base("CREATE").put("orderId", order).put("type", "HEADER_CORRECTION"); body.set("expected", expected);
+        body.set("headerPatch", SubmissionJson.object().put("orderNo", orderNo + "-withdraw-guard"));
+        return body;
+    }
+
     ObjectNode command(String document, String kind) {
         var current = store.documentFacts(UUID.fromString(document)); var expected = SubmissionJson.object();
         for (String key : List.of("documentId", "documentSha256", "status", "expectedResultVersion")) expected.set(key, current.get(key));

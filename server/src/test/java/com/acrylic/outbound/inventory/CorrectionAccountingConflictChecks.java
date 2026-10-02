@@ -14,7 +14,7 @@ final class CorrectionAccountingConflictChecks {
     private final Path attempt;
     CorrectionAccountingConflictChecks(WebApplicationContext context, Path attempt) { this.context = context; this.attempt = attempt; }
 
-    void verify() throws Exception { mismatch(); exhausted(); aba(); disjoint(); manual(); }
+    void verify() throws Exception { mismatch(); exhausted(); aba(); disjoint(); manual(); headerWithdrawBlocked(); }
 
     private void mismatch() throws Exception {
         var f = new CorrectionAccountingHttpFixture(context, attempt, true, "mismatch");
@@ -61,6 +61,17 @@ final class CorrectionAccountingConflictChecks {
         assertThat(f.correctionWeight()).isEqualTo(-f.originalDispatchWeight - 20);
         f.withdraw(document); assertThat(f.correctionWeight()).isEqualTo(-f.originalDispatchWeight);
         Files.writeString(f.evidence.resolve("completed.json"), f.result().toPrettyString());
+    }
+
+    private void headerWithdrawBlocked() throws Exception {
+        var f = new CorrectionAccountingHttpFixture(context, attempt, false, "header-withdraw");
+        String document = f.signed(f.maker, f.headerCreate()).path("documentId").asText();
+        f.signed(f.checker, f.command(document, "APPROVE"));
+        var before = state(f, document); var withdraw = f.command(document, "WITHDRAW");
+        byte[] denied = f.checker.command(withdraw, 409);
+        Files.write(f.evidence.resolve(withdraw.path("commandId").asText() + "-denied.json"), denied);
+        assertThat(SubmissionJson.parse(denied).path("code").asText()).isEqualTo("CORRECTION_LEDGER_CONFLICT");
+        assertThat(state(f, document)).isEqualTo(before);
     }
 
     private void insert(CorrectionAccountingHttpFixture f, String kind, long quantity, long weight) {

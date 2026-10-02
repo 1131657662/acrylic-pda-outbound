@@ -54,6 +54,8 @@ public final class CorrectionOperations {
             var facts = write.anchor(); String actor = write.actor().path("principalId").asText();
             if (!"EFFECTIVE".equals(facts.path("status").asText())) throw CorrectionCommand.stale();
             if (!actor.equals(facts.path("approvedBy").asText())) throw CorrectionCommand.denied();
+            // Header restoration has no frozen line/ledger proof; reject before creating an impossible pending state.
+            if ("HEADER_CORRECTION".equals(facts.path("type").asText())) throw CorrectionCommand.ledgerConflict();
             if (store.requestWithdrawal(write.documentId(), UUID.fromString(actor), write.recordedAt()) != 1) throw CorrectionCommand.stale();
             return SubmissionJson.object().put("documentId", write.documentId().toString()).put("status", "WITHDRAW_PENDING")
                 .put("requestedBy", actor).put("awaitingConfirmationBy", facts.path("requestedBy").asText()).put("rolledBack", false);
