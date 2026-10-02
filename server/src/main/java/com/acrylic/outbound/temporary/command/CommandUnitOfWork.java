@@ -41,7 +41,7 @@ public class CommandUnitOfWork {
     }
     private CommandOperation operation(String kind) {
         // Production has no registered operations; isolated assemblies support only these decisions.
-        if(!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT").contains(kind))throw CommandErrors.unsupported();
+        if(!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION").contains(kind))throw CommandErrors.unsupported();
         var found=operations.stream().filter(o->o.commandType().equals(kind)).toList();
         if(found.isEmpty())throw CommandErrors.unsupported();
         if(found.size()!=1)throw new IllegalStateException("Ambiguous command operation");return found.getFirst();
