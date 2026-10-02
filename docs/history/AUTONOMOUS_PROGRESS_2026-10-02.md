@@ -15,7 +15,7 @@
 | R07历史更正outbox同步兼容 | 单测、真实隔离HTTP、完整服务端回归通过，已推送 | b87433d；e2a-cross-20260925-849；R07_LEGACY_CORRECTION_OUTBOX_COMPAT_2026-10-02.md |
 | R07 CYCLE_REOPENED/历史 REVERSAL 审计 | 已核对；取消派发重开有组合证据，历史无引用账务保持 fail-closed | R07_CYCLE_REOPENED_REVERSAL_AUDIT_2026-10-02.md |
 | R07周期重开占用迁移 | 编译、离线回归、真实隔离HTTP通过，已验证推送 | 38ff2ba；e2a-cross-20260925-852；cycle-reopening-completed.json |
-| R06 TEMP拒绝保留占用 | 离线全量与命令回归通过；真实隔离MySQL待验 | eb7ac94；R06_TEMP_REJECTION_2026-10-02.md |
+| R06 TEMP拒绝保留占用 | 离线全量、命令回归与真实隔离MySQL通过 | eb7ac94、f015954；attempt 856；R06_TEMP_REJECTION_2026-10-02.md |
 | mapping3+/R1及R06/R07余项 | 未完成 | 沿优先级接续 |
 
 ## 自主决策记录
@@ -56,6 +56,8 @@
 34. CYCLE_REOPENED 只按已编码的 DISPATCH_CANCELLATION 收口；历史无引用 REVERSAL 没有可审计归属政策，继续由贡献图返回 CORRECTION_LEDGER_CONFLICT，不回填、不猜测、不把取消派发覆盖成完整重扫能力。
 35. 周期重开先按稳定顺序锁定派发、包和占用记录，校验取消派发的周期/订单/状态后删除旧 DISPATCHED 占用并推进包周期；任一包冲突或账务失败事务整体回滚，重复请求返回 CYCLE_REOPENING_EXISTS。run 850 的旧夹具缺少后续账务列、run 851 缺渲染器均保留，修正后的 run 852 真实 HTTP 通过后才收口。
 36. R06 TEMP 拒绝先独立落地：复核人绑定完整候选上下文后写 `REJECTED` 和原因，订单保持待处置状态，`REVIEW_RESERVED` 占用不由拒绝事件自动释放；真实隔离 MySQL 因磁盘硬阈值本轮未启动，保留 IT 与未验边界。
+37. `TemporaryRejectionIT` 内部使用真实 HTTP，因此固定 `19434` 的 Spring Boot `DEFINED_PORT` 上下文；attempt 856 以 1 类/1 测试通过，853 的 NPE 与 854/855 的 runner 收尾失败均保留。
+38. 清理只针对可再生构建缓存和未引用的三份 Demo 数据库快照；保留 `.local` 及其证据，runner 在 `localDeletionAllowed=false` 下跳过自动 datadir 删除。
 
 ## 验证与证据索引
 
@@ -75,6 +77,8 @@ HEADER撤回证据根`.local/e2a-cross-20260925-847/`：E2aCorrectionAccountingH
 
 周期重开占用迁移证据根`.local/e2a-cross-20260925-852/`：`E2aCorrectionAccountingHttpIT`为1项通过、0失败、0错误、0 skip；重开完成回执、旧占用删除、包周期推进、账务投影和重复重开 `CYCLE_REOPENING_EXISTS` 均保全。run 850 的旧 `E2aCorrectionChainIT` 夹具只迁移到早期 schema、缺少后续账务列而失败；run 851 因未配置报表渲染器返回503，均保留为失败证据。
 
+TEMP拒绝真实隔离证据根`.local/e2a-cross-20260925-856/`：`TemporaryRejectionIT`为1项通过、0失败、0错误、0 skip；隔离 MySQL 数据目录、初始化/测试日志、认证停机和 XML 保全，19330/19434监听均已释放。
+
 周期/历史账务审计见[R07 CYCLE_REOPENED 与历史 REVERSAL 审计](R07_CYCLE_REOPENED_REVERSAL_AUDIT_2026-10-02.md)：取消派发重开、不可用快照和重复重开已有更正链断言；PHYSICAL_RETURN 触发与 PDA 重扫未定义/未验，历史无引用 REVERSAL 保持 fail-closed。
 
 ## 仍未解决与边界
@@ -83,4 +87,4 @@ mapping3+及R06/R07余项。TEMP拒绝真实隔离 MySQL 尚未验收；PHYSICAL
 
 ## 磁盘与环境
 
-842/843/844/846/847/848/849/850/851/852隔离库均已认证停机；无在途重型任务，19330/19434/19435测试监听0，系统MySQL不动，构建缓存已清理，`.local`证据删除0，设备动作0。D盘清理后可用约21.47GiB，仍高于20GiB；未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。目标按用户指令暂停。
+842/843/844/846/847/848/849/850/851/852/856隔离库均已认证停机；无在途重型任务，19330/19434/19435测试监听0，系统MySQL不动，构建缓存已清理，`.local`证据删除0，设备动作0。删除三份未引用 Demo 快照及缓存后 D 盘可用约34.1GiB，仍高于20GiB；未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。目标按用户指令暂停。

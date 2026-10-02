@@ -6,20 +6,20 @@
 ```yaml
 date: 2026-10-02
 branch: codex/development
-head: 8740b65
-dirty_entries: 9
+head: f015954
+dirty_entries: 11
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V54, migrations: 54 }
 ```
 <!-- FACTS_END -->
-R07更正原键actor回放、HEADER撤回入口保护、历史更正outbox同步兼容与周期重开占用迁移已验证提交推送；R06 TEMP拒绝保留占用已完成离线与命令回归，真实隔离MySQL待验；R1写后回滚已在843/844隔离MySQL通过并完成回归；mapping3+保持fail-closed审计，目标按用户指令暂停。
+R07更正原键actor回放、HEADER撤回入口保护、历史更正outbox同步兼容与周期重开占用迁移已验证提交推送；R06 TEMP拒绝保留占用已完成离线、命令与真实隔离MySQL回归；R1写后回滚已在843/844隔离MySQL通过并完成回归；mapping3+保持fail-closed审计，目标按用户指令暂停。
 
 ## Git、写权与环境
 - 主树D:/acrylic-pda-outbound、codex/development，产品HEAD及远端以事实块和Git回执核对；周期重开占用迁移与TEMP拒绝提交已推送，事实块由脚本生成。
-- 单助手root写入；旧audit_model已中断无写权，无在途重型任务，842/843/844/846/847/848/849/850/851/852认证停机；19330/19434测试监听0，系统MySQL不动。
+- 单助手root写入；旧audit_model已中断无写权，无在途重型任务，842/843/844/846/847/848/849/850/851/852/856认证停机；19330/19434测试监听0，系统MySQL不动。
 - 全部差异/工作树/写者/监听见.local/autonomous-20261002/及closeout/；周期重开证据见.local/e2a-cross-20260925-852/；保护预存PDA文档、更正链IT、旧历史和tools/r07_p08_run_803.ps1。
-- D盘清理后可用约30.85GiB，高于20GiB；主树及旧worktree再生缓存已清理，`.local`证据删除0，目标暂停。
+- D盘清理后可用约34.1GiB，高于20GiB；删除三份未引用 Demo 快照及主树/旧worktree再生缓存，`.local`证据删除0，目标暂停。
 
 ## 已验与失败
 - P08主键6faf322、R06分页33533e4、R07首次原键dce5fe7、同步status bfcf471、实际账务458a943已验证推送，不重复已验工作。
@@ -32,14 +32,14 @@ R07更正原键actor回放、HEADER撤回入口保护、历史更正outbox同步
 - HEADER撤回入口在发起端提前返回`CORRECTION_LEDGER_CONFLICT`，真实隔离HTTP与导出回归通过；表头实际恢复语义未定义，继续fail-closed，详见`docs/history/R07_3_HEADER_WITHDRAW_BLOCKER_2026-10-02.md`。
 - 历史更正outbox缺`status`只对三个已知更正事件回退`COMPLETED`，显式坏值和未知事件继续拒绝；b87433d已推送，run 849真实HTTP通过，run 848夹具失败保留，详见`docs/history/R07_LEGACY_CORRECTION_OUTBOX_COMPAT_2026-10-02.md`。
 - 周期重开按取消派发校验周期/订单/状态，锁定并删除旧包占用、推进包周期，账务或冲突事务回滚；38ff2ba已推送，run 852真实HTTP通过，run 850旧夹具迁移不足与run 851渲染器缺失失败均保留。
-- R06 TEMP拒绝命令在完整候选上下文和复核权限下写入REJECTED与原因，保留REVIEW_RESERVED占用；eb7ac94已推送，离线2969项与命令47项通过，真实隔离MySQL IT因磁盘阈值待验，详见`docs/history/R06_TEMP_REJECTION_2026-10-02.md`。
+- R06 TEMP拒绝命令在完整候选上下文和复核权限下写入REJECTED与原因，保留REVIEW_RESERVED占用；eb7ac94/f015954已推送，离线2969项、命令47项与attempt 856真实隔离MySQL 1项通过，详见`docs/history/R06_TEMP_REJECTION_2026-10-02.md`。
 - `CYCLE_REOPENED`取消派发路径已有真实更正链断言；PHYSICAL_RETURN是否重开、重开后PDA重扫和历史无引用`REVERSAL`归属没有政策依据，保持fail-closed，详见`docs/history/R07_CYCLE_REOPENED_REVERSAL_AUDIT_2026-10-02.md`。
-- regression-1、browser-1、final-1失败证据及830/831/837/838/848/850/851历史失败均保留；Web/841/849/852证据根见日报。
+- regression-1、browser-1、final-1失败证据及830/831/837/838/848/850/851/853/854/855历史失败均保留；Web/841/849/852/856证据根见日报。
 
 ## 下一步、未验与边界
-- mapping3+与R06/R07余项按优先级接续；TEMP拒绝真实隔离MySQL、PHYSICAL_DISPOSITION及完整停止证据仍未验；目标已暂停，R1隔离事务已验但现场身份、PDA/Keystore、断电/长时和全量integrationTest仍未替代。
+- mapping3+与R06/R07余项按优先级接续；PHYSICAL_DISPOSITION及完整停止证据仍未验；目标已暂停，R1隔离事务和TEMP拒绝真实IT已验但现场身份、PDA/Keystore、断电/长时和全量integrationTest仍未替代。
 - HEADER撤回实际恢复语义、历史无引用REVERSAL的归属、PHYSICAL_RETURN周期策略、CYCLE_REOPENED后的PDA重扫、526、R05原资料/旧BCD、R09恢复限制单列。
-- 合成hook/Chrome边界、MockMvc、隔离HTTP/SQL不代替现场；本批拒绝IT尚未运行；浏览器主动清空/驱逐记录、跨页重新认证仍是限制。
+- 合成hook/Chrome边界、MockMvc、隔离HTTP/SQL不代替现场；浏览器主动清空/驱逐记录、跨页重新认证仍是限制。
 - 自主决策见`docs/history/AUTONOMOUS_PROGRESS_2026-10-02.md`；生产默认false、localDeletionAllowed=false。不合main/标签/Release/部署、不接原库/现网、不删.local。
 <!-- CURRENT_STATE_END -->
 
