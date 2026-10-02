@@ -15,6 +15,7 @@
 | R07历史更正outbox同步兼容 | 单测、真实隔离HTTP、完整服务端回归通过，已推送 | b87433d；e2a-cross-20260925-849；R07_LEGACY_CORRECTION_OUTBOX_COMPAT_2026-10-02.md |
 | R07 CYCLE_REOPENED/历史 REVERSAL 审计 | 已核对；取消派发重开有组合证据，历史无引用账务保持 fail-closed | R07_CYCLE_REOPENED_REVERSAL_AUDIT_2026-10-02.md |
 | R07周期重开占用迁移 | 编译、离线回归、真实隔离HTTP通过，已验证推送 | 38ff2ba；e2a-cross-20260925-852；cycle-reopening-completed.json |
+| R06 TEMP拒绝保留占用 | 离线全量与命令回归通过；真实隔离MySQL待验 | eb7ac94；R06_TEMP_REJECTION_2026-10-02.md |
 | mapping3+/R1及R06/R07余项 | 未完成 | 沿优先级接续 |
 
 ## 自主决策记录
@@ -54,10 +55,11 @@
 33. 历史更正 outbox 缺少 status 时只对三个已知更正事件回退 COMPLETED，显式坏值和未知事件继续拒绝；依据原订单保持 COMPLETED 的 R07 规则。run 848 夹具占位符失败保留，run 849 真实 HTTP 1/0/0/0 通过，完整回归为 148 套件/2964 项/0 失败/0 错误/1 既有 skip。
 34. CYCLE_REOPENED 只按已编码的 DISPATCH_CANCELLATION 收口；历史无引用 REVERSAL 没有可审计归属政策，继续由贡献图返回 CORRECTION_LEDGER_CONFLICT，不回填、不猜测、不把取消派发覆盖成完整重扫能力。
 35. 周期重开先按稳定顺序锁定派发、包和占用记录，校验取消派发的周期/订单/状态后删除旧 DISPATCHED 占用并推进包周期；任一包冲突或账务失败事务整体回滚，重复请求返回 CYCLE_REOPENING_EXISTS。run 850 的旧夹具缺少后续账务列、run 851 缺渲染器均保留，修正后的 run 852 真实 HTTP 通过后才收口。
+36. R06 TEMP 拒绝先独立落地：复核人绑定完整候选上下文后写 `REJECTED` 和原因，订单保持待处置状态，`REVIEW_RESERVED` 占用不由拒绝事件自动释放；真实隔离 MySQL 因磁盘硬阈值本轮未启动，保留 IT 与未验边界。
 
 ## 验证与证据索引
 
-已交付：[分页验收](R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)、[原键验收](R07_FIRST_REPLAY_REPAIR_2026-10-02.md)、[同步验收](R07_HANDOVER_SYNC_STATUS_REPAIR_2026-10-02.md)、[账务验收](R07_ACTUAL_ACCOUNTING_REPAIR_2026-10-02.md)、[Web原命令验收](R06_WEB_ORIGINAL_COMMAND_REPAIR_2026-10-02.md)、[更正回放验收](R07_CORRECTION_REPLAY_ACTOR_REPAIR_2026-10-02.md)、[R1写后回滚验收](R1_HANDOVER_WRITE_AFTER_ROLLBACK_2026-10-02.md)、[mapping3+审计](R06_MAPPING3_FAIL_CLOSED_AUDIT_2026-10-02.md)、[HEADER撤回入口验收](R07_3_HEADER_WITHDRAW_BLOCKER_2026-10-02.md)。
+已交付：[分页验收](R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)、[原键验收](R07_FIRST_REPLAY_REPAIR_2026-10-02.md)、[同步验收](R07_HANDOVER_SYNC_STATUS_REPAIR_2026-10-02.md)、[账务验收](R07_ACTUAL_ACCOUNTING_REPAIR_2026-10-02.md)、[Web原命令验收](R06_WEB_ORIGINAL_COMMAND_REPAIR_2026-10-02.md)、[更正回放验收](R07_CORRECTION_REPLAY_ACTOR_REPAIR_2026-10-02.md)、[R1写后回滚验收](R1_HANDOVER_WRITE_AFTER_ROLLBACK_2026-10-02.md)、[mapping3+审计](R06_MAPPING3_FAIL_CLOSED_AUDIT_2026-10-02.md)、[HEADER撤回入口验收](R07_3_HEADER_WITHDRAW_BLOCKER_2026-10-02.md)、[TEMP拒绝验收](R06_TEMP_REJECTION_2026-10-02.md)。
 
 账务证据根.local/autonomous-20261002/accounting-repair/：offline-full-9/10/11各148套件2956项0失败0错误1既有skip。832至836及839隔离验证成功，原库/dump/日志保全停机。
 
@@ -77,8 +79,8 @@ HEADER撤回证据根`.local/e2a-cross-20260925-847/`：E2aCorrectionAccountingH
 
 ## 仍未解决与边界
 
-mapping3+及R06/R07余项。HEADER撤回实际恢复语义、历史无引用REVERSAL的归属、PHYSICAL_RETURN周期策略与CYCLE_REOPENED后的 PDA 重扫仍未完成；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。R1写后回滚已完成隔离验收，但不替代现场边界，goal active。
+mapping3+及R06/R07余项。TEMP拒绝真实隔离 MySQL 尚未验收；PHYSICAL_DISPOSITION、完整停止证据、释放占用、HEADER撤回实际恢复语义、历史无引用REVERSAL的归属、PHYSICAL_RETURN周期策略与CYCLE_REOPENED后的 PDA 重扫仍未完成；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。R1写后回滚已完成隔离验收，但不替代现场边界，目标按用户指令暂停。
 
 ## 磁盘与环境
 
-842/843/844/846/847/848/849/850/851/852隔离库均已认证停机；无在途重型任务，19330/19434测试监听0，系统MySQL不动，删除0，设备动作0。D盘本轮结束可用约23.75GiB，仍高于20GiB；未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。
+842/843/844/846/847/848/849/850/851/852隔离库均已认证停机；无在途重型任务，19330/19434/19435测试监听0，系统MySQL不动，构建缓存已清理，`.local`证据删除0，设备动作0。D盘清理后可用约21.47GiB，仍高于20GiB；未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。目标按用户指令暂停。
