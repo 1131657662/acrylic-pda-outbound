@@ -6,20 +6,20 @@
 ```yaml
 date: 2026-10-02
 branch: codex/development
-head: 880808e
-dirty_entries: 11
+head: 1c76602
+dirty_entries: 8
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V54, migrations: 54 }
 ```
 <!-- FACTS_END -->
-R07更正原键actor回放已验证提交推送；单助手继续mapping3+/R1及R06/R07余项，goal active。
+R07更正原键actor回放已验证提交推送；R1写后回滚已在843/844隔离MySQL通过并完成回归；mapping3+保持fail-closed审计，单助手继续R06/R07余项，goal active。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound、codex/development，产品HEAD及远端880808ede4284d8ac26eac795de964c01c48c9b9，断点文档提交自身SHA见Git回执。
-- 单助手root写入；旧audit_model已中断无写权，无在途重型任务，841认证停机；19330/19434测试监听0，系统MySQL不动。
+- 主树D:/acrylic-pda-outbound、codex/development，产品HEAD及远端以事实块和Git回执核对；R1文档/测试提交待本轮提交后回写。
+- 单助手root写入；旧audit_model已中断无写权，无在途重型任务，842/843/844认证停机；19330/19434测试监听0，系统MySQL不动。
 - 全部差异/工作树/写者/监听见.local/autonomous-20261002/correction-replay/及closeout/；保护预存PDA文档、更正链IT、旧历史和tools/r07_p08_run_803.ps1。
-- D盘接续可用值以841 closeout为证，高于20GiB；每新任务复核阈值，证据删除0。
+- D盘本轮结束可用约23.75GiB，高于20GiB；每新任务复核阈值，证据删除0。
 
 ## 已验与失败
 - P08主键6faf322、R06分页33533e4、R07首次原键dce5fe7、同步status bfcf471、实际账务458a943已验证推送，不重复已验工作。
@@ -27,10 +27,12 @@ R07更正原键actor回放已验证提交推送；单助手继续mapping3+/R1及
 - e2fa8e8 Web按身份/仓库/提交/类型保存原JSON及键，读回后才POST；原恢复代次、跨页锁、CSRF后身份复核、匹配回执持久完成；恒false写能力契约已收紧。
 - Web final-2：hook35、temporary-review7、Chrome10、typecheck/build/OpenAPI通过；Chrome真实组件/原生存储和锁、合成HTTP。840真实隔离MySQL+MockMvc契约样本1项通过。
 - 880808e更正回放绑定actor_id并校验原字节/完整回执；841真实HTTP四类命令原 actor 回放、同仓库 outsider 404、改正文409、状态不变，1项零失败/错误/跳过。
+- R1测试配置不新增Primary；842歧义失败保留，843/844各1项真实隔离MySQL写后回滚与原键重放通过；完整server test 2956项0失败0错误1既有skip。详见`docs/history/R1_HANDOVER_WRITE_AFTER_ROLLBACK_2026-10-02.md`。
+- mapping3+审计确认现有一次人工关联后的前置条件使重复关联保持stale；没有定义旧目标失效/重链政策，继续fail-closed，详见`docs/history/R06_MAPPING3_FAIL_CLOSED_AUDIT_2026-10-02.md`。
 - regression-1、browser-1、final-1失败证据及830/831/837/838历史失败均保留；Web/841证据根见日报。
 
 ## 下一步、未验与边界
-- mapping3+/R1及R06/R07余项按优先级接续；TEMP高轮次/跨来源/处置、现场身份、PDA/Keystore、断电/长时和全量integrationTest未验。
+- mapping3+与R06/R07余项按优先级接续；R1隔离事务已验但现场身份、PDA/Keystore、断电/长时和全量integrationTest仍未替代。
 - HEADER撤回、历史无引用REVERSAL、旧更正outbox、CYCLE_REOPENED、526、R05原资料/旧BCD、R09恢复限制单列。
 - 合成hook/Chrome边界、MockMvc、隔离HTTP/SQL不代替现场；浏览器主动清空/驱逐记录、跨页重新认证仍是限制。
 - 自主决策见日报；生产默认false、localDeletionAllowed=false。不合main/标签/Release/部署、不接原库/现网、不删.local。

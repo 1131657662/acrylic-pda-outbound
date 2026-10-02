@@ -43,10 +43,13 @@
 26. e2fa8e8提交推送15文件；校验最终源码哈希及远端。后续长命令全部放脚本。
 27. 更正回放原实现只按原键读取，不绑定actor且不校验完整回执；修为actor_id绑定、规范化原字节比较及签名/存储完整性验证，保留统一404防止身份枚举。
 28. 841真实HTTP反例覆盖原 actor 四类命令回放、同仓库 outsider、改正文冲突和前后状态不变；产品提交880808e并推送。
+29. R1 故障注入改用测试域 BeanPostProcessor 替换同名 AuditWriter，遵守 Primary 冻结白名单；842 的注入歧义失败保留，843/844 真实隔离 MySQL 通过后才收口。
+30. R1 写后回滚验收按 16 张表逐字快照、审计后中间状态、原键提交/重放和上下文重建复核；生产默认与原库边界不变。
+31. mapping3+ 只记录 fail-closed：版本字段可表达高值，但没有安全的重复关联/旧目标失效政策；不凭字段或自动重链入口宣称完成。
 
 ## 验证与证据索引
 
-已交付：[分页验收](R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)、[原键验收](R07_FIRST_REPLAY_REPAIR_2026-10-02.md)、[同步验收](R07_HANDOVER_SYNC_STATUS_REPAIR_2026-10-02.md)、[账务验收](R07_ACTUAL_ACCOUNTING_REPAIR_2026-10-02.md)、[Web原命令验收](R06_WEB_ORIGINAL_COMMAND_REPAIR_2026-10-02.md)、[更正回放验收](R07_CORRECTION_REPLAY_ACTOR_REPAIR_2026-10-02.md)。
+已交付：[分页验收](R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)、[原键验收](R07_FIRST_REPLAY_REPAIR_2026-10-02.md)、[同步验收](R07_HANDOVER_SYNC_STATUS_REPAIR_2026-10-02.md)、[账务验收](R07_ACTUAL_ACCOUNTING_REPAIR_2026-10-02.md)、[Web原命令验收](R06_WEB_ORIGINAL_COMMAND_REPAIR_2026-10-02.md)、[更正回放验收](R07_CORRECTION_REPLAY_ACTOR_REPAIR_2026-10-02.md)、[R1写后回滚验收](R1_HANDOVER_WRITE_AFTER_ROLLBACK_2026-10-02.md)、[mapping3+审计](R06_MAPPING3_FAIL_CLOSED_AUDIT_2026-10-02.md)。
 
 账务证据根.local/autonomous-20261002/accounting-repair/：offline-full-9/10/11各148套件2956项0失败0错误1既有skip。832至836各1项零失败/错误/跳过；839撤回更正导出1项complete=true。830/831/837/838、离线中断/编码/编译失败全部保留。
 
@@ -54,10 +57,12 @@ Web证据根.local/autonomous-20261002/web-recovery/：final-2/unit为35项通�
 
 更正回放证据根.local/autonomous-20261002/correction-replay/：compile-1成功、offline-2为2956项0失败0错误1既有skip；841为真实隔离HTTP 1项零失败/错误/跳过，dump、XML、原回执和认证停机记录保全。
 
+R1证据根`.local/e2a-cross-20260925-842/`、`843/`、`844/`：842为配置歧义失败且无完成标记；843与844各1项真实隔离 MySQL 通过，16表快照、原键回执和认证停机保全。完整`server test`为148套件/2956项，0失败、0错误、1既有skip。
+
 ## 仍未解决与边界
 
-mapping3+/R1、R06/R07余项。HEADER撤回、历史无引用REVERSAL、旧更正outbox、CYCLE_REOPENED未覆盖；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。完整服务端integrationTest尚无可解读全量通过，goal active。
+mapping3+及R06/R07余项。HEADER撤回、历史无引用REVERSAL、旧更正outbox、CYCLE_REOPENED未覆盖；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。R1写后回滚已完成隔离验收，但不替代现场边界，goal active。
 
 ## 磁盘与环境
 
-841隔离库已保全停机；无在途重型任务，19330/19434测试监听0，系统MySQL不动，删除0，设备动作0。D盘接续可用值以本轮closeout回执为证，仍高于20GiB；未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。
+842/843/844隔离库均已认证停机；无在途重型任务，19330/19434测试监听0，系统MySQL不动，删除0，设备动作0。D盘本轮结束可用约23.75GiB，仍高于20GiB；未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。
