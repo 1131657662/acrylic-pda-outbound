@@ -14,6 +14,7 @@
 | R07 HEADER撤回入口保护 | 编译、离线全量、真实隔离HTTP与导出回归通过，已推送 | 8b203d0；e2a-cross-20260925-847；R07_3_HEADER_WITHDRAW_BLOCKER_2026-10-02.md |
 | R07历史更正outbox同步兼容 | 单测、真实隔离HTTP、完整服务端回归通过，已推送 | b87433d；e2a-cross-20260925-849；R07_LEGACY_CORRECTION_OUTBOX_COMPAT_2026-10-02.md |
 | R07 CYCLE_REOPENED/历史 REVERSAL 审计 | 已核对；取消派发重开有组合证据，历史无引用账务保持 fail-closed | R07_CYCLE_REOPENED_REVERSAL_AUDIT_2026-10-02.md |
+| R07周期重开占用迁移 | 编译、离线回归、真实隔离HTTP通过，已验证推送 | 38ff2ba；e2a-cross-20260925-852；cycle-reopening-completed.json |
 | mapping3+/R1及R06/R07余项 | 未完成 | 沿优先级接续 |
 
 ## 自主决策记录
@@ -49,15 +50,16 @@
 29. R1 故障注入改用测试域 BeanPostProcessor 替换同名 AuditWriter，遵守 Primary 冻结白名单；842 的注入歧义失败保留，843/844 真实隔离 MySQL 通过后才收口。
 30. R1 写后回滚验收按 16 张表逐字快照、审计后中间状态、原键提交/重放和上下文重建复核；生产默认与原库边界不变。
 31. mapping3+ 只记录 fail-closed：版本字段可表达高值，但没有安全的重复关联/旧目标失效政策；不凭字段或自动重链入口宣称完成。
-32. HEADER 撤回沿确认端既有 `CORRECTION_LEDGER_CONFLICT` 在发起端提前拒绝，避免生成必然无法确认的 `WITHDRAW_PENDING`；实际表头恢复语义未定义，保持 fail-closed。run 846 的渲染器缺失失败保留，run 847 配置渲染器后 1/0/0/0 通过。
-33. 历史更正 outbox 缺少 `status` 时只对三个已知更正事件回退 `COMPLETED`，显式坏值和未知事件继续拒绝；依据原订单保持 `COMPLETED` 的 R07 规则。run 848 夹具占位符失败保留，run 849 真实 HTTP 1/0/0/0 通过，完整回归为 148 套件/2964 项/0 失败/0 错误/1 既有 skip。
-34. `CYCLE_REOPENED` 只按已编码的 `DISPATCH_CANCELLATION` 收口；历史无引用 `REVERSAL` 没有可审计归属政策，继续由贡献图返回 `CORRECTION_LEDGER_CONFLICT`，不回填、不猜测、不把取消派发覆盖成完整重扫能力。
+32. HEADER 撤回沿确认端既有 CORRECTION_LEDGER_CONFLICT 在发起端提前拒绝，避免生成必然无法确认的 WITHDRAW_PENDING；实际表头恢复语义未定义，保持 fail-closed。run 846 的渲染器缺失失败保留，run 847 配置渲染器后 1/0/0/0 通过。
+33. 历史更正 outbox 缺少 status 时只对三个已知更正事件回退 COMPLETED，显式坏值和未知事件继续拒绝；依据原订单保持 COMPLETED 的 R07 规则。run 848 夹具占位符失败保留，run 849 真实 HTTP 1/0/0/0 通过，完整回归为 148 套件/2964 项/0 失败/0 错误/1 既有 skip。
+34. CYCLE_REOPENED 只按已编码的 DISPATCH_CANCELLATION 收口；历史无引用 REVERSAL 没有可审计归属政策，继续由贡献图返回 CORRECTION_LEDGER_CONFLICT，不回填、不猜测、不把取消派发覆盖成完整重扫能力。
+35. 周期重开先按稳定顺序锁定派发、包和占用记录，校验取消派发的周期/订单/状态后删除旧 DISPATCHED 占用并推进包周期；任一包冲突或账务失败事务整体回滚，重复请求返回 CYCLE_REOPENING_EXISTS。run 850 的旧夹具缺少后续账务列、run 851 缺渲染器均保留，修正后的 run 852 真实 HTTP 通过后才收口。
 
 ## 验证与证据索引
 
 已交付：[分页验收](R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)、[原键验收](R07_FIRST_REPLAY_REPAIR_2026-10-02.md)、[同步验收](R07_HANDOVER_SYNC_STATUS_REPAIR_2026-10-02.md)、[账务验收](R07_ACTUAL_ACCOUNTING_REPAIR_2026-10-02.md)、[Web原命令验收](R06_WEB_ORIGINAL_COMMAND_REPAIR_2026-10-02.md)、[更正回放验收](R07_CORRECTION_REPLAY_ACTOR_REPAIR_2026-10-02.md)、[R1写后回滚验收](R1_HANDOVER_WRITE_AFTER_ROLLBACK_2026-10-02.md)、[mapping3+审计](R06_MAPPING3_FAIL_CLOSED_AUDIT_2026-10-02.md)、[HEADER撤回入口验收](R07_3_HEADER_WITHDRAW_BLOCKER_2026-10-02.md)。
 
-账务证据根.local/autonomous-20261002/accounting-repair/：offline-full-9/10/11各148套件2956项0失败0错误1既有skip。832至836各1项零失败/错误/跳过；839撤回更正导出1项complete=true。830/831/837/838、离线中断/编码/编译失败全部保留。
+账务证据根.local/autonomous-20261002/accounting-repair/：offline-full-9/10/11各148套件2956项0失败0错误1既有skip。832至836及839隔离验证成功，原库/dump/日志保全停机。
 
 Web证据根.local/autonomous-20261002/web-recovery/：final-2/unit为35项通过；final-2/regression包含build、7项temporary-review、OpenAPI及Chrome 10项，均exit 0。840为TemporaryReviewContractIT真实隔离MySQL+MockMvc 1项，零失败/错误/跳过；失败证据保留。
 
@@ -67,14 +69,16 @@ R1证据根`.local/e2a-cross-20260925-842/`、`843/`、`844/`：842为配置歧�
 
 HEADER撤回证据根`.local/e2a-cross-20260925-847/`：E2aCorrectionAccountingHttpIT为1项通过、0失败、0错误、0 skip；`accounting/header-withdraw/`含拒绝回执和状态不变断言输入。846因渲染器缺失失败，未计入完成，证据保留。
 
-历史更正 outbox 兼容证据根`.local/e2a-cross-20260925-849/`：`E2aHandoverSyncHttpIT`为1项通过、0失败、0错误、0 skip；新/旧交接消息与缺 `status` 的历史 `CORRECTION_EFFECTIVE` 均只发布一次，回放响应相同，投影状态为`COMPLETED`；首轮848的夹具失败证据保留。专项记录见[R07历史更正outbox同步兼容](R07_LEGACY_CORRECTION_OUTBOX_COMPAT_2026-10-02.md)。
+历史更正 outbox 兼容证据根`.local/e2a-cross-20260925-849/`：`E2aHandoverSyncHttpIT`为1项通过、0失败、0错误、0 skip；新/旧交接消息与缺 status 的历史 CORRECTION_EFFECTIVE 均只发布一次，回放响应相同，投影状态为 COMPLETED；首轮848的夹具失败证据保留。专项记录见[R07历史更正outbox同步兼容](R07_LEGACY_CORRECTION_OUTBOX_COMPAT_2026-10-02.md)。
+
+周期重开占用迁移证据根`.local/e2a-cross-20260925-852/`：`E2aCorrectionAccountingHttpIT`为1项通过、0失败、0错误、0 skip；重开完成回执、旧占用删除、包周期推进、账务投影和重复重开 `CYCLE_REOPENING_EXISTS` 均保全。run 850 的旧 `E2aCorrectionChainIT` 夹具只迁移到早期 schema、缺少后续账务列而失败；run 851 因未配置报表渲染器返回503，均保留为失败证据。
 
 周期/历史账务审计见[R07 CYCLE_REOPENED 与历史 REVERSAL 审计](R07_CYCLE_REOPENED_REVERSAL_AUDIT_2026-10-02.md)：取消派发重开、不可用快照和重复重开已有更正链断言；PHYSICAL_RETURN 触发与 PDA 重扫未定义/未验，历史无引用 REVERSAL 保持 fail-closed。
 
 ## 仍未解决与边界
 
-mapping3+及R06/R07余项。HEADER撤回实际恢复语义、历史无引用REVERSAL的归属、占用回退、PHYSICAL_RETURN周期策略与CYCLE_REOPENED后的 PDA 重扫仍未完成；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。R1写后回滚已完成隔离验收，但不替代现场边界，goal active。
+mapping3+及R06/R07余项。HEADER撤回实际恢复语义、历史无引用REVERSAL的归属、PHYSICAL_RETURN周期策略与CYCLE_REOPENED后的 PDA 重扫仍未完成；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。R1写后回滚已完成隔离验收，但不替代现场边界，goal active。
 
 ## 磁盘与环境
 
-842/843/844/846/847隔离库均已认证停机；无在途重型任务，19330/19434测试监听0，系统MySQL不动，删除0，设备动作0。D盘本轮结束可用约23.75GiB，仍高于20GiB；未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。
+842/843/844/846/847/848/849/850/851/852隔离库均已认证停机；无在途重型任务，19330/19434测试监听0，系统MySQL不动，删除0，设备动作0。D盘本轮结束可用约23.75GiB，仍高于20GiB；未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。
