@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-02
 branch: codex/development
-head: 1c76602
+head: d43e3b1
 dirty_entries: 8
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
@@ -16,7 +16,7 @@ server: { contract: 0.37.0, paths: 131, flyway: V54, migrations: 54 }
 R07更正原键actor回放已验证提交推送；R1写后回滚已在843/844隔离MySQL通过并完成回归；mapping3+保持fail-closed审计，单助手继续R06/R07余项，goal active。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound、codex/development，产品HEAD及远端以事实块和Git回执核对；R1文档/测试提交待本轮提交后回写。
+- 主树D:/acrylic-pda-outbound、codex/development，产品HEAD及远端为d43e3b1；R1文档/测试提交已推送，事实块由脚本生成。
 - 单助手root写入；旧audit_model已中断无写权，无在途重型任务，842/843/844认证停机；19330/19434测试监听0，系统MySQL不动。
 - 全部差异/工作树/写者/监听见.local/autonomous-20261002/correction-replay/及closeout/；保护预存PDA文档、更正链IT、旧历史和tools/r07_p08_run_803.ps1。
 - D盘本轮结束可用约23.75GiB，高于20GiB；每新任务复核阈值，证据删除0。
