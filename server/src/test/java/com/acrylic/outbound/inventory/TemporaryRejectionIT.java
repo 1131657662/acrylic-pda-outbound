@@ -5,9 +5,12 @@ import com.acrylic.outbound.auth.SessionUser;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.context.WebApplicationContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
+    properties = {"server.address=127.0.0.1", "server.port=19434"})
 class TemporaryRejectionIT {
     @Autowired WebApplicationContext context;
 
