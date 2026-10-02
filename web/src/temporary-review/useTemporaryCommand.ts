@@ -1,82 +1,126 @@
-import { ref } from 'vue';
+import { ref, type Ref } from 'vue';
 import { ApiError, currentRecoveryEpoch, errorText, postRaw, request } from '../api';
 import { commandFactsSchema, commandReceiptSchema, type CommandFacts, type CommandKind, type CommandReceipt } from './command-contracts';
 import { duplicatePageSchema } from './duplicate-contracts';
+import { clearTemporaryCommand, commandOwner, loadTemporaryCommand, lockTemporaryCommand, savedCommandBody,
+  saveTemporaryCommand, TemporaryPersistenceError, type SavedTemporaryCommand, type TemporaryCommandOwner } from './pending-command';
 
-function newCommandId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
-  const random = () => Math.floor(Math.random() * 0x10000).toString(16).padStart(4, '0');
-  return `${random()}${random()}-${random()}-4${random().slice(1)}-a${random().slice(1)}-${random()}${random()}${random()}`;
+interface ExecuteOptions { reason?: string; candidateContextSha256?: string | null }
+interface TemporaryCommandHook {
+  facts: Ref<CommandFacts | null>; busy: Ref<boolean>; error: Ref<string>; receipt: Ref<CommandReceipt | null>;
+  closed: Ref<boolean>; original: Ref<SavedTemporaryCommand | null>;
+  restore: (kind: CommandKind) => void; originalKey: (kind: CommandKind) => string | null;
+  loadFacts: () => Promise<void>; execute: (kind: CommandKind, options?: ExecuteOptions) => Promise<void>;
+  startOver: (kind: CommandKind) => Promise<void>;
 }
 
-/**
- * Client half of the temporary command chain. The commandId is the original key: it is minted once per intent
- * and reused while the user retries the same intent, so a retry after a lost response replays the stored
- * receipt instead of recording a second decision. It is only discarded after a receipt is returned (the
- * context has moved, so the next decision needs fresh facts) or when the user explicitly starts over.
- */
-export function useTemporaryCommand(scope: () => { submissionId: string; warehouseId: string }) {
-  const facts = ref<CommandFacts | null>(null); const busy = ref(false); const error = ref('');
-  const receipt = ref<CommandReceipt | null>(null); const closed = ref(false);
-  const keys = new Map<CommandKind, string>();
+/** One mounted command lifecycle; persistence and cross-page serialization live in pending-command. */
+class TemporaryCommandLifecycle {
+  readonly facts = ref<CommandFacts | null>(null);
+  readonly busy = ref(false);
+  readonly error = ref('');
+  readonly receipt = ref<CommandReceipt | null>(null);
+  readonly closed = ref(false);
+  readonly original = ref<SavedTemporaryCommand | null>(null);
+  private readonly scope: () => TemporaryCommandOwner;
 
-  function keyOf(kind: CommandKind): string {
-    const existing = keys.get(kind);
-    if (existing) return existing;
-    const minted = newCommandId(); keys.set(kind, minted); return minted;
+  constructor(scope: () => TemporaryCommandOwner) { this.scope = scope; }
+
+  private assertOwner(owner: TemporaryCommandOwner): void {
+    const now = commandOwner(this.scope());
+    if (now.userId !== owner.userId || now.warehouseId !== owner.warehouseId || now.submissionId !== owner.submissionId)
+      throw new TemporaryPersistenceError('登录身份或提交范围已变化，请回到原身份核对原操作结果。');
   }
-  function startOver(kind: CommandKind): void { keys.delete(kind); receipt.value = null; error.value = ''; }
-  function originalKey(kind: CommandKind): string { return keyOf(kind); }
-
-  async function fetchFacts(): Promise<CommandFacts> {
-    const current = scope();
-    const params = new URLSearchParams({ warehouseId: current.warehouseId, submissionId: current.submissionId });
+  private report(cause: unknown): void {
+    if (cause instanceof ApiError && (cause.status === 404 || cause.code === 'COMMAND_SURFACE_CLOSED')) this.closed.value = true;
+    this.error.value = cause instanceof TemporaryPersistenceError ? cause.message : errorText(cause);
+  }
+  restore(kind: CommandKind): void {
+    this.error.value = ''; this.original.value = null; this.receipt.value = null;
+    try {
+      this.original.value = loadTemporaryCommand(commandOwner(this.scope()), kind);
+      this.receipt.value = this.original.value?.receipt ?? null;
+    } catch (cause) { this.report(cause); }
+  }
+  originalKey(kind: CommandKind): string | null {
+    this.restore(kind);
+    return this.original.value ? savedCommandBody(this.original.value).commandId : null;
+  }
+  private async fetchFacts(owner: TemporaryCommandOwner): Promise<CommandFacts> {
+    const params = new URLSearchParams({ warehouseId: owner.warehouseId, submissionId: owner.submissionId });
     const value = await request(`/temporary-commands/facts?${params}`, commandFactsSchema);
-    facts.value = value; closed.value = false; return value;
+    this.assertOwner(owner);
+    if (value.warehouseId !== owner.warehouseId || value.submissionId !== owner.submissionId)
+      throw new TemporaryPersistenceError('服务端事实与原提交范围不匹配，请重新核对。');
+    this.facts.value = value; this.closed.value = false; return value;
   }
-
-  async function loadFacts(): Promise<void> {
-    busy.value = true; error.value = '';
-    try { await fetchFacts(); }
-    catch (cause) { if (cause instanceof ApiError && cause.status === 404) closed.value = true; else error.value = errorText(cause); }
-    finally { busy.value = false; }
+  async loadFacts(): Promise<void> {
+    if (this.busy.value) return;
+    this.busy.value = true; this.error.value = '';
+    try { await this.fetchFacts(commandOwner(this.scope())); }
+    catch (cause) { this.report(cause); }
+    finally { this.busy.value = false; }
   }
-
-  /**
-   * Both command kinds require the server's <em>command-caliber</em> candidate context digest (the server refuses
-   * any decision that does not carry it). Prefer the value the review page already read; otherwise read it from the
-   * candidate endpoint. It must be `commandContextSha256` and never the page's own `contextSha256`: the latter is a
-   * different digest (review context incl. permission version/receivedAt) and can never pass CommandExpected.validate.
-   */
-  async function candidateContext(kind: CommandKind, provided?: string | null): Promise<string> {
+  private async candidateContext(owner: TemporaryCommandOwner, provided?: string | null): Promise<string> {
     if (provided) return provided;
-    const current = scope();
-    const params = new URLSearchParams({ warehouseId: current.warehouseId, limit: '1' });
-    const page = await request(`/temporary-reviews/${current.submissionId}/duplicate-candidates?${params}`, duplicatePageSchema);
-    if (!page.commandContextSha256) throw new Error(`${kind === 'LINK' ? '关联' : '确认'}前必须先完成候选核对。`);
+    const params = new URLSearchParams({ warehouseId: owner.warehouseId, limit: '1' });
+    const page = await request(`/temporary-reviews/${owner.submissionId}/duplicate-candidates?${params}`, duplicatePageSchema);
+    this.assertOwner(owner);
+    if (!page.commandContextSha256) throw new Error('提交前必须先完成候选核对。');
     return page.commandContextSha256;
   }
-
-  async function execute(kind: CommandKind, options: { reason?: string; candidateContextSha256?: string | null } = {}): Promise<void> {
-    busy.value = true; error.value = '';
-    try {
-      const current = facts.value ?? await fetchFacts();
-      const context = await candidateContext(kind, options.candidateContextSha256);
-      const body = {
-        commandVersion: 1, commandType: kind, commandId: keyOf(kind), transportRecoveryEpoch: currentRecoveryEpoch(),
-        reason: options.reason ?? '',
-        warehouseId: current.warehouseId, submissionId: current.submissionId, workRound: current.workRound,
-        authorizationId: current.authorizationId, freezeDeviceId: current.freezeDeviceId,
-        sourceRecoveryEpoch: current.sourceRecoveryEpoch, source: { ...current.source },
-        expected: { ...current.expected, candidateContextSha256: context },
-      };
-      receipt.value = await postRaw('/temporary-commands', body, commandReceiptSchema);
-      keys.delete(kind); facts.value = null;
-    } catch (cause) {
-      if (cause instanceof ApiError && (cause.status === 404 || cause.code === 'COMMAND_SURFACE_CLOSED')) closed.value = true;
-      else error.value = errorText(cause);
-    } finally { busy.value = false; }
+  private async prepare(owner: TemporaryCommandOwner, kind: CommandKind, options: ExecuteOptions): Promise<SavedTemporaryCommand> {
+    const current = await this.fetchFacts(owner);
+    const context = await this.candidateContext(owner, options.candidateContextSha256);
+    const body = { commandVersion: 1, commandType: kind, commandId: crypto.randomUUID(),
+      transportRecoveryEpoch: currentRecoveryEpoch(), reason: options.reason ?? '', ...current,
+      expected: { ...current.expected, candidateContextSha256: context } };
+    return { ...owner, version: 1, kind, json: JSON.stringify(body), receipt: null };
   }
+  private async send(owner: TemporaryCommandOwner, kind: CommandKind, options: ExecuteOptions): Promise<void> {
+    this.assertOwner(owner);
+    const saved = loadTemporaryCommand(owner, kind) ?? await this.prepare(owner, kind, options);
+    this.assertOwner(owner); saveTemporaryCommand(saved); this.original.value = saved;
+    if (saved.receipt) { this.receipt.value = saved.receipt; return; }
+    const body = savedCommandBody(saved);
+    const result = await postRaw('/temporary-commands', { json: saved.json, recoveryEpoch: body.transportRecoveryEpoch,
+      assertCurrent: () => this.assertOwner(owner) }, commandReceiptSchema);
+    this.assertOwner(owner);
+    if (result.commandId !== body.commandId || result.commandType !== kind)
+      throw new TemporaryPersistenceError('回执与原键或命令类型不匹配，原请求已保留，请核对后重试。');
+    this.receipt.value = result;
+    const completed = { ...saved, receipt: result };
+    saveTemporaryCommand(completed); this.original.value = completed; this.facts.value = null;
+  }
+  async execute(kind: CommandKind, options: ExecuteOptions = {}): Promise<void> {
+    if (this.busy.value) return;
+    this.busy.value = true; this.error.value = ''; this.receipt.value = null;
+    try {
+      const owner = commandOwner(this.scope());
+      await lockTemporaryCommand(owner, kind, () => this.send(owner, kind, options));
+    } catch (cause) { this.report(cause); }
+    finally { this.busy.value = false; }
+  }
+  private async reset(owner: TemporaryCommandOwner, kind: CommandKind): Promise<void> {
+    this.assertOwner(owner);
+    const saved = loadTemporaryCommand(owner, kind);
+    if (saved && !saved.receipt) throw new TemporaryPersistenceError('原操作结果尚未核对，不能换键；请重试原请求。');
+    clearTemporaryCommand(owner, kind);
+    this.original.value = null; this.receipt.value = null; this.facts.value = null;
+  }
+  async startOver(kind: CommandKind): Promise<void> {
+    if (this.busy.value) return;
+    this.busy.value = true; this.error.value = '';
+    try { const owner = commandOwner(this.scope()); await lockTemporaryCommand(owner, kind, () => this.reset(owner, kind)); }
+    catch (cause) { this.report(cause); }
+    finally { this.busy.value = false; }
+  }
+}
 
-  return { facts, busy, error, receipt, closed, originalKey, loadFacts, execute, startOver };
+export function useTemporaryCommand(scope: () => TemporaryCommandOwner): TemporaryCommandHook {
+  const state = new TemporaryCommandLifecycle(scope);
+  return { facts: state.facts, busy: state.busy, error: state.error, receipt: state.receipt, closed: state.closed,
+    original: state.original, restore: kind => state.restore(kind), originalKey: kind => state.originalKey(kind),
+    loadFacts: () => state.loadFacts(), execute: (kind, options) => state.execute(kind, options),
+    startOver: kind => state.startOver(kind) };
 }

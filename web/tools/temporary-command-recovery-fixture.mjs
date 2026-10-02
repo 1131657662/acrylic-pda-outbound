@@ -20,39 +20,59 @@ export function facts() {
   };
 }
 
-function storage(blocked, events) {
-  const entries = new Map();
+function storage(options, events, entries) {
   return {
     get length() { return entries.size; }, key: index => [...entries.keys()][index] ?? null,
-    getItem: key => entries.get(key) ?? null,
+    getItem(key) { if (options.blockedRead) throw new Error('Synthetic read denied'); return entries.get(key) ?? null; },
     setItem(key, value) {
-      events.push({ action: 'setItem', key, blocked });
-      if (blocked) throw new Error('Synthetic browser storage quota denied');
-      entries.set(key, String(value));
+      events.push({ action: 'setItem', key, blocked: !!options.blockedStorage });
+      if (options.blockedStorage) throw new Error('Synthetic quota denied');
+      if (!options.silentWrite) entries.set(key, String(value));
     },
-    removeItem: key => entries.delete(key), clear: () => entries.clear(),
+    removeItem(key) { if (options.blockedRemove) throw new Error('Synthetic removal denied'); entries.delete(key); },
   };
 }
 
+function locks() {
+  const queues = new Map();
+  return { async request(key, action) {
+    const previous = queues.get(key) ?? Promise.resolve();
+    let release; const next = new Promise(resolve => { release = resolve; }); queues.set(key, next);
+    await previous;
+    try { return await action(); } finally { release(); if (queues.get(key) === next) queues.delete(key); }
+  } };
+}
+
+function receipt(body, options) {
+  return { status: 'RECORDED', commandId: options.mismatchedReceipt ? randomUUID() : body.commandId,
+    commandType: body.commandType, capabilities: { writeConfirmationAvailable: false, releaseAllowed: false,
+      mayResumeScanning: false, stockReleased: false, localDeletionAllowed: false } };
+}
+
 export function boundary(options = {}) {
-  const data = facts(); const calls = []; const storageEvents = []; let epoch = '1';
-  const previous = ['localStorage', 'sessionStorage'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]);
-  for (const key of ['localStorage', 'sessionStorage'])
-    Object.defineProperty(globalThis, key, { configurable: true, value: storage(options.blockedStorage, storageEvents) });
-  const api = {
+  const data = facts(); const calls = []; const storageEvents = []; const entries = new Map();
+  let epoch = '1'; let userId = randomUUID(); let gets = 0;
+  const previous = ['localStorage', 'navigator'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]);
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: storage(options, storageEvents, entries) });
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { locks: options.noLocks ? null : locks() } });
+  globalThis.temporaryRecoveryBoundary = {
     epoch: () => epoch,
     async request(url, schema) {
       if (!url.startsWith('/temporary-commands/facts?')) throw new Error('Unexpected GET ' + url);
-      return schema.parse(structuredClone(data));
+      gets++; options.beforeFacts?.(); return schema.parse(structuredClone(data));
     },
-    async postRaw(path, body) {
-      const text = JSON.stringify(body);
-      calls.push({ path, key: body.commandId, body: text, sha256: createHash('sha256').update(text).digest('hex') });
-      throw new TypeError('Synthetic response lost at transport boundary');
+    async postRaw(path, saved, schema) {
+      const body = JSON.parse(saved.json);
+      calls.push({ path, key: body.commandId, body: saved.json, epoch: saved.recoveryEpoch,
+        sha256: createHash('sha256').update(saved.json).digest('hex'),
+        persistedBeforePost: [...entries.values()].some(json => JSON.parse(json).json === saved.json) });
+      if (!options.success) throw new TypeError('Synthetic response lost');
+      options.beforeReceipt?.(); return schema.parse(receipt(body, options));
     },
   };
-  globalThis.temporaryRecoveryBoundary = api;
-  return { data, calls, storageEvents, setEpoch: value => { epoch = value; },
+  return { data, calls, entries, storageEvents, options, get gets() { return gets; },
+    owner: () => ({ userId, submissionId: data.submissionId, warehouseId: data.warehouseId }),
+    setUser: value => { userId = value; }, setEpoch: value => { epoch = value; },
     restore() {
       for (const [key, descriptor] of previous) {
         if (descriptor) Object.defineProperty(globalThis, key, descriptor); else delete globalThis[key];
@@ -61,12 +81,9 @@ export function boundary(options = {}) {
     } };
 }
 
-export function mountHook(useTemporaryCommand, data) {
+export function mountHook(useTemporaryCommand, owner) {
   let state;
-  const app = renderer.createApp({ setup() {
-    state = useTemporaryCommand(() => ({ submissionId: data.submissionId, warehouseId: data.warehouseId }));
-    return () => null;
-  } });
+  const app = renderer.createApp({ setup() { state = useTemporaryCommand(owner); return () => null; } });
   app.mount({});
   return { state, stop: () => app.unmount() };
 }

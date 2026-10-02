@@ -43,19 +43,18 @@ export function currentRecoveryEpoch(): string {
   return recoveryEpoch;
 }
 
-/**
- * POST that returns the server's own JSON body instead of the standard envelope. The temporary command
- * endpoint answers with the stored original receipt bytes, so it cannot go through {@link request}. A 404
- * means the command surface is switched off, which is a normal state and is reported as such.
- */
-export async function postRaw<T>(path: string, body: unknown, schema: z.ZodType<T>): Promise<T> {
+export interface RawJsonCommand { json: string; recoveryEpoch: string; assertCurrent: () => void }
+
+/** Send saved JSON verbatim, preserving the epoch and rechecking ownership after the asynchronous CSRF read. */
+export async function postRaw<T>(path: string, body: RawJsonCommand, schema: z.ZodType<T>): Promise<T> {
   if (connection.state === 'expired' && !path.startsWith('/auth/')) throw new ApiError(401, 'UNAUTHENTICATED', '请重新登录后核对原操作结果。');
   const headers = new Headers({ 'Content-Type': 'application/json' });
   const csrf = csrfSchema.parse((await read('/auth/csrf', {})).data);
   headers.set(csrf.headerName, csrf.token);
-  if (recoveryEpoch) headers.set('X-Server-Recovery-Epoch', recoveryEpoch);
+  headers.set('X-Server-Recovery-Epoch', body.recoveryEpoch);
+  body.assertCurrent();
   let response: Response;
-  try { response = await fetch(`/api/v1${path}`, { method: 'POST', body: JSON.stringify(body), headers, credentials: 'same-origin' }); }
+  try { response = await fetch(`/api/v1${path}`, { method: 'POST', body: body.json, headers, credentials: 'same-origin' }); }
   catch (cause) { connection.state = 'unreachable'; throw cause; }
   const payload: unknown = await response.json();
   if (!response.ok) {
