@@ -11,6 +11,7 @@
 | R07实际账务贡献 | 离线、迁移、HTTP与导出验证通过，已推送 | 458a943；accounting-repair/closeout/git-final.json |
 | R06 Web原命令恢复 | 构建、hook/契约/Chrome回归通过，已推送 | e2fa8e8；web-recovery/closeout/git-final.json |
 | R07更正原键actor回放 | 编译、离线全量、真实隔离HTTP通过，已推送 | 880808e；e2a-cross-20260925-841、correction-replay/offline-2 |
+| R07 HEADER撤回入口保护 | 编译、离线全量、真实隔离HTTP与导出回归通过，已推送 | 8b203d0；e2a-cross-20260925-847；R07_3_HEADER_WITHDRAW_BLOCKER_2026-10-02.md |
 | mapping3+/R1及R06/R07余项 | 未完成 | 沿优先级接续 |
 
 ## 自主决策记录
@@ -46,10 +47,11 @@
 29. R1 故障注入改用测试域 BeanPostProcessor 替换同名 AuditWriter，遵守 Primary 冻结白名单；842 的注入歧义失败保留，843/844 真实隔离 MySQL 通过后才收口。
 30. R1 写后回滚验收按 16 张表逐字快照、审计后中间状态、原键提交/重放和上下文重建复核；生产默认与原库边界不变。
 31. mapping3+ 只记录 fail-closed：版本字段可表达高值，但没有安全的重复关联/旧目标失效政策；不凭字段或自动重链入口宣称完成。
+32. HEADER 撤回沿确认端既有 `CORRECTION_LEDGER_CONFLICT` 在发起端提前拒绝，避免生成必然无法确认的 `WITHDRAW_PENDING`；实际表头恢复语义未定义，保持 fail-closed。run 846 的渲染器缺失失败保留，run 847 配置渲染器后 1/0/0/0 通过。
 
 ## 验证与证据索引
 
-已交付：[分页验收](R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)、[原键验收](R07_FIRST_REPLAY_REPAIR_2026-10-02.md)、[同步验收](R07_HANDOVER_SYNC_STATUS_REPAIR_2026-10-02.md)、[账务验收](R07_ACTUAL_ACCOUNTING_REPAIR_2026-10-02.md)、[Web原命令验收](R06_WEB_ORIGINAL_COMMAND_REPAIR_2026-10-02.md)、[更正回放验收](R07_CORRECTION_REPLAY_ACTOR_REPAIR_2026-10-02.md)、[R1写后回滚验收](R1_HANDOVER_WRITE_AFTER_ROLLBACK_2026-10-02.md)、[mapping3+审计](R06_MAPPING3_FAIL_CLOSED_AUDIT_2026-10-02.md)。
+已交付：[分页验收](R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)、[原键验收](R07_FIRST_REPLAY_REPAIR_2026-10-02.md)、[同步验收](R07_HANDOVER_SYNC_STATUS_REPAIR_2026-10-02.md)、[账务验收](R07_ACTUAL_ACCOUNTING_REPAIR_2026-10-02.md)、[Web原命令验收](R06_WEB_ORIGINAL_COMMAND_REPAIR_2026-10-02.md)、[更正回放验收](R07_CORRECTION_REPLAY_ACTOR_REPAIR_2026-10-02.md)、[R1写后回滚验收](R1_HANDOVER_WRITE_AFTER_ROLLBACK_2026-10-02.md)、[mapping3+审计](R06_MAPPING3_FAIL_CLOSED_AUDIT_2026-10-02.md)、[HEADER撤回入口验收](R07_3_HEADER_WITHDRAW_BLOCKER_2026-10-02.md)。
 
 账务证据根.local/autonomous-20261002/accounting-repair/：offline-full-9/10/11各148套件2956项0失败0错误1既有skip。832至836各1项零失败/错误/跳过；839撤回更正导出1项complete=true。830/831/837/838、离线中断/编码/编译失败全部保留。
 
@@ -59,10 +61,12 @@ Web证据根.local/autonomous-20261002/web-recovery/：final-2/unit为35项通�
 
 R1证据根`.local/e2a-cross-20260925-842/`、`843/`、`844/`：842为配置歧义失败且无完成标记；843与844各1项真实隔离 MySQL 通过，16表快照、原键回执和认证停机保全。完整`server test`为148套件/2956项，0失败、0错误、1既有skip。
 
+HEADER撤回证据根`.local/e2a-cross-20260925-847/`：E2aCorrectionAccountingHttpIT为1项通过、0失败、0错误、0 skip；`accounting/header-withdraw/`含拒绝回执和状态不变断言输入。846因渲染器缺失失败，未计入完成，证据保留。
+
 ## 仍未解决与边界
 
-mapping3+及R06/R07余项。HEADER撤回、历史无引用REVERSAL、旧更正outbox、CYCLE_REOPENED未覆盖；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。R1写后回滚已完成隔离验收，但不替代现场边界，goal active。
+mapping3+及R06/R07余项。HEADER撤回实际恢复语义、历史无引用REVERSAL、旧更正outbox、CYCLE_REOPENED未覆盖；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。R1写后回滚已完成隔离验收，但不替代现场边界，goal active。
 
 ## 磁盘与环境
 
-842/843/844隔离库均已认证停机；无在途重型任务，19330/19434测试监听0，系统MySQL不动，删除0，设备动作0。D盘本轮结束可用约23.75GiB，仍高于20GiB；未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。
+842/843/844/846/847隔离库均已认证停机；无在途重型任务，19330/19434测试监听0，系统MySQL不动，删除0，设备动作0。D盘本轮结束可用约23.75GiB，仍高于20GiB；未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。
