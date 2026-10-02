@@ -87,7 +87,7 @@ public class SourceEvidenceIntakeReadIntegrity {
             require("RECEIVED".equals(text(row, "receipt_status")) && absent(row, "object_id")
                 && absent(row, "evidence_set_id") && absent(row, "evidence_verification_id"));
         } else if ("VERIFY".equals(operation)) {
-            require("PARTIAL".equals(text(row, "receipt_status")) && absent(row, "object_id")
+            require("VERIFIED_COMPLETE_AT_STOP".equals(text(row, "receipt_status")) && absent(row, "object_id")
                 && id(row, "evidence_set_id").toString().equals(receipt.path("evidenceSetId").asText())
                 && id(row, "evidence_verification_id").toString().equals(receipt.path("evidenceVerificationId").asText()));
         } else {

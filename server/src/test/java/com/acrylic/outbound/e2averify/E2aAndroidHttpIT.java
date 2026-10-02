@@ -68,6 +68,6 @@ class E2aAndroidHttpIT {
             submission)).isEqualTo(abortBeforePayload ? "ABORTED" : "REVIEW_REQUIRED");
         if (abortBeforePayload) E2aAndroidAbortHttpIT.unchanged(jdbc, result, partialUpload);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM source_evidence_verification "
-            + "WHERE submission_id=UUID_TO_BIN(?) AND result='PARTIAL'", Integer.class, submission)).isEqualTo(1);
+            + "WHERE submission_id=UUID_TO_BIN(?) AND result='VERIFIED_COMPLETE_AT_STOP'", Integer.class, submission)).isEqualTo(1);
     }
 }

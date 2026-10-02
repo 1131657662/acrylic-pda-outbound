@@ -74,15 +74,18 @@ public class SourceEvidenceIntakeReadService {
 
     private static JsonNode currentEffect(Found found,
         ServerState.State server) {
+        var receipt = found.result().receipt();
+        boolean completeStop = "VERIFY".equals(receipt.path("operationKind").asText())
+            && "VERIFIED_COMPLETE_AT_STOP".equals(receipt.path("status").asText());
         var effect = SubmissionJson.object().put("evaluatedAt", Instant.now().toString())
-            .put("evaluation", "PARTIAL").put("applicable", false)
+            .put("evaluation", completeStop ? "VERIFIED_COMPLETE_AT_STOP" : "PARTIAL").put("applicable", false)
             .put("serverRecoveryEpoch", server.epoch()).put("serviceMode", server.mode());
         var reasons = effect.putArray("reasons");
-        reasons.add("NO_TRUSTED_COMPLETE_AT_STOP");
+        if (!completeStop) reasons.add("NO_TRUSTED_COMPLETE_AT_STOP");
         reasons.add("BUSINESS_DECISION_NOT_IMPLEMENTED");
         if (!"VERIFIED".equals(found.result().trustStatus())) reasons.add("HISTORICAL_KEY_UNVERIFIABLE");
         if (!"NORMAL".equals(server.mode())) reasons.add("SERVER_NOT_NORMAL");
-        var original = found.result().receipt().path("originalContext");
+        var original = receipt.path("originalContext");
         if (!found.actor().authVersion().equals(original.path("userAuthVersion").asText()))
             reasons.add("USER_AUTH_VERSION_CHANGED");
         if (!found.actor().pda().deviceVersion().equals(original.path("deviceVersion").asText()))

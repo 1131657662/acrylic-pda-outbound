@@ -60,6 +60,16 @@ class SourceEvidenceIntakeReadServiceTest {
         assertThat(view.currentEffect().path("capabilities").path("localDeletionAllowed").booleanValue()).isFalse();
     }
 
+    @Test void completeStopVerificationDoesNotReportMissingStopProof() {
+        when(integrity.check(anyMap(),eq(source),eq(ORIGINAL_KEY))).thenReturn(result("VERIFIED"));
+
+        var effect=service.read(WAREHOUSE,SUBMISSION,2,ORIGINAL_KEY.toString()).currentEffect();
+
+        assertThat(effect.path("evaluation").asText()).isEqualTo("VERIFIED_COMPLETE_AT_STOP");
+        assertThat(effect.path("reasons").toString()).doesNotContain("NO_TRUSTED_COMPLETE_AT_STOP");
+        assertThat(effect.path("reasons").toString()).contains("BUSINESS_DECISION_NOT_IMPLEMENTED");
+    }
+
     @Test void unknownHistoricalKeyCannotUseRawTrustedEndpoint() {
         when(integrity.check(anyMap(),eq(source),eq(ORIGINAL_KEY))).thenReturn(result("UNVERIFIABLE_KEY"));
 
@@ -90,7 +100,8 @@ class SourceEvidenceIntakeReadServiceTest {
     private static SourceEvidenceIntakeReadIntegrity.Result result(String trust) {
         var context=SubmissionJson.object().put("userAuthVersion","7").put("deviceVersion","1")
             .put("currentSessionId",UUID.randomUUID().toString());
-        var receipt=SubmissionJson.object().set("originalContext",context);
+        var receipt=SubmissionJson.object().put("operationKind","VERIFY")
+            .put("status","VERIFIED_COMPLETE_AT_STOP").set("originalContext",context);
         return new SourceEvidenceIntakeReadIntegrity.Result("{}".getBytes(StandardCharsets.UTF_8),"digest",trust,receipt);
     }
 }

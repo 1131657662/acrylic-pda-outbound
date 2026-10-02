@@ -41,7 +41,7 @@ final class E2aCrossSourceHttpChecks {
         byte[] verified = http.post("verify", verifyKey, wire.verify(1));
         assertThat(http.post("verify", verifyKey, wire.verify(1))).isEqualTo(verified);
         http.original(verifyKey, verified);
-        assertThat(SubmissionJson.parse(verified).path("status").asText()).isEqualTo("PARTIAL");
+        assertThat(SubmissionJson.parse(verified).path("status").asText()).isEqualTo("VERIFIED_COMPLETE_AT_STOP");
         assertThat(SubmissionJson.parse(verified).path("capabilities").path("localDeletionAllowed").booleanValue()).isFalse();
         assertReservations(f);
         http.reject("verify", verifyKey, wire.verify(2), "E2A_INTAKE_CONFLICT");

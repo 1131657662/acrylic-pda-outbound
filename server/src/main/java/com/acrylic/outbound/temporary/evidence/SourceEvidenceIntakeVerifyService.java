@@ -95,9 +95,10 @@ public class SourceEvidenceIntakeVerifyService {
         byte[] factsBytes = E2aProtocol.canonical(context.json().toString().getBytes(StandardCharsets.UTF_8));
         byte[] findings = findings(stop, link.itemCount());
         UUID verificationId = verifications.insert(pageBinding, link.id(), verify.setHash(), verify.verificationVersion(),
-            verify.algorithmVersion(), "PARTIAL", factsBytes, findings, Instant.now());
+            verify.algorithmVersion(), "VERIFIED_COMPLETE_AT_STOP", factsBytes, findings, Instant.now());
         var insert = insert(context, actor, verify, request.originalKey());
-        var receipt = codec.verify(Ids.next(), request.originalKey(), open, verify, insert, link.id(), verificationId, "PARTIAL", Instant.now());
+        var receipt = codec.verify(Ids.next(), request.originalKey(), open, verify, insert, link.id(), verificationId,
+            "VERIFIED_COMPLETE_AT_STOP", Instant.now());
         receipts.insert(insert, link.id(), verificationId, receipt); return receipt.originalResponseBytes();
     }
 
@@ -140,7 +141,8 @@ public class SourceEvidenceIntakeVerifyService {
 
     private byte[] findings(SourceEvidenceIntakeStop.Parsed stop, long items) {
         var proof = SubmissionJson.parse(stop.canonicalStopProofBytes()).path("core");
-        ObjectNode node = SubmissionJson.object().put("result", "PARTIAL").put("reason", "SERVER_ROOTS_RECHECKED")
+        ObjectNode node = SubmissionJson.object().put("result", "VERIFIED_COMPLETE_AT_STOP")
+            .put("reason", "SERVER_ROOTS_RECHECKED")
             .put("captureHighWatermark", proof.path("captureHighWatermark").longValue())
             .put("auditThroughSeq", proof.path("auditThroughSeq").longValue()).put("itemCount", items);
         return E2aProtocol.canonical(node.toString().getBytes(StandardCharsets.UTF_8));
