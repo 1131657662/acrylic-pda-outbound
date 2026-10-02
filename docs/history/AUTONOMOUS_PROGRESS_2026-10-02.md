@@ -57,7 +57,7 @@
 35. 周期重开先按稳定顺序锁定派发、包和占用记录，校验取消派发的周期/订单/状态后删除旧 DISPATCHED 占用并推进包周期；任一包冲突或账务失败事务整体回滚，重复请求返回 CYCLE_REOPENING_EXISTS。run 850 的旧夹具缺少后续账务列、run 851 缺渲染器均保留，修正后的 run 852 真实 HTTP 通过后才收口。
 36. R06 TEMP 拒绝先独立落地：复核人绑定完整候选上下文后写 `REJECTED` 和原因，订单保持待处置状态，`REVIEW_RESERVED` 占用不由拒绝事件自动释放；真实隔离 MySQL 通过 attempt 856，现场身份与停止边界仍未替代。
 37. `TemporaryRejectionIT` 内部使用真实 HTTP，因此固定 `19434` 的 Spring Boot `DEFINED_PORT` 上下文；attempt 856 以 1 类/1 测试通过，853 的 NPE 与 854/855 的 runner 收尾失败均保留。
-38. 清理只针对可再生构建缓存和未引用的三份 Demo 数据库快照；保留 `.local` 及其证据，runner 在 `localDeletionAllowed=false` 下跳过自动 datadir 删除。
+38. 首轮清理只针对可再生构建缓存和未引用的三份 Demo 数据库快照；后续按用户要求删除三个无活动进程的 AVD 快照、历史运行时 JAR 及旧检出/快照的 `build/`，保留 `.local` 中的数据库与证据，runner 在 `localDeletionAllowed=false` 下跳过自动 datadir 删除。
 
 ## 验证与证据索引
 
@@ -83,8 +83,8 @@ TEMP拒绝真实隔离证据根`.local/e2a-cross-20260925-856/`：`TemporaryReje
 
 ## 仍未解决与边界
 
-mapping3+及R06/R07余项。TEMP拒绝真实隔离 MySQL 尚未验收；PHYSICAL_DISPOSITION、完整停止证据、释放占用、HEADER撤回实际恢复语义、历史无引用REVERSAL的归属、PHYSICAL_RETURN周期策略与CYCLE_REOPENED后的 PDA 重扫仍未完成；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。R1写后回滚已完成隔离验收，但不替代现场边界，目标按用户指令暂停。
+mapping3+及R06/R07余项。PHYSICAL_DISPOSITION、完整停止证据、释放占用、HEADER撤回实际恢复语义、历史无引用REVERSAL的归属、PHYSICAL_RETURN周期策略与CYCLE_REOPENED后的 PDA 重扫仍未完成；TEMP政策/高轮次/跨来源、526、R05原资料/旧BCD、R09恢复限制单列。fixture/HTTP/SQL不是现场；PDA/Keystore、独立JVM/OS死亡、断电/长时与完整UI未完成。R1写后回滚与TEMP拒绝均已完成隔离验收，但不替代现场边界，目标按用户指令暂停。
 
 ## 磁盘与环境
 
-842/843/844/846/847/848/849/850/851/852/856隔离库均已认证停机；无在途重型任务，19330/19434/19435测试监听0，系统MySQL不动，构建缓存已清理，`.local`证据删除0，设备动作0。删除三份未引用 Demo 快照及缓存后 D 盘可用约34.1GiB，仍高于20GiB；未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。目标按用户指令暂停。
+842/843/844/846/847/848/849/850/851/852/856隔离库均已认证停机；无在途重型任务，19330/19434/19435测试监听0，系统MySQL不动，emulator/qemu不在运行，`.local` 证据删除0，设备动作0。删除 AVD 快照、历史运行时 JAR 和旧 `build/` 后 D 盘可用约52.4GiB，仍高于20GiB；`demo-artifacts`/`outputs`及数据库证据保留。未合main/标签/Release/部署、未接原库/现网、未改生产默认开关。目标按用户指令暂停。
