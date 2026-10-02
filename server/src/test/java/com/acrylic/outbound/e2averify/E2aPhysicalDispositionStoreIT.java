@@ -2,8 +2,7 @@ package com.acrylic.outbound.e2averify;
 
 import com.acrylic.outbound.common.Ids;
 import com.acrylic.outbound.submissions.SubmissionJson;
-import com.acrylic.outbound.temporary.command.PhysicalDispositionStore;
-import com.acrylic.outbound.temporary.command.PhysicalDispositionVerification;
+import com.acrylic.outbound.temporary.command.*;
 import java.nio.file.Files;
 import java.time.Instant;
 import java.util.*;
@@ -24,13 +23,26 @@ class E2aPhysicalDispositionStoreIT {
         // This is a store/transaction fixture, not proof of the trusted STOP/VERIFY HTTP chain.
         jdbc.update("UPDATE source_evidence_verification SET result='VERIFIED_COMPLETE_AT_STOP' WHERE id=UUID_TO_BIN(?)", verification);
         var transaction = new TransactionTemplate(new org.springframework.jdbc.datasource.DataSourceTransactionManager(jdbc.getDataSource()));
+        verifyLocks(jdbc, transaction, seed);
         var verified = transaction.execute(status -> new PhysicalDispositionVerification(jdbc).read(
             UUID.fromString(warehouse), UUID.fromString(scope), UUID.fromString(submission), 1,
             UUID.fromString(set), UUID.fromString(verification), jdbc.queryForObject(
                 "SELECT set_sha256 FROM source_evidence_verification WHERE id=UUID_TO_BIN(?)", String.class, verification), 1, 1));
         assertThat(verified.activeBales()).containsExactly(UUID.fromString(bale));
         verifyStore(profile, jdbc, transaction, verified);
-        Files.writeString(profile.attempt.resolve("test-completed.marker"), "Isolated MySQL independent manifest hash and duplicate rollback passed\n");
+        Files.writeString(profile.attempt.resolve("test-completed.marker"), "Isolated MySQL source locks, independent manifest hash and duplicate rollback passed\n");
+    }
+
+    private void verifyLocks(org.springframework.jdbc.core.JdbcTemplate jdbc, TransactionTemplate transaction, Map<String,String> seed) {
+        var hint = SubmissionJson.object().put("authorizationId", seed.get("authorizationId"))
+            .put("creatorDeviceId", seed.get("deviceId")).put("clientOrderId", seed.get("mappedClientOrderId"))
+            .put("scopeId", seed.get("mappedScopeId")).put("canonicalOrderId", seed.get("orderId"))
+            .put("submissionId", seed.get("mappedSubmissionId"));
+        var locks = new CommandLocks(null, null, null, null, jdbc);
+        assertThatThrownBy(() -> transaction.execute(status -> { locks.source(new CommandContext(hint)); return null; }))
+            .isInstanceOf(com.acrylic.outbound.common.BusinessException.class);
+        assertThatCode(() -> transaction.execute(status -> { locks.sourceDisposition(new CommandContext(hint)); return null; }))
+            .doesNotThrowAnyException();
     }
 
     private void verifyStore(E2aCrossSourceProfile profile, org.springframework.jdbc.core.JdbcTemplate jdbc,

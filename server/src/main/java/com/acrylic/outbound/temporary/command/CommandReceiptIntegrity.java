@@ -18,7 +18,7 @@ public class CommandReceiptIntegrity {
     }
     public JsonNode verify(CommandRecord r) {
         try { return checked(r); }
-        catch(RuntimeException damaged) { throw CommandErrors.corrupt(); }
+        catch(RuntimeException damaged) { throw CommandErrors.corrupt(damaged); }
     }
     private JsonNode checked(CommandRecord r) {
         CommandErrors.integrity(r.id("id")!=null && r.id("id").equals(r.id("resource_id")) && r.id("api_request_id").equals(r.id("request_id")));

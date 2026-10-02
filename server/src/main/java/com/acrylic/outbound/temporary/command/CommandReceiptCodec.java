@@ -5,6 +5,7 @@ import com.acrylic.outbound.submissions.SubmissionJson;
 import com.acrylic.outbound.temporary.protocol.TemporaryProtocol;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,8 @@ public class CommandReceiptCodec {
             .put("commandType",input.kind()).put("commandSha256",input.digest()).put("status",decision.isNull()?"INTERNAL_TEST_ONLY":"RECORDED")
             .putNull("businessDecision").put("recordedAt",write.recordedAt().toString()).put("eventId",write.eventId().toString())
             .put("resultingDecisionVersion",Long.toString(Math.addExact(write.context().version("decisionVersion"),1)));
-        unsigned.set("originalContext",write.context().json());unsigned.set("actor",write.actor());
+        unsigned.set("originalContext",receiptContext(write.context()));
+        unsigned.set("actor",write.actor());
         unsigned.set("businessDecision",decision.deepCopy());
         unsigned.set("expected",input.expected());unsigned.set("capabilities",capabilities());
         CommandReceiptShape.validate(unsigned);
@@ -31,6 +33,14 @@ public class CommandReceiptCodec {
         return new Receipt(original,TemporaryProtocol.originalResponseSha256(original),unsignedBytes,
             TemporaryProtocol.unsignedReceiptSha256(unsignedBytes),signed.keyId(),signed.token());
     }
+    private static JsonNode receiptContext(CommandContext context) {
+        var result = (com.fasterxml.jackson.databind.node.ObjectNode) context.json();
+        for (String key : List.of("evidenceSetId", "evidenceSetSha256", "verificationId",
+            "verificationVersion", "verificationAlgorithmVersion", "dispositionManifestSha256", "dispositionManifestVersion"))
+            result.remove(key);
+        return result;
+    }
+
     public static JsonNode capabilities() {
         return SubmissionJson.object().put("writeConfirmationAvailable",false).put("releaseAllowed",false)
             .put("mayResumeScanning",false).put("stockReleased",false).put("localDeletionAllowed",false);

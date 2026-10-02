@@ -16,7 +16,6 @@ final class CommandDecision {
         var decision=receipt.get("businessDecision");
         if(decision.isNull()) { require(receipt.path("status").asText().equals("INTERNAL_TEST_ONLY")); return; }
         require(receipt.path("status").asText().equals("RECORDED") && decision.isObject());
-        fields(decision,"kind candidates products shortShipmentReason shortApprovalReceiptId shortApprovalSha256 submissionReceipt");
         String kind=receipt.path("commandType").asText();
         require(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION").contains(kind) && decision.path("kind").asText().equals(kind));
         if (kind.equals("PHYSICAL_DISPOSITION")) {
@@ -28,6 +27,7 @@ final class CommandDecision {
             hash(decision.path("manifestSha256")); require(decision.path("manifestVersion").asText().matches("[1-9][0-9]*"));
             return;
         }
+        fields(decision,"kind candidates products shortShipmentReason shortApprovalReceiptId shortApprovalSha256 submissionReceipt");
         var candidates=decision.path("candidates");
         fields(candidates,"policyVersion fromDate throughDate total fingerprint contextSha256");
         require(candidates.path("policyVersion").asText().equals("REVIEW_DEFAULT_V1"));

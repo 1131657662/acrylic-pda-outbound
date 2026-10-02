@@ -34,6 +34,6 @@ public final class PhysicalDispositionOperation implements CommandOperation {
             .put("verificationId", verified.verification().toString())
             .put("manifestSha256", expected.path("dispositionManifestSha256").asText())
             .put("manifestVersion", expected.path("dispositionManifestVersion").asText())
-            .set("products", SubmissionJson.object().putArray("items").path("items"));
+            .set("products", manifest.path("items").deepCopy());
     }
 }

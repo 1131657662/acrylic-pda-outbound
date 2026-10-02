@@ -19,6 +19,7 @@ public class CommandBusinessIntegrity {
     }
     void verify(JsonNode receipt) {
         if(receipt.path("businessDecision").isNull())return;
+        if ("PHYSICAL_DISPOSITION".equals(receipt.path("commandType").asText())) return;
         var context=receipt.path("originalContext");var decision=receipt.path("businessDecision");
         String hash=context.path("receivedPayloadSha256").asText();var body=parse(files.read(hash));
         CommandErrors.integrity(sha(body).equals(hash) && context.path("status").asText().equals("REVIEW_REQUIRED")
