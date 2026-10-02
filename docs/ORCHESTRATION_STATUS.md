@@ -17,7 +17,7 @@ server: { contract: 0.37.0, paths: 131, flyway: V56, migrations: 56 }
 P-R06-01 已实现并推送：拒绝 TEMP 来源在完整停止验证和逐包清单下可 RELEASE 释放占用或 QUARANTINE 隔离；旧 PHYSICAL_DISPOSED 输入兼容为隔离。拒绝原因改为严格解析 issues_json.issues[].code。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development；实现提交 d8b1ac9、当前断点提交 d52f38c 均已推送。本次单助手写入，完整遗留清单见 .local/autonomous-20261003/checkpoint-status.txt。
+- 树 D:/acrylic-pda-outbound，分支 codex/development；实现提交 d8b1ac9 已推送，当前提交见本看板生成事实块。本次单助手写入，完整遗留清单见 .local/autonomous-20261003/checkpoint-status.txt。
 - 本次提交只包含处置释放实现、迁移、单测、隔离 MySQL/真实 Web 测试；历史更正链、PDA 文档、本机请求 JSON 和旧脚本未代提交。
 - 隔离实例 902/903 已认证停机；系统既有监听未操作；生产默认 gate 保持 false；未接原库/现网，未部署，未删 .local。
 
