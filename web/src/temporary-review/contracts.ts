@@ -16,7 +16,7 @@ export const temporaryReviewSchema = z.object({
   registeredAt: z.iso.datetime(), receivedAt: z.iso.datetime(), checkedAt: z.iso.datetime(), closedAt: z.iso.datetime(),
   operatorId: z.string().uuid(), operatorName: z.string(), deviceName: z.string(),
   expectedCount: count, expectedWeightGrams: count, inventorySnapshotId: z.string().uuid(), policyVersion: z.string(), autoDeductInventory: z.boolean(),
-  writeConfirmationAvailable: z.boolean(), releaseAllowed: z.literal(false),
+  writeConfirmationAvailable: z.literal(false), releaseAllowed: z.literal(false),
   authorization: z.object({ authorizationId: z.string().uuid(), issuedAt: z.iso.datetime(), expiresAt: z.iso.datetime(),
     userVersion: count, deviceVersion: count, recoveryEpoch: count }),
   products: z.array(z.object({ deliveryCode: z.string(), productId: z.string().uuid(), model: z.string(), name: z.string(),
