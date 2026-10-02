@@ -43,7 +43,7 @@ public class CommandFacts {
             JOIN temporary_authorization a ON a.id=t.authorization_id AND a.id=s.temporary_authorization_id
              AND a.device_id=c.creator_device_id AND a.device_id=s.freeze_device_id AND a.user_id=s.operator_id
              AND a.warehouse_id=c.warehouse_id AND a.recovery_epoch=s.source_recovery_epoch
-            JOIN temporary_source_mapping m ON m.scope_id=c.id AND m.mapping_version=c.mapping_version
+            LEFT JOIN temporary_source_mapping m ON m.scope_id=c.id AND m.mapping_version=c.mapping_version
             JOIN temporary_decision_state d ON d.scope_id=c.id
             LEFT JOIN outbound_order o ON o.id=c.canonical_order_id AND o.warehouse_id=c.warehouse_id
             LEFT JOIN order_submission_slot l ON l.order_id=o.id
@@ -54,7 +54,8 @@ public class CommandFacts {
         var node=(ObjectNode)SubmissionJson.parse(rows.getFirst());return complete(node);
     }
     private CommandContext complete(ObjectNode node) {
-        CommandErrors.integrity(node.get("canonicalOrderId").equals(node.get("mappingOrderId")));
+        if (node.get("canonicalOrderId") != null && !node.get("canonicalOrderId").isNull())
+            CommandErrors.integrity(node.get("canonicalOrderId").equals(node.get("mappingOrderId")));
         String hash=node.path("receivedPayloadSha256").isNull()?null:node.path("receivedPayloadSha256").asText();
         node.putNull("planSha256");
         if(hash!=null)node.set("planSha256",SubmissionJson.parse(files.read(hash)).get("planSha256"));
