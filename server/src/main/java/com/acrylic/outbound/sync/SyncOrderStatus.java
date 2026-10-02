@@ -18,6 +18,8 @@ public class SyncOrderStatus {
             case "ORDER_ASSIGNED" -> "ASSIGNED";
             case "ORDER_CANCELLED" -> "CANCELLED";
             case "HANDOVER_ACTIVATED" -> handoverStatus(payload);
+            case "CORRECTION_EFFECTIVE", "CORRECTION_WITHDRAWN", "CYCLE_REOPENED"
+                -> correctionStatus(type, payload);
             default -> payloadStatus(payload).path("status").asText();
         };
         if (!STATUSES.contains(status)) throw new IllegalStateException("不支持的订单同步状态: " + status);
@@ -38,6 +40,14 @@ public class SyncOrderStatus {
         var node = payloadStatus(payload);
         if (!node.has("status")) return "ASSIGNED";
         if (!node.path("status").isTextual()) throw new IllegalStateException("交接同步状态类型无效");
+        return node.path("status").asText();
+    }
+
+    private String correctionStatus(String type, String payload) {
+        var node = payloadStatus(payload);
+        // Older correction outbox rows predate the status field. Corrections preserve a completed order state.
+        if (!node.has("status")) return "COMPLETED";
+        if (!node.path("status").isTextual()) throw new IllegalStateException("更正同步状态类型无效: " + type);
         return node.path("status").asText();
     }
 }
