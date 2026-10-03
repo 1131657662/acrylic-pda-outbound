@@ -6,30 +6,28 @@
 ```yaml
 date: 2026-10-03
 branch: codex/development
-head: 96eb2c5
-dirty_entries: 12
+head: b7809c5
+dirty_entries: 13
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V56, migrations: 56 }
 ```
 <!-- FACTS_END -->
 
-P-R06-01 已实现并推送：拒绝 TEMP 来源在完整停止验证和逐包清单下可 RELEASE 释放占用或 QUARANTINE 隔离；旧 PHYSICAL_DISPOSED 输入兼容为隔离。拒绝原因改为严格解析 issues_json.issues[].code。
+R07 PHYSICAL_RETURN 已纳入受控周期重开：批准时周期 +1、删除旧 DISPATCHED 占用、结果快照该包保持 is_effective=0，并写唯一 cycle_reopening 与 CYCLE_REOPENED outbox；DISPATCH_CANCELLATION 同路径。实现与测试已在 `b7809c5` 提交并推送 codex/development。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development；实现提交 d8b1ac9 已推送，当前提交见本看板生成事实块。本次单助手写入，完整遗留清单见 .local/autonomous-20261003/checkpoint-status.txt。
-- 本次提交只包含处置释放实现、迁移、单测、隔离 MySQL/真实 Web 测试；历史更正链、PDA 文档、本机请求 JSON 和旧脚本未代提交。
-- 隔离实例 902/903 已认证停机；系统既有监听未操作；生产默认 gate 保持 false；未接原库/现网，未部署，未删 .local。
+- 本轮单助手写入；`b7809c5` 只包含本轮更正周期实现、测试与 P08-B 审计；其他遗留未提交/未跟踪文件继续保护。
+- 真实隔离 HTTP attempt 906 已认证停机；904/905 的渲染器配置失败证据保留；系统 MySQL 未操作，生产默认 gate 仍 false。
 
 ## 当次证据
-- 定向回归 26 项通过；完整离线服务端回归 2990 项通过、0 失败、0 错误、1 个既有条件跳过。
-- 隔离真实 MySQL 释放链 902：1/0/0/0；隔离真实 Web 会话释放链 903：1/0/0/0。
-- 首次 BOM 编译失败日志保留于 .local/autonomous-20261003/disposition-release-targeted/；修复后证据见 disposition-release-targeted-2/。
-- 证据只覆盖隔离库、真实 Web 会话和合成停止验证夹具；现场 PDA/原身份、断电、长时、物理卸货观察和生产审批仍未验。
+- CorrectionCycleReopeningTest：3/0/0/0。
+- E2aCorrectionAccountingHttpIT：attempt 906，1/0/0/0，覆盖 DISPATCH_CANCELLATION 与 PHYSICAL_RETURN，渲染器/Chromium 已配置。
+- 完整服务端离线 test：2991 项，0 失败、0 错误、1 个既有条件跳过；定向 `CorrectionCycleReopeningTest` 3/0/0/0。
 
 ## 下一步、未验与边界
-- 继续 R06/R07 剩余功能；mapping3+ 保持 fail-closed，R1 白名单、跨来源/高轮次、HEADER 恢复、历史撤回、PHYSICAL_RETURN 周期策略和现场证据继续单列。
-- 失败证据不删除；不把隔离 HTTP/SQL 证明写成现场或生产完成。当前提交为开发阶段备份，不合 main、不打标签、不 Release、不部署。
+- P08-B 撤销确认后的占用回退仍因缺业务政策和占用流转模型未实现；mapping3+、R1 白名单、现场 PDA/原身份、真实退货实物和生产审批继续单列。
+- 失败证据不删除；不把隔离 HTTP/SQL 证明写成现场或生产完成。不合 main、不打标签、不 Release、不部署、不接原库/现网。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实见生成块；提交自身SHA以Git回执核对。
