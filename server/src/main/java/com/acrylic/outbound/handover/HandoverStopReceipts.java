@@ -17,6 +17,7 @@ final class HandoverStopReceipts {
 
     byte[] sign(HandoverStopCommand command, HandoverStopAccess.Context context, JsonNode recall,
             UUID receiptId, UUID packageEvidenceId, Instant now) {
+        requireActor(context);
         verifyRecall(recall, command, context.origin());
         var receipt = SubmissionJson.object().put("receiptVersion", 1).put("receiptId", receiptId.toString())
             .put("packageEvidenceId", packageEvidenceId.toString()).put("routeScope", HandoverStopService.ROUTE)
@@ -31,6 +32,13 @@ final class HandoverStopReceipts {
     }
 
     JsonNode verify(Map<String, Object> stop, Map<String, Object> pack, HandoverStopAccess.Context context) {
+        requireActor(context);
+        return verifyEvidence(stop, pack, context.origin(), context.facts());
+    }
+
+    /** Supervisor consumers prove the original actor from the immutable source, without impersonating the PDA. */
+    JsonNode verifyEvidence(Map<String, Object> stop, Map<String, Object> pack,
+            HandoverStopStore.Origin origin, JsonNode facts) {
         try {
             corruptUnless(stop != null && pack != null);
             byte[] bytes = (byte[]) stop.get("receipt_bytes");
@@ -41,26 +49,32 @@ final class HandoverStopReceipts {
             var bound = receipt.path("originalCommand");
             var command = HandoverStopCommand.parse(SubmissionJson.uuid(bound, "caseId"),
                 SubmissionJson.text(bound, "transportRecoveryEpoch"), HandoverReceiptCodec.bytes(bound.path("command")));
-            bind(receipt, command, context);
-            verifyRecall(receipt.path("recallStop"), command, context.origin());
-            row(stop, "STOP_PROOF", SubmissionJson.uuid(receipt, "receiptId"), command, context, HandoverCommand.sha(bytes), receipt);
-            row(pack, "RECOVERY_PACKAGE", SubmissionJson.uuid(receipt, "packageEvidenceId"), command, context, command.payloadHash(), receipt);
+            bind(receipt, command, origin, facts);
+            verifyRecall(receipt.path("recallStop"), command, origin);
+            row(stop, "STOP_PROOF", SubmissionJson.uuid(receipt, "receiptId"), command, origin, HandoverCommand.sha(bytes), receipt);
+            row(pack, "RECOVERY_PACKAGE", SubmissionJson.uuid(receipt, "packageEvidenceId"), command, origin, command.payloadHash(), receipt);
             return receipt;
         } catch (RuntimeException invalid) { throw HandoverCommand.corrupt(); }
     }
 
-    private void bind(JsonNode receipt, HandoverStopCommand command, HandoverStopAccess.Context context) {
+    private void bind(JsonNode receipt, HandoverStopCommand command, HandoverStopStore.Origin origin, JsonNode facts) {
         corruptUnless(receipt.path("receiptVersion").asInt() == 1 && receipt.path("status").asText().equals("STOPPED")
             && receipt.path("routeScope").asText().equals(HandoverStopService.ROUTE)
             && receipt.path("commandSha256").asText().equals(command.digest())
             && receipt.path("originalCommand").equals(command.bound())
             && receipt.path("capabilities").equals(HandoverReceiptCodec.capabilities())
-            && receipt.path("source").equals(source(context.origin())));
-        corruptUnless(command.caseId().toString().equals(context.facts().path("caseId").asText())
+            && receipt.path("source").equals(source(origin)) && command.epoch().equals(origin.epoch()));
+        corruptUnless(command.caseId().toString().equals(facts.path("caseId").asText())
             && command.caseId().toString().equals(receipt.path("caseContext").path("caseId").asText())
             && Long.toString(command.caseVersion()).equals(receipt.path("caseContext").path("caseVersion").asText())
-            && context.actor().userId().toString().equals(receipt.path("actor").path("principalId").asText())
-            && context.actor().deviceId().toString().equals(receipt.path("actor").path("deviceId").asText()));
+            && origin.operator().toString().equals(receipt.path("actor").path("principalId").asText())
+            && origin.device().toString().equals(receipt.path("actor").path("deviceId").asText()));
+    }
+
+    private void requireActor(HandoverStopAccess.Context context) {
+        corruptUnless(context.origin().operator().equals(context.actor().userId())
+            && context.origin().device().equals(context.actor().deviceId())
+            && context.origin().warehouse().equals(context.actor().warehouseId()));
     }
 
     private void verifyRecall(JsonNode recall, HandoverStopCommand command, HandoverStopStore.Origin origin) {
@@ -76,10 +90,10 @@ final class HandoverStopReceipts {
     }
 
     private void row(Map<String, Object> row, String kind, UUID id, HandoverStopCommand command,
-            HandoverStopAccess.Context context, String digest, JsonNode receipt) {
+            HandoverStopStore.Origin origin, String digest, JsonNode receipt) {
         corruptUnless(kind.equals(row.get("kind")) && Arrays.equals(Ids.bytes(id), (byte[]) row.get("id"))
             && Arrays.equals(Ids.bytes(command.caseId()), (byte[]) row.get("case_id"))
-            && Arrays.equals(Ids.bytes(context.origin().device()), (byte[]) row.get("device_id"))
+            && Arrays.equals(Ids.bytes(origin.device()), (byte[]) row.get("device_id"))
             && digest.equals(HexFormat.of().formatHex((byte[]) row.get("payload_sha256")))
             && row.get("high_watermark") instanceof Number high && high.longValue() == command.captureHigh()
             && recorded(row.get("recorded_at")).equals(Instant.parse(receipt.path("recordedAt").asText())));
