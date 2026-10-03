@@ -24,6 +24,7 @@ public final class TemporaryLinkOperation implements CommandOperation {
     public void apply(CommandContext context) { throw new IllegalStateException("Full command/actor required"); }
     public JsonNode execute(CommandWrite write) {
         var facts=write.context();var command=write.command();
+        if(facts.version("mappingVersion")!=1)throw CommandErrors.stale();
         var source=dependencies.source().read(facts);
         if(source.snapshot().shortShipment())
             throw reject("TEMPORARY_LINK_SHORT_SHIPMENT_UNRESOLVED","原实绩存在短装，须先按短装审批与冲突分流处理，不能直接关联");
