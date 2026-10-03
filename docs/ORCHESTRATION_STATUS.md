@@ -6,29 +6,31 @@
 ```yaml
 date: 2026-10-03
 branch: codex/development
-head: 9deea7f
-dirty_entries: 14
+head: 5cfda82
+dirty_entries: 15
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
 server: { contract: 0.37.0, paths: 131, flyway: V58, migrations: 58 }
 ```
 <!-- FACTS_END -->
 
-close-disposition 已完成：受控 CLOSE_DISPOSITION 入口要求可信完整停止验证、精确物料清单和非空原因；逐包释放或隔离占用，清除来源绑定并关闭 canonical slot，签名回执记录取消决定与关闭事实。生产命令开关默认值保持 false。提交 `9deea7f` 已推送。
+R07 原来源锁内复核已实现并推送：`5cfda82dad6f61a4e2e801e50df897b106d24a56`。APPROVE/PREPARE/ACTIVATE 重验原申请签名、实时来源/映射/轮次/批次/活动槽及原结果；已提交同键仍恢复原回执。详细子项、决策与历史索引见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-03.md)。前项 close-disposition 结论见[归档](history/ORCHESTRATION_STATE_before_r07_review_2026-10-03.md)。
 
 ## Git、写权与环境
-- 本轮单助手写入；`9deea7f` 只包含 close-disposition 产品、迁移、测试与验证脚本，遗留文档、本机请求和工具文件继续保护。
-- 隔离 HTTP/E2a 已结束；系统 MySQL 未操作，生产默认 gate 仍 false；`.local` 证据未删除。
+- 树 `D:/acrylic-pda-outbound`，分支 `codex/development`；本轮单助手。产品提交仅 9 个相关文件；遗留 11 项保持，全部树与起始清单见 `.local/autonomous-20261003/r07-resume-inventory/`，交付快照见 `r07-source-delivery/`。
+- 本轮重型任务均结束；隔离 916～920 已认证停机，19330/19434/19435/19436 无监听。系统 MySQL 未操作；仅空闲 Gradle daemon；D 盘约 43.08 GiB。
+- 代码及文档正文已推送；文档提交后自动事实块刷新可留下仅元数据未提交差异，写权仍属本助手。
 
 ## 当次证据
-- `PhysicalDispositionVerificationTest`：7/0/0/0；证据：`.local/autonomous-20261003/close-disposition-verification-targeted-2/`。
-- 完整服务端离线回归：3002/0/0/1；证据：`.local/autonomous-20261003/close-disposition-full-regression-2/`。
-- `E2aTemporaryCloseDispositionIT`：1/0/0/0，迁移与重复迁移均验证；证据：`.local/e2a-cross-20260925-915/`。
-- `git diff --check` 通过；早期 targeted compile 失败已修复，失败日志保留在关联证据记录中。
+- 交接定向编译/测试：33/0/0/0；`.local/autonomous-20261003/r07-source-targeted-1/`。
+- 完整服务端离线回归：3002/0/0/1；`r07-source-full-1/`，既有符号链接条件跳过。
+- 实库 918：15 组拒绝、16 表不变、原批次提交锁竞争、正常激活与重放；919：首次同键并发/唯一激活/重启原回执；920：真实 Web HTTP 四步命令与只读恢复。三轮各 1/0/0/0，证据 `.local/e2a-cross-20260925-{918,919,920}/`。
+- 修前 916 错误批准已复现；917 夹具槽位约束失败已修复，失败日志与数据库保留。作者实现/自审及隔离组合验证，不宣称独立消费者、PDA 或现场验收。
 
 ## 下一步、未验与边界
-- 原身份 PDA、真实实物、断电恢复、生产审批和现场流程仍未验；隔离 HTTP/SQL 不替代现场证据。mapping3+ 重链业务政策与 R1 白名单复审继续单列。
-- 下一项按优先级继续 R06/R07 未完功能；失败证据保留，不合 main、不打标签、不 Release、不部署、不接原库/现网。
+- 下一项补 R07 原机停止证据入口及批准时可信完整清单绑定；再接 TEMP 来源停止和接收授权/续作票据。TEMP REQUEST 仍关闭，真实两端交接及新机最终提交未完成。
+- mapping3+ 重链政策、R1 正式放行、历史更正、现场原身份/实物/断电/长时、R05 原资料/旧 BCD/526 与 R09 恢复限制仍单列。
+- 生产 gate 默认 false；不合 main、不打标签/Release、不部署、不接原库/现网；`.local` 证据未删除。目标仍在推进，局部通过不代表整体交付。
 <!-- CURRENT_STATE_END -->
 
-> 长期规则见AGENTS.md；版本事实见生成块；提交自身SHA以Git回执核对。
+> 长期规则见 AGENTS.md；版本事实见生成块；文档提交自身 SHA 以 Git 回执核对。
