@@ -96,6 +96,7 @@ public class CorrectionCommandService {
         var receipt=codec.sign(receiptWrite,decision);
         store.receipt(receiptWrite,SubmissionJson.canonical(input.expected()),
             new String[]{new String(receipt.original(),StandardCharsets.UTF_8),receipt.originalSha256()});
+        operation.afterReceipt(receiptWrite, decision);
         var details=SubmissionJson.object().put("commandSha256",input.digest()).put("originalResponseSha256",receipt.originalSha256())
             .put("orderId",orderId==null?"null":orderId.toString())
             .put("documentId",decision==null||decision.path("documentId").isMissingNode()?"null":decision.path("documentId").asText())

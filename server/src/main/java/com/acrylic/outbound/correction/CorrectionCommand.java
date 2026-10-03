@@ -171,6 +171,7 @@ final class CorrectionCommand {
     interface Operation {
         String commandType();
         JsonNode execute(Write write);
+        default void afterReceipt(Write write, JsonNode decision) { }
         /**
          * Only the two supervisor decisions carry the approval gate. Confirming a withdrawal is the requester's act
          * (P-R07-08), and reconciliation cases have no gate at all (design §5).

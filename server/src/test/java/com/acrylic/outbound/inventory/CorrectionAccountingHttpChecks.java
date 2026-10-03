@@ -37,11 +37,20 @@ public final class CorrectionAccountingHttpChecks {
         assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM order_effective_scan WHERE order_id=UUID_TO_BIN(?)"
             + " AND result_version=? AND dispatch_id=UUID_TO_BIN(?) AND is_effective=0 AND effective_weight_g=0",
             Integer.class, f.order, resultVersion, f.dispatch)).isEqualTo(1);
+        f.withdraw(document);
+        assertThat(f.jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=UUID_TO_BIN(?)", Long.class, bale)).isEqualTo(before + 1);
+        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE bale_id=UUID_TO_BIN(?)"
+            + " AND order_id=UUID_TO_BIN(?) AND state='DISPATCHED' AND dispatch_cycle=?", Integer.class, bale, f.order, before + 1)).isEqualTo(1);
+        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM correction_occupancy_restoration r"
+            + " JOIN correction_command_receipt c ON c.id=r.withdrawal_receipt_id WHERE r.original_dispatch_id=UUID_TO_BIN(?)"
+            + " AND r.withdrawal_document_id=UUID_TO_BIN(?) AND r.correction_line_id=(SELECT id FROM correction_line"
+            + " WHERE document_id=UUID_TO_BIN(?) LIMIT 1)", Integer.class, f.dispatch, document, document)).isEqualTo(1);
+        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM correction_occupancy_restoration WHERE original_dispatch_id=UUID_TO_BIN(?)",
+            Integer.class, f.dispatch)).isEqualTo(1);
         String duplicate = f.signed(f.maker, type.equals("PHYSICAL_RETURN") ? f.physicalReturn(500) : f.cancellation(500)).path("documentId").asText();
         byte[] refused = f.checker.command(f.command(duplicate, "APPROVE"), 409);
         assertThat(SubmissionJson.parse(refused).path("code").asText()).isEqualTo("CYCLE_REOPENING_EXISTS");
-        assertThat(f.jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=UUID_TO_BIN(?)", Long.class, bale))
-            .isEqualTo(before + 1);
+        assertThat(f.jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=UUID_TO_BIN(?)", Long.class, bale)).isEqualTo(before + 1);
         assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM cycle_reopening WHERE original_dispatch_id=UUID_TO_BIN(?)",
             Integer.class, f.dispatch)).isEqualTo(1);
         assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM order_sync_outbox WHERE order_id=UUID_TO_BIN(?) AND event_type='CYCLE_REOPENED'",

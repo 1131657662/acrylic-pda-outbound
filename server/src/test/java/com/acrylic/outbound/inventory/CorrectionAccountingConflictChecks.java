@@ -14,7 +14,7 @@ final class CorrectionAccountingConflictChecks {
     private final Path attempt;
     CorrectionAccountingConflictChecks(WebApplicationContext context, Path attempt) { this.context = context; this.attempt = attempt; }
 
-    void verify() throws Exception { mismatch(); exhausted(); aba(); disjoint(); manual(); headerWithdrawBlocked(); }
+    void verify() throws Exception { mismatch(); exhausted(); aba(); disjoint(); manual(); headerWithdrawBlocked(); occupancyRollbackConflict(); }
 
     private void mismatch() throws Exception {
         var f = new CorrectionAccountingHttpFixture(context, attempt, true, "mismatch");
@@ -72,6 +72,27 @@ final class CorrectionAccountingConflictChecks {
         Files.write(f.evidence.resolve(withdraw.path("commandId").asText() + "-denied.json"), denied);
         assertThat(SubmissionJson.parse(denied).path("code").asText()).isEqualTo("CORRECTION_LEDGER_CONFLICT");
         assertThat(state(f, document)).isEqualTo(before);
+    }
+
+    private void occupancyRollbackConflict() throws Exception {
+        var f = new CorrectionAccountingHttpFixture(context, attempt, true, "occupancy-rollback-conflict");
+        String bale = f.facts(f.dispatch).path("baleId").asText();
+        long cycle = f.jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=UUID_TO_BIN(?)", Long.class, bale);
+        String document = f.signed(f.maker, f.cancellation(0)).path("documentId").asText();
+        f.signed(f.checker, f.command(document, "APPROVE"));
+        f.jdbc.update("INSERT INTO bale_commitment(bale_id,order_id,submission_id,dispatch_cycle,state,created_at)"
+            + " SELECT bale_id,order_id,submission_id,?,'REVIEW_RESERVED',UTC_TIMESTAMP(3)"
+            + " FROM dispatch_record WHERE id=UUID_TO_BIN(?)", cycle + 1, f.dispatch);
+        f.signed(f.checker, f.command(document, "WITHDRAW"));
+        var body = f.command(document, "WITHDRAW_CONFIRM"); var before = state(f, document);
+        denied(f, f.maker, body);
+        assertThat(state(f, document)).isEqualTo(before);
+        assertThat(f.jdbc.queryForObject("SELECT status FROM correction_document WHERE id=UUID_TO_BIN(?)", String.class, document))
+            .isEqualTo("WITHDRAW_PENDING");
+        assertThat(f.jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=UUID_TO_BIN(?)", Long.class, bale)).isEqualTo(cycle + 1);
+        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM correction_occupancy_restoration WHERE original_dispatch_id=UUID_TO_BIN(?)",
+            Integer.class, f.dispatch)).isZero();
+        Files.writeString(f.evidence.resolve("completed.json"), before.toPrettyString());
     }
 
     private void insert(CorrectionAccountingHttpFixture f, String kind, long quantity, long weight) {

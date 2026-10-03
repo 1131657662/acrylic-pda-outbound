@@ -18,8 +18,9 @@ public class CorrectionCommandConfiguration {
         return new CorrectionApprove(store, accounting);
     }
     @Bean CorrectionCommand.Operation correctionWithdraw(CorrectionStore store) { return new CorrectionOperations.Withdraw(store); }
-    @Bean CorrectionCommand.Operation correctionWithdrawConfirm(CorrectionStore store, CorrectionAccounting accounting) {
-        return new CorrectionWithdrawConfirm(store, accounting);
+    @Bean CorrectionCommand.Operation correctionWithdrawConfirm(CorrectionStore store, CorrectionAccounting accounting,
+        org.springframework.jdbc.core.JdbcTemplate jdbc) {
+        return new CorrectionWithdrawConfirm(store, accounting, new CorrectionOccupancyRestoration(jdbc));
     }
     @Bean CorrectionCommand.Operation reconciliationOpen(CorrectionStore store) { return new CorrectionReconciliations.Open(store); }
     @Bean CorrectionCommand.Operation reconciliationAdvance(CorrectionStore store) { return new CorrectionReconciliations.Advance(store); }
