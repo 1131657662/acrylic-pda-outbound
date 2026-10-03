@@ -8,6 +8,8 @@ import java.time.Instant;
 import java.util.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Storage for the correction command kernel, mirroring the R07-1 handover store: the original key is reserved before
@@ -447,20 +449,21 @@ public class CorrectionStore {
 
     // ---------------------------------------------------------------- A4 step 8: state outbox
 
-    /**
-     * One notification per published version. {@code order_sync_outbox} is unique on
-     * {@code (recovery_epoch, order_id, entity_version)} and that version space is <b>shared with the R05/R06 order
-     * events</b> - using the result version collided with a row the confirmation chain had already written, so a
-     * correction takes the next free state version of its order instead. The order lock is held by the caller, so the
-     * read-then-insert cannot race.
-     */
+    /** Reads the next shared version while the command holds the order lock; insertOutbox commits its allocation. */
     public long nextOutboxEntityVersion(UUID orderId,long epoch) {
-        Long next=jdbc.queryForObject("SELECT IFNULL(MAX(entity_version),0)+1 FROM order_sync_outbox"
-            + " WHERE recovery_epoch=? AND order_id=?",Long.class,epoch,Ids.bytes(orderId));
-        return next==null?1:next;
+        return jdbc.queryForObject("""
+            SELECT GREATEST(o.row_version,COALESCE((SELECT MAX(x.entity_version) FROM order_sync_outbox x
+              WHERE x.recovery_epoch=? AND x.order_id=o.id),0))+1
+            FROM outbound_order o WHERE o.id=?
+            """,Long.class,epoch,Ids.bytes(orderId));
     }
 
+    /** The correction result, order version and notification commit or roll back on the command transaction. */
+    @Transactional(propagation=Propagation.MANDATORY)
     public void insertOutbox(UUID orderId,long epoch,String eventType,long entityVersion,String payload,Instant now) {
+        int changed=jdbc.update("UPDATE outbound_order SET row_version=?,updated_at=? WHERE id=? AND row_version<?",
+            entityVersion,Timestamp.from(now),Ids.bytes(orderId),entityVersion);
+        if (changed!=1) throw CorrectionCommand.stale();
         jdbc.update("""
             INSERT INTO order_sync_outbox(id,recovery_epoch,warehouse_id,order_id,entity_version,event_type,payload,
               published_seq,created_at)
