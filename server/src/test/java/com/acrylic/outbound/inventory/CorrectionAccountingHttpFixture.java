@@ -77,7 +77,15 @@ final class CorrectionAccountingHttpFixture {
     }
 
     ObjectNode cancellation(long targetWeight) {
-        var body = create(dispatch, 0, targetWeight).put("type", "DISPATCH_CANCELLATION");
+        return physicalCorrection("DISPATCH_CANCELLATION", targetWeight);
+    }
+
+    ObjectNode physicalReturn(long targetWeight) {
+        return physicalCorrection("PHYSICAL_RETURN", targetWeight);
+    }
+
+    private ObjectNode physicalCorrection(String type, long targetWeight) {
+        var body = create(dispatch, 0, targetWeight).put("type", type);
         var line = (ObjectNode) body.path("lines").get(0);
         line.put("evidenceId", UUID.randomUUID().toString()).put("evidenceSha256", "c".repeat(64));
         return body;

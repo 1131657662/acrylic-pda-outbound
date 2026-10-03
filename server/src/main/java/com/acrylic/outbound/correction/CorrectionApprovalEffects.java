@@ -25,7 +25,7 @@ final class CorrectionApprovalEffects {
             long weight = CorrectionResultSnapshots.number(line, "target_weight_g") - CorrectionResultSnapshots.number(line, "before_weight_g");
             if (dispatch != null) {
                 var facts = store.dispatchFacts(write.orderId(), dispatch);
-                if ("DISPATCH_CANCELLATION".equals(type)) reopened.add(reopen(write, line, facts));
+                if (Set.of("DISPATCH_CANCELLATION", "PHYSICAL_RETURN").contains(type)) reopened.add(reopen(write, line, facts));
                 accounting.approve(line, UUID.fromString(facts.path("baleId").asText()), write.recordedAt()).forEach(ledger::add);
             }
             store.insertEffect(Ids.next(), lineId, write.orderId(), version, dispatch, ACTIONS.getOrDefault(type, "WEIGHT"),

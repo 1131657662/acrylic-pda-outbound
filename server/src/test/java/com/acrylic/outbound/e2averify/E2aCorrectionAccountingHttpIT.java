@@ -15,11 +15,14 @@ class E2aCorrectionAccountingHttpIT {
         profile.migrate(jdbc, "34"); E2aV34Seed.seed(jdbc, profile.attempt.resolve("storage"));
         Flyway.configure().dataSource(jdbc.getDataSource()).load().migrate();
         E2aCrossSourceHttpSetup.signing(profile.attempt);
+        String renderer = profile.ROOT.resolve("report-rendering/build/install/acrylic-report-rendering").toString();
+        String browsers = profile.ROOT.resolve("report-rendering/build/browsers").toString();
         try (var context = E2aCrossSourceHttpIT.start(profile, "--server.servlet.session.cookie.secure=false",
-                "--outbound.corrections.commands.enabled=true")) {
+                "--outbound.corrections.commands.enabled=true", "--outbound.exports.renderer-home=" + renderer,
+                "--outbound.exports.browsers=" + browsers)) {
             CorrectionAccountingHttpChecks.verify((WebApplicationContext) context, profile.attempt);
         }
         Files.writeString(profile.attempt.resolve("test-completed.marker"),
-            "Real HTTP separated identities; actual/absent debits; signed replay; correction/withdrawal chains; conflict rollback; export");
+            "Real HTTP separated identities; actual/absent debits; signed replay; correction/withdrawal chains; conflict rollback; export; cancellation and physical-return cycle reopening");
     }
 }

@@ -41,6 +41,21 @@ class CorrectionCycleReopeningTest {
         verify(store, never()).insertCycleReopening(any(), any(), any(), anyInt(), anyInt(), anyString(), anyLong(), anyLong(), any());
     }
 
+    @Test void physicalReturnAlsoReopensTheControlledDispatchCycle() {
+        var store = mock(CorrectionStore.class); var accounting = mock(CorrectionAccounting.class);
+        when(store.cycleReopeningExists(dispatch)).thenReturn(false);
+        when(store.dispatchFacts(order, dispatch)).thenReturn(facts());
+        when(store.recoveryEpoch()).thenReturn(7L);
+        when(accounting.approve(anyMap(), eq(bale), eq(now))).thenReturn(List.of());
+
+        var result = new CorrectionApprovalEffects(store, accounting).apply(write("PHYSICAL_RETURN"), 4, List.of(line()));
+
+        assertThat(result.path("reopenedCycles")).hasSize(1);
+        verify(store).reopenDispatchOccupancy(order, bale, 1, 2);
+        verify(store).insertCycleReopening(any(), eq(dispatch), eq(lineId), eq(1), eq(2), eq("a".repeat(64)),
+            eq(4L), eq(7L), eq(now));
+    }
+
     private JsonNode facts() {
         return SubmissionJson.object().put("baleId", bale.toString()).put("dispatchCycle", "1");
     }
@@ -52,11 +67,15 @@ class CorrectionCycleReopeningTest {
     }
 
     private CorrectionCommand.Write write() {
+        return write("DISPATCH_CANCELLATION");
+    }
+
+    private CorrectionCommand.Write write(String type) {
         var body = SubmissionJson.object().put("commandVersion", 1).put("commandType", "APPROVE")
             .put("commandId", UUID.randomUUID().toString()).put("warehouseId", UUID.randomUUID().toString())
             .put("documentId", UUID.randomUUID().toString());
         var actor = SubmissionJson.object().put("principalId", UUID.randomUUID().toString());
-        var anchor = SubmissionJson.object().put("expectedResultVersion", 3).put("type", "DISPATCH_CANCELLATION");
+        var anchor = SubmissionJson.object().put("expectedResultVersion", 3).put("type", type);
         return new CorrectionCommand.Write(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), order, now,
             new CorrectionCommand.Input(SubmissionJson.canonical(body).getBytes(java.nio.charset.StandardCharsets.UTF_8)), anchor, actor);
     }

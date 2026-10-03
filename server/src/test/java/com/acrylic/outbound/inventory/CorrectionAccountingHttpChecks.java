@@ -10,18 +10,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 public final class CorrectionAccountingHttpChecks {
     public static void verify(WebApplicationContext context, Path attempt) throws Exception {
         chain(context, attempt, true); chain(context, attempt, false);
-        cycleReopening(context, attempt);
+        cycleReopening(context, attempt, "DISPATCH_CANCELLATION");
+        cycleReopening(context, attempt, "PHYSICAL_RETURN");
         new CorrectionAccountingConflictChecks(context, attempt).verify();
     }
 
-    private static void cycleReopening(WebApplicationContext context, Path attempt) throws Exception {
-        var f = new CorrectionAccountingHttpFixture(context, attempt, true, "cycle-reopened");
+    private static void cycleReopening(WebApplicationContext context, Path attempt, String type) throws Exception {
+        String evidenceName = type.equals("PHYSICAL_RETURN") ? "physical-return-cycle-reopened" : "cycle-reopened";
+        var f = new CorrectionAccountingHttpFixture(context, attempt, true, evidenceName);
         String bale = f.facts(f.dispatch).path("baleId").asText();
         long before = f.jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=UUID_TO_BIN(?)", Long.class, bale);
         assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE bale_id=UUID_TO_BIN(?)"
             + " AND order_id=UUID_TO_BIN(?) AND state='DISPATCHED' AND dispatch_cycle=?", Integer.class, bale, f.order, before)).isEqualTo(1);
-        String document = f.signed(f.maker, f.cancellation(0)).path("documentId").asText();
-        f.signed(f.checker, f.command(document, "APPROVE"));
+        var created = f.signed(f.maker, type.equals("PHYSICAL_RETURN") ? f.physicalReturn(0) : f.cancellation(0));
+        String document = created.path("documentId").asText();
+        var approved = f.signed(f.checker, f.command(document, "APPROVE"));
+        long resultVersion = approved.at("/resultVersion").asLong();
+        assertThat(resultVersion).isGreaterThan(1);
         assertThat(f.jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=UUID_TO_BIN(?)", Long.class, bale))
             .isEqualTo(before + 1);
         assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE bale_id=UUID_TO_BIN(?)", Integer.class, bale)).isZero();
@@ -29,11 +34,18 @@ public final class CorrectionAccountingHttpChecks {
             .isEqualTo("DEDUCTED");
         assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM cycle_reopening WHERE original_dispatch_id=UUID_TO_BIN(?)",
             Integer.class, f.dispatch)).isEqualTo(1);
-        String duplicate = f.signed(f.maker, f.cancellation(500)).path("documentId").asText();
+        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM order_effective_scan WHERE order_id=UUID_TO_BIN(?)"
+            + " AND result_version=? AND dispatch_id=UUID_TO_BIN(?) AND is_effective=0 AND effective_weight_g=0",
+            Integer.class, f.order, resultVersion, f.dispatch)).isEqualTo(1);
+        String duplicate = f.signed(f.maker, type.equals("PHYSICAL_RETURN") ? f.physicalReturn(500) : f.cancellation(500)).path("documentId").asText();
         byte[] refused = f.checker.command(f.command(duplicate, "APPROVE"), 409);
         assertThat(SubmissionJson.parse(refused).path("code").asText()).isEqualTo("CYCLE_REOPENING_EXISTS");
         assertThat(f.jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=UUID_TO_BIN(?)", Long.class, bale))
             .isEqualTo(before + 1);
+        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM cycle_reopening WHERE original_dispatch_id=UUID_TO_BIN(?)",
+            Integer.class, f.dispatch)).isEqualTo(1);
+        assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM order_sync_outbox WHERE order_id=UUID_TO_BIN(?) AND event_type='CYCLE_REOPENED'",
+            Integer.class, f.order)).isEqualTo(1);
         Files.write(f.evidence.resolve("cycle-reopening-completed.json"), refused);
     }
 

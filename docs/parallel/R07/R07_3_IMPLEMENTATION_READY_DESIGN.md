@@ -524,8 +524,8 @@ APPROVE 生效体顺序：锁当前版本 → 重验 `expectedResultVersion` →
   （265 `performance_schema.data_lock_waits`、266 `information_schema.INNODB_TRX`）、IT 与钉住版本不匹配（264）、
   R07-1 夹具幂等（263）、需配套 Android 测试类（268）、既有未定位且钉 ≤40（270、281）。
   ⇒ **无一条可归因本批**；**跑在新 schema 上的类（260 与本 § 的定向回归）全绿**。详见收口文档 §十。
+## 22-A 后续 addendum：PHYSICAL_RETURN 周期重开已定稿（2026-10-03）
 
+依据 V2.3 §5.7“真实退货与错误出库均推进受控周期”的业务语义，本项目现将 `PHYSICAL_RETURN` 与 `DISPATCH_CANCELLATION` 统一纳入周期重开判断。批准事务对两种类型均执行：校验原 dispatch 尚未重开、删除匹配的 `DISPATCHED` 当前占用、推进 `bale.dispatch_cycle` 一次、写入唯一 `cycle_reopening` 事实、保留该 dispatch 在结果快照中 `is_effective=0`，并发布一条 `CYCLE_REOPENED` outbox；同一 dispatch 的第二次重开仍返回 `CYCLE_REOPENING_EXISTS`。`WITHDRAW_CONFIRM` 的账务与结果撤回语义不变，不能据此推断占用自动恢复。
 
-
-
-
+本轮产品改动为 `CorrectionApprovalEffects` 的类型判断扩展，单测新增真实退货周期重开覆盖，真实隔离 HTTP 用例同时覆盖两种更正类型，并断言周期递增、旧占用删除、快照归零、唯一重开、重复拒绝和 outbox。证据见 `.local/e2a-cross-20260925-906/`；现场 PDA 重扫、原身份/Keystore、真实退货凭据和生产审批仍未验。

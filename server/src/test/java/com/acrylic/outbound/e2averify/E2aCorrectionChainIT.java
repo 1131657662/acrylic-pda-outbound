@@ -232,17 +232,11 @@ class E2aCorrectionChainIT {
             assertThat(jdbc.queryForObject("SELECT CAST(current_result_version AS CHAR) FROM outbound_order"
                 + " WHERE id=UUID_TO_BIN(?)", String.class, order.orderId())).as("no new version yet").isEqualTo("2");
             // (g2) the confirmation belongs to the requester, not to the approver who opened it.
-            String otherUser = jdbc.queryForObject("SELECT BIN_TO_UUID(id) FROM app_user WHERE id<>? LIMIT 1",
-                String.class, Ids.bytes(order.operatorId()));
-            jdbc.update("UPDATE correction_document SET requested_by=UUID_TO_BIN(?) WHERE id=UUID_TO_BIN(?)",
-                otherUser, documentId);
-            var intruder = post(token, withdrawConfirmBody(order, documentId, documentSha256));
+            var intruder = post(approverToken, withdrawConfirmBody(order, documentId, documentSha256));
             notes.append("⑩b 非申请人确认 -> ").append(intruder.statusCode()).append(' ')
                 .append(codeOf(intruder.body())).append(" (期望 403)\n");
             assertThat(intruder.statusCode()).isEqualTo(403);
             assertThat(codeOf(intruder.body())).isEqualTo("CORRECTION_PERMISSION_DENIED");
-            jdbc.update("UPDATE correction_document SET requested_by=? WHERE id=UUID_TO_BIN(?)",
-                Ids.bytes(order.operatorId()), documentId);
             // (g3) the requester confirms: only now is the mistake rolled back, entry by entry.
             var confirm = withdrawConfirmBody(order, documentId, documentSha256);
             var withdrawn = post(token, confirm);
