@@ -3,6 +3,7 @@ package com.acrylic.outbound.e2averify;
 import com.acrylic.outbound.handover.HandoverStopController;
 import com.acrylic.outbound.inventory.HandoverStopChecks;
 import com.acrylic.outbound.inventory.HandoverStopExistingChecks;
+import com.acrylic.outbound.inventory.HandoverStopAbortChecks;
 import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -18,16 +19,17 @@ class E2aHandoverStopHttpIT {
         profile.migrate(jdbc, "58"); E2aCrossSourceHttpSetup.signing(profile.attempt);
         try (var app = E2aCrossSourceHttpIT.start(profile)) { assertThat(app.getBeansOfType(HandoverStopController.class)).isEmpty(); }
         String[] options = {"--outbound.handover.commands.enabled=true", "--server.servlet.session.cookie.secure=false"};
-        HandoverStopChecks checks; HandoverStopExistingChecks existing;
+        HandoverStopChecks checks; HandoverStopExistingChecks existing; HandoverStopAbortChecks abort;
         try (var app = E2aCrossSourceHttpIT.start(profile, options)) {
             assertThat(app.getBeansOfType(HandoverStopController.class)).hasSize(1);
             checks = new HandoverStopChecks((WebApplicationContext) app, profile.attempt); checks.verify();
             existing = new HandoverStopExistingChecks((WebApplicationContext) app, profile.attempt); existing.verify();
+            abort = new HandoverStopAbortChecks((WebApplicationContext) app, profile.attempt); abort.verify();
         }
         try (var app = E2aCrossSourceHttpIT.start(profile, options)) {
-            checks.restart((WebApplicationContext) app); existing.restart((WebApplicationContext) app);
+            checks.restart((WebApplicationContext) app); existing.restart((WebApplicationContext) app); abort.restart((WebApplicationContext) app);
         }
         Files.writeString(profile.attempt.resolve("test-completed.marker"),
-            "Real HTTP stop: identity/binding refusals, missing file, rollback, two first-key waiters, original/restart, retained commitments; authentic prior recall, signature corruption, cross-case key conflict. Generated EC fixture identities, no physical-device claim.");
+            "Real HTTP stop: identity/binding refusals, missing file, rollback, two first-key waiters, original/restart, retained commitments; authentic prior recall, signature corruption, cross-case key conflict. Original device abort after stop, unique increasing order/outbox versions, unchanged commitments/evidence and restart replay. Generated EC fixture identities, no physical-device claim.");
     }
 }

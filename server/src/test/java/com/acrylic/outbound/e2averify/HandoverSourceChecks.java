@@ -99,9 +99,19 @@ final class HandoverSourceChecks {
         assertThat(facts.summary().path("scopeRound").asLong()).isEqualTo(2);
         assertThat(facts.summary().path("activeAssignments").asLong()).isEqualTo(1);
         assertThat(facts.summary().path("retained").asLong()).isEqualTo(1);
+        activationVersion();
         Files.writeString(evidence.resolve("source-activation-command.json"), SubmissionJson.canonical(command));
         Files.write(evidence.resolve("source-activation-receipt.json"), receipt);
         return receipt;
+    }
+
+    private void activationVersion() throws Exception {
+        var row = fixture.jdbc.queryForMap("SELECT entity_version,event_type FROM order_sync_outbox WHERE order_id=? AND recovery_epoch=1 ORDER BY entity_version DESC LIMIT 1", Ids.bytes(fixture.order));
+        long version = fixture.jdbc.queryForObject("SELECT row_version FROM outbound_order WHERE id=?", Long.class, Ids.bytes(fixture.order));
+        assertThat(row.get("event_type")).isEqualTo("HANDOVER_ACTIVATED");
+        assertThat(((Number) row.get("entity_version")).longValue()).isEqualTo(version);
+        Files.writeString(evidence.resolve("source-activation-version.json"),
+            SubmissionJson.object().put("orderVersion", version).put("outboxVersion", ((Number) row.get("entity_version")).longValue()).toString());
     }
 
     void status(String value) {

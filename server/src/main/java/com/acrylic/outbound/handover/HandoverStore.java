@@ -3,12 +3,13 @@ package com.acrylic.outbound.handover;
 import com.acrylic.outbound.common.Ids;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * All persistence for the handover chain. The receipt table is immutable, so the original-key reservation uses the
@@ -161,24 +162,21 @@ public class HandoverStore {
             Ids.bytes(receiptId));
     }
 
-    /**
-     * The next free state version of this order in the shared {@code order_sync_outbox} space. The version space is
-     * shared with the R05/R06 order events and the R07-3 correction events, so a handover must take the next free
-     * version instead of reusing a business version that another chain already claimed. The order row is locked by
-     * the caller's transaction, so this read-then-insert cannot race.
-     */
+    /** Reads the next shared version while the caller holds the order lock; allocation is committed by insertOutbox. */
     public long nextOutboxEntityVersion(UUID orderId,long epoch) {
-        Long next=jdbc.queryForObject("SELECT IFNULL(MAX(entity_version),0)+1 FROM order_sync_outbox"
-            + " WHERE recovery_epoch=? AND order_id=?",Long.class,epoch,Ids.bytes(orderId));
-        return next==null?1:next;
+        return jdbc.queryForObject("""
+            SELECT GREATEST(o.row_version,COALESCE((SELECT MAX(x.entity_version) FROM order_sync_outbox x
+              WHERE x.recovery_epoch=? AND x.order_id=o.id),0))+1
+            FROM outbound_order o WHERE o.id=?
+            """,Long.class,epoch,Ids.bytes(orderId));
     }
 
-    /**
-     * One outbound handover notification. It is written on the command's own transaction, so the notification and the
-     * case/qualification change either both land or both roll back; a crash after commit leaves the row pending
-     * ({@code published_seq IS NULL}) and therefore recoverable by the outbox reader.
-     */
+    /** Advances the order's shared version with its notification, on the command transaction; both roll back together. */
+    @Transactional(propagation=Propagation.MANDATORY)
     public void insertOutbox(UUID orderId,long epoch,long entityVersion,String eventType,String payload,Instant now) {
+        int changed=jdbc.update("UPDATE outbound_order SET row_version=?,updated_at=? WHERE id=? AND row_version<?",
+            entityVersion,Timestamp.from(now),Ids.bytes(orderId),entityVersion);
+        if (changed!=1) throw HandoverCommand.stale();
         jdbc.update("""
             INSERT INTO order_sync_outbox(id,recovery_epoch,warehouse_id,order_id,entity_version,event_type,payload,
               published_seq,created_at)
