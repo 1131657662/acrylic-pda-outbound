@@ -28,8 +28,8 @@ public class HandoverCommandConfiguration {
     }
 
     @Bean
-    HandoverCommand.Operation handoverPrepare(HandoverStore store) {
-        return new HandoverActivation.Prepare(store);
+    HandoverCommand.Operation handoverPrepare(HandoverStore store, HandoverTargetQualification targets) {
+        return new HandoverActivation.Prepare(store, targets);
     }
 
     @Bean
