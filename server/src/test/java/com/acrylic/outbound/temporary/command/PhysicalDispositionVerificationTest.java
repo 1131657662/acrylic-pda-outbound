@@ -23,6 +23,17 @@ class PhysicalDispositionVerificationTest {
         assertThat(result.activeBales()).containsExactly(bale);
     }
 
+    @Test void returnsReservationsInManifestUuidOrder() {
+        UUID first = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        UUID second = UUID.fromString("00000000-0000-0000-0000-000000000002");
+        when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
+            row("REJECTED", "{\"issues\":[{\"code\":\"SUPERVISOR_REJECTED\"}]}", "VERIFIED_COMPLETE_AT_STOP")));
+        when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+            .thenReturn(List.of(second, first));
+        assertThat(reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1).activeBales())
+            .containsExactly(first, second);
+    }
+
     @Test void rejectsPartialVerification() {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
             row("REJECTED", "{\"issues\":[{\"code\":\"SUPERVISOR_REJECTED\"}]}", "PARTIAL")));
@@ -33,6 +44,22 @@ class PhysicalDispositionVerificationTest {
     @Test void rejectsDispositionBeforeSupervisorRejection() {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
             row("REVIEW_REQUIRED", "{\"issues\":[]}", "VERIFIED_COMPLETE_AT_STOP")));
+        assertThatThrownBy(() -> reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1))
+            .isInstanceOfSatisfying(BusinessException.class, e -> assertThat(e.code()).isEqualTo("DISPOSITION_REJECTION_REQUIRED"));
+    }
+
+    @Test void permitsAbortedSourceOnlyForCloseDisposition() {
+        when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
+            row("ABORTED", "{\"issues\":[]}", "VERIFIED_COMPLETE_AT_STOP")));
+        when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+            .thenReturn(List.of(bale));
+        var result = reader.readForClose(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1);
+        assertThat(result.activeBales()).containsExactly(bale);
+    }
+
+    @Test void rejectsAbortedSourceForOrdinaryDisposition() {
+        when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
+            row("ABORTED", "{\"issues\":[]}", "VERIFIED_COMPLETE_AT_STOP")));
         assertThatThrownBy(() -> reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1))
             .isInstanceOfSatisfying(BusinessException.class, e -> assertThat(e.code()).isEqualTo("DISPOSITION_REJECTION_REQUIRED"));
     }

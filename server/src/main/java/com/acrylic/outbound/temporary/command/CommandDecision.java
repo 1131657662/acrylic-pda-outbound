@@ -17,12 +17,21 @@ final class CommandDecision {
         if(decision.isNull()) { require(receipt.path("status").asText().equals("INTERNAL_TEST_ONLY")); return; }
         require(receipt.path("status").asText().equals("RECORDED") && decision.isObject());
         String kind=receipt.path("commandType").asText();
-        require(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION").contains(kind) && decision.path("kind").asText().equals(kind));
+        require(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(kind) && decision.path("kind").asText().equals(kind));
         if (kind.equals("PHYSICAL_DISPOSITION")) {
             fields(decision,"kind products shortShipmentReason shortApprovalReceiptId shortApprovalSha256 submissionReceipt dispositionId evidenceSetId verificationId manifestSha256 manifestVersion");
             require(decision.path("products").isArray() && decision.path("shortShipmentReason").asText().isEmpty()
                 && decision.path("shortApprovalReceiptId").isNull() && decision.path("shortApprovalSha256").isNull()
                 && decision.path("submissionReceipt").isNull());
+            uuid(decision.path("dispositionId")); uuid(decision.path("evidenceSetId")); uuid(decision.path("verificationId"));
+            hash(decision.path("manifestSha256")); require(decision.path("manifestVersion").asText().matches("[1-9][0-9]*"));
+            return;
+        }
+        if (kind.equals("CLOSE_DISPOSITION")) {
+            fields(decision,"kind status scopeClosed slotClosed products dispositionId evidenceSetId verificationId closeReason manifestSha256 manifestVersion");
+            require(decision.path("status").asText().equals("CANCELLED") && decision.path("scopeClosed").asBoolean()
+                && decision.path("products").isArray() && decision.path("closeReason").isTextual()
+                && !decision.path("closeReason").asText().isBlank() && decision.path("closeReason").asText().length() <= 1000);
             uuid(decision.path("dispositionId")); uuid(decision.path("evidenceSetId")); uuid(decision.path("verificationId"));
             hash(decision.path("manifestSha256")); require(decision.path("manifestVersion").asText().matches("[1-9][0-9]*"));
             return;

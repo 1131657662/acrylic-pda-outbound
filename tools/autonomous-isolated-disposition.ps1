@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$true)][string]$OfflineEvidence,
-    [ValidateSet('E2aPhysicalDispositionStoreIT','E2aPhysicalDispositionWebHttpIT')]
+    [ValidateSet('E2aPhysicalDispositionStoreIT','E2aPhysicalDispositionWebHttpIT','E2aTemporaryCloseDispositionIT')]
     [string]$Test = 'E2aPhysicalDispositionStoreIT'
 )
 $ErrorActionPreference = 'Stop'

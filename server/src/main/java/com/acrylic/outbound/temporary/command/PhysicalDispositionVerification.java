@@ -16,14 +16,25 @@ public class PhysicalDispositionVerification {
     @org.springframework.transaction.annotation.Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
     public Verified read(UUID warehouse, UUID scope, UUID submission, long round, UUID set, UUID verification,
         String setHash, long verificationVersion, long algorithmVersion) {
+        return read(warehouse, scope, submission, round, set, verification, setHash, verificationVersion, algorithmVersion, false);
+    }
+
+    @org.springframework.transaction.annotation.Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public Verified readForClose(UUID warehouse, UUID scope, UUID submission, long round, UUID set, UUID verification,
+        String setHash, long verificationVersion, long algorithmVersion) {
+        return read(warehouse, scope, submission, round, set, verification, setHash, verificationVersion, algorithmVersion, true);
+    }
+
+    private Verified read(UUID warehouse, UUID scope, UUID submission, long round, UUID set, UUID verification,
+        String setHash, long verificationVersion, long algorithmVersion, boolean close) {
         var rows = jdbc.queryForList("""
             SELECT s.status AS submission_status,s.issues_json,result,set_sha256,verification_version,algorithm_version
             FROM source_evidence_verification v JOIN submission s ON s.id=v.submission_id
             WHERE v.id=? AND v.set_id=? AND v.scope_id=? AND v.submission_id=? AND v.work_round=? FOR UPDATE
-            """, Ids.bytes(verification), Ids.bytes(set), Ids.bytes(scope), Ids.bytes(submission), round);
+        """, Ids.bytes(verification), Ids.bytes(set), Ids.bytes(scope), Ids.bytes(submission), round);
         if (rows.size() != 1) throw conflict("DISPOSITION_VERIFICATION_MISSING");
         var row = rows.getFirst();
-        requireRejected(row);
+        if (close) requireCloseable(row); else requireRejected(row);
         if (!"VERIFIED_COMPLETE_AT_STOP".equals(row.get("result"))
             || !Objects.equals(setHash, row.get("set_sha256")) || number(row.get("verification_version")) != verificationVersion
             || number(row.get("algorithm_version")) != algorithmVersion)
@@ -37,6 +48,8 @@ public class PhysicalDispositionVerification {
             """, (rs, n) -> uuid(rs.getBytes(1)), Ids.bytes(scope), Ids.bytes(set), Ids.bytes(warehouse),
             Ids.bytes(warehouse), round);
         if (bales.isEmpty()) throw conflict("DISPOSITION_RESERVATIONS_MISSING");
+        bales = new ArrayList<>(bales);
+        bales.sort(Comparator.naturalOrder());
         return new Verified(warehouse, scope, submission, round, set, verification, setHash,
             verificationVersion, algorithmVersion, List.copyOf(bales));
     }
@@ -44,6 +57,11 @@ public class PhysicalDispositionVerification {
     private static void requireRejected(Map<String, Object> row) {
         if (!"REJECTED".equals(row.get("submission_status")) || !hasSupervisorRejection(row.get("issues_json")))
             throw conflict("DISPOSITION_REJECTION_REQUIRED");
+    }
+
+    private static void requireCloseable(Map<String, Object> row) {
+        if ("ABORTED".equals(row.get("submission_status"))) return;
+        requireRejected(row);
     }
 
     private static boolean hasSupervisorRejection(Object value) {

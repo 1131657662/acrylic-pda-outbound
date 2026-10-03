@@ -21,10 +21,19 @@ public class PhysicalDispositionStore {
     @Transactional(propagation = Propagation.MANDATORY)
     public UUID apply(PhysicalDispositionVerification.Verified verified, String manifestHash, long manifestVersion,
         List<PhysicalDispositionManifest.Item> items, Instant recordedAt) {
+        return apply(verified, manifestHash, manifestVersion, items, recordedAt, false, null);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public UUID apply(PhysicalDispositionVerification.Verified verified, String manifestHash, long manifestVersion,
+        List<PhysicalDispositionManifest.Item> items, Instant recordedAt, boolean close, String reason) {
+        if (close && (reason == null || reason.isBlank() || reason.length() > 1000))
+            throw conflict("CLOSE_REASON_REQUIRED");
         validate(verified, manifestHash, manifestVersion, items);
         UUID disposition = Ids.next();
-        insertHeader(disposition, verified, manifestHash, manifestVersion, recordedAt);
+        insertHeader(disposition, verified, manifestHash, manifestVersion, recordedAt, close, reason);
         for (var item : items) applyBale(verified, disposition, item);
+        if (close) closeSource(verified);
         return disposition;
     }
 
@@ -38,15 +47,27 @@ public class PhysicalDispositionStore {
     }
 
     private void insertHeader(UUID disposition, PhysicalDispositionVerification.Verified verified,
-        String manifestHash, long manifestVersion, Instant recordedAt) {
+        String manifestHash, long manifestVersion, Instant recordedAt, boolean close, String reason) {
         int header = jdbc.update("""
             INSERT INTO temporary_physical_disposition
-            (id,warehouse_id,scope_id,submission_id,work_round,evidence_set_id,evidence_verification_id,manifest_sha256,manifest_version,recorded_at)
-            VALUES(?,?,?,?,?,?,?,?,?,?)
+            (id,warehouse_id,scope_id,submission_id,work_round,evidence_set_id,evidence_verification_id,manifest_sha256,manifest_version,close_mode,close_reason,recorded_at)
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
             """, Ids.bytes(disposition), Ids.bytes(verified.warehouse()), Ids.bytes(verified.scope()), Ids.bytes(verified.submission()),
             verified.round(), Ids.bytes(verified.set()), Ids.bytes(verified.verification()), manifestHash, manifestVersion,
-            Timestamp.from(recordedAt));
+            close, reason, Timestamp.from(recordedAt));
         if (header != 1) throw new IllegalStateException("DISPOSITION_HEADER_INSERT");
+    }
+
+    private void closeSource(PhysicalDispositionVerification.Verified verified) {
+        int scope = jdbc.update("UPDATE submission_scope SET current_submission_id=NULL WHERE id=? AND current_submission_id=?",
+            Ids.bytes(verified.scope()), Ids.bytes(verified.submission()));
+        if (scope != 1) throw conflict("CLOSE_SOURCE_NOT_CURRENT");
+        var orders = jdbc.queryForList("SELECT canonical_order_id FROM submission_scope WHERE id=?", byte[].class, Ids.bytes(verified.scope()));
+        if (orders.size() != 1 || orders.getFirst() == null) return;
+        int slot = jdbc.update("UPDATE order_submission_slot SET current_submission_id=NULL,phase='CLOSED',slot_version=slot_version+1 "
+            + "WHERE scope_id=? AND current_submission_id=? AND phase IN ('FROZEN','COMPLETED')",
+            Ids.bytes(verified.scope()), Ids.bytes(verified.submission()));
+        if (slot != 1) throw conflict("CLOSE_SLOT_NOT_CURRENT");
     }
 
     private void applyBale(PhysicalDispositionVerification.Verified verified, UUID disposition,

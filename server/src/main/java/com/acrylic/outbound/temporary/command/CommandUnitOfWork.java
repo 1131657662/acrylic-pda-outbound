@@ -29,7 +29,7 @@ public class CommandUnitOfWork {
         byte[] existing = replay.existing(actor, input); if (existing != null) return existing;
         var operation = operation(input.kind());
         state.requireWritable(input.text("transportRecoveryEpoch")); CommandPermissions.requireWrite(actor.permissions(), input.kind());
-        if (input.kind().equals("PHYSICAL_DISPOSITION")) locks.sourceDisposition(hint); else locks.source(hint);
+        if (Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(input.kind())) locks.sourceDisposition(hint); else locks.source(hint);
         var context = facts.read(input.uuid("submissionId")); locks.sameHint(hint, context);
         CommandExpected.validate(input, context, actor, operation.requiresCandidateContext());
         if (!operation.recordsDecision()) eligibility.require(context);
@@ -42,7 +42,7 @@ public class CommandUnitOfWork {
         return replay.existing(actor, input);
     }
     private CommandOperation operation(String kind) {
-        if (!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION").contains(kind)) throw CommandErrors.unsupported();
+        if (!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(kind)) throw CommandErrors.unsupported();
         var found = operations.stream().filter(operation -> operation.commandType().equals(kind)).toList();
         if (found.isEmpty()) throw CommandErrors.unsupported();
         if (found.size() != 1) throw new IllegalStateException("Ambiguous command operation"); return found.getFirst();

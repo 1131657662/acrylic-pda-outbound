@@ -18,6 +18,10 @@ public class CommandDecisionEffect {
         this.candidates=candidates;this.files=files;this.authorizations=authorizations;this.source=source;
     }
     void observations(CommandContext now,JsonNode original,List<String> reasons) {
+        if (CommandDecision.kind(original).equals("CLOSE_DISPOSITION")) {
+            reasons.add("SOURCE_CLOSED");
+            return;
+        }
         try { reasons.addAll(source.reasons(authorizations.get(now.id("authorizationId")))); }
         catch(RuntimeException unavailable) { reasons.add("SOURCE_ELIGIBILITY_UNAVAILABLE"); }
         try {
@@ -41,6 +45,12 @@ public class CommandDecisionEffect {
     }
     void complete(JsonNode original,ObjectNode result,List<String> reasons) {
         String kind=CommandDecision.kind(original);
+        if (kind.equals("CLOSE_DISPOSITION")) {
+            result.put("evaluation","CANCELLED");
+            reasons.add("ORIGINAL_CLOSE_COMMITTED");
+            reasons.add("PRODUCTION_OPERATIONS_DISABLED");
+            return;
+        }
         boolean applied=kind.equals("LINK") && original.at("/businessDecision/submissionReceipt/applyState").asText().equals("APPLIED");
         // A link recorded from Web and later read from a PDA only differs in the reading session, and an applied
         // link changes exactly the canonical/mapping/slot context it recorded; neither loses the decision's force.

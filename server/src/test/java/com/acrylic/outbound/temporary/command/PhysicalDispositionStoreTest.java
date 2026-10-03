@@ -61,6 +61,31 @@ class PhysicalDispositionStoreTest {
         } finally { TransactionSynchronizationManager.setActualTransactionActive(false); }
     }
 
+    @Test void closeRequiresAHumanReasonBeforeAnyWrite() {
+        var jdbc = mock(JdbcTemplate.class);
+        var bale = UUID.randomUUID();
+        assertThatThrownBy(() -> new PhysicalDispositionStore(jdbc).apply(verified(List.of(bale)), "b".repeat(64), 1,
+            items(List.of(bale), "RELEASE"), Instant.now(), true, " "))
+            .isInstanceOf(BusinessException.class).extracting("code").isEqualTo("CLOSE_REASON_REQUIRED");
+        verifyNoInteractions(jdbc);
+    }
+
+    @Test void closeClearsTheSourceAndRecordsCloseMode() {
+        var jdbc = mock(JdbcTemplate.class);
+        var bale = UUID.randomUUID();
+        when(jdbc.update(anyString(), any(Object[].class))).thenReturn(1);
+        when(jdbc.queryForObject(anyString(), eq(Long.class), any(Object[].class))).thenReturn(7L);
+        when(jdbc.queryForList(anyString(), eq(byte[].class), any(Object[].class))).thenReturn(Collections.singletonList(null));
+        TransactionSynchronizationManager.setActualTransactionActive(true);
+        try {
+            new PhysicalDispositionStore(jdbc).apply(verified(List.of(bale)), "b".repeat(64), 1,
+                items(List.of(bale), "RELEASE"), Instant.now(), true, "operator close");
+            var calls = mockingDetails(jdbc).getInvocations();
+            assertThat(calls).anyMatch(call -> call.getArgument(0).toString().contains("close_mode"));
+            assertThat(calls).anyMatch(call -> call.getArgument(0).toString().contains("current_submission_id=NULL"));
+        } finally { TransactionSynchronizationManager.setActualTransactionActive(false); }
+    }
+
     private static List<PhysicalDispositionManifest.Item> items(List<UUID> bales, String action) {
         return bales.stream().map(bale -> new PhysicalDispositionManifest.Item(bale, action)).toList();
     }

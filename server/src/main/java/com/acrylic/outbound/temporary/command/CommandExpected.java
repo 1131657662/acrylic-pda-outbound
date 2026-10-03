@@ -25,7 +25,7 @@ public final class CommandExpected {
     static void validate(CommandInput input,CommandContext facts,CommandIdentity.Actor actor,boolean candidateContext) {
         applicability(input,candidateContext);
         var expected = current(facts,actor.authVersion());
-        if (input.kind().equals("PHYSICAL_DISPOSITION")) {
+        if (Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(input.kind())) {
             EVIDENCE.forEach(key -> expected.set(key,facts.json().get(key)));
             // Manifest contents and digest are checked by the disposition operation, not by source facts.
             MANIFEST.forEach(key -> expected.set(key,input.expected().get(key)));
@@ -39,9 +39,9 @@ public final class CommandExpected {
     }
 
     private static void applicability(CommandInput input,boolean candidateContext) {
-        if (!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION").contains(input.kind()))
+        if (!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(input.kind()))
             throw CommandErrors.unsupported();
-        boolean physical = input.kind().equals("PHYSICAL_DISPOSITION");
+        boolean physical = Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(input.kind());
         for (String key : OPTIONAL) {
             boolean evidence = EVIDENCE.contains(key) || MANIFEST.contains(key);
             if (evidence && physical == input.expected().get(key).isNull()) throw CommandErrors.unsupported();

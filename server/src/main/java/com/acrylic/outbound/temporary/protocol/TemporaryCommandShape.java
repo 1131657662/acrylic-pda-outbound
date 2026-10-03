@@ -12,7 +12,7 @@ final class TemporaryCommandShape {
         "slotVersion","decisionVersion","receivedPayloadSha256","declaredUploadSha256","planSha256","targetRevision",
         "candidateContextSha256","userAuthVersion","evidenceSetId","evidenceSetSha256","verificationId","verificationVersion",
         "verificationAlgorithmVersion","dispositionManifestSha256","dispositionManifestVersion","retainedManifestSha256","retainedManifestVersion");
-    private static final Set<String> KINDS = Set.of("DUPLICATE_EXCLUDE","LINK","REJECT","SHORT_APPROVE","NORMAL_CONFIRM","PHYSICAL_DISPOSITION","REOPEN_WORK");
+    private static final Set<String> KINDS = Set.of("DUPLICATE_EXCLUDE","LINK","REJECT","SHORT_APPROVE","NORMAL_CONFIRM","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK");
     private TemporaryCommandShape() { }
 
     static void validate(JsonNode body) {
@@ -31,7 +31,7 @@ final class TemporaryCommandShape {
         uuid(source,"creatorDeviceId"); uuid(source,"clientOrderId");
         expected(body.get("expected"),kind);
         var manifest = body.get("dispositionManifest");
-        if (kind.equals("PHYSICAL_DISPOSITION"))
+        if (kind.equals("PHYSICAL_DISPOSITION") || kind.equals("CLOSE_DISPOSITION"))
             require(manifest != null && manifest.isObject(),"DISPOSITION_MANIFEST_REQUIRED");
         else require(manifest == null || manifest.isNull(),"DISPOSITION_MANIFEST_NOT_APPLICABLE");
     }
@@ -58,7 +58,7 @@ final class TemporaryCommandShape {
     }
 
     private static void evidence(JsonNode value,String kind) {
-        boolean physical = kind.equals("PHYSICAL_DISPOSITION"), reopen = kind.equals("REOPEN_WORK");
+        boolean physical = kind.equals("PHYSICAL_DISPOSITION") || kind.equals("CLOSE_DISPOSITION"), reopen = kind.equals("REOPEN_WORK");
         var core = List.of("evidenceSetId","evidenceSetSha256","verificationId","verificationVersion","verificationAlgorithmVersion");
         if (physical || reopen) {
             uuid(value,"evidenceSetId"); hash(value,"evidenceSetSha256"); uuid(value,"verificationId");

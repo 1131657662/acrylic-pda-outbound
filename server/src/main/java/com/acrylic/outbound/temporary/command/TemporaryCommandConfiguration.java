@@ -60,4 +60,10 @@ public class TemporaryCommandConfiguration {
             PhysicalDispositionStore store) {
         return new PhysicalDispositionOperation(verification, store);
     }
+
+    @Bean
+    CommandOperation temporaryCloseDisposition(PhysicalDispositionVerification verification,
+            PhysicalDispositionStore store) {
+        return new CloseDispositionOperation(verification, store);
+    }
 }

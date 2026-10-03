@@ -65,7 +65,7 @@ public class CommandReceiptIntegrity {
         for(String key:List.of("creatorDeviceId","clientOrderId"))CommandErrors.integrity(body.get("source").get(key).equals(c.get(key)));
         CommandErrors.integrity(c.path("freezeDeviceId").equals(c.path("creatorDeviceId")) && c.path("workRound").asText().equals(r.text("work_round"))
             && c.path("sourceRecoveryEpoch").asText().equals(r.text("source_recovery_epoch")));
-        if ("PHYSICAL_DISPOSITION".equals(command.kind())) {
+        if (Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(command.kind())) {
             CommandErrors.integrity(r.id("evidence_set_id") != null && r.id("evidence_verification_id") != null
                 && command.expected().path("evidenceSetId").asText().equals(r.id("evidence_set_id").toString())
                 && command.expected().path("verificationId").asText().equals(r.id("evidence_verification_id").toString()));

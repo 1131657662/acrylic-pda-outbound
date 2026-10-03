@@ -19,7 +19,10 @@ public class CommandBusinessIntegrity {
     }
     void verify(JsonNode receipt) {
         if(receipt.path("businessDecision").isNull())return;
-        if ("PHYSICAL_DISPOSITION".equals(receipt.path("commandType").asText())) return;
+        if (Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(receipt.path("commandType").asText())) {
+            verifyDisposition(receipt);
+            return;
+        }
         var context=receipt.path("originalContext");var decision=receipt.path("businessDecision");
         String hash=context.path("receivedPayloadSha256").asText();var body=parse(files.read(hash));
         CommandErrors.integrity(sha(body).equals(hash) && context.path("status").asText().equals("REVIEW_REQUIRED")
@@ -38,6 +41,45 @@ public class CommandBusinessIntegrity {
         }
         CommandErrors.integrity(shortShipment!=decision.path("shortApprovalReceiptId").isNull());
         success(context,decision.path("submissionReceipt"),body);
+    }
+    private void verifyDisposition(JsonNode receipt) {
+        var context = receipt.path("originalContext");
+        var decision = receipt.path("businessDecision");
+        boolean close = "CLOSE_DISPOSITION".equals(receipt.path("commandType").asText());
+        CommandErrors.integrity(decision.path("evidenceSetId").asText().equals(receipt.path("expected").path("evidenceSetId").asText())
+            && decision.path("verificationId").asText().equals(receipt.path("expected").path("verificationId").asText())
+            && decision.path("manifestSha256").asText().equals(receipt.path("expected").path("dispositionManifestSha256").asText())
+            && decision.path("manifestVersion").asText().equals(receipt.path("expected").path("dispositionManifestVersion").asText()));
+        var rows = jdbc.queryForList("SELECT close_mode,close_reason FROM temporary_physical_disposition WHERE id=? AND scope_id=? AND submission_id=? AND work_round=?",
+            Ids.bytes(UUID.fromString(decision.path("dispositionId").asText())), Ids.bytes(uuid(context,"scopeId")),
+            Ids.bytes(uuid(context,"submissionId")), Long.parseLong(context.path("workRound").asText()));
+        CommandErrors.integrity(rows.size()==1 && (close == truth(rows.getFirst().get("close_mode")))
+            && (!close || decision.path("closeReason").asText().equals(rows.getFirst().get("close_reason"))));
+        verifyDispositionItems(decision, context);
+        if (close) verifyClosedSlot(decision, context);
+    }
+    private void verifyDispositionItems(JsonNode decision, JsonNode context) {
+        var expected = new ArrayList<String>();
+        for (var item : decision.path("products")) {
+            String bale = item.path("baleId").asText();
+            String action = item.path("disposition").asText();
+            expected.add(bale + ":" + ("PHYSICAL_DISPOSED".equals(action) ? "QUARANTINE" : action));
+        }
+        expected.sort(String::compareTo);
+        var actualRows = jdbc.queryForList("SELECT BIN_TO_UUID(i.bale_id) bale_id,i.action FROM temporary_physical_disposition_item i "
+            + "JOIN temporary_physical_disposition d ON d.id=i.disposition_id WHERE d.id=? AND d.scope_id=? ORDER BY i.bale_id",
+            Ids.bytes(UUID.fromString(decision.path("dispositionId").asText())), Ids.bytes(uuid(context,"scopeId")));
+        var actual = actualRows.stream().map(row -> row.get("bale_id") + ":" + row.get("action")).toList();
+        CommandErrors.integrity(expected.equals(actual));
+    }
+    private void verifyClosedSlot(JsonNode decision, JsonNode context) {
+        boolean hasOrder = !context.path("canonicalOrderId").isNull();
+        CommandErrors.integrity(decision.path("scopeClosed").asBoolean() && decision.path("slotClosed").asBoolean() == hasOrder);
+        if (!hasOrder) return;
+        var slots = jdbc.queryForList("SELECT phase,current_submission_id FROM order_submission_slot WHERE scope_id=?",
+            Ids.bytes(uuid(context,"scopeId")));
+        CommandErrors.integrity(slots.size()==1 && "CLOSED".equals(slots.getFirst().get("phase"))
+            && slots.getFirst().get("current_submission_id") == null);
     }
     private void rejected(JsonNode context) {
         var rows=jdbc.queryForList("SELECT status,issues_json FROM submission WHERE id=?",Ids.bytes(uuid(context,"submissionId")));
