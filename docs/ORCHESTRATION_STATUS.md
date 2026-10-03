@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-03
 branch: codex/development
-head: 8b4b738
+head: 9cff926
 dirty_entries: 15
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
@@ -14,27 +14,26 @@ server: { contract: 0.38.0, paths: 132, flyway: V58, migrations: 58 }
 ```
 <!-- FACTS_END -->
 
-R07 可信交接证据只读消费基础已实现、验证并推送：8b4b738e7c8269a767f217d4cf2f0164a4d875d7。原 actor/来源验签、恢复包摘要和高水位复核通过；尚未接入批准、准备和激活命令。详情见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-03.md)，旧断点见[归档](history/ORCHESTRATION_STATE_before_approval_evidence_2026-10-03.md)。更正版本修复 de1ae707035065a1bdc4ece981314127dd743982、交接版本修复 d539918ef28352f90a8231b2de211e734aa498ac 继续有效。
+R07 可信停止证据及全量清单已接入 FORMAL 审批/准备/激活并实测推送：9cff926c80e481e54f70738a5ab1c6025070aec5。完整服务端回归、真实 HTTP 审批链、空集、移除凭据、并发与回滚通过。详情见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-03.md)，旧断点见[归档](history/ORCHESTRATION_STATE_before_approval_workflow_2026-10-03.md)。更正版本修复 de1ae707035065a1bdc4ece981314127dd743982 与交接版本修复 d539918ef28352f90a8231b2de211e734aa498ac 继续有效。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development；单助手，七个本轮源码/测试文件已推送并核对远端。11 项遗留保持，路径/哈希、全部树/差异和 Git 回执见 .local/autonomous-20261003/r07-approval-evidence-delivery/。
-- 重型任务结束；隔离 933/934 认证停机，库与日志保留。19330/19434/19435/19436 无监听，系统 MySQL 未操作；仅空闲 Gradle daemon，D 盘约 40.02 GiB。
-- 文档正文单独提交推送；之后自动事实块刷新可留下仅元数据差异，写权仍属本助手。
+- 树 D:/acrylic-pda-outbound，分支 codex/development；单助手，34 项源码/测试已推送并核对远端。11 项遗留路径/哈希不变；完整树/差异、清单和 Git 回执见 .local/autonomous-20261003/r07-approval-workflow-delivery/。
+- 重型任务结束，935～947 认证停机，库与日志保留。19330/19434/19435/19436 无监听；系统 MySQL 未操作；空闲 Gradle daemon，D 盘约 37.31 GiB。
+- 文档正文单独提交推送；随后自动事实块刷新可留下仅元数据差异，写权仍属本助手。
 
 ## 当次证据
-- 定向编译/交接单测 97/0/0/0；完整服务端离线回归 3066/0/0/1，既有符号链接条件跳过。r07-approval-evidence-offline/、r07-approval-evidence-full/。
-- 933：真实 HTTP 原机 stop→abort→服务层证据消费→重启复读，缺证据对、高水位错误、文件缺失/摘要损坏拒绝；1/0/0/0。七对快照各 19 表相等，原 stop 重放字节一致。
-- 934：原停工入口身份/来源/并发、证据和消息写失败回滚、原键/重启及原批次中止版本协调回归，1/0/0/0；没有本轮测试失败，历史失败证据保留。
-- 作者实现、自审和隔离组合验证。原前置含 MockMvc/生成 EC 身份，stop/abort 为真实 HTTP，消费为服务层；未验主管批准 HTTP、独立消费者、真机或现场原身份。
+- 定向离线 103/0/0/0；完整服务端 3072/0/0/1，既有符号链接条件跳过。r07-approval-workflow-offline-5/、r07-approval-workflow-full/。
+- 945 最终 HTTP 审批链、独立主管会话、原恢复文件/清单/周期/映射/库存拒绝、批准写失败回滚、原键/重启通过；另对既有 RELEASE/QUARANTINE 凭据完成全 REMOVED 链，占用不释放。25 对快照各 19 表相等。
+- 940 真实完整原输入的空有效集合走完审批链并保留高水位；缺证据和未签名伪证对拒绝。937～939 来源漂移、双批准与首次同键双等待者通过。
+- 941/942 两种激活写失败回滚及原键恢复/重启通过；943 HTTP 读取及隔离通过；944 出站 status/版本/唯一性通过；946 锁等待期间授权撤销拒绝且 16 表不变；947 HTTP 列表兼容通过。935～947 各 1/0/0/0；本轮无测试失败，历史失败证据保留。
+- 作者自审与隔离组合验证。业务前置含 MockMvc/生成 EC 身份；审批、停止及多数中止为真实 HTTP，部分故障/并发命令为服务层。未验独立消费者、真机、现场原身份/实物或本轮浏览器。
 
 ## 下一步、未验与边界
-- 把 HandoverApprovalEvidence 与逐包清单/实物处置/库存复核组合接入 APPROVE，再在 PREPARE/ACTIVATE 重查。APPROVE 仍只计数 STOP_PROOF，不能宣称批准入口已修复。
-- 验签已绑定不可变原人员/设备，不伪造主管 PDA principal；只读读取器不调用会绑定审计来源或再次撤权的 RecoveryEvidence.validate/RecallStops.acknowledge。
-- 清单须覆盖全部原包、比较已有清单、检查周期/占用、正确统计 RETAINED、绑定 REMOVED 已批准实物证明并处理真实空集合；保留完整原输入高水位，不能隐式卸货释放。
-- 接入时把旧合成 STOP_PROOF 成功夹具迁移到真实停止回执，或改成明确拒绝；不增加兼容绕过。真实 stop→abort 前置可复用本轮测试，不以 SQL 伪造终态。
-- TEMP 来源停止、接收授权/续作票据、PDA 页面、激活高水位继承和新机最终提交未完成；TEMP REQUEST 仍关闭，真实两端交接未验。
-- mapping3+ 重链政策、R1 正式放行、历史更正、现场原身份/实物/断电/长时、R05 原资料/旧 BCD/526 与 R09 恢复限制继续单列。
-- 生产 gate 默认 false；不合 main、不打标签/Release、不部署、不接原库/现网；未删除 .local 证据。目标仍在推进。
+- 下一子项：接收资格/续作票据与高水位继承。旧激活签发仍重置 startOrderScanSeq，原提交指针和占用所有权未推进，新设备最终提交未完成。
+- 目标人员权限/仓库资格、设备实际接收下载与续作审计来源需专项；本轮复核不等于两端交接。TEMP 停工及 PDA 页面仍未完成，TEMP REQUEST 继续拒绝。
+- 原批准正文保留凭据引用；每步重读原文件、比较全清单和库存占用。RETAINED 不含移除行，空集合法但保留完整输入；无隐式卸货/释放。
+- mapping3+ 重链政策、R1 正式放行、历史更正、现场身份/实物/断电/长时、R05 原资料/旧 BCD/526 和 R09 恢复限制继续单列。
+- 生产 gate 默认 false；不合 main、不打标签/Release、不部署、不接原库/现网；未删除 .local 证据。长期目标仍在推进。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实见生成块；文档提交自身 SHA 以 Git 回执核对。
