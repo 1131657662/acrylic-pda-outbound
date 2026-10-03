@@ -6,32 +6,29 @@
 ```yaml
 date: 2026-10-03
 branch: codex/development
-head: 9da4ca3
+head: 9deea7f
 dirty_entries: 14
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
-server: { contract: 0.37.0, paths: 131, flyway: V57, migrations: 57 }
+server: { contract: 0.37.0, paths: 131, flyway: V58, migrations: 58 }
 ```
 <!-- FACTS_END -->
 
-R07 PHYSICAL_RETURN 与 DISPATCH_CANCELLATION 已纳入受控周期重开：批准时周期 +1、删除旧 DISPATCHED 占用、结果快照保持 is_effective=0，并写唯一 cycle_reopening 与 CYCLE_REOPENED outbox；实现与测试已在 `b7809c5` 推送。R06 mapping3+ LINK 入口对 v2+ 返回 `COMMAND_CONTEXT_CHANGED`，实现提交 `1bba207` 推送。R07-P08-B 撤销确认在重开后占用未变化时恢复原订单 DISPATCHED 占用并写回执关联审计，提交 `9da4ca3` 推送。
+close-disposition 已完成：受控 CLOSE_DISPOSITION 入口要求可信完整停止验证、精确物料清单和非空原因；逐包释放或隔离占用，清除来源绑定并关闭 canonical slot，签名回执记录取消决定与关闭事实。生产命令开关默认值保持 false。提交 `9deea7f` 已推送。
 
 ## Git、写权与环境
-- 本轮单助手写入；`9da4ca3` 只包含 P08-B 恢复实现、迁移、测试与验证脚本，其他遗留未提交/未跟踪文件继续保护。
-- 真实隔离 HTTP attempt 913 已认证停机；904/905 的渲染器配置失败证据保留；系统 MySQL 未操作，生产默认 gate 仍 false。
+- 本轮单助手写入；`9deea7f` 只包含 close-disposition 产品、迁移、测试与验证脚本，遗留文档、本机请求和工具文件继续保护。
+- 隔离 HTTP/E2a 已结束；系统 MySQL 未操作，生产默认 gate 仍 false；`.local` 证据未删除。
 
 ## 当次证据
-- CorrectionCycleReopeningTest：3/0/0/0。
-- E2aCorrectionAccountingHttpIT：attempt 906，1/0/0/0，覆盖 DISPATCH_CANCELLATION 与 PHYSICAL_RETURN，渲染器/Chromium 已配置。
-- 完整服务端离线 test：2991 项，0 失败、0 错误、1 个既有条件跳过；定向 `CorrectionCycleReopeningTest` 3/0/0/0。
-- 完整服务端离线 test：2992 项，0 失败、0 错误、1 个既有条件跳过；`TemporaryLinkOperationTest` 1/0/0/0。证据：`.local/autonomous-20261003/mapping3-fail-closed-regression/`。
-- P08-B 定向回归：12 项，0 失败、0 错误、0 跳过；证据：`.local/autonomous-20261003/r07-p08-b-targeted-5/`。
-- P08-B 完整服务端回归：2993 项，0 失败、0 错误、1 个既有条件跳过；证据：`.local/autonomous-20261003/r07-p08-b-full-regression-4/`。
-- P08-B 真实隔离 HTTP：`E2aCorrectionAccountingHttpIT` 1/0/0/0；证据：`.local/e2a-cross-20260925-913/`。
+- `PhysicalDispositionVerificationTest`：7/0/0/0；证据：`.local/autonomous-20261003/close-disposition-verification-targeted-2/`。
+- 完整服务端离线回归：3002/0/0/1；证据：`.local/autonomous-20261003/close-disposition-full-regression-2/`。
+- `E2aTemporaryCloseDispositionIT`：1/0/0/0，迁移与重复迁移均验证；证据：`.local/e2a-cross-20260925-915/`。
+- `git diff --check` 通过；早期 targeted compile 失败已修复，失败日志保留在关联证据记录中。
 
 ## 下一步、未验与边界
-- P08-B 采用周期单调且冲突即回滚的占用恢复语义；PC 真实 HTTP、现场 PDA/原身份、真实退货实物、断电恢复和生产审批继续单列。mapping3+ 重链业务政策仍未定义，R1 白名单复审无新放行。
-- 失败证据不删除；不把隔离 HTTP/SQL 证明写成现场或生产完成。不合 main、不打标签、不 Release、不部署、不接原库/现网。
+- 原身份 PDA、真实实物、断电恢复、生产审批和现场流程仍未验；隔离 HTTP/SQL 不替代现场证据。mapping3+ 重链业务政策与 R1 白名单复审继续单列。
+- 下一项按优先级继续 R06/R07 未完功能；失败证据保留，不合 main、不打标签、不 Release、不部署、不接原库/现网。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实见生成块；提交自身SHA以Git回执核对。

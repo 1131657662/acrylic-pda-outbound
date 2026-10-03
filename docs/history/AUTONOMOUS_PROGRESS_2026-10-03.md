@@ -125,3 +125,38 @@ P08-B 占用回退政策与模型、mapping3+、R1 白名单和历史更正边�
 
 - `9da4ca3` 已推送 `origin/codex/development`；新增迁移、恢复服务、测试和验证脚本均已纳入该提交。
 - 下一步继续审查 R06/R07 未完功能，优先处理已有明确契约且可独立验证的缺陷；生产默认 gate 保持关闭。
+
+## 本轮接续：CLOSE_DISPOSITION 受控关闭（2026-10-03）
+
+### 子项状态
+
+| 子项 | 状态 | SHA / 证据 |
+|---|---|---|
+| CLOSE_DISPOSITION 受控关闭 | 已实现、定向/完整/隔离验证通过并推送 | `9deea7f`；`.local/autonomous-20261003/close-disposition-verification-targeted-2/`；`.local/autonomous-20261003/close-disposition-full-regression-2/`；`.local/e2a-cross-20260925-915/` |
+| mapping3+ | 保持 fail-closed，未完成 | 缺少安全重复关联政策 |
+| R1 白名单 | 无新增放行 | 继续单列复审 |
+
+### 自主决策记录
+
+16. 按交接状态先完成已验证 close-disposition 的暂存、提交和推送，再更新事实块与断点，避免把已完成证据留在未提交工作树。
+17. 关闭只接受拒绝或中止来源，并要求可信完整停止验证、精确物料清单和非空原因；逐包释放或隔离占用，绑定来源清除和 canonical slot 关闭均在同一受控操作中完成。
+18. 生产命令开关默认值保持 false；隔离测试只在测试配置中开启，不改变生产行为。
+19. 保护用户遗留文档、本机请求 JSON、清理脚本和历史报告，不把它们混入产品提交。
+20. 早期 targeted compile 发现错误调用 `SubmissionJson.canonical` 的 `byte[]` 参数和不存在的 `ArrayNode.parent()`；修复后才接受定向、完整和隔离证据，失败记录继续保留。
+21. 先串行复核事实检查；并行执行曾读到旧事实块，未将该中间读数作为证据，随后串行 `-Check` 通过。
+
+### 验证与证据索引
+
+- 定向：`PhysicalDispositionVerificationTest` 7/0/0/0，见 `.local/autonomous-20261003/close-disposition-verification-targeted-2/result.json`。
+- 完整：服务端离线回归 3002/0/0/1，见 `.local/autonomous-20261003/close-disposition-full-regression-2/result.json`。
+- 组合：`E2aTemporaryCloseDispositionIT` 1/0/0/0，见 `.local/e2a-cross-20260925-915/result.json`；覆盖迁移、真实读取/写入、释放/隔离和重复迁移。
+- 版控：暂存清单、暂存空白检查、提交回执和推送回执在本地命令记录中；提交已推送到 `codex/development`。
+- 失败：早期编译失败记录不删除；修复后证据不覆盖失败记录。
+
+### 仍未解决
+
+原身份 PDA、真实实物、断电恢复、生产审批、现场流程、mapping3+ 安全重链政策和 R1 白名单复审仍未完成。隔离 HTTP/SQL、合成身份和测试开关不能代替现场或生产证据。
+
+### 磁盘与环境
+
+D 盘可用空间约 47.4 GB，高于 20 GB 停止阈值；系统 MySQL 仅确认监听、未访问；无在途 Gradle/隔离库任务；设备动作 0；`.local` 证据删除 0。未合 main、未打标签、未 Release、未部署、未接原库/现网。
