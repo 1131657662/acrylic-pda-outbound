@@ -65,3 +65,31 @@
 ### 仍未解决与环境
 
 P08-B 占用回退政策与模型、mapping3+、R1 白名单和历史更正边界仍未完成；现场 PDA/原身份/Keystore、真实退货实物、断电恢复和生产审批未验。19330/19434/19435/19436 已释放，系统 MySQL 未操作，`.local` 证据删除 0，D 盘可用空间仍高于 20 GiB；不合 `main`、不打标签/Release、不部署。
+
+## 本轮接续：R06 mapping3+ 显式 fail-closed（2026-10-03）
+
+### 子项状态
+
+| 子项 | 状态 | SHA / 证据 |
+|---|---|---|
+| R06 mapping3+ LINK 入口守卫 | 已实现并推送开发分支 | `1bba207`；`.local/autonomous-20261003/mapping3-fail-closed-regression/` |
+| R1 白名单复审 | 未发现新产品缺陷，保持现有冻结保护 | 既有 `R1_HANDOVER_WRITE_AFTER_ROLLBACK_2026-10-02.md`；本轮未放宽能力 |
+
+### 自主决策记录
+
+10. 现有业务只定义 v1 初始来源到 v2 `CONTROLLED_LINK` 的一次人工关联，没有定义重复关联、旧目标失效或高轮次续作的权限、占用迁移和确认语义；因此在 `TemporaryLinkOperation` 入口要求 `mappingVersion == 1`，任何 v2+ LINK 直接返回 `COMMAND_CONTEXT_CHANGED`，继续 fail-closed。
+11. 用独立单测固定高版本请求在读取来源、候选、目标和映射写入前被拒绝；不改变正常 v1→v2 关联，也不改生产 gate、白名单、迁移或接口契约。
+12. R1 白名单审查未发现新的静态或运行缺陷，保留既有 Primary 冻结和隔离证据，不为“完成白名单”添加未经定义的生产能力。
+
+### 验证与证据索引
+
+- `TemporaryLinkOperationTest`：1/0/0/0，证明 mappingVersion=2 在所有依赖调用前返回 `COMMAND_CONTEXT_CHANGED`。
+- 完整服务端离线 `test`：2992 项，0 失败、0 错误、1 个既有条件跳过；证据：`.local/autonomous-20261003/mapping3-fail-closed-regression/`。
+- 首次定向编译因测试夹具静态类型错误失败，修正为 `ObjectNode` 后定向测试和完整回归通过；无业务测试失败，失败输出未写入产品证据目录。
+- 提交 `1bba207` 已推送 `origin/codex/development`；本轮未合 `main`、未打标签/Release、未部署、未接原库/现网。
+
+### 仍未解决与环境
+
+- mapping3+ 的业务重链政策、旧目标失效、跨来源/高轮次续作仍未定义；本轮只落实入口保护，不把字段可表达性写成已完成。
+- P08-B 撤销确认后的占用回退、现场 PDA/原身份/Keystore、真实退货实物、断电恢复、长时运行和生产审批仍未验。
+- 失败证据继续保留；系统 MySQL 未操作，监听为空，`.local` 未删除；D 盘可用空间约 49.9 GB，高于 20 GB 阈值。
