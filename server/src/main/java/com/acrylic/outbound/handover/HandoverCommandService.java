@@ -21,14 +21,15 @@ public class HandoverCommandService {
     private final HandoverCommand.Identity identities;private final HandoverCommand.Locks locks;
     private final HandoverStore store;private final HandoverReceiptCodec codec;private final AuditWriter audit;
     private final ServerState state;private final List<HandoverCommand.Operation> operations;
+    private final HandoverSourceGuard sources;
     private final TransactionTemplate read;private final TransactionTemplate write;
 
     public HandoverCommandService(HandoverCommand.Identity identities,HandoverCommand.Locks locks,HandoverStore store,
         HandoverReceiptCodec codec,AuditWriter audit,ServerState state,
         org.springframework.beans.factory.ObjectProvider<HandoverCommand.Operation> operations,
-        PlatformTransactionManager manager) {
+        PlatformTransactionManager manager,HandoverSourceGuard sources) {
         this.identities=identities;this.locks=locks;this.store=store;this.codec=codec;this.audit=audit;this.state=state;
-        this.operations=operations.orderedStream().toList();
+        this.sources=sources;this.operations=operations.orderedStream().toList();
         this.read=template(manager,true);this.write=template(manager,false);
     }
 
@@ -56,7 +57,6 @@ public class HandoverCommandService {
         if (row==null) return null;
         byte[] stored=(byte[])row.get("canonical_command_bytes");
         if (!Arrays.equals(stored,input.bytes())) throw HandoverCommand.conflict();
-        // A retry may only receive a receipt whose stored bytes, identifiers, digests and signature still verify.
         codec.verify(row);
         return (byte[])row.get("response_bytes");
     }
@@ -65,7 +65,7 @@ public class HandoverCommandService {
         state.requireWritable(input.text("transportRecoveryEpoch"));
         boolean request=input.kind().equals("REQUEST");
         UUID caseId=request?Ids.next():input.uuid("caseId");
-        if (request) locks.scope(input.uuid("scopeId"));else locks.kase(caseId);
+        if (request) locks.scope(input.uuid("scopeId"));else lockCaseSource(caseId);
         byte[] committed=replay(input);if (committed!=null) return committed;
         JsonNode anchor=request?store.scopeFacts(input.uuid("scopeId")):store.caseFacts(caseId);
         if (!anchor.path("warehouseId").asText().equals(actor.warehouse().toString())) throw HandoverCommand.missing();
@@ -73,15 +73,28 @@ public class HandoverCommandService {
             :HandoverCommand.Expected.forCase(anchor,Long.parseLong(actor.authVersion()));
         HandoverCommand.Expected.validate(input.expected(),current);
         if (operation.requiresApproval() && !actor.mayApprove()) throw HandoverCommand.denied();
+        if (!request) sources.require(input,anchor);
         var write=new HandoverCommand.Write(Ids.next(),Ids.next(),Ids.next(),caseId,
             Instant.now().truncatedTo(ChronoUnit.MILLIS),input,anchor,snapshot(actor));
+        return record(write,actor,operation,requestId);
+    }
+
+    private void lockCaseSource(UUID caseId) {
+        var hint=store.caseFacts(caseId);
+        // REQUEST and submission writers also take the source first. Never hold the case while waiting for its source.
+        locks.scope(UUID.fromString(hint.path("scopeId").asText()));
+        locks.kase(caseId);
+    }
+
+    private byte[] record(HandoverCommand.Write write,HandoverCommand.Actor actor,HandoverCommand.Operation operation,String requestId) {
+        var input=write.command();
         store.reserve(write.requestId(),actor.id(),input.key(),input.digest(),write.receiptId(),write.recordedAt());
         JsonNode decision=operation.execute(write);
         var receipt=codec.sign(write,decision);
         store.receipt(write,SubmissionJson.canonical(input.expected()),
             new String[]{new String(receipt.original(),StandardCharsets.UTF_8),receipt.originalSha256()});
         var details=SubmissionJson.object().put("commandSha256",input.digest()).put("originalResponseSha256",receipt.originalSha256())
-            .put("caseId",caseId.toString());
+            .put("caseId",write.caseId().toString());
         audit.append(new AuditWriter.Event(actor.id(),"HANDOVER_"+input.kind(),"HANDOVER_COMMAND",write.receiptId(),details.toString()),requestId);
         return receipt.original();
     }

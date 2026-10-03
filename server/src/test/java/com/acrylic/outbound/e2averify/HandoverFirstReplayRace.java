@@ -5,7 +5,7 @@ import java.util.concurrent.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Holds the case until both first deliveries are observed waiting in distinct MySQL transactions. */
+/** Holds the case until both first deliveries are observed waiting along the source -> case lock chain. */
 final class HandoverFirstReplayRace {
     private final JdbcTemplate jdbc;
     private final java.nio.file.Path attempt;
@@ -46,9 +46,9 @@ final class HandoverFirstReplayRace {
     private void awaitTwoDatabaseWaiters(List<Future<Outcome>> workers) throws Exception {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(20);
         while (System.nanoTime() < deadline) {
-            var waits = jdbc.queryForList("SELECT ENGINE_TRANSACTION_ID,THREAD_ID,LOCK_TYPE,LOCK_MODE,LOCK_STATUS,LOCK_DATA "
+            var waits = jdbc.queryForList("SELECT ENGINE_TRANSACTION_ID,THREAD_ID,OBJECT_NAME,LOCK_TYPE,LOCK_MODE,LOCK_STATUS,LOCK_DATA "
                 + "FROM performance_schema.data_locks WHERE OBJECT_SCHEMA=DATABASE() "
-                + "AND OBJECT_NAME='handover_case' AND LOCK_STATUS='WAITING' ORDER BY THREAD_ID");
+                + "AND OBJECT_NAME IN ('handover_case','submission_scope') AND LOCK_STATUS='WAITING' ORDER BY THREAD_ID");
             if (waits.stream().map(row -> row.get("THREAD_ID")).distinct().count() == 2) {
                 assertThat(waits.stream().map(row -> row.get("ENGINE_TRANSACTION_ID")).distinct().count()).isEqualTo(2);
                 var json = new com.fasterxml.jackson.databind.ObjectMapper().valueToTree(waits);
@@ -59,7 +59,7 @@ final class HandoverFirstReplayRace {
                 .allMatch(worker -> !worker.isDone());
             Thread.sleep(50);
         }
-        throw new AssertionError("Two real case lock waiters not observed; cannot claim overlapping first delivery");
+        throw new AssertionError("Two real source/case lock waiters not observed; cannot claim overlapping first delivery");
     }
 
     private static Outcome invoke(Callable<byte[]> call, CountDownLatch ready, CountDownLatch start) throws Exception {
