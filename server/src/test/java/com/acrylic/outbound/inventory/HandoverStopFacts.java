@@ -3,6 +3,7 @@ package com.acrylic.outbound.inventory;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,10 +29,10 @@ final class HandoverStopFacts {
     }
 
     void unchanged(ObjectNode before) throws Exception {
-        var after = snapshot(); int index = ++comparisons;
-        Files.writeString(f.directory.resolve("state-" + index + "-before.json"), before.toPrettyString());
-        Files.writeString(f.directory.resolve("state-" + index + "-after.json"), after.toPrettyString());
-        assertThat(after).as("business tables unchanged for check " + index).isEqualTo(before);
+        var after = snapshot(); String label = "state-" + ++comparisons + "-" + UUID.randomUUID();
+        Files.writeString(f.directory.resolve(label + "-before.json"), before.toPrettyString(), StandardOpenOption.CREATE_NEW);
+        Files.writeString(f.directory.resolve(label + "-after.json"), after.toPrettyString(), StandardOpenOption.CREATE_NEW);
+        assertThat(after).as("business tables unchanged for " + label).isEqualTo(before);
     }
 
     void stopped() throws Exception {
@@ -47,7 +48,7 @@ final class HandoverStopFacts {
         assertThat(count("SELECT COUNT(*) FROM operation_event WHERE event_type='HANDOVER_STOPPED' AND JSON_UNQUOTE(JSON_EXTRACT(details,'$.caseId'))=?", f.kase.toString())).isEqualTo(1);
         assertThat(count("SELECT COUNT(*) FROM order_sync_outbox WHERE order_id=UUID_TO_BIN(?) AND event_type='HANDOVER_STOPPED' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.status'))='RECALL_PENDING'", f.r.f.order)).isEqualTo(1);
         assertThat(f.r.f.count("bale_commitment")).isEqualTo(2); assertThat(f.r.f.count("inventory_ledger")).isZero();
-        Files.writeString(f.directory.resolve("final-state.json"), snapshot().toPrettyString());
+        Files.writeString(f.directory.resolve("final-state.json"), snapshot().toPrettyString(), StandardOpenOption.CREATE_NEW);
     }
 
     private String value(String sql, String argument) { return jdbc.queryForObject(sql, String.class, argument); }
