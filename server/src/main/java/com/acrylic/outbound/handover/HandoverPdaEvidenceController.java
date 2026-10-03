@@ -12,18 +12,30 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Bounded evidence manifest for the specified receiving device and operator. */
+/** Read-only evidence delivery for the specified receiving device and operator. */
 @RestController
 @RequestMapping("/api/v1/pda/handovers")
 @ConditionalOnProperty(prefix="outbound.handover.commands", name="enabled", havingValue="true")
 public class HandoverPdaEvidenceController {
-    private final HandoverPdaEvidenceService service;
+    private final HandoverPdaEvidenceService evidence;
+    private final HandoverPdaPackageService packages;
 
-    HandoverPdaEvidenceController(HandoverPdaEvidenceService service) { this.service = service; }
+    HandoverPdaEvidenceController(HandoverPdaEvidenceService evidence, HandoverPdaPackageService packages) {
+        this.evidence = evidence;
+        this.packages = packages;
+    }
 
     @GetMapping("/{caseId}/manifest")
     public ResponseEntity<byte[]> manifest(@PathVariable UUID caseId) {
-        var bytes = SubmissionJson.canonical(service.manifest(caseId)).getBytes(StandardCharsets.UTF_8);
+        return response(SubmissionJson.canonical(evidence.manifest(caseId)).getBytes(StandardCharsets.UTF_8));
+    }
+
+    @GetMapping("/{caseId}/recovery-package")
+    public ResponseEntity<byte[]> recoveryPackage(@PathVariable UUID caseId) {
+        return response(packages.download(caseId));
+    }
+
+    private ResponseEntity<byte[]> response(byte[] bytes) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).contentLength(bytes.length)
             .cacheControl(CacheControl.noStore()).header("X-Content-Type-Options", "nosniff").body(bytes);
     }

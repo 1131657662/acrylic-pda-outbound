@@ -2,6 +2,7 @@ package com.acrylic.outbound.e2averify;
 
 import com.acrylic.outbound.inventory.HandoverApprovalWorkflowChecks;
 import com.acrylic.outbound.inventory.HandoverPdaManifestChecks;
+import com.acrylic.outbound.inventory.HandoverPdaPackageChecks;
 import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -9,7 +10,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 @EnabledIfEnvironmentVariable(named="E2A_CROSS_VERIFY", matches="true")
 class E2aHandoverPdaManifestIT {
-    @Test void namedPdaReadsVerifiedHandoverManifest() throws Exception {
+    @Test void namedPdaReadsVerifiedHandoverEvidenceAndOriginalPackage() throws Exception {
         var profile = new E2aCrossSourceProfile();
         var jdbc = profile.connect();
         Files.createFile(profile.attempt.resolve("test-started.marker"));
@@ -22,8 +23,9 @@ class E2aHandoverPdaManifestIT {
             var workflow = new HandoverApprovalWorkflowChecks((WebApplicationContext) app, profile.attempt);
             workflow.verify();
             new HandoverPdaManifestChecks(workflow, profile.attempt).verify();
+            new HandoverPdaPackageChecks(workflow, profile.attempt).verify();
         }
         Files.writeString(profile.attempt.resolve("test-completed.marker"),
-            "Real HTTP PDA manifest after authentic stop and supervisor workflow; anonymous, target, and ticket guards. Generated test identities only.");
+            "Real HTTP PDA manifest and original package after authentic stop and supervisor workflow; generated test identities only.");
     }
 }
