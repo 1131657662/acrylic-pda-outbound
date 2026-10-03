@@ -6,28 +6,31 @@
 ```yaml
 date: 2026-10-03
 branch: codex/development
-head: 1bba207
+head: 9da4ca3
 dirty_entries: 14
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 28 }
-server: { contract: 0.37.0, paths: 131, flyway: V56, migrations: 56 }
+server: { contract: 0.37.0, paths: 131, flyway: V57, migrations: 57 }
 ```
 <!-- FACTS_END -->
 
-R07 PHYSICAL_RETURN 已纳入受控周期重开：批准时周期 +1、删除旧 DISPATCHED 占用、结果快照该包保持 is_effective=0，并写唯一 cycle_reopening 与 CYCLE_REOPENED outbox；DISPATCH_CANCELLATION 同路径。实现与测试已在 `b7809c5` 提交并推送 codex/development。R06 mapping3+ LINK 入口新增 `mappingVersion == 1` 守卫，v2+ 明确返回 `COMMAND_CONTEXT_CHANGED`，实现提交 `1bba207` 已推送。
+R07 PHYSICAL_RETURN 与 DISPATCH_CANCELLATION 已纳入受控周期重开：批准时周期 +1、删除旧 DISPATCHED 占用、结果快照保持 is_effective=0，并写唯一 cycle_reopening 与 CYCLE_REOPENED outbox；实现与测试已在 `b7809c5` 推送。R06 mapping3+ LINK 入口对 v2+ 返回 `COMMAND_CONTEXT_CHANGED`，实现提交 `1bba207` 推送。R07-P08-B 撤销确认在重开后占用未变化时恢复原订单 DISPATCHED 占用并写回执关联审计，提交 `9da4ca3` 推送。
 
 ## Git、写权与环境
-- 本轮单助手写入；`1bba207` 只包含 mapping3+ 入口守卫与单测，`b7809c5` 只包含更正周期实现、测试与 P08-B 审计；其他遗留未提交/未跟踪文件继续保护。
-- 真实隔离 HTTP attempt 906 已认证停机；904/905 的渲染器配置失败证据保留；系统 MySQL 未操作，生产默认 gate 仍 false。
+- 本轮单助手写入；`9da4ca3` 只包含 P08-B 恢复实现、迁移、测试与验证脚本，其他遗留未提交/未跟踪文件继续保护。
+- 真实隔离 HTTP attempt 913 已认证停机；904/905 的渲染器配置失败证据保留；系统 MySQL 未操作，生产默认 gate 仍 false。
 
 ## 当次证据
 - CorrectionCycleReopeningTest：3/0/0/0。
 - E2aCorrectionAccountingHttpIT：attempt 906，1/0/0/0，覆盖 DISPATCH_CANCELLATION 与 PHYSICAL_RETURN，渲染器/Chromium 已配置。
 - 完整服务端离线 test：2991 项，0 失败、0 错误、1 个既有条件跳过；定向 `CorrectionCycleReopeningTest` 3/0/0/0。
 - 完整服务端离线 test：2992 项，0 失败、0 错误、1 个既有条件跳过；`TemporaryLinkOperationTest` 1/0/0/0。证据：`.local/autonomous-20261003/mapping3-fail-closed-regression/`。
+- P08-B 定向回归：12 项，0 失败、0 错误、0 跳过；证据：`.local/autonomous-20261003/r07-p08-b-targeted-5/`。
+- P08-B 完整服务端回归：2993 项，0 失败、0 错误、1 个既有条件跳过；证据：`.local/autonomous-20261003/r07-p08-b-full-regression-4/`。
+- P08-B 真实隔离 HTTP：`E2aCorrectionAccountingHttpIT` 1/0/0/0；证据：`.local/e2a-cross-20260925-913/`。
 
 ## 下一步、未验与边界
-- P08-B 撤销确认后的占用回退仍因缺业务政策和占用流转模型未实现；mapping3+ 重链业务政策仍未定义，本轮仅落实 v2+ LINK fail-closed；R1 白名单复审无新缺陷，现场 PDA/原身份、真实退货实物和生产审批继续单列。
+- P08-B 采用周期单调且冲突即回滚的占用恢复语义；PC 真实 HTTP、现场 PDA/原身份、真实退货实物、断电恢复和生产审批继续单列。mapping3+ 重链业务政策仍未定义，R1 白名单复审无新放行。
 - 失败证据不删除；不把隔离 HTTP/SQL 证明写成现场或生产完成。不合 main、不打标签、不 Release、不部署、不接原库/现网。
 <!-- CURRENT_STATE_END -->
 
