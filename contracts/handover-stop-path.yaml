@@ -1,0 +1,108 @@
+Path:
+  post:
+    summary: 原人员及原设备确认正式来源交接停止
+    description: >-
+      仅在 outbound.handover.commands.enabled=true 的隔离或明确授权环境存在；默认关闭。
+      须先经既有 recovery-packages 入口上传完整耐久恢复包。本入口重验原交接申请、实时来源、原包摘要、输入和完整设备审计，
+      复用召回停止链撤销原授权，并在同一事务保存停止与恢复包描述证据、案件状态、审计、同步通知和幂等索引。
+      必须为原人员及原设备的有效在线 PDA 身份，具有 pda:recover；离线凭据过期不妨碍提交停止证据。
+      原键按人员和路由确定，同键同文重放原 JSON 字节；同键异文、跨案件复用原键或不同键重复停止均拒绝。
+      重放仍校验身份、签名和两份证据及索引的一致性，不重签。回执仅证明已记录停止；全部能力为 false。
+      原批次未终结时仍不能批准；实物清单、TEMP 来源、接收机和最终提交不由本接口授权。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {name: caseId, in: path, required: true, schema: {type: string, format: uuid}}
+      - {name: X-Server-Recovery-Epoch, in: header, required: true, schema: {$ref: '#/IntegerText'}}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: '#/Command'}
+    responses:
+      '200':
+        description: 签名停止回执的原 JSON 字节，不使用 Envelope；重复请求逐字节一致
+        headers:
+          Cache-Control: {schema: {type: string, const: no-store}}
+          X-Content-Type-Options: {schema: {type: string, const: nosniff}}
+        content:
+          application/json:
+            schema: {$ref: '#/Receipt'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+IntegerText:
+  type: string
+  pattern: '^(0|[1-9][0-9]{0,17})$'
+Command:
+  type: object
+  additionalProperties: false
+  description: 最大 8192 字节；拒绝重复字段和尾随 JSON；所有 UUID 为规范小写格式。
+  required: [commandId, expectedCaseVersion, changeRequestId, recoveryPackageId, payloadSha256, captureHighWatermark, auditThroughSeq]
+  properties:
+    commandId: {type: string, format: uuid}
+    expectedCaseVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    changeRequestId: {type: string, format: uuid}
+    recoveryPackageId: {type: string, format: uuid}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    captureHighWatermark: {$ref: '#/IntegerText', description: 原订单输入序列高水位}
+    auditThroughSeq: {$ref: '#/IntegerText', description: 原设备完整审计覆盖终点}
+Receipt:
+  type: object
+  additionalProperties: false
+  required: [receiptVersion, receiptId, packageEvidenceId, routeScope, status, commandSha256, recordedAt, originalCommand, source, caseContext, actor, recallStop, capabilities, signedReceipt]
+  properties:
+    receiptVersion: {type: integer, const: 1}
+    receiptId: {type: string, format: uuid, description: STOP_PROOF 证据标识}
+    packageEvidenceId: {type: string, format: uuid, description: RECOVERY_PACKAGE 证据标识；描述原包，不复制原正文}
+    routeScope: {type: string, const: handover.stop}
+    status: {type: string, const: STOPPED}
+    commandSha256: {type: string, pattern: '^[a-f0-9]{64}$', description: originalCommand 规范 JSON 的 SHA-256}
+    recordedAt: {type: string, format: date-time}
+    originalCommand:
+      type: object
+      additionalProperties: false
+      required: [caseId, transportRecoveryEpoch, command]
+      properties:
+        caseId: {type: string, format: uuid}
+        transportRecoveryEpoch: {$ref: '#/IntegerText'}
+        command: {$ref: '#/Command'}
+    source:
+      type: object
+      additionalProperties: false
+      required: [warehouseId, scopeId, orderId, submissionId, assignmentId, deviceId, operatorId, sourceRecoveryEpoch, workRound]
+      properties:
+        warehouseId: {type: string, format: uuid}
+        scopeId: {type: string, format: uuid}
+        orderId: {type: string, format: uuid}
+        submissionId: {type: string, format: uuid}
+        assignmentId: {type: string, format: uuid}
+        deviceId: {type: string, format: uuid}
+        operatorId: {type: string, format: uuid}
+        sourceRecoveryEpoch: {$ref: '#/IntegerText'}
+        workRound: {$ref: '#/IntegerText'}
+    caseContext: {type: object, description: 取得来源及案件锁后、停止前的案件事实快照；不表示重放时的动态状态}
+    actor:
+      type: object
+      additionalProperties: false
+      required: [principalId, deviceId, sessionId, userAuthVersion]
+      properties:
+        principalId: {type: string, format: uuid}
+        deviceId: {type: string, format: uuid}
+        sessionId: {type: string, format: uuid}
+        userAuthVersion: {$ref: '#/IntegerText'}
+    recallStop: {type: object, description: 已验签的原召回 STOPPED 回执，包含原包计数、重量、摘要、高水位及其独立 signedReceipt}
+    capabilities:
+      type: object
+      additionalProperties: false
+      required: [writeConfirmationAvailable, releaseAllowed, mayResumeScanning, stockReleased, localDeletionAllowed]
+      properties:
+        writeConfirmationAvailable: {type: boolean, const: false}
+        releaseAllowed: {type: boolean, const: false}
+        mayResumeScanning: {type: boolean, const: false}
+        stockReleased: {type: boolean, const: false}
+        localDeletionAllowed: {type: boolean, const: false}
+    signedReceipt:
+      type: string
+      description: RS256 JWS，header 为 alg/typ/kid；claims 为 iss=acrylic-outbound、aud=acrylic-pda-handover-stop、receipt=去掉 signedReceipt 的整个回执。支持保留历史公钥验签。

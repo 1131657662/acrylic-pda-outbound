@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$true)][string]$OfflineEvidence,
-    [ValidateSet('E2aHandoverSourceGuardIT','E2aHandoverFirstReplayIT','E2aHandoverReadHttpIT')]
+    [ValidateSet('E2aHandoverSourceGuardIT','E2aHandoverFirstReplayIT','E2aHandoverReadHttpIT','E2aHandoverStopHttpIT')]
     [string]$Test = 'E2aHandoverSourceGuardIT'
 )
 $ErrorActionPreference = 'Stop'

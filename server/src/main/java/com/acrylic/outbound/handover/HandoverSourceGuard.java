@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-/** Rechecks the live source after its scope lock, before any approval, preparation or activation effects. */
+/** Rechecks the live source after its scope lock, before any stop, approval, preparation or activation effects. */
 @Component
 final class HandoverSourceGuard {
     private final JdbcTemplate jdbc;
@@ -23,6 +23,14 @@ final class HandoverSourceGuard {
     }
 
     void require(HandoverCommand.Input command, JsonNode facts) {
+        var submission = lock(facts);
+        String result = originalResult(submission.path("status").asText());
+        String expected = command.kind().equals("APPROVE") ? command.text("originalResultState")
+            : facts.path("originalResultState").asText();
+        requireSame(result.equals(expected));
+    }
+
+    JsonNode lock(JsonNode facts) {
         var original = receipts.verify(requests.originalRequest(id(facts, "caseId")));
         var slot = lockSlot(facts);
         var submission = lockSubmission(facts);
@@ -30,10 +38,7 @@ final class HandoverSourceGuard {
         requireSource(facts, scope, original);
         requireSlot(facts, slot);
         requireSubmission(facts, submission);
-        String result = originalResult(submission.path("status").asText());
-        String expected = command.kind().equals("APPROVE") ? command.text("originalResultState")
-            : facts.path("originalResultState").asText();
-        requireSame(result.equals(expected));
+        return submission;
     }
 
     private JsonNode lockSlot(JsonNode facts) {
