@@ -3,7 +3,6 @@ package com.acrylic.outbound.handover;
 import com.acrylic.outbound.audit.AuditWriter;
 import com.acrylic.outbound.common.BusinessException;
 import com.acrylic.outbound.common.Ids;
-import com.acrylic.outbound.common.ServerState;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.nio.charset.StandardCharsets;
@@ -15,21 +14,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.*;
 import org.springframework.transaction.support.*;
 
-/** Owns the outer commit boundary; replays the original receipt before work and after its serialising row lock. */
+/** Owns the outer commit boundary; replays original bytes before work and after serialising locks. */
 @Service
 public class HandoverCommandService {
     private final HandoverCommand.Identity identities;private final HandoverCommand.Locks locks;
     private final HandoverStore store;private final HandoverReceiptCodec codec;private final AuditWriter audit;
-    private final ServerState state;private final List<HandoverCommand.Operation> operations;
-    private final HandoverSourceGuard sources;
+    private final List<HandoverCommand.Operation> operations;
+    private final HandoverSourceGuard sources;private final HandoverApprovalReview approvals;
+    private final HandoverWriteAccess access;
     private final TransactionTemplate read;private final TransactionTemplate write;
 
     public HandoverCommandService(HandoverCommand.Identity identities,HandoverCommand.Locks locks,HandoverStore store,
-        HandoverReceiptCodec codec,AuditWriter audit,ServerState state,
+        HandoverReceiptCodec codec,AuditWriter audit,
         org.springframework.beans.factory.ObjectProvider<HandoverCommand.Operation> operations,
-        PlatformTransactionManager manager,HandoverSourceGuard sources) {
-        this.identities=identities;this.locks=locks;this.store=store;this.codec=codec;this.audit=audit;this.state=state;
-        this.sources=sources;this.operations=operations.orderedStream().toList();
+        PlatformTransactionManager manager,HandoverSourceGuard sources,HandoverApprovalReview approvals,HandoverWriteAccess access) {
+        this.identities=identities;this.locks=locks;this.store=store;this.codec=codec;this.audit=audit;
+        this.sources=sources;this.approvals=approvals;this.access=access;this.operations=operations.orderedStream().toList();
         this.read=template(manager,true);this.write=template(manager,false);
     }
 
@@ -51,18 +51,16 @@ public class HandoverCommandService {
         }
     }
 
-    /** Same key + same canonical bytes replays the stored response; different bytes is a conflict, never a redo. */
     private byte[] replay(HandoverCommand.Input input) {
         var row=store.receipt(input.key());
         if (row==null) return null;
-        byte[] stored=(byte[])row.get("canonical_command_bytes");
-        if (!Arrays.equals(stored,input.bytes())) throw HandoverCommand.conflict();
+        if (!Arrays.equals((byte[])row.get("canonical_command_bytes"),input.bytes())) throw HandoverCommand.conflict();
         codec.verify(row);
         return (byte[])row.get("response_bytes");
     }
 
-    private byte[] executeOnce(HandoverCommand.Input input,HandoverCommand.Actor actor,HandoverCommand.Operation operation,String requestId) {
-        state.requireWritable(input.text("transportRecoveryEpoch"));
+    private byte[] executeOnce(HandoverCommand.Input input,HandoverCommand.Actor before,HandoverCommand.Operation operation,String requestId) {
+        var actor=access.lock(input,before);
         boolean request=input.kind().equals("REQUEST");
         UUID caseId=request?Ids.next():input.uuid("caseId");
         if (request) locks.scope(input.uuid("scopeId"));else lockCaseSource(caseId);
@@ -73,7 +71,7 @@ public class HandoverCommandService {
             :HandoverCommand.Expected.forCase(anchor,Long.parseLong(actor.authVersion()));
         HandoverCommand.Expected.validate(input.expected(),current);
         if (operation.requiresApproval() && !actor.mayApprove()) throw HandoverCommand.denied();
-        if (!request) sources.require(input,anchor);
+        if (!request) { sources.require(input,anchor); approvals.require(input,anchor); }
         var write=new HandoverCommand.Write(Ids.next(),Ids.next(),Ids.next(),caseId,
             Instant.now().truncatedTo(ChronoUnit.MILLIS),input,anchor,snapshot(actor));
         return record(write,actor,operation,requestId);
@@ -81,7 +79,6 @@ public class HandoverCommandService {
 
     private void lockCaseSource(UUID caseId) {
         var hint=store.caseFacts(caseId);
-        // REQUEST and submission writers also take the source first. Never hold the case while waiting for its source.
         locks.scope(UUID.fromString(hint.path("scopeId").asText()));
         locks.kase(caseId);
     }
