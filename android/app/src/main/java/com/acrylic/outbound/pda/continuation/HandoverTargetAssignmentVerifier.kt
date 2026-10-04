@@ -11,7 +11,8 @@ internal object HandoverTargetAssignmentVerifier {
         val verified = HandoverPackageVerifier.verify(manifest, stage.recoveryBytes, session)
         check(sameHandoverEvidence(stage.copy(state = "STAGED"), verified)) { "本机交接暂存与签名证据不一致" }
         check(manifest.getString("status") == "ACTIVATED") { "交接尚未激活，不能导入目标授权" }
-        JwtVerifier.authorization(assignment, session, session.getJSONObject("signingKey"), now)
+        JwtVerifier.authorization(assignment, session, session.getJSONObject("signingKey"), now,
+            setOf("pda:handover-import"))
 
         val decision = manifest.getJSONObject("activationReceipt").getJSONObject("businessDecision")
         val source = manifest.getJSONObject("stopReceipt").getJSONObject("source")

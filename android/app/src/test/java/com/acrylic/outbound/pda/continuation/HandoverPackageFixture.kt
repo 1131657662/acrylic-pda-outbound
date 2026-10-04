@@ -58,7 +58,7 @@ internal class HandoverPackageFixture {
             .put("issuedAt", issuedAt).put("expiresAt", expiresAt)
             .put("offlineAuthorizationId", UUID.randomUUID().toString())
         val claims = JSONObject().put("iss", "acrylic-outbound").put("aud", "acrylic-pda-offline")
-            .put("sub", targetUser).put("warehouseId", warehouse).put("scope", "pda:scan")
+            .put("sub", targetUser).put("warehouseId", warehouse).put("scope", "pda:handover-import")
             .put("userAuthVersion", "1").put("deviceVersion", "1")
             .put("iat", Instant.parse(issuedAt).epochSecond).put("exp", Instant.parse(expiresAt).epochSecond)
         val fields = mapOf("assignmentId" to "id", "jti" to "offlineAuthorizationId",

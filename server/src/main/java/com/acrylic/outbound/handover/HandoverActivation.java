@@ -78,7 +78,7 @@ public class HandoverActivation {
             targetUser.toString(), targetDevice.toString(), warehouse.toString(), work.id().toString(),
             order.toString(), revision, Long.toString(work.epoch()), recoveryEpoch, publication.snapshotId(),
             publication.policyVersion(), publication.autoDeduct(), work.planSha(), publication.inventorySha(),
-            Long.toString(startSeq), "0", target.authVersion(), target.deviceVersion(), "pda:scan",
+            Long.toString(startSeq), "0", target.authVersion(), target.deviceVersion(), "pda:handover-import",
             issued.getEpochSecond(), work.expires().getEpochSecond()));
         assignments.insert(work, publication, signed);
         if (jdbc.update("UPDATE order_assignment SET start_order_scan_seq=? WHERE id=?",

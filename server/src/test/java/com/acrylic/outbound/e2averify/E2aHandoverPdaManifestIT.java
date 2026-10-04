@@ -4,6 +4,7 @@ import com.acrylic.outbound.inventory.HandoverApprovalWorkflowChecks;
 import com.acrylic.outbound.inventory.HandoverPdaAssignmentChecks;
 import com.acrylic.outbound.inventory.HandoverPdaManifestChecks;
 import com.acrylic.outbound.inventory.HandoverPdaPackageChecks;
+import com.acrylic.outbound.inventory.HandoverPdaRenewalChecks;
 import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -26,8 +27,9 @@ class E2aHandoverPdaManifestIT {
             new HandoverPdaManifestChecks(workflow, profile.attempt).verify();
             new HandoverPdaPackageChecks(workflow, profile.attempt).verify();
             new HandoverPdaAssignmentChecks(workflow, profile.attempt).verify();
+            new HandoverPdaRenewalChecks(workflow, (WebApplicationContext) app, profile.attempt).verify();
         }
         Files.writeString(profile.attempt.resolve("test-completed.marker"),
-            "Real HTTP PDA manifest, original package and target assignment after stop and approval; generated test identities only.");
+            "Real HTTP PDA manifest/package/assignment and scope-preserving renewal; generated test identities only.");
     }
 }

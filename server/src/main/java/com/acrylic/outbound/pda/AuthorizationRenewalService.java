@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -53,7 +54,7 @@ public class AuthorizationRenewalService {
         var previous = assignments.lockCurrentAuthorization(assignmentId);
         if (!previous.id().toString().equals(command.authorizationId()))
             throw new BusinessException(409, "OFFLINE_AUTH_REAUTHORIZATION_REQUIRED", "授权已发生变化，请刷新后重试");
-        checkTokenVersions(previous.token(), principal);
+        String scope = checkTokenVersions(previous.token(), principal);
 
         var issued = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         var expires = issued.plusSeconds(OFFLINE_SECONDS);
@@ -63,6 +64,7 @@ public class AuthorizationRenewalService {
             Long.parseLong(current.epoch()), principal, current.planSha256(), current.areaNote(), issued, expires);
         var publication = assignments.publication(UUID.fromString(current.orderId()), current.revision());
         var claims = claims(current, principal, authorizationId, previous.id(), nextSequence, publication, issued, expires);
+        claims.put("scope", scope);
         assignments.insertRenewal(assignmentId, previous.id(), work, signer.sign(claims), nextSequence);
         requests.record(key, digest, authorizationId);
         audit.append(new AuditWriter.Event(principal.userId(), "PDA_AUTHORIZATION_RENEWED", "ORDER_ASSIGNMENT", assignmentId,
@@ -92,13 +94,17 @@ public class AuthorizationRenewalService {
             throw new BusinessException(409, "ASSIGNMENT_NOT_RENEWABLE", "已有冻结或提交事实，须按原提交或恢复流程处理");
     }
 
-    private void checkTokenVersions(String token, PdaSessions.Principal principal) {
+    private String checkTokenVersions(String token, PdaSessions.Principal principal) {
         try {
             var pieces = token.split("\\.");
             var claims = mapper.readTree(Base64.getUrlDecoder().decode(pieces[1]));
             if (!principal.userAuthVersion().equals(claims.path("userAuthVersion").asText())
                 || !principal.deviceVersion().equals(claims.path("deviceVersion").asText()))
                 throw new BusinessException(409, "OFFLINE_AUTH_REAUTHORIZATION_REQUIRED", "人员或设备授权版本已变化，不能直接续期");
+            String scope = claims.path("scope").asText();
+            if (!Set.of("pda:scan", "pda:handover-import").contains(scope))
+                throw new BusinessException(409, "OFFLINE_AUTH_REAUTHORIZATION_REQUIRED", "原授权用途不受支持，不能直接续期");
+            return scope;
         } catch (BusinessException error) { throw error; }
         catch (Exception error) { throw new IllegalStateException("Stored authorization is invalid", error); }
     }
@@ -114,7 +120,7 @@ public class AuthorizationRenewalService {
             .put("autoDeductInventory", publication.autoDeduct()).put("planSha256", current.planSha256())
             .put("inventorySha256", current.inventorySha256()).put("startOrderScanSeq", current.startOrderScanSeq())
             .put("allocationVersion", current.allocationVersion()).put("userAuthVersion", principal.userAuthVersion())
-            .put("deviceVersion", principal.deviceVersion()).put("scope", "pda:scan")
+            .put("deviceVersion", principal.deviceVersion())
             .put("authorizationSequence", Long.toString(sequence)).put("renewedFromAuthorizationId", previousId.toString())
             .put("iat", issued.getEpochSecond()).put("exp", expires.getEpochSecond());
     }

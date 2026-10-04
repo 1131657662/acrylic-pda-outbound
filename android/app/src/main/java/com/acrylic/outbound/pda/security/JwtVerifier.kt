@@ -30,7 +30,8 @@ object JwtVerifier {
         }
     }
 
-    fun authorization(assignment: JSONObject, session: JSONObject, key: JSONObject, now: Instant): JSONObject {
+    fun authorization(assignment: JSONObject, session: JSONObject, key: JSONObject, now: Instant,
+        acceptedScopes: Set<String> = setOf("pda:scan")): JSONObject {
         val claims = verify(assignment.getString("offlineToken"), key, "acrylic-pda-offline")
         val fields = mapOf("assignmentId" to "id", "jti" to "offlineAuthorizationId", "sub" to "operatorId",
             "assignmentEpoch" to "epoch", "deviceId" to "deviceId", "orderId" to "orderId", "revision" to "revision",
@@ -40,7 +41,7 @@ object JwtVerifier {
         fields.forEach { (claim, field) -> check(claims.get(claim).toString() == assignment.get(field).toString()) { "授权上下文不匹配：$claim" } }
         check(claims.getString("sub") == session.getString("userId") && claims.getString("deviceId") == session.getString("deviceId") &&
             claims.getString("warehouseId") == session.getString("warehouseId")) { "授权不属于当前人员或设备" }
-        check(claims.getString("scope") == "pda:scan" && assignment.getString("status") == "ACTIVE") { "授权已停止" }
+        check(claims.getString("scope") in acceptedScopes && assignment.getString("status") == "ACTIVE") { "授权用途不匹配或已停止" }
         check(claims.getString("serverRecoveryEpoch") == session.getString("serverRecoveryEpoch")) { "恢复代次变化，请保留资料并对账" }
         check(claims.getString("userAuthVersion") == session.getString("userAuthVersion") && claims.getString("deviceVersion") == session.getString("deviceVersion")) { "人员或设备授权版本变化，须重新授权" }
         val issued = claims.getLong("iat"); val expires = claims.getLong("exp")

@@ -12,7 +12,8 @@ data class VerifiedPackage(val assignment: JSONObject, val receipt: JSONObject, 
 
 class LocalActivation(private val db: PdaDatabase) {
     fun activate(input: VerifiedPackage): PreparedOrder {
-        val claims = JwtVerifier.authorization(input.assignment, input.session, input.key, input.now)
+        val claims = JwtVerifier.authorization(input.assignment, input.session, input.key, input.now,
+            setOf("pda:scan", "pda:handover-import"))
         val manifest = PackageVerifier.manifest(input.receipt, input.assignment, input.key, input.now)
         val parts = manifest.getJSONArray("parts")
         for (index in 0 until parts.length()) {
