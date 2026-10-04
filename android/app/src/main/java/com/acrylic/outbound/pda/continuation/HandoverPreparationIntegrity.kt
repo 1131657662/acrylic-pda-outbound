@@ -20,6 +20,9 @@ internal class HandoverPreparationIntegrity(private val db: PdaDatabase) {
             prepared.signingKeyJson == input.key.toString()) { "本机目标资料与已验证下载不一致" }
         val bales = InventoryDecoder.decode(id, JSONArray(input.payloads.getValue("inventory").toString(Charsets.UTF_8)),
             JSONArray(input.payloads.getValue("availability").toString(Charsets.UTF_8)))
+        check(prepared.rowCount == bales.size && db.preparations().count(id) == bales.size) {
+            "本机固定库存行数与签名资料不一致"
+        }
         check(bales.all { db.preparations().bale(id, it.barcode) == it }) { "本机固定库存资料损坏，请保留资料" }
     }
 }
