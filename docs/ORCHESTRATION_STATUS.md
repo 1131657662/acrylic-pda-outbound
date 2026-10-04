@@ -6,32 +6,31 @@
 ```yaml
 date: 2026-10-05
 branch: codex/development
-head: ddfa28a
-dirty_entries: 17
+head: bc5f8b4
+dirty_entries: 16
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 29 }
 server: { contract: 0.38.0, paths: 132, flyway: V58, migrations: 58 }
 ```
 <!-- FACTS_END -->
 
-交接接收人资料准备权限 943d639、Android 导入后下载确认与原正文重试 ddfa28a 已验证推送。状态、SHA、自主决策及证据见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-05.md)；旧断点见[归档](history/ORCHESTRATION_STATE_before_download_ack_2026-10-04.md)。
+同实例服务端到 Android 冻结交接组合 bc5f8b4 已验证推送。子项、SHA、自主决策、证据和未验见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-05.md)；旧结论见[归档](history/ORCHESTRATION_STATE_before_combined_http_2026-10-05.md)。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development，源码 HEAD ddfa28a1021b5d4a5bbcf0a822a7039b638b9836；文档自身 SHA 以 Git 回执为准。单助手，无已知在途写者、Gradle 或重型任务。D 盘约 32.62 GiB 可用。
-- 19330/19434/19435/19436 无监听，隔离 965/966 已保留 dump 后正常停机；既存 MySQL 未操作。
-- 完整既存脏路径/差异/哈希见 .local/autonomous-20261004/handover-download-resume/；收尾快照见 handover-download-ack-checkpoint/。受保护文档、ContinuationApiIT/ContinuationFixture 和既存未跟踪资料未提交。
+- 树 D:/acrylic-pda-outbound，分支 codex/development，源码 HEAD bc5f8b47eccd745ec44dac9dcf841e454236ae93；文档自身 SHA 以 Git 回执为准。单助手，无已知在途写者、Gradle 或重型任务。D 盘约 31.99 GiB 可用。
+- 19330/19434/19435/19436 无监听，967～969 已保留 dump 并正常停机，既存 MySQL 未操作。
+- 全部脏路径/差异/哈希见 .local/autonomous-20261005/handover-combined-review-2/；收尾快照 handover-combined-checkpoint/。受保护文档、ContinuationApiIT/ContinuationFixture 及既存未跟踪资料未提交。
 
 ## 当次证据
-- 服务端全量 3079/0/0/1，170 个 XML；Android 交接定向 86/0/0/0，补断线后完整回归 554/0/0/5，132 个 XML；编译通过。
-- 确认失败保留冻结导入，数据库重开后原正文相同；socket 断开、回执不符、身份/权限/恢复屏障变化、落库失败和原事实变化均有验证。成功不解冻。
-- 已核对 965 回环 HTTP 下载/验签/确认重放、966 服务层权限检查，各 1/0/0/0；保留历史失败 963/964。
-- 证据 .local/autonomous-20261004/handover-download-ack-focused/、handover-download-ack-full/、handover-download-ack-delivery/；后者含源码哈希、暂存差异与提交推送回执。
-- 作者自审；Android 使用 MockWebServer/Room/Robolectric 和生成签名，尚未证明真实服务端与 Android 同一组合。未跑 APK、模拟器、真机、独立消费者或原身份现场。
+- 968 服务端与 Android 各 1/0/0/0：真实回环 HTTP、生产验签和原子导入、确认丢失后重开 Room 原正文重放，两侧确认时间相同，成功仍 HANDOVER_FROZEN。
+- 969 原审批链/移除证据/重启重放 1/0/0/0；Android 交接 89/0/0/1（15 XML），唯一跳过的组合用例已于 968 单独通过。服务端与 Android 编译通过。
+- 967 因 fixture 缺少 dispositions 失败，1/1/0/0；原证据保留。只在上传签名前补 Android fixture 格式；原路径经 969 回归。
+- 证据 .local/e2a-cross-20260925-967/～969/、.local/autonomous-20261005/handover-combined-regression/、handover-combined-delivery/；含源码前后哈希、暂存差异、提交/远端回执。
+- 作者自审，生成身份、同一测试设备身份、JVM/Room 及测试会话边界；网络异常为导入前/确认后注入。未验 APK、模拟器、真机、两个物理设备、独立消费者或原身份/Keystore 现场。
 
 ## 下一步、未验与边界
-- 优先补真实服务端到 Android 暂存、原子导入和下载确认组合验证，前置自包含，上设备前离线自检。
-- 继续原提交指针、占用归属、跨设备续作凭据和最终提交；目标仍 HANDOVER_FROZEN，两设备闭环未完成。
-- PDA 页面/重试交互、旧凭据/旧客户端、服务端最终提交用途守卫未验。TEMP、mapping3+、R1 生产放行、历史更正、现场/断电/长时、R05 原资料/旧 BCD/526、R09 恢复限制继续单列。
+- 核查服务端最终提交用途守卫，再推进原提交指针、占用归属、跨设备续作凭据及最终提交。目标仍冻结，两设备闭环未完成。
+- PDA 页面/重试交互、旧凭据/旧客户端、TEMP、mapping3+、R1 生产放行、历史更正、现场/断电/长时、R05 原资料/旧 BCD/526、R09 恢复限制继续单列。
 - 生产 gate 默认值未变；不合 main、不打标签/Release、不部署、不接原库/现网，未删除 .local 证据。长期目标 active。
 <!-- CURRENT_STATE_END -->
 
