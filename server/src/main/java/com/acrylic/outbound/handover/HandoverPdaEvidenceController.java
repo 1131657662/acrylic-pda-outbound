@@ -1,6 +1,10 @@
 package com.acrylic.outbound.handover;
 
 import com.acrylic.outbound.submissions.SubmissionJson;
+import com.acrylic.outbound.common.ApiEnvelope;
+import com.acrylic.outbound.common.ApiResponses;
+import com.acrylic.outbound.pda.AssignmentStore;
+import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,10 +23,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class HandoverPdaEvidenceController {
     private final HandoverPdaEvidenceService evidence;
     private final HandoverPdaPackageService packages;
+    private final HandoverPdaAssignmentService assignments;
+    private final ApiResponses responses;
 
-    HandoverPdaEvidenceController(HandoverPdaEvidenceService evidence, HandoverPdaPackageService packages) {
+    HandoverPdaEvidenceController(HandoverPdaEvidenceService evidence, HandoverPdaPackageService packages,
+            HandoverPdaAssignmentService assignments, ApiResponses responses) {
         this.evidence = evidence;
         this.packages = packages;
+        this.assignments = assignments;
+        this.responses = responses;
     }
 
     @GetMapping("/{caseId}/manifest")
@@ -33,6 +42,14 @@ public class HandoverPdaEvidenceController {
     @GetMapping("/{caseId}/recovery-package")
     public ResponseEntity<byte[]> recoveryPackage(@PathVariable UUID caseId) {
         return response(packages.download(caseId));
+    }
+
+    @GetMapping("/{caseId}/assignment")
+    public ResponseEntity<ApiEnvelope<AssignmentStore.View>> assignment(@PathVariable UUID caseId,
+            HttpServletRequest request) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+            .header("X-Content-Type-Options", "nosniff")
+            .body(responses.ok(assignments.assignment(caseId), request));
     }
 
     private ResponseEntity<byte[]> response(byte[] bytes) {

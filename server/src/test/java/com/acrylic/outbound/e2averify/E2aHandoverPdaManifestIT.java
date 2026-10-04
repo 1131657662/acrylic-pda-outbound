@@ -1,6 +1,7 @@
 package com.acrylic.outbound.e2averify;
 
 import com.acrylic.outbound.inventory.HandoverApprovalWorkflowChecks;
+import com.acrylic.outbound.inventory.HandoverPdaAssignmentChecks;
 import com.acrylic.outbound.inventory.HandoverPdaManifestChecks;
 import com.acrylic.outbound.inventory.HandoverPdaPackageChecks;
 import java.nio.file.Files;
@@ -24,8 +25,9 @@ class E2aHandoverPdaManifestIT {
             workflow.verify();
             new HandoverPdaManifestChecks(workflow, profile.attempt).verify();
             new HandoverPdaPackageChecks(workflow, profile.attempt).verify();
+            new HandoverPdaAssignmentChecks(workflow, profile.attempt).verify();
         }
         Files.writeString(profile.attempt.resolve("test-completed.marker"),
-            "Real HTTP PDA manifest and original package after authentic stop and supervisor workflow; generated test identities only.");
+            "Real HTTP PDA manifest, original package and target assignment after stop and approval; generated test identities only.");
     }
 }
