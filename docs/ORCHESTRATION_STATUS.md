@@ -6,28 +6,29 @@
 ```yaml
 date: 2026-10-04
 branch: codex/development
-head: 0ab09ac
-dirty_entries: 14
+head: 8188266
+dirty_entries: 16
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 29 }
 server: { contract: 0.38.0, paths: 132, flyway: V58, migrations: 58 }
 ```
 <!-- FACTS_END -->
 
-R07 接收机暂存已验证原恢复包已提交并推送：`de419af`。范围、证据和自主决策见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-04.md)；前一断点见[归档](history/ORCHESTRATION_STATE_before_pda_package_2026-10-04.md)。
+R07 接收机读取新目标授权已提交并推送：`8188266`。范围、证据和自主决策见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-04.md)；前一断点见[归档](history/ORCHESTRATION_STATE_before_target_assignment_2026-10-04.md)。
 
 ## Git、写权与环境
 - 树 D:/acrylic-pda-outbound，分支 codex/development，单助手写权；既存受保护路径继续保留在工作树，未纳入本次提交。
-- 重型任务结束，953～959 隔离实例停机；19330/19434/19435/19436 无监听，系统 MySQL 未操作。D 盘约 34.25 GiB 可用。
-- 本次提交接收机 Room 暂存、原件下载大小边界、签名回执验证和迁移/持久化测试；续作票据与服务器状态变更仍未实现。
+- 重型任务结束，953～961 隔离实例停机；19330/19434/19435/19436 无监听，系统 MySQL 未操作。D 盘约 33.77 GiB 可用。
+- 本次提交签名交接链验证后的目标授权只读接口；接收机导入与服务器提交状态变更仍未实现。
 
 ## 当次证据
-- Android 完整 `testDebugUnitTest` 480/0/0/5；交接新增 14 项 0/0/0，报告和日志保存在 `.local/autonomous-20261004/`。
+- 服务端完整单测 3079/0/0/1；隔离 MySQL 真实 HTTP 961 为 1/0/0/0，报告和响应保存在 `.local/e2a-cross-20260925-961/`。
+- Android 完整 `testDebugUnitTest` 480/0/0/5 为前一提交历史结果；交接暂存新增 14 项 0/0/0，报告和日志保存在 `.local/autonomous-20261004/`。
 - 957 成功消费 fixture 生成 1/0/0/0；959 归档 fixture 生成 1/0/0/0；958 归档恢复辅助检查 1/1/0/0，失败证据保留且未计入通过。
 - 作者自审、隔离组合验证和生成测试身份证据已记录；没有独立消费者、真机、现场原身份或实物验收。
 
 ## 下一步、未验与边界
-- 下一子项：续作票据验签与重放保护，随后推进原提交指针、占用归属和新设备最终提交；只读下载与本地暂存不是两设备闭环。
+- 下一子项：接收机以新目标授权导入原恢复事实；随后推进原提交指针、占用归属和新设备最终提交。只读授权、下载与本地暂存不是两设备闭环。
 - TEMP 停工与接收、PDA 页面、mapping3+ 重链、R1 白名单、历史更正及现场/断电/长时、R05 原资料/旧 BCD/526 和 R09 恢复限制继续单列。
 - 生产 gate 默认 false；不合 main、不打标签/Release、不部署、不接原库/现网；未删除 `.local` 证据。长期目标继续推进。
 <!-- CURRENT_STATE_END -->
