@@ -37,6 +37,7 @@ class HandoverImportRepository(private val db: PdaDatabase, private val session:
             epoch = expected.getString("serverRecoveryEpoch"), expected = expected)
         SessionIdentity.requireSame(expected, session.saved())
         val verified = HandoverTargetAssignmentVerifier.verify(saved, result, expected, session.now())
+        HandoverRecoveryFacts.verify(saved)
         SessionIdentity.requireSame(expected, session.saved())
         return verified
     }
