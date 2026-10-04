@@ -6,29 +6,30 @@
 ```yaml
 date: 2026-10-04
 branch: codex/development
-head: 366c388
-dirty_entries: 16
+head: 9cc19bc
+dirty_entries: 17
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 29 }
 server: { contract: 0.38.0, paths: 132, flyway: V58, migrations: 58 }
 ```
 <!-- FACTS_END -->
 
-R07 接收端原输入与审计关联核对已提交并推送：`366c388`。范围、证据和自主决策见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-04.md)；前一断点见[归档](history/ORCHESTRATION_STATE_before_handover_audit_2026-10-04.md)。
+R07 接收机原事实原子导入已提交并推送：`9cc19bc`。范围、证据和自主决策见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-04.md)；替换前结论见[归档](history/ORCHESTRATION_STATE_before_handover_import_2026-10-04.md)。
 
 ## Git、写权与环境
 - 树 D:/acrylic-pda-outbound，分支 codex/development，单助手写权；HEAD 以生成事实块及 Git 为准。重型任务结束，953～961 隔离实例停机；19330/19434/19435/19436 无监听，系统 MySQL 未操作。D 盘约 33.76 GiB 可用。
 - 受保护的既存改动未纳入本次源码提交：`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、`docs/history/R06_A1_1_CODEX_2026-09-30.md`、`server/src/test/java/com/acrylic/outbound/inventory/ContinuationApiIT.java`、`ContinuationFixture.java`。
 - 受保护的既存未跟踪路径：`docs/PDA_UI_UX_REVIEW_2026-09-29.md`、`docs/history/AUTONOMOUS_PLAN_2026-09-30_CONTINUATION.md`、`AUTONOMOUS_PLAN_2026-09-30_R06_R07.md`、`AUTONOMOUS_PROGRESS_2026-10-02_before_disposition-digests-checkpoint.md`、`ORCHESTRATION_STATE_before_disposition-digests-checkpoint_2026-10-02.md`、`R06_M2B3_BRIDGE_AUDIT_2026-09-30.md`、`server/physical-disposition-last-request.json`、`tools/cleanup-rebuildable.ps1`、`tools/r07_p08_run_803.ps1`。
-- 本次文档写入仅涉及本看板、自主进度和旧断点归档；其余未提交路径继续保护。没有已知在途写者或重型任务。
+- 本次源码提交包含 14 个 Android 文件；文档写入仅为本看板、自主进度及两份旧断点/报告归档。其余未提交路径继续保护。没有已知在途写者或重型任务。
 
 ## 当次证据
-- Android 完整 `testDebugUnitTest` 508/0/0/5，XML 归档 `.local/autonomous-20261004/handover-audit-final-android-tests.zip`；原机 `RecoveryFreeze` 正文兼容测试通过。`git diff --cached --check` 与 `version_facts.ps1 -Check` 通过。
-- 服务端完整单测 3079/0/0/1、隔离 MySQL 真实 HTTP 961 为前一服务端提交的历史证据，未冒充本次 Android 联调；958 归档恢复辅助检查 1/1/0/0，失败证据保留且未计入通过。
-- 本次未运行 APK、模拟器、真机或真实 HTTP；没有独立消费者、现场原身份或实物验收。
+- Android 完整 `testDebugUnitTest` 525/0/0/5，126 个 XML 归档 `.local/autonomous-20261004/handover-import-full-20261004.zip`；编译成功。事务回滚、重启重试、无损导入、冻结、防覆盖和篡改拒绝通过。
+- 首次全量 525/1/0/5：旧 producer 夹具缺少原 assignment；补齐后聚焦与全量复验通过。失败栈从工具输出保存在 `handover-import-regression-failure-observed.txt`，原失败 XML 已被 Gradle 重跑覆盖，不能宣称保留原报告。
+- `git diff --cached --check`、`version_facts.ps1 -Check` 通过。服务端全量 3079/0/0/1、隔离 HTTP 961 均为历史证据；958 失败继续保留。
+- 本次为作者自审及 Room/Robolectric 测试，未运行 APK、模拟器、真机或真实 HTTP；没有独立消费者、现场原身份或实物验收。
 
 ## 下一步、未验与边界
-- 下一子项：接收机以新目标授权原子导入原恢复事实，保留原设备来源与高水位；随后推进原提交指针、占用归属和新设备最终提交。结构及审计核对、下载与本地暂存不是两设备闭环。
+- 下一子项：核对并衔接原提交指针、占用归属、接收机续作票据和新设备最终提交。目标保持 `HANDOVER_FROZEN`，导入不是两设备闭环。
 - TEMP 停工与接收、PDA 页面、mapping3+ 重链、R1 白名单、历史更正及现场/断电/长时、R05 原资料/旧 BCD/526 和 R09 恢复限制继续单列。
 - 生产 gate 默认 false；不合 main、不打标签/Release、不部署、不接原库/现网；未删除 `.local` 证据。长期目标继续推进。
 <!-- CURRENT_STATE_END -->
