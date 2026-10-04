@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-04
 branch: codex/development
-head: 10bc6df
+head: 366c388
 dirty_entries: 16
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 29 }
@@ -14,20 +14,21 @@ server: { contract: 0.38.0, paths: 132, flyway: V58, migrations: 58 }
 ```
 <!-- FACTS_END -->
 
-R07 接收机原恢复包结构核对已提交并推送：`10bc6df`。范围、证据和自主决策见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-04.md)；前一断点见[归档](history/ORCHESTRATION_STATE_before_handover_recovery_facts_2026-10-04.md)。
+R07 接收端原输入与审计关联核对已提交并推送：`366c388`。范围、证据和自主决策见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-04.md)；前一断点见[归档](history/ORCHESTRATION_STATE_before_handover_audit_2026-10-04.md)。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development，单助手写权；既存受保护路径继续保留在工作树，未纳入本次提交。
-- 重型任务结束，953～961 隔离实例停机；19330/19434/19435/19436 无监听，系统 MySQL 未操作。D 盘约 33.76 GiB 可用。
-- 本次提交只核对目标授权读取前的原包结构；原事实目标 Room 导入、原提交指针和占用归属变更仍未实现。
+- 树 D:/acrylic-pda-outbound，分支 codex/development，单助手写权；HEAD 以生成事实块及 Git 为准。重型任务结束，953～961 隔离实例停机；19330/19434/19435/19436 无监听，系统 MySQL 未操作。D 盘约 33.76 GiB 可用。
+- 受保护的既存改动未纳入本次源码提交：`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、`docs/history/R06_A1_1_CODEX_2026-09-30.md`、`server/src/test/java/com/acrylic/outbound/inventory/ContinuationApiIT.java`、`ContinuationFixture.java`。
+- 受保护的既存未跟踪路径：`docs/PDA_UI_UX_REVIEW_2026-09-29.md`、`docs/history/AUTONOMOUS_PLAN_2026-09-30_CONTINUATION.md`、`AUTONOMOUS_PLAN_2026-09-30_R06_R07.md`、`AUTONOMOUS_PROGRESS_2026-10-02_before_disposition-digests-checkpoint.md`、`ORCHESTRATION_STATE_before_disposition-digests-checkpoint_2026-10-02.md`、`R06_M2B3_BRIDGE_AUDIT_2026-09-30.md`、`server/physical-disposition-last-request.json`、`tools/cleanup-rebuildable.ps1`、`tools/r07_p08_run_803.ps1`。
+- 本次文档写入仅涉及本看板、自主进度和旧断点归档；其余未提交路径继续保护。没有已知在途写者或重型任务。
 
 ## 当次证据
-- Android 完整 `testDebugUnitTest` 498/0/0/5；新增原包核对用例 9/0/0/0。XML 报告存于 `.local/autonomous-20261004/handover-recovery-android-tests.zip`。
-- 服务端完整单测 3079/0/0/1、隔离 MySQL 真实 HTTP 961 为前一服务端提交的历史证据，未冒充本次 Android 联调。
-- 958 归档恢复辅助检查 1/1/0/0，失败证据保留且未计入通过；没有独立消费者、真机、现场原身份或实物验收。
+- Android 完整 `testDebugUnitTest` 508/0/0/5，XML 归档 `.local/autonomous-20261004/handover-audit-final-android-tests.zip`；原机 `RecoveryFreeze` 正文兼容测试通过。`git diff --cached --check` 与 `version_facts.ps1 -Check` 通过。
+- 服务端完整单测 3079/0/0/1、隔离 MySQL 真实 HTTP 961 为前一服务端提交的历史证据，未冒充本次 Android 联调；958 归档恢复辅助检查 1/1/0/0，失败证据保留且未计入通过。
+- 本次未运行 APK、模拟器、真机或真实 HTTP；没有独立消费者、现场原身份或实物验收。
 
 ## 下一步、未验与边界
-- 下一子项：接收机以新目标授权原子导入原恢复事实，保留原设备来源与高水位；随后推进原提交指针、占用归属和新设备最终提交。结构核对、下载与本地暂存不是两设备闭环。
+- 下一子项：接收机以新目标授权原子导入原恢复事实，保留原设备来源与高水位；随后推进原提交指针、占用归属和新设备最终提交。结构及审计核对、下载与本地暂存不是两设备闭环。
 - TEMP 停工与接收、PDA 页面、mapping3+ 重链、R1 白名单、历史更正及现场/断电/长时、R05 原资料/旧 BCD/526 和 R09 恢复限制继续单列。
 - 生产 gate 默认 false；不合 main、不打标签/Release、不部署、不接原库/现网；未删除 `.local` 证据。长期目标继续推进。
 <!-- CURRENT_STATE_END -->
