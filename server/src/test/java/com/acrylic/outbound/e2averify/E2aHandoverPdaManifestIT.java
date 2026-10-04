@@ -2,6 +2,7 @@ package com.acrylic.outbound.e2averify;
 
 import com.acrylic.outbound.inventory.HandoverApprovalWorkflowChecks;
 import com.acrylic.outbound.inventory.HandoverPdaAssignmentChecks;
+import com.acrylic.outbound.inventory.HandoverPdaDownloadChecks;
 import com.acrylic.outbound.inventory.HandoverPdaManifestChecks;
 import com.acrylic.outbound.inventory.HandoverPdaPackageChecks;
 import com.acrylic.outbound.inventory.HandoverPdaRenewalChecks;
@@ -28,6 +29,7 @@ class E2aHandoverPdaManifestIT {
             new HandoverPdaPackageChecks(workflow, profile.attempt).verify();
             new HandoverPdaAssignmentChecks(workflow, profile.attempt).verify();
             new HandoverPdaRenewalChecks(workflow, (WebApplicationContext) app, profile.attempt).verify();
+            new HandoverPdaDownloadChecks(workflow, profile.attempt).verify();
         }
         Files.writeString(profile.attempt.resolve("test-completed.marker"),
             "Real HTTP PDA manifest/package/assignment and scope-preserving renewal; generated test identities only.");

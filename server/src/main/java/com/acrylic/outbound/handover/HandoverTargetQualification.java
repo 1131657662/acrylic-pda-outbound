@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 /** Reads target eligibility after the handover write path has locked identity, warehouse and device. */
 @Component
 final class HandoverTargetQualification {
-    private static final List<String> PDA_PERMISSIONS = List.of("pda:login", "pda:scan", "pda:submit");
+    private static final List<String> PDA_PERMISSIONS = List.of("pda:login", "pda:assign", "pda:scan", "pda:submit");
     private final IdentityStore identities;
     private final JdbcTemplate jdbc;
 
