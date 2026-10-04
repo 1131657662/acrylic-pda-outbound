@@ -6,34 +6,32 @@
 ```yaml
 date: 2026-10-04
 branch: codex/development
-head: e2d6fbc
-dirty_entries: 16
+head: 943d639
+dirty_entries: 17
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 29 }
 server: { contract: 0.38.0, paths: 132, flyway: V58, migrations: 58 }
 ```
 <!-- FACTS_END -->
 
-R07 交接导入授权隔离 `e2d6fbc` 已提交推送。此前原事实导入 `9cc19bc`、库存额外行拒绝 `3ed6724` 仍有效。范围、证据、自主决策及接续见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-04.md)；前断点见[归档](history/ORCHESTRATION_STATE_before_handover_scope_2026-10-04.md)。
+R07 接收人资料准备权限修复 943d639 已提交推送，专用网络原子导入 873d92c 已核对。详细状态、SHA、自主决策和证据见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-04.md)；前断点见[归档](history/ORCHESTRATION_STATE_before_download_resume_2026-10-04.md)。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development，单助手写权；源码 HEAD e2d6fbc，文档 SHA 以 Git 回执为准。Gradle 已结束，没有已知在途写者或重型任务。隔离 962 保存快照后正常停机，19330/19434/19435/19436 无监听；既存系统/本机 MySQL 未操作。D 盘约 33.49 GiB 可用。
-- 受保护既存改动：`docs/PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md`、`docs/history/R06_A1_1_CODEX_2026-09-30.md`、`server/src/test/java/com/acrylic/outbound/inventory/ContinuationApiIT.java`、`ContinuationFixture.java`。
-- 受保护既存未跟踪路径：`docs/PDA_UI_UX_REVIEW_2026-09-29.md`、`docs/history/AUTONOMOUS_PLAN_2026-09-30_CONTINUATION.md`、`AUTONOMOUS_PLAN_2026-09-30_R06_R07.md`、`AUTONOMOUS_PROGRESS_2026-10-02_before_disposition-digests-checkpoint.md`、`ORCHESTRATION_STATE_before_disposition-digests-checkpoint_2026-10-02.md`、`R06_M2B3_BRIDGE_AUDIT_2026-09-30.md`、`server/physical-disposition-last-request.json`、`tools/cleanup-rebuildable.ps1`、`tools/r07_p08_run_803.ps1`。
-- 本批提交 10 个 Android/服务端源码及测试文件，清单/哈希/暂存差异见 `.local/autonomous-20261004/handover-scope-delivery/`。断点文档仅本看板、自主进度及两份旧结论归档；受保护路径未纳入提交。
+- 树 D:/acrylic-pda-outbound，分支 codex/development，源码 HEAD 943d6399b6a193e7af799d6043442af4c059d8fd；文档 SHA 以 Git 回执为准。单助手写权，无已知在途写者或重型任务。D 盘约 32.62 GiB 可用。
+- 19330/19434/19435/19436 无监听；隔离 965/966 已保存 dump 并正常停机。既存 3306/13316 MySQL 未操作。
+- 本轮启动完整未提交/未跟踪清单、差异和哈希：.local/autonomous-20261004/handover-download-resume/。原受保护文档、ContinuationApiIT/ContinuationFixture 及未跟踪资料未纳入源码提交；4 个交接资料源码/测试文件已单独收口。
 
 ## 当次证据
-- 普通开单绕过交接导入已实测：未暂存、暂存未导入、零输入交接，红测 4/3/0/0；交接聚焦 65/0/0/0、Android 全量 531/0/0/5，收紧拒绝断言后 4/0/0/0。各轮 XML/日志/汇总分别保存于 `.local/autonomous-20261004/handover-scope-*/`。
-- 服务端全量 3079/0/0/1；隔离 HTTP 962 为 1/0/0/0，实际交接激活/续期均为导入用途，普通扫码续期保持扫码用途；RSA 验签、同键响应数据重放和原授权保留通过。`.local/e2a-cross-20260925-962/` 保留日志、请求/响应、XML、dump 与停机标记。
-- 暂存差异及版本事实检查通过。此前库存完整性、导入及失败 958 等证据保留，完整索引见前报告。
-- 当次为作者自审及 Room/Robolectric/生成身份的真实 HTTP。前置身份/订单含 fixture/MockMvc；未运行 APK、模拟器、真机、独立消费者或现场原身份验证。
+- 本轮服务端全量 3079/0/0/1，主代码与测试源码编译成功，170 个 XML：.local/autonomous-20261004/handover-download-resume-server-full/。
+- 已有 965 真实 HTTP 下载、验签、摘要/长度、身份/恢复代次与确认重放，966 服务层目标权限检查，各 1/0/0/0；XML、完成/停机标记和源码时间已核对。四文件提交前哈希与启动快照一致。
+- 历史 Android 网络导入完整回归 543/0/0/5；此前失败 963/964 及所有证据保留。源码提交回执见 .local/autonomous-20261004/handover-download-resume-delivery/。
+- 作者自审、生成身份/fixture、Room/Robolectric 和回环 HTTP；未验同一真实服务端到 Android 组合、APK、模拟器、真机、独立消费者、现场原身份。
 
 ## 下一步、未验与边界
-- 下一项补专用交接资料下载到 `importFrozen` 的网络通路，核验签名/身份连续性及失败原子性。普通 `PreparationRepository.prepare` 仍只接受扫码用途，不能用其冒充完整接收机链。
-- 随后补原提交指针、占用归属、跨设备续作凭据和最终提交。交接与普通续作在指针清空、占用转移及原身份校验上存在差异；导入目标仍为 `HANDOVER_FROZEN`，未构成两设备闭环。
-- 已签发的旧扫码用途交接凭据未自动转换，旧客户端不支持新用途；历史兼容及服务端最终提交用途守卫未验证。
-- TEMP、PDA 页面、mapping3+、R1、历史更正及现场/断电/长时、R05 原资料/旧 BCD/526、R09 恢复限制继续单列。
-- 生产 gate 默认 false；不合 main、不打标签/Release、不部署、不接原库/现网；未删除 `.local` 证据。长期目标保持 active。
+- 接入 Android 下载确认：先原子导入，再从持久化资料恢复原确认正文；失败保留，支持重启重试；成功仍冻结。
+- 原提交指针、占用归属、跨设备续作凭据和最终提交未闭环；不能将普通续作直接用于交接解冻。
+- 旧凭据/旧客户端兼容、服务端最终提交用途守卫未验。TEMP/PDA 页面、mapping3+、R1 生产放行、历史更正及现场/断电/长时、R05 原资料/旧 BCD/526、R09 恢复限制继续单列。
+- 生产 gate 默认 false；不合 main、不打标签/Release、不部署、不接原库/现网，未删除 .local 证据。长期目标 active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实见生成块；文档提交自身 SHA 以 Git 回执核对。
