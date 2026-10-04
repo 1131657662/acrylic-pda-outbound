@@ -6,30 +6,30 @@
 ```yaml
 date: 2026-10-04
 branch: codex/development
-head: e04a31c
-dirty_entries: 14
+head: de419af
+dirty_entries: 15
 worktrees: 33
-android: { name: 0.16.0-r06-release, code: 21, room: 28 }
+android: { name: 0.16.0-r06-release, code: 21, room: 29 }
 server: { contract: 0.38.0, paths: 132, flyway: V58, migrations: 58 }
 ```
 <!-- FACTS_END -->
 
-R07 指定接收 PDA 原恢复包正文下载已验证、提交并推送：`e04a31c`。范围、隔离探针与限制见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-04.md)；前一断点见[归档](history/ORCHESTRATION_STATE_before_pda_package_2026-10-04.md)。
+R07 接收机暂存已验证原恢复包已提交并推送：`de419af`。范围、证据和自主决策见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-04.md)；前一断点见[归档](history/ORCHESTRATION_STATE_before_pda_package_2026-10-04.md)。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development，单助手写权；源码远端 SHA 已核对。11 项既存受保护路径哈希不变，清单在 .local/autonomous-20261003/r07-approval-workflow-delivery/protected-hashes.json。
-- 重型任务结束，953～956 隔离实例停机、库与日志保留；19330/19434/19435/19436 无监听，系统 MySQL 未操作。D 盘约 35.26 GiB。
-- 本次仅提交恢复包交付 6 个源码、测试与脚本路径；既存受保护改动不纳入。文档提交回执单独核对。
+- 树 D:/acrylic-pda-outbound，分支 codex/development，单助手写权；既存受保护路径继续保留在工作树，未纳入本次提交。
+- 重型任务结束，953～959 隔离实例停机；19330/19434/19435/19436 无监听，系统 MySQL 未操作。D 盘约 34.25 GiB 可用。
+- 本次提交接收机 Room 暂存、原件下载大小边界、签名回执验证和迁移/持久化测试；续作票据与服务器状态变更仍未实现。
 
 ## 当次证据
-- 956 隔离实库真实 HTTP 探针 1/0/0/0：指定接收身份、原字节与摘要、原票据、匿名/错目标/票据篡改及文件缺失/损坏拒绝，恢复后下载一致；开始/完成标记齐备并认证停机。
-- 改动后完整服务端离线 `test` 成功，唯一跳过为既有符号链接条件测试。作者自审与隔离组合验证；生成测试身份，不代表独立消费者、真机、现场原身份或实物验收。
-- 953 原始签名丢失 1/1/0/0、952 旧 M5 失败及 M7 未执行证据保留；本次通过不覆盖旧失败。
+- Android 完整 `testDebugUnitTest` 480/0/0/5；交接新增 14 项 0/0/0，报告和日志保存在 `.local/autonomous-20261004/`。
+- 957 成功消费 fixture 生成 1/0/0/0；959 归档 fixture 生成 1/0/0/0；958 归档恢复辅助检查 1/1/0/0，失败证据保留且未计入通过。
+- 作者自审、隔离组合验证和生成测试身份证据已记录；没有独立消费者、真机、现场原身份或实物验收。
 
 ## 下一步、未验与边界
-- 下一子项：接收机导入原恢复包正文与续作票据，随后推进原提交指针、占用归属和新机最终提交；只读下载不是两设备闭环。
+- 下一子项：续作票据验签与重放保护，随后推进原提交指针、占用归属和新设备最终提交；只读下载与本地暂存不是两设备闭环。
 - TEMP 停工与接收、PDA 页面、mapping3+ 重链、R1 白名单、历史更正及现场/断电/长时、R05 原资料/旧 BCD/526 和 R09 恢复限制继续单列。
-- 生产 gate 默认 false；不合 main、不打标签/Release、不部署、不接原库/现网；未删除 .local 证据。长期目标继续推进。
+- 生产 gate 默认 false；不合 main、不打标签/Release、不部署、不接原库/现网；未删除 `.local` 证据。长期目标继续推进。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实见生成块；文档提交自身 SHA 以 Git 回执核对。
