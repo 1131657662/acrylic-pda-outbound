@@ -33,7 +33,8 @@ class PdaNetwork(baseUrl: String,
         .build().create(PdaHttp::class.java)
 
     /** The caller verifies the signature before these untouched bytes become trusted evidence. */
-    fun original(path: String, body: ByteArray?, headers: Map<String, String>, raw: ByteArray? = null): ByteArray {
+    fun original(path: String, body: ByteArray?, headers: Map<String, String>, raw: ByteArray? = null,
+        maximumBytes: Int = 262144): ByteArray {
         require(!path.startsWith('/') && !path.contains(":") && !path.contains(".."))
         require(body == null || raw == null)
         val call = if (raw != null) http.post(path, headers, raw.toRequestBody("application/octet-stream".toMediaType()))
@@ -42,7 +43,7 @@ class PdaNetwork(baseUrl: String,
         val response = try { call.execute() } catch (error: IOException) { throw transportFailure(error) }
         val source = response.body() ?: response.errorBody()
             ?: throw ApiFailure("EMPTY_RESPONSE", "原回执为空，请保留原请求", httpStatus = response.code())
-        val bytes = try { source.use { readLimited(it.byteStream(), 262144) } }
+        val bytes = try { source.use { readLimited(it.byteStream(), maximumBytes) } }
             catch (error: IOException) { throw transportFailure(error) }
         if (!response.isSuccessful) {
             val error = runCatching { JSONObject(bytes.toString(Charsets.UTF_8)) }.getOrNull()

@@ -85,14 +85,15 @@ class PdaSession(private val context: Context, val settings: ConnectionSettings,
         extraHeaders: Map<String, String> = emptyMap(), expected: JSONObject? = null): JSONObject =
         requests.run(expected ?: requireSession()) { execute(path, body, epoch, raw, extraHeaders) }
 
-    data class Original(val path: String, val body: ByteArray?, val epoch: String, val raw: ByteArray? = null)
+    data class Original(val path: String, val body: ByteArray?, val epoch: String, val raw: ByteArray? = null,
+        val maximumBytes: Int = 262144)
     fun original(request: Original, expected: JSONObject): ByteArray = requests.run(expected) {
-        val result = try { network().original(request.path, request.body, headers(epoch = request.epoch), request.raw) }
+        val result = try { network().original(request.path, request.body, headers(epoch = request.epoch), request.raw, request.maximumBytes) }
         catch (error: ApiFailure) {
             if (error.code != "AUTH_EXPIRED") throw error
             refresh()
             SessionIdentity.requireSame(expected, saved())
-            network().original(request.path, request.body, headers(epoch = request.epoch), request.raw)
+            network().original(request.path, request.body, headers(epoch = request.epoch), request.raw, request.maximumBytes)
         }
         SessionIdentity.requireSame(expected, saved())
         result

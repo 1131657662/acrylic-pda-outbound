@@ -12,7 +12,8 @@ import java.util.Base64
 object JwtVerifier {
     fun sha(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
 
-    fun verify(token: String, key: JSONObject, audience: String, maximumLength: Int = 32768): JSONObject {
+    fun verify(token: String, key: JSONObject, audience: String, maximumLength: Int = 32768,
+        issuer: String = "acrylic-outbound"): JSONObject {
         val parts = token.split('.')
         check(parts.size == 3 && token.length <= maximumLength) { "授权签名格式错误" }
         val decoder = Base64.getUrlDecoder()
@@ -25,7 +26,7 @@ object JwtVerifier {
         verifier.initVerify(public); verifier.update("${parts[0]}.${parts[1]}".toByteArray(Charsets.US_ASCII))
         check(verifier.verify(decoder.decode(parts[2]))) { "授权签名校验失败" }
         return JSONObject(String(decoder.decode(parts[1]), Charsets.UTF_8)).also {
-            check(it.getString("iss") == "acrylic-outbound" && it.getString("aud") == audience) { "授权用途不匹配" }
+            check(it.getString("iss") == issuer && it.getString("aud") == audience) { "授权用途不匹配" }
         }
     }
 
