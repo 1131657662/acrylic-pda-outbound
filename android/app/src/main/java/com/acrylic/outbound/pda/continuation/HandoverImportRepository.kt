@@ -28,6 +28,18 @@ class HandoverImportRepository(private val db: PdaDatabase, private val session:
         }
         return saved
     }
+
+    fun assignment(caseId: String): JSONObject {
+        val id = UUID.fromString(caseId).toString()
+        val expected = JSONObject(session.requireSession().toString())
+        val saved = checkNotNull(db.handoverStages().get(id)) { "请先暂存交接资料" }
+        val result = session.call("pda/handovers/$id/assignment",
+            epoch = expected.getString("serverRecoveryEpoch"), expected = expected)
+        SessionIdentity.requireSame(expected, session.saved())
+        val verified = HandoverTargetAssignmentVerifier.verify(saved, result, expected, session.now())
+        SessionIdentity.requireSame(expected, session.saved())
+        return verified
+    }
 }
 
 internal fun saveVerifiedHandoverStage(db: PdaDatabase, row: LocalHandoverStage, expected: JSONObject) {
@@ -53,6 +65,6 @@ internal fun saveVerifiedHandoverStage(db: PdaDatabase, row: LocalHandoverStage,
     }
 }
 
-private fun sameHandoverEvidence(left: LocalHandoverStage, right: LocalHandoverStage): Boolean =
+internal fun sameHandoverEvidence(left: LocalHandoverStage, right: LocalHandoverStage): Boolean =
     left.copy(recoveryBytes = right.recoveryBytes) == right &&
         left.recoveryBytes.contentEquals(right.recoveryBytes)
