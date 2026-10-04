@@ -3,6 +3,8 @@ package com.acrylic.outbound.pda.continuation
 import com.acrylic.outbound.pda.data.PdaDatabase
 import com.acrylic.outbound.pda.network.PdaSession
 import com.acrylic.outbound.pda.network.SessionIdentity
+import com.acrylic.outbound.pda.preparation.VerifiedPackage
+import com.acrylic.outbound.pda.work.WorkOrder
 import org.json.JSONObject
 import java.util.UUID
 
@@ -22,7 +24,7 @@ class HandoverImportRepository(private val db: PdaDatabase, private val session:
         saveVerifiedHandoverStage(db, row, expected)
         SessionIdentity.requireSame(expected, session.saved())
         val saved = checkNotNull(db.handoverStages().get(id))
-        check(sameHandoverEvidence(saved, HandoverPackageVerifier.verify(
+        check(sameHandoverEvidence(saved.copy(state = "STAGED"), HandoverPackageVerifier.verify(
             JSONObject(saved.manifestJson), saved.recoveryBytes, expected))) {
             "已暂存交接资料损坏，请保留资料"
         }
@@ -42,6 +44,21 @@ class HandoverImportRepository(private val db: PdaDatabase, private val session:
         SessionIdentity.requireSame(expected, session.saved())
         return verified
     }
+
+    fun importFrozen(caseId: String, preparation: VerifiedPackage): WorkOrder {
+        val id = UUID.fromString(caseId).toString()
+        val expected = JSONObject(session.requireSession().toString())
+        SessionIdentity.requireSame(preparation.session, expected)
+        lateinit var imported: WorkOrder
+        db.runInTransaction {
+            val saved = checkNotNull(db.handoverStages().get(id)) { "请先暂存交接资料" }
+            SessionIdentity.requireSame(expected, session.saved())
+            val input = preparation.copy(session = expected, key = expected.getJSONObject("signingKey"), now = session.now())
+            imported = HandoverLocalImport(db).install(saved, input)
+            SessionIdentity.requireSame(expected, session.saved())
+        }
+        return imported
+    }
 }
 
 internal fun saveVerifiedHandoverStage(db: PdaDatabase, row: LocalHandoverStage, expected: JSONObject) {
@@ -50,15 +67,16 @@ internal fun saveVerifiedHandoverStage(db: PdaDatabase, row: LocalHandoverStage,
         if (prior == null) {
             db.handoverStages().insert(row)
         } else {
-            check(sameHandoverEvidence(prior, HandoverPackageVerifier.verify(
+            val evidence = prior.copy(state = "STAGED")
+            check(sameHandoverEvidence(evidence, HandoverPackageVerifier.verify(
                 JSONObject(prior.manifestJson), prior.recoveryBytes, expected))) {
                 "已暂存交接资料损坏，请保留资料"
             }
-            if (!sameHandoverEvidence(prior, row)) {
+            if (!sameHandoverEvidence(evidence, row)) {
                 val oldStatus = JSONObject(prior.manifestJson).getString("status")
                 val newStatus = JSONObject(row.manifestJson).getString("status")
-                check(oldStatus == "TARGET_PREPARED" && newStatus == "ACTIVATED" &&
-                    sameHandoverEvidence(prior.copy(manifestJson = row.manifestJson), row)) {
+                check(prior.state == "STAGED" && oldStatus == "TARGET_PREPARED" && newStatus == "ACTIVATED" &&
+                    sameHandoverEvidence(evidence.copy(manifestJson = row.manifestJson), row)) {
                     "原交接暂存与重试正文不同，请保留资料"
                 }
                 db.handoverStages().update(row)

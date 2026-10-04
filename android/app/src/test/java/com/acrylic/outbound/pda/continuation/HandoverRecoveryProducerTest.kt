@@ -32,7 +32,8 @@ class HandoverRecoveryProducerTest {
             val freeze = RecoveryFreeze(fixture.store) { fixture.now }
             val payload = checkNotNull(freeze.freeze(fixture.assignment,
                 freeze.fingerprint(freeze.unresolved(fixture.assignment))).payload)
-            val source = JSONObject().put("deviceId", fixture.session.getString("deviceId"))
+            val source = JSONObject().put("assignmentId", fixture.assignment)
+                .put("deviceId", fixture.session.getString("deviceId"))
                 .put("operatorId", fixture.session.getString("userId"))
             val manifest = JSONObject().put("stopReceipt", JSONObject().put("source", source))
             val body = JSONObject(payload)

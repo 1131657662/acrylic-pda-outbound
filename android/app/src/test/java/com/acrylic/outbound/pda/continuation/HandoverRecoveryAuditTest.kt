@@ -99,7 +99,7 @@ class HandoverRecoveryAuditTest {
         .put("captureId", id ?: JSONObject.NULL).put("localSeq", sequence.toString()).put("type", type)
 
     private fun stage(body: JSONObject): LocalHandoverStage {
-        val sourceReceipt = JSONObject().put("deviceId", device).put("operatorId", operator)
+        val sourceReceipt = JSONObject().put("assignmentId", source).put("deviceId", device).put("operatorId", operator)
         val manifest = JSONObject().put("stopReceipt", JSONObject().put("source", sourceReceipt))
         return LocalHandoverStage(UUID.randomUUID().toString(), source, order, UUID.randomUUID().toString(),
             UUID.randomUUID().toString(), warehouse, 2, "", manifest.toString(), "",

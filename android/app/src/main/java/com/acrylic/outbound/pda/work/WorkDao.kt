@@ -23,6 +23,7 @@ interface WorkDao {
     @Insert fun insertEvent(row: WorkEvent)
     @Query("UPDATE work_order SET state='FROZEN' WHERE assignmentId=:id AND state='SCANNING'") fun freeze(id: String): Int
     @Query("SELECT * FROM work_event WHERE assignmentId=:id ORDER BY localSeq") fun events(id: String): List<WorkEvent>
+    @Query("SELECT * FROM work_guard WHERE assignmentId=:id ORDER BY barcode") fun guards(id: String): List<WorkGuard>
     @Query("SELECT * FROM work_event WHERE originDeviceId=:device ORDER BY localSeq") fun deviceEvents(device: String): List<WorkEvent>
     @Query("SELECT COUNT(*) FROM work_capture WHERE state IN ('RECEIVED','WAITING_CONFIRM','CONFIRM_REQUESTED') OR (state IN ('INVALID','BUSINESS_REJECTED') AND failureAckAt IS NULL)")
     fun unresolvedCount(): Int

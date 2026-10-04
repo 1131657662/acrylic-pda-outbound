@@ -27,7 +27,8 @@ internal object HandoverRecoveryAudit {
             check(row.getString("originDeviceId") == source.getString("deviceId") &&
                 row.getString("operatorId") == source.getString("operatorId") &&
                 row.getString("warehouseId") == stage.warehouseId &&
-                row.getString("orderId") == stage.orderId) { "原输入来源与停止证明不一致" }
+                row.getString("orderId") == stage.orderId &&
+                row.getString("assignmentId") == source.getString("assignmentId")) { "原输入来源与停止证明不一致" }
             UUID.fromString(row.getString("assignmentId"))
         }
         return result
@@ -47,7 +48,8 @@ internal object HandoverRecoveryAudit {
             }
             previous = sequence
             check(row.getString("originDeviceId") == source.getString("deviceId") &&
-                row.getString("operatorId") == source.getString("operatorId")) { "原审计来源与停止证明不一致" }
+                row.getString("operatorId") == source.getString("operatorId") &&
+                row.getString("assignmentId") == source.getString("assignmentId")) { "原审计来源与停止证明不一致" }
             UUID.fromString(row.getString("assignmentId"))
             if (!row.isNull("captureId")) {
                 val id = UUID.fromString(row.getString("captureId")).toString()
