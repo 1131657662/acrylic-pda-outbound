@@ -6,6 +6,7 @@ import com.acrylic.outbound.pda.network.SessionIdentity
 import com.acrylic.outbound.pda.preparation.VerifiedPackage
 import com.acrylic.outbound.pda.work.WorkOrder
 import org.json.JSONObject
+import java.io.File
 import java.util.UUID
 
 class HandoverImportRepository(private val db: PdaDatabase, private val session: PdaSession) {
@@ -44,6 +45,9 @@ class HandoverImportRepository(private val db: PdaDatabase, private val session:
         SessionIdentity.requireSame(expected, session.saved())
         return verified
     }
+
+    fun downloadAndImport(caseId: String, cacheDirectory: File, progress: (String) -> Unit): WorkOrder =
+        HandoverPreparationDownload(db, HandoverDownloadSession(session)).import(caseId, cacheDirectory, progress)
 
     fun importFrozen(caseId: String, preparation: VerifiedPackage): WorkOrder {
         val id = UUID.fromString(caseId).toString()
