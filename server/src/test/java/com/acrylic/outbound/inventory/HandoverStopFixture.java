@@ -28,12 +28,24 @@ final class HandoverStopFixture {
     final Path directory;
     private final HttpClient client = HttpClient.newHttpClient();
     private final AtomicInteger requests = new AtomicInteger();
+    private record Source(HandoverStopFixture prior, boolean androidRecords) { }
 
-    HandoverStopFixture(WebApplicationContext app, Path directory) throws Exception { this(app, directory, null); }
+    HandoverStopFixture(WebApplicationContext app, Path directory) throws Exception {
+        this(app, directory, new Source(null, false));
+    }
 
     HandoverStopFixture(WebApplicationContext app, Path directory, HandoverStopFixture prior) throws Exception {
+        this(app, directory, new Source(prior, false));
+    }
+
+    static HandoverStopFixture forAndroid(WebApplicationContext app, Path directory) throws Exception {
+        return new HandoverStopFixture(app, directory, new Source(null, true));
+    }
+
+    private HandoverStopFixture(WebApplicationContext app, Path directory, Source input) throws Exception {
         this.directory = Files.createDirectory(directory); jdbc = app.getBean(JdbcTemplate.class);
-        r = source(app, prior); var web = r.f.web;
+        r = source(app, input.prior()); var web = r.f.web;
+        if (input.androidRecords()) androidRecords();
         r.start(false); assertThat(r.f.submit().path("status").asText()).isEqualTo("REVIEW_REQUIRED");
         r.upload();
         String scope = jdbc.queryForObject("SELECT BIN_TO_UUID(scope_id) FROM submission WHERE id=UUID_TO_BIN(?)", String.class, r.f.id());
@@ -50,6 +62,12 @@ final class HandoverStopFixture {
         command = r.ackBody().put("commandId", UUID.randomUUID().toString()).put("expectedCaseVersion", "1")
             .put("changeRequestId", r.recall.path("changeRequestId").asText());
         Files.writeString(directory.resolve("command.json"), command.toPrettyString());
+    }
+
+    /** Set the generated source format before upload/signing; never rewrite a signed recovery package. */
+    private void androidRecords() {
+        r.f.body.putArray("dispositions");
+        r.f.body.withArray("captures").forEach(row -> ((ObjectNode) row).put("inputRevision", 1));
     }
 
     private RecallFixture source(WebApplicationContext app, HandoverStopFixture prior) throws Exception {

@@ -22,7 +22,13 @@ public final class HandoverApprovalWorkflowChecks {
     private final Map<String, byte[]> receipts = new LinkedHashMap<>();
 
     public HandoverApprovalWorkflowChecks(WebApplicationContext app, Path attempt) throws Exception {
-        f = new HandoverStopFixture(app, attempt.resolve("approval-workflow")); facts = new HandoverStopFacts(f, f.jdbc);
+        this(app, attempt, false);
+    }
+
+    public HandoverApprovalWorkflowChecks(WebApplicationContext app, Path attempt, boolean androidRecords) throws Exception {
+        var directory = attempt.resolve("approval-workflow");
+        f = androidRecords ? HandoverStopFixture.forAndroid(app, directory) : new HandoverStopFixture(app, directory);
+        facts = new HandoverStopFacts(f, f.jdbc);
         UUID actor = Ids.next(); username = "handover-supervisor-" + actor;
         f.jdbc.update("INSERT INTO app_user(id,username,display_name,password_hash,created_at) VALUES(?,?,?,?,UTC_TIMESTAMP(3))",
             Ids.bytes(actor), username, "审批测试", app.getBean(PasswordEncoder.class).encode("Test-password-123"));
@@ -100,9 +106,9 @@ public final class HandoverApprovalWorkflowChecks {
             .timeout(java.time.Duration.ofSeconds(30)).header("Content-Type", "application/json")
             .header("X-Server-Recovery-Epoch", "1").header("Authorization", "Bearer " + f.r.f.tokens.path("accessToken").asText())
             .POST(HttpRequest.BodyPublishers.ofString(SubmissionJson.canonical(f.r.f.abortBody()))).build();
-        var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-        Files.writeString(f.directory.resolve("abort.json"), response.body(), StandardOpenOption.CREATE_NEW);
-        assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
+        var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofByteArray());
+        Files.write(f.directory.resolve("abort.json"), response.body(), StandardOpenOption.CREATE_NEW);
+        assertThat(response.statusCode()).isEqualTo(200);
         assertThat(SubmissionJson.parse(response.body()).path("data").path("status").asText()).isEqualTo("ABORTED");
     }
 
