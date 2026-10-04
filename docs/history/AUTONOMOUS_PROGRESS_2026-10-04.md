@@ -1,6 +1,6 @@
 # 自主进度 2026-10-04
 
-本页记录 R07 接收机原恢复事实的原子导入。此前子项的完整自主决策 58～72、证据和限制已保留在[导入前报告](AUTONOMOUS_PROGRESS_2026-10-04_before_handover_import.md)；更早缺陷记录见[2026-10-03 报告](AUTONOMOUS_PROGRESS_2026-10-03.md)。版本事实只见看板生成块。
+本页记录 R07 接收机原恢复事实原子导入及库存完整性补强。此前自主决策 58～72、证据和限制见[导入前报告](AUTONOMOUS_PROGRESS_2026-10-04_before_handover_import.md)；更早缺陷见[2026-10-03 报告](AUTONOMOUS_PROGRESS_2026-10-03.md)。版本事实只见看板生成块。
 
 ## 子项状态与 SHA
 
@@ -13,8 +13,9 @@
 | R07 接收机验证目标授权 | 已验证推送 `45ec9b0` | Android 历史全量 489/0/0/5 |
 | R07 接收机验证原包结构 | 已验证推送 `10bc6df` | Android 历史全量 498/0/0/5 |
 | R07 接收机验证原输入与审计关联 | 已验证推送 `366c388` | Android 历史全量 508/0/0/5 |
-| R07 接收机原事实原子导入 | 已验证推送 `9cc19bc` | 本次 Android 全量 525/0/0/5；事务回滚、重启重试、原事实无损及冻结保护 |
-| R07 续作票据、原提交指针、占用归属和新机最终提交 | 未完成 | 目标仍为 `HANDOVER_FROZEN`，导入不构成两设备闭环 |
+| R07 接收机原事实原子导入 | 已验证推送 `9cc19bc` | Android 全量 525/0/0/5；事务回滚、重启重试、原事实无损及冻结保护 |
+| R07 接收库存额外行拒绝 | 已验证推送 `3ed6724` | 红测 2/2/0/0、绿测 2/0/0/0、完整 Android 527/0/0/5 |
+| R07 续作票据、原提交指针、占用归属和新机最终提交 | 未完成 | 导入作业保持 `HANDOVER_FROZEN`，未构成两设备闭环 |
 | TEMP 接收、mapping3+ 重链、R1 白名单 | 未完成或冻结 | 保留前序范围和现场限制，不作生产放行 |
 
 ## 自主决策记录
@@ -23,23 +24,28 @@
 74. 导入状态为 `HANDOVER_FROZEN`，既有接收与结单入口拒绝继续扫码和最终提交。新的设备序号独立初始化，已有设备序号不覆盖；订单下一输入序号来自已验证目标授权并绑定原高水位。
 75. 已导入重试必须逐项等于原事实和目标汇总；防重使用完整集合比对。已有目标作业、暂存变化、错误目标、过期授权、损坏库存和未处理本机输入均拒绝，失败整体回滚，不以自动修复覆盖现存证据。
 76. 补强原输入、原审计与停止证明原 assignment 的一致性。首次全量回归 525/1/0/5 暴露旧 producer 测试夹具缺少该字段；只补齐夹具后，聚焦 1/0/0/0 和完整 525/0/0/5 通过。
-77. 首次失败 XML 在后续 Gradle 重跑中被覆盖，已从实际工具输出保留失败栈摘要；明确不是原 XML。后续测试运行须在重跑前归档失败报告，避免可再生报告覆盖丢失。
+77. 首次失败 XML 在后续 Gradle 重跑中被覆盖，已从实际工具输出保留失败栈摘要；明确不是原 XML。后续测试运行改为每轮独立目录归档日志和 XML，失败后先归档再重跑。
+78. 发现并复现库存集合缺口：新增本地库存行并同步修改缓存 rowCount 后，原实现的逐行核对仍通过。增加缓存行数和实存总行数与已验签下载行数的比较，配合原有逐条内容比对形成完整集合核对。首次导入和重启重试均拒绝，异常资料不自动覆盖或删除。
+79. 静态核对服务端衔接：`HandoverActivation.advanceRounds` 仅推进轮次并保留原提交指针；`ContinuationApproval.save` 会清空指针并转移保留占用；`ContinuationEvidence.origin` 仍要求同设备同人员。不能直接复用普通续作逻辑实现跨设备最终提交。
+80. 静态发现 `WorkStore.open` 在无本地作业时直接从 prepared assignment 建立可扫描空作业，需验证交接授权是否能绕过原事实导入。下一子项优先做带签名目标授权的复现，覆盖未暂存、已暂存未导入及零输入高水位；尚未测试，不标记已复现或已修复。
 
 ## 证据索引
 
-- `.local/autonomous-20261004/handover-import-full-20261004.zip`：本次完整 Android 回归的 126 个 XML 与汇总，525 tests / 0 failures / 0 errors / 5 skipped。编译随同任务成功。
+- `.local/autonomous-20261004/handover-import-full-20261004.zip`：导入子项完整 Android 回归，126 个 XML，525/0/0/5；编译随同任务成功。
 - `.local/autonomous-20261004/handover-import-regression-failure-observed.txt`：Gradle session 99302 失败输出摘要、原因和复验结果；原失败 XML 未保留，不冒充原始报告。
-- `.local/autonomous-20261004/handover-import-focused-20261004-102500.zip`、`handover-import-focused-20261004-102813.zip`：前序导入聚焦报告，作为过程证据保留。
-- `.local/autonomous-20261004/handover-audit-final-android-tests.zip`：前一子项 508/0/0/5 的历史报告，不作为导入完成证据。
-- `git diff --cached --check`、`tools/version_facts.ps1 -Check` 通过；源码只暂存 14 个 Android 文件，未带入受保护路径。推送回执 `94eb888..9cc19bc`。
-- 服务端和隔离 HTTP 证据及失败 958 的完整索引见导入前报告，均保留。
+- `.local/autonomous-20261004/handover-import-focused-20261004-102500.zip`、`handover-import-focused-20261004-102813.zip`：前序导入聚焦过程报告。
+- `.local/autonomous-20261004/inventory-integrity-red/`：2/2/0/0；两条实际异常均为 expected exception but nothing was thrown，保存原 XML、日志和运行汇总。
+- `.local/autonomous-20261004/inventory-integrity-green/`：修复后 2/0/0/0。
+- `.local/autonomous-20261004/inventory-integrity-full/`：完整 Android 527 tests / 0 failures / 0 errors / 5 skipped，127 个 XML、Gradle 日志及汇总，编译通过。
+- 两次源码提交的 `git diff --cached --check`、`tools/version_facts.ps1 -Check` 均通过；推送回执 `94eb888..9cc19bc` 和 `beb4322..3ed6724`，受保护路径未纳入提交。
+- 服务端、隔离 HTTP、前一 Android 子项及失败 958 的完整索引见导入前报告，均保留，未代替当次验证。
 
 ## 仍未解决与接续
 
-- 下一子项：核对服务端原提交指针、占用归属及接收机续作票据的结合点，再实现新设备受控最终提交；不得直接把导入状态改成可扫描来跳过这些前提。
+- 下一子项先复现普通开单入口的交接授权风险，再继续原提交指针、占用归属、跨设备续作凭据及最终提交。不得直接把导入状态改成可扫描跳过前提。
 - 独立接收机网络组合、票据重放/篡改、指针与占用原子性、失败恢复未完成。本次是作者自审及 Room/Robolectric 测试，使用生成身份和签名，不是原身份、现场或两设备闭环证据。
 - TEMP 来源停工、接收资格及 PDA 页面、mapping3+ 重链政策、R1 正式放行、历史更正继续单列。现场 Keystore、实物、断电、长时恢复和 R05 原资料/旧 BCD/526、R09 恢复限制未被本次覆盖。
 
 ## 磁盘、写权与边界
 
-树 `D:/acrylic-pda-outbound`、分支 `codex/development`，单助手写权；源码 `9cc19bc` 已推送，断点文档提交另以 Git 回执核对。既存受保护路径沿看板清单保留。D 盘约 33.76 GiB 可用，高于停止线。Gradle 已结束，19330/19434/19435/19436 无监听，系统 MySQL 未操作。设备动作 0，`.local` 证据删除 0；未运行本次 APK、模拟器、真机、真实 HTTP 或部署。未合 main、未打标签/Release、未接原库/现网，生产 gate 默认 false 未改。
+树 `D:/acrylic-pda-outbound`、分支 `codex/development`，单助手写权；源码 `3ed6724` 已推送，断点文档提交另以 Git 回执核对。既存受保护路径沿看板清单保留。D 盘约 33.75 GiB 可用，高于停止线。Gradle 已结束；系统 MySQL 未操作。设备动作 0，`.local` 证据删除 0；未运行本次 APK、模拟器、真机、真实 HTTP 或部署。未合 main、未打标签/Release、未接原库/现网，生产 gate 默认 false 未改。
