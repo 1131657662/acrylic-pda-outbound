@@ -49,6 +49,9 @@ class HandoverImportRepository(private val db: PdaDatabase, private val session:
     fun downloadAndImport(caseId: String, cacheDirectory: File, progress: (String) -> Unit): WorkOrder =
         HandoverPreparationDownload(db, HandoverDownloadSession(session)).import(caseId, cacheDirectory, progress)
 
+    fun acknowledgeDownload(caseId: String) =
+        HandoverDownloadAcknowledgement(db, HandoverDownloadSession(session)).acknowledge(caseId)
+
     fun importFrozen(caseId: String, preparation: VerifiedPackage): WorkOrder {
         val id = UUID.fromString(caseId).toString()
         val expected = JSONObject(session.requireSession().toString())

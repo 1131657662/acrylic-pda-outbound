@@ -33,7 +33,11 @@ internal class HandoverPreparationDownload(private val db: PdaDatabase,
         try {
             val payloads = download(Download(target, expected, manifest, directory), progress)
             progress("资料已校验，正在保存原交接记录")
-            return persist(stage, VerifiedPackage(assignment, receipt, key, expected, payloads, connection.now()))
+            val imported = persist(stage, VerifiedPackage(assignment, receipt, key, expected, payloads, connection.now()))
+            progress("本机交接资料已保存，正在确认下载；确认失败可重试")
+            SessionIdentity.requireSame(expected, connection.current())
+            HandoverDownloadAcknowledgement(db, connection).acknowledge(id)
+            return imported
         } finally { directory.deleteRecursively() }
     }
 

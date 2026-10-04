@@ -22,12 +22,19 @@ internal class HandoverDownloadFixture(directory: File) : AutoCloseable {
     var receipt = JSONObject(local.input.receipt.toString())
     var failPart: String? = null
     var corruptPart: String? = null
+    var failAck = false
+    var malformedAck = false
+    var ackAssignment: String = local.target
+    val ackBodies = java.util.concurrent.CopyOnWriteArrayList<String>()
     var afterResponse: (String) -> Unit = {}
     val connection: HandoverDownloadConnection
 
     init {
         server.dispatcher = object : Dispatcher() {
-            override fun dispatch(request: RecordedRequest): MockResponse = response(checkNotNull(request.path))
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                if (request.path?.endsWith("/download-ack") == true) return acknowledge(request)
+                return response(checkNotNull(request.path))
+            }
         }
         val network = PdaNetwork(server.url("/api/v1/").toString())
         connection = object : HandoverDownloadConnection {
@@ -46,6 +53,8 @@ internal class HandoverDownloadFixture(directory: File) : AutoCloseable {
     fun import(progress: (String) -> Unit = {}) = HandoverPreparationDownload(local.db, connection)
         .import(local.caseId, cache, progress)
 
+    fun ack() = HandoverDownloadAcknowledgement(local.db, connection).acknowledge(local.caseId)
+
     fun assertNoImport() {
         assertNull(local.db.preparations().order(local.target))
         assertNull(local.db.work().order(local.target))
@@ -54,6 +63,15 @@ internal class HandoverDownloadFixture(directory: File) : AutoCloseable {
         assertTrue(local.db.work().events(local.target).isEmpty())
         assertEquals("STAGED", local.db.handoverStages().get(local.caseId)?.state)
         assertTrue(cache.listFiles().orEmpty().isEmpty())
+        assertTrue(ackBodies.isEmpty())
+    }
+
+    private fun acknowledge(request: RecordedRequest): MockResponse {
+        ackBodies.add(request.body.readUtf8())
+        if (failAck) return MockResponse().setResponseCode(503).setBody("{}")
+        if (malformedAck) return MockResponse().setHeader("Content-Type", "application/json").setBody("{")
+        return json(JSONObject().put("assignmentId", ackAssignment).put("bundleId", receipt.getString("bundleId"))
+            .put("downloadAckAt", local.input.now.plusSeconds(1).toString()))
     }
 
     private fun response(path: String): MockResponse {

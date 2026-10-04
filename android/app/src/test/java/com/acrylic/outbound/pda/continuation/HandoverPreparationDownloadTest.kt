@@ -33,9 +33,10 @@ class HandoverPreparationDownloadTest {
             assertEquals("IMPORTED_FROZEN", f.local.db.handoverStages().get(f.local.caseId)?.state)
             val captures = JSONArray(f.local.db.captures().page(f.local.target, 0, 100).map(SubmissionRecords::capture))
             assertEquals(SubmissionJson.canonical(f.local.body.getJSONArray("captures")), SubmissionJson.canonical(captures))
-            assertEquals(5, f.server.requestCount)
-            val requests = List(5) { f.server.takeRequest() }
-            assertEquals(listOf("GET", "POST", "GET", "GET", "GET"), requests.map { it.method })
+            assertNotNull(f.local.db.preparations().order(f.local.target)?.ackAt)
+            assertEquals(6, f.server.requestCount)
+            val requests = List(6) { f.server.takeRequest() }
+            assertEquals(listOf("GET", "POST", "GET", "GET", "GET", "POST"), requests.map { it.method })
             requests.forEach { assertEquals("Bearer test-access", it.getHeader("Authorization")) }
         }
     }
@@ -53,6 +54,7 @@ class HandoverPreparationDownloadTest {
 
             assertEquals(first, f.import())
             assertEquals(2, f.local.db.captures().page(f.local.target, 0, 100).size)
+            assertEquals(1, f.ackBodies.size)
         }
     }
 
