@@ -6,29 +6,29 @@
 ```yaml
 date: 2026-10-05
 branch: codex/development
-head: 89cd427
-dirty_entries: 15
+head: 102cda9
+dirty_entries: 16
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 29 }
 server: { contract: 0.39.0, paths: 133, flyway: V59, migrations: 59 }
 ```
 <!-- FACTS_END -->
 
-正式提交与主管批准的离线凭据用途守卫已修复、验证并推送；接收机确认后的跨设备续作服务端链已提交 `89cd427`。子项、SHA、自主决策、证据与未验见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-05.md)；设计边界见[续作设计](history/R07_HANDOVER_CONTINUATION_DESIGN_2026-10-05.md)。
+接收机确认后的跨设备续作服务端链及最终正式提交已验证并推送 `102cda9`。子项、SHA、自主决策、失败与通过证据、未验见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-05.md)；设计边界见[续作设计](history/R07_HANDOVER_CONTINUATION_DESIGN_2026-10-05.md)。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development；源码和文档 SHA 以本轮 Git 回执核对。单助手，无已知在途写者、Gradle 或重型任务。D 盘约 29.7 GB 可用。
-- 19330/19434/19435/19436 无监听，989 已保留隔离数据库、dump 和正常停机证据，既存 MySQL 未操作。
-- 本轮续作差异、提交清单与验证摘要见 `.local/e2a-cross-20260925-989/`；既有设计/分析文档、ContinuationApiIT/ContinuationFixture、物理处置请求及旧回归脚本保留，未代提交。
+- 树 D:/acrylic-pda-outbound，分支 codex/development；代码 SHA `102cda9`，文档 SHA 以 Git 回执核对。单助手，无已知在途写者、Gradle 或重型任务。D 盘约 26.8 GiB 可用。
+- 19330/19434/19435/19436 无监听，993 已保留隔离数据库、dump 和认证停机证据，既存 MySQL 未操作。
+- 本轮最终提交证据见 `.local/autonomous-20261005/handover-final-submit-990/` 至 `992/`、`handover-final-regression-994/` 与 `.local/e2a-cross-20260925-993/`。未代提交的受保护路径为两份既有文档、ContinuationApiIT、ContinuationFixture、六份既有未跟踪历史文档、物理处置请求和两份旧脚本。
 
 ## 当次证据
-- 970～974 的用途守卫与交接审批证据仍保留；服务端全量单测本轮复验 170 XML、3079/0/0/1，编译通过。
-- 989 真实回环 HTTP 续作 1/0/0/0：未确认下载、未知字段、错误身份、摘要漂移、写后失败回滚、首次同键并发、同文重放和异文冲突均覆盖；原提交替代指针、续作占用、导入授权撤销链和不可变回执均核对。
-- 989 使用生成身份、隔离 MySQL 和真实服务端 HTTP；证据含迁移日志、请求/回执、失败栈、数据库 dump、完成标记和正常停机。作者自审，未验独立消费者、原身份、APK、模拟器、真机或两个物理设备。
+- 990 因测试正文缺 dispositions 失败，991 因断言不存在账本列失败；失败 XML、日志和隔离库均保留。992 修正后真实回环 HTTP 最终提交 1/0/0/0。
+- 993 用新隔离 MySQL 复验跨设备最终提交 1/0/0/0、普通集成 41/0/0/0；服务端单测 170 XML、3079/0/0/1，唯一跳过为既有 Windows 符号链接能力条件。
+- 最终化验证保留原设备/人员/凭据来源，订单序号连续且局部序列按设备递增；覆盖错误当前身份、证据改写、序列错误、账务触发器回滚、成功回放、账务/调度汇总与完成态。均使用生成身份、隔离 MySQL 和真实服务端 HTTP；作者自审，未验独立消费者、原身份、APK、模拟器、真机或两个物理设备。
 
 ## 下一步、未验与边界
-- 服务端已写入原提交替代指针、续作占用及新的 pda:scan 凭据，但最终提交/批准账务和客户端消费闭环仍未完成；接收作业未因下载确认提前解冻。
-- 普通续作仍限同设备/人员；PDA 页面/重试、旧凭据/旧客户端、两个物理设备和最终提交仍未验，不能称为完整跨设备交接。
+- 服务端已完成原提交替代、续作占用、新 pda:scan 凭据、跨设备最终提交及其账务；接收作业未因下载确认提前解冻。
+- Android 消费、PDA 页面/重试、旧凭据/旧客户端、两个物理设备和现场原身份仍未验，不能称为完整跨设备交接。
 - PDA页面/重试、旧凭据/旧客户端、TEMP、mapping3+、R1生产放行、历史更正、现场/断电/长时、R05原资料/旧BCD/526、R09恢复限制继续单列。
 - 生产gate默认值未变；不合main、不打标签/Release、不部署、不接原库/现网，未删除.local证据。长期目标active。
 <!-- CURRENT_STATE_END -->
