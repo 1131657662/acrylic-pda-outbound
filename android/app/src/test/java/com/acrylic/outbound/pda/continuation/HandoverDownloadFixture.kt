@@ -27,11 +27,13 @@ internal class HandoverDownloadFixture(directory: File) : AutoCloseable {
     var ackAssignment: String = local.target
     val ackBodies = java.util.concurrent.CopyOnWriteArrayList<String>()
     var afterResponse: (String) -> Unit = {}
+    var continuation: ((RecordedRequest) -> MockResponse)? = null
     val connection: HandoverDownloadConnection
 
     init {
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
+                if (request.path?.endsWith("/continuation") == true) return checkNotNull(continuation)(request)
                 if (request.path?.endsWith("/download-ack") == true) return acknowledge(request)
                 return response(checkNotNull(request.path))
             }
@@ -43,6 +45,11 @@ internal class HandoverDownloadFixture(directory: File) : AutoCloseable {
             override fun call(request: HandoverDownloadConnection.Call): JSONObject =
                 network.request(request.path, request.body, headers(request.expected)).getJSONObject("data")
                     .also { afterResponse(request.path) }
+            override fun original(request: HandoverDownloadConnection.Call): JSONObject = JSONObject(
+                network.original(request.path, request.body?.let {
+                    com.acrylic.outbound.pda.submission.SubmissionJson.canonical(it).toByteArray(Charsets.UTF_8)
+                }, headers(request.expected), maximumBytes = 256 * 1024)
+                    .toString(Charsets.UTF_8)).also { afterResponse(request.path) }
             override fun download(request: HandoverDownloadConnection.Download) {
                 network.download(request.path, request.target, headers(request.expected))
                 afterResponse(request.path)

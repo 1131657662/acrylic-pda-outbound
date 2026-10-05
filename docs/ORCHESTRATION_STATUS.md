@@ -6,32 +6,34 @@
 ```yaml
 date: 2026-10-05
 branch: codex/development
-head: b55b479
-dirty_entries: 15
+head: 895335e
+dirty_entries: 56
 worktrees: 33
-android: { name: 0.16.0-r06-release, code: 21, room: 29 }
+android: { name: 0.16.0-r06-release, code: 21, room: 30 }
 server: { contract: 0.39.0, paths: 133, flyway: V59, migrations: 59 }
 ```
 <!-- FACTS_END -->
-B1 受控重关联服务端子项已验证并推送 b55b4796a77c7938cab643cc8b21f56c1c897e45；接收机服务端续作和最终提交回归通过。详细决策、全部失败轮与限制见[自主进度 B1 段](history/AUTONOMOUS_PROGRESS_2026-10-05.md)，执行范围见[无人值守计划](history/AUTONOMOUS_PLAN_2026-10-05_UNATTENDED.md)，替换前断点见[归档](history/ORCHESTRATION_STATE_before_mapping3_delivery_2026-10-05.md)。
+B2 接收机 Android 续作已满足本批退出标准，正在保存开发分支交付。详细决策、全部失败轮与限制见[自主进度 B2 交付段](history/AUTONOMOUS_PROGRESS_2026-10-05.md#b2-当次交付)，执行范围见[无人值守计划](history/AUTONOMOUS_PLAN_2026-10-05_UNATTENDED.md)，替换前 B1 断点见[归档](history/ORCHESTRATION_STATE_before_handover_android_delivery_2026-10-05.md)。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development；批次基线 686cef1374ed9a08766b6f29191f51c793d62da1；实际 HEAD 以 Git 回执和事实块核对。当前聊天为唯一写者，无在途 Gradle 测试或重型任务。
-- B0 快照 `.local/autonomous-20261005/mapping3-preflight/`，交付快照 `mapping3-delivery/`。13 条既有脏路径逐一核对哈希未变；完整清单、diff、进程、监听与磁盘均在快照中，未代提交。
-- 19330/19434/19435/19436 已释放；994～998 隔离 MySQL 均完成 dump 和认证停机，失败库保留。3306/13316 为既存 MySQL，未接入或修改；D 盘约 25.6 GiB 可用。
-- 本批改动为 5 个产品类、5 个测试类及看板/自主进度/验收索引/替换前快照；精确清单以交付暂存清单核对。本批没有迁移、API 新路径、Android 或 Web 改动。
+- 树 D:/acrylic-pda-outbound，分支 codex/development；B2 输入及交付前 HEAD 为 895335ef599564766c55c69ed4a153654a7639ab，远端同值；交付 SHA 以 Git 回执核对。当前聊天为唯一写者，无在途 Gradle 或重型任务。
+- B0 快照 `.local/autonomous-20261005/handover-continuation-android-preflight/`、`handover-continuation-android-write/`；交付快照 `handover-android-delivery/`。13 条既有脏路径哈希未变，完整清单、diff、进程、监听与磁盘已保存，不代提交。
+- 19330/19434/19435/19436 无监听；999～1004 隔离 MySQL 全部 dump/认证停机，失败库保留。3306/13316 为既存 MySQL，未接入；D 盘约 24.3 GiB 可用，高于 20 GiB 阈值。
+- 本批改动：Android 耐久命令/验签/重试、审计排序及 Room 迁移、交接页面与状态入口；服务端续作整数输入兼容及契约说明；双设备生成身份组合夹具/测试与隔离轮次守卫。没有新服务端迁移或 API 路径；全部路径以交付快照和暂存清单核对。
 
 ## 当次证据
-- 994 真实 HTTP 1/1/0/0：首次关联后第二次 LINK 被旧 mapping 守卫拒绝。995 为 1/1/0/0：回执形状仍要求一条候选。两轮失败 XML、日志与库完整保留。
-- 996 修复后 1/0/0/0；997 最终真实 HTTP/隔离 MySQL 1/0/0/0，覆盖首次关联、重关联/后续关联、歧义、现目标缺失、现目标/历史目标有作业、原键/异文/旧上下文、同键并发、旧回执失效和 SQL 故障回滚，追加首次关联到确认及默认关闭态内部回归。
-- 998 服务端单测 3088/0/0/1（171 XML；唯一既有 Windows 符号链接能力跳过）；接收机续作/最终提交真实 HTTP 1/0/0/0；普通续作/并发/提交/归档集成 41/0/0/0。
-- 证据在 `.local/autonomous-20261005/mapping3-final-997/`、`mapping3-regression-998/` 和 `.local/e2a-cross-20260925-994/` 至 `998/`；997、998 前后源码哈希一致。作者实现、自审与执行，使用生成身份；非独立消费者、APK 或物理设备验收。
+- Android 最终全套 `handover-android-final-v2/`：137 XML、574/0/0/7；Debug APK、签名与 metadata 检查通过；lint 0 error、199 warning。7 项专用实时环境测试条件跳过。非空迁移间隔反例在 `handover-migration-real-gap/` 1/0/0/0。
+- `b2-server-regression-v2/`：172 XML、3103/0/0/1，唯一既有 Windows 符号链接条件跳过；1003 续作/最终提交真实 HTTP 1/0/0/0，普通续作/并发/提交/归档集成 41/0/0/0。
+- `handover-android-http-final-1004/` 与 `.local/e2a-cross-20260925-1004/`：同实例真实 HTTP 服务端包装和 Android 子进程各 1/0/0/0；响应丢失、Room 重启原键重放、双设备新输入、原前缀保留、最终提交和成功回执验签通过。
+- 最终组合前后及交付时 1860 条源码哈希一致。作者实现、自审与执行；Android 生产消费者运行于 JVM，使用生成身份与回环 HTTP，非独立审查/物理设备/现场验收。
+- 最终 APK 为 `.local/autonomous-20261005/handover-android-final-v2/app-debug.apk`，SHA256 `08F873DDF2A5A65D1C352BE380C5F9F7ECB3FC3BA465615C7F9CD74B52FAD238`，未安装、未发布。
+- 开发失败轮的 XML、编译/测试日志和隔离库全部保留：999 整数输入，1000 授权序号，1001 测试期望；模拟回包、原回执编码、通配符启动、数字边界与迁移夹具失败详见自主进度。最终均在新目录复验，失败不改写为通过。
 
 ## 下一步、未验与边界
-- B1 只允许冻结来源从空白现目标人工迁移到唯一新空白目标，完整候选恰含两者；历史目标有作业拒绝。映射/回执追加，scope/slot/保留占用原子切换；PDA_TEMP 的首次 LINKED 和历史正式订单状态不改写。
-- 完整候选仍有歧义时正常确认继续拒绝；候选排除、跨来源权限及公开 GET 契约既存 LINK currentEffect 枚举遗漏留待后续批次核对，不声称完整客户端闭环。
-- 下一步按 B2 执行接收机 Android 持久命令、签名回执、网络重试和页面状态；先做 B0。Android 消费、APK、旧凭据/旧客户端、两个物理设备和现场原身份仍未验。
-- TEMP 高轮次、R1 生产放行、历史更正、现场/断电/长时、R05 原资料/旧 BCD/526、R09 恢复限制仍单列。生产 gate 默认值及七类生产决定边界保持，不合 main、Release、部署、接原库/现网或删除 .local。长期目标 active。
+- 下一批 B3 先做 B0 和只读盘点：来源/停止写者/耐久队列/非零候选实际消费；复用既有实现，只补有当次证据的缺口。候选排除与跨来源权限按既有政策或拒绝默认处理。
+- B1 已推送 b55b4796a77c7938cab643cc8b21f56c1c897e45；完整候选仍有歧义时正常确认拒绝，公开 GET 的 LINK currentEffect 契约枚举遗漏留待 B8。
+- 真机、APK 安装、两个物理设备、真实 Keystore/原登录身份、现场网络、旧凭据/旧客户端、断电与长时仍未验。TEMP 高轮次、R1 生产放行、历史更正、R05 原资料/旧 BCD/526、R09 恢复限制继续单列。
+- 生产 gate 默认值及七类生产决定边界保持，localDeletionAllowed=false；不合 main、Release、部署、接原库/现网或删除 .local。长期目标 active，B2 范围交付不代表 R01–R09 全部完成。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实见生成块；文档提交自身 SHA 以 Git 回执核对。

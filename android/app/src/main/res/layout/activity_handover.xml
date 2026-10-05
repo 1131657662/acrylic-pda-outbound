@@ -1,0 +1,20 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+        <Button android:id="@+id/back" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回（资料保留）" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="接收换机交接"
+            android:textSize="22sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" android:paddingTop="12dp" />
+        <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textSize="16sp" android:paddingTop="12dp" android:paddingBottom="12dp" android:accessibilityLiveRegion="polite" />
+        <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent"
+            android:layout_height="4dp" android:indeterminate="true" android:visibility="gone" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:labelFor="@id/caseId"
+            android:text="主管提供的交接编号" android:textSize="16sp" android:paddingTop="12dp" />
+        <EditText android:id="@+id/caseId" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="52dp" android:singleLine="true" android:inputType="textVisiblePassword" android:maxLength="36" android:importantForAutofill="no" />
+        <Button android:id="@+id/receive" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="核验交接资料" />
+        <Button android:id="@+id/refresh" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="恢复本机交接" />
+        <LinearLayout android:id="@+id/cards" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+        <Button android:id="@+id/more" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="加载更多交接" android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>

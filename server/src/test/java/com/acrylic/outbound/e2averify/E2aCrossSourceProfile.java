@@ -19,7 +19,7 @@ final class E2aCrossSourceProfile {
 
     E2aCrossSourceProfile() throws Exception {
         String run = System.getenv("E2A_CROSS_RUN");
-        if (run == null || !run.matches("[1-9][0-9]{0,2}")) throw new IllegalStateException("Invalid run allocation");
+        if (run == null || !run.matches("[1-9][0-9]{0,3}")) throw new IllegalStateException("Invalid run allocation");
         attempt = ROOT.resolve(".local/e2a-cross-20260925-" + run);
         database = "acrylic_e2a_cross_20260925_" + run;
         user = "e2a_cross_20260925_" + run;

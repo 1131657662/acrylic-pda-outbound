@@ -16,10 +16,11 @@ data class WorkScan(@PrimaryKey val captureId: String, val assignmentId: String,
 data class WorkGuard(@PrimaryKey val barcode: String, val captureId: String, val assignmentId: String, val dispatchCycle: Long)
 
 @Entity(tableName = "work_event", indices = [Index(value = ["originDeviceId", "localSeq"], unique = true),
-    Index(value = ["assignmentId", "localSeq"]), Index("captureId")],
+    Index(value = ["assignmentId", "localSeq"]), Index(value = ["assignmentId", "orderPosition"]), Index("captureId")],
     foreignKeys = [ForeignKey(entity = WorkOrder::class, parentColumns = ["assignmentId"], childColumns = ["assignmentId"]),
         ForeignKey(entity = WorkCapture::class, parentColumns = ["id"], childColumns = ["captureId"])])
 data class WorkEvent(@PrimaryKey val id: String, val assignmentId: String, val captureId: String?,
     val originDeviceId: String, val operatorId: String, val localSeq: Long, val type: String,
     val detail: String, val wallMs: Long, val elapsedMs: Long, val boot: Int,
-    @ColumnInfo(defaultValue = "''") val originAssignmentId: String = "")
+    @ColumnInfo(defaultValue = "''") val originAssignmentId: String = "",
+    @ColumnInfo(defaultValue = "0") val orderPosition: Long = localSeq)

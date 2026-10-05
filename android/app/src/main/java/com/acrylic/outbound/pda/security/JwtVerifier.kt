@@ -45,7 +45,7 @@ object JwtVerifier {
         check(claims.getString("serverRecoveryEpoch") == session.getString("serverRecoveryEpoch")) { "恢复代次变化，请保留资料并对账" }
         check(claims.getString("userAuthVersion") == session.getString("userAuthVersion") && claims.getString("deviceVersion") == session.getString("deviceVersion")) { "人员或设备授权版本变化，须重新授权" }
         val issued = claims.getLong("iat"); val expires = claims.getLong("exp")
-        check(expires - issued == 172800L && issued <= now.epochSecond && now.epochSecond < expires) { "离线授权未生效或已到期，订单占用保留" }
+        check(Math.subtractExact(expires, issued) in 1..172800L && issued <= now.epochSecond && now.epochSecond < expires) { "离线授权未生效或已到期，订单占用保留" }
         check(Instant.parse(assignment.getString("issuedAt")).epochSecond == issued && Instant.parse(assignment.getString("expiresAt")).epochSecond == expires)
         return claims
     }

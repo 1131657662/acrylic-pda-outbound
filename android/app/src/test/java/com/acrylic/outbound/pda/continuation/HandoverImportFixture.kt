@@ -18,7 +18,7 @@ internal class HandoverImportFixture(directory: File, sourceWork: (WorkFixture) 
     it.scan(); it.scan("bad")
 }) : AutoCloseable {
     val context: Context = ApplicationProvider.getApplicationContext()
-    private val signing = HandoverImportSigning()
+    val signing = HandoverImportSigning()
     val caseId = UUID.randomUUID().toString()
     val target = UUID.randomUUID().toString()
     private val device = UUID.randomUUID().toString()

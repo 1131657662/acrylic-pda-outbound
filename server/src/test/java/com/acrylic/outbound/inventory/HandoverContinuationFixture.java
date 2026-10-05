@@ -23,7 +23,11 @@ final class HandoverContinuationFixture {
     private final AtomicInteger calls = new AtomicInteger();
 
     HandoverContinuationFixture(WebApplicationContext app, Path attempt) throws Exception {
-        workflow = new HandoverApprovalWorkflowChecks(app, attempt);
+        this(app, attempt, false);
+    }
+
+    HandoverContinuationFixture(WebApplicationContext app, Path attempt, boolean androidRecords) throws Exception {
+        workflow = new HandoverApprovalWorkflowChecks(app, attempt, androidRecords);
         source = workflow.f;
         var pda = new PdaTestDriver(source.r.f.web);
         tokens = pda.login(pda.register());

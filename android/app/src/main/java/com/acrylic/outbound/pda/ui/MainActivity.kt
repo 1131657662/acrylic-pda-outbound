@@ -46,6 +46,7 @@ class MainActivity : ComponentActivity() {
         binding.deviceSettings.setOnClickListener { startActivity(android.content.Intent(this, DeviceSettingsActivity::class.java)) }
         binding.appUpdate.setOnClickListener { startActivity(android.content.Intent(this, PdaUpdateActivity::class.java)) }
         binding.temporaryPreparation.setOnClickListener { startActivity(android.content.Intent(this, TemporaryPreparationActivity::class.java)) }
+        binding.handover.setOnClickListener { startActivity(android.content.Intent(this, HandoverActivity::class.java)) }
         lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { model.state.collect { render(it) } } }
     }
 
@@ -73,6 +74,7 @@ class MainActivity : ComponentActivity() {
         binding.availableSection.visibility = if (state.formalOrders) View.VISIBLE else View.GONE
         binding.temporaryPreparation.visibility = if (state.temporaryVisible) View.VISIBLE else View.GONE
         binding.temporaryPreparation.isEnabled = !state.busy
+        binding.handover.isEnabled = !state.busy
         binding.loadMore.visibility = if (loggedIn && ((state.section == "AVAILABLE" && state.availableHasMore) ||
             (state.section in setOf("LOCAL", "HISTORY") && state.localHasMore) ||
             (state.section == "LOCAL" && state.assignedHasMore) ||

@@ -62,10 +62,18 @@ public class HandoverContinuationService {
             "INVALID_HANDOVER_CONTINUATION","续作命令字段无效");
         UUID commandId=uuid(command,"commandId"),assignmentId=uuid(command,"assignmentId"),authorizationId=uuid(command,"authorizationId");
         String recovery=text(command,"payloadSha256"),retained=text(command,"retainedManifestSha256"),plan=text(command,"planSha256");
-        long next=number(command,"nextOrderScanSeq"); check(command.path("commandVersion").asInt()==1,"INVALID_HANDOVER_CONTINUATION","命令版本不支持");
+        long next=nextSequence(command); check(command.path("commandVersion").asInt()==1,"INVALID_HANDOVER_CONTINUATION","命令版本不支持");
         check(recovery.matches("[a-f0-9]{64}")&&retained.matches("[a-f0-9]{64}")&&plan.matches("[a-f0-9]{64}")&&next>0,
             "INVALID_HANDOVER_CONTINUATION","续作命令摘要或序号无效");
         String canonical=canonical(command); return new Input(commandId,assignmentId,authorizationId,recovery,retained,next,plan,canonical,sha(command));
+    }
+
+    /** Public contract uses an integer; retained legacy commands keep their original decimal-string digest. */
+    static long nextSequence(JsonNode command) {
+        var value=command.path("nextOrderScanSeq");
+        if(value.isTextual()) return number(command,"nextOrderScanSeq");
+        require(value.isIntegralNumber() && value.canConvertToLong(),"无效整数字段：nextOrderScanSeq");
+        return value.longValue();
     }
 
     private JsonNode replay(UUID caseId,UUID id,String digest,PdaSessions.Principal principal) {

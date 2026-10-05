@@ -34,7 +34,7 @@ internal class HandoverDownloadAcknowledgement(private val db: PdaDatabase,
         return checkNotNull(db.preparations().order(prepared.assignmentId))
     }
 
-    private fun verified(caseId: String, expected: JSONObject): PreparedOrder {
+    internal fun verified(caseId: String, expected: JSONObject): PreparedOrder {
         RecoveryProtection(db).requireNormal()
         SessionIdentity.requireSame(expected, connection.current())
         val current = JSONObject(checkNotNull(connection.current()).toString())

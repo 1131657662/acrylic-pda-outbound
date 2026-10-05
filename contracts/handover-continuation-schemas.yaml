@@ -9,7 +9,7 @@ Command:
     authorizationId: {type: string, format: uuid, description: 下载确认时持有的导入授权}
     payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$', description: 原恢复包正文摘要}
     retainedManifestSha256: {type: string, pattern: '^[a-f0-9]{64}$', description: 有效保留扫描集合摘要}
-    nextOrderScanSeq: {type: integer, minimum: 1, description: 新输入的首个订单序号}
+    nextOrderScanSeq: {type: integer, minimum: 1, maximum: 9007199254740991, description: 新输入的首个订单序号，受固定正文安全整数范围约束}
     planSha256: {type: string, pattern: '^[a-f0-9]{64}$', description: 固定计划摘要}
 Receipt:
   type: object
@@ -26,7 +26,7 @@ Receipt:
     previousAuthorizationId: {type: string, format: uuid}
     recoveryPackageSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
     retainedManifestSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
-    nextOrderScanSeq: {type: integer, minimum: 1}
+    nextOrderScanSeq: {type: integer, minimum: 1, maximum: 9007199254740991}
     expiresAt: {type: string, format: date-time}
     stockReleased: {type: boolean, const: false}
     targetDeviceId: {type: string, format: uuid}

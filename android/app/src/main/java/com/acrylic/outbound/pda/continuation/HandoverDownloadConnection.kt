@@ -11,6 +11,7 @@ internal interface HandoverDownloadConnection {
     fun current(): JSONObject?
     fun now(): Instant
     fun call(request: Call): JSONObject
+    fun original(request: Call): JSONObject
     fun download(request: Download)
     data class Call(val path: String, val expected: JSONObject, val body: JSONObject? = null)
     data class Download(val path: String, val expected: JSONObject, val target: File)
@@ -21,6 +22,12 @@ internal class HandoverDownloadSession(private val session: PdaSession) : Handov
     override fun now() = session.now()
     override fun call(request: HandoverDownloadConnection.Call): JSONObject = session.call(request.path,
         request.body, epoch = request.expected.getString("serverRecoveryEpoch"), expected = request.expected)
+
+    override fun original(request: HandoverDownloadConnection.Call): JSONObject = JSONObject(session.original(
+        PdaSession.Original(request.path, request.body?.let {
+            com.acrylic.outbound.pda.submission.SubmissionJson.canonical(it).toByteArray(Charsets.UTF_8)
+        }, request.expected.getString("serverRecoveryEpoch"),
+            maximumBytes = 256 * 1024), request.expected).toString(Charsets.UTF_8))
 
     override fun download(request: HandoverDownloadConnection.Download) {
         SessionIdentity.requireSame(request.expected, session.saved())

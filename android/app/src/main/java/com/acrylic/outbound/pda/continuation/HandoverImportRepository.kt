@@ -10,6 +10,9 @@ import java.io.File
 import java.util.UUID
 
 class HandoverImportRepository(private val db: PdaDatabase, private val session: PdaSession) {
+    fun continueWork(caseId: String): String =
+        HandoverContinuationRepository(db, HandoverDownloadSession(session)).activate(caseId)
+
     fun stage(caseId: String): LocalHandoverStage {
         val id = UUID.fromString(caseId).toString()
         val expected = JSONObject(session.requireSession().toString())

@@ -41,6 +41,7 @@ class OrderCards(private val parent: LinearLayout, private val model: Preparatio
             val plan = JSONObject(item.order.planJson).getJSONObject("order")
             val renewalNeeded = !item.recalled && item.readiness.contains("已到期")
             val action = when {
+                item.workState == "HANDOVER_FROZEN" -> null
                 item.submissionState == "SYNCED" -> null
                 renewalNeeded -> "联网续期"
                 item.order.ackAt == null -> "重试下载确认"
@@ -53,19 +54,21 @@ class OrderCards(private val parent: LinearLayout, private val model: Preparatio
             }.work.apply {
                 visibility = View.VISIBLE; isEnabled = !state.busy && item.originalOperator
                 text = when {
+                    item.workState == "HANDOVER_FROZEN" -> "处理换机交接"
                     item.recalled -> "召回核对 / 停止证明"
                     !item.originalOperator -> "须原操作员登录"
                     item.submissionState != null || item.workState == "FROZEN" -> "查看提交/回执"
                     else -> "继续作业"
                 }
                 setOnClickListener { context.startActivity(android.content.Intent(context,
-                    if (item.recalled) RecallActivity::class.java else if (item.submissionState != null || item.workState == "FROZEN") SubmissionActivity::class.java else WorkActivity::class.java)
+                    if (item.workState == "HANDOVER_FROZEN") HandoverActivity::class.java else if (item.recalled) RecallActivity::class.java else if (item.submissionState != null || item.workState == "FROZEN") SubmissionActivity::class.java else WorkActivity::class.java)
                     .putExtra("assignmentId", item.order.assignmentId)) }
             }
         }
     }
 
     private fun localStatus(item: LocalCard): String = when {
+        item.workState == "HANDOVER_FROZEN" -> "换机交接冻结 · 须核验续作"
         item.recalled -> "召回/恢复阻断 · 停止作业"
         item.submissionState == "SYNCED" -> "历史完成 · 已验签回执"
         item.submissionState == "REVIEW_REQUIRED" -> "待主管审核 · 不可放行"

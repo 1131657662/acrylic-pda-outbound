@@ -57,7 +57,8 @@ class WorkStore(val db: PdaDatabase, access: WorkAccess) {
         val order = prepared(assignment); val device = checkNotNull(db.work().device(order.deviceId)); val time = access.sample()
         val sequence = device.nextEventSeq
         db.work().insertEvent(WorkEvent(UUID.randomUUID().toString(), assignment, capture, order.deviceId, order.operatorId,
-            sequence, type, detail, time.wall, time.elapsed, time.boot, JSONObject(order.assignmentJson).getString("id")))
+            sequence, type, detail, time.wall, time.elapsed, time.boot, JSONObject(order.assignmentJson).getString("id"),
+            Math.addExact(db.work().eventPosition(assignment), 1)))
         db.work().updateDevice(device.copy(nextEventSeq = Math.addExact(sequence, 1)))
         return sequence
     }

@@ -166,7 +166,8 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
             val continuation = app.database.continuations().current(it.assignmentId)
             val current = if (continuation == null) it else it.copy(assignmentJson = continuation.authorizationJson,
                 authorizationHistoryJson = continuation.authorizationHistoryJson)
-            LocalCard(current, if (recalled) "收到召回 · 停止作业，须核对恢复证据" else repository.readiness(current), recalled,
+            val readiness = if (app.database.work().state(it.assignmentId) == "HANDOVER_FROZEN") "原资料保留，核验续作前禁止扫码" else repository.readiness(current)
+            LocalCard(current, if (recalled) "收到召回 · 停止作业，须核对恢复证据" else readiness, recalled,
                 app.database.work().state(it.assignmentId), app.database.submissions().currentState(it.assignmentId),
                 saved?.optString("userId") == it.operatorId && saved.optString("deviceId") == it.deviceId)
         }

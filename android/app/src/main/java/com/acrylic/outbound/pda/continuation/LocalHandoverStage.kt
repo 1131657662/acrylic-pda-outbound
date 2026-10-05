@@ -13,6 +13,9 @@ data class LocalHandoverStage(@PrimaryKey val caseId: String, val originalAssign
 
 @Dao
 abstract class LocalHandoverStageDao {
+    @Query("SELECT caseId FROM local_handover_stage WHERE targetUserId=:user AND targetDeviceId=:device AND warehouseId=:warehouse ORDER BY caseId DESC LIMIT :limit")
+    abstract fun cases(user: String, device: String, warehouse: String, limit: Int): List<String>
+
     @Insert abstract fun insert(row: LocalHandoverStage)
     @Update abstract fun update(row: LocalHandoverStage)
 

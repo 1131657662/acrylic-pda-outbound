@@ -19,6 +19,9 @@ internal class HandoverRealHttpConnection(input: JSONObject, private val databas
     var downloads = 0
     val ackBodies = mutableListOf<String>()
     val ackReceipts = mutableListOf<String>()
+    var loseContinuation = false
+    val continuationBodies = mutableListOf<String>()
+    val continuationReceipts = mutableListOf<String>()
 
     init { check(input.getString("baseUrl") == "http://127.0.0.1:19434/api/v1/") }
 
@@ -32,6 +35,18 @@ internal class HandoverRealHttpConnection(input: JSONObject, private val databas
             ackBodies.add(checkNotNull(request.body).toString())
             ackReceipts.add(data.toString())
             if (loseAck) { loseAck = false; throw IOException("Injected lost acknowledgement after server commit") }
+        }
+        return data
+    }
+
+    override fun original(request: HandoverDownloadConnection.Call): JSONObject {
+        check(!database().inTransaction())
+        val body = request.body?.let { com.acrylic.outbound.pda.submission.SubmissionJson.canonical(it).toByteArray(Charsets.UTF_8) }
+        val data = JSONObject(network.original(request.path, body, headers(), maximumBytes = 256 * 1024).toString(Charsets.UTF_8))
+        if (request.path.endsWith("/continuation")) {
+            continuationBodies.add(checkNotNull(request.body).toString())
+            continuationReceipts.add(data.toString())
+            if (loseContinuation) { loseContinuation = false; throw IOException("Injected lost continuation after server commit") }
         }
         return data
     }
