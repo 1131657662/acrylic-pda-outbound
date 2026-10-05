@@ -179,3 +179,5 @@
 当次验证：`handover-android-final-v2/` 574/0/0/7，137 XML，Debug APK 与 lint 通过；`handover-migration-real-gap/` 1/0/0/0；`b2-server-regression-v2/` 3103/0/0/1；隔离服务端续作/最终提交 1/0/0/0，普通续作/并发/提交/归档 41/0/0/0；1004 服务端包装与 Android 子进程各 1/0/0/0。最终 APK 保存在 `.local/autonomous-20261005/handover-android-final-v2/`，未安装或发布。失败轮与隔离库、dump、停机标记保留。
 
 交付结论：B2 的本批退出标准满足，作者自审和组合验证证据完整；验证使用生成身份、JVM/回环 HTTP 和 Debug APK，不能替代 APK 安装、真机、两个物理设备、原登录身份、现场网络、断电/长时验收。后续按计划进入 B3，继续保留 TEMP 高轮次、候选排除/跨来源权限、R07 更正与库存对账、R08/R09 以及 R1 生产放行等边界。
+
+提交回执：B2 已提交并推送 `b90f0a7f2a98daf89899a160de5eaa673ba64380`，远端 `refs/heads/codex/development` 精确核对一致。交付快照 `.local/autonomous-20261005/handover-android-delivery/` 保存 43 条明确暂存路径、完整 diff、敏感项扫描、13 条受保护路径核对、源码哈希、提交与推送回执。未将 APK 或 `.local` 证据上传；下一批 B3 先做 B0。

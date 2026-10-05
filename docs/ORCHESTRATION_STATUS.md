@@ -6,17 +6,17 @@
 ```yaml
 date: 2026-10-05
 branch: codex/development
-head: 895335e
-dirty_entries: 56
+head: b90f0a7
+dirty_entries: 15
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 30 }
 server: { contract: 0.39.0, paths: 133, flyway: V59, migrations: 59 }
 ```
 <!-- FACTS_END -->
-B2 接收机 Android 续作已满足本批退出标准，正在保存开发分支交付。详细决策、全部失败轮与限制见[自主进度 B2 交付段](history/AUTONOMOUS_PROGRESS_2026-10-05.md#b2-当次交付)，执行范围见[无人值守计划](history/AUTONOMOUS_PLAN_2026-10-05_UNATTENDED.md)，替换前 B1 断点见[归档](history/ORCHESTRATION_STATE_before_handover_android_delivery_2026-10-05.md)。
+B2 接收机 Android 续作已满足本批退出标准，提交并推送 b90f0a7f2a98daf89899a160de5eaa673ba64380，远端精确核对一致。详细决策、全部失败轮与限制见[自主进度 B2 交付段](history/AUTONOMOUS_PROGRESS_2026-10-05.md#b2-当次交付)，执行范围见[无人值守计划](history/AUTONOMOUS_PLAN_2026-10-05_UNATTENDED.md)，替换前 B1 断点见[归档](history/ORCHESTRATION_STATE_before_handover_android_delivery_2026-10-05.md)。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development；B2 输入及交付前 HEAD 为 895335ef599564766c55c69ed4a153654a7639ab，远端同值；交付 SHA 以 Git 回执核对。当前聊天为唯一写者，无在途 Gradle 或重型任务。
+- 树 D:/acrylic-pda-outbound，分支 codex/development；B2 输入为 895335ef599564766c55c69ed4a153654a7639ab，交付 HEAD/远端为 b90f0a7f2a98daf89899a160de5eaa673ba64380；后续文档提交自身 SHA 以 Git 回执核对。当前聊天为唯一写者，无在途 Gradle 或重型任务。
 - B0 快照 `.local/autonomous-20261005/handover-continuation-android-preflight/`、`handover-continuation-android-write/`；交付快照 `handover-android-delivery/`。13 条既有脏路径哈希未变，完整清单、diff、进程、监听与磁盘已保存，不代提交。
 - 19330/19434/19435/19436 无监听；999～1004 隔离 MySQL 全部 dump/认证停机，失败库保留。3306/13316 为既存 MySQL，未接入；D 盘约 24.3 GiB 可用，高于 20 GiB 阈值。
 - 本批改动：Android 耐久命令/验签/重试、审计排序及 Room 迁移、交接页面与状态入口；服务端续作整数输入兼容及契约说明；双设备生成身份组合夹具/测试与隔离轮次守卫。没有新服务端迁移或 API 路径；全部路径以交付快照和暂存清单核对。
