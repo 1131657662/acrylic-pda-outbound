@@ -6,25 +6,25 @@
 ```yaml
 date: 2026-10-05
 branch: codex/development
-head: 5ffe36a
-dirty_entries: 26
+head: 89cd427
+dirty_entries: 15
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 29 }
 server: { contract: 0.39.0, paths: 133, flyway: V59, migrations: 59 }
 ```
 <!-- FACTS_END -->
 
-正式提交与主管批准的离线凭据用途守卫已修复、验证并推送；本轮已补接收机确认后的跨设备续作服务端链。子项、SHA、自主决策、证据与未验见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-05.md)；设计边界见[续作设计](history/R07_HANDOVER_CONTINUATION_DESIGN_2026-10-05.md)。
+正式提交与主管批准的离线凭据用途守卫已修复、验证并推送；接收机确认后的跨设备续作服务端链已提交 `89cd427`。子项、SHA、自主决策、证据与未验见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-05.md)；设计边界见[续作设计](history/R07_HANDOVER_CONTINUATION_DESIGN_2026-10-05.md)。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development；源码和文档 SHA 以本轮 Git 回执核对。单助手，无已知在途写者、Gradle 或重型任务。D 盘约 29.9 GB 可用。
-- 19330/19434/19435/19436 无监听，988 已保留隔离数据库、dump 和正常停机证据，既存 MySQL 未操作。
-- 本轮续作差异、暂存清单与验证摘要见 `.local/e2a-cross-20260925-988/`；既有设计/分析文档、ContinuationApiIT/ContinuationFixture、物理处置请求及旧回归脚本保留，未代提交。
+- 树 D:/acrylic-pda-outbound，分支 codex/development；源码和文档 SHA 以本轮 Git 回执核对。单助手，无已知在途写者、Gradle 或重型任务。D 盘约 29.7 GB 可用。
+- 19330/19434/19435/19436 无监听，989 已保留隔离数据库、dump 和正常停机证据，既存 MySQL 未操作。
+- 本轮续作差异、提交清单与验证摘要见 `.local/e2a-cross-20260925-989/`；既有设计/分析文档、ContinuationApiIT/ContinuationFixture、物理处置请求及旧回归脚本保留，未代提交。
 
 ## 当次证据
 - 970～974 的用途守卫与交接审批证据仍保留；服务端全量单测本轮复验 170 XML、3079/0/0/1，编译通过。
-- 988 真实回环 HTTP 续作 1/0/0/0：未确认下载、错误身份、摘要漂移、写后失败回滚、首次同键并发、同文重放和异文冲突均覆盖；原提交替代指针、续作占用、导入授权撤销链和不可变回执均核对。
-- 988 使用生成身份、隔离 MySQL 和真实服务端 HTTP；证据含迁移日志、请求/回执、失败栈、数据库 dump、完成标记和正常停机。作者自审，未验独立消费者、原身份、APK、模拟器、真机或两个物理设备。
+- 989 真实回环 HTTP 续作 1/0/0/0：未确认下载、未知字段、错误身份、摘要漂移、写后失败回滚、首次同键并发、同文重放和异文冲突均覆盖；原提交替代指针、续作占用、导入授权撤销链和不可变回执均核对。
+- 989 使用生成身份、隔离 MySQL 和真实服务端 HTTP；证据含迁移日志、请求/回执、失败栈、数据库 dump、完成标记和正常停机。作者自审，未验独立消费者、原身份、APK、模拟器、真机或两个物理设备。
 
 ## 下一步、未验与边界
 - 服务端已写入原提交替代指针、续作占用及新的 pda:scan 凭据，但最终提交/批准账务和客户端消费闭环仍未完成；接收作业未因下载确认提前解冻。
