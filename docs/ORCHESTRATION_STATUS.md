@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-05
 branch: codex/development
-head: bc5f8b4
+head: d0b079b
 dirty_entries: 16
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 29 }
@@ -14,24 +14,24 @@ server: { contract: 0.38.0, paths: 132, flyway: V58, migrations: 58 }
 ```
 <!-- FACTS_END -->
 
-同实例服务端到 Android 冻结交接组合 bc5f8b4 已验证推送。子项、SHA、自主决策、证据和未验见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-05.md)；旧结论见[归档](history/ORCHESTRATION_STATE_before_combined_http_2026-10-05.md)。
+正式提交与主管批准的离线凭据用途守卫已修复、验证并推送。子项、SHA、自主决策、证据与未验见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-05.md)；旧结论见[归档](history/ORCHESTRATION_STATE_before_submission_purpose_2026-10-05.md)。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development，源码 HEAD bc5f8b47eccd745ec44dac9dcf841e454236ae93；文档自身 SHA 以 Git 回执为准。单助手，无已知在途写者、Gradle 或重型任务。D 盘约 31.99 GiB 可用。
-- 19330/19434/19435/19436 无监听，967～969 已保留 dump 并正常停机，既存 MySQL 未操作。
-- 全部脏路径/差异/哈希见 .local/autonomous-20261005/handover-combined-review-2/；收尾快照 handover-combined-checkpoint/。受保护文档、ContinuationApiIT/ContinuationFixture 及既存未跟踪资料未提交。
+- 树 D:/acrylic-pda-outbound，分支 codex/development，源码 HEAD d0b079b9f6c273a8f9e7802523bf487be54d76ac；文档自身 SHA 以 Git 回执为准。单助手，无已知在途写者、Gradle 或重型任务。D 盘约 30.86 GiB 可用。
+- 19330/19434/19435/19436 无监听，970～974 已保留 dump 并正常停机，既存 MySQL 未操作。
+- 全部启动脏路径/差异/哈希见 .local/autonomous-20261005/submission-purpose-resume/；收尾快照 submission-purpose-checkpoint/。受保护文档、ContinuationApiIT/ContinuationFixture 及其余既存未跟踪资料保留；后两文件参与回归但未代提交。
 
 ## 当次证据
-- 968 服务端与 Android 各 1/0/0/0：真实回环 HTTP、生产验签和原子导入、确认丢失后重开 Room 原正文重放，两侧确认时间相同，成功仍 HANDOVER_FROZEN。
-- 969 原审批链/移除证据/重启重放 1/0/0/0；Android 交接 89/0/0/1（15 XML），唯一跳过的组合用例已于 968 单独通过。服务端与 Android 编译通过。
-- 967 因 fixture 缺少 dispositions 失败，1/1/0/0；原证据保留。只在上传签名前补 Android fixture 格式；原路径经 969 回归。
-- 证据 .local/e2a-cross-20260925-967/～969/、.local/autonomous-20261005/handover-combined-regression/、handover-combined-delivery/；含源码前后哈希、暂存差异、提交/远端回执。
-- 作者自审，生成身份、同一测试设备身份、JVM/Room 及测试会话边界；网络异常为导入前/确认后注入。未验 APK、模拟器、真机、两个物理设备、独立消费者或原身份/Keystore 现场。
+- 970 红测 1/1/0/0：导入用途正式提交预期409却得200。971 初次变绿；972 扩充分块/终态重放后 1/0/0/0，拒绝导入及异常用途，无新增占用/账务；正常提交/批准及原回执重放保留。
+- 973 相关集成 8类81/0/0/0；974 交接审批/实物移除证据/重启重放 1/0/0/0；服务端全量单测170 XML、3079/0/0/1。离线编译通过，源码前后哈希一致。
+- 用途专项和973为生成签名身份、MockMvc与真实MySQL；974为生成身份、真实回环HTTP。作者自审，未验独立消费者、原身份、APK、模拟器、真机或两个物理设备。
+- 证据 .local/e2a-cross-20260925-970/～974/、.local/autonomous-20261005/submission-purpose-final-*/、submission-purpose-delivery/；包含失败记录、XML、dump摘要、停机和提交远端回执。
+- 接续基线误复用旧805日志/摘要路径，已复制到当日resume目录并在决策109说明；其后全用新目录。此前968双侧组合、969原审批链和967失败保留原证据，不代替本项未验范围。
 
 ## 下一步、未验与边界
-- 核查服务端最终提交用途守卫，再推进原提交指针、占用归属、跨设备续作凭据及最终提交。目标仍冻结，两设备闭环未完成。
-- PDA 页面/重试交互、旧凭据/旧客户端、TEMP、mapping3+、R1 生产放行、历史更正、现场/断电/长时、R05 原资料/旧 BCD/526、R09 恢复限制继续单列。
-- 生产 gate 默认值未变；不合 main、不打标签/Release、不部署、不接原库/现网，未删除 .local 证据。长期目标 active。
+- 推进原提交指针、占用归属、跨设备续作凭据及最终提交。普通续作仍限同设备/人员，接收作业仍HANDOVER_FROZEN，两设备闭环未完成。
+- PDA页面/重试、旧凭据/旧客户端、TEMP、mapping3+、R1生产放行、历史更正、现场/断电/长时、R05原资料/旧BCD/526、R09恢复限制继续单列。
+- 生产gate默认值未变；不合main、不打标签/Release、不部署、不接原库/现网，未删除.local证据。长期目标active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实见生成块；文档提交自身 SHA 以 Git 回执核对。
