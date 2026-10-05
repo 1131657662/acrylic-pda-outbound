@@ -6,17 +6,17 @@
 ```yaml
 date: 2026-10-06
 branch: codex/development
-head: dc7a01a
-dirty_entries: 33
+head: d469bbf
+dirty_entries: 15
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 30 }
 server: { contract: 0.39.0, paths: 133, flyway: V59, migrations: 59 }
 ```
 <!-- FACTS_END -->
-B3 来源、停止保全与候选消费已满足本批退出标准，准备明确路径提交推送。详细改动、失败轮、证据与边界见[当日自主进度](history/AUTONOMOUS_PROGRESS_2026-10-06.md#b3-当次交付)，范围见[无人值守计划](history/AUTONOMOUS_PLAN_2026-10-05_UNATTENDED.md)，替换前断点见[归档](history/ORCHESTRATION_STATE_before_b3_delivery_2026-10-06.md)。
+B3 来源、停止保全与候选消费已满足本批退出标准，已提交并推送 d469bbf7185c899fdccfbb8e59ac8b34d72d61c2。详细改动、失败轮、证据与边界见[当日自主进度](history/AUTONOMOUS_PROGRESS_2026-10-06.md#b3-当次交付)，范围见[无人值守计划](history/AUTONOMOUS_PLAN_2026-10-05_UNATTENDED.md)，替换前断点见[归档](history/ORCHESTRATION_STATE_before_b3_delivery_2026-10-06.md)。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development；B3 输入 HEAD/远端 dc7a01ad4395cb1263ad3e87927ac8cbd39d3d8d。当前聊天唯一写者，无在途测试或重型任务；提交后的自身 SHA 以 Git 回执核对。
+- 树 D:/acrylic-pda-outbound，分支 codex/development；B3 输入 dc7a01ad4395cb1263ad3e87927ac8cbd39d3d8d，交付 HEAD/远端 d469bbf7185c899fdccfbb8e59ac8b34d72d61c2。当前聊天唯一写者，无在途测试或重型任务；提交后的自身 SHA 以 Git 回执核对。
 - B0 `b3-source-preflight/`、跨日断点 `b3-checkpoint-20261006/`、交付快照 `b3-delivery/` 均位于 `.local/autonomous-20261005/`；全部脏路径/diff/哈希/进程/监听已保存，13 条受保护路径未改动、不代提交。
 - 本批改动：Android VERIFY 验签状态、HTTP/迁移/恢复反例；服务端 VERIFY 状态持久化和原件完整性、签名往返与五阶段 SQL 故障测试；来源证据契约及本批文档。无新迁移或 API 路径，完整清单见交付快照。
 - 1005～1011 均已 dump/认证停机；失败库保留。19330/19434/19435/19436 无监听，3306/13316 既存 MySQL 未操作。D 盘可用 24534929408 字节，高于 20 GiB 阈值。
@@ -32,7 +32,7 @@ B3 来源、停止保全与候选消费已满足本批退出标准，准备明�
 - 失败保留：1006 原件 GET 409；服务端定向首轮 306/5/0/1 为 Mockito varargs 取参错误；Android filter 启动 0 测试；APK metadata 辅助正则首轮未匹配。各项已修正复验，失败日志/XML/库未覆盖。
 
 ## 下一步、未验与边界
-- 完成 B3 明确路径提交推送与远端核对后进入 B4；先 B0，再盘点拒绝/实物处置、跨来源续作与关联成功链。下一隔离编号在全树核对后分配，不复用旧库。
+- B3 提交推送与远端核对完成，下一批 B4；先 B0，再盘点拒绝/实物处置、跨来源续作与关联成功链。下一隔离编号在全树核对后分配，不复用旧库。
 - B1 已交付 b55b4796a77c7938cab643cc8b21f56c1c897e45，B2 已交付 b90f0a7f2a98daf89899a160de5eaa673ba64380；历史证据见前日进度，不代替 B3。
 - 真机、APK 安装、两个物理设备、原身份/Keystore、现场网络、旧客户端、断电和长时未验。TEMP 高轮次、候选排除/跨来源权限、LINK currentEffect 契约遗漏（B8）、R1 生产放行、R05 原资料/旧 BCD/526、R09 恢复限制继续单列。
 - 生产 gate 默认值与七类生产决定边界保持，localDeletionAllowed=false；不合 main、Release、部署、接原库/现网或删除 .local。长期目标 active，本批不代表 R01–R09 全部完成。
