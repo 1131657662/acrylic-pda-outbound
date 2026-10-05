@@ -1,0 +1,31 @@
+Path:
+  post:
+    summary: 接收机确认固定资料后领取跨设备续作扫码凭据
+    description: >-
+      仅在 outbound.handover.commands.enabled=true 的隔离或明确授权环境存在；默认关闭。
+      必须使用已激活交接案件的目标人员及目标设备，并先完成准备资料下载确认。服务端重验原恢复包、保留清单、输入高水位、固定计划和当前接收授权，
+      同一事务写入续作票据、原提交替代指针、续作占用、新的 pda:scan 凭据及不可变回执。原交接导入凭据仍只用于导入，不会恢复原机扫码。
+      同一命令键同文逐字节重放仅限已持久化的案件、人员和设备；异文或跨身份重放拒绝。此接口不释放库存、不产生出库账务，也不改变生产默认 gate。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {name: caseId, in: path, required: true, schema: {type: string, format: uuid}}
+      - {name: X-Server-Recovery-Epoch, in: header, required: true, schema: {$ref: './openapi.yaml#/components/parameters/Epoch/schema'}}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './handover-continuation-schemas.yaml#/Command'}
+    responses:
+      '200':
+        description: 续作扫码资格回执；同键同文重放原 JSON 字节
+        headers:
+          Cache-Control: {schema: {type: string, const: no-store}}
+          X-Content-Type-Options: {schema: {type: string, const: nosniff}}
+        content:
+          application/json:
+            schema: {$ref: './handover-continuation-schemas.yaml#/Receipt'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}

@@ -1,0 +1,36 @@
+Command:
+  type: object
+  additionalProperties: false
+  required: [commandVersion, commandId, assignmentId, authorizationId, payloadSha256, retainedManifestSha256, nextOrderScanSeq, planSha256]
+  properties:
+    commandVersion: {type: integer, const: 1}
+    commandId: {type: string, format: uuid, description: 接收机本地持久化的原键}
+    assignmentId: {type: string, format: uuid, description: 已激活交接目标授权}
+    authorizationId: {type: string, format: uuid, description: 下载确认时持有的导入授权}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$', description: 原恢复包正文摘要}
+    retainedManifestSha256: {type: string, pattern: '^[a-f0-9]{64}$', description: 有效保留扫描集合摘要}
+    nextOrderScanSeq: {type: integer, minimum: 1, description: 新输入的首个订单序号}
+    planSha256: {type: string, pattern: '^[a-f0-9]{64}$', description: 固定计划摘要}
+Receipt:
+  type: object
+  additionalProperties: false
+  required: [caseId, continuationId, status, assignmentId, authorizationId, scope, previousAssignmentId, previousAuthorizationId, recoveryPackageSha256, retainedManifestSha256, nextOrderScanSeq, expiresAt, stockReleased, targetDeviceId, targetUserId, signedToken, assignment, signedReceipt]
+  properties:
+    caseId: {type: string, format: uuid}
+    continuationId: {type: string, format: uuid}
+    status: {type: string, const: ACTIVATED}
+    assignmentId: {type: string, format: uuid}
+    authorizationId: {type: string, format: uuid}
+    scope: {type: string, const: pda:scan}
+    previousAssignmentId: {type: string, format: uuid}
+    previousAuthorizationId: {type: string, format: uuid}
+    recoveryPackageSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    retainedManifestSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    nextOrderScanSeq: {type: integer, minimum: 1}
+    expiresAt: {type: string, format: date-time}
+    stockReleased: {type: boolean, const: false}
+    targetDeviceId: {type: string, format: uuid}
+    targetUserId: {type: string, format: uuid}
+    signedToken: {type: string, description: RS256 JWT，scope=pda:scan}
+    assignment: {$ref: './assignment-schemas.yaml#/View'}
+    signedReceipt: {type: string, description: RS256 JWT，aud=acrylic-pda-handover-continuation，绑定除 signedReceipt 外的完整回执}

@@ -6,30 +6,29 @@
 ```yaml
 date: 2026-10-05
 branch: codex/development
-head: d0b079b
-dirty_entries: 16
+head: 5ffe36a
+dirty_entries: 26
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 29 }
-server: { contract: 0.38.0, paths: 132, flyway: V58, migrations: 58 }
+server: { contract: 0.39.0, paths: 133, flyway: V59, migrations: 59 }
 ```
 <!-- FACTS_END -->
 
-正式提交与主管批准的离线凭据用途守卫已修复、验证并推送。子项、SHA、自主决策、证据与未验见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-05.md)；旧结论见[归档](history/ORCHESTRATION_STATE_before_submission_purpose_2026-10-05.md)。
+正式提交与主管批准的离线凭据用途守卫已修复、验证并推送；本轮已补接收机确认后的跨设备续作服务端链。子项、SHA、自主决策、证据与未验见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-05.md)；设计边界见[续作设计](history/R07_HANDOVER_CONTINUATION_DESIGN_2026-10-05.md)。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development，源码 HEAD d0b079b9f6c273a8f9e7802523bf487be54d76ac；文档自身 SHA 以 Git 回执为准。单助手，无已知在途写者、Gradle 或重型任务。D 盘约 30.86 GiB 可用。
-- 19330/19434/19435/19436 无监听，970～974 已保留 dump 并正常停机，既存 MySQL 未操作。
-- 全部启动脏路径/差异/哈希见 .local/autonomous-20261005/submission-purpose-resume/；收尾快照 submission-purpose-checkpoint/。受保护文档、ContinuationApiIT/ContinuationFixture 及其余既存未跟踪资料保留；后两文件参与回归但未代提交。
+- 树 D:/acrylic-pda-outbound，分支 codex/development；源码和文档 SHA 以本轮 Git 回执核对。单助手，无已知在途写者、Gradle 或重型任务。D 盘约 29.9 GB 可用。
+- 19330/19434/19435/19436 无监听，988 已保留隔离数据库、dump 和正常停机证据，既存 MySQL 未操作。
+- 本轮续作差异、暂存清单与验证摘要见 `.local/e2a-cross-20260925-988/`；既有设计/分析文档、ContinuationApiIT/ContinuationFixture、物理处置请求及旧回归脚本保留，未代提交。
 
 ## 当次证据
-- 970 红测 1/1/0/0：导入用途正式提交预期409却得200。971 初次变绿；972 扩充分块/终态重放后 1/0/0/0，拒绝导入及异常用途，无新增占用/账务；正常提交/批准及原回执重放保留。
-- 973 相关集成 8类81/0/0/0；974 交接审批/实物移除证据/重启重放 1/0/0/0；服务端全量单测170 XML、3079/0/0/1。离线编译通过，源码前后哈希一致。
-- 用途专项和973为生成签名身份、MockMvc与真实MySQL；974为生成身份、真实回环HTTP。作者自审，未验独立消费者、原身份、APK、模拟器、真机或两个物理设备。
-- 证据 .local/e2a-cross-20260925-970/～974/、.local/autonomous-20261005/submission-purpose-final-*/、submission-purpose-delivery/；包含失败记录、XML、dump摘要、停机和提交远端回执。
-- 接续基线误复用旧805日志/摘要路径，已复制到当日resume目录并在决策109说明；其后全用新目录。此前968双侧组合、969原审批链和967失败保留原证据，不代替本项未验范围。
+- 970～974 的用途守卫与交接审批证据仍保留；服务端全量单测本轮复验 170 XML、3079/0/0/1，编译通过。
+- 988 真实回环 HTTP 续作 1/0/0/0：未确认下载、错误身份、摘要漂移、写后失败回滚、首次同键并发、同文重放和异文冲突均覆盖；原提交替代指针、续作占用、导入授权撤销链和不可变回执均核对。
+- 988 使用生成身份、隔离 MySQL 和真实服务端 HTTP；证据含迁移日志、请求/回执、失败栈、数据库 dump、完成标记和正常停机。作者自审，未验独立消费者、原身份、APK、模拟器、真机或两个物理设备。
 
 ## 下一步、未验与边界
-- 推进原提交指针、占用归属、跨设备续作凭据及最终提交。普通续作仍限同设备/人员，接收作业仍HANDOVER_FROZEN，两设备闭环未完成。
+- 服务端已写入原提交替代指针、续作占用及新的 pda:scan 凭据，但最终提交/批准账务和客户端消费闭环仍未完成；接收作业未因下载确认提前解冻。
+- 普通续作仍限同设备/人员；PDA 页面/重试、旧凭据/旧客户端、两个物理设备和最终提交仍未验，不能称为完整跨设备交接。
 - PDA页面/重试、旧凭据/旧客户端、TEMP、mapping3+、R1生产放行、历史更正、现场/断电/长时、R05原资料/旧BCD/526、R09恢复限制继续单列。
 - 生产gate默认值未变；不合main、不打标签/Release、不部署、不接原库/现网，未删除.local证据。长期目标active。
 <!-- CURRENT_STATE_END -->
