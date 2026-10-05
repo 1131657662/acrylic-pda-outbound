@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-05
 branch: codex/development
-head: 7400429
-dirty_entries: 16
+head: 8c2c0da
+dirty_entries: 14
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 29 }
 server: { contract: 0.39.0, paths: 133, flyway: V59, migrations: 59 }
@@ -19,7 +19,7 @@ server: { contract: 0.39.0, paths: 133, flyway: V59, migrations: 59 }
 ## Git、写权与环境
 - 树 D:/acrylic-pda-outbound，分支 codex/development；实际 HEAD 和版本事实以 Git 回执及生成事实块核对。单助手，无已知在途写者、Gradle 或重型任务。D 盘约 26.8 GiB 可用。
 - 19330/19434/19435/19436 无监听，既有隔离数据库、dump 和认证停机证据保留，既存 MySQL 未操作。
-- 本轮最终提交证据见 `.local/autonomous-20261005/handover-final-submit-990/` 至 `992/`、`handover-final-regression-994/` 与 `.local/e2a-cross-20260925-993/`。本次 mapping3+ 为只读审计，未生成新的测试、数据库或运行证据。未代提交的受保护路径为两份既有文档、ContinuationApiIT、ContinuationFixture、六份既有未跟踪历史文档、物理处置请求和两份旧脚本。
+- 本轮最终提交证据见 `.local/autonomous-20261005/handover-final-submit-990/` 至 `992/`、`handover-final-regression-994/` 与 `.local/e2a-cross-20260925-993/`。本次 mapping3+ 为只读审计，未生成新的测试、数据库或运行证据。未代提交的受保护路径为两份既有文档、ContinuationApiIT、ContinuationFixture、一份既有未跟踪 UI 审查文档、六份既有未跟踪历史文档、物理处置请求和两份旧脚本。
 
 ## 当次证据
 - 990 因测试正文缺 dispositions 失败，991 因断言不存在账本列失败；失败 XML、日志和隔离库均保留。992 修正后真实回环 HTTP 最终提交 1/0/0/0。
