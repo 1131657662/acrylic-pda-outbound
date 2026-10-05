@@ -93,10 +93,19 @@ public class HandoverContinuationService {
         String recoveryId=recoveryRows.getFirst();
         UUID id=Ids.next(); UUID scope=UUID.fromString(facts.path("scopeId").asText()),order=UUID.fromString(facts.path("orderId").asText()),source=UUID.fromString(facts.path("submissionId").asText());
         int rows=jdbc.update("INSERT INTO order_continuation(id,request_id,scope_id,order_id,previous_submission_id,from_round,to_round,revision,assigned_device_id,recovery_package_id,retained_manifest_sha256,next_order_scan_seq,status,command_text,requested_by,new_assignment_id,approved_by,physical_evidence,receipt_text,created_at,approved_at) VALUES(?,?,?,?,?,?,?,?,?,?,UNHEX(?),?,'ACTIVATED',?,?,?,?,?,?,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6))",
-            Ids.bytes(id),Ids.bytes(recall),Ids.bytes(scope),Ids.bytes(order),Ids.bytes(source),facts.path("fromRound").asLong(),facts.path("toRound").asLong(),assignment.revision(),Ids.bytes(UUID.fromString(assignment.deviceId())),Ids.bytes(UUID.fromString(recoveryId)),input.retainedSha256(),input.nextSeq(),input.command(),Ids.bytes(principal.userId()),Ids.bytes(UUID.fromString(assignment.id())),Ids.bytes(principal.userId()),"接收机交接续作已核验",input.command());
+            Ids.bytes(id),Ids.bytes(recall),Ids.bytes(scope),Ids.bytes(order),Ids.bytes(source),facts.path("fromRound").asLong(),facts.path("toRound").asLong(),assignment.revision(),Ids.bytes(UUID.fromString(assignment.deviceId())),Ids.bytes(UUID.fromString(recoveryId)),input.retainedSha256(),input.nextSeq(),continuationCommand(body,input),Ids.bytes(principal.userId()),Ids.bytes(UUID.fromString(assignment.id())),Ids.bytes(principal.userId()),"接收机交接续作已核验",input.command());
         check(rows==1,"HANDOVER_CONTEXT_CHANGED","交接案件已变化，请重新核对");
         for(JsonNode row:DispositionProofs.effective(body)) jdbc.update("INSERT INTO continuation_bale(continuation_id,bale_id,origin_scan_id,expected_cycle,record_sha256) VALUES(?,?,?,?,UNHEX(?))",Ids.bytes(id),Ids.bytes(uuid(row,"baleId")),Ids.bytes(uuid(row,"captureId")),number(row,"expectedDispatchCycle"),sha(row));
         return new CreatedContinuation(id);
+    }
+
+    /** Internal continuation projection; the original eight-field command stays in handover_continuation. */
+    private String continuationCommand(JsonNode body,Input input) {
+        var command=object(); command.setAll((com.fasterxml.jackson.databind.node.ObjectNode)parse(input.command()));
+        var actions=command.putArray("dispositions");
+        for(var row:DispositionProofs.effective(body)) actions.add(object().put("barcode",text(row,"barcode"))
+            .put("expectedDispatchCycle",text(row,"expectedDispatchCycle")).put("action","RETAIN"));
+        return canonical(command);
     }
 
     private Authorization issueScanAuthorization(AssignmentStore.View assignment,PdaSessions.Principal principal,UUID previous) {

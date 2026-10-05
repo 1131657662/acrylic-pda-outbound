@@ -53,13 +53,40 @@ final class HandoverContinuationFixture {
         return request("POST", "/handovers/" + source.kase + "/continuation", body, identity, expected);
     }
 
+    byte[] submit(ObjectNode body, JsonNode identity, int expected) throws Exception {
+        return request("POST", "/orders/" + source.r.f.order + "/submissions", body, identity, expected);
+    }
+
+    ObjectNode continuationSubmission(JsonNode receipt) {
+        var target = receipt.path("assignment");
+        var body = source.r.f.body.deepCopy();
+        body.put("submissionId", UUID.randomUUID().toString())
+            .put("assignmentId", target.path("id").asText()).put("assignmentEpoch", target.path("epoch").asText())
+            .put("freezeDeviceId", target.path("deviceId").asText()).put("workRound", "2")
+            .put("sourceRecoveryEpoch", target.path("serverRecoveryEpoch").asText())
+            .put("continuationId", receipt.path("continuationId").asText())
+            .put("closedAt", Instant.parse(target.path("issuedAt").asText()).plusMillis(200).toString())
+            .putNull("shortShipmentReason");
+        for (String key : new String[]{"captures", "scans", "events"}) body.set(key, source.r.body.path(key).deepCopy());
+        body.set("dispositions", DispositionProofs.rows(source.r.body).deepCopy());
+        body.withArray("events").add(SubmissionJson.object().put("id", UUID.randomUUID().toString())
+            .putNull("captureId").put("assignmentId", target.path("id").asText())
+            .put("originDeviceId", target.path("deviceId").asText()).put("operatorId", target.path("operatorId").asText())
+            .put("localSeq", "1").put("type", "FROZEN")
+            .put("detail", body.path("submissionId").asText()).put("wallMs", "1000").put("elapsedMs", "1000").put("boot", 1));
+        return body;
+    }
+
     private byte[] request(String method, String path, JsonNode body, JsonNode identity, int expected) throws Exception {
         var builder = HttpRequest.newBuilder(URI.create("http://127.0.0.1:19434/api/v1/pda" + path))
             .timeout(java.time.Duration.ofSeconds(40)).header("Content-Type", "application/json")
             .header("X-Server-Recovery-Epoch", "1").header("Authorization", "Bearer " + identity.path("accessToken").asText());
         builder.method(method, body == null ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(SubmissionJson.canonical(body)));
+        int call = calls.incrementAndGet();
+        if (body != null) Files.writeString(source.directory.resolve("continuation-request-" + call + ".json"),
+            SubmissionJson.canonical(body), StandardOpenOption.CREATE_NEW);
         var response = HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.ofByteArray());
-        Files.write(source.directory.resolve("continuation-http-" + calls.incrementAndGet() + ".json"), response.body(), StandardOpenOption.CREATE_NEW);
+        Files.write(source.directory.resolve("continuation-http-" + call + ".json"), response.body(), StandardOpenOption.CREATE_NEW);
         assertThat(response.statusCode()).as(new String(response.body(), java.nio.charset.StandardCharsets.UTF_8)).isEqualTo(expected);
         return response.body();
     }

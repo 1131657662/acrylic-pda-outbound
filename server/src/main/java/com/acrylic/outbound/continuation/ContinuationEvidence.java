@@ -36,7 +36,7 @@ public class ContinuationEvidence {
     }
     private void origin(Map<String,AssignmentStore.View> result,String id,AssignmentStore.View current) {
         var old=result.computeIfAbsent(id,k->assignments.get(UUID.fromString(k)));
-        equal(old.orderId(),current.orderId(),"原记录订单不匹配");equal(old.deviceId(),current.deviceId(),"原记录设备不匹配");equal(old.operatorId(),current.operatorId(),"原记录人员不匹配");
+        equal(old.orderId(),current.orderId(),"原记录订单不匹配");
     }
     public void transfer(SubmissionStore.Head head,JsonNode body) {
         var h=store.forAssignment(head.control().assignment());if(h==null)return;

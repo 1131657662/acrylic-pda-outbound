@@ -26,6 +26,7 @@ public final class HandoverContinuationChecks {
         rejectAndRollbackWriteFailure(f);
         var receipt = concurrentFirstWrite(f);
         assertProjection(f, receipt);
+        new HandoverContinuationSubmissionChecks().verify(f, SubmissionJson.parse(receipt));
         assertReplayAndConflict(f, receipt);
     }
 
@@ -65,11 +66,8 @@ public final class HandoverContinuationChecks {
         var jdbc = f.source.r.f.jdbc;
         var before = state(f);
         jdbc.execute("CREATE TRIGGER e2a_handover_continuation_write_failure BEFORE INSERT ON handover_continuation FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='continuation evidence failure'");
-        try {
-            f.resume(f.command, f.tokens, 500);
-        } finally {
-            jdbc.execute("DROP TRIGGER e2a_handover_continuation_write_failure");
-        }
+        try { f.resume(f.command, f.tokens, 500); }
+        finally { jdbc.execute("DROP TRIGGER e2a_handover_continuation_write_failure"); }
         assertThat(state(f)).isEqualTo(before);
     }
 
@@ -82,9 +80,7 @@ public final class HandoverContinuationChecks {
             var left = first.get(40, TimeUnit.SECONDS); var right = second.get(40, TimeUnit.SECONDS);
             assertThat(left).isEqualTo(right);
             return left;
-        } finally {
-            pool.shutdownNow();
-        }
+        } finally { pool.shutdownNow(); }
     }
 
     private void assertProjection(HandoverContinuationFixture f, byte[] bytes) throws Exception {
@@ -107,17 +103,23 @@ public final class HandoverContinuationChecks {
         assertThat(jdbc.queryForObject("SELECT work_round FROM submission_scope WHERE id=(SELECT scope_id FROM submission WHERE id=UUID_TO_BIN(?))", Integer.class, f.source.r.f.id())).isEqualTo(2);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE continuation_id=UUID_TO_BIN(?) AND state='CONTINUATION_RESERVED'", Integer.class, receipt.path("continuationId").asText())).isEqualTo(2);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM inventory_ledger l JOIN dispatch_record d ON d.id=l.dispatch_id WHERE d.order_id=UUID_TO_BIN(?)", Integer.class, f.assignment.path("orderId").asText())).isZero();
+        assertAuthorization(f, receipt);
+        assertThat(jdbc.queryForObject("SELECT superseded_by IS NOT NULL FROM submission WHERE id=UUID_TO_BIN(?)", Boolean.class, f.source.r.f.id())).isTrue();
+        assertThat(Files.exists(f.source.directory.getParent().resolve("storage/submissions/" + SubmissionJson.sha(f.source.r.body) + ".json"))).isTrue();
+        var commandDigest = jdbc.queryForObject("SELECT command_sha256 FROM handover_continuation WHERE command_id=UUID_TO_BIN(?)", byte[].class, f.command.path("commandId").asText());
+        assertThat(HexFormat.of().formatHex(commandDigest)).isEqualTo(SubmissionJson.sha(f.command));
+        assertThat(SubmissionJson.parse(jdbc.queryForObject("SELECT command_text FROM handover_continuation WHERE case_id=UUID_TO_BIN(?)", String.class, f.source.kase.toString()))).isEqualTo(f.command);
+        assertThatThrownBy(() -> jdbc.update("UPDATE handover_continuation SET receipt_text=receipt_text WHERE case_id=UUID_TO_BIN(?)", f.source.kase.toString())).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> jdbc.update("DELETE FROM handover_continuation WHERE case_id=UUID_TO_BIN(?)", f.source.kase.toString())).isInstanceOf(DataAccessException.class);
+    }
+
+    private void assertAuthorization(HandoverContinuationFixture f, com.fasterxml.jackson.databind.JsonNode receipt) {
+        var jdbc = f.source.r.f.jdbc;
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM offline_authorization WHERE assignment_id=UUID_TO_BIN(?)", Integer.class, f.assignment.path("id").asText())).isEqualTo(2);
         assertThat(jwtScope(jdbc.queryForObject("SELECT signed_token FROM offline_authorization WHERE id=UUID_TO_BIN(?)", String.class, f.assignment.path("offlineAuthorizationId").asText()))).isEqualTo("pda:handover-import");
         assertThat(jwtScope(receipt.path("signedToken").asText())).isEqualTo("pda:scan");
         assertThat(jdbc.queryForObject("SELECT revoked_at IS NOT NULL AND replaced_by=UUID_TO_BIN(?) FROM offline_authorization WHERE id=UUID_TO_BIN(?)", Boolean.class,
             receipt.path("authorizationId").asText(), receipt.path("previousAuthorizationId").asText())).isTrue();
-        assertThat(jdbc.queryForObject("SELECT superseded_by IS NOT NULL FROM submission WHERE id=UUID_TO_BIN(?)", Boolean.class, f.source.r.f.id())).isTrue();
-        assertThat(Files.exists(f.source.directory.getParent().resolve("storage/submissions/" + SubmissionJson.sha(f.source.r.body) + ".json"))).isTrue();
-        var commandDigest = jdbc.queryForObject("SELECT command_sha256 FROM handover_continuation WHERE command_id=UUID_TO_BIN(?)", byte[].class, f.command.path("commandId").asText());
-        assertThat(HexFormat.of().formatHex(commandDigest)).isEqualTo(SubmissionJson.sha(f.command));
-        assertThatThrownBy(() -> jdbc.update("UPDATE handover_continuation SET receipt_text=receipt_text WHERE case_id=UUID_TO_BIN(?)", f.source.kase.toString())).isInstanceOf(DataAccessException.class);
-        assertThatThrownBy(() -> jdbc.update("DELETE FROM handover_continuation WHERE case_id=UUID_TO_BIN(?)", f.source.kase.toString())).isInstanceOf(DataAccessException.class);
     }
 
     private void assertReplayAndConflict(HandoverContinuationFixture f, byte[] receipt) throws Exception {

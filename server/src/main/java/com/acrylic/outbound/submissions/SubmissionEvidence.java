@@ -39,11 +39,12 @@ public class SubmissionEvidence {
         summary(body,captures.values(),saved,voided);require(recovery || saved>0,"整单0包不能确认出库");
     }
     private Map<UUID,JsonNode> captures(Context h,AssignmentStore.View current,JsonNode body,Map<String,AssignmentStore.View> origins) {
-        var result=new LinkedHashMap<UUID,JsonNode>();var deviceSeqs=new HashSet<Long>();long seq=1,previousDevice=0;
+        var result=new LinkedHashMap<UUID,JsonNode>();var previousByDevice=new HashMap<String,Long>();long seq=1;
         for(var c:array(body,"captures")) {
             var a=origins.get(text(c,"assignmentId"));require(a!=null,"输入原授权不在核验来源中");
             UUID id=uuid(c,"id");require(result.put(id,c)==null,"原输入ID重复");
-            equal(number(c,"orderScanSeq"),seq++,"输入序号有缺口或乱序");long d=number(c,"deviceCaptureSeq");require(d>previousDevice && deviceSeqs.add(d),"设备输入序号重复或乱序");previousDevice=d;
+            equal(number(c,"orderScanSeq"),seq++,"输入序号有缺口或乱序");
+            long d=number(c,"deviceCaptureSeq");require(d>previousByDevice.getOrDefault(a.deviceId(),0L),"设备输入序号重复或乱序");previousByDevice.put(a.deviceId(),d);
             equal(text(c,"assignmentId"),a.id(),"输入原授权错误");equal(text(c,"orderId"),a.orderId(),"输入原订单错误");
             equal(text(c,"originDeviceId"),a.deviceId(),"输入原设备错误");equal(text(c,"operatorId"),a.operatorId(),"输入原人员错误");
             equal(text(c,"warehouseId"),h.warehouse().toString(),"输入仓库错误");equal(text(c,"authorizationId"),a.offlineAuthorizationId(),"输入离线凭据错误");
@@ -59,19 +60,18 @@ public class SubmissionEvidence {
         }
         equal(number(body,"captureHighWatermark"),seq-1,"输入高水位错误");return result;
     }
-    private record EventIndex(Map<UUID,Set<String>> types,Map<Long,JsonNode> sequences) {}
+    private record DeviceSequence(String device,long sequence) {}
+    private record EventIndex(Map<UUID,Set<String>> types,Map<DeviceSequence,JsonNode> sequences) {}
     private EventIndex events(Context h,JsonNode body,Map<UUID,JsonNode> captures,boolean recovery,Map<String,AssignmentStore.View> origins) {
-        var result=new EventIndex(new HashMap<>(),new HashMap<>());var ids=new HashSet<UUID>();long previous=0;JsonNode last=null;
+        var result=new EventIndex(new HashMap<>(),new HashMap<>());var ids=new HashSet<UUID>();
+        var previousByDevice=new HashMap<String,Long>();JsonNode last=null;
         for(var e:array(body,"events")) {
-            require(ids.add(uuid(e,"id")),"审计ID重复");long seq=number(e,"localSeq");require(seq>previous,"本单审计顺序错误");previous=seq;
-            require(origins.containsKey(text(e,"assignmentId")),"审计订单来源错误");equal(text(e,"originDeviceId"),h.device().toString(),"审计设备错误");
-            equal(text(e,"operatorId"),h.actor().toString(),"审计人员错误");number(e,"wallMs");number(e,"elapsedMs");
+            require(ids.add(uuid(e,"id")),"审计ID重复");long seq=number(e,"localSeq");String device=text(e,"originDeviceId");
+            require(seq>previousByDevice.getOrDefault(device,0L),"本单审计顺序错误");previousByDevice.put(device,seq);
+            eventOrigin(e,origins,captures);number(e,"wallMs");number(e,"elapsedMs");
             require(e.path("boot").isIntegralNumber() && text(e,"detail").length()<=500,"审计字段错误");
-            if(!e.path("captureId").isNull()) {
-                UUID id=uuid(e,"captureId");require(captures.containsKey(id),"审计指向不存在输入");
-                result.types().computeIfAbsent(id,key->new HashSet<>()).add(text(e,"type"));
-            }
-            result.sequences().put(seq,e);last=e;
+            if(!e.path("captureId").isNull()) result.types().computeIfAbsent(uuid(e,"captureId"),key->new HashSet<>()).add(text(e,"type"));
+            result.sequences().put(new DeviceSequence(device,seq),e);last=e;
         }
         require(last!=null && text(last,"type").equals(recovery?"RECALL_STOPPED":"FROZEN"),"缺少停止/冻结审计");
         equal(text(last,"assignmentId"),h.assignment().toString(),"最后审计须使用当前授权");
@@ -84,6 +84,14 @@ public class SubmissionEvidence {
         }
         return result;
     }
+    private void eventOrigin(JsonNode event,Map<String,AssignmentStore.View> origins,Map<UUID,JsonNode> captures) {
+        var origin=origins.get(text(event,"assignmentId"));require(origin!=null,"审计订单来源错误");
+        equal(text(event,"originDeviceId"),origin.deviceId(),"审计设备错误");
+        equal(text(event,"operatorId"),origin.operatorId(),"审计人员错误");
+        if(event.path("captureId").isNull())return;
+        var capture=captures.get(uuid(event,"captureId"));require(capture!=null,"审计指向不存在输入");
+        equal(text(event,"assignmentId"),text(capture,"assignmentId"),"审计与输入授权不匹配");
+    }
     private void scan(AssignmentStore.View a,JsonNode scan,JsonNode capture,EventIndex events) {
         equal(number(scan,"orderScanSeq"),number(capture,"orderScanSeq"),"保存序号错误");equal(text(scan,"barcode"),text(capture,"barcode"),"保存条码错误");
         String raw=text(capture,"rawInput").replaceAll("^[ \\r\\n\\t]+|[ \\r\\n\\t]+$","");require(raw.matches("[0-9A-Za-z]{11}"),"有效条码格式错误");
@@ -92,7 +100,7 @@ public class SubmissionEvidence {
         Instant saved=time(text(scan,"savedAt")),confirmed=time(text(capture,"confirmedAt")),issued=Instant.parse(a.issuedAt()),expires=Instant.parse(a.expiresAt());
         require(!confirmed.isBefore(issued) && !saved.isBefore(confirmed) && saved.isBefore(expires),"保存不在原离线授权期限内");
         require(has(events,uuid(capture,"id"),"CONFIRM_REQUESTED"),"缺少确认意图审计");
-        JsonNode savedEvent=events.sequences().get(number(scan,"localSeq"));
+        JsonNode savedEvent=events.sequences().get(new DeviceSequence(a.deviceId(),number(scan,"localSeq")));
         require(savedEvent!=null && savedEvent.path("captureId").asText().equals(text(capture,"id")) && text(savedEvent,"type").equals("SAVED"),"保存审计引用错误");
     }
     private boolean has(EventIndex events,UUID id,String type) { return events.types().getOrDefault(id,Set.of()).contains(type); }
