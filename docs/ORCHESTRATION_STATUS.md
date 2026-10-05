@@ -6,14 +6,14 @@
 ```yaml
 date: 2026-10-05
 branch: codex/development
-head: 686cef1
-dirty_entries: 26
+head: b55b479
+dirty_entries: 15
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 29 }
 server: { contract: 0.39.0, paths: 133, flyway: V59, migrations: 59 }
 ```
 <!-- FACTS_END -->
-B1 受控重关联服务端子项已实现并完成当次验证，提交推送待回执；接收机服务端续作和最终提交回归通过。详细决策、全部失败轮与限制见[自主进度 B1 段](history/AUTONOMOUS_PROGRESS_2026-10-05.md)，执行范围见[无人值守计划](history/AUTONOMOUS_PLAN_2026-10-05_UNATTENDED.md)，替换前断点见[归档](history/ORCHESTRATION_STATE_before_mapping3_delivery_2026-10-05.md)。
+B1 受控重关联服务端子项已验证并推送 b55b4796a77c7938cab643cc8b21f56c1c897e45；接收机服务端续作和最终提交回归通过。详细决策、全部失败轮与限制见[自主进度 B1 段](history/AUTONOMOUS_PROGRESS_2026-10-05.md)，执行范围见[无人值守计划](history/AUTONOMOUS_PLAN_2026-10-05_UNATTENDED.md)，替换前断点见[归档](history/ORCHESTRATION_STATE_before_mapping3_delivery_2026-10-05.md)。
 
 ## Git、写权与环境
 - 树 D:/acrylic-pda-outbound，分支 codex/development；批次基线 686cef1374ed9a08766b6f29191f51c793d62da1；实际 HEAD 以 Git 回执和事实块核对。当前聊天为唯一写者，无在途 Gradle 测试或重型任务。
