@@ -19,7 +19,10 @@ public class SubmissionFinalizer {
     public JsonNode finish(SubmissionStore.Head head,JsonNode body,Approval approval) {
         if(head.control().temporary()!=null)throw new BusinessException(409,"TEMPORARY_CONFIRMATION_REQUIRED","临时单须独立确认，不能使用正式单审批放行");
         store.current(head);var assignment=new AssignmentStore(jdbc).get(head.control().assignment());
-        var value=snapshots.validate(assignment,body);var issues=authorization(head,assignment);
+        var claims=parse(Base64.getUrlDecoder().decode(assignment.offlineToken().split("\\.")[1]));
+        if(!"pda:scan".equals(claims.path("scope").asText()))
+            throw new BusinessException(409,"OFFLINE_AUTH_SCOPE_INVALID","此离线授权用途不允许提交出库，保留原资料并核对");
+        var value=snapshots.validate(assignment,body);var issues=authorization(head,assignment,claims);
         var publication=new AssignmentStore(jdbc).publication(head.control().order(),assignment.revision());
         equal(text(body,"policyVersion"),publication.policyVersion(),"原出库政策版本不符");
         require(body.path("autoDeductInventory").isBoolean() && body.path("autoDeductInventory").booleanValue()==publication.autoDeduct(),"固定扣账政策不符");
@@ -31,9 +34,8 @@ public class SubmissionFinalizer {
         store.state(head.control().id(),"REVIEW_REQUIRED",issues,null);events.transition(head,"REVIEW_REQUIRED",approval.actor());
         var response=receipts.base(head,"REVIEW_REQUIRED",sha(body));response.set("issues",issues);return response;
     }
-    private ArrayNode authorization(SubmissionStore.Head head,AssignmentStore.View assignment) {
+    private ArrayNode authorization(SubmissionStore.Head head,AssignmentStore.View assignment,JsonNode claims) {
         var issues=object().putArray("issues");
-        var claims=parse(Base64.getUrlDecoder().decode(assignment.offlineToken().split("\\.")[1]));
         var status=jdbc.queryForObject("""
             SELECT o.revoked_at IS NULL AND u.status='ACTIVE' AND d.status='ACTIVE' AND u.auth_version=? AND d.row_version=?
             FROM offline_authorization o INNER JOIN app_user u ON u.id=o.user_id INNER JOIN device d ON d.id=o.device_id WHERE o.assignment_id=?

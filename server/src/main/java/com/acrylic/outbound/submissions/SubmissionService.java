@@ -44,7 +44,11 @@ public class SubmissionService {
         if(previous!=null) return response(head);
         if(head.control().temporary()!=null)return temporary.accept(head,body);
         store.requireBeforeRecovery(head.control().assignment());
-        var assignment=assignments.get(head.control().assignment());evidence.validate(head,assignment,body);snapshots.validate(assignment,body);
+        var assignment=assignments.get(head.control().assignment());
+        var claims=parse(java.util.Base64.getUrlDecoder().decode(assignment.offlineToken().split("\\.")[1]));
+        if(!"pda:scan".equals(claims.path("scope").asText()))
+            throw new BusinessException(409,"OFFLINE_AUTH_SCOPE_INVALID","此离线授权用途不允许提交出库，保留原资料并核对");
+        evidence.validate(head,assignment,body);snapshots.validate(assignment,body);
         byte[] bytes=canonical(body).getBytes(StandardCharsets.UTF_8);equal(files.store(bytes),hash,"归档摘要不符");
         store.select(head);continuations.transfer(head,body);store.payload(head,body,hash,bytes.length);events.evidence(head,body);
         return finalizer.finish(head,body,new SubmissionFinalizer.Approval(false,head.actor()));
