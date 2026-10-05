@@ -47,7 +47,10 @@ final class CommandDecision {
         require(decision.path("products").isArray() && !decision.path("products").isEmpty() && decision.path("shortShipmentReason").isTextual());
         if(kind.equals("LINK")) {
             // A link is only ever a human decision over a complete, uniquely resolvable candidate set.
-            require(decision.path("submissionReceipt").isObject() && candidates.path("total").asText().equals("1")
+            var link=decision.path("submissionReceipt");
+            boolean relink=link.path("applyState").asText().equals("APPLIED") && link.path("sourceMappingVersion").asLong()>1;
+            String expectedTotal=relink?"2":"1";
+            require(decision.path("submissionReceipt").isObject() && candidates.path("total").asText().equals(expectedTotal)
                 && decision.path("shortApprovalReceiptId").isNull() && decision.path("shortApprovalSha256").isNull()
                 && decision.path("shortShipmentReason").asText().isEmpty());
             link(decision.path("submissionReceipt"),candidates.path("contextSha256"));

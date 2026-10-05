@@ -10,9 +10,9 @@ import static org.mockito.Mockito.*;
 
 class TemporaryLinkOperationTest {
     @Test
-    void rejectsHigherMappingVersionBeforeReadingLinkDependencies() {
+    void rejectsUnmappedSourceBeforeReadingLinkDependencies() {
         var fixture=CommandReceiptFixture.write();
-        var facts=(ObjectNode)fixture.context().json();facts.put("mappingVersion","2");
+        var facts=(ObjectNode)fixture.context().json();facts.put("mappingVersion","0");
         var context=new CommandContext(facts);
         var source=mock(TemporaryConfirmationSource.class);
         var candidates=mock(com.acrylic.outbound.temporary.review.TemporaryDecisionCandidates.class);

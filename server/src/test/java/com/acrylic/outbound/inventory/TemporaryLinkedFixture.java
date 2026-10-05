@@ -37,7 +37,7 @@ final class TemporaryLinkedFixture {
         source.jdbc.update("INSERT INTO user_role VALUES(?,?)", Ids.bytes(source.operator().id()), Ids.bytes(role));
     }
 
-    private String createTarget() {
+    String createTarget() {
         UUID order = Ids.next(), revision = Ids.next();
         var warehouse = source.source.f.web.identity().warehouse();
         source.jdbc.update("INSERT INTO outbound_order(id,warehouse_id,order_no,source,status,current_revision,created_by,created_at,updated_at) "
@@ -67,12 +67,23 @@ final class TemporaryLinkedFixture {
     }
 
     byte[] post(ObjectNode command) throws Exception {
-        var request = request("/pda/temporary-commands").header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofByteArray(TemporaryConfirmationFixture.bytes(command))).build();
-        var response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+        var response = send(command);
         assertThat(response.statusCode()).as("command HTTP status; code=%s", SubmissionJson.parse(response.body()).path("code")).isEqualTo(200);
         assertThat(response.headers().firstValue("Cache-Control")).hasValue("no-store");
         return response.body();
+    }
+
+    HttpResponse<byte[]> send(ObjectNode command) throws Exception {
+        var request = request("/pda/temporary-commands").header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofByteArray(TemporaryConfirmationFixture.bytes(command))).build();
+        return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+    }
+
+    com.fasterxml.jackson.databind.JsonNode detail(String commandId) throws Exception {
+        var path = "/pda/temporary-command-receipts/" + commandId + "?warehouseId=" + source.source.f.web.identity().warehouse();
+        var response = client.send(request(path).GET().build(), HttpResponse.BodyHandlers.ofByteArray());
+        assertThat(response.statusCode()).isEqualTo(200);
+        return SubmissionJson.parse(response.body()).path("data");
     }
 
     String success() throws Exception {

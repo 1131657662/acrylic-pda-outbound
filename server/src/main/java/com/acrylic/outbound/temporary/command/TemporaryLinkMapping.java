@@ -23,9 +23,10 @@ public class TemporaryLinkMapping {
             Ids.bytes(UUID.fromString(targetOrder)),version,Ids.bytes(context.id("scopeId")),context.version("mappingVersion")));
         require(jdbc.update("UPDATE order_submission_slot SET order_id=?,slot_version=slot_version+1 WHERE order_id=? AND scope_id=? AND slot_version=?",
             Ids.bytes(UUID.fromString(targetOrder)),Ids.bytes(context.id("canonicalOrderId")),Ids.bytes(context.id("scopeId")),context.version("slotVersion")));
-        require(jdbc.update("UPDATE outbound_order SET status='LINKED',row_version=row_version+1,updated_at=UTC_TIMESTAMP(3) "
-            +"WHERE id=? AND warehouse_id=? AND source='PDA_TEMP' AND status='REVIEW_REQUIRED'",
-            Ids.bytes(context.id("canonicalOrderId")),Ids.bytes(context.id("warehouseId"))));
+        if(context.version("mappingVersion")==1)
+            require(jdbc.update("UPDATE outbound_order SET status='LINKED',row_version=row_version+1,updated_at=UTC_TIMESTAMP(3) "
+                +"WHERE id=? AND warehouse_id=? AND source='PDA_TEMP' AND status='REVIEW_REQUIRED'",
+                Ids.bytes(context.id("canonicalOrderId")),Ids.bytes(context.id("warehouseId"))));
         // Reservations carry the order id captured when they were first written, so the switch must move this
         // submission's still-reserved rows onto the linked order inside the same transaction; otherwise the
         // later dispatch cannot match them and confirmation fails with BALE_COMMITMENT_CONFLICT. Only

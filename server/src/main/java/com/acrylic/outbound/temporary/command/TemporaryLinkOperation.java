@@ -4,6 +4,7 @@ import com.acrylic.outbound.common.BusinessException;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.acrylic.outbound.temporary.review.TemporaryDecisionCandidates;
 import com.acrylic.outbound.temporary.review.TemporaryLinkTarget;
+import com.acrylic.outbound.temporary.review.TemporaryDuplicateModels.Head;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.*;
 
@@ -23,25 +24,41 @@ public final class TemporaryLinkOperation implements CommandOperation {
     public boolean requiresCandidateContext() { return true; }
     public void apply(CommandContext context) { throw new IllegalStateException("Full command/actor required"); }
     public JsonNode execute(CommandWrite write) {
-        var facts=write.context();var command=write.command();
-        if(facts.version("mappingVersion")!=1)throw CommandErrors.stale();
+        var facts=write.context();
+        if(facts.version("mappingVersion")<1)throw CommandErrors.stale();
         var source=dependencies.source().read(facts);
         if(source.snapshot().shortShipment())
             throw reject("TEMPORARY_LINK_SHORT_SHIPMENT_UNRESOLVED","原实绩存在短装，须先按短装审批与冲突分流处理，不能直接关联");
-        var warehouse=facts.id("warehouseId");var submission=facts.id("submissionId");
-        var context=linkContext(source.body());
-        var reviewed=dependencies.candidates().reviewed(warehouse,submission,source.body());
-        if(!reviewed.snapshot().path("total").asText().equals("1"))
-            throw reviewed.snapshot().path("total").asText().equals("0")
-                ? reject("TEMPORARY_LINK_TARGET_NOT_FOUND","没有可供人工核对的正式候选，不能关联")
-                : reject("TEMPORARY_LINK_DUPLICATES_UNRESOLVED","完整候选集合存在多条疑似重复正式单，必须逐单人工核对后才能关联");
-        var head=reviewed.heads().getFirst();
-        dependencies.targets().lockAndVerify(warehouse,context,head);
-        // Recompute the reviewed set with the target row locked, so a change between review and write cannot pass.
-        reviewed=dependencies.candidates().reviewed(warehouse,submission,source.body());
-        if(!reviewed.snapshot().path("contextSha256").equals(command.expected().path("candidateContextSha256"))
-            || !reviewed.snapshot().path("total").asText().equals("1") || !reviewed.heads().getFirst().id().equals(head.id()))
-            throw CommandErrors.stale();
+        var reviewed=lockedCandidates(write,source.body());
+        var head=target(facts,reviewed);
+        return decision(facts,source.body(),reviewed,head);
+    }
+    private TemporaryDecisionCandidates.Reviewed lockedCandidates(CommandWrite write,JsonNode body) {
+        var facts=write.context();var warehouse=facts.id("warehouseId");var submission=facts.id("submissionId");
+        var reviewed=dependencies.candidates().reviewed(warehouse,submission,body);
+        var head=target(facts,reviewed);
+        if(facts.version("mappingVersion")>1)
+            dependencies.targets().lockAndVerifyHistory(warehouse,facts.id("scopeId"),head.id());
+        dependencies.targets().lockAndVerify(warehouse,linkContext(body),head);
+        var locked=dependencies.candidates().reviewed(warehouse,submission,body);
+        if(!locked.snapshot().path("contextSha256").equals(write.command().expected().path("candidateContextSha256"))
+            || !head.equals(target(facts,locked)))throw CommandErrors.stale();
+        return locked;
+    }
+    private Head target(CommandContext facts,TemporaryDecisionCandidates.Reviewed reviewed) {
+        long total=reviewed.snapshot().path("total").asLong();
+        if(total==0)throw reject("TEMPORARY_LINK_TARGET_NOT_FOUND","没有可供人工核对的正式候选，不能关联");
+        boolean first=facts.version("mappingVersion")==1;
+        int required=first?1:2;
+        if(total!=required || reviewed.heads().size()!=required)
+            throw reject("TEMPORARY_LINK_DUPLICATES_UNRESOLVED","完整候选集合不满足受控关联条件，请逐单核对");
+        if(first)return reviewed.heads().getFirst();
+        String current=facts.text("canonicalOrderId");
+        if(reviewed.heads().stream().noneMatch(head->head.id().equals(current)))
+            throw reject("TEMPORARY_LINK_DUPLICATES_UNRESOLVED","现关联正式单不在完整候选集合中，不能重关联");
+        return reviewed.heads().stream().filter(head->!head.id().equals(current)).findFirst().orElseThrow(CommandErrors::stale);
+    }
+    private JsonNode decision(CommandContext facts,JsonNode body,TemporaryDecisionCandidates.Reviewed reviewed,Head head) {
         var installed=dependencies.mappings().install(facts,head.id());
         var link=SubmissionJson.object().put("applyState","APPLIED").put("targetOrderId",head.id())
             .put("targetOrderNo",head.orderNo()).put("targetRevision",Integer.toString(head.revision()))
@@ -52,7 +69,7 @@ public final class TemporaryLinkOperation implements CommandOperation {
         if(facts.id("canonicalOrderId")!=null)link.put("sourceCanonicalOrderId",facts.id("canonicalOrderId").toString());
         var decision=SubmissionJson.object().put("kind","LINK").put("shortShipmentReason","")
             .putNull("shortApprovalReceiptId").putNull("shortApprovalSha256");
-        decision.set("products",TemporaryDecisionCandidates.products(source.body()));
+        decision.set("products",TemporaryDecisionCandidates.products(body));
         decision.set("candidates",reviewed.snapshot());decision.set("submissionReceipt",link);return decision;
     }
     private JsonNode linkContext(JsonNode body) {

@@ -6,32 +6,32 @@
 ```yaml
 date: 2026-10-05
 branch: codex/development
-head: c4c3005
-dirty_entries: 13
+head: 686cef1
+dirty_entries: 26
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 29 }
 server: { contract: 0.39.0, paths: 133, flyway: V59, migrations: 59 }
 ```
 <!-- FACTS_END -->
-
-接收机确认后的跨设备续作服务端链及最终正式提交已验证并推送；mapping3+ 已完成只读代码审计和自主语义决策，尚未实现。子项、SHA、自主决策、失败与通过证据、未验见[自主进度](history/AUTONOMOUS_PROGRESS_2026-10-05.md)；续作设计见[续作设计](history/R07_HANDOVER_CONTINUATION_DESIGN_2026-10-05.md)，本次替换前的断点见[归档](history/ORCHESTRATION_STATE_before_mapping3-checkpoint_2026-10-05.md)。
+B1 受控重关联服务端子项已实现并完成当次验证，提交推送待回执；接收机服务端续作和最终提交回归通过。详细决策、全部失败轮与限制见[自主进度 B1 段](history/AUTONOMOUS_PROGRESS_2026-10-05.md)，执行范围见[无人值守计划](history/AUTONOMOUS_PLAN_2026-10-05_UNATTENDED.md)，替换前断点见[归档](history/ORCHESTRATION_STATE_before_mapping3_delivery_2026-10-05.md)。
 
 ## Git、写权与环境
-- 树 D:/acrylic-pda-outbound，分支 codex/development；实际 HEAD 和版本事实以 Git 回执及生成事实块核对。单助手，无已知在途写者、Gradle 或重型任务。D 盘约 26.8 GiB 可用。
-- 19330/19434/19435/19436 无监听，既有隔离数据库、dump 和认证停机证据保留，既存 MySQL 未操作。
-- 本轮最终提交证据见 `.local/autonomous-20261005/handover-final-submit-990/` 至 `992/`、`handover-final-regression-994/` 与 `.local/e2a-cross-20260925-993/`。本次 mapping3+ 为只读审计，未生成新的测试、数据库或运行证据。未代提交的受保护路径为两份既有文档、ContinuationApiIT、ContinuationFixture、一份既有未跟踪 UI 审查文档、六份既有未跟踪历史文档、物理处置请求和两份旧脚本。
+- 树 D:/acrylic-pda-outbound，分支 codex/development；批次基线 686cef1374ed9a08766b6f29191f51c793d62da1；实际 HEAD 以 Git 回执和事实块核对。当前聊天为唯一写者，无在途 Gradle 测试或重型任务。
+- B0 快照 `.local/autonomous-20261005/mapping3-preflight/`，交付快照 `mapping3-delivery/`。13 条既有脏路径逐一核对哈希未变；完整清单、diff、进程、监听与磁盘均在快照中，未代提交。
+- 19330/19434/19435/19436 已释放；994～998 隔离 MySQL 均完成 dump 和认证停机，失败库保留。3306/13316 为既存 MySQL，未接入或修改；D 盘约 25.6 GiB 可用。
+- 本批改动为 5 个产品类、5 个测试类及看板/自主进度/验收索引/替换前快照；精确清单以交付暂存清单核对。本批没有迁移、API 新路径、Android 或 Web 改动。
 
 ## 当次证据
-- 990 因测试正文缺 dispositions 失败，991 因断言不存在账本列失败；失败 XML、日志和隔离库均保留。992 修正后真实回环 HTTP 最终提交 1/0/0/0。
-- 993 用新隔离 MySQL 复验跨设备最终提交 1/0/0/0、普通集成 41/0/0/0；服务端单测 170 XML、3079/0/0/1，唯一跳过为既有 Windows 符号链接能力条件。
-- 最终化验证保留原设备/人员/凭据来源，订单序号连续且局部序列按设备递增；覆盖错误当前身份、证据改写、序列错误、账务触发器回滚、成功回放、账务/调度汇总与完成态。均使用生成身份、隔离 MySQL 和真实服务端 HTTP；作者自审，未验独立消费者、原身份、APK、模拟器、真机或两个物理设备。
-- mapping3+ 审计确认，现有实现的版本字段虽可递增，但首次 LINK 后的状态守卫使后续 LINK 拒绝。自主决定的接续语义为：只允许冻结来源从空白正式目标人工重关联到唯一的新空白正式目标；保持映射和回执追加、旧 PDA_TEMP 的首次 `LINKED` 状态及已签名历史。实现与回归未开始，不能称为功能完成。
+- 994 真实 HTTP 1/1/0/0：首次关联后第二次 LINK 被旧 mapping 守卫拒绝。995 为 1/1/0/0：回执形状仍要求一条候选。两轮失败 XML、日志与库完整保留。
+- 996 修复后 1/0/0/0；997 最终真实 HTTP/隔离 MySQL 1/0/0/0，覆盖首次关联、重关联/后续关联、歧义、现目标缺失、现目标/历史目标有作业、原键/异文/旧上下文、同键并发、旧回执失效和 SQL 故障回滚，追加首次关联到确认及默认关闭态内部回归。
+- 998 服务端单测 3088/0/0/1（171 XML；唯一既有 Windows 符号链接能力跳过）；接收机续作/最终提交真实 HTTP 1/0/0/0；普通续作/并发/提交/归档集成 41/0/0/0。
+- 证据在 `.local/autonomous-20261005/mapping3-final-997/`、`mapping3-regression-998/` 和 `.local/e2a-cross-20260925-994/` 至 `998/`；997、998 前后源码哈希一致。作者实现、自审与执行，使用生成身份；非独立消费者、APK 或物理设备验收。
 
 ## 下一步、未验与边界
-- 服务端已完成原提交替代、续作占用、新 pda:scan 凭据、跨设备最终提交及其账务；接收作业未因下载确认提前解冻。
-- Android 消费、PDA 页面/重试、旧凭据/旧客户端、两个物理设备和现场原身份仍未验，不能称为完整跨设备交接。
-- PDA页面/重试、旧凭据/旧客户端、TEMP、mapping3+ 实现与回归、R1生产放行、历史更正、现场/断电/长时、R05原资料/旧BCD/526、R09恢复限制继续单列。下次从 mapping3+ 受控重关联的实现和隔离 MySQL/真实 HTTP 回归接续。
-- 生产gate默认值未变；不合main、不打标签/Release、不部署、不接原库/现网，未删除.local证据。长期目标active。
+- B1 只允许冻结来源从空白现目标人工迁移到唯一新空白目标，完整候选恰含两者；历史目标有作业拒绝。映射/回执追加，scope/slot/保留占用原子切换；PDA_TEMP 的首次 LINKED 和历史正式订单状态不改写。
+- 完整候选仍有歧义时正常确认继续拒绝；候选排除、跨来源权限及公开 GET 契约既存 LINK currentEffect 枚举遗漏留待后续批次核对，不声称完整客户端闭环。
+- 下一步按 B2 执行接收机 Android 持久命令、签名回执、网络重试和页面状态；先做 B0。Android 消费、APK、旧凭据/旧客户端、两个物理设备和现场原身份仍未验。
+- TEMP 高轮次、R1 生产放行、历史更正、现场/断电/长时、R05 原资料/旧 BCD/526、R09 恢复限制仍单列。生产 gate 默认值及七类生产决定边界保持，不合 main、Release、部署、接原库/现网或删除 .local。长期目标 active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实见生成块；文档提交自身 SHA 以 Git 回执核对。

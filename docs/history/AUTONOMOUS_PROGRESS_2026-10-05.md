@@ -8,8 +8,8 @@
 | --- | --- | --- |
 | P08、R06 分页、R07 同键/同步 status/账务贡献、R06 Web 原命令恢复 | 历史已修复并推送 | `6faf322`、`33533e4`、`dce5fe7`、`bfcf471`、`458a943`、`e2fa8e8`；专项证据沿前日报 |
 | R1 白名单与写后回滚 | 历史有界验证 `d43e3b1` | 未增加 Primary，不代表生产放行 |
-| mapping3+ | 未支持入口已拒绝 `1bba207`；重链未完成 | 见[审计](R06_MAPPING3_FAIL_CLOSED_AUDIT_2026-10-02.md) |
-| mapping3+ 续作语义 | 只读审计已收口；实现待续 | 本轮未改产品代码、迁移或测试；接续准则见自主决策 121 与本段未解决项 |
+| mapping3+ | B1 受控重关联已实现并通过当次隔离验证，提交回执见下文 | 历史拒绝守卫见[审计](R06_MAPPING3_FAIL_CLOSED_AUDIT_2026-10-02.md)；生产入口未开放 |
+| mapping3+ 续作语义 | 已按自主决策 121 实现 | 当次失败与通过证据、范围和限制见本页 B1 交付段 |
 | mapping3+ 审计收口断点 | 已记录并推送 `8c2c0da` | 仅看板、自主进度与替换前快照；无产品运行行为变化 |
 | 接收机网络原子导入 | 已验证推送 `873d92c` | 历史 Android 543/0/0/5，导入后冻结 |
 | 交接接收人资料准备权限 | 已修复推送 `943d639` | 本日此前服务端全量 3079/0/0/1；965 HTTP、966 服务层各 1/0/0/0 |
@@ -88,8 +88,33 @@
 
 - 接收机跨设备续作的服务端最终提交及其账务已验证；Android 消费闭环、PDA 页面和确认重试交互仍未接线，普通同设备 ContinuationEvidence 的原设备/原人员要求仍保持。
 - 本项未跑 Android、APK、模拟器、真机、独立消费者、两个物理设备、现场原身份/Keystore/实物、断电或长时验证。此前 Android 证据只保留原范围。
-- mapping3+ 尚未实现。下一次开发先将自主决策 121 写入 `TemporaryLinkOperation`、候选选择和映射切换，并新增独立的隔离 MySQL/真实 HTTP 回归，覆盖首关联、重关联、候选歧义、旧目标已有作业、重放和事务回滚；通过后再评估 R1 白名单边界。旧扫码用途交接凭据/旧客户端兼容、TEMP 停工/接收资格/PDA 页面、R1 生产放行、历史更正、R05 原资料/旧 BCD/526、R09 恢复限制继续单列。
+- mapping3+ 的 B1 受控重关联服务端子项见下文；Android 重关联消费、候选排除授权、跨来源权限和生产入口不由该子项放行。接续按无人值守计划 B2 开始接收机 Android 消费。旧扫码用途交接凭据/旧客户端兼容、TEMP 停工/接收资格/PDA 页面、R1 生产放行、历史更正、R05 原资料/旧 BCD/526、R09 恢复限制继续单列。
 
 ## 磁盘、写权与边界
 
 树 D:/acrylic-pda-outbound，分支 codex/development；实际 HEAD、文档 SHA 与版本事实以 Git 回执及看板生成块核对。单助手，无在途 Gradle 或重型任务。D 盘约 26.8 GiB 可用。19330/19434/19435/19436 无监听，既存 MySQL 未操作。受保护脏文件按启动快照保留。未合 main、打标签/Release、部署、接原库/现网或删除 .local；生产默认值不变。长期目标 active，Android 与物理双设备验收仍未完成。
+
+## B1：受控重关联当次交付
+
+范围：在已有 LINK 命令中支持冻结来源从现关联空白正式订单移到唯一的新空白正式订单；完整候选必须恰好包含这两个订单。非目标为候选排除、新权限、自动匹配、确认放行、Android/PDA 消费或生产入口。基础输入为 `686cef1374ed9a08766b6f29191f51c793d62da1` 与 B0 保存的受保护脏路径；版本事实只见看板生成块。
+
+122. 复用 `TemporaryLinkOperation` 与原事务，不引入平行命令。候选查询仍计算完整集合的摘要，只把受限 head 列表扩至两个；首次关联的唯一候选语义保持。两候选缺现目标、超过两条、旧来源不冻结、目标非空白或计划不符均拒绝。
+123. 在同一写事务锁定并核对历次 `CONTROLLED_LINK` 正式目标。其它 scope（包括正式 source_order_id）、领取、PC 作业或结果都使重关联拒绝；已替换目标即使离开候选时间窗口也不能绕过该检查。新目标不得是历史关联目标。
+124. 每次重关联追加映射并切换 scope、slot 和该提交的 `REVIEW_RESERVED` 占用；仅首次关联更新 PDA_TEMP 的 `LINKED` 状态。历史映射、正式订单状态、原回执和账务不改写。来源级 `SOURCE_RESERVED` 继续按原 scope 归属，不据重关联释放。
+125. 保留回执字段，记录前后目标和完整候选摘要；修正 LINK receipt 校验以接受受控重关联的两个候选，同时保留历史 `NOT_APPLIED` 形状。新映射使旧回执 currentEffect 失效，但原键仍逐字节重放原回执。候选仍有歧义时正常确认继续拒绝，不把重关联当成候选排除授权。
+126. 增加生成身份的真实 HTTP 回归，复用已有隔离夹具；检查二次及后续重关联、历史回执、异文、旧上下文、同键并发和写回执时 SQL 故障。原批次失败不覆盖，修复后重新分配空库。既有 ContinuationApiIT/ContinuationFixture 仅作为受保护回归输入，不纳入本批提交。
+
+改动路径：产品 `CommandDecision`、`TemporaryLinkOperation`、`TemporaryLinkMapping`、`TemporaryDecisionCandidates`、`TemporaryLinkTarget`；测试 `TemporaryLinkedFixture`、`TemporaryLinkOperationTest`、`CommandLinkDecisionTest`、`TemporaryRelinkChecks`、`E2aTemporaryRelinkIT`。没有新数据库迁移或新 API 路径；公开 GET 契约的既存 LINK currentEffect 枚举遗漏留待 B8 契约核对，不能据此声称客户端契约闭环。
+
+当次计数为 tests/failures/errors/skipped，均为作者执行与自审：
+
+- `mapping3-focused-baseline/`：旧守卫单测 1/0/0/0。
+- `mapping3-preflight/`：B0 唯一写者、分支/远端、13 条受保护路径及哈希、进程/监听/磁盘快照；无其它活动项目写者，原有 MySQL 未接入。
+- `mapping3-red-994/`：真实 HTTP 1/1/0/0，首次 LINK 成功、重关联返回 `COMMAND_CONTEXT_CHANGED`。
+- `mapping3-green-995/`：真实 HTTP 1/1/0/0，receipt 形状仍要求一条候选，返回 `COMMAND_RECEIPT_INTEGRITY_FAILURE`。
+- `mapping3-green2-996/`：修复后真实 HTTP 1/0/0/0。
+- `mapping3-final-997/`：最终真实 HTTP/隔离 MySQL 1/0/0/0，覆盖受控重关联反例、后续重关联、同键并发、事务回滚；同库追加首次 LINK→确认 HTTP 和默认关闭态的内部 LINK 回归。非空库按迁移链升级，原请求/回执、原始 SQL 投影和旧回执效果见 `.local/e2a-cross-20260925-997/relink-evidence.json`。
+- `mapping3-regression-998/`：服务端单测 171 XML、3088/0/0/1；唯一跳过为既有 Windows 符号链接能力条件。`.local/e2a-cross-20260925-998/` 上接收机续作/最终提交 HTTP 1/0/0/0，普通续作/并发/提交/归档集成 41/0/0/0。
+- 上述 mapping3 目录位于 `.local/autonomous-20261005/`。994～998 的隔离 datadir、dump SHA256、认证停机和原失败日志全部保留。997 与 998 源码前后哈希一致，交付前核对全部受保护路径未变。
+
+自审结论：新增查询参数化，仓库/scope 归属明确；目标和历史目标在命令原事务内锁定；每次映射追加，保留原幂等键；故障回滚覆盖 mapping、scope、slot、占用、回执、审计、决定序号；没有改生产 gate 默认值、生产七类决定放行或删除能力。未执行 Android/APK、独立消费者、原身份、模拟器、真机、两个物理设备或部署。本批满足 B1 服务端退出标准，提交与推送回执随后补记；下一批 B2。

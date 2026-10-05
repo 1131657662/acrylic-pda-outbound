@@ -32,8 +32,8 @@ public class TemporaryDecisionCandidates {
     public Reviewed reviewed(UUID warehouse,UUID submission,JsonNode body) {
         var snapshot=snapshot(warehouse,submission,body);
         var range=range(submission);
-        var heads=queries.page(queries.parameters(warehouse,range,context(submission,body)),null,1);
-        return new Reviewed(snapshot,List.copyOf(heads.size()>1?heads.subList(0,1):heads));
+        var heads=queries.page(queries.parameters(warehouse,range,context(submission,body)),null,2);
+        return new Reviewed(snapshot,List.copyOf(heads.size()>2?heads.subList(0,2):heads));
     }
     public boolean authentic(UUID warehouse,UUID submission,JsonNode body,JsonNode candidates) {
         var range=range(submission);
