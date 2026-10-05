@@ -48,7 +48,9 @@ object E2aReceiptVerifier {
     private fun operation(expected: Expected, receipt: JSONObject) {
         val stop = expected.stop; val request = expected.request; val plan = expected.plan
         val body = JSONObject(request.requestJson)
-        equal(receipt, "status", if (request.operation == "OPEN") "RECEIVED" else "PARTIAL")
+        if (request.operation == "VERIFY") {
+            check(receipt.getString("status") in setOf("PARTIAL", "VERIFIED_COMPLETE_AT_STOP")) { "原验证回执状态不支持" }
+        } else equal(receipt, "status", if (request.operation == "OPEN") "RECEIVED" else "PARTIAL")
         if (request.operation != "VERIFY") equal(receipt, "manifestVersion", 1)
         if (request.operation == "OPEN" || request.operation == "PAGE") equal(receipt, "snapshotId", stop.snapshotId)
         if (request.operation != "OPEN") equal(receipt, "openOriginalKey", stop.openOriginalKey)

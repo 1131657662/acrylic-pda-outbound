@@ -185,9 +185,9 @@ Verify:
   post:
     summary: 接收原机 TEMP 来源证据 VERIFY
     description: >-
-      依据OPEN、STOP、PAGE和服务器可重验事实生成不可变PARTIAL验证记录与回执。要求pda:recover、
-      当前同仓原人员/原设备、OPEN原键及STOP原键。当前实现不得将PARTIAL升级为可信完整验证，
-      不执行正式单关联、拒绝处置、库存释放、继续扫码或任何生产决定。
+      依据OPEN、STOP、PAGE和服务器重验的完整停止集合生成不可变VERIFIED_COMPLETE_AT_STOP验证记录与回执。
+      要求pda:recover、同仓原人员/原设备、OPEN原键及STOP原键。历史PARTIAL回执按原键原文返回，
+      不据重试升级状态。完整停止证据不授予正式单关联、拒绝处置、库存释放、继续扫码或任何生产决定能力。
     security: [{pdaBearer: []}]
     parameters:
       - {$ref: '#/Warehouse'}

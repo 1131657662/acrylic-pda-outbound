@@ -181,3 +181,14 @@
 交付结论：B2 的本批退出标准满足，作者自审和组合验证证据完整；验证使用生成身份、JVM/回环 HTTP 和 Debug APK，不能替代 APK 安装、真机、两个物理设备、原登录身份、现场网络、断电/长时验收。后续按计划进入 B3，继续保留 TEMP 高轮次、候选排除/跨来源权限、R07 更正与库存对账、R08/R09 以及 R1 生产放行等边界。
 
 提交回执：B2 已提交并推送 `b90f0a7f2a98daf89899a160de5eaa673ba64380`，远端 `refs/heads/codex/development` 精确核对一致。交付快照 `.local/autonomous-20261005/handover-android-delivery/` 保存 43 条明确暂存路径、完整 diff、敏感项扫描、13 条受保护路径核对、源码哈希、提交与推送回执。未将 APK 或 `.local` 证据上传；下一批 B3 先做 B0。
+
+## B3：来源、停止保全与候选消费（进行中）
+
+输入：开发断点 `dc7a01ad4395cb1263ad3e87927ac8cbd39d3d8d`，13 条受保护脏路径保持；B0 见 `.local/autonomous-20261005/b3-source-preflight/`，事实检查通过，无在途构建，D 盘高于安全阈值。
+
+范围与退出标准：先核对已有停止写者、耐久原键队列、坏原件拒绝、身份变化暂停、非空迁移及非零候选消费者；只补实际缺口。当前源码下用新隔离库验证 Android 停止→原件上传→丢回执→Room/服务器重启恢复，来源缺失/伪造/跨仓拒绝且不误占，非零候选由实际消费者重建核对。保留故障和全部旧证据；不把来源收存等同于业务确认，不增加候选排除/跨来源权限或开放生产 gate。
+
+139. 只读核对发现 LocalDraftStopRepository、LocalDraftRecoveryRepository、LocalDraftQueueGuard 已实现停止、原键耐久补传和身份暂停；既有 E2aDraftEvidenceIT、E2aUnsubmittedHttpIT 及 Python candidate 消费者提供可复用验证入口，故不重新实现已验代码。Android 全套已随 B2 验过本地队列/迁移，本批补新隔离实时路径。
+140. 草稿 HTTP 测试仍将隔离编号限定为三位，与已统一扩展的隔离 profile 不一致；仅把其私有输入路径编号上限扩为四位，保留 `.local`、目录和文件名守卫。弃用复用旧编号方案，避免覆盖证据；本项仅测试代码，无产品变化。
+
+跨日续作：1005～1007 的真实 HTTP、回执状态修复、定向测试与失败轮见[次日自主进度](AUTONOMOUS_PROGRESS_2026-10-06.md)。本节不重复次日状态。

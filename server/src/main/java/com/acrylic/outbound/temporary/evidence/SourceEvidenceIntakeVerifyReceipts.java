@@ -2,10 +2,12 @@ package com.acrylic.outbound.temporary.evidence;
 
 import com.acrylic.outbound.common.BusinessException;
 import com.acrylic.outbound.common.Ids;
+import com.acrylic.outbound.submissions.SubmissionJson;
 import com.acrylic.outbound.temporary.protocol.E2aProtocol;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -58,7 +60,7 @@ public class SourceEvidenceIntakeVerifyReceipts {
             Ids.bytes(context.originalKey()), Ids.bytes(context.currentSessionId()), Ids.bytes(context.warehouseId()),
             Ids.bytes(context.scopeId()), Ids.bytes(context.submissionId()), context.workRound(),
             Ids.bytes(context.creatorDeviceId()), Ids.bytes(context.clientOrderId()), Ids.bytes(context.authorizationId()),
-            Ids.bytes(context.originalOperatorId()), context.sourceRecoveryEpoch(), "VERIFY", "PARTIAL",
+            Ids.bytes(context.originalOperatorId()), context.sourceRecoveryEpoch(), "VERIFY", status(receipt.originalResponseBytes()),
             context.requestBytes(), context.requestSha256(), receipt.originalResponseBytes(), receipt.originalResponseSha256(),
             receipt.signatureKeyId(), receipt.signedReceipt(), Ids.bytes(setId), Ids.bytes(verificationId),
             Timestamp.from(receipt.recordedAt())) != 1) throw new IllegalStateException("VERIFY_RECEIPT_INSERT_COUNT");
@@ -74,7 +76,7 @@ public class SourceEvidenceIntakeVerifyReceipts {
         if (rows.size() != 1) return invalid();
         var row = rows.getFirst();
         if (!Arrays.equals(value(row, "original_operator_id"), Ids.bytes(key.principalId()))
-            || !"VERIFY".equals(row.get("operation_kind")) || !"PARTIAL".equals(row.get("receipt_status"))
+            || !"VERIFY".equals(row.get("operation_kind")) || !matchingStatus(row)
             || row.get("object_id") != null || !(row.get("evidence_set_id") instanceof byte[] set)
             || set.length != 16 || !(row.get("evidence_verification_id") instanceof byte[] verification)
             || verification.length != 16) return invalid();
@@ -93,6 +95,18 @@ public class SourceEvidenceIntakeVerifyReceipts {
     private static SourceEvidenceIntakeReplay.Decision invalid() {
         return new SourceEvidenceIntakeReplay.Decision(SourceEvidenceIntakeReplay.Status.INTEGRITY_FAILURE, null,
             SourceEvidenceIntakeReplay.TrustStatus.NOT_EVALUATED);
+    }
+    private static String status(byte[] response) {
+        var receipt = SubmissionJson.parse(response);
+        String status = receipt.path("status").asText();
+        if (!"VERIFY".equals(receipt.path("operationKind").asText())
+            || !Set.of("PARTIAL", "VERIFIED_COMPLETE_AT_STOP").contains(status))
+            throw new IllegalArgumentException("VERIFY_RECEIPT_STATUS");
+        return status;
+    }
+    private static boolean matchingStatus(Map<String, Object> row) {
+        try { return status(value(row, "original_response_bytes")).equals(row.get("receipt_status")); }
+        catch (RuntimeException damaged) { return false; }
     }
     private static int number(Map<String, Object> row, String key) { return row.get(key) instanceof Number n ? n.intValue() : -1; }
     private static byte[] value(Map<String, Object> row, String key) { return row.get(key) instanceof byte[] b ? b : null; }

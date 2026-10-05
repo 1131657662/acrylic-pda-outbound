@@ -24,12 +24,8 @@ final class E2aUnsubmittedChecks {
 
     void verify() throws Exception {
         auditUpload();
+        uploadWithRollbackChecks();
         var wire = http.wire;
-        var raw = new E2aCrossSourceRawHttp(http, setup);
-        raw.beforeOpen();
-        http.post("open", wire.openKey, wire.open()); raw.upload();
-        http.post("page", wire.pageKey, wire.pageRequest());
-        http.post("stop", wire.stopKey, wire.stop(setup.audit, setup.deviceKey));
         var accepted = context.getBean(SourceEvidenceIntakeTransactions.class).write(status ->
             context.getBean(SourceEvidenceIntakeBusinessFacts.class).require(setup.fixture.binding(wire.openKey), setup.items(), 5, null, 11));
         assertThat(accepted).containsExactly(E2aCrossSourceFixture.item("SCAN", setup.fixture.ownScan));
@@ -37,12 +33,25 @@ final class E2aUnsubmittedChecks {
         rejectsRawCorruption(); rejectsForeignOwnedCapture();
         newerAuthorizationCannotReplaceOriginal();
         new E2aUnsubmittedNegativeChecks(http, setup, context).verify();
-        byte[] original = http.post("verify", verifyKey, wire.verify(1));
+        byte[] original = new E2aIntakeSqlRollback(http).receipt("verify", verifyKey, wire.verify(1));
         assertThat(http.post("verify", verifyKey, wire.verify(1))).isEqualTo(original);
         http.original(verifyKey, original);
-        assertThat(SubmissionJson.parse(original).path("status").asText()).isEqualTo("PARTIAL");
+        assertThat(SubmissionJson.parse(original).path("status").asText()).isEqualTo("VERIFIED_COMPLETE_AT_STOP");
+        assertThat(setup.fixture.jdbc.queryForObject("SELECT receipt_status FROM source_evidence_intake_receipt WHERE original_key=?",
+            String.class, Ids.bytes(verifyKey))).isEqualTo("VERIFIED_COMPLETE_AT_STOP");
         assertThat(SubmissionJson.parse(original).path("capabilities").path("localDeletionAllowed").booleanValue()).isFalse();
         database();
+    }
+
+    private void uploadWithRollbackChecks() throws Exception {
+        var wire = http.wire;
+        var raw = new E2aCrossSourceRawHttp(http, setup);
+        var rollback = new E2aIntakeSqlRollback(http);
+        raw.beforeOpen();
+        rollback.receipt("open", wire.openKey, wire.open());
+        rollback.raw(raw); raw.upload();
+        rollback.receipt("page", wire.pageKey, wire.pageRequest());
+        rollback.receipt("stop", wire.stopKey, wire.stop(setup.audit, setup.deviceKey));
     }
 
     private void rejectsRawCorruption() throws Exception {

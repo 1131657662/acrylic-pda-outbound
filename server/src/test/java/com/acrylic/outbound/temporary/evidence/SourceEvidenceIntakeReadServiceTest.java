@@ -78,6 +78,20 @@ class SourceEvidenceIntakeReadServiceTest {
                 error -> assertThat(error.code()).isEqualTo("E2A_RECEIPT_KEY_UNVERIFIABLE"));
     }
 
+    @Test void historicalPartialOriginalDoesNotAcquireCompleteStopEffect() {
+        var original=result("VERIFIED");
+        var receipt=(com.fasterxml.jackson.databind.node.ObjectNode)original.receipt(); receipt.put("status","PARTIAL");
+        when(integrity.check(anyMap(),eq(source),eq(ORIGINAL_KEY))).thenReturn(
+            new SourceEvidenceIntakeReadIntegrity.Result(original.originalBytes(),original.sha256(),"VERIFIED",receipt));
+
+        var effect=service.read(WAREHOUSE,SUBMISSION,2,ORIGINAL_KEY.toString()).currentEffect();
+
+        assertThat(effect.path("evaluation").asText()).isEqualTo("PARTIAL");
+        assertThat(effect.path("reasons").toString()).contains("NO_TRUSTED_COMPLETE_AT_STOP");
+        assertThat(effect.path("applicable").booleanValue()).isFalse();
+        assertThat(effect.path("capabilities")).isEqualTo(SourceEvidenceIntakeReceiptCodec.capabilities());
+    }
+
     @Test void verifiedOriginalEndpointReturnsStoredBytes() {
         when(integrity.check(anyMap(),eq(source),eq(ORIGINAL_KEY))).thenReturn(result("VERIFIED"));
 

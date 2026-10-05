@@ -103,6 +103,64 @@ class LocalE2aRecoveryTest {
         }
     }
 
+    @Test fun completeStopReceiptRecoversAfterLossWithoutGrantingWorkOrRelease() = runBlocking<Unit>(Dispatchers.IO) {
+        frozen { f, transport ->
+            transport.signer.change = { if (it.getString("operationKind") == "VERIFY") it.put("status", "VERIFIED_COMPLETE_AT_STOP") }
+            val repo = transport.repository(); repo.queue(f.id)
+            val state = f.db.temporaryDrafts().get(f.id)!!.state
+            val original = transport.all(); transport.drop = "VERIFY"
+            assertThrows(IOException::class.java) { finish(repo, f.id) }
+            f.reopen(); finish(transport.repository(), f.id)
+            assertEquals(original, transport.all())
+            assertEquals(state, f.db.temporaryDrafts().get(f.id)!!.state)
+            assertFalse(f.db.localE2aReceipts().queue(f.id)!!.autoRetry)
+            val verify = original.single { it.operation == "VERIFY" }
+            val saved = f.db.localE2aReceipts().get(verify.originalKey)!!
+            assertEquals("VERIFIED", saved.state)
+            assertArrayEquals(transport.received[verify.originalKey], saved.responseBytes)
+            assertEquals(original.size, transport.posts.size)
+            val receipt = org.json.JSONObject(saved.responseBytes!!.toString(Charsets.UTF_8))
+            assertEquals("VERIFIED_COMPLETE_AT_STOP", receipt.getString("status"))
+            receipt.getJSONObject("capabilities").keys().forEach { assertEquals(false, receipt.getJSONObject("capabilities").get(it)) }
+        }
+    }
+
+    @Test fun completeStatusIsInvalidForStopAndCannotEnableLaterVerification() = runBlocking<Unit>(Dispatchers.IO) {
+        frozen { f, transport ->
+            transport.signer.change = { if (it.getString("operationKind") == "STOP") it.put("status", "VERIFIED_COMPLETE_AT_STOP") }
+            val repo = transport.repository(); repo.queue(f.id)
+            assertThrows(IllegalStateException::class.java) { finish(repo, f.id) }
+            assertFalse(transport.posts.any { it.operation == "VERIFY" })
+            assertFalse(f.db.localE2aReceipts().queue(f.id)!!.autoRetry)
+        }
+    }
+
+    @Test fun queueWriteFailureRollsBackVerificationAndReopensWithoutResendingReceipt() = runBlocking<Unit>(Dispatchers.IO) {
+        frozen { f, transport ->
+            val repo = transport.repository(); repo.queue(f.id)
+            val requests = transport.all(); val first = requests.first()
+            val draft = f.db.temporaryDrafts().get(f.id)
+            val stop = f.db.localE2aStops().get(f.id)
+            val audit = f.db.temporaryScans().events(f.id)
+            f.db.openHelper.writableDatabase.execSQL("""CREATE TRIGGER fail_e2a_queue BEFORE UPDATE ON local_e2a_queue
+                WHEN NEW.state='READY' BEGIN SELECT RAISE(ABORT,'injected queue write failure'); END""")
+            val failure = assertThrows(Exception::class.java) { repo.resume(f.id) }
+            assertTrue(failure.message.orEmpty().contains("injected queue write failure"))
+            val saved = f.db.localE2aReceipts().get(first.originalKey)!!
+            assertEquals("RECEIVED", saved.state); assertNull(saved.signingKeyJson)
+            assertArrayEquals(transport.received[first.originalKey], saved.responseBytes)
+            assertEquals(draft, f.db.temporaryDrafts().get(f.id)); assertEquals(stop, f.db.localE2aStops().get(f.id))
+            assertEquals(audit, f.db.temporaryScans().events(f.id)); assertEquals(requests, transport.all())
+            assertEquals("ACTION_REQUIRED", f.db.localE2aReceipts().queue(f.id)?.state)
+            f.db.openHelper.writableDatabase.execSQL("DROP TRIGGER fail_e2a_queue")
+            f.reopen(); val resumed = transport.repository(); resumed.queue(f.id); finish(resumed, f.id)
+            assertEquals("PARTIAL", f.db.localE2aReceipts().queue(f.id)?.state)
+            assertEquals(1, transport.posts.count { it.originalKey == first.originalKey })
+            assertArrayEquals(saved.responseBytes, f.db.localE2aReceipts().get(first.originalKey)?.responseBytes)
+            assertEquals(draft, f.db.temporaryDrafts().get(f.id)); assertEquals(requests, transport.all())
+        }
+    }
+
     private fun frozen(action: (TemporaryWorkFixture, E2aRecoveryFixture) -> Unit) {
         TemporaryWorkFixture(folder.newFolder()).use { f ->
             f.start(); f.scan(); TemporaryFreeze(f.store).freeze(f.id, "短装待核对")

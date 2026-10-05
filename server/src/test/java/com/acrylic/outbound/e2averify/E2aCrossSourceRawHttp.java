@@ -31,6 +31,10 @@ final class E2aCrossSourceRawHttp {
         assertCount(0);
     }
 
+    HttpResponse<byte[]> first() throws Exception {
+        return send(0, setup.rawBytes().getFirst(), Map.of(), "1", http.token);
+    }
+
     void upload() throws Exception {
         negatives();
         var records = setup.rawBytes();

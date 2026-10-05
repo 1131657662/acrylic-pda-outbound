@@ -31,6 +31,10 @@ final class E2aCrossSourceHttp {
         return response.body();
     }
 
+    HttpResponse<byte[]> send(String operation, UUID key, JsonNode body) throws Exception {
+        return request(operation, key, body, token);
+    }
+
     void reject(String operation, UUID key, JsonNode body, String code) throws Exception {
         var response = request(operation, key, body, token);
         assertThat(response.statusCode()).as(operation + " rejected").isEqualTo(409);

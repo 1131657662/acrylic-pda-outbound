@@ -27,7 +27,7 @@ import java.io.File
  * local-draft keys/requests/receipts exist yet), and every 22→27 step already has its own non-empty test.
  *
  * The test builds real stop evidence, transfer plan, requests and a durable receipt on the current schema, forces
- * the database back to 27 (drop exactly what 27→28 adds, restore that version's Room identity hash), reopens so
+ * the database back to 27 (remove later tables/columns, restore its schema and Room identity hash), reopens so
  * Room runs the real migration, and then compares every preserved fact item by item.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -53,6 +53,7 @@ class LocalDraftSourceBindingMigrationTest {
                 f.db.localDraftQueue().update(queued.copy(state = "ACTION_REQUIRED", autoRetry = false,
                     error = "paused by test"))
                 val signerCallsBefore = f.fixture.stopSigner.calls
+                val postsBefore = wire.posts.toList()
 
                 downgradeTo27(f)
                 // A retrospective re-signing would be a migration bug; make it fail loudly instead of quietly pass.
@@ -79,7 +80,7 @@ class LocalDraftSourceBindingMigrationTest {
                 assertFalse("a migration must not re-enable automatic transfer", after.autoRetry)
                 assertEquals("paused by test", after.error)
                 assertEquals(queued.totalRequests, after.totalRequests)
-                assertEquals(wire.posts.count { it.operation == "OPEN" }, wire.posts.count { it.operation == "OPEN" })
+                assertEquals(postsBefore, wire.posts)
                 // and it must not re-sign: the private key is unavailable, so retrospective signing would fail
                 assertEquals(signerCallsBefore, f.fixture.stopSigner.calls)
 
@@ -91,15 +92,34 @@ class LocalDraftSourceBindingMigrationTest {
             }
         }
 
-    /** Forces the file back to schema 27 by removing exactly what 27 → 28 adds, then restoring 27's identity hash. */
+    /** Remove all later additions and restore the exported historical event schema before migration. */
     private fun downgradeTo27(f: TemporaryWorkFixture) {
         f.db.close()
         val schema = JSONObject(File(checkNotNull(System.getProperty("pda.schemas")), "27.json").readText())
             .getJSONObject("database")
         f.fixture.context.openOrCreateDatabase("outbound-pda.db", 0, null).use { db ->
+            db.execSQL("DROP TABLE local_handover_continuation")
+            db.execSQL("DROP TABLE local_handover_stage")
             db.execSQL("DROP TABLE local_source_binding")
+            restoreEvents(db, schema)
             db.execSQL("UPDATE room_master_table SET identity_hash=? WHERE id=42", arrayOf(schema.getString("identityHash")))
             db.version = 27
+        }
+    }
+
+    private fun restoreEvents(db: android.database.sqlite.SQLiteDatabase, schema: JSONObject) {
+        val entities = schema.getJSONArray("entities")
+        val event = (0 until entities.length()).map { entities.getJSONObject(it) }.single { it.getString("tableName") == "work_event" }
+        val fields = event.getJSONArray("fields")
+        val columns = (0 until fields.length()).joinToString(",") { fields.getJSONObject(it).getString("columnName") }
+        db.execSQL("CREATE TEMP TABLE old_events AS SELECT $columns FROM work_event")
+        db.execSQL("DROP TABLE work_event")
+        db.execSQL(event.getString("createSql").replace("\${TABLE_NAME}", "work_event"))
+        db.execSQL("INSERT INTO work_event($columns) SELECT $columns FROM old_events")
+        val indices = event.getJSONArray("indices")
+        for (i in 0 until indices.length()) db.execSQL(indices.getJSONObject(i).getString("createSql").replace("\${TABLE_NAME}", "work_event"))
+        db.rawQuery("PRAGMA table_info(work_event)", null).use { rows ->
+            while (rows.moveToNext()) assertFalse(rows.getString(1) == "orderPosition")
         }
     }
 }

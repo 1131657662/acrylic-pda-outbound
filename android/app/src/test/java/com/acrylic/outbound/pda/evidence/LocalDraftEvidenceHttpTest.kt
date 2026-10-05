@@ -29,7 +29,7 @@ class LocalDraftEvidenceHttpTest {
         assumeTrue("Requires protected nonempty MySQL runner", !path.isNullOrBlank())
         val file = File(checkNotNull(path)).canonicalFile
         check(file.path.replace('\\', '/').matches(Regex(
-            ".*/\\.local/e2a-cross-20260925-[1-9][0-9]{0,2}/private/android-http-input\\.json")))
+            ".*/\\.local/e2a-cross-20260925-[1-9][0-9]{0,3}/private/android-http-input\\.json")))
         val input = JSONObject(file.readText()); check(input.getString("fixturePurpose") == "SYNTHETIC_ANDROID_ROOM_REAL_HTTP")
         TemporaryWorkFixture(folder.root, contract = input).use { work ->
             work.start(); work.scan()
