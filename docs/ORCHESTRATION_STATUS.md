@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-07
 branch: codex/development
-head: e5b6f5d
-dirty_entries: 15
+head: 2e129c2
+dirty_entries: 14
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 31 }
 server: { contract: 0.40.0, paths: 135, flyway: V66, migrations: 66 }
@@ -16,7 +16,7 @@ server: { contract: 0.40.0, paths: 135, flyway: V66, migrations: 66 }
 B4 接续进行中：可信扫描高水位、独立 TEMP 新授权、ACTIVATED 消费、COMPLETED 数据库边界、受限完整intake、新轮确认记账及 Android 续作下载确认协调已实现并分层验证；Android 新草稿和确认后继续保持 CONTINUATION_BLOCKED。生产命令/放行/扫码/删除及localDeletionAllowed继续关闭，CANCELLED因释放政策未定义拒绝。
 
 ## Git、写权与环境
-- 唯一写者为本聊天；树 D:/acrylic-pda-outbound；分支 codex/development；HEAD/origin 为 e5b6f5df4585eaf1681cdeaebebb9def3ebb9714；确认记账与 Android 协调子项已提交推送；前序Android/服务端/注册/累积验证提交仍保留；未合 main、未部署发布。
+- 唯一写者为本聊天；树 D:/acrylic-pda-outbound；分支 codex/development；HEAD/origin 为 2e129c224dc9070ed7e1f33c45d5a820810e8383；确认记账与 Android 协调子项已提交推送；前序Android/服务端/注册/累积验证提交仍保留；未合 main、未部署发布。
 - 全部脏路径/源码/diff/哈希、远端和环境：.local/autonomous-20261007/b4-round-confirm/b0/及resume-01/、.local/autonomous-20261007/b4-android-coordination/；包含继承保护路径，禁止回滚清理。实际 origin 为同仓库 SSH 地址。Android 替换前看板保存在 b4-android-coordination/board-before.md。
 - 隔离59–66均已dump/哈希/认证停机，无在途项目测试；既有MySQL 3306/13316与外部Harness19387未操作。失败库、binlog、日志和原资料保留；阶段环境快照见上述证据根。
 - 历史资料已归档至 E:/acrylic-archive-20261006/；查找旧路径先读 [本机历史资料位置](LOCAL_ARCHIVE_LOCATIONS.md)。
