@@ -24,7 +24,10 @@ final class ContinuationReceiptHttpFixture implements AutoCloseable {
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
 
     ContinuationReceiptHttpFixture() throws Exception {
-        database = new RetentionDatabaseFixture(); database.profile.migrate(database.jdbc, "65");
+        this("65");
+    }
+    ContinuationReceiptHttpFixture(String migrationTarget) throws Exception {
+        database = new RetentionDatabaseFixture(); database.profile.migrate(database.jdbc, migrationTarget);
         database.jdbc.update("INSERT INTO order_submission_slot(order_id,scope_id,work_round,current_submission_id,phase) "
             + "VALUES(?,?,1,?,'FROZEN')", Ids.bytes(database.id("orderId")), Ids.bytes(database.id("mappedScopeId")),
             Ids.bytes(database.id("mappedSubmissionId")));

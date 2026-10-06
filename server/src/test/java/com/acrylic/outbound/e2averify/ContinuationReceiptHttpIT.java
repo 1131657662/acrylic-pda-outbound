@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfEnvironmentVariable(named = "B4_RETENTION_VERIFY", matches = "true")
 class ContinuationReceiptHttpIT {
     @Test void originalHttpReceiptsSurviveActivationCompletionAndRejectedReplays() throws Exception {
-        try (var fixture = new ContinuationReceiptHttpFixture()) {
+        try (var fixture = new ContinuationReceiptHttpFixture("66")) {
             var commands = new ContinuationReceiptHttpCommands(fixture);
             var reopen = commands.request(null); var issued = fixture.accepted(reopen, "issued");
             assertThat(fixture.accepted(reopen, "issued-replay")).isEqualTo(issued);
