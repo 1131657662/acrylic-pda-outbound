@@ -12,29 +12,33 @@ import static com.acrylic.outbound.submissions.SubmissionEvidence.time;
 @Component
 public class TemporarySubmissionEvidence {
     public void validate(SubmissionStore.Head head,TemporarySubmissionPlan.Plan plan,JsonNode body) {
+        validate(head,plan,body,TemporaryEvidenceOrigins.initial(head,plan));
+    }
+    public void validate(SubmissionStore.Head head,TemporarySubmissionPlan.Plan plan,JsonNode body,TemporaryEvidenceOrigins origins) {
         require(body.path("schemaVersion").isInt() && body.path("schemaVersion").intValue()==2,"临时证据版本错误");
         require(array(body,"dispositions").isEmpty(),"临时首轮不接受未经批准的处置");
         equal(text(body,"authorizationEpoch"),plan.authorization().authorizationEpoch(),"原资格序号不符");
         Instant closed=time(text(body,"closedAt"));require(!closed.isAfter(Instant.now().plusSeconds(300)),"结单时间超前");
-        var captures=captures(head,plan,body);var events=events(head,body,captures);
+        var captures=captures(body,origins);var events=events(head,body,captures,origins);
         var ids=new HashSet<String>();var codes=new HashSet<String>();long previous=0,saved=0,voided=0;
         for(var scan:array(body,"scans")) {
             String id=text(scan,"captureId");require(ids.add(id),"保存记录重复");var c=captures.get(id);
             require(c!=null && text(c,"state").equals("COMMITTED"),"明细缺少原输入");
             long seq=number(scan,"orderScanSeq");require(seq>previous,"扫码明细乱序");previous=seq;
-            scan(scan,c,events,plan.authorization());require(!time(text(scan,"savedAt")).isAfter(closed),"保存晚于冻结");
+            scan(scan,c,events,origins.authorization(c));require(!time(text(scan,"savedAt")).isAfter(closed),"保存晚于冻结");
             if(text(scan,"status").equals("ACTIVE")) { require(codes.add(text(scan,"barcode")),"有效条码重复");saved++; }
             else { equal(text(scan,"status"),"VOID","保存状态无效");require(has(events,id,"VOID"),"撤销缺少实物核对事件");voided++; }
         }
         for(var c:captures.values())equal(text(c,"state").equals("COMMITTED"),ids.contains(text(c,"id")),"保存事实不完整");
         summary(body,captures.values(),saved,voided);require(saved>0,"零包不能结单");
     }
-    private Map<String,JsonNode> captures(SubmissionStore.Head head,TemporarySubmissionPlan.Plan plan,JsonNode body) {
-        var result=new LinkedHashMap<String,JsonNode>();long seq=0,deviceSeq=0;var a=plan.authorization();
+    private Map<String,JsonNode> captures(JsonNode body,TemporaryEvidenceOrigins origins) {
+        var result=new LinkedHashMap<String,JsonNode>();long seq=0,deviceSeq=0;int index=0;
         for(var c:array(body,"captures")) {
+            var origin=origins.capture(index++);var a=origin.authorization();
             String id=uuid(c,"id").toString();require(result.put(id,c)==null,"输入ID重复");equal(number(c,"orderScanSeq"),++seq,"输入缺口或乱序");
             long d=number(c,"deviceCaptureSeq");require(d>deviceSeq,"设备输入序号乱序");deviceSeq=d;
-            equal(text(c,"clientOrderId"),head.control().temporary().client().toString(),"输入原临时单错误");
+            equal(text(c,"clientOrderId"),text(origin.source(),"clientOrderId"),"输入原临时单错误");
             equal(text(c,"originDeviceId"),a.deviceId().toString(),"输入原设备错误");equal(text(c,"operatorId"),a.userId().toString(),"输入原人员错误");
             equal(text(c,"authorizationId"),a.id().toString(),"输入原资格错误");equal(text(c,"authorizationEpoch"),a.authorizationEpoch(),"输入资格序号错误");
             equal(text(c,"snapshotId"),text(body,"inventorySnapshotId"),"输入原快照错误");equal(text(c,"sourceRecoveryEpoch"),a.recoveryEpoch(),"输入恢复代次错误");
@@ -49,11 +53,12 @@ public class TemporarySubmissionEvidence {
         }
         equal(number(body,"captureHighWatermark"),seq,"输入高水位不符");return result;
     }
-    private List<JsonNode> events(SubmissionStore.Head head,JsonNode body,Map<String,JsonNode> captures) {
-        var result=new ArrayList<JsonNode>();var ids=new HashSet<UUID>();long previous=0;
+    private List<JsonNode> events(SubmissionStore.Head head,JsonNode body,Map<String,JsonNode> captures,TemporaryEvidenceOrigins origins) {
+        var result=new ArrayList<JsonNode>();var ids=new HashSet<UUID>();long previous=0;int index=0;
         for(var e:array(body,"events")) {
-            PdaAuditFacts.validate(e);equal(e.get("source"),head.control().source(),"审计原来源错误");
-            equal(text(e,"authorizationId"),head.control().temporary().authorization().toString(),"审计原资格错误");
+            var origin=origins.event(index++);
+            PdaAuditFacts.validate(e);equal(e.get("source"),origin.source(),"审计原来源错误");
+            equal(text(e,"authorizationId"),origin.authorization().id().toString(),"审计原资格错误");
             equal(uuid(e,"operatorId"),head.actor(),"审计原人员错误");require(ids.add(uuid(e,"id")),"事件重复");
             long sequence=number(e,"localSeq");require(sequence>previous,"事件乱序");previous=sequence;
             if(!e.path("captureId").isNull())require(captures.containsKey(text(e,"captureId")),"事件引用未知输入");result.add(e);

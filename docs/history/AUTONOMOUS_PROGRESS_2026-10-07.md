@@ -16,3 +16,11 @@
 证据根 `.local/autonomous-20261007/b4-round-intake/`；各隔离实例 `C:/Users/qq113/AppData/Local/acrylic-pda-outbound-isolated/retention-20261006-{54..57}/` 已保存源码/前后输入哈希、XML/日志、HTTP 请求响应、数据库 dump/SHA/binlog 和认证停机回执。旧第23轮和服务端完整单测没有重跑。新迁移下完整命令专项回归接续记录于下条；下一步在已绑定提交上实现完整原文前缀验收、同事务 scope/slot/K 转移和确认记账。Android CONTINUATION_BLOCKED、CANCELLED 释放政策、生产命令/放行/扫码/删除及 localDeletionAllowed 保持关闭；无 APK、模拟器、真机或部署。
 
 198a. 新迁移下命令受影响回归：隔离58运行 ContinuationReceiptHttpIT，1/0/0/0，重新覆盖 REOPEN/ACTIVATE 真实 HTTP、原人原机和权限拒绝、同键/异文/跨人重放、最终审计失败回滚、合成完成后的历史回执重放，以及激活/完成资格普通首轮 submit/abort 仍拒绝、普通原资格取消仍可恢复。源码输入哈希不变，dump/SHA/认证停机及日志/XML保存在同父目录 `retention-20261006-58/`。这次完成仍是合成结算，不是新轮实际记账；本子项所有验证无失败，前序失败证据继续保留。提交前继续核验全部脏路径、保护哈希、暂存清单和远端；未合main、未部署发布。
+
+198b. 上述18条路径已提交 a7f22c81ce038e9f244f4ef186520b66ad49fe69 并推送codex/development，远端核验一致；暂存patch/清单/提交及推送回执在证据根delivery/。下一子项进入累积原文/新授权分段证据验证，仍不接生产入口。
+
+199. 累积冻结证据验证子项。B0 位于 `.local/autonomous-20261007/b4-round-evidence/b0/`，基于已推送的 a7f22c81ce038e9f244f4ef186520b66ad49fe69。新增 TemporaryRoundEvidence/Prefixes/TemporaryEvidenceOrigins，并让原 TemporarySubmissionEvidence 的首轮调用继续使用单一资格。续作验证先重验原首轮证据，再检查 captures/scans/events 完整原文前缀、原/新来源和资格、固定计划/政策、精确保留集及可信下一序号；旧扫描沿原资格有效期验证，新增输入/事件必须属于新资格，不能借新增 scan/事件改写旧 capture。只有保留包、没有新扫描时仍要求新来源 FROZEN 和正确累计统计。纯验证不会重写两份正文；没有新 HTTP 入口或库存写入。
+
+作者/自审验证：unit-01 为3 XML、49/0/0/0；补空/重复保留集和“保存数代替原连续输入高水位”反例后，受影响 TEMP/SubmissionControl 回归为96 XML、670/0/0/1，源码输入前后哈希一致。唯一跳过仍为 Windows 条件下 SourceEvidenceIntakeFilesTest.symbolicLinkTargetCannotBeAccepted。旧/新资格窗口完全不重叠的正向用例通过；缺失/改写原前缀、借原资格/原 client、断档、设备序号回退、旧包 VOID、跨来源审计、错误时间/统计/计划/保留集均拒绝。本子项没有失败轮，无新增迁移和数据库写者，因此没有新数据库 dump；XML、日志和源码/哈希在证据根 unit-01/、regression-01/。此前数据库56–58证据只按 a7f22c8 输入引用，不充作本次新增验证器的真实 HTTP 结果。
+
+仍未实现新轮 HTTP intake、原资料/快照组合验证、scope/slot/K 同事务接受及确认记账；此项不是原设备或完整新轮验收。下一步接入显式受限 intake，在生产开关保持关闭的隔离 HTTP 环境验证完整正文、同键/异文、原资格误用、占用转移与最终事务回滚。Android CONTINUATION_BLOCKED、CANCELLED 与全部生产能力继续关闭；未重跑旧第23轮或服务端完整单测，未合main、未部署发布。

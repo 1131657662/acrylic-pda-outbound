@@ -24,12 +24,18 @@
 
 前驱原文有两个合法来源：已接受的 `submission_payload`；或完整 STOP 集合所引用的 `LOCAL_FROZEN_PAYLOAD` 原始对象。已接受正文存在时不允许退回另一份本地文件。两条路径均核对原字节、canonical 摘要、原来源与资格；缺文件、哈希不符或不支持的前驱轮次拒绝，不能由 capture 数量推造原文。更高轮次 STOP 的证明链尚未实现，继续拒绝。
 
+## 累积证据验证
+
+`TemporaryRoundEvidence` 实现内部累积证据验证，输入为前驱原文、原/新控制头、已验证的原/新计划、锁定票据事实及保留明细。它不授予提交或扫描权限，不替代外层资料、快照、锁与库存校验。
+
+新正文的 captures、scans、events 必须保留前驱原数组的完整、不变前缀；原 capture ID、source/authorization、时间、序号及扫描原文不可重写。新增事件和新增 scan 不得重新引用旧 capture，旧 ACTIVE 集必须与固定保留明细完全相等。原扫描仍按原资格有效窗口验证，不套用新授权窗口。
+
+新增 capture 按票据 `nextOrderScanSeq` 继续连续编号，新事件使用新来源和资格；设备 capture/localSeq 继续递增。新计划只变更 client/authorization 身份，原产品、政策、库存基线和计划数量保留。只有保留包且无新增输入时，仍要求新来源的新 FROZEN 事件与完整累计统计。接收原文字节不会被该验证器重写；首轮调用只允许一个原资格。
+
 ## 完整 intake 的后续实施约束
 
-以下是接续实现的验收约束，不能以注册专项通过冒充已实现：
+以下仍待接续实现，不能以注册和纯验证器专项通过冒充完整受理：
 
-- 新正文的 captures、scans、events 保留前驱原数组的完整、不变前缀；原 capture ID、原 source/authorization、时间、序号及扫描原文不可重写。新增事件不得修改旧 capture，旧 ACTIVE 集必须与固定 retained manifest 完全相等。
-- 新 capture 从票据 `nextOrderScanSeq` 连续递增，新事件使用新来源和资格；全设备 capture/localSeq 继续递增。新计划只变更 client/authorization 身份，原计划产品、政策、库存基线和数量保留。不得通过重新扫描旧包或删除旧扫描来规避保留关系。
 - 完整验收在同一事务保存收到的原正文、原/新事实引用，选择新轮及提交，逐包把精确票据/evidence-set/cycle/scope owner 转为新提交 REVIEW_RESERVED，再处理新增包。任一 owner 不符全部回滚，通用库存冲突检查不放宽。
 - 已有 canonical 目标沿原映射和原计划使用；canonical 为空时仍须在合法完整受理后创建目标，不把注册当正式化。
 - 确认读取同一受理原文和独立新授权，重验前驱及保留关系、原政策、目标和精确占用。出库、库存记账、成功回执、票据 COMPLETED 与 K 结算同事务提交，失败和重放不得重复记账。
