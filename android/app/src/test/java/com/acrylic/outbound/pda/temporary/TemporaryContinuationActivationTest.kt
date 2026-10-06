@@ -24,7 +24,9 @@ class TemporaryContinuationActivationTest {
             val saved = f.activate(); f.work.reopen()
             assertEquals(saved, f.activate()); assertEquals(draft, f.draft)
             assertEquals(f.frozen, f.db.temporarySubmissions().forOrder(f.work.id))
-            assertEquals(request, f.db.temporary().current(request.userId, request.deviceId, request.warehouseId))
+            val successor = checkNotNull(f.db.temporary().request(f.receipt.getJSONObject("businessDecision").getString("ticketId")))
+            assertEquals(request.key, successor.previousKey)
+            assertNull(f.db.temporary().current(request.userId, request.deviceId, request.warehouseId))
             assertEquals(preparation, f.db.temporary().byAuthorization(draft.authorizationId))
             assertEquals(scans, f.db.temporaryScans().allScans(f.work.id)); assertEquals(stop, f.db.localE2aStops().get(f.work.id))
             assertEquals("CONTINUATION_BLOCKED", saved.state); assertFalse(saved.canScan())
@@ -33,6 +35,52 @@ class TemporaryContinuationActivationTest {
             assertThrows(Exception::class.java) { f.work.processor.reception.receive(TemporaryInput(saved.clientOrderId,
                 barcode, "BROADCAST", f.work.store.sample())) }
             f.db.openHelper.readableDatabase.query("PRAGMA foreign_key_check").use { assertFalse(it.moveToFirst()) }
+        }
+    }
+
+    @Test fun successorDownloadAcknowledgementIsResumableWithoutOpeningScanning() = runBlocking<Unit>(Dispatchers.IO) {
+        TemporaryContinuationFixture(folder.root).use { f ->
+            val saved = f.activate()
+            val ticket = f.receipt.getJSONObject("businessDecision").getString("ticketId")
+            val request = checkNotNull(f.db.temporary().request(ticket))
+            f.work.fixture.ack = f.downloadAck(request)
+            val beforeAcks = f.work.fixture.calls.count { it.path.endsWith("download-ack") }
+            val row = TemporaryContinuationDownload(f.work.store).acknowledge(ticket)
+            assertNotNull(row.ackJson)
+            assertEquals("CONTINUATION_BLOCKED", saved.state)
+            assertFalse(f.db.temporaryDrafts().get(saved.clientOrderId)!!.canScan())
+            assertNull(f.work.fixture.repository.local())
+            assertThrows(Exception::class.java) { TemporaryDraftRepository(f.work.store).create(java.util.UUID.randomUUID().toString()) }
+            val replay = TemporaryContinuationDownload(f.work.store).acknowledge(ticket)
+            assertEquals(row, replay)
+            assertEquals(beforeAcks + 1, f.work.fixture.calls.count { it.path.endsWith("download-ack") })
+        }
+    }
+
+    @Test fun failedSuccessorDownloadAcknowledgementLeavesProofPending() = runBlocking<Unit>(Dispatchers.IO) {
+        TemporaryContinuationFixture(folder.root).use { f ->
+            val saved = f.activate()
+            val ticket = f.receipt.getJSONObject("businessDecision").getString("ticketId")
+            val request = checkNotNull(f.db.temporary().request(ticket))
+            f.work.fixture.ack = f.downloadAck(request)
+            f.work.fixture.beforeCall = { if (it.path.endsWith("download-ack")) error("injected continuation ack failure") }
+            assertThrows(Exception::class.java) { TemporaryContinuationDownload(f.work.store).acknowledge(ticket) }
+            assertNull(f.db.temporary().prepared(request.key)!!.ackJson)
+            assertEquals("CONTINUATION_BLOCKED", f.db.temporaryDrafts().get(saved.clientOrderId)!!.state)
+            f.work.fixture.beforeCall = {}
+            assertNotNull(TemporaryContinuationDownload(f.work.store).acknowledge(ticket).ackJson)
+        }
+    }
+
+    @Test fun changedSuccessorPredecessorCannotAcknowledgeDownload() = runBlocking<Unit>(Dispatchers.IO) {
+        TemporaryContinuationFixture(folder.root).use { f ->
+            val saved = f.activate()
+            val ticket = f.receipt.getJSONObject("businessDecision").getString("ticketId")
+            f.db.openHelper.writableDatabase.execSQL(
+                "UPDATE temporary_request SET previousKey=NULL WHERE `key`=?", arrayOf(ticket))
+            assertThrows(Exception::class.java) { TemporaryContinuationDownload(f.work.store).acknowledge(ticket) }
+            assertNull(f.db.temporary().prepared(ticket)!!.ackJson)
+            assertEquals("CONTINUATION_BLOCKED", f.db.temporaryDrafts().get(saved.clientOrderId)!!.state)
         }
     }
 

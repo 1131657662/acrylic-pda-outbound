@@ -35,6 +35,18 @@ internal class TemporaryContinuationFixture(root: File) : AutoCloseable {
         return SubmissionJson.canonical(value.put("signedReceipt", token)).toByteArray(Charsets.UTF_8)
     }
     fun activate(raw: ByteArray = raw()) = TemporaryContinuationActivation(work.store).activate(work.id, raw)
+    fun downloadAck(request: TemporaryRequest): JSONObject {
+        val row = checkNotNull(db.temporary().prepared(request.key))
+        val body = JSONObject(row.ackBodyJson)
+        val claims = JSONObject().put("iss", "acrylic-outbound").put("aud", "acrylic-pda-temporary-activation")
+            .put("authorizationId", row.authorizationId).put("bundleId", row.bundleId)
+            .put("manifestSha256", row.manifestSha256).put("commandSha256", TemporaryAckVerifier.commandDigest(body))
+            .put("serverRecoveryEpoch", request.recoveryEpoch).put("userId", request.userId).put("deviceId", request.deviceId)
+            .put("activatedAt", row.activatedAt).put("acknowledgedAt", work.fixture.time.plusMillis(1).toString())
+        return JSONObject().put("authorizationId", row.authorizationId).put("bundleId", row.bundleId)
+            .put("activatedAt", row.activatedAt).put("acknowledgedAt", claims.getString("acknowledgedAt"))
+            .put("signedAck", signer.jwt(claims))
+    }
     fun rehash(decision: JSONObject) {
         decision.put("retainedManifestSha256", sha(JSONObject().put("version", 1).put("items", decision.getJSONArray("retained"))))
     }

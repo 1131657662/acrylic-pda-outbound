@@ -27,7 +27,8 @@ class TemporaryContinuationActivation(private val store: TemporaryWorkStore) {
         val source = store.source(draft.clientOrderId)
         val manifest = JSONObject(verified.authorization.getString("manifest"))
         TemporaryVerifier.time(manifest, store.connection.now())
-        val newRequest = source.request.copy(key = verified.ticketId, receiptJson = verified.authorization.toString(), previousKey = null)
+        val newRequest = source.request.copy(key = verified.ticketId, receiptJson = verified.authorization.toString(),
+            previousKey = source.request.key)
         store.db.temporary().insertRequest(newRequest)
         val payloads = TemporaryParts(store.db).read(draft.authorizationId, source.manifest)
         TemporaryActivation(store.db, store.connection).activate(TemporaryActivation.Input(newRequest,
