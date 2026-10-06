@@ -6,18 +6,18 @@
 ```yaml
 date: 2026-10-07
 branch: codex/development
-head: 424074a
-dirty_entries: 13
+head: e5b6f5d
+dirty_entries: 15
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 31 }
 server: { contract: 0.40.0, paths: 135, flyway: V66, migrations: 66 }
 ```
 <!-- FACTS_END -->
-B4 接续进行中：可信扫描高水位、独立 TEMP 新授权、ACTIVATED 消费、COMPLETED 数据库边界、受限完整intake及新轮确认记账已实现并分层验证；Android 严格验签及 Room 原子消费后保持 CONTINUATION_BLOCKED。生产命令/放行/扫码/删除及localDeletionAllowed继续关闭，CANCELLED因释放政策未定义拒绝。
+B4 接续进行中：可信扫描高水位、独立 TEMP 新授权、ACTIVATED 消费、COMPLETED 数据库边界、受限完整intake、新轮确认记账及 Android 续作下载确认协调已实现并分层验证；Android 新草稿和确认后继续保持 CONTINUATION_BLOCKED。生产命令/放行/扫码/删除及localDeletionAllowed继续关闭，CANCELLED因释放政策未定义拒绝。
 
 ## Git、写权与环境
-- 唯一写者为本聊天；树 D:/acrylic-pda-outbound；分支 codex/development；HEAD/origin 为 424074a0e83534a3f16255f8a4c7323d84d686dd；确认记账子项已提交推送；前序Android/服务端/注册/累积验证提交仍保留；未合 main、未部署发布。
-- 全部脏路径/源码/diff/哈希、远端和环境：.local/autonomous-20261007/b4-round-confirm/b0/及resume-01/；包含继承保护路径，禁止回滚清理。实际 origin 为同仓库 SSH 地址。替换前看板保存在resume-01/board-before.md。
+- 唯一写者为本聊天；树 D:/acrylic-pda-outbound；分支 codex/development；HEAD/origin 为 e5b6f5df4585eaf1681cdeaebebb9def3ebb9714；确认记账与 Android 协调子项已提交推送；前序Android/服务端/注册/累积验证提交仍保留；未合 main、未部署发布。
+- 全部脏路径/源码/diff/哈希、远端和环境：.local/autonomous-20261007/b4-round-confirm/b0/及resume-01/、.local/autonomous-20261007/b4-android-coordination/；包含继承保护路径，禁止回滚清理。实际 origin 为同仓库 SSH 地址。Android 替换前看板保存在 b4-android-coordination/board-before.md。
 - 隔离59–66均已dump/哈希/认证停机，无在途项目测试；既有MySQL 3306/13316与外部Harness19387未操作。失败库、binlog、日志和原资料保留；阶段环境快照见上述证据根。
 - 历史资料已归档至 E:/acrylic-archive-20261006/；查找旧路径先读 [本机历史资料位置](LOCAL_ARCHIVE_LOCATIONS.md)。
 
@@ -28,9 +28,11 @@ B4 接续进行中：可信扫描高水位、独立 TEMP 新授权、ACTIVATED �
 - Android 追加独立消费记录及新草稿，不替换原来源、资格、停止或扫描历史；验签绑定原 canonical payload、保留包原文、身份、轮次、连续序号及关闭能力。Room 同事务写入新资格/资料/草稿/消费/审计，支持重启精确重放和最终写入失败全回滚。
 - Android 证据 .local/autonomous-20261006/b4-android-continuation-20261006/：attempt-03相关回归189/0/0/3，attempt-05最终定向13/0/0/0，lint 0 error/199 warning。attempt-01/04依赖未缓存；attempt-02夹具 indices 假设错误11/1/0/0均保留。attempt-04复制XML为旧结果，不计当轮执行。
 - Android 验证为合成签名/身份的 JVM/Room 消费与非空迁移；无当次 APK、模拟器、真机、真实 HTTP、原设备验收。Android失败未另导出SQLite dump，只有源码/schema/XML/日志/哈希，不声称数据库dump。编译日志见 b4-ticket-lifecycle-20261006/android-compile-activation.log。
+- 本次 Android 协调提交 `e5b6f5d` 已推送：续作新请求保留原 `previousKey`；独立确认入口重验已消费票据、原准备请求、前驱、manifest、身份和保留包，在事务外取得 `download-ack` 后以未变化行条件原子保存，已有 ack 重放不再发网络请求。证据 `.local/autonomous-20261007/b4-android-coordination/`：attempt-03 15/0/0/0、attempt-04 16/0/0/0、regression-02 127/0/0/3、lint 0 error/199 warning；attempt-02 失败断言保留。
+- 本次 Android 结果仍仅为合成签名/身份与 JVM/Room fixture 验证；无 APK、模拟器、真机、原身份、真实 HTTP、共享数据库或部署。生产命令/放行/扫码/删除、CANCELLED 释放和 `localDeletionAllowed` 继续关闭。
 
 ## 下一步与未验边界
-- 新轮唯一注册a7f22c8、累积验证7a399f0、完整intake e624690及确认记账55d441d已推送；隔离轮74/75通过，受影响回归regression-02为672/0/0/1，编译失败链及夹具失败轮保留，见当日第202、203条。B4整体不标完成、不进入B5。
+- 新轮唯一注册a7f22c8、累积验证7a399f0、完整intake e624690、确认记账55d441d及 Android 协调 e5b6f5d 已推送；隔离轮74/75和 Android attempt-03/04通过，服务端受影响回归 672/0/0/1、Android 受影响回归 127/0/0/3，编译失败链、夹具失败轮和 Android attempt-02 失败均保留，见当日第202–204条。B4整体不标完成、不进入B5。
 - 历史REOPEN/ACTIVATE回执已改为不可变事实核验，短装审批误入与两个Spring代理问题已修复；retention-20261006-50真实HTTP专项1/0/0/0、命令/协议144/0/0/0。47/48启动失败、49合成完成事务夹具失败及各轮dump/日志/哈希/停机证据保留。停止/完成事实为合成输入，不是新轮记账验收。
 - 续作资格普通首轮submit/abort复用已在访问检查及注册写者双重拒绝；激活新增原人原机守卫。retention-20261006-53真实HTTP1/0/0/0，52为其他设备夹具重复公钥摘要失败，dump/日志保留。新轮确认仍须重验票据、新授权、前驱及K转移；不能复用FORMAL assignment。Android高轮次扫描/冻结继续关闭。
 - 新轮显式引用、旧已接受/LOCAL_FROZEN原文读取、唯一REGISTERED绑定和数据库不可变约束已实现；注册原语自身不选择新轮或移动K。unit-02为31/0/0/0，隔离56/57注册各1/0/0/0；58命令HTTP回归1/0/0/0。该组STOP/前驱及完成为合成fixture，不是受理/记账证明。证据 .local/autonomous-20261007/b4-round-intake/，见当日第198/198a条。
@@ -38,7 +40,7 @@ B4 接续进行中：可信扫描高水位、独立 TEMP 新授权、ACTIVATED �
 - 原身份/Keystore、真机/双设备、现场网络/断电/长时离线、TEMP更高轮次/跨来源、候选排除授权、B8 LINK currentEffect遗漏、R1生产放行保持未验或关闭。
 - 完整intake默认关闭，整笔scope/slot选择、原文/证据落库及精确K转移；已有目标固定计划/基线逐项核对，空目标完整受理后创建。最终隔离64新增扫描、65本地前驱仅保留包、66命令/默认关闭HTTP回归各1/0/0/0；受影响回归97 XML、672/0/0/1，OpenAPI通过。59–61夹具失败及62/63中间通过均保全；见 .local/autonomous-20261007/b4-round-accept/、当日第200–200b条。
 - intake验证使用合成STOP/设备/前驱，但新轮POST、K转移、待审及最终审计失败回滚实际执行；确认轮74/75另行完成download-ack、记账、成功回执和COMPLETED同事务验证，仍非原身份或原设备证明。受控LINK、续作分块上传、更高前驱轮次和取消继续拒绝。
-- R05原资料/旧BCD/526边界、R09恢复限制/备份异地取回/RPO-RTO/Linux运维继续单列，不由局部通过覆盖。详细进度见history/AUTONOMOUS_PROGRESS_2026-10-06.md第192–196条；跨日接续见history/AUTONOMOUS_PROGRESS_2026-10-07.md第197条。
+- R05原资料/旧BCD/526边界、R09恢复限制/备份异地取回/RPO-RTO/Linux运维继续单列，不由局部通过覆盖；Android 显式确认协议/队列接入、原身份/真实设备/真实 HTTP仍未验。详细进度见history/AUTONOMOUS_PROGRESS_2026-10-06.md第192–196条；跨日接续见history/AUTONOMOUS_PROGRESS_2026-10-07.md第197、204条。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；详细阶段记录见 docs/history/AUTONOMOUS_PROGRESS_2026-10-06.md。

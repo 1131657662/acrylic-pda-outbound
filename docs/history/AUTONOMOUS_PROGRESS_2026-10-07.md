@@ -52,3 +52,9 @@
 受影响服务端回归第二轮 `regression-02`：`672/0/0/1`，唯一跳过 Windows 符号链接目标用例；第一次 `regression-01` 的两个失败为配置测试未提供新 completion mock，修复后通过。`version_facts.ps1 -Check`、`git diff --check` 通过；未重跑隔离第23轮或服务端完整单测。生产命令/放行/扫码/删除、`localDeletionAllowed`、CANCELLED 释放政策、更高轮次与 Android 扫描继续关闭。证据根为 `.local/autonomous-20261007/b4-round-confirm/`；下一步为暂存清单/保护哈希复核、提交并推送 `codex/development`，随后继续 Android 显式确认协议协调。
 
 203. 确认记账子项已按明确路径提交 `55d441d3b369746fd7f00ccd4436abe0be826cf5` 并推送 `codex/development`，远端核对一致；facts 已更新到该 SHA。暂存清单、patch、SHA、保护哈希及验证索引在 `.local/autonomous-20261007/b4-round-confirm/delivery/`；继承脏路径保持未暂存。当前仍不合 `main`、不部署发布；下一阶段接续 Android 显式确认协议协调，生产命令、扫码、删除、CANCELLED 和 `localDeletionAllowed` 继续关闭。
+
+204. Android 续作协调子项完成。B0 与接续环境、唯一写者、监听、磁盘、继承脏路径和输入哈希证据保存在 `.local/autonomous-20261007/b4-android-coordination/b0/`、`board-before.md` 和 `protected-hash-check.json`；本聊天仍是唯一写者，既有 3306/13316 与外部 19387 未操作。`TemporaryContinuationActivation` 为新请求保留原请求 `previousKey`，不替换原来源、授权、资格或扫描历史；`TemporaryContinuationDownload` 只接受已消费的续作票据，重验来源草稿、原准备请求、前驱链、新草稿、manifest、身份和保留包，网络 `download-ack` 在 Room 事务外调用，只有本地行未变化时才原子写入 `ackJson`，已有确认可无网络重放，状态继续保持 `CONTINUATION_BLOCKED`。
+
+定向最终轮 `attempt-03` 为 15/0/0/0，补前驱篡改反例后的 `attempt-04` 为 16/0/0/0；受影响 `regression-02` 为 127/0/0/3，lint 为 0 error/199 warning，`git diff --check` 与 facts 检查通过。`attempt-02` 的失败断言、全部 XML/日志/输入哈希及 lint 结果均保留，索引见 `.local/autonomous-20261007/b4-android-coordination/evidence-summary.json`。本轮仅使用合成签名、身份和 fixture transport 的 JVM/Room 验证，没有 APK、模拟器、真机、原身份、真实 HTTP、共享数据库或部署；生产命令、放行、扫码、删除、CANCELLED 释放和 `localDeletionAllowed` 继续关闭。
+
+本子项四条 Android 源码/测试路径已提交 `e5b6f5d` 并推送 `codex/development`，远端核对一致；提交前后的继承脏路径未暂存。B4 整体仍不标完成、不进入 B5；下一步在该 fail-closed 协调基础上评估显式确认协议/队列接入，仍需单列原身份、真实设备与真实 HTTP 边界。
