@@ -31,6 +31,7 @@ public class CommandUnitOfWork {
         state.requireWritable(input.text("transportRecoveryEpoch")); CommandPermissions.requireWrite(actor.permissions(), input.kind());
         if (Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind())) locks.sourceDisposition(hint); else locks.source(hint);
         var context = facts.read(input.uuid("submissionId")); locks.sameHint(hint, context);
+        if(context.version("workRound")>1 && !Set.of("NORMAL_CONFIRM","SHORT_APPROVE").contains(input.kind()))throw CommandErrors.unsupported();
         CommandExpected.validate(input, context, actor, operation.requiresCandidateContext());
         if (!operation.recordsDecision()) eligibility.require(context);
         var write = new CommandWrite(Ids.next(), Ids.next(), Ids.next(), Instant.now().truncatedTo(ChronoUnit.MILLIS),

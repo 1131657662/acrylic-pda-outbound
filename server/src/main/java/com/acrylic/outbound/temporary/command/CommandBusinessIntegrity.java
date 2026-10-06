@@ -27,6 +27,7 @@ public class CommandBusinessIntegrity {
         }
         if (Set.of("REOPEN_WORK","ACTIVATE_CONTINUATION").contains(receipt.path("commandType").asText())) { continuation.verify(receipt); return; }
         var context=receipt.path("originalContext");var decision=receipt.path("businessDecision");
+        if(context.path("workRound").asLong()>1)CommandErrors.integrity(Set.of("NORMAL_CONFIRM","SHORT_APPROVE").contains(receipt.path("commandType").asText()));
         String hash=context.path("receivedPayloadSha256").asText();var body=parse(files.read(hash));
         CommandErrors.integrity(sha(body).equals(hash) && context.path("status").asText().equals("REVIEW_REQUIRED")
             && context.path("planSha256").equals(body.path("planSha256"))
@@ -44,6 +45,7 @@ public class CommandBusinessIntegrity {
         }
         CommandErrors.integrity(shortShipment!=decision.path("shortApprovalReceiptId").isNull());
         success(context,decision.path("submissionReceipt"),body);
+        if(context.path("workRound").asLong()>1)TemporaryRoundReceiptIntegrity.completed(jdbc,receipt);
     }
     private void verifyDisposition(JsonNode receipt) {
         var context = receipt.path("originalContext");
@@ -157,8 +159,9 @@ public class CommandBusinessIntegrity {
     private void original(JsonNode context,JsonNode body) {
         for(String field:List.of("authorizationId","freezeDeviceId","workRound","sourceRecoveryEpoch","authorizationEpoch"))
             CommandErrors.integrity(context.path(field).equals(body.path(field)));
-        for(String field:List.of("creatorDeviceId","clientOrderId"))
-            CommandErrors.integrity(context.path(field).equals(body.path("source").path(field)));
+        CommandErrors.integrity(context.path("creatorDeviceId").equals(body.path("source").path("creatorDeviceId")));
+        if(context.path("workRound").asLong()==1)CommandErrors.integrity(context.path("clientOrderId").equals(body.path("source").path("clientOrderId")));
+        else TemporaryRoundReceiptIntegrity.original(jdbc,context,body);
         CommandErrors.integrity(body.path("source").path("kind").asText().equals("TEMP")
             && body.path("assignmentId").isNull() && body.path("continuationId").isNull()
             && context.path("targetRevision").equals(body.path("orderRevision")));

@@ -2,6 +2,7 @@ package com.acrylic.outbound.temporary.command;
 
 import com.acrylic.outbound.submissions.SubmissionAccounting;
 import com.acrylic.outbound.submissions.SubmissionStock;
+import com.acrylic.outbound.temporary.continuation.TemporaryRoundCompletion;
 import com.acrylic.outbound.temporary.review.TemporaryDecisionCandidates;
 import com.acrylic.outbound.temporary.review.TemporaryLinkTarget;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -27,17 +28,17 @@ public class TemporaryCommandConfiguration {
     @Bean
     CommandOperation temporaryNormalConfirmation(TemporaryConfirmationSource source,
             TemporaryDecisionCandidates candidates, TemporaryShortApprovals approvals, SubmissionStock stock,
-            SubmissionAccounting accounting) {
+            SubmissionAccounting accounting, TemporaryRoundCompletion rounds) {
         return new TemporaryConfirmationOperation("NORMAL_CONFIRM",
-            new TemporaryConfirmationOperation.Dependencies(source, candidates, approvals, stock, accounting));
+            new TemporaryConfirmationOperation.Dependencies(source, candidates, approvals, stock, accounting, rounds));
     }
 
     @Bean
     CommandOperation temporaryShortApproval(TemporaryConfirmationSource source,
             TemporaryDecisionCandidates candidates, TemporaryShortApprovals approvals, SubmissionStock stock,
-            SubmissionAccounting accounting) {
+            SubmissionAccounting accounting, TemporaryRoundCompletion rounds) {
         return new TemporaryConfirmationOperation("SHORT_APPROVE",
-            new TemporaryConfirmationOperation.Dependencies(source, candidates, approvals, stock, accounting));
+            new TemporaryConfirmationOperation.Dependencies(source, candidates, approvals, stock, accounting, rounds));
     }
 
     @Bean

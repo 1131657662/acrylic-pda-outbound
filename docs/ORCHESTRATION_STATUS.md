@@ -6,18 +6,18 @@
 ```yaml
 date: 2026-10-07
 branch: codex/development
-head: 7a399f0
-dirty_entries: 41
+head: e624690
+dirty_entries: 39
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 31 }
 server: { contract: 0.40.0, paths: 135, flyway: V66, migrations: 66 }
 ```
 <!-- FACTS_END -->
-B4 接续进行中：可信扫描高水位、独立 TEMP 新授权、ACTIVATED 消费、COMPLETED 数据库边界及受限完整intake已实现并分层验证；实际确认记账仍待接入。Android 严格验签及 Room 原子消费后保持 CONTINUATION_BLOCKED；生产命令/放行/扫码/删除及 localDeletionAllowed 继续关闭，CANCELLED 因释放政策未定义拒绝。
+B4 接续进行中：可信扫描高水位、独立 TEMP 新授权、ACTIVATED 消费、COMPLETED 数据库边界、受限完整intake及新轮确认记账已实现并分层验证；Android 严格验签及 Room 原子消费后保持 CONTINUATION_BLOCKED。生产命令/放行/扫码/删除及localDeletionAllowed继续关闭，CANCELLED因释放政策未定义拒绝。
 
 ## Git、写权与环境
-- 唯一写者为本聊天；树 D:/acrylic-pda-outbound；分支 codex/development；HEAD/origin 为 7a399f0fe7650a517be3be2be156e3c0e0e13c28；Android子项fe4550f和服务端B4开发子项2b8de51已提交推送，历史记录cf2f8e8、新轮注册a7f22c8和累积验证7a399f0均已推送；未合 main、未部署发布。
-- 全部脏路径/diff/哈希、远端和环境：.local/autonomous-20261007/b4-round-accept/resume-01/及delivery/；十二条继承保护路径哈希未变。实际 origin 为同仓库 SSH 地址。替换前看板：history/ORCHESTRATION_STATE_before_round_accept_2026-10-07.md。
+- 唯一写者为本聊天；树 D:/acrylic-pda-outbound；分支 codex/development；HEAD/origin 为 e6246903605f991c112f3b5cf840bf95a762e1cd；已验证完整intake子项已提交推送；前序Android/服务端/注册/累积验证提交仍保留；未合 main、未部署发布。
+- 全部脏路径/源码/diff/哈希、远端和环境：.local/autonomous-20261007/b4-round-confirm/b0/及resume-01/；包含继承保护路径，禁止回滚清理。实际 origin 为同仓库 SSH 地址。替换前看板保存在resume-01/board-before.md。
 - 隔离59–66均已dump/哈希/认证停机，无在途项目测试；既有MySQL 3306/13316与外部Harness19387未操作。失败库、binlog、日志和原资料保留；阶段环境快照见上述证据根。
 - 历史资料已归档至 E:/acrylic-archive-20261006/；查找旧路径先读 [本机历史资料位置](LOCAL_ARCHIVE_LOCATIONS.md)。
 
@@ -30,7 +30,7 @@ B4 接续进行中：可信扫描高水位、独立 TEMP 新授权、ACTIVATED �
 - Android 验证为合成签名/身份的 JVM/Room 消费与非空迁移；无当次 APK、模拟器、真机、真实 HTTP、原设备验收。Android失败未另导出SQLite dump，只有源码/schema/XML/日志/哈希，不声称数据库dump。编译日志见 b4-ticket-lifecycle-20261006/android-compile-activation.log。
 
 ## 下一步与未验边界
-- 新轮唯一注册a7f22c8及累积验证7a399f0已推送；完整intake已验证待开发提交，下一步新轮确认记账。用户当次授权按已验证子项提交，替代旧计划整批B4后才能提交的限制；B4整体不标完成、不进入B5。
+- 新轮唯一注册a7f22c8、累积验证7a399f0、完整intake e624690已推送；新轮确认记账实现及隔离轮74/75已通过，受影响回归regression-02为672/0/0/1，编译失败链及夹具失败轮保留，见当日第202条。待暂存/提交/推送本已验证子项；B4整体不标完成、不进入B5。
 - 历史REOPEN/ACTIVATE回执已改为不可变事实核验，短装审批误入与两个Spring代理问题已修复；retention-20261006-50真实HTTP专项1/0/0/0、命令/协议144/0/0/0。47/48启动失败、49合成完成事务夹具失败及各轮dump/日志/哈希/停机证据保留。停止/完成事实为合成输入，不是新轮记账验收。
 - 续作资格普通首轮submit/abort复用已在访问检查及注册写者双重拒绝；激活新增原人原机守卫。retention-20261006-53真实HTTP1/0/0/0，52为其他设备夹具重复公钥摘要失败，dump/日志保留。新轮确认仍须重验票据、新授权、前驱及K转移；不能复用FORMAL assignment。Android高轮次扫描/冻结继续关闭。
 - 新轮显式引用、旧已接受/LOCAL_FROZEN原文读取、唯一REGISTERED绑定和数据库不可变约束已实现；注册原语自身不选择新轮或移动K。unit-02为31/0/0/0，隔离56/57注册各1/0/0/0；58命令HTTP回归1/0/0/0。该组STOP/前驱及完成为合成fixture，不是受理/记账证明。证据 .local/autonomous-20261007/b4-round-intake/，见当日第198/198a条。

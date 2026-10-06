@@ -50,7 +50,8 @@ final class TemporaryConfirmationFixture {
     record Assembly(CommandReceiptCodec codec,AuditWriter audit,CommandLocks locks,TemporaryConfirmationSource source,SubmissionAccounting accounting) { }
     TemporaryCommandService service(Assembly components) {
         var dependencies=new TemporaryConfirmationOperation.Dependencies(components.source(),
-            bean(TemporaryDecisionCandidates.class),bean(TemporaryShortApprovals.class),bean(SubmissionStock.class),components.accounting());
+            bean(TemporaryDecisionCandidates.class),bean(TemporaryShortApprovals.class),bean(SubmissionStock.class),components.accounting(),
+            bean(com.acrylic.outbound.temporary.continuation.TemporaryRoundCompletion.class));
         var rejection=new TemporaryRejectionOperation.Dependencies(components.source(),bean(TemporaryDecisionCandidates.class),
             bean(SubmissionStore.class),bean(SubmissionEvents.class));
         List<CommandOperation> operations=List.of(new TemporaryConfirmationOperation("NORMAL_CONFIRM",dependencies),

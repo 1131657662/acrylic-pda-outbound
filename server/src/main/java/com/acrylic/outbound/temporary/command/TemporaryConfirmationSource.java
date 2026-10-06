@@ -15,16 +15,21 @@ public class TemporaryConfirmationSource {
     private final TemporarySubmissionEvidence evidence; private final TemporarySubmissionSnapshot snapshots;
     private final TemporaryReviewEligibility eligibility; private final ServerState server;
     private final org.springframework.jdbc.core.JdbcTemplate jdbc;
+    private final com.acrylic.outbound.temporary.continuation.TemporaryRoundConfirmationSource rounds;
     public TemporaryConfirmationSource(SubmissionStore submissions,SubmissionFiles files,TemporarySubmissionPlan plans,
         TemporarySubmissionEvidence evidence,TemporarySubmissionSnapshot snapshots,TemporaryReviewEligibility eligibility,ServerState server,
-        org.springframework.jdbc.core.JdbcTemplate jdbc) {
+        org.springframework.jdbc.core.JdbcTemplate jdbc,com.acrylic.outbound.temporary.continuation.TemporaryRoundConfirmationSource rounds) {
         this.submissions=submissions;this.files=files;this.plans=plans;this.evidence=evidence;this.snapshots=snapshots;
-        this.eligibility=eligibility;this.server=server;this.jdbc=jdbc;
+        this.eligibility=eligibility;this.server=server;this.jdbc=jdbc;this.rounds=rounds;
     }
     public Value read(CommandContext context) {
         var head=submissions.required(context.id("submissionId"));submissions.current(head);
-        if(head.control().temporary()==null || head.order()==null || !head.status().equals("REVIEW_REQUIRED")
-            || head.control().round()!=1)throw CommandErrors.stale();
+        if(head.control().temporary()==null || head.order()==null || !head.status().equals("REVIEW_REQUIRED"))throw CommandErrors.stale();
+        if(head.control().round()!=1) {
+            var checked=rounds.read(head);var issues=reasons(checked.authorization());
+            if(!issues.isEmpty())throw new BusinessException(409,issues.getFirst(),"续作新资格条件不满足，保留待审及占用");
+            return checked.value();
+        }
         long mappingVersion=context.version("mappingVersion");
         boolean linked=confirmableSource(context,mappingVersion);
         target(head,linked);

@@ -54,7 +54,8 @@ public final class TemporaryArchiveDriver {
     }
     private TemporaryCommandService commands() {
         var dependencies=new TemporaryConfirmationOperation.Dependencies(bean(TemporaryConfirmationSource.class),bean(TemporaryDecisionCandidates.class),
-            bean(TemporaryShortApprovals.class),bean(SubmissionStock.class),bean(SubmissionAccounting.class));
+            bean(TemporaryShortApprovals.class),bean(SubmissionStock.class),bean(SubmissionAccounting.class),
+            bean(com.acrylic.outbound.temporary.continuation.TemporaryRoundCompletion.class));
         var work=new CommandUnitOfWork(bean(CommandIdentity.class),bean(CommandFacts.class),bean(CommandLocks.class),bean(CommandReplay.class),
             bean(ServerState.class),bean(CommandStore.class),bean(CommandReceiptCodec.class),bean(AuditWriter.class),
             List.of(new TemporaryConfirmationOperation("NORMAL_CONFIRM",dependencies)),bean(CommandSyntheticEligibility.class));

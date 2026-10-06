@@ -48,7 +48,7 @@ final class ContinuationReceiptHttpFixture implements AutoCloseable {
     private String session(UUID user) {
         var jdbc = database.jdbc;
         jdbc.update("INSERT IGNORE INTO user_warehouse VALUES(?,?)", Ids.bytes(user), Ids.bytes(database.id("warehouseId")));
-        jdbc.update("INSERT INTO user_role SELECT ?,id FROM role WHERE code IN ('PDA_OPERATOR','SUPERVISOR','WAREHOUSE_ADMIN')", Ids.bytes(user));
+        jdbc.update("INSERT INTO user_role SELECT ?,id FROM role WHERE code IN ('PDA_OPERATOR','SUPERVISOR','WAREHOUSE_ADMIN','TEMPORARY_ORDER_CONFIRMER')", Ids.bytes(user));
         return sessionOnDevice(user, database.id("deviceId"));
     }
 

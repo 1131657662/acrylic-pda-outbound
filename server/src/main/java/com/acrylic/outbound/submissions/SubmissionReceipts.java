@@ -27,6 +27,7 @@ public class SubmissionReceipts {
             .put("orderNo",jdbc.queryForObject("SELECT order_no FROM outbound_order WHERE id=?",String.class,Ids.bytes(head.order())));
         var items=result.putArray("items");value.products().forEach(p->items.add(object().put("deliveryCode",p.code())
             .put("actualCount",Long.toString(p.count())).put("actualWeightGrams",Long.toString(p.weight()))));
+        if(head.control().temporary()!=null && head.control().round()>1)result.put("localDeletionAllowed",false);
         return sign(result);
     }
     public ObjectNode abort(SubmissionStore.Head head,String hash,String reason) {

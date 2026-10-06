@@ -16,7 +16,7 @@ public class TemporaryRoundSelection {
     private final JdbcTemplate jdbc;
     public TemporaryRoundSelection(JdbcTemplate jdbc) { this.jdbc=jdbc; }
     public void select(SubmissionStore.Head head,TemporaryRoundFacts.Source source,TemporarySubmissionPlan.Plan plan) {
-        if(head.order()!=null)target(head,source,plan);
+        if(head.order()!=null)requireTarget(head,source,plan);
         int changed=jdbc.update("""
             UPDATE submission_scope SET current_submission_id=?,work_round=?
             WHERE id=? AND current_submission_id=? AND work_round=? AND source_order_id IS NULL
@@ -30,7 +30,7 @@ public class TemporaryRoundSelection {
             Ids.bytes(source.previous()),source.fromRound());
         if(changed!=1)throw conflict("TEMP_CONTINUATION_TARGET_CHANGED");
     }
-    private void target(SubmissionStore.Head head,TemporaryRoundFacts.Source source,TemporarySubmissionPlan.Plan plan) {
+    public void requireTarget(SubmissionStore.Head head,TemporaryRoundFacts.Source source,TemporarySubmissionPlan.Plan plan) {
         int valid=jdbc.queryForObject("""
             SELECT COUNT(*) FROM submission_scope c JOIN outbound_order o ON o.id=c.canonical_order_id AND o.warehouse_id=c.warehouse_id
             JOIN temporary_source_mapping m ON m.scope_id=c.id AND m.mapping_version=c.mapping_version AND m.canonical_order_id=o.id

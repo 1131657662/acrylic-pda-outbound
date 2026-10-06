@@ -46,8 +46,10 @@ public final class TemporaryConfirmationOperation implements CommandOperation {
         if(source.snapshot().shortShipment())dependencies.approvals().bind(write,decision);
         var issues=dependencies.stock().reserve(h,source.snapshot());
         if(!issues.isEmpty())throw new BusinessException(409,"TEMPORARY_STOCK_CONFLICT","库存或原包周期冲突，不能确认");
-        decision.set("submissionReceipt",dependencies.accounting().commit(h,source.body(),source.snapshot(),actor));return decision;
+        var receipt=dependencies.accounting().commit(h,source.body(),source.snapshot(),actor);
+        dependencies.rounds().complete(write,source,receipt);decision.set("submissionReceipt",receipt);return decision;
     }
     public record Dependencies(TemporaryConfirmationSource source,TemporaryDecisionCandidates candidates,
-        TemporaryShortApprovals approvals,SubmissionStock stock,SubmissionAccounting accounting) { }
+        TemporaryShortApprovals approvals,SubmissionStock stock,SubmissionAccounting accounting,
+        com.acrylic.outbound.temporary.continuation.TemporaryRoundCompletion rounds) { }
 }

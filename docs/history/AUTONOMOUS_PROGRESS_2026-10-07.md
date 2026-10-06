@@ -38,3 +38,15 @@
 定向受影响TEMP/Submission回归为97 XML、672/0/0/1；缺省和显式关闭的两个应用上下文测试通过，唯一跳过为Windows符号链接目标用例。所有轮次源码前后哈希一致；OpenAPI验证通过。证据根 `.local/autonomous-20261007/b4-round-accept/`，XML/日志/源码/输入哈希在regression-01/，真实HTTP及数据库资料在C盘隔离父目录retention-20261006-59至66；全部dump/哈希/binlog/认证停机，失败资料未删。十二条继承保护路径哈希未变；保护核对脚本曾把属性名误作字符串比较而误报，改为逐行属性比较后确认无差异，没有回滚或改动受保护文件。
 
 验证身份、STOP和前驱构造仍为合成，不冒充原停止接收、原设备/真机或完整记账验收。确认记账、COMPLETED与实际成功回执的同事务接入仍待实现；新轮取消/受控LINK/更高前驱轮次/分块上传及Android扫描冻结继续安全拒绝。未新增迁移，契约事实见看板；服务端查询依赖已追加的绑定表，隔离旧迁移目标测试需先完成对应迁移再调用新读者。旧第23轮和服务端完整单测没有重跑；无当次APK、模拟器、真机、原库、main或发布/部署操作。
+
+200c. 上述28条路径已提交 e6246903605f991c112f3b5cf840bf95a762e1cd，并推送codex/development，远端逐字核验一致；交付manifest、暂存patch、输入哈希、commit/push回执在证据根delivery/。进入新轮确认记账B0；B4目标持续，未进入B5。所有隔离库停止，下一新实例编号至少67。
+
+201. 新轮确认记账开发断点：B0与接续完整路径/源码/哈希/diff、进程/监听/磁盘在 `.local/autonomous-20261007/b4-round-confirm/b0/`、`resume-01/`。HEAD/origin仍为e6246903605f991c112f3b5cf840bf95a762e1cd，本聊天唯一写者，无在途隔离数据库或测试，原3306/13316及外部19387未操作。已写未验代码连接不可变注册/激活/票据、新授权与原root来源；确认重验原文、固定目标与保留K，拟在外层命令事务内完成记账、成功回执及COMPLETED。命令source仍保留root client；成功正文使用新client/新授权；历史重放只核验不可变绑定。仅接入NORMAL_CONFIRM/SHORT_APPROVE，其余高轮次决定继续拒绝。
+
+首次compileTestJava失败：TemporaryCommandConfiguration的两处条件@Bean装配尚缺TemporaryRoundCompletion参数，日志保留于compile-01/；没有当次行为验证，不将intake已通过结果作为确认记账证据。下一步修复装配、编译、自审、补隔离真实HTTP正常/短装确认、权限与身份/占用反例和最终故障全回滚，再跑受影响回归。退出标准为真实dispatch/result/ledger、成功回执与票据COMPLETED同事务且历史不变、同键字节重放、异文/越权拒绝。所有生产能力、Android扫描冻结、localDeletionAllowed和CANCELLED保持关闭；下一隔离编号至少67。
+
+202. 新轮确认记账子项完成作者实现、自审及受影响复验。新增 `TemporaryRoundConfirmationSource`/`Owners`/`Completion`、不可变回执完整性校验，并将 `CommandFacts`、`SubmissionAccountingPolicy`、`CommandUnitOfWork` 和成功回执接入续作绑定：命令 context 保留原 root client，确认正文使用新 client/新授权；仅 `NORMAL_CONFIRM`、`SHORT_APPROVE` 允许高轮次；缺 download-ack、原文/目标/保留K变化、异身份或权限不足均 fail-closed；记账、成功回执、closure、票据 `COMPLETED` 与最终审计在外层事务中回滚。
+
+编译修复链：compile-01 配置依赖缺失、compile-02 旧测试构造器缺失、compile-03 通过；失败日志均保留于 `.local/autonomous-20261007/b4-round-confirm/`。隔离轮67–69、71–73失败分别为确认用户夹具角色、历史快照时点、同一编号重复消费及脚本未强制重跑等测试问题，源码与数据库证据均保留；最终轮75 NORMAL_CONFIRM **1/0/0/0**，轮74 SHORT_APPROVE→NORMAL_CONFIRM **1/0/0/0**，真实 loopback HTTP 执行 download-ack、dispatch/result/closure、固定不扣库存账务、同键字节重放、异文/跨身份/权限/保留owner/最终审计故障回滚。隔离库 `C:/Users/qq113/AppData/Local/acrylic-pda-outbound-isolated/retention-20261006-{74,75}/` 已 dump/SHA/binlog/认证停机；非原设备/原身份仍为合成 stopped-source 事实。
+
+受影响服务端回归第二轮 `regression-02`：`672/0/0/1`，唯一跳过 Windows 符号链接目标用例；第一次 `regression-01` 的两个失败为配置测试未提供新 completion mock，修复后通过。`version_facts.ps1 -Check`、`git diff --check` 通过；未重跑隔离第23轮或服务端完整单测。生产命令/放行/扫码/删除、`localDeletionAllowed`、CANCELLED 释放政策、更高轮次与 Android 扫描继续关闭。证据根为 `.local/autonomous-20261007/b4-round-confirm/`；下一步为暂存清单/保护哈希复核、提交并推送 `codex/development`，随后继续 Android 显式确认协议协调。

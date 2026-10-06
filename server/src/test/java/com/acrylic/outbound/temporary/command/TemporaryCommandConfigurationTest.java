@@ -6,6 +6,7 @@ import com.acrylic.outbound.submissions.SubmissionStock;
 import com.acrylic.outbound.submissions.SubmissionStore;
 import com.acrylic.outbound.temporary.review.TemporaryDecisionCandidates;
 import com.acrylic.outbound.temporary.review.TemporaryLinkTarget;
+import com.acrylic.outbound.temporary.continuation.TemporaryRoundCompletion;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,7 @@ class TemporaryCommandConfigurationTest {
         .withBean(PhysicalDispositionStore.class, () -> mock(PhysicalDispositionStore.class))
         .withBean(TemporaryContinuationTicketStore.class, () -> mock(TemporaryContinuationTicketStore.class))
         .withBean(TemporaryContinuationAuthorizationIssuer.class, () -> mock(TemporaryContinuationAuthorizationIssuer.class))
+        .withBean(TemporaryRoundCompletion.class, () -> mock(TemporaryRoundCompletion.class))
         .withBean(JdbcTemplate.class, () -> mock(JdbcTemplate.class))
         .withBean(TemporaryCommandService.class, () -> mock(TemporaryCommandService.class));
 
