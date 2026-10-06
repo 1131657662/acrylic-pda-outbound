@@ -15,7 +15,7 @@ class TemporaryReception(private val store: TemporaryWorkStore) {
     }
     private fun persist(input: TemporaryInput): TemporaryCapture {
         val draft = store.check(input.order); store.requireNoOtherInput(input.order)
-        check(draft.state == "SCANNING") { "请先保存计划并开始本单" }
+        check(draft.canScan()) { "请先保存计划并开始本单" }
         val device = checkNotNull(store.db.work().device(draft.creatorDeviceId))
         val catalog = store.source(input.order); val identity = catalog.manifest.getJSONObject("identity")
         val barcode = input.raw.trim(' ', '\r', '\n', '\t').uppercase(Locale.ROOT)

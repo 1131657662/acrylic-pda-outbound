@@ -98,6 +98,7 @@ class LocalDraftSourceBindingMigrationTest {
         val schema = JSONObject(File(checkNotNull(System.getProperty("pda.schemas")), "27.json").readText())
             .getJSONObject("database")
         f.fixture.context.openOrCreateDatabase("outbound-pda.db", 0, null).use { db ->
+            com.acrylic.outbound.pda.temporary.TemporaryContinuationMigrationFixture.restorePreContinuation(db)
             db.execSQL("DROP TABLE local_handover_continuation")
             db.execSQL("DROP TABLE local_handover_stage")
             db.execSQL("DROP TABLE local_source_binding")

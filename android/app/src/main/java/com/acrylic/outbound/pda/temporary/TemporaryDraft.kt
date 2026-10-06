@@ -8,7 +8,12 @@ import androidx.room.*
 data class TemporaryDraft(@PrimaryKey val clientOrderId: String, val creatorDeviceId: String, val operatorId: String,
     val warehouseId: String, val authorizationId: String, val temporaryNo: String, val createdAt: String,
     val vehicleNo: String = "", val containerNo: String = "", val reason: String = "", val revision: Long = 0,
-    val state: String = "DRAFT", val nextScanSeq: Long = 1, val planSha256: String = "")
+    val state: String = "DRAFT", val nextScanSeq: Long = 1, val planSha256: String = "",
+    @ColumnInfo(defaultValue = "1") val workRound: Long = 1,
+    @ColumnInfo(defaultValue = "[]") val authorizationHistoryJson: String = "[]")
+
+// Continuation receipts preserve evidence; they do not grant production scanning.
+fun TemporaryDraft.canScan(): Boolean = state == "SCANNING" && workRound == 1L
 
 @Entity(tableName = "temporary_line", primaryKeys = ["clientOrderId", "deliveryCode"],
     foreignKeys = [ForeignKey(entity = TemporaryDraft::class, parentColumns = ["clientOrderId"], childColumns = ["clientOrderId"])])

@@ -22,7 +22,8 @@ data class TemporaryPartChunk(val authorizationId: String, val part: String, val
 @Dao
 interface TemporaryDao {
     @Query("""SELECT r.* FROM temporary_request r WHERE userId=:user AND deviceId=:device AND warehouseId=:warehouse
-        AND NOT EXISTS (SELECT 1 FROM temporary_request n WHERE n.previousKey=r.`key`)""")
+        AND NOT EXISTS (SELECT 1 FROM temporary_request n WHERE n.previousKey=r.`key`)
+        AND NOT EXISTS (SELECT 1 FROM temporary_continuation c WHERE c.ticketId=r.`key`)""")
     fun current(user: String, device: String, warehouse: String): TemporaryRequest?
     @Query("SELECT * FROM temporary_request WHERE `key`=:key") fun request(key: String): TemporaryRequest?
     @Query("SELECT EXISTS(SELECT 1 FROM temporary_request WHERE recoveryEpoch!=:epoch)") fun hasOtherEpoch(epoch: String): Boolean

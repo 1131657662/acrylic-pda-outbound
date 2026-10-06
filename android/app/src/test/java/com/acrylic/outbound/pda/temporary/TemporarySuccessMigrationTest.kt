@@ -48,6 +48,7 @@ class TemporarySuccessMigrationTest {
         f.db.close()
         val schema = JSONObject(File(checkNotNull(System.getProperty("pda.schemas")), "21.json").readText()).getJSONObject("database")
         f.fixture.context.openOrCreateDatabase("outbound-pda.db", 0, null).use { db ->
+            com.acrylic.outbound.pda.temporary.TemporaryContinuationMigrationFixture.restorePreContinuation(db)
             db.execSQL("DROP TABLE temporary_archive_evidence"); db.execSQL("DROP TABLE temporary_archive_response"); db.execSQL("DROP TABLE temporary_archive_request"); db.execSQL("DROP TABLE temporary_success_evidence"); db.execSQL("DROP TABLE temporary_success_response")
             db.execSQL("UPDATE room_master_table SET identity_hash=? WHERE id=42", arrayOf(schema.getString("identityHash")))
             db.version = 21

@@ -60,6 +60,7 @@ class HandoverContinuationMigrationTest {
         val fields = event.getJSONArray("fields")
         val columns = (0 until fields.length()).joinToString(",") { fields.getJSONObject(it).getString("columnName") }
         f.context.openOrCreateDatabase("outbound-pda.db", 0, null).use { old ->
+            com.acrylic.outbound.pda.temporary.TemporaryContinuationMigrationFixture.restorePreContinuation(old)
             old.execSQL("DROP TABLE local_handover_continuation")
             old.execSQL("CREATE TEMP TABLE event_copy AS SELECT $columns FROM work_event")
             old.execSQL("DROP TABLE work_event")

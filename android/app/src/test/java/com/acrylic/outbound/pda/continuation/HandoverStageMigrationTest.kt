@@ -32,6 +32,7 @@ class HandoverStageMigrationTest {
             val schema = JSONObject(File(System.getProperty("pda.schemas"), "28.json").readText())
                 .getJSONObject("database")
             f.context.openOrCreateDatabase("outbound-pda.db", 0, null).use { old ->
+            com.acrylic.outbound.pda.temporary.TemporaryContinuationMigrationFixture.restorePreContinuation(old)
                 old.execSQL("DROP TABLE local_handover_stage")
                 old.execSQL("UPDATE room_master_table SET identity_hash=? WHERE id=42", arrayOf(schema.getString("identityHash")))
                 old.version = 28

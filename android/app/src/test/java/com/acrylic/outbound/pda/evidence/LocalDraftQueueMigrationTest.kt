@@ -45,6 +45,7 @@ class LocalDraftQueueMigrationTest {
         f.db.close()
         val schema = JSONObject(File(checkNotNull(System.getProperty("pda.schemas")), "26.json").readText()).getJSONObject("database")
         f.fixture.context.openOrCreateDatabase("outbound-pda.db", 0, null).use { db ->
+            com.acrylic.outbound.pda.temporary.TemporaryContinuationMigrationFixture.restorePreContinuation(db)
             db.execSQL("DROP TABLE local_draft_queue")
             db.execSQL("UPDATE room_master_table SET identity_hash=? WHERE id=42", arrayOf(schema.getString("identityHash")))
             db.version = 26
