@@ -12,6 +12,7 @@ public final class CommandExpected {
     private static final List<String> EVIDENCE = List.of("evidenceSetId","evidenceSetSha256","verificationId",
         "verificationVersion","verificationAlgorithmVersion");
     private static final List<String> MANIFEST = List.of("dispositionManifestSha256","dispositionManifestVersion");
+    private static final List<String> RETAINED = List.of("retainedManifestSha256","retainedManifestVersion");
     private CommandExpected() { }
 
     public static ObjectNode current(CommandContext facts,String userVersion) {
@@ -25,10 +26,11 @@ public final class CommandExpected {
     static void validate(CommandInput input,CommandContext facts,CommandIdentity.Actor actor,boolean candidateContext) {
         applicability(input,candidateContext);
         var expected = current(facts,actor.authVersion());
-        if (Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(input.kind())) {
+        if (Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind())) {
             EVIDENCE.forEach(key -> expected.set(key,facts.json().get(key)));
             // Manifest contents and digest are checked by the disposition operation, not by source facts.
             MANIFEST.forEach(key -> expected.set(key,input.expected().get(key)));
+            if (Set.of("REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind())) RETAINED.forEach(key -> expected.set(key,input.expected().get(key)));
         }
         if (candidateContext) {
             if (!input.expected().path("candidateContextSha256").isTextual()) throw CommandErrors.confirmationRequired();
@@ -39,13 +41,16 @@ public final class CommandExpected {
     }
 
     private static void applicability(CommandInput input,boolean candidateContext) {
-        if (!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(input.kind()))
+        if (!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind()))
             throw CommandErrors.unsupported();
         boolean physical = Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(input.kind());
+        boolean continuation = Set.of("REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind());
         for (String key : OPTIONAL) {
-            boolean evidence = EVIDENCE.contains(key) || MANIFEST.contains(key);
-            if (evidence && physical == input.expected().get(key).isNull()) throw CommandErrors.unsupported();
-            boolean applicable = physical && evidence || candidateContext && key.equals("candidateContextSha256");
+            boolean required = EVIDENCE.contains(key) && (physical || continuation)
+                || MANIFEST.contains(key) && physical || RETAINED.contains(key) && continuation;
+            if (required && input.expected().get(key).isNull()) throw CommandErrors.unsupported();
+            boolean applicable = required
+                || candidateContext && key.equals("candidateContextSha256");
             if (!applicable && !input.expected().get(key).isNull()) throw CommandErrors.unsupported();
         }
     }

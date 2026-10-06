@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -76,7 +77,7 @@ class SourceEvidenceIntakeSetWriterTest {
 
     @Test void businessFactFailureDoesNotInsertAnySetOrItem() {
         doThrow(new BusinessException(409,"E2A_SOURCE_PAYLOAD_UNAVAILABLE","missing"))
-            .when(facts).require(eq(binding),any(),eq(1L),eq(null),eq(2L));
+            .when(facts).requireTrusted(eq(binding),any(),eq(1L),eq(null),eq(2L));
 
         assertThatThrownBy(() -> writer.createIfComplete(stop,binding,stopObjectId))
             .isInstanceOf(BusinessException.class);
@@ -86,18 +87,24 @@ class SourceEvidenceIntakeSetWriterTest {
     }
 
     @Test void trustedFactsPrecedeSetAndItemInsertion() {
+        when(facts.requireTrusted(eq(binding),any(),eq(1L),eq(null),eq(2L)))
+            .thenReturn(new SourceEvidenceIntakeBusinessFacts.TrustedFacts(List.of(),7L));
         var link=writer.createIfComplete(stop,binding,stopObjectId);
 
         assertThat(link.itemCount()).isEqualTo(1);
         var order=inOrder(facts,jdbc,reservations);
-        order.verify(facts).require(eq(binding),any(),eq(1L),eq(null),eq(2L));
-        order.verify(jdbc).update(contains("INSERT INTO source_evidence_set"),any(Object[].class));
+        order.verify(facts).requireTrusted(eq(binding),any(),eq(1L),eq(null),eq(2L));
+        var arguments=ArgumentCaptor.forClass(Object[].class);
+        order.verify(jdbc).update(contains("INSERT INTO source_evidence_set"),arguments.capture());
+        assertThat(arguments.getValue()[9]).isEqualTo(7L);
         order.verify(jdbc).update(contains("INSERT INTO source_evidence_item"),any(Object[].class));
         order.verify(reservations).reserve(eq(binding),any(),eq(List.of()));
     }
 
     @Test void existingSetRejectsAlteredItemBeforeAnyNewReservation() {
         UUID setId=existingSet();
+        when(facts.requireTrusted(eq(binding),any(),eq(1L),eq(setId),eq(2L)))
+            .thenReturn(new SourceEvidenceIntakeBusinessFacts.TrustedFacts(List.of(),1L));
         when(jdbc.queryForObject(contains("COUNT(*) FROM source_evidence_item"),eq(Integer.class),any(Object[].class)))
             .thenReturn(0);
 
@@ -109,12 +116,14 @@ class SourceEvidenceIntakeSetWriterTest {
 
     @Test void existingSetRechecksFactsAndReservationsWithoutReinsertion() {
         UUID setId=existingSet();
+        when(facts.requireTrusted(eq(binding),any(),eq(1L),eq(setId),eq(2L)))
+            .thenReturn(new SourceEvidenceIntakeBusinessFacts.TrustedFacts(List.of(),1L));
         when(jdbc.queryForObject(contains("COUNT(*) FROM source_evidence_item"),eq(Integer.class),any(Object[].class)))
             .thenReturn(1);
 
         assertThat(writer.createIfComplete(stop,binding,stopObjectId).id()).isEqualTo(setId);
 
-        verify(facts).require(eq(binding),any(),eq(1L),eq(setId),eq(2L));
+        verify(facts).requireTrusted(eq(binding),any(),eq(1L),eq(setId),eq(2L));
         verify(reservations).reserve(eq(binding),eq(setId),eq(List.of()));
         verify(jdbc,never()).update(anyString(),any(Object[].class));
     }
@@ -123,7 +132,8 @@ class SourceEvidenceIntakeSetWriterTest {
         UUID setId=UUID.randomUUID();
         when(jdbc.queryForList(contains("FROM source_evidence_set"),any(Object[].class))).thenReturn(List.of(Map.of(
             "id",Ids.bytes(setId),"stop_object_id",Ids.bytes(stopObjectId),"manifest_bytes",stop.manifestBytes(),
-            "set_sha256",stop.setHash(),"capture_high_watermark",1L,"audit_through_seq",2L,"item_count",1L)));
+            "set_sha256",stop.setHash(),"capture_high_watermark",1L,"order_scan_high_watermark",1L,
+            "audit_through_seq",2L,"item_count",1L)));
         when(jdbc.queryForObject(contains("SELECT COUNT(*) FROM source_evidence_item WHERE set_id"),eq(Long.class),
             any(Object[].class))).thenReturn(1L);
         return setId;

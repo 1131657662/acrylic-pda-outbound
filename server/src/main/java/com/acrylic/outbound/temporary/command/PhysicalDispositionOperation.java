@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Opt-in command operation for rejected TEMP sources with trusted stop verification. */
+/** Opt-in physical disposition; retaining an aborted source never grants scanning authority. */
 public final class PhysicalDispositionOperation implements CommandOperation {
     private final PhysicalDispositionVerification verification;
     private final PhysicalDispositionStore store;
@@ -18,10 +18,7 @@ public final class PhysicalDispositionOperation implements CommandOperation {
     @Override public void apply(CommandContext context) { throw new IllegalStateException("Full command required"); }
     @Override public JsonNode execute(CommandWrite write) {
         var expected = write.command().expected();
-        var verified = verification.read(write.context().id("warehouseId"), write.context().id("scopeId"),
-            write.context().id("submissionId"), write.context().version("workRound"), UUID.fromString(expected.path("evidenceSetId").asText()),
-            UUID.fromString(expected.path("verificationId").asText()), expected.path("evidenceSetSha256").asText(),
-            expected.path("verificationVersion").asLong(), expected.path("verificationAlgorithmVersion").asLong());
+        var verified = verified(write);
         var manifest = SubmissionJson.parse(write.command().body().path("dispositionManifest").toString());
         var items = PhysicalDispositionManifest.require(manifest, verified.activeBales(),
             expected.path("dispositionManifestSha256").asText(), expected.path("dispositionManifestVersion").asLong());
@@ -32,5 +29,17 @@ public final class PhysicalDispositionOperation implements CommandOperation {
             .put("dispositionId", id.toString()).put("evidenceSetId", verified.set().toString())
             .put("verificationId", verified.verification().toString()).put("manifestSha256", expected.path("dispositionManifestSha256").asText())
             .put("manifestVersion", expected.path("dispositionManifestVersion").asText()).set("products", manifest.path("items").deepCopy());
+    }
+
+    private PhysicalDispositionVerification.Verified verified(CommandWrite write) {
+        var c = write.context(); var e = write.command().expected();
+        UUID set = UUID.fromString(e.path("evidenceSetId").asText()), proof = UUID.fromString(e.path("verificationId").asText());
+        if ("ABORTED".equals(c.text("status")))
+            return verification.readForContinuation(c.id("warehouseId"), c.id("scopeId"), c.id("submissionId"),
+                c.version("workRound"), set, proof, e.path("evidenceSetSha256").asText(),
+                e.path("verificationVersion").asLong(), e.path("verificationAlgorithmVersion").asLong());
+        return verification.read(c.id("warehouseId"), c.id("scopeId"), c.id("submissionId"), c.version("workRound"),
+            set, proof, e.path("evidenceSetSha256").asText(), e.path("verificationVersion").asLong(),
+            e.path("verificationAlgorithmVersion").asLong());
     }
 }

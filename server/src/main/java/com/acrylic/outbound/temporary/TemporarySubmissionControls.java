@@ -10,9 +10,12 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 
 @Component
 public class TemporarySubmissionControls {
-    private final JdbcTemplate jdbc;private final PdaAuditOrigins origins;
-    public TemporarySubmissionControls(JdbcTemplate jdbc,PdaAuditOrigins origins) { this.jdbc=jdbc;this.origins=origins; }
+    private final JdbcTemplate jdbc;private final PdaAuditOrigins origins;private final TemporaryStore authorizations;
+    public TemporarySubmissionControls(JdbcTemplate jdbc,PdaAuditOrigins origins,TemporaryStore authorizations) {
+        this.jdbc=jdbc;this.origins=origins;this.authorizations=authorizations;
+    }
     public void lock(SubmissionControl c,SubmissionAccess.Actor actor) {
+        authorizations.requireInitialSubmission(c.temporary().authorization());
         var t=c.temporary();origins.bind(t.creator(),new PdaAuditOrigins.Origin(null,t.authorization(),t.client(),actor.user().toString(),c.epoch()));
         var scopes=jdbc.queryForList("SELECT BIN_TO_UUID(id) FROM submission_scope WHERE creator_device_id=? AND client_order_id=? FOR UPDATE",
             String.class,Ids.bytes(t.creator()),Ids.bytes(t.client()));

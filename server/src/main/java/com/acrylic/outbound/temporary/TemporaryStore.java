@@ -43,6 +43,13 @@ public class TemporaryStore {
         var rows=jdbc.queryForList("SELECT compressed FROM temporary_preparation_part WHERE authorization_id=? AND part_name=?",byte[].class,Ids.bytes(id),part);
         if(rows.isEmpty()) throw missing();return rows.getFirst();
     }
+    /** A continuation credential can only enter its explicit next-round protocol. */
+    public void requireInitialSubmission(UUID authorization) {
+        Integer consumed = jdbc.queryForObject("SELECT COUNT(*) FROM temporary_source_continuation_activation WHERE new_authorization_id=?",
+            Integer.class, Ids.bytes(authorization));
+        if (consumed == null || consumed != 0)
+            throw new BusinessException(409,"TEMP_CONTINUATION_INTAKE_UNAVAILABLE","续作资格不能用于临时首轮；请保留原票据等待专用续作协议");
+    }
     public TemporaryCommands.Acknowledgement ack(Stored row) {
         var rows=jdbc.query("SELECT activated_at,acknowledged_at,signed_ack FROM temporary_preparation_ack WHERE authorization_id=?",
             (rs,n)->new TemporaryCommands.Acknowledgement(row.id().toString(),row.receipt().bundleId(),rs.getTimestamp(1).toInstant().toString(),

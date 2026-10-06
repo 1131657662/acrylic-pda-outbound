@@ -8,7 +8,7 @@ import java.util.*;
 
 /** Validates the immutable, ordered per-bale manifest before any reservation can be changed. */
 public final class PhysicalDispositionManifest {
-    private static final Set<String> ACTIONS = Set.of("RELEASE", "QUARANTINE", "PHYSICAL_DISPOSED");
+    private static final Set<String> ACTIONS = Set.of("RELEASE", "RETAIN", "QUARANTINE", "PHYSICAL_DISPOSED");
     private PhysicalDispositionManifest() { }
 
     public static List<Item> require(JsonNode manifest, Collection<UUID> activeBales,

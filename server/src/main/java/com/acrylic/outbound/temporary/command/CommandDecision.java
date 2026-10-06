@@ -17,7 +17,43 @@ final class CommandDecision {
         if(decision.isNull()) { require(receipt.path("status").asText().equals("INTERNAL_TEST_ONLY")); return; }
         require(receipt.path("status").asText().equals("RECORDED") && decision.isObject());
         String kind=receipt.path("commandType").asText();
-        require(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(kind) && decision.path("kind").asText().equals(kind));
+        require(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(kind) && decision.path("kind").asText().equals(kind));
+        if (kind.equals("REOPEN_WORK")) {
+            fields(decision,"kind status ticketId fromWorkRound toWorkRound evidenceSetId verificationId retainedManifestSha256 retainedManifestVersion nextOrderScanSeq products");
+            require(decision.path("status").asText().equals("TICKET_ISSUED") && decision.path("products").isArray()
+                && !decision.path("products").isEmpty());
+            uuid(decision.path("ticketId")); uuid(decision.path("evidenceSetId")); uuid(decision.path("verificationId"));
+            hash(decision.path("retainedManifestSha256")); positive(decision.path("retainedManifestVersion"));
+            positive(decision.path("fromWorkRound")); positive(decision.path("toWorkRound"));
+            require(decision.path("toWorkRound").asLong()==Math.addExact(decision.path("fromWorkRound").asLong(),1));
+            positive(decision.path("nextOrderScanSeq"));
+            for (var item : decision.path("products")) {
+                fields(item,"baleId expectedDispatchCycle recordSha256 disposition"); uuid(item.path("baleId"));
+                positive(item.path("expectedDispatchCycle")); hash(item.path("recordSha256"));
+                require(item.path("disposition").asText().equals("RETAIN"));
+            }
+            return;
+        }
+        if (kind.equals("ACTIVATE_CONTINUATION")) {
+            fields(decision,"kind status ticketId fromWorkRound toWorkRound nextOrderScanSeq newAuthorizationId newBundleId newClientOrderId targetDeviceId targetOperatorId scopeId retainedManifestSha256 retainedManifestVersion authorization retained");
+            require(decision.path("status").asText().equals("ACTIVATED") && decision.path("retained").isArray() && !decision.path("retained").isEmpty());
+            for (String key : List.of("ticketId","newAuthorizationId","newBundleId","newClientOrderId","targetDeviceId","targetOperatorId","scopeId")) uuid(decision.path(key));
+            hash(decision.path("retainedManifestSha256")); positive(decision.path("retainedManifestVersion"));
+            positive(decision.path("fromWorkRound")); positive(decision.path("toWorkRound")); positive(decision.path("nextOrderScanSeq"));
+            require(decision.path("toWorkRound").asLong()==Math.addExact(decision.path("fromWorkRound").asLong(),1));
+            fields(decision.path("authorization"),"authorizationId bundleId offlineToken manifest manifestSha256 signedManifest");
+            require(decision.path("authorization").path("authorizationId").asText().equals(decision.path("newAuthorizationId").asText())
+                && decision.path("authorization").path("bundleId").asText().equals(decision.path("newBundleId").asText())
+                && decision.path("authorization").path("manifest").isTextual()
+                && decision.path("authorization").path("offlineToken").isTextual()
+                && decision.path("authorization").path("signedManifest").isTextual());
+            hash(decision.path("authorization").path("manifestSha256"));
+            for (var item : decision.path("retained")) {
+                fields(item,"baleId expectedDispatchCycle recordSha256"); uuid(item.path("baleId"));
+                positive(item.path("expectedDispatchCycle")); hash(item.path("recordSha256"));
+            }
+            return;
+        }
         if (kind.equals("PHYSICAL_DISPOSITION")) {
             fields(decision,"kind products shortShipmentReason shortApprovalReceiptId shortApprovalSha256 submissionReceipt dispositionId evidenceSetId verificationId manifestSha256 manifestVersion");
             require(decision.path("products").isArray() && decision.path("shortShipmentReason").asText().isEmpty()
@@ -102,5 +138,6 @@ final class CommandDecision {
         require(actual.equals(Set.of(names.split(" "))));
     }
     private static void hash(JsonNode value) { require(value.isTextual() && value.asText().matches("[a-f0-9]{64}")); }
+    private static void positive(JsonNode value) { require(value.isTextual() && value.asText().matches("[1-9][0-9]{0,17}")); }
     private static void require(boolean value) { CommandErrors.integrity(value); }
 }

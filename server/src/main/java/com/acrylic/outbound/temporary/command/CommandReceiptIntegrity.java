@@ -65,7 +65,7 @@ public class CommandReceiptIntegrity {
         for(String key:List.of("creatorDeviceId","clientOrderId"))CommandErrors.integrity(body.get("source").get(key).equals(c.get(key)));
         CommandErrors.integrity(c.path("freezeDeviceId").equals(c.path("creatorDeviceId")) && c.path("workRound").asText().equals(r.text("work_round"))
             && c.path("sourceRecoveryEpoch").asText().equals(r.text("source_recovery_epoch")));
-        if (Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(command.kind())) {
+        if (Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(command.kind())) {
             CommandErrors.integrity(r.id("evidence_set_id") != null && r.id("evidence_verification_id") != null
                 && command.expected().path("evidenceSetId").asText().equals(r.id("evidence_set_id").toString())
                 && command.expected().path("verificationId").asText().equals(r.id("evidence_verification_id").toString()));
@@ -94,6 +94,8 @@ public class CommandReceiptIntegrity {
             && details.path("commandSha256").asText().equals(r.text("command_sha256")));
     }
     private void approval(JsonNode receipt) {
+        // These validated decision shapes have no short-shipment approval reference.
+        if (Set.of("CLOSE_DISPOSITION", "REOPEN_WORK", "ACTIVATE_CONTINUATION").contains(CommandDecision.kind(receipt))) return;
         var decision=receipt.path("businessDecision");if(decision.isNull() || decision.path("shortApprovalReceiptId").isNull())return;
         var linked=store.byReceipt(UUID.fromString(decision.path("shortApprovalReceiptId").asText()));
         CommandErrors.integrity("SHORT_APPROVE".equals(linked.text("command_type")));

@@ -66,4 +66,16 @@ public class TemporaryCommandConfiguration {
             PhysicalDispositionStore store) {
         return new CloseDispositionOperation(verification, store);
     }
+
+    @Bean
+    CommandOperation temporaryReopenWork(PhysicalDispositionVerification verification,
+            TemporaryContinuationTicketStore tickets) {
+        return new TemporaryReopenWorkOperation(verification, tickets);
+    }
+
+    @Bean
+    CommandOperation temporaryContinuationActivation(org.springframework.jdbc.core.JdbcTemplate jdbc,
+            TemporaryContinuationAuthorizationIssuer authorizations) {
+        return new TemporaryContinuationActivationOperation(jdbc, authorizations);
+    }
 }

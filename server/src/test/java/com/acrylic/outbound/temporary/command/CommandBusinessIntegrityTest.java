@@ -31,7 +31,7 @@ class CommandBusinessIntegrityTest {
 
     private static CommandBusinessIntegrity integrity(JdbcTemplate jdbc) {
         return new CommandBusinessIntegrity(jdbc, mock(SubmissionFiles.class), mock(SubmissionArchiveProofs.class),
-            mock(TemporaryDecisionCandidates.class));
+            mock(TemporaryDecisionCandidates.class), mock(TemporaryContinuationIntegrity.class));
     }
 
     private static JdbcTemplate matchingJdbc(String reason) {

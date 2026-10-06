@@ -15,6 +15,7 @@ public class TemporarySubmissionAccess {
             !row.warehouseId().equals(actor.warehouseId()))throw SubmissionAccess.missing();
         if(!row.recoveryEpoch().equals(c.epoch()) || write && !epoch.equals(c.epoch()))
             throw new BusinessException(409,"ORDER_RECOVERY_REQUIRED","原临时资料恢复代次不符，保留原批次对账");
+        store.requireInitialSubmission(c.temporary().authorization());
         // Historical evidence/abort must remain recoverable after offline expiry or admission changes.
         return new SubmissionAccess.Actor(actor.userId(),actor.warehouseId(),actor.userAuthVersion());
     }

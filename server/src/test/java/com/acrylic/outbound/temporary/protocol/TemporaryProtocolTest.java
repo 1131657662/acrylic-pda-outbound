@@ -1,6 +1,9 @@
 package com.acrylic.outbound.temporary.protocol;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+import com.acrylic.outbound.submissions.SubmissionJson;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -32,6 +35,34 @@ class TemporaryProtocolTest {
     void commandVersionCannotTruncateToOne(long version) {
         String source="{\"commandVersion\":"+version+",\"commandType\":\"NORMAL_CONFIRM\",\"commandId\":null,\"warehouseId\":null,\"source\":null,\"submissionId\":null,\"workRound\":null,\"authorizationId\":null,\"freezeDeviceId\":null,\"sourceRecoveryEpoch\":null,\"transportRecoveryEpoch\":null,\"expected\":null,\"reason\":\"\"}";
         assertThatThrownBy(()->TemporaryProtocol.command(bytes(source))).isInstanceOf(IllegalArgumentException.class).hasMessage("VERSION_INVALID");
+    }
+    @Test void activationCommandIncludesItsTicketBindingInTheStrictBodyShape() {
+        String id = UUID.randomUUID().toString();
+        var body = SubmissionJson.object().put("commandVersion", 1).put("commandType", "ACTIVATE_CONTINUATION")
+            .put("commandId", id).put("warehouseId", id).put("submissionId", id).put("workRound", "1")
+            .put("authorizationId", id).put("freezeDeviceId", id).put("sourceRecoveryEpoch", "1")
+            .put("transportRecoveryEpoch", "1").put("reason", "continue retained source")
+            .put("nextOrderScanSeq", "5").put("continuationTicketId", id);
+        body.putObject("source").put("kind", "TEMP").put("creatorDeviceId", id).put("clientOrderId", id);
+        body.set("retainedManifest", manifest(id)); body.set("expected", expected(id));
+
+        assertThat(TemporaryProtocol.command(bytes(SubmissionJson.canonical(body)))).isNotEmpty();
+    }
+    private static ObjectNode manifest(String id) {
+        var result = SubmissionJson.object().put("version", 1);
+        result.putArray("items").add(SubmissionJson.object().put("baleId", id).put("expectedDispatchCycle", "1")
+            .put("recordSha256", "a".repeat(64)));
+        return result;
+    }
+    private static ObjectNode expected(String id) {
+        return SubmissionJson.object().putNull("canonicalOrderId").put("mappingVersion", "0")
+            .put("currentSubmissionId", id).put("scopeRound", "1").putNull("slotVersion").put("decisionVersion", "0")
+            .putNull("receivedPayloadSha256").putNull("declaredUploadSha256").putNull("planSha256")
+            .putNull("targetRevision").putNull("candidateContextSha256").put("userAuthVersion", "1")
+            .put("evidenceSetId", id).put("evidenceSetSha256", "b".repeat(64)).put("verificationId", id)
+            .put("verificationVersion", "1").put("verificationAlgorithmVersion", "1")
+            .putNull("dispositionManifestSha256").putNull("dispositionManifestVersion")
+            .put("retainedManifestSha256", "c".repeat(64)).put("retainedManifestVersion", "1");
     }
     private static byte[] bytes(String value) { return value.getBytes(StandardCharsets.UTF_8); }
     private static String text(byte[] value) { return new String(value,StandardCharsets.UTF_8); }

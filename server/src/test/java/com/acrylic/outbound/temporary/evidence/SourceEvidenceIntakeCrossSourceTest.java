@@ -158,12 +158,13 @@ class SourceEvidenceIntakeCrossSourceTest {
     private ObjectNode capture(long sequence) {
         return SubmissionJson.object().put("id", UUID.randomUUID().toString())
             .put("originDeviceId", binding.creatorDeviceId().toString())
-            .put("deviceCaptureSeq", Long.toString(sequence)).put("state", "COMMITTED");
+            .put("deviceCaptureSeq", Long.toString(sequence)).put("orderScanSeq", "1").put("state", "COMMITTED");
     }
 
     private static ObjectNode scan(JsonNode capture, String status, long sequence) {
         return SubmissionJson.object().put("captureId", capture.path("id").asText())
-            .put("localSeq", Long.toString(sequence)).put("baleId", UUID.randomUUID().toString())
+            .put("localSeq", Long.toString(sequence)).put("orderScanSeq", capture.path("orderScanSeq").asText())
+            .put("baleId", UUID.randomUUID().toString())
             .put("expectedDispatchCycle", "1").put("status", status);
     }
 

@@ -56,10 +56,16 @@ public class SourceEvidenceIntakeBusinessFacts {
 
     public List<E2aPageItem> require(SourceEvidenceIntakePageObjects.Binding binding, List<E2aPageItem> items,
         long captureHighWatermark, UUID existingSetId, long auditThrough) {
+        return requireTrusted(binding, items, captureHighWatermark, existingSetId, auditThrough).ownScans();
+    }
+
+    public TrustedFacts requireTrusted(SourceEvidenceIntakePageObjects.Binding binding, List<E2aPageItem> items,
+        long captureHighWatermark, UUID existingSetId, long auditThrough) {
         var hashes = jdbc.queryForList("SELECT payload_sha256 FROM submission_payload WHERE submission_id=?",
             String.class, Ids.bytes(binding.submissionId()));
         boolean received = !hashes.isEmpty();
         var payload = received ? payload(binding.submissionId()) : localPayload.require(binding, items, auditThrough);
+        long orderScanHighWatermark = SourceEvidenceIntakeOrderScanSequence.require(payload, binding.creatorDeviceId());
         var captures = byId(SubmissionJson.array(payload, "captures"), "id");
         var scans = byCapture(SubmissionJson.array(payload, "scans"));
         require(captures.size() <= captureHighWatermark, "E2A_CAPTURE_FACT_COUNT_CONFLICT");
@@ -90,7 +96,7 @@ public class SourceEvidenceIntakeBusinessFacts {
         own.stream().filter(item -> "ACTIVE".equals(item.recordStatus()))
             .sorted(Comparator.comparing(item -> item.baleId().toString()))
             .forEach(item -> requireStock(binding, item, existingSetId));
-        return List.copyOf(own);
+        return new TrustedFacts(List.copyOf(own), orderScanHighWatermark);
     }
 
     private JsonNode payload(UUID submissionId) {
@@ -185,4 +191,11 @@ public class SourceEvidenceIntakeBusinessFacts {
     private record StockRow(String warehouseId, long dispatchCycle, boolean present, String bookStatus,
         String blockedReason, String owner, long ownerCycle, String state,
         String sourceScopeId, String sourceWarehouseId, String evidenceSetId) { }
+
+    public record TrustedFacts(List<E2aPageItem> ownScans, long orderScanHighWatermark) {
+        public TrustedFacts {
+            ownScans = List.copyOf(ownScans);
+            if (orderScanHighWatermark < 0) throw new IllegalArgumentException("ORDER_SCAN_HIGH_WATERMARK");
+        }
+    }
 }

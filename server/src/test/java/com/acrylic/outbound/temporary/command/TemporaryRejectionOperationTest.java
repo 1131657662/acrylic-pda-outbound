@@ -3,60 +3,107 @@ package com.acrylic.outbound.temporary.command;
 import com.acrylic.outbound.submissions.SubmissionControl;
 import com.acrylic.outbound.submissions.SubmissionEvents;
 import com.acrylic.outbound.submissions.SubmissionJson;
+import com.acrylic.outbound.submissions.SubmissionSnapshot;
 import com.acrylic.outbound.submissions.SubmissionStore;
 import com.acrylic.outbound.temporary.review.TemporaryDecisionCandidates;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class TemporaryRejectionOperationTest {
     @Test
     void recordsRejectionAndLeavesReservationForLaterDisposition() {
-        UUID submission = UUID.randomUUID();
-        UUID original = UUID.randomUUID();
-        UUID reviewer = UUID.randomUUID();
-        UUID warehouse = UUID.randomUUID();
-        UUID device = UUID.randomUUID();
-        UUID authorization = UUID.randomUUID();
-        UUID clientOrder = UUID.randomUUID();
-        UUID order = UUID.randomUUID();
-        var control = new SubmissionControl(submission, null, null, device, 1, "1", null,
-            new SubmissionControl.Temporary(device, clientOrder, authorization));
-        var head = new SubmissionStore.Head(control, original, warehouse, "REVIEW_REQUIRED", null, null, order);
-        var body = SubmissionJson.object().put("shortShipmentReason", "");
-        var line = body.putObject("temporaryOrder").putArray("lines").addObject();
-        line.put("deliveryCode", "D-1").put("productId", UUID.randomUUID().toString()).put("model", "M")
-            .put("name", "N").put("plannedCount", "1");
-        body.putArray("scans").add(SubmissionJson.object().put("status", "ACTIVE")
-            .put("deliveryCode", "D-1").put("weightGrams", "10"));
+        var scenario = scenario(null, "B-1");
+        var decision = scenario.operation().execute(scenario.write());
+
+        assertThat(decision.path("kind").asText()).isEqualTo("REJECT");
+        verify(scenario.submissions()).state(scenario.submission(), "REJECTED", decisionIssues("主管复核后拒绝"), null);
+        verify(scenario.events()).transition(scenario.head(), "REVIEW_REQUIRED", scenario.reviewer());
+    }
+
+    @Test
+    void blocksRejectionWhenEveryActiveScanHasAStoredStockConflict() {
+        String issues = stockIssues("B-1", "B-2");
+        var scenario = scenario(issues, "B-1", "B-2");
+
+        assertThatThrownBy(() -> scenario.operation().execute(scenario.write()))
+            .isInstanceOfSatisfying(com.acrylic.outbound.common.BusinessException.class,
+                error -> assertThat(error.code()).isEqualTo("SUBMISSION_STILL_CONFLICTED"));
+        verify(scenario.submissions(), never()).state(any(), any(), any(), any());
+        verify(scenario.events(), never()).transition(any(), any(), any());
+    }
+
+    @Test
+    void permitsRejectionWhenOnlySomeActiveScansHaveAStoredStockConflict() {
+        var scenario = scenario(stockIssues("B-1"), "B-1", "B-2");
+
+        var decision = scenario.operation().execute(scenario.write());
+
+        assertThat(decision.path("kind").asText()).isEqualTo("REJECT");
+        verify(scenario.submissions()).state(scenario.submission(), "REJECTED", decisionIssues("主管复核后拒绝"), null);
+    }
+
+    private static Scenario scenario(String storedIssues, String... barcodes) {
+        var ids = new ScenarioIds(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+        var control = new SubmissionControl(ids.submission(), null, null, ids.device(), 1, "1", null,
+            new SubmissionControl.Temporary(ids.device(), ids.clientOrder(), ids.authorization()));
+        var head = new SubmissionStore.Head(control, ids.original(), ids.warehouse(), "REVIEW_REQUIRED", null, storedIssues, ids.order());
+        var evidence = evidence(barcodes);
         var candidate = SubmissionJson.object().put("policyVersion", "REVIEW_DEFAULT_V1")
             .put("fromDate", "2026-01-01").put("throughDate", "2026-01-02").put("total", "0")
             .put("fingerprint", "a".repeat(64)).put("contextSha256", "b".repeat(64));
-
         var source = mock(TemporaryConfirmationSource.class);
-        when(source.read(any())).thenReturn(new TemporaryConfirmationSource.Value(head, body, null, false));
+        when(source.read(any())).thenReturn(new TemporaryConfirmationSource.Value(head, evidence.body(), evidence.snapshot(), false));
         var candidates = mock(TemporaryDecisionCandidates.class);
-        when(candidates.snapshot(eq(warehouse), eq(submission), any())).thenReturn(candidate);
-        var submissions = mock(SubmissionStore.class);
-        var events = mock(SubmissionEvents.class);
+        when(candidates.snapshot(eq(ids.warehouse()), eq(ids.submission()), any())).thenReturn(candidate);
+        var submissions = mock(SubmissionStore.class);var events = mock(SubmissionEvents.class);
         var operation = new TemporaryRejectionOperation(
             new TemporaryRejectionOperation.Dependencies(source, candidates, submissions, events));
-
-        var context = context(submission, original, warehouse, device, authorization, clientOrder, order);
-        var command = command(context, reviewer, "主管复核后拒绝");
-        var decision = operation.execute(new CommandWrite(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-            Instant.parse("2026-10-02T00:00:00Z"), CommandInput.parse(SubmissionJson.canonical(command).getBytes(StandardCharsets.UTF_8)), context, actor(reviewer)));
-
-        assertThat(decision.path("kind").asText()).isEqualTo("REJECT");
-        verify(submissions).state(submission, "REJECTED", decisionIssues("主管复核后拒绝"), null);
-        verify(events).transition(head, "REVIEW_REQUIRED", reviewer);
+        var context = context(ids.submission(), ids.original(), ids.warehouse(), ids.device(), ids.authorization(),
+            ids.clientOrder(), ids.order());
+        var command = command(context, ids.reviewer(), "主管复核后拒绝");
+        var write = new CommandWrite(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), Instant.parse("2026-10-02T00:00:00Z"),
+            CommandInput.parse(SubmissionJson.canonical(command).getBytes(StandardCharsets.UTF_8)), context, actor(ids.reviewer()));
+        return new Scenario(operation, write, submissions, events, head, ids.submission(), ids.reviewer());
     }
+
+    private static Evidence evidence(String... barcodes) {
+        var body = SubmissionJson.object().put("shortShipmentReason", "");
+        var line = body.putObject("temporaryOrder").putArray("lines").addObject();
+        line.put("deliveryCode", "D-1").put("productId", UUID.randomUUID().toString()).put("model", "M")
+            .put("name", "N").put("plannedCount", Integer.toString(barcodes.length));
+        var scans = body.putArray("scans");var validated = new ArrayList<SubmissionSnapshot.Scan>();
+        for (int i = 0; i < barcodes.length; i++) {
+            String barcode = barcodes[i];var bale = new SubmissionSnapshot.Bale(UUID.randomUUID(), barcode, "D-1", 10, "10", "M", "N");
+            scans.add(SubmissionJson.object().put("status", "ACTIVE").put("barcode", barcode)
+                .put("deliveryCode", "D-1").put("weightGrams", "10").put("model", "M").put("name", "N"));
+            validated.add(new SubmissionSnapshot.Scan(UUID.randomUUID(), i + 1L, 1, bale));
+        }
+        return new Evidence(body, new SubmissionSnapshot.Validated(validated, List.of(), 10L * barcodes.length, false));
+    }
+
+    private static String stockIssues(String... barcodes) {
+        var issues = SubmissionJson.object().putArray("issues");
+        for (String barcode : barcodes) issues.add(SubmissionJson.object()
+            .put("code", "INVENTORY_UNAVAILABLE").put("barcode", barcode));
+        return SubmissionJson.canonical(issues);
+    }
+
+    private record Scenario(TemporaryRejectionOperation operation, CommandWrite write, SubmissionStore submissions,
+        SubmissionEvents events, SubmissionStore.Head head, UUID submission, UUID reviewer) { }
+    private record Evidence(ObjectNode body, SubmissionSnapshot.Validated snapshot) { }
+    private record ScenarioIds(UUID submission, UUID original, UUID reviewer, UUID warehouse, UUID device,
+        UUID authorization, UUID clientOrder, UUID order) { }
 
     private static CommandContext context(UUID submission, UUID original, UUID warehouse, UUID device,
             UUID authorization, UUID clientOrder, UUID order) {

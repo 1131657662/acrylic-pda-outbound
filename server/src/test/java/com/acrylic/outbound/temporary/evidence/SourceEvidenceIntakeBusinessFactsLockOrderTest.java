@@ -93,12 +93,14 @@ class SourceEvidenceIntakeBusinessFactsLockOrderTest {
     private JsonNode capture(long sequence) {
         return SubmissionJson.object().put("id",UUID.randomUUID().toString())
             .put("originDeviceId",DEVICE.toString()).put("deviceCaptureSeq",Long.toString(sequence))
+            .put("orderScanSeq",Long.toString(sequence))
             .put("state","COMMITTED");
     }
 
     private JsonNode scan(JsonNode capture,UUID bale,long sequence) {
         return SubmissionJson.object().put("captureId",capture.path("id").asText())
             .put("localSeq",Long.toString(sequence)).put("baleId",bale.toString())
+            .put("orderScanSeq",capture.path("orderScanSeq").asText())
             .put("expectedDispatchCycle","1").put("status","ACTIVE");
     }
 

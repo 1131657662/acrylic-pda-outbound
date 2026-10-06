@@ -89,7 +89,9 @@ class ContinuationApiIT {
         assertThat(receipt.get("status").asText()).isEqualTo("SUCCEEDED");assertThat(c.r.f.count("dispatch_record")).isEqualTo(2);
     }
     @Test void otherWarehouseCannotApproveOrChangeReservations() throws Exception {
-        var c=fixture();c.request();var outsider=new PublicationDriver(mvc,json,IdentityFixture.create(jdbc,passwords,"WAREHOUSE_ADMIN"));
+        var c=fixture();c.request();var identity=IdentityFixture.create(jdbc,passwords,"WAREHOUSE_ADMIN");
+        jdbc.update("INSERT INTO user_role SELECT ?,id FROM role WHERE code='SUPERVISOR'",Ids.bytes(identity.user().id()));
+        var outsider=new PublicationDriver(mvc,json,identity);
         outsider.send(c.approve(c.approveBody(),UUID.randomUUID().toString())).andExpect(status().isBadRequest());
         assertThat(c.r.read().at("/continuation/status").asText()).isEqualTo("REQUESTED");
     }

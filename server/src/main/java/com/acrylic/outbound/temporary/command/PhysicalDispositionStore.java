@@ -11,10 +11,10 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Atomically records disposition evidence and releases or quarantines every source reservation. */
+/** Records per-bale physical disposition without granting permission to resume scanning. */
 @Repository
 public class PhysicalDispositionStore {
-    private static final Set<String> ACTIONS = Set.of("RELEASE", "QUARANTINE");
+    private static final Set<String> ACTIONS = Set.of("RELEASE", "RETAIN", "QUARANTINE");
     private final JdbcTemplate jdbc;
     public PhysicalDispositionStore(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
@@ -29,7 +29,7 @@ public class PhysicalDispositionStore {
         List<PhysicalDispositionManifest.Item> items, Instant recordedAt, boolean close, String reason) {
         if (close && (reason == null || reason.isBlank() || reason.length() > 1000))
             throw conflict("CLOSE_REASON_REQUIRED");
-        validate(verified, manifestHash, manifestVersion, items);
+        validate(verified, manifestHash, manifestVersion, items, close);
         UUID disposition = Ids.next();
         insertHeader(disposition, verified, manifestHash, manifestVersion, recordedAt, close, reason);
         for (var item : items) applyBale(verified, disposition, item);
@@ -38,12 +38,18 @@ public class PhysicalDispositionStore {
     }
 
     private void validate(PhysicalDispositionVerification.Verified verified, String manifestHash, long manifestVersion,
-        List<PhysicalDispositionManifest.Item> items) {
+        List<PhysicalDispositionManifest.Item> items, boolean close) {
         if (verified == null || items == null || manifestHash == null || !manifestHash.matches("[a-f0-9]{64}")
-            || manifestVersion <= 0 || items.stream().anyMatch(item -> item == null || !ACTIONS.contains(item.action())))
+            || manifestVersion <= 0 || items.stream().anyMatch(item -> invalid(item, verified, close)))
             throw conflict("DISPOSITION_MANIFEST_VERSION_CONFLICT");
         var actual = items.stream().map(PhysicalDispositionManifest.Item::baleId).toList();
         if (!verified.activeBales().equals(actual)) throw conflict("DISPOSITION_MANIFEST_SET_CONFLICT");
+    }
+
+    private static boolean invalid(PhysicalDispositionManifest.Item item, PhysicalDispositionVerification.Verified verified,
+        boolean close) {
+        return item == null || !ACTIONS.contains(item.action())
+            || (item.action().equals("RETAIN") && (!"ABORTED".equals(verified.status()) || close));
     }
 
     private void insertHeader(UUID disposition, PhysicalDispositionVerification.Verified verified,
@@ -77,26 +83,60 @@ public class PhysicalDispositionStore {
         int inserted = jdbc.update("INSERT INTO temporary_physical_disposition_item(disposition_id,bale_id,dispatch_cycle,disposition,action) VALUES(?,?,?,'PHYSICAL_DISPOSED',?)",
             Ids.bytes(disposition), Ids.bytes(bale), cycle, item.action());
         if (inserted != 1) throw conflict("DISPOSITION_ITEM_INSERT");
-        int changed = item.action().equals("RELEASE") ? release(verified, bale, cycle) : quarantine(verified, disposition, bale, cycle);
+        int changed = switch (item.action()) {
+            case "RETAIN" -> retain(verified, bale, cycle);
+            case "RELEASE" -> release(verified, bale, cycle);
+            default -> quarantine(verified, disposition, bale, cycle);
+        };
         if (changed != 1) throw conflict("DISPOSITION_RESERVATION_CHANGED");
-        BarcodeChanges.bale(jdbc, bale);
+        if (!item.action().equals("RETAIN")) BarcodeChanges.bale(jdbc, bale);
+    }
+
+    private int retain(PhysicalDispositionVerification.Verified verified, UUID bale, long cycle) {
+        return jdbc.queryForList("""
+            SELECT k.bale_id FROM bale_commitment k JOIN submission_scope c ON c.id=k.source_scope_id
+            WHERE k.bale_id=? AND k.source_scope_id=? AND k.source_warehouse_id=? AND k.dispatch_cycle=?
+              AND k.disposition_id IS NULL AND k.continuation_id IS NULL
+              AND k.recovery_package_id IS NULL AND k.disposition_evidence_id IS NULL
+              AND k.pc_work_id IS NULL AND k.pc_disposition_id IS NULL
+              AND ((k.state='SOURCE_RESERVED' AND k.source_evidence_set_id=? AND k.submission_id IS NULL)
+                OR (k.state='REVIEW_RESERVED' AND k.submission_id=? AND k.source_evidence_set_id IS NULL
+                    AND k.order_id=c.canonical_order_id))
+              AND EXISTS (SELECT 1 FROM source_evidence_item i WHERE i.set_id=? AND i.scope_id=?
+                AND i.submission_id=? AND i.work_round=? AND i.warehouse_id=? AND i.bale_id=k.bale_id
+                AND i.original_cycle=k.dispatch_cycle AND i.item_kind='SCAN' AND i.record_status='ACTIVE')
+            FOR UPDATE
+            """, Ids.bytes(bale), Ids.bytes(verified.scope()), Ids.bytes(verified.warehouse()), cycle,
+            Ids.bytes(verified.set()), Ids.bytes(verified.submission()), Ids.bytes(verified.set()),
+            Ids.bytes(verified.scope()), Ids.bytes(verified.submission()), verified.round(), Ids.bytes(verified.warehouse())).size();
     }
 
     private int release(PhysicalDispositionVerification.Verified verified, UUID bale, long cycle) {
         return jdbc.update("""
             DELETE FROM bale_commitment
-            WHERE bale_id=? AND state='SOURCE_RESERVED' AND source_scope_id=? AND source_evidence_set_id=?
-              AND source_warehouse_id=? AND dispatch_cycle=? AND disposition_id IS NULL
-            """, Ids.bytes(bale), Ids.bytes(verified.scope()), Ids.bytes(verified.set()), Ids.bytes(verified.warehouse()), cycle);
+            WHERE bale_id=? AND source_scope_id=? AND source_warehouse_id=? AND dispatch_cycle=? AND disposition_id IS NULL
+              AND ((state='SOURCE_RESERVED' AND source_evidence_set_id=? AND submission_id IS NULL)
+                OR (state='REVIEW_RESERVED' AND submission_id=? AND source_evidence_set_id IS NULL))
+              AND EXISTS (SELECT 1 FROM source_evidence_item i WHERE i.set_id=? AND i.scope_id=? AND i.submission_id=?
+                AND i.bale_id=bale_commitment.bale_id AND i.original_cycle=bale_commitment.dispatch_cycle
+                AND i.item_kind='SCAN' AND i.record_status='ACTIVE')
+            """, Ids.bytes(bale), Ids.bytes(verified.scope()), Ids.bytes(verified.warehouse()), cycle,
+            Ids.bytes(verified.set()), Ids.bytes(verified.submission()), Ids.bytes(verified.set()),
+            Ids.bytes(verified.scope()), Ids.bytes(verified.submission()));
     }
 
     private int quarantine(PhysicalDispositionVerification.Verified verified, UUID disposition, UUID bale, long cycle) {
         return jdbc.update("""
-            UPDATE bale_commitment SET state='QUARANTINED',disposition_id=?
-            WHERE bale_id=? AND state='SOURCE_RESERVED' AND source_scope_id=? AND source_evidence_set_id=?
-              AND source_warehouse_id=? AND dispatch_cycle=? AND disposition_id IS NULL
-            """, Ids.bytes(disposition), Ids.bytes(bale), Ids.bytes(verified.scope()), Ids.bytes(verified.set()),
-            Ids.bytes(verified.warehouse()), cycle);
+            UPDATE bale_commitment SET state='QUARANTINED',disposition_id=?,source_evidence_set_id=?,submission_id=NULL,order_id=NULL
+            WHERE bale_id=? AND source_scope_id=? AND source_warehouse_id=? AND dispatch_cycle=? AND disposition_id IS NULL
+              AND ((state='SOURCE_RESERVED' AND source_evidence_set_id=? AND submission_id IS NULL)
+                OR (state='REVIEW_RESERVED' AND submission_id=? AND source_evidence_set_id IS NULL))
+              AND EXISTS (SELECT 1 FROM source_evidence_item i WHERE i.set_id=? AND i.scope_id=? AND i.submission_id=?
+                AND i.bale_id=bale_commitment.bale_id AND i.original_cycle=bale_commitment.dispatch_cycle
+                AND i.item_kind='SCAN' AND i.record_status='ACTIVE')
+            """, Ids.bytes(disposition), Ids.bytes(verified.set()), Ids.bytes(bale), Ids.bytes(verified.scope()),
+            Ids.bytes(verified.warehouse()), cycle, Ids.bytes(verified.set()), Ids.bytes(verified.submission()),
+            Ids.bytes(verified.set()), Ids.bytes(verified.scope()), Ids.bytes(verified.submission()));
     }
 
     private static BusinessException conflict(String code) { return new BusinessException(409, code, "disposition item cannot be committed"); }

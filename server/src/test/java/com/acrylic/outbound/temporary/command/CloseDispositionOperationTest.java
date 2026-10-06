@@ -17,7 +17,7 @@ class CloseDispositionOperationTest {
         var write = closeWrite(bale, "supervisor confirmed closure");
         var verified = new PhysicalDispositionVerification.Verified(write.context().id("warehouseId"), write.context().id("scopeId"),
             write.context().id("submissionId"), 1, UUID.fromString(write.command().expected().path("evidenceSetId").asText()),
-            UUID.fromString(write.command().expected().path("verificationId").asText()), "a".repeat(64), 1, 1, List.of(bale));
+            UUID.fromString(write.command().expected().path("verificationId").asText()), "ABORTED", "a".repeat(64), 1, 1, List.of(bale));
         when(verification.readForClose(any(), any(), any(), anyLong(), any(), any(), anyString(), anyLong(), anyLong())).thenReturn(verified);
         UUID disposition = UUID.randomUUID();
         when(store.apply(any(), anyString(), anyLong(), anyList(), any(), eq(true), anyString())).thenReturn(disposition);

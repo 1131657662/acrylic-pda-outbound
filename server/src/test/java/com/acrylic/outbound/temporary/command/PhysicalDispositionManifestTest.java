@@ -26,6 +26,18 @@ class PhysicalDispositionManifestTest {
         assertThat(items).extracting(PhysicalDispositionManifest.Item::action).containsExactly("RELEASE", "RELEASE");
     }
 
+    @Test void preservesAllThreePhysicalDestinationsInACompleteManifest() {
+        UUID c = UUID.fromString("00000000-0000-0000-0000-000000000003");
+        var manifest = manifest("RETAIN", a, b, c);
+        ((ObjectNode) manifest.path("items").get(1)).put("disposition", "RELEASE");
+        ((ObjectNode) manifest.path("items").get(2)).put("disposition", "QUARANTINE");
+
+        var items = PhysicalDispositionManifest.require(manifest, List.of(c, a, b), hash(manifest), 1);
+
+        assertThat(items).extracting(PhysicalDispositionManifest.Item::action)
+            .containsExactly("RETAIN", "RELEASE", "QUARANTINE");
+    }
+
     @Test void rejectsMissingBale() {
         var manifest = manifest("RELEASE", a);
         assertThatThrownBy(() -> PhysicalDispositionManifest.require(manifest, List.of(a, b), hash(manifest), 1))
@@ -38,7 +50,7 @@ class PhysicalDispositionManifestTest {
         assertThatThrownBy(() -> PhysicalDispositionManifest.require(duplicate, List.of(a, b), hash(duplicate), 1))
             .isInstanceOfSatisfying(BusinessException.class, error -> assertThat(error.code())
                 .isEqualTo("DISPOSITION_MANIFEST_SET_CONFLICT"));
-        var unsupported = manifest("RETAIN", a);
+        var unsupported = manifest("UNSUPPORTED", a);
         assertThatThrownBy(() -> PhysicalDispositionManifest.require(unsupported, List.of(a), hash(unsupported), 1))
             .isInstanceOfSatisfying(BusinessException.class, error -> assertThat(error.code())
                 .isEqualTo("DISPOSITION_MANIFEST_ITEM_INVALID"));

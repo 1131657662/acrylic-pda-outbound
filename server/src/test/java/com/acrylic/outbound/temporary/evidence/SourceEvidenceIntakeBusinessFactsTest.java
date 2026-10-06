@@ -181,11 +181,12 @@ class SourceEvidenceIntakeBusinessFactsTest {
 
     private JsonNode capture(String state,long sequence) {
         return SubmissionJson.object().put("id",UUID.randomUUID().toString()).put("originDeviceId",DEVICE.toString())
-            .put("deviceCaptureSeq",Long.toString(sequence)).put("state",state);
+            .put("deviceCaptureSeq",Long.toString(sequence)).put("orderScanSeq",Long.toString(sequence)).put("state",state);
     }
 
     private JsonNode scan(JsonNode capture,String status,long localSeq) {
         return SubmissionJson.object().put("captureId",capture.path("id").asText()).put("localSeq",Long.toString(localSeq))
+            .put("orderScanSeq",capture.path("orderScanSeq").asText())
             .put("baleId",UUID.randomUUID().toString()).put("expectedDispatchCycle","1").put("status",status);
     }
 

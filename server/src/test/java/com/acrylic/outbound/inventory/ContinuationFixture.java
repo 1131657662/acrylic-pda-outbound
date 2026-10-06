@@ -1,5 +1,6 @@
 package com.acrylic.outbound.inventory;
 
+import com.acrylic.outbound.common.Ids;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -16,6 +17,7 @@ class ContinuationFixture {
         f.body.put("expectedCount","1").put("expectedWeightGrams","300500").put("captureHighWatermark","1").put("shortShipmentReason","退审补扫测试");
         ((ObjectNode)f.body.get("captureSummary")).put("received","1").put("saved","1");
         f.submit();f.review("REJECT");r=new RecallFixture(f);r.start(false);r.upload();r.stop();
+        f.jdbc.update("INSERT INTO user_role SELECT ?,id FROM role WHERE code='SUPERVISOR'",Ids.bytes(f.web.identity().user().id()));
     }
     ObjectNode requestBody() {
         var c=SubmissionJson.object().put("type","REOPEN_WORK").put("previousSubmissionId",r.f.id()).put("expectedWorkRound","1")

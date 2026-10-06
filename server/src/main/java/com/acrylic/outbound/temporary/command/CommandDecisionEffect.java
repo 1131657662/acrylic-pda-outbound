@@ -18,6 +18,7 @@ public class CommandDecisionEffect {
         this.candidates=candidates;this.files=files;this.authorizations=authorizations;this.source=source;
     }
     void observations(CommandContext now,JsonNode original,List<String> reasons) {
+        if (CommandDecision.kind(original).equals("REOPEN_WORK")) return;
         if (CommandDecision.kind(original).equals("CLOSE_DISPOSITION")) {
             reasons.add("SOURCE_CLOSED");
             return;
@@ -45,6 +46,13 @@ public class CommandDecisionEffect {
     }
     void complete(JsonNode original,ObjectNode result,List<String> reasons) {
         String kind=CommandDecision.kind(original);
+        if (kind.equals("REOPEN_WORK")) {
+            result.put("evaluation","TICKET_ISSUED");
+            reasons.add("CONTINUATION_TICKET_ISSUED");
+            reasons.add("NEW_AUTHORIZATION_REQUIRED");
+            reasons.add("PRODUCTION_OPERATIONS_DISABLED");
+            return;
+        }
         if (kind.equals("CLOSE_DISPOSITION")) {
             result.put("evaluation","CANCELLED");
             reasons.add("ORIGINAL_CLOSE_COMMITTED");

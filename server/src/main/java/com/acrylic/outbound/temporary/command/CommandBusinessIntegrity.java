@@ -12,10 +12,12 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 /** Historical decision closure uses immutable original facts, never today's permissions or candidate query. */
 @Component
 public class CommandBusinessIntegrity {
+    private static final String PHYSICAL_DISPOSITION_MIGRATION = "55";
     private final JdbcTemplate jdbc;private final SubmissionFiles files;private final SubmissionArchiveProofs proofs;
-    private final TemporaryDecisionCandidates candidates;
-    public CommandBusinessIntegrity(JdbcTemplate jdbc,SubmissionFiles files,SubmissionArchiveProofs proofs,TemporaryDecisionCandidates candidates) {
-        this.jdbc=jdbc;this.files=files;this.proofs=proofs;this.candidates=candidates;
+    private final TemporaryDecisionCandidates candidates; private final TemporaryContinuationIntegrity continuation;
+    public CommandBusinessIntegrity(JdbcTemplate jdbc,SubmissionFiles files,SubmissionArchiveProofs proofs,
+        TemporaryDecisionCandidates candidates,TemporaryContinuationIntegrity continuation) {
+        this.jdbc=jdbc;this.files=files;this.proofs=proofs;this.candidates=candidates;this.continuation=continuation;
     }
     void verify(JsonNode receipt) {
         if(receipt.path("businessDecision").isNull())return;
@@ -23,6 +25,7 @@ public class CommandBusinessIntegrity {
             verifyDisposition(receipt);
             return;
         }
+        if (Set.of("REOPEN_WORK","ACTIVATE_CONTINUATION").contains(receipt.path("commandType").asText())) { continuation.verify(receipt); return; }
         var context=receipt.path("originalContext");var decision=receipt.path("businessDecision");
         String hash=context.path("receivedPayloadSha256").asText();var body=parse(files.read(hash));
         CommandErrors.integrity(sha(body).equals(hash) && context.path("status").asText().equals("REVIEW_REQUIRED")
@@ -34,7 +37,7 @@ public class CommandBusinessIntegrity {
             && candidates.authentic(uuid(context,"warehouseId"),uuid(context,"submissionId"),body,decision.path("candidates")));
         boolean shortShipment=false;for(var product:decision.path("products"))shortShipment|=product.path("shortCount").asLong()>0;
         if(CommandDecision.kind(receipt).equals("LINK")) { link(context,decision);return; }
-        if(CommandDecision.kind(receipt).equals("REJECT")) { rejected(context);return; }
+        if(CommandDecision.kind(receipt).equals("REJECT")) { rejected(context,body);return; }
         if(CommandDecision.kind(receipt).equals("SHORT_APPROVE")) {
             CommandErrors.integrity(shortShipment && !decision.path("shortShipmentReason").asText().isBlank()
                 && !receipt.path("actor").path("principalId").equals(context.path("originalOperatorId")));return;
@@ -81,14 +84,53 @@ public class CommandBusinessIntegrity {
         CommandErrors.integrity(slots.size()==1 && "CLOSED".equals(slots.getFirst().get("phase"))
             && slots.getFirst().get("current_submission_id") == null);
     }
-    private void rejected(JsonNode context) {
+    private void rejected(JsonNode context,JsonNode body) {
         var rows=jdbc.queryForList("SELECT status,issues_json FROM submission WHERE id=?",Ids.bytes(uuid(context,"submissionId")));
         CommandErrors.integrity(rows.size()==1 && "REJECTED".equals(rows.getFirst().get("status")));
         var issues=rows.getFirst().get("issues_json");
-        CommandErrors.integrity(issues!=null && issues.toString().contains("SUPERVISOR_REJECTED"));
-        var reservations=jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE submission_id=? AND state='REVIEW_RESERVED'",
-            Integer.class,Ids.bytes(uuid(context,"submissionId")));
-        CommandErrors.integrity(reservations>0);
+        CommandErrors.integrity(issues!=null);
+        var stored=parse(issues.toString());var entries=stored.isArray()?stored:stored.path("issues");
+        boolean rejected=false;
+        for(var issue:entries)rejected|="SUPERVISOR_REJECTED".equals(issue.path("code").asText());
+        CommandErrors.integrity(entries.isArray() && rejected);
+        var expected=new ArrayList<String>();
+        for(var scan:body.path("scans"))if("ACTIVE".equals(scan.path("status").asText()))
+            expected.add(scan.path("baleId").asText()+":"+scan.path("expectedDispatchCycle").asText());
+        var reserved=rejectionReservations(context);
+        var disposed=rejectionDisposition(context);
+        CommandErrors.integrity(!expected.isEmpty() && new HashSet<>(expected).size()==expected.size());
+        CommandErrors.integrity(validSubset(reserved, expected) && validSubset(disposed, expected));
+        // Rejection can retain a subset when another source already owns conflicting bales.
+        // A committed physical disposition, however, must account for the complete verified set.
+        CommandErrors.integrity(disposed.isEmpty() ? !reserved.isEmpty()
+            : reserved.isEmpty() && disposed.size()==expected.size());
+    }
+    private boolean validSubset(List<String> actual, List<String> expected) {
+        return new HashSet<>(actual).size()==actual.size() && expected.containsAll(actual);
+    }
+    private ArrayList<String> rejectionReservations(JsonNode context) {
+        return new ArrayList<>(jdbc.queryForList("""
+            SELECT CONCAT(BIN_TO_UUID(bale_id),':',dispatch_cycle) FROM bale_commitment
+            WHERE submission_id=? AND source_scope_id=? AND source_warehouse_id=? AND state='REVIEW_RESERVED'
+            """,String.class,Ids.bytes(uuid(context,"submissionId")),Ids.bytes(uuid(context,"scopeId")),
+            Ids.bytes(uuid(context,"warehouseId"))));
+    }
+    private List<String> rejectionDisposition(JsonNode context) {
+        if (!physicalDispositionMigrationApplied()) return List.of();
+        return jdbc.queryForList("""
+            SELECT CONCAT(BIN_TO_UUID(i.bale_id),':',i.dispatch_cycle) FROM temporary_physical_disposition_item i
+            JOIN temporary_physical_disposition d ON d.id=i.disposition_id
+            JOIN source_evidence_verification v ON v.id=d.evidence_verification_id AND v.set_id=d.evidence_set_id
+              AND v.scope_id=d.scope_id AND v.submission_id=d.submission_id AND v.work_round=d.work_round
+            WHERE d.submission_id=? AND d.scope_id=? AND d.warehouse_id=? AND d.work_round=?
+              AND v.result='VERIFIED_COMPLETE_AT_STOP' AND i.disposition='PHYSICAL_DISPOSED'
+            """,String.class,Ids.bytes(uuid(context,"submissionId")),Ids.bytes(uuid(context,"scopeId")),
+            Ids.bytes(uuid(context,"warehouseId")),Long.parseLong(context.path("workRound").asText()));
+    }
+    private boolean physicalDispositionMigrationApplied() {
+        return Boolean.TRUE.equals(jdbc.queryForObject("""
+            SELECT EXISTS(SELECT 1 FROM flyway_schema_history WHERE version=? AND success=1)
+            """,Boolean.class,PHYSICAL_DISPOSITION_MIGRATION));
     }
     private void link(JsonNode context,JsonNode decision) {
         var link=decision.path("submissionReceipt");

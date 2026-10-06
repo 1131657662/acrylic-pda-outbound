@@ -16,17 +16,23 @@ public class PhysicalDispositionVerification {
     @org.springframework.transaction.annotation.Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
     public Verified read(UUID warehouse, UUID scope, UUID submission, long round, UUID set, UUID verification,
         String setHash, long verificationVersion, long algorithmVersion) {
-        return read(warehouse, scope, submission, round, set, verification, setHash, verificationVersion, algorithmVersion, false);
+        return read(warehouse, scope, submission, round, set, verification, setHash, verificationVersion, algorithmVersion, Mode.REJECTED);
     }
 
     @org.springframework.transaction.annotation.Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
     public Verified readForClose(UUID warehouse, UUID scope, UUID submission, long round, UUID set, UUID verification,
         String setHash, long verificationVersion, long algorithmVersion) {
-        return read(warehouse, scope, submission, round, set, verification, setHash, verificationVersion, algorithmVersion, true);
+        return read(warehouse, scope, submission, round, set, verification, setHash, verificationVersion, algorithmVersion, Mode.CLOSE);
+    }
+
+    @org.springframework.transaction.annotation.Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public Verified readForContinuation(UUID warehouse, UUID scope, UUID submission, long round, UUID set, UUID verification,
+        String setHash, long verificationVersion, long algorithmVersion) {
+        return read(warehouse, scope, submission, round, set, verification, setHash, verificationVersion, algorithmVersion, Mode.ABORTED_CONTINUATION);
     }
 
     private Verified read(UUID warehouse, UUID scope, UUID submission, long round, UUID set, UUID verification,
-        String setHash, long verificationVersion, long algorithmVersion, boolean close) {
+        String setHash, long verificationVersion, long algorithmVersion, Mode mode) {
         var rows = jdbc.queryForList("""
             SELECT s.status AS submission_status,s.issues_json,result,set_sha256,verification_version,algorithm_version
             FROM source_evidence_verification v JOIN submission s ON s.id=v.submission_id
@@ -34,24 +40,47 @@ public class PhysicalDispositionVerification {
         """, Ids.bytes(verification), Ids.bytes(set), Ids.bytes(scope), Ids.bytes(submission), round);
         if (rows.size() != 1) throw conflict("DISPOSITION_VERIFICATION_MISSING");
         var row = rows.getFirst();
-        if (close) requireCloseable(row); else requireRejected(row);
+        String status = Objects.toString(row.get("submission_status"), "");
+        switch (mode) {
+            case REJECTED -> requireRejected(row);
+            case CLOSE -> requireCloseable(row);
+            case ABORTED_CONTINUATION -> requireAborted(status);
+        }
         if (!"VERIFIED_COMPLETE_AT_STOP".equals(row.get("result"))
             || !Objects.equals(setHash, row.get("set_sha256")) || number(row.get("verification_version")) != verificationVersion
             || number(row.get("algorithm_version")) != algorithmVersion)
             throw conflict("DISPOSITION_VERIFICATION_NOT_COMPLETE");
-        var bales = jdbc.query("""
-            SELECT k.bale_id
-            FROM bale_commitment k JOIN bale b ON b.id=k.bale_id
-            WHERE k.state='SOURCE_RESERVED' AND k.source_scope_id=? AND k.source_evidence_set_id=?
-              AND k.source_warehouse_id=? AND b.warehouse_id=? AND b.dispatch_cycle=?
-            ORDER BY k.bale_id FOR UPDATE
-            """, (rs, n) -> uuid(rs.getBytes(1)), Ids.bytes(scope), Ids.bytes(set), Ids.bytes(warehouse),
-            Ids.bytes(warehouse), round);
-        if (bales.isEmpty()) throw conflict("DISPOSITION_RESERVATIONS_MISSING");
-        bales = new ArrayList<>(bales);
-        bales.sort(Comparator.naturalOrder());
-        return new Verified(warehouse, scope, submission, round, set, verification, setHash,
-            verificationVersion, algorithmVersion, List.copyOf(bales));
+        var proof = new Verified(warehouse, scope, submission, round, set, verification, status, setHash,
+            verificationVersion, algorithmVersion, List.of());
+        return new Verified(warehouse, scope, submission, round, set, verification, status, setHash,
+            verificationVersion, algorithmVersion, reservations(proof));
+    }
+
+    private List<UUID> reservations(Verified proof) {
+        var expected = jdbc.query("""
+            SELECT bale_id,original_cycle FROM source_evidence_item
+            WHERE set_id=? AND scope_id=? AND submission_id=? AND work_round=? AND warehouse_id=?
+              AND item_kind='SCAN' AND record_status='ACTIVE' ORDER BY bale_id FOR UPDATE
+            """, (rs, n) -> new Reservation(uuid(rs.getBytes(1)), rs.getLong(2)), Ids.bytes(proof.set()),
+            Ids.bytes(proof.scope()), Ids.bytes(proof.submission()), proof.round(), Ids.bytes(proof.warehouse()));
+        var actual = jdbc.query("""
+            SELECT k.bale_id,k.dispatch_cycle,b.dispatch_cycle AS current_cycle
+            FROM bale_commitment k JOIN bale b ON b.id=k.bale_id JOIN submission_scope c ON c.id=k.source_scope_id
+            WHERE k.source_scope_id=? AND k.source_warehouse_id=? AND b.warehouse_id=? AND k.disposition_id IS NULL
+              AND ((k.state='SOURCE_RESERVED' AND k.source_evidence_set_id=? AND k.submission_id IS NULL)
+                OR (k.state='REVIEW_RESERVED' AND k.submission_id=? AND k.source_evidence_set_id IS NULL
+                    AND k.order_id=c.canonical_order_id)) ORDER BY k.bale_id FOR UPDATE
+            """, (rs, n) -> {
+                if (rs.getLong(2) != rs.getLong(3)) throw conflict("DISPOSITION_RESERVATION_CORRUPT");
+                return new Reservation(uuid(rs.getBytes(1)), rs.getLong(2));
+            }, Ids.bytes(proof.scope()), Ids.bytes(proof.warehouse()), Ids.bytes(proof.warehouse()),
+            Ids.bytes(proof.set()), Ids.bytes(proof.submission()));
+        if (actual.isEmpty()) throw conflict("DISPOSITION_RESERVATIONS_MISSING");
+        var order = Comparator.comparing(Reservation::bale);
+        if (!expected.stream().sorted(order).toList().equals(actual.stream().sorted(order).toList())
+            || expected.stream().map(Reservation::bale).distinct().count() != expected.size())
+            throw conflict("DISPOSITION_RESERVATION_CORRUPT");
+        return expected.stream().map(Reservation::bale).sorted().toList();
     }
 
     private static void requireRejected(Map<String, Object> row) {
@@ -64,10 +93,15 @@ public class PhysicalDispositionVerification {
         requireRejected(row);
     }
 
+    private static void requireAborted(String status) {
+        if (!"ABORTED".equals(status)) throw conflict("CONTINUATION_ABORT_REQUIRED");
+    }
+
     private static boolean hasSupervisorRejection(Object value) {
         if (!(value instanceof CharSequence text)) return false;
         try {
-            var issues = SubmissionJson.parse(text.toString()).path("issues");
+            var stored = SubmissionJson.parse(text.toString());
+            var issues = stored.isArray() ? stored : stored.path("issues");
             if (!issues.isArray()) return false;
             for (var issue : issues) {
                 if (issue.isObject() && "SUPERVISOR_REJECTED".equals(issue.path("code").asText())) return true;
@@ -84,6 +118,14 @@ public class PhysicalDispositionVerification {
         var b = java.nio.ByteBuffer.wrap(value); return new UUID(b.getLong(), b.getLong());
     }
     private static BusinessException conflict(String code) { return new BusinessException(409, code, "disposition verification facts cannot be verified"); }
+    private enum Mode { REJECTED, CLOSE, ABORTED_CONTINUATION }
     public record Verified(UUID warehouse, UUID scope, UUID submission, long round, UUID set, UUID verification,
-        String setHash, long verificationVersion, long algorithmVersion, List<UUID> activeBales) { }
+        String status, String setHash, long verificationVersion, long algorithmVersion, List<UUID> activeBales) {
+        public Verified(UUID warehouse, UUID scope, UUID submission, long round, UUID set, UUID verification,
+            String setHash, long verificationVersion, long algorithmVersion, List<UUID> activeBales) {
+            this(warehouse, scope, submission, round, set, verification, "REJECTED", setHash,
+                verificationVersion, algorithmVersion, activeBales);
+        }
+    }
+    record Reservation(UUID bale, long cycle) { }
 }

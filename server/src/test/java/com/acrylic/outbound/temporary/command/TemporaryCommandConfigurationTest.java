@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -29,6 +30,9 @@ class TemporaryCommandConfigurationTest {
         .withBean(TemporaryLinkMapping.class, () -> mock(TemporaryLinkMapping.class))
         .withBean(PhysicalDispositionVerification.class, () -> mock(PhysicalDispositionVerification.class))
         .withBean(PhysicalDispositionStore.class, () -> mock(PhysicalDispositionStore.class))
+        .withBean(TemporaryContinuationTicketStore.class, () -> mock(TemporaryContinuationTicketStore.class))
+        .withBean(TemporaryContinuationAuthorizationIssuer.class, () -> mock(TemporaryContinuationAuthorizationIssuer.class))
+        .withBean(JdbcTemplate.class, () -> mock(JdbcTemplate.class))
         .withBean(TemporaryCommandService.class, () -> mock(TemporaryCommandService.class));
 
     @Test void disabledByDefaultRegistersNoOperationAndNoRoute() {
@@ -52,11 +56,11 @@ class TemporaryCommandConfigurationTest {
         runner.withPropertyValues("outbound.temporary.commands.enabled=true").run(context -> {
             assertThat(context).hasNotFailed();
             List<CommandOperation> operations = List.copyOf(context.getBeansOfType(CommandOperation.class).values());
-            assertThat(operations).hasSize(6);
+            assertThat(operations).hasSize(8);
             assertThat(operations.stream().map(CommandOperation::commandType))
-                .containsExactlyInAnyOrder("NORMAL_CONFIRM", "SHORT_APPROVE", "LINK", "REJECT", "PHYSICAL_DISPOSITION", "CLOSE_DISPOSITION");
+                .containsExactlyInAnyOrder("NORMAL_CONFIRM", "SHORT_APPROVE", "LINK", "REJECT", "PHYSICAL_DISPOSITION", "CLOSE_DISPOSITION", "REOPEN_WORK", "ACTIVATE_CONTINUATION");
             // Ambiguity is rejected by CommandUnitOfWork, so one operation per kind is the contract.
-            assertThat(operations.stream().map(CommandOperation::commandType).distinct().count()).isEqualTo(6);
+            assertThat(operations.stream().map(CommandOperation::commandType).distinct().count()).isEqualTo(8);
             assertThat(context.getBeanNamesForType(TemporaryCommandController.class)).hasSize(1);
             assertThat(context.getBeanNamesForType(TemporaryCloseDispositionController.class)).hasSize(1);
         });
@@ -67,7 +71,7 @@ class TemporaryCommandConfigurationTest {
             assertThat(context.getBeansOfType(CommandOperation.class).values())
                 .allSatisfy(operation -> {
                     assertThat(operation.recordsDecision()).isTrue();
-                    if (Set.of("PHYSICAL_DISPOSITION", "CLOSE_DISPOSITION").contains(operation.commandType()))
+                    if (Set.of("PHYSICAL_DISPOSITION", "CLOSE_DISPOSITION", "REOPEN_WORK", "ACTIVATE_CONTINUATION").contains(operation.commandType()))
                         assertThat(operation.requiresCandidateContext()).isFalse();
                     else assertThat(operation.requiresCandidateContext()).isTrue();
                 });

@@ -14,11 +14,16 @@ class PhysicalDispositionVerificationTest {
     private final UUID warehouse = UUID.randomUUID(), scope = UUID.randomUUID(), submission = UUID.randomUUID();
     private final UUID set = UUID.randomUUID(), verification = UUID.randomUUID(), bale = UUID.randomUUID();
 
-    @Test void readsCompleteVerificationAndReservations() {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {
+        "[{\"code\":\"SUPERVISOR_REJECTED\",\"reason\":\"unload\"}]",
+        "{\"issues\":[{\"code\":\"SUPERVISOR_REJECTED\",\"reason\":\"legacy\"}]}"
+    })
+    void readsCompleteVerificationAndReservations(String issues) {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
-            row("REJECTED", "{\"issues\":[{\"code\":\"SUPERVISOR_REJECTED\"}]}", "VERIFIED_COMPLETE_AT_STOP")));
+            row("REJECTED", issues, "VERIFIED_COMPLETE_AT_STOP")));
         when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
-            .thenReturn(List.of(bale));
+            .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(bale, 7)));
         var result = reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1);
         assertThat(result.activeBales()).containsExactly(bale);
     }
@@ -29,7 +34,8 @@ class PhysicalDispositionVerificationTest {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
             row("REJECTED", "{\"issues\":[{\"code\":\"SUPERVISOR_REJECTED\"}]}", "VERIFIED_COMPLETE_AT_STOP")));
         when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
-            .thenReturn(List.of(second, first));
+            .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(second, 7),
+                new PhysicalDispositionVerification.Reservation(first, 3)));
         assertThat(reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1).activeBales())
             .containsExactly(first, second);
     }
@@ -39,6 +45,27 @@ class PhysicalDispositionVerificationTest {
             row("REJECTED", "{\"issues\":[{\"code\":\"SUPERVISOR_REJECTED\"}]}", "PARTIAL")));
         assertThatThrownBy(() -> reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1))
             .isInstanceOfSatisfying(BusinessException.class, e -> assertThat(e.code()).isEqualTo("DISPOSITION_VERIFICATION_NOT_COMPLETE"));
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"different-cycle", "other-bale", "extra-bale", "duplicate-evidence"})
+    void rejectsReservationsThatDoNotExactlyMatchTrustedActiveScans(String mismatch) {
+        when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
+            row("REJECTED", "[{\"code\":\"SUPERVISOR_REJECTED\"}]", "VERIFIED_COMPLETE_AT_STOP")));
+        var original = new PhysicalDispositionVerification.Reservation(bale, 7);
+        var foreign = new PhysicalDispositionVerification.Reservation(UUID.randomUUID(), 7);
+        var expected = mismatch.equals("duplicate-evidence") ? List.of(original, original) : List.of(original);
+        var actual = switch (mismatch) {
+            case "different-cycle" -> List.of(new PhysicalDispositionVerification.Reservation(bale, 8));
+            case "other-bale" -> List.of(foreign);
+            case "extra-bale" -> List.of(original, foreign);
+            default -> List.of(original, original);
+        };
+        when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+            .thenReturn(expected, actual);
+        assertThatThrownBy(() -> reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1))
+            .isInstanceOfSatisfying(BusinessException.class,
+                e -> assertThat(e.code()).isEqualTo("DISPOSITION_RESERVATION_CORRUPT"));
     }
 
     @Test void rejectsDispositionBeforeSupervisorRejection() {
@@ -52,9 +79,45 @@ class PhysicalDispositionVerificationTest {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
             row("ABORTED", "{\"issues\":[]}", "VERIFIED_COMPLETE_AT_STOP")));
         when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
-            .thenReturn(List.of(bale));
+            .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(bale, 1)));
         var result = reader.readForClose(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1);
         assertThat(result.activeBales()).containsExactly(bale);
+    }
+
+    @Test void permitsCompleteAbortedSourceForContinuation() {
+        when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
+            row("ABORTED", "{\"issues\":[]}", "VERIFIED_COMPLETE_AT_STOP")));
+        when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+            .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(bale, 1)));
+
+        var result = reader.readForContinuation(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1);
+
+        assertThat(result.status()).isEqualTo("ABORTED");
+        assertThat(result.activeBales()).containsExactly(bale);
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"REJECTED", "REVIEW_REQUIRED", "SUCCEEDED", "REGISTERED", "RECEIVING"})
+    void rejectsNonAbortedSourceForContinuation(String status) {
+        when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
+            row(status, "{\"issues\":[{\"code\":\"SUPERVISOR_REJECTED\"}]}", "VERIFIED_COMPLETE_AT_STOP")));
+
+        assertThatThrownBy(() -> reader.readForContinuation(warehouse, scope, submission, 1, set, verification,
+            "a".repeat(64), 1, 1))
+            .isInstanceOfSatisfying(BusinessException.class,
+                error -> assertThat(error.code()).isEqualTo("CONTINUATION_ABORT_REQUIRED"));
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"PARTIAL", "CONFLICT", "UNVERIFIABLE"})
+    void abortedSourceStillRequiresCompleteStopVerification(String verificationResult) {
+        when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
+            row("ABORTED", "[]", verificationResult)));
+
+        assertThatThrownBy(() -> reader.readForContinuation(warehouse, scope, submission, 1, set, verification,
+            "a".repeat(64), 1, 1))
+            .isInstanceOfSatisfying(BusinessException.class,
+                error -> assertThat(error.code()).isEqualTo("DISPOSITION_VERIFICATION_NOT_COMPLETE"));
     }
 
     @Test void rejectsAbortedSourceForOrdinaryDisposition() {

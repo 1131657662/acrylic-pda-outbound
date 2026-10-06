@@ -6,7 +6,8 @@ final class CommandPermissions {
     private static final Map<String,String> KNOWN=Map.of("NORMAL_CONFIRM","temporary_order:confirm",
         "SHORT_APPROVE","submission:review","LINK","temporary_order:link",
         "REJECT","submission:review",
-        "PHYSICAL_DISPOSITION","order:dispose","CLOSE_DISPOSITION","order:dispose","REOPEN_WORK","order:resume");
+        "PHYSICAL_DISPOSITION","order:dispose","CLOSE_DISPOSITION","order:dispose","REOPEN_WORK","order:resume",
+        "ACTIVATE_CONTINUATION","order:resume");
     private CommandPermissions() { }
     static String execution(String kind) { return KNOWN.get(kind); }
     static boolean mayRead(Collection<String> permissions,String kind) {
