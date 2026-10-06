@@ -1,5 +1,11 @@
 # 历史归档
 
+- [B4 TEMP 续作票据收口节点（2026-10-06）](ORCHESTRATION_STATE_before_b4_continuation_checkpoint_2026-10-06.md)：本次看板替换前快照；下次接续入口见 `AUTONOMOUS_PLAN_2026-10-05_UNATTENDED.md` 收口节点章节和 `AUTONOMOUS_PROGRESS_2026-10-06.md` 第191条。
+
+- [B4 TEMP 续作票据验证收口（2026-10-06）](ORCHESTRATION_STATE_before_b4_continuation_close_2026-10-06.md)：看板替换前断点；当日详细结果见 `AUTONOMOUS_PROGRESS_2026-10-06.md` 第190条。
+
+- [本机资料归档位置](../LOCAL_ARCHIVE_LOCATIONS.md)：D 盘旧目录和历史测试资料的 E 盘位置；查找旧文档中引用的本机路径时先看此页。
+
 - - [R06 A1.1 收口：停止保全 device 层实质通过（可重复性未建立）](R06_A1_1_2026-09-30.md)：三层 device 证据——**G4-2 成立**（指纹式非空迁移保留，但 `local_draft_stop=0` 判 EMPTY ⇒ 不算非空）、**G4-3 成立**（`verdict=NONEMPTY`，五张表 1/2/1/1/1 迁移前后逐字节相同）、**G1 单次通过**（四组断言＋身份切换三步，两阶段 `numtests=1` 真跑＋真 `am force-stop`）。**G1 可重复性未建立**：第二次在已 seed 设备上因测试不幂等（固定主键合成事件未先删）失败，已离线修复未重跑。未验边界与口径声明见文档；harness 硬化 5 项（含"空跑=失败"反向验证）。
 [R06 A1.1 第 2 步：单测缺口 G2/G3 补齐（子步记录，非 A1.1 验收）](R06_A1_1_STEP2_UNIT_COVERAGE_2026-09-30.md)：新增两个测试类并**全绿**——`LocalDraftStopWriterTest` **4/0/0/0**（① 先拒新输入/耐久保存/**失败不签停止**，补齐既有 rollback 测试未断言的"无签名行"与"未入队"）、`LocalDraftSourceBindingMigrationTest` **1/0/0/0**（④ 非空迁移 **27→28**，唯一落在 LocalDraft 时代的未核段：stop/签名/plan/requests/receipt 逐项相等、**迁移不复活已暂停的自动续传**、新表建出为空、FK 干净、密钥不可用即不追补签名）。并发级如实标注：3 条**顺序交织模拟** + 1 条**真实 4 线程串行化/幂等探针**，**真实竞态与真机重启未验**（G1/G4 留第 3 步）。**"6 事件 vs 4 尝试"最终定性＝我的判据误用**（`LocalDraftStopDao.count(id)` 数 `local_draft_stop_item` **明细项**；`event()` 首行 `check(db.inTransaction())` ⇒ 与停止插入同原子；恢复严格断言"事件==1"后 4 并发通过）⇒ **无产品缺陷**；另修正 `stopSigner.calls`（两处自增，非签名次数判据）。未改产品代码、未跑 AVD、失败轮保留。
 
@@ -347,3 +353,8 @@
 ## R07-P08 review stop (2026-10-01)
 
 - [P08 review correction and product-gap stop](R07_P08_REVIEW_STOP_2026-10-01.md): 805 execution artifacts are retained, but the acceptance conclusion is withdrawn because V51 omits primary-key immutability and the negative IT did not attribute rejection to the new triggers. No product fix or new attempt was run.
+
+- [Android续作子项前看板](ORCHESTRATION_STATE_before_android_continuation_2026-10-06.md)：当次实现、失败/跳过及边界见自主进度第194条。
+- [续作HTTP回执子项前看板](ORCHESTRATION_STATE_before_continuation_receipt_http_2026-10-06.md)：回执修复、真实HTTP及失败保全见自主进度第195条。
+- [续作资格隔离子项前看板](ORCHESTRATION_STATE_before_continuation_intake_guard_2026-10-06.md)：原人原机/首轮复用拒绝、HTTP及受影响回归见自主进度第196条。
+- [2026-10-07自主进度](AUTONOMOUS_PROGRESS_2026-10-07.md)：从已推送的受限续作子项接续新轮intake/记账。

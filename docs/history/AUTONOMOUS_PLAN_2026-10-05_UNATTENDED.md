@@ -132,3 +132,19 @@
 ## 交付记录模板
 
 每个批次完成后在 `docs/history/AUTONOMOUS_PROGRESS_<date>.md` 记录：范围与非目标、决策、改动路径、定向/组合/完整测试结果、失败和跳过、证据目录、提交与推送回执、未验边界、下一批次。看板当前区只写摘要并保持上限；版本事实不复制到本文件。
+
+## 2026-10-06 收口节点：B4-CONTINUATION
+
+本计划在本节点暂停，供下一次无人值守接续。当前事实、分支、工作树、写权、环境和未验边界只读[协作断点看板](../ORCHESTRATION_STATUS.md)；本次详细结果见[自主进度第190、191条](AUTONOMOUS_PROGRESS_2026-10-06.md)。本节点已验证的证据目录为：
+
+- `C:/Users/qq113/AppData/Local/acrylic-pda-outbound-isolated/retention-20261006-23/`
+- `C:/Users/qq113/AppData/Local/acrylic-pda-outbound-isolated/b4-continuation-review-20261006/unit-20261006-continue/`
+
+下次接续时先完成 B0 只读预检并核对实际写者，不重复本节点已通过的隔离数据库第23轮或服务端完整单测。接续顺序为：
+
+1. 实现独立 TEMP 新授权签发，保留原来源、原授权和资格历史的不可变关系。
+2. 实现票据消费及 `ACTIVATED`/`COMPLETED`/`CANCELLED` 状态边界，补齐保留前驱、消费关系和 K owner 同事务转移。
+3. 实现新轮 intake/确认记账与 Android 显式协议、Room 原子耐久激活。
+4. 为新迁移补真实 HTTP 命令回执、同键幂等、异文/身份/权限反例，并复验受影响回归。
+
+实现前必须先收敛 `nextOrderScanSeq` 与可信扫描高水位的业务契约；未收敛时继续 fail-closed。B4 未达到退出标准前，不进入 B5，不提交、推送、合并 `main` 或部署。生产命令/放行/扫码/删除能力和 `localDeletionAllowed` 保持关闭。
