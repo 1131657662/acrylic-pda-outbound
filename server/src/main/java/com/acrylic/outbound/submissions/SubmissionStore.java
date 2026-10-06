@@ -15,8 +15,11 @@ public class SubmissionStore {
     private static final String SELECT="""
         SELECT BIN_TO_UUID(s.id),BIN_TO_UUID(c.source_order_id),BIN_TO_UUID(s.assignment_id),BIN_TO_UUID(s.freeze_device_id),
          s.work_round,s.source_recovery_epoch,BIN_TO_UUID(s.operator_id),BIN_TO_UUID(c.warehouse_id),s.status,s.receipt_text,s.issues_json,BIN_TO_UUID(s.continuation_id),
-         BIN_TO_UUID(c.creator_device_id),BIN_TO_UUID(c.client_order_id),BIN_TO_UUID(s.temporary_authorization_id),BIN_TO_UUID(c.canonical_order_id)
+         BIN_TO_UUID(c.creator_device_id),BIN_TO_UUID(COALESCE(a.new_client_order_id,c.client_order_id)),BIN_TO_UUID(s.temporary_authorization_id),BIN_TO_UUID(c.canonical_order_id)
         FROM submission s INNER JOIN submission_scope c ON c.id=s.scope_id
+        LEFT JOIN temporary_source_continuation_submission r ON r.submission_id=s.id AND r.scope_id=s.scope_id AND r.to_work_round=s.work_round
+        LEFT JOIN temporary_source_continuation_activation a ON a.ticket_id=r.ticket_id AND a.scope_id=r.scope_id
+          AND a.from_work_round=r.from_work_round AND a.new_authorization_id=s.temporary_authorization_id
         """;
     public Head find(UUID id) {
         var rows=jdbc.query(SELECT+" WHERE s.id=?",(rs,n)->new Head(new SubmissionControl(UUID.fromString(rs.getString(1)),

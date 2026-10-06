@@ -6,19 +6,19 @@
 ```yaml
 date: 2026-10-07
 branch: codex/development
-head: a7f22c8
-dirty_entries: 24
+head: 7a399f0
+dirty_entries: 41
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 31 }
-server: { contract: 0.39.0, paths: 133, flyway: V66, migrations: 66 }
+server: { contract: 0.40.0, paths: 135, flyway: V66, migrations: 66 }
 ```
 <!-- FACTS_END -->
-B4 接续进行中：可信扫描高水位、独立 TEMP 新授权、ACTIVATED 消费和 COMPLETED 数据库边界已有实现及分层验证。新增新轮唯一注册/前驱原文绑定子项，完整 intake/确认记账仍待实现。Android 严格验签及 Room 原子消费后保持 CONTINUATION_BLOCKED；生产命令/放行/扫码/删除及 localDeletionAllowed 继续关闭，CANCELLED 因释放政策未定义拒绝。
+B4 接续进行中：可信扫描高水位、独立 TEMP 新授权、ACTIVATED 消费、COMPLETED 数据库边界及受限完整intake已实现并分层验证；实际确认记账仍待接入。Android 严格验签及 Room 原子消费后保持 CONTINUATION_BLOCKED；生产命令/放行/扫码/删除及 localDeletionAllowed 继续关闭，CANCELLED 因释放政策未定义拒绝。
 
 ## Git、写权与环境
-- 唯一写者为本聊天；树 D:/acrylic-pda-outbound；分支 codex/development；HEAD/origin 为 a7f22c81ce038e9f244f4ef186520b66ad49fe69；Android子项fe4550f和服务端B4开发子项2b8de51已提交推送，历史记录cf2f8e8及新轮唯一注册子项a7f22c8均已推送；未合 main、未部署发布。
-- 全部脏路径/diff/哈希、远端和环境：.local/autonomous-20261007/b4-round-intake/b0/；继承保护路径哈希未变。实际 origin 为同仓库 SSH 地址。替换前看板：history/ORCHESTRATION_STATE_before_round_registration_2026-10-07.md。
-- 隔离54–58均已dump/哈希/认证停机，无在途项目测试；既有MySQL 3306/13316与外部Harness19387未操作。失败库、binlog、日志和原资料保留；阶段环境快照见上述证据根。
+- 唯一写者为本聊天；树 D:/acrylic-pda-outbound；分支 codex/development；HEAD/origin 为 7a399f0fe7650a517be3be2be156e3c0e0e13c28；Android子项fe4550f和服务端B4开发子项2b8de51已提交推送，历史记录cf2f8e8、新轮注册a7f22c8和累积验证7a399f0均已推送；未合 main、未部署发布。
+- 全部脏路径/diff/哈希、远端和环境：.local/autonomous-20261007/b4-round-accept/resume-01/及delivery/；十二条继承保护路径哈希未变。实际 origin 为同仓库 SSH 地址。替换前看板：history/ORCHESTRATION_STATE_before_round_accept_2026-10-07.md。
+- 隔离59–66均已dump/哈希/认证停机，无在途项目测试；既有MySQL 3306/13316与外部Harness19387未操作。失败库、binlog、日志和原资料保留；阶段环境快照见上述证据根。
 - 历史资料已归档至 E:/acrylic-archive-20261006/；查找旧路径先读 [本机历史资料位置](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 实现与证据
@@ -30,12 +30,14 @@ B4 接续进行中：可信扫描高水位、独立 TEMP 新授权、ACTIVATED �
 - Android 验证为合成签名/身份的 JVM/Room 消费与非空迁移；无当次 APK、模拟器、真机、真实 HTTP、原设备验收。Android失败未另导出SQLite dump，只有源码/schema/XML/日志/哈希，不声称数据库dump。编译日志见 b4-ticket-lifecycle-20261006/android-compile-activation.log。
 
 ## 下一步与未验边界
-- 新轮唯一注册a7f22c8已按授权开发提交/推送；下一步在绑定提交上实现完整原文前缀验收、scope/slot/K同事务转移与确认记账。用户当次授权按已验证子项提交，替代旧计划整批B4后才能提交的限制；B4整体不标完成、不进入B5。
+- 新轮唯一注册a7f22c8及累积验证7a399f0已推送；完整intake已验证待开发提交，下一步新轮确认记账。用户当次授权按已验证子项提交，替代旧计划整批B4后才能提交的限制；B4整体不标完成、不进入B5。
 - 历史REOPEN/ACTIVATE回执已改为不可变事实核验，短装审批误入与两个Spring代理问题已修复；retention-20261006-50真实HTTP专项1/0/0/0、命令/协议144/0/0/0。47/48启动失败、49合成完成事务夹具失败及各轮dump/日志/哈希/停机证据保留。停止/完成事实为合成输入，不是新轮记账验收。
-- 续作资格普通首轮submit/abort复用已在访问检查及注册写者双重拒绝；激活新增原人原机守卫。retention-20261006-53真实HTTP1/0/0/0，52为其他设备夹具重复公钥摘要失败，dump/日志保留。下一步新轮 intake/确认记账须显式绑定票据、新授权、前驱及K转移；不能复用FORMAL assignment。Android高轮次扫描/冻结继续关闭。
-- 新轮显式引用、旧已接受/LOCAL_FROZEN原文读取、唯一REGISTERED绑定和数据库不可变约束已实现；不选择新轮、不移动K、未接HTTP intake。unit-02为31/0/0/0，最终隔离56/57分别验证已接受/本地原文注册各1/0/0/0；58新迁移命令HTTP受影响回归1/0/0/0。STOP/前驱及完成仍为合成fixture；不是实际新轮受理/记账。证据 .local/autonomous-20261007/b4-round-intake/，详见当日第198/198a条。
-- 累积证据纯验证器已实现：原数组完整不变前缀、原/新资格分别验时、新输入连续序号、精确保留集、固定计划政策、禁止新增事件改写旧包；保留原正文。定向49/0/0/0，最终受影响回归670/0/0/1（Windows符号链接跳过），证据 .local/autonomous-20261007/b4-round-evidence/。未接新轮HTTP/库存写者，下一步受限intake组合；见第199条。
+- 续作资格普通首轮submit/abort复用已在访问检查及注册写者双重拒绝；激活新增原人原机守卫。retention-20261006-53真实HTTP1/0/0/0，52为其他设备夹具重复公钥摘要失败，dump/日志保留。新轮确认仍须重验票据、新授权、前驱及K转移；不能复用FORMAL assignment。Android高轮次扫描/冻结继续关闭。
+- 新轮显式引用、旧已接受/LOCAL_FROZEN原文读取、唯一REGISTERED绑定和数据库不可变约束已实现；注册原语自身不选择新轮或移动K。unit-02为31/0/0/0，隔离56/57注册各1/0/0/0；58命令HTTP回归1/0/0/0。该组STOP/前驱及完成为合成fixture，不是受理/记账证明。证据 .local/autonomous-20261007/b4-round-intake/，见当日第198/198a条。
+- 累积证据纯验证器已实现：原数组完整不变前缀、原/新资格分别验时、新输入连续序号、精确保留集、固定计划政策、禁止新增事件改写旧包；保留原正文。定向49/0/0/0，受影响回归670/0/0/1（Windows符号链接跳过），证据 .local/autonomous-20261007/b4-round-evidence/；该组只证明纯验证器，见第199条。
 - 原身份/Keystore、真机/双设备、现场网络/断电/长时离线、TEMP更高轮次/跨来源、候选排除授权、B8 LINK currentEffect遗漏、R1生产放行保持未验或关闭。
+- 完整intake默认关闭，整笔scope/slot选择、原文/证据落库及精确K转移；已有目标固定计划/基线逐项核对，空目标完整受理后创建。最终隔离64新增扫描、65本地前驱仅保留包、66命令/默认关闭HTTP回归各1/0/0/0；受影响回归97 XML、672/0/0/1，OpenAPI通过。59–61夹具失败及62/63中间通过均保全；见 .local/autonomous-20261007/b4-round-accept/、当日第200–200b条。
+- intake验证使用合成STOP/设备/前驱，但新轮POST、K转移、待审及最终审计失败回滚实际执行；尚非记账、原身份或原设备证明。新资格download-ack缺失仍待审；受控LINK、续作分块上传、更高前驱轮次和取消继续拒绝。后续须让确认显式读取续作正文并重验新资格，记账/成功回执/COMPLETED同事务。
 - R05原资料/旧BCD/526边界、R09恢复限制/备份异地取回/RPO-RTO/Linux运维继续单列，不由局部通过覆盖。详细进度见history/AUTONOMOUS_PROGRESS_2026-10-06.md第192–196条；跨日接续见history/AUTONOMOUS_PROGRESS_2026-10-07.md第197条。
 <!-- CURRENT_STATE_END -->
 

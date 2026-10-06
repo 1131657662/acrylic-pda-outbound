@@ -233,3 +233,5 @@
 
 
 - R06 来源绑定分页修复：[验收](history/R06_SOURCE_BINDING_PAGINATION_REPAIR_2026-10-02.md)，单测及822真实HTTP通过，旧失败保留；只收分页范围。
+
+- R06 TEMP续作受限完整intake：[验收与失败保全](history/AUTONOMOUS_PROGRESS_2026-10-07.md)，见第200–200b条；确认记账、原设备及生产能力另列未验。

@@ -27,8 +27,14 @@ final class ContinuationReceiptHttpFixture implements AutoCloseable {
         this("65");
     }
     ContinuationReceiptHttpFixture(String migrationTarget) throws Exception {
-        database = new RetentionDatabaseFixture(); database.profile.migrate(database.jdbc, migrationTarget);
-        database.jdbc.update("INSERT INTO order_submission_slot(order_id,scope_id,work_round,current_submission_id,phase) "
+        this(migrationTarget,false);
+    }
+    ContinuationReceiptHttpFixture(String migrationTarget,boolean intake) throws Exception {
+        this(migrationTarget,intake,false);
+    }
+    ContinuationReceiptHttpFixture(String migrationTarget,boolean intake,boolean unmapped) throws Exception {
+        database = new RetentionDatabaseFixture(intake,unmapped); database.profile.migrate(database.jdbc, migrationTarget);
+        if(!unmapped)database.jdbc.update("INSERT INTO order_submission_slot(order_id,scope_id,work_round,current_submission_id,phase) "
             + "VALUES(?,?,1,?,'FROZEN')", Ids.bytes(database.id("orderId")), Ids.bytes(database.id("mappedScopeId")),
             Ids.bytes(database.id("mappedSubmissionId")));
         database.tx.executeWithoutResult(status -> database.apply(database.verified(), java.util.Collections.nCopies(3, "RETAIN")));
@@ -36,7 +42,7 @@ final class ContinuationReceiptHttpFixture implements AutoCloseable {
         otherDeviceToken = otherDeviceSession();
         E2aCrossSourceHttpSetup.signing(database.profile.attempt);
         Files.createDirectory(database.profile.attempt.resolve("http"));
-        app = start();
+        app = start(intake);
     }
 
     private String session(UUID user) {
@@ -70,7 +76,7 @@ final class ContinuationReceiptHttpFixture implements AutoCloseable {
         return sessionOnDevice(database.id("operatorId"), device);
     }
 
-    private ServletWebServerApplicationContext start() {
+    private ServletWebServerApplicationContext start(boolean intake) {
         var profile = database.profile;
         return (ServletWebServerApplicationContext) new SpringApplication(OutboundApplication.class).run(
             "--server.address=127.0.0.1", "--server.port=0", "--spring.flyway.enabled=false",
@@ -82,7 +88,8 @@ final class ContinuationReceiptHttpFixture implements AutoCloseable {
             "--outbound.signing.private-key=" + profile.attempt.resolve("private/server-private.der"),
             "--outbound.signing.public-key=" + profile.attempt.resolve("private/server-public.der"),
             "--outbound.worker.enabled=false", "--outbound.bootstrap.enabled=false",
-            "--spring.session.jdbc.cleanup-cron=-", "--outbound.temporary.commands.enabled=true");
+            "--spring.session.jdbc.cleanup-cron=-", "--outbound.temporary.commands.enabled=true",
+            "--outbound.temporary.continuation-intake.enabled="+intake);
     }
 
     HttpResponse<byte[]> post(JsonNode command, String access, String label) throws Exception {
@@ -91,6 +98,17 @@ final class ContinuationReceiptHttpFixture implements AutoCloseable {
 
     HttpResponse<byte[]> submit(JsonNode command, String label) throws Exception {
         return send(new Call(command, token, "/api/v1/pda/temporary-orders/submissions", label));
+    }
+    HttpResponse<byte[]> continuation(JsonNode body,String access,String label) throws Exception {
+        return send(new Call(body,access,"/api/v1/pda/temporary-orders/continuation-submissions",label));
+    }
+    HttpResponse<byte[]> readContinuation(String id,String access,String label) throws Exception {
+        var request=HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+app.getWebServer().getPort()
+            +"/api/v1/pda/temporary-orders/continuation-submissions/"+id)).timeout(Duration.ofSeconds(30))
+            .header("Authorization","Bearer "+access).GET().build();
+        var response=client.send(request,HttpResponse.BodyHandlers.ofByteArray());
+        Files.write(database.profile.attempt.resolve("http/"+label+"-response.json"),response.body(),StandardOpenOption.CREATE_NEW);
+        Files.writeString(database.profile.attempt.resolve("http/"+label+"-status.txt"),Integer.toString(response.statusCode()));return response;
     }
 
     HttpResponse<byte[]> abort(JsonNode command, String label) throws Exception {

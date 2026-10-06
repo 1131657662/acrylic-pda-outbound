@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ContinuationReceiptHttpIT {
     @Test void originalHttpReceiptsSurviveActivationCompletionAndRejectedReplays() throws Exception {
         try (var fixture = new ContinuationReceiptHttpFixture("66")) {
+            assertThat(fixture.continuation(SubmissionJson.object(),fixture.token,"intake-default-closed").statusCode()).isEqualTo(404);
             var commands = new ContinuationReceiptHttpCommands(fixture);
             var reopen = commands.request(null); var issued = fixture.accepted(reopen, "issued");
             assertThat(fixture.accepted(reopen, "issued-replay")).isEqualTo(issued);

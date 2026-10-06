@@ -18,7 +18,7 @@
 
 ## 注册与重放
 
-`TemporaryRoundRegistration` 是尚未接入 HTTP intake 的内部事务原语。调用者先持有既有恢复、身份和仓库锁并核验提交权限；写者再锁原 scope、已有目标/槽、提交、授权及票据。它核验原人原机、新资格/新 client、轮次、代次、前驱原文和可信序号，追加新 REGISTERED 提交及唯一票据绑定。
+`TemporaryRoundRegistration` 是独立 HTTP intake 使用的内部事务原语。调用者先持有既有恢复、身份和仓库锁并核验提交权限；写者再锁原 scope、已有目标/槽、提交、授权及票据。它核验原人原机、新资格/新 client、轮次、代次、前驱原文和可信序号，追加新 REGISTERED 提交及唯一票据绑定。
 
 注册不改变 scope 的当前提交、作业轮次、目标槽或任何 K owner。上传未完成或注册失败不能提前消耗保留占用。同一票据只绑定一个新提交；同身份和同引用重放返回该绑定，换提交 ID、身份、资格、轮次或原文摘要拒绝。绑定、激活记录及绑定后的提交身份由数据库阻止改写和删除；状态演进另由相应事务负责。
 
@@ -32,12 +32,18 @@
 
 新增 capture 按票据 `nextOrderScanSeq` 继续连续编号，新事件使用新来源和资格；设备 capture/localSeq 继续递增。新计划只变更 client/authorization 身份，原产品、政策、库存基线和计划数量保留。只有保留包且无新增输入时，仍要求新来源的新 FROZEN 事件与完整累计统计。接收原文字节不会被该验证器重写；首轮调用只允许一个原资格。
 
-## 完整 intake 的后续实施约束
+## 受限完整 intake
 
-以下仍待接续实现，不能以注册和纯验证器专项通过冒充完整受理：
+独立 POST `/api/v1/pda/temporary-orders/continuation-submissions` 与 GET 同路径 `/{id}` 由 `outbound.temporary.continuation-intake.enabled` 控制，缺省关闭。POST 只接受不超过 1MiB 的完整正文；尚无续作分块协议，不可回退普通首轮上传。读取与提交均要求原人原机及 `pda:submit`；写入还遵守恢复和身份锁。
 
-- 完整验收在同一事务保存收到的原正文、原/新事实引用，选择新轮及提交，逐包把精确票据/evidence-set/cycle/scope owner 转为新提交 REVIEW_RESERVED，再处理新增包。任一 owner 不符全部回滚，通用库存冲突检查不放宽。
-- 已有 canonical 目标沿原映射和原计划使用；canonical 为空时仍须在合法完整受理后创建目标，不把注册当正式化。
+完整验收同事务注册、重读原文、分段验资格/快照、保存原文和事实、选择 scope/slot 新轮、转移精确 K owner，并落为 REVIEW_REQUIRED。文件字节在数据库回滚后作为证据保留，数据库不留下部分接受结果。同键同正文恢复已接受状态，异文拒绝。已有目标仅支持初始映射的 PDA_TEMP 待审记录，核对固定版本、基线、车柜信息和逐行计划；受控 LINK 目标继续拒绝。尚无目标时只在完整接受事务中正式化。
+
+原 ACTIVE 包必须全部保留，精确核对票据、scope、warehouse、evidence-set、cycle；先按包顺序加锁，再从 TEMP_CONTINUATION_RESERVED 转为新提交 REVIEW_RESERVED，新增包继续普通库存冲突检查。新授权 download-ack 缺失会保留待审问题，票据 ACTIVATED 不代替资料下载确认。待审回执显式给出 `localDeletionAllowed=false`，不允许继续扫描或释放库存。
+
+## 确认及后续边界
+
+以下确认记账仍待接续实现，不能以受理通过冒充记账完成：
+
 - 确认读取同一受理原文和独立新授权，重验前驱及保留关系、原政策、目标和精确占用。出库、库存记账、成功回执、票据 COMPLETED 与 K 结算同事务提交，失败和重放不得重复记账。
 - 新轮 abort/CANCELLED 的释放政策没有定义，保持拒绝。Android 原子消费后的草稿继续保持 CONTINUATION_BLOCKED；生产命令、放行、扫码、删除和 `localDeletionAllowed` 均关闭。
 

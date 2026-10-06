@@ -12,6 +12,25 @@ public class TemporaryRoundFacts {
     private final JdbcTemplate jdbc;
     public TemporaryRoundFacts(JdbcTemplate jdbc) { this.jdbc=jdbc; }
 
+    public List<com.acrylic.outbound.temporary.command.TemporaryRetainedManifest.Expected> retained(TemporaryRoundControl request,Source source) {
+        return jdbc.query("""
+            SELECT BIN_TO_UUID(bale_id),expected_cycle,record_sha256 FROM temporary_source_continuation_bale
+            WHERE continuation_id=? AND scope_id=? AND from_work_round=? ORDER BY bale_id
+            """,(rs,n)->new com.acrylic.outbound.temporary.command.TemporaryRetainedManifest.Expected(
+                UUID.fromString(rs.getString(1)),rs.getLong(2),rs.getString(3)),
+            Ids.bytes(request.predecessor().ticket()),Ids.bytes(source.scope()),source.fromRound());
+    }
+    public TemporaryRoundControl.Reference reference(UUID submission) {
+        var rows=jdbc.query("""
+            SELECT BIN_TO_UUID(t.id),BIN_TO_UUID(t.previous_submission_id),r.predecessor_payload_sha256,t.retained_manifest_sha256
+            FROM temporary_source_continuation_submission r JOIN temporary_source_continuation t
+              ON t.id=r.ticket_id AND t.scope_id=r.scope_id AND t.from_work_round=r.from_work_round
+            WHERE r.submission_id=?
+            """,(rs,n)->new TemporaryRoundControl.Reference(UUID.fromString(rs.getString(1)),UUID.fromString(rs.getString(2)),
+                rs.getString(3),rs.getString(4)),Ids.bytes(submission));
+        if(rows.size()!=1)throw SubmissionAccess.missing();return rows.getFirst();
+    }
+
     public Source read(TemporaryRoundControl request,SubmissionAccess.Actor actor) {
         var rows=jdbc.query("""
             SELECT BIN_TO_UUID(t.scope_id),BIN_TO_UUID(t.warehouse_id),BIN_TO_UUID(t.previous_submission_id),

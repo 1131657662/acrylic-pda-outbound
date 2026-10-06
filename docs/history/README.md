@@ -360,3 +360,4 @@
 - [2026-10-07自主进度](AUTONOMOUS_PROGRESS_2026-10-07.md)：从已推送的受限续作子项接续新轮intake/记账。
 - [新轮唯一注册前看板](ORCHESTRATION_STATE_before_round_registration_2026-10-07.md)：原断点字节快照；唯一注册、前驱原文绑定和迁移证据见当日自主进度第198条。
 - [累积证据验证前看板](ORCHESTRATION_STATE_before_round_evidence_2026-10-07.md)：当次纯验证器、受影响回归及边界见当日自主进度第199条。
+- [实际intake开发前看板](ORCHESTRATION_STATE_before_round_accept_2026-10-07.md)：已推送子项及未验证intake接续见当日自主进度第200条。
