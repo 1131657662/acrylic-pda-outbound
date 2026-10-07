@@ -12,6 +12,7 @@ internal class TemporaryHandoverHttpConnection(input: JSONObject, private val ou
     private var ordinal = 0
     var loseAck = true
     var losePackage = true
+    var loseConfirmation = true
     init { check(input.getString("baseUrl") == "http://127.0.0.1:19434/api/v1/") }
     override fun current() = session
     override fun now(): Instant = Instant.now()
@@ -29,6 +30,10 @@ internal class TemporaryHandoverHttpConnection(input: JSONObject, private val ou
     override fun original(request: TemporaryConnection.Original): ByteArray {
         val bytes = network.original(request.path, request.body, headers(request.epoch), request.raw, request.maximumBytes)
         File(output, "original-${++ordinal}.json").writeBytes(bytes)
+        request.body?.let { File(output, "command-$ordinal.json").writeBytes(it) }
+        if (request.path.endsWith("temporary-confirmation") && loseConfirmation) {
+            loseConfirmation = false; throw java.io.IOException("Injected lost actual target confirmation response")
+        }
         if (request.path.endsWith("recovery-package") && losePackage) {
             losePackage = false; throw java.io.IOException("Injected lost actual original payload response")
         }

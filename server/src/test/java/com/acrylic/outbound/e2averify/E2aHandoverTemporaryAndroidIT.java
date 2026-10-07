@@ -24,7 +24,8 @@ class E2aHandoverTemporaryAndroidIT {
             var bridge = new HandoverTemporaryAndroidBridge(web, approval, profile.attempt);
             TemporaryHandoverAndroidProcess.run(profile.attempt, "prepare"); bridge.prepare();
             TemporaryHandoverAndroidProcess.run(profile.attempt, "stage"); bridge.verify();
+            TemporaryHandoverAndroidProcess.run(profile.attempt, "confirm"); bridge.verifyConfirmation();
         }
-        Files.writeString(profile.attempt.resolve("test-completed.marker"), "Actual source Android STOP and recipient Android preparation, original-byte stage and Room recovery.\n");
+        Files.writeString(profile.attempt.resolve("test-completed.marker"), "Actual source Android STOP and recipient Android preparation, original-byte stage, confirmation and Room recovery.\n");
     }
 }

@@ -11,7 +11,7 @@ import java.util.UUID
 /** Generated milestone signatures and HTTP boundary only; the recipient uses real Room and downloaded parts. */
 internal class TemporaryHandoverFixture(root: File) : AutoCloseable {
     val local = TemporaryFixture(root)
-    private val signer = HandoverImportSigning()
+    val signer = HandoverImportSigning()
     val db get() = local.db
     val caseId = id()
     val scopeId = id()
@@ -51,7 +51,7 @@ internal class TemporaryHandoverFixture(root: File) : AutoCloseable {
             .put("policyVersion", local.manifest.getString("policyVersion")).put("planSha256", sha(plan))
             .put("captureHighWatermark", "8").put("captures", JSONArray().put(JSONObject().put("orderScanSeq", "1")))
     }
-    private fun context() = JSONObject().put("caseId", caseId).put("sourceKind", "TEMP")
+    private fun context() = JSONObject().put("caseId", caseId).put("sourceKind", "TEMP").put("caseVersion", "4")
         .put("warehouseId", session.getString("warehouseId")).put("scopeId", scopeId).put("submissionId", submissionId)
         .put("canonicalOrderId", order).put("fromWorkRound", "1").put("toWorkRound", "2")
         .put("originalResultState", "ABORTED").put("stopState", "DEVICE_ACKED")
@@ -94,6 +94,7 @@ internal class TemporaryHandoverFixture(root: File) : AutoCloseable {
             .put("preparedTicketSha256", sha(ticket)).put("recoveryPackageSha256", sha(body))
             .put("stopReceipt", stop()).put("approvalReceipt", approval).put("preparationReceipt", preparation)
             .put("capabilities", JSONObject(preparation.getJSONObject("capabilities").toString()))
+            .put("checklist", JSONArray())
     }
     private fun command(kind: String, decision: JSONObject) = signer.receipt(JSONObject().put("status", "RECORDED")
         .put("commandType", kind).put("caseContext", context()).put("recordedAt", local.time.toString()).put("businessDecision", decision))

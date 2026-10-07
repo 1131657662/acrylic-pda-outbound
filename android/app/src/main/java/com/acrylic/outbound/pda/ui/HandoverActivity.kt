@@ -64,6 +64,12 @@ class HandoverActivity : ComponentActivity() {
             startActivity(Intent(this, page).putExtra("assignmentId", card.assignment))
             return
         }
+        if (card.action == "TEMP_CONFIRM") {
+            AlertDialog.Builder(this).setTitle("确认临时交接实物与资料")
+                .setMessage(card.confirmation).setNegativeButton("返回核对", null)
+                .setPositiveButton("已核对，确认接收") { _, _ -> model.perform(card) }.show()
+            return
+        }
         if (card.action != "CONTINUE") { model.perform(card); return }
         AlertDialog.Builder(this).setTitle("核验接收机续作")
             .setMessage("请先核对实物与主管批准的交接资料。联网核验成功后才允许扫码，原记录和占用继续保留。")

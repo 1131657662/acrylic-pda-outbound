@@ -25,6 +25,7 @@ android {
         buildConfigField("String", "PDA_ENVIRONMENT", "\"$environment\"")
         buildConfigField("String", "PDA_UPDATE_PUBLIC_KEY", "\"$updatePublicKey\"")
         buildConfigField("boolean", "TEMPORARY_CONTINUATION_DEVELOPMENT", "false")
+        buildConfigField("boolean", "TEMPORARY_HANDOVER_DEVELOPMENT", "false")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { viewBinding = true; buildConfig = true }
@@ -59,6 +60,9 @@ android {
             val isolatedContinuation = providers.gradleProperty("pdaIsolatedTemporaryContinuation").orElse("false").get()
             require(isolatedContinuation in setOf("true", "false"))
             buildConfigField("boolean", "TEMPORARY_CONTINUATION_DEVELOPMENT", isolatedContinuation)
+            val isolatedHandover = providers.gradleProperty("pdaIsolatedTemporaryHandover").orElse("false").get()
+            require(isolatedHandover in setOf("true", "false"))
+            buildConfigField("boolean", "TEMPORARY_HANDOVER_DEVELOPMENT", isolatedHandover)
         }
         release {
             isMinifyEnabled = false
@@ -72,6 +76,7 @@ android {
             matchingFallbacks += listOf("debug")
             buildConfigField("String", "PDA_UPDATE_CHANNEL", "\"staging\"")
             buildConfigField("boolean", "TEMPORARY_CONTINUATION_DEVELOPMENT", "false")
+            buildConfigField("boolean", "TEMPORARY_HANDOVER_DEVELOPMENT", "false")
         }
     }
     testOptions {

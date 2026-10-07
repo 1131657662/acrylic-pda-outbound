@@ -48,6 +48,8 @@ open class PdaApplication : Application(), androidx.work.Configuration.Provider 
     val freezer by lazy { SubmissionFreeze(WorkStore(database, SessionWorkAccess(this, session)), session::now) }
     val continuations by lazy { ContinuationRepository(WorkStore(database, SessionWorkAccess(this, session)), session, work::resumedContinuation) }
     val handovers by lazy { HandoverImportRepository(database, session) }
+    val temporaryHandoverConfirmations by lazy { com.acrylic.outbound.pda.temporary.TemporaryHandoverConfirmationRepository(
+        database, com.acrylic.outbound.pda.temporary.TemporarySession(session)) }
     val recalls by lazy { RecallRepository(database, session, work::pauseForRecall) }
     val recoveryFreezer by lazy { RecoveryFreeze(WorkStore(database, SessionWorkAccess(this, session)), session::now) }
     val renewals by lazy { AuthorizationRenewalRepository(database, session) }

@@ -11,7 +11,7 @@ import org.json.JSONObject
 import java.io.File
 
 data class HandoverCard(val caseId: String, val assignment: String, val title: String,
-    val status: String, val action: String, val label: String)
+    val status: String, val action: String, val label: String, val confirmation: String = "")
 data class HandoverUi(val busy: Boolean = false, val message: String = "输入主管提供的交接编号，或恢复本机交接。",
     val cards: List<HandoverCard> = emptyList(), val hasMore: Boolean = false)
 
@@ -32,6 +32,11 @@ class HandoverViewModel(application: Application) : AndroidViewModel(application
             }
             "ACK" -> app.handovers.acknowledgeDownload(card.caseId)
             "CONTINUE" -> app.work.resumedContinuation(app.handovers.continueWork(card.caseId))
+            "TEMP_CONFIRM" -> {
+                app.temporaryHandoverConfirmations.queue(card.caseId, true)
+                com.acrylic.outbound.pda.temporary.TemporaryHandoverConfirmationWorker.schedule(app, card.caseId)
+                app.temporaryHandoverConfirmations.resume(card.caseId)
+            }
             else -> error("交接状态已变化，请重新读取")
         }
         load()
@@ -52,9 +57,22 @@ class HandoverViewModel(application: Application) : AndroidViewModel(application
     private fun temporaryCard(id: String): HandoverCard {
         val repository = com.acrylic.outbound.pda.temporary.TemporaryHandoverRepository(app.database,
             com.acrylic.outbound.pda.temporary.TemporarySession(app.session))
-        val status = runCatching { repository.read(id); "原临时记录已保存；接收确认和激活尚未完成，保持停止" }
-            .getOrElse { "${it.message ?: "临时交接需核对"}；原资料保留" }
-        return HandoverCard(id, "", "临时作业交接", status, "REFRESH", "核对接收资格与原资料")
+        return runCatching {
+            val row = repository.read(id)
+            val pending = app.temporaryHandoverConfirmations.read(id)
+            val plan = JSONObject(row.payloadBytes.toString(Charsets.UTF_8)).getJSONObject("temporaryOrder")
+            val details = "车号 ${plan.getString("vehicleNo")} · 柜号 ${plan.optString("containerNo")}\n原记录 ${row.inputHighWatermark} 条"
+            val enabled = com.acrylic.outbound.pda.BuildConfig.DEBUG && com.acrylic.outbound.pda.BuildConfig.TEMPORARY_HANDOVER_DEVELOPMENT
+            val (action, label, status) = when {
+                pending?.state == "CONFIRMED" -> Triple("REFRESH", "核对主管处理结果", "接收确认已保存，等待独立激活；保持停止")
+                !enabled -> Triple("REFRESH", "核对接收资格与原资料", "原临时记录已保存，接收确认尚未开放；保持停止")
+                pending != null -> Triple("TEMP_CONFIRM", "恢复原接收确认", "${pending.error.ifBlank { "接收确认结果待核对" }}；原请求保留")
+                else -> Triple("TEMP_CONFIRM", "核对实物并确认接收", "原临时记录已保存，尚未确认实物和资料")
+            }
+            HandoverCard(id, "", "临时作业交接", "$details\n$status", action, label,
+                "$details\n交接编号 $id\n请逐包核对下方主管批准的保留清单。确认只记录接收事实，激活完成前保持停止。\n" +
+                    com.acrylic.outbound.pda.temporary.TemporaryHandoverConfirmationDisplay.lines(row))
+        }.getOrElse { HandoverCard(id, "", "临时作业交接", "${it.message ?: "临时交接需核对"}；原资料保留", "REFRESH", "核对接收资格与原资料") }
     }
 
     private fun card(id: String): HandoverCard {

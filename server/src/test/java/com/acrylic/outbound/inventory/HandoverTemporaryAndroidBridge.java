@@ -47,4 +47,16 @@ public final class HandoverTemporaryAndroidBridge {
         assertThat(f.source.jdbc.queryForObject("SELECT status FROM handover_case WHERE id=?", String.class, Ids.bytes(f.source.kase))).isEqualTo("TARGET_PREPARED");
         Files.writeString(directory.resolve("verified.marker"), "Actual Android own preparation/ACK and durable TEMP original-byte reception; no activation or assignment.\n");
     }
+
+    public void verifyConfirmation() throws Exception {
+        var result = SubmissionJson.parse(Files.readAllBytes(directory.resolve("confirm-result.json")));
+        var row = f.source.jdbc.queryForMap("SELECT receipt_bytes,command_bytes FROM temporary_handover_confirmation WHERE case_id=?", Ids.bytes(f.source.kase));
+        assertThat(Files.readAllBytes(directory.resolve("android-confirmation.json"))).isEqualTo((byte[]) row.get("receipt_bytes"));
+        assertThat(Files.readAllBytes(directory.resolve("android-confirmation-command.json"))).isEqualTo((byte[]) row.get("command_bytes"));
+        assertThat(result.path("state").asText()).isEqualTo("CONFIRMED");
+        assertThat(f.source.jdbc.queryForObject("SELECT COUNT(*) FROM temporary_handover_confirmation WHERE case_id=?", Long.class, Ids.bytes(f.source.kase))).isEqualTo(1);
+        assertThat(f.source.jdbc.queryForObject("SELECT status FROM handover_case WHERE id=?", String.class, Ids.bytes(f.source.kase))).isEqualTo("TARGET_PREPARED");
+        assertThat(f.source.jdbc.queryForObject("SELECT COUNT(*) FROM order_assignment WHERE device_id=?", Long.class, Ids.bytes(f.device))).isZero();
+        Files.writeString(directory.resolve("confirmation-verified.marker"), "Actual Android immutable confirmation, lost-response recovery and Room rollback; no activation.\n");
+    }
 }
