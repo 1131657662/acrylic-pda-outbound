@@ -6,17 +6,17 @@
 ```yaml
 date: 2026-10-07
 branch: codex/development
-head: c29ddc2
-dirty_entries: 39
+head: 0a39231
+dirty_entries: 36
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 33 }
-server: { contract: 0.44.0, paths: 139, flyway: V67, migrations: 67 }
+server: { contract: 0.45.0, paths: 140, flyway: V68, migrations: 68 }
 ```
 <!-- FACTS_END -->
 总目标 D01–D18 执行中，必须同时通过新计划第8节才能 complete；不得按局部边界结束。逐项输入映射及开发证据见 [执行记录](history/D01_D18_EXECUTION_2026-10-07.md)。
 
 ## Git、写权与环境
-- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/实际远端均为c29ddc226eaa6a17ed5de9e5255fa55fea9d9717；D06接收机准备/原证据下载25路径已提交推送，Git回执在d06-target-review，无main/部署/发布动作。
+- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/实际远端均为0a3923106e8cf71522d1fed940586a099ee299d1；D06 Android耐久接收23路径已提交推送，Git回执在d06-stage-review，无main/部署/发布动作。
 - D01预检18条继承路径的完整清单、逐文件副本、hash/diff、worktrees、进程/监听/磁盘、旧看板在 `.local/d01-d18-20261007/preflight-01/`；继承内容保护不回滚。原看板结论含前审查/计划完整保存在 board-before.md。
 - 既有MySQL3306/13316及外部Harness19387未操作；隔离76–79已dump/认证停机，19331无遗留。运行器在 `.local/d01-d18-20261007/d02-http/`，实例及证据在LOCALAPPDATA/acrylic-pda-outbound-isolated。隔离80也已dump/认证停机；D02Continuation79模拟器已正常关闭、5560监听消失。D03隔离81/82/83均已dump/认证停库，19331无遗留，无重型构建在途。
 - 历史归档在 E:/acrylic-archive-20261006/，路径按 [本机归档位置](LOCAL_ARCHIVE_LOCATIONS.md) 查找；失败库/binlog/日志/XML/原资料保持。
@@ -37,6 +37,7 @@ server: { contract: 0.44.0, paths: 139, flyway: V67, migrations: 67 }
 - 原资料/旧BCD/526、R09历史恢复限制保持单列；原身份/Keystore、真实双设备、实体键/断电/长时/规模、正式HTTPS渠道、异地介质、生产RPO-RTO/Linux现场等只按新计划第9节C01–C08保留。任何代码/迁移/权限/客户端/导出/恢复缺口不得转入C档。
 
 ## 下一动作
+- D06指定TEMP接收人确认服务已实现，原意图/专用签名/append-only与最后审计同事务，不激活/转占用。1077快照日期失败保留；1078实际HTTP/MySQL1/0/0/0，身份/资格拒绝、并发原件、35表末写回滚、重启/默认关闭通过，已dump认证停机。受影响568/0/0/1（Windows符号链接skip），独立契约/RSA9项通过；源码/证据在d06-temp-confirm。下一步Android持久确认与页面，再接激活/最终提交；D06仍未通过。
 - D03分块已提交bad2870；关联目标88真实HTTP1/0/0/0；高轮次91真实HTTP1/0/0/0（STOP合成），84/85/87/89/90失败及全部停机证据保留。逐轮不可变来源边界与根/当轮client核验已随后续切片验证，见执行记录；本轮提交清单见d03-linked/linked-next-paths.txt。
 - 隔离92及普通全套regression-02通过，切片已提交推送eac6a2e。高轮STOP的93字段名错误失败保留；94/95均1/0/0/0、exit0、sourceUnchanged，95含两次实际高轮E2A/STOP后第四轮LINK确认及最终SQL回滚，均dump/认证停库。首轮STOP及身份仍合成。
 - stop-regression-01旧替身29失败、96根scope外键失败保留并修复。根键存储/当轮签名绑定的97实际链1/0/0/0；stop-regression-02旧夹具缺字段8失败已修，03init路径失败未执行测试（复制旧XML不计本次）；04普通回归3220/0/0/1、exit0、sourceUnchanged，符号链接环境跳过，普通test不含IT。

@@ -20,12 +20,21 @@ final class HandoverStopSignature {
     HandoverStopSignature(OfflineSigner signer) { this.signer = signer; }
 
     ObjectNode sign(ObjectNode receipt) {
+        return sign(receipt, AUDIENCE);
+    }
+
+    ObjectNode signTemporaryConfirmation(ObjectNode receipt) {
+        return sign(receipt, "acrylic-pda-temporary-handover-confirmation");
+    }
+
+    private ObjectNode sign(ObjectNode receipt, String audience) {
         return receipt.deepCopy().put("signedReceipt", signer.sign(Map.of(
-            "iss", ISSUER, "aud", AUDIENCE, "receipt", receipt)).token());
+            "iss", ISSUER, "aud", audience, "receipt", receipt)).token());
     }
 
     void verify(JsonNode receipt) { verify(receipt, AUDIENCE); }
     void verifyRecall(JsonNode receipt) { verify(receipt, "acrylic-pda-recall"); }
+    void verifyTemporaryConfirmation(JsonNode receipt) { verify(receipt, "acrylic-pda-temporary-handover-confirmation"); }
 
     private void verify(JsonNode receipt, String audience) {
         try {

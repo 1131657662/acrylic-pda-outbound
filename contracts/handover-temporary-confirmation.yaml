@@ -1,0 +1,102 @@
+Path:
+  post:
+    summary: 指定接收人确认 TEMP 原交接资料及实物
+    description: >-
+      沿 outbound.handover.commands.enabled 默认关闭开关，仅指定接收人及设备的有效在线身份可用。
+      必须具有 temporary_order:create、pda:scan、pda:submit 及设备 TEMP 准入。
+      首次确认重新核验原停止、主管批准、本人准备资格/下载确认、期限/版本/恢复代次、来源/映射/基线及原正文。
+      最大请求 65536 字节；拒绝重复字段、未知字段、尾随 JSON、非规范 UUID 与整数溢出。
+      每案件只保存一次不可变确认；原命令包含 URL caseId 与恢复代次，同文重放原字节，异文或换键拒绝。
+      已存确认重放核当前身份、仓库、恢复代次和原件完整性；它仅证明历史确认，不证明旧资格仍有效。
+      保存确认与最后审计同事务，不推进案件/轮次、不创建 assignment、不转占用、不记账或授予扫码/删除资格。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {name: caseId, in: path, required: true, schema: {type: string, format: uuid}}
+      - {name: X-Server-Recovery-Epoch, in: header, required: true, schema: {$ref: '#/PositiveText'}}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: '#/Command'}
+    responses:
+      '200':
+        description: 不可变签名确认原 JSON 字节，不使用 Envelope
+        headers:
+          Cache-Control: {schema: {type: string, const: no-store}}
+          X-Content-Type-Options: {schema: {type: string, const: nosniff}}
+        content:
+          application/json:
+            schema: {$ref: '#/Receipt'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+PositiveText: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+Hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+Command:
+  type: object
+  additionalProperties: false
+  required: [commandVersion, commandId, expectedCaseVersion, targetAuthorizationId, preparedTicketSha256, payloadSha256, checklistSha256, physicalConfirmed]
+  properties:
+    commandVersion: {type: integer, const: 1}
+    commandId: {type: string, format: uuid}
+    expectedCaseVersion: {$ref: '#/PositiveText', description: 原 PREPARE 回执 caseContext.caseVersion 加一}
+    targetAuthorizationId: {type: string, format: uuid}
+    preparedTicketSha256: {$ref: '#/Hash'}
+    payloadSha256: {$ref: '#/Hash'}
+    checklistSha256: {$ref: '#/Hash'}
+    physicalConfirmed: {type: boolean, const: true}
+BoundCommand:
+  type: object
+  additionalProperties: false
+  required: [caseId, transportRecoveryEpoch, command]
+  properties:
+    caseId: {type: string, format: uuid}
+    transportRecoveryEpoch: {$ref: '#/PositiveText'}
+    command: {$ref: '#/Command'}
+Receipt:
+  type: object
+  additionalProperties: false
+  required: [receiptVersion, receiptId, caseId, status, recordedAt, commandSha256, originalCommand, preparedTicket, checklist, capabilities, actor, signedReceipt]
+  properties:
+    receiptVersion: {type: integer, const: 1}
+    receiptId: {type: string, format: uuid}
+    caseId: {type: string, format: uuid}
+    status: {type: string, const: TARGET_CONFIRMED}
+    recordedAt: {type: string, format: date-time}
+    commandSha256: {$ref: '#/Hash'}
+    originalCommand: {$ref: '#/BoundCommand'}
+    preparedTicket: {$ref: './handover-command-paths.yaml#/TemporaryPreparedTicket'}
+    checklist:
+      type: array
+      items:
+        type: object
+        additionalProperties: false
+        required: [baleId, deliveryCode, state, dispatchCycle]
+        properties:
+          baleId: {type: string, format: uuid}
+          deliveryCode: {type: string}
+          state: {type: string, const: RETAINED}
+          dispatchCycle: {$ref: '#/PositiveText'}
+    capabilities:
+      type: object
+      additionalProperties: false
+      required: [writeConfirmationAvailable, releaseAllowed, mayResumeScanning, stockReleased, localDeletionAllowed]
+      properties:
+        writeConfirmationAvailable: {type: boolean, const: false}
+        releaseAllowed: {type: boolean, const: false}
+        mayResumeScanning: {type: boolean, const: false}
+        stockReleased: {type: boolean, const: false}
+        localDeletionAllowed: {type: boolean, const: false}
+    actor:
+      type: object
+      additionalProperties: false
+      required: [userId, deviceId, warehouseId, userAuthVersion, deviceVersion]
+      properties:
+        userId: {type: string, format: uuid}
+        deviceId: {type: string, format: uuid}
+        warehouseId: {type: string, format: uuid}
+        userAuthVersion: {$ref: '#/PositiveText'}
+        deviceVersion: {$ref: '#/PositiveText'}
+    signedReceipt: {type: string, description: RS256 JWT，iss=acrylic-outbound、aud=acrylic-pda-temporary-handover-confirmation；receipt 绑定除 signedReceipt 外全部字段}
