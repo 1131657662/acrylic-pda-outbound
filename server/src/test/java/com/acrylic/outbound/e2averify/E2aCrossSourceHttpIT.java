@@ -28,10 +28,9 @@ class E2aCrossSourceHttpIT {
         Files.createDirectory(profile.attempt.resolve("http"));
         try (var context = start(profile)) {
             E2aCrossSourceHttpChecks.verify(new E2aCrossSourceHttp(wire, setup.token, profile.attempt.resolve("http")), setup);
-            E2aCrossSourceExport.write(wire, profile.attempt);
         }
         Files.writeString(profile.attempt.resolve("test-completed.marker"),
-            "V34 nonempty -> V36; real HTTP OPEN/RAW/PAGE/STOP/VERIFY and original replay; RAW negative guards verified\n");
+            "V34 nonempty -> V36; real HTTP OPEN/RAW/PAGE/STOP; incomplete synthetic audit prefix is rejected before VERIFY writes\n");
     }
 
     static ConfigurableApplicationContext start(E2aCrossSourceProfile profile,String... overrides) {

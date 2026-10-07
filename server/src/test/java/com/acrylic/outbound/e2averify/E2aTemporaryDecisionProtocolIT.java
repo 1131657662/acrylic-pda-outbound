@@ -11,10 +11,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnabledIfEnvironmentVariable(named="E2A_CROSS_VERIFY",matches="true")
 class E2aTemporaryDecisionProtocolIT {
     @Test void independentConsumerVerifiesRecordedDecisionsAndRealHttpOriginals() throws Exception {
+        run("37");
+    }
+
+    static void run(String migrationTarget) throws Exception {
         var profile=new E2aCrossSourceProfile();var jdbc=profile.connect();Files.createFile(profile.attempt.resolve("test-started.marker"));
         profile.migrate(jdbc,"34");E2aV34Seed.seed(jdbc,profile.attempt.resolve("storage"));
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM submission",Integer.class)).isPositive();
-        profile.migrate(jdbc,"37");E2aCrossSourceHttpSetup.signing(profile.attempt);
+        profile.migrate(jdbc,migrationTarget);E2aCrossSourceHttpSetup.signing(profile.attempt);
         try(var context=E2aCrossSourceHttpIT.start(profile,"--server.servlet.session.cookie.secure=false")) {
             new TemporaryDecisionVectors((WebApplicationContext)context).write(profile.attempt);
             consume(profile.attempt);
@@ -22,7 +26,7 @@ class E2aTemporaryDecisionProtocolIT {
         Files.writeString(profile.attempt.resolve("test-completed.marker"),"Independent recorded decision consumer; isolated real transactions/HTTP; no product handler\n");
     }
 
-    private void consume(Path attempt) throws Exception {
+    private static void consume(Path attempt) throws Exception {
         var builder=new ProcessBuilder("C:/Python314/python.exe","-W","error::ResourceWarning","-m","unittest","discover",
             "-s","docs/parallel/R06_LEDGER_PROTOCOL","-p","test_decision*.py","-v");
         builder.directory(Path.of("D:/acrylic-pda-outbound").toFile());builder.environment().remove("E2A_CROSS_PASSWORD");

@@ -20,6 +20,7 @@ final class E2aCrossSourceFixture {
     final UUID scope = UUID.randomUUID(), submission = UUID.randomUUID(), client = UUID.randomUUID();
     final UUID priorScope = UUID.randomUUID(), priorSubmission = UUID.randomUUID();
     final UUID ownBale = UUID.randomUUID(), priorBale = UUID.randomUUID();
+    final UUID ownOrder = UUID.randomUUID();
     final ObjectNode earlier, current, priorScan, ownScan;
 
     E2aCrossSourceFixture(JdbcTemplate jdbc, SubmissionFiles files, Map<String, String> seed) {
@@ -36,9 +37,16 @@ final class E2aCrossSourceFixture {
     }
 
     private void source() {
+        temporaryOrder();
         jdbc.update("INSERT INTO temporary_work_origin VALUES(?,?,?)", id("deviceId"), Ids.bytes(client), id("authorizationId"));
-        jdbc.update("INSERT INTO submission_scope(id,warehouse_id,creator_device_id,client_order_id,work_round) VALUES(?,?,?,?,1)",
-            Ids.bytes(scope), id("warehouseId"), id("deviceId"), Ids.bytes(client));
+        jdbc.update("""
+            INSERT INTO submission_scope(id,warehouse_id,creator_device_id,client_order_id,work_round,canonical_order_id,mapping_version)
+            VALUES(?,?,?,?,1,?,1)
+            """, Ids.bytes(scope), id("warehouseId"), id("deviceId"), Ids.bytes(client), Ids.bytes(ownOrder));
+        jdbc.update("""
+            INSERT INTO temporary_source_mapping(id,warehouse_id,scope_id,mapping_version,canonical_order_id,origin,observed_at)
+            VALUES(?,?,?,1,?,'SOURCE_REGISTERED',UTC_TIMESTAMP(3))
+            """, Ids.bytes(UUID.randomUUID()), id("warehouseId"), Ids.bytes(scope), Ids.bytes(ownOrder));
         jdbc.update("INSERT INTO temporary_decision_state VALUES(?,0,'SOURCE_REGISTERED',UTC_TIMESTAMP(3))", Ids.bytes(scope));
         jdbc.update("""
             INSERT INTO submission(id,scope_id,temporary_authorization_id,freeze_device_id,operator_id,
@@ -46,6 +54,17 @@ final class E2aCrossSourceFixture {
             VALUES(?,?,?,?,?,1,1,'REVIEW_REQUIRED',UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))
             """, Ids.bytes(submission), Ids.bytes(scope), id("authorizationId"), id("deviceId"), id("operatorId"));
         jdbc.update("UPDATE submission_scope SET current_submission_id=? WHERE id=?", Ids.bytes(submission), Ids.bytes(scope));
+        jdbc.update("""
+            INSERT INTO order_submission_slot(order_id,scope_id,current_submission_id,work_round,phase)
+            VALUES(?,?,?,1,'FROZEN')
+            """, Ids.bytes(ownOrder), Ids.bytes(scope), Ids.bytes(submission));
+    }
+
+    private void temporaryOrder() {
+        jdbc.update("""
+            INSERT INTO outbound_order(id,warehouse_id,order_no,source,status,created_by,created_at,updated_at)
+            VALUES(?,?,?,'PDA_TEMP','REVIEW_REQUIRED',?,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))
+            """, Ids.bytes(ownOrder), id("warehouseId"), "E2A-" + ownOrder, id("operatorId"));
     }
 
     private void formalSource() {
@@ -85,8 +104,9 @@ final class E2aCrossSourceFixture {
 
     private void storeCapture(UUID target, ObjectNode capture) {
         jdbc.update("INSERT INTO submitted_capture VALUES(?,?,?,?,?,?,?)", Ids.bytes(SubmissionJson.uuid(capture, "id")),
-            Ids.bytes(target), id("orderId"), id("deviceId"), SubmissionJson.number(capture, "deviceCaptureSeq"),
-            SubmissionJson.number(capture, "deviceCaptureSeq"), SubmissionJson.sha(capture));
+            Ids.bytes(target), target.equals(submission) ? Ids.bytes(ownOrder) : id("orderId"),
+            id("deviceId"), SubmissionJson.number(capture, "deviceCaptureSeq"),
+            SubmissionJson.number(capture, "orderScanSeq"), SubmissionJson.sha(capture));
     }
 
     List<E2aPageItem> items() {
@@ -100,12 +120,12 @@ final class E2aCrossSourceFixture {
 
     private ObjectNode capture(long sequence) {
         return SubmissionJson.object().put("id", UUID.randomUUID().toString()).put("originDeviceId", seed.get("deviceId"))
-            .put("deviceCaptureSeq", Long.toString(sequence)).put("state", "COMMITTED");
+            .put("deviceCaptureSeq", Long.toString(sequence)).put("orderScanSeq","1").put("state", "COMMITTED");
     }
 
     private ObjectNode scan(ObjectNode capture, UUID bale, long sequence) {
         return SubmissionJson.object().put("captureId", capture.path("id").asText()).put("baleId", bale.toString())
-            .put("expectedDispatchCycle", "1").put("localSeq", Long.toString(sequence)).put("status", "ACTIVE");
+            .put("expectedDispatchCycle", "1").put("orderScanSeq","1").put("localSeq", Long.toString(sequence)).put("status", "ACTIVE");
     }
 
     static E2aPageItem item(String kind, JsonNode record) {

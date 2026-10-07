@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-07
 branch: codex/development
-head: 912d283
-dirty_entries: 35
+head: 7514bf9
+dirty_entries: 27
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 32 }
 server: { contract: 0.43.0, paths: 139, flyway: V66, migrations: 66 }
@@ -16,7 +16,7 @@ server: { contract: 0.43.0, paths: 139, flyway: V66, migrations: 66 }
 总目标 D01–D18 执行中，必须同时通过新计划第8节才能 complete；不得按局部边界结束。逐项输入映射及开发证据见 [执行记录](history/D01_D18_EXECUTION_2026-10-07.md)。
 
 ## Git、写权与环境
-- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/实际远端为912d283db9c5e1cdf4b4bdc9490295e7548f9008；D03关联后再续作切片已提交推送并核对ls-remote，无main/部署/发布动作。
+- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/实际远端为7514bf9bd32b6f61574fde78c680d847313b840b；D04映射/分页切片已提交推送并核对ls-remote，无main/部署/发布动作。
 - D01预检18条继承路径的完整清单、逐文件副本、hash/diff、worktrees、进程/监听/磁盘、旧看板在 `.local/d01-d18-20261007/preflight-01/`；继承内容保护不回滚。原看板结论含前审查/计划完整保存在 board-before.md。
 - 既有MySQL3306/13316及外部Harness19387未操作；隔离76–79已dump/认证停机，19331无遗留。运行器在 `.local/d01-d18-20261007/d02-http/`，实例及证据在LOCALAPPDATA/acrylic-pda-outbound-isolated。隔离80也已dump/认证停机；D02Continuation79模拟器已正常关闭、5560监听消失。D03隔离81/82/83均已dump/认证停库，19331无遗留，无重型构建在途。
 - 历史归档在 E:/acrylic-archive-20261006/，路径按 [本机归档位置](LOCAL_ARCHIVE_LOCATIONS.md) 查找；失败库/binlog/日志/XML/原资料保持。
@@ -47,7 +47,12 @@ server: { contract: 0.43.0, paths: 139, flyway: V66, migrations: 66 }
 - 关联后再续作100暴露正式目标待审状态校验缺口已修，101磁盘余量检查失败未跑业务；均dump停库。后续新隔离库在D:/.local固定根（完整路径及脚本见执行记录），102/103均1/0/0/0：第三轮LINK/实际STOP→第四轮原件续传/确认、目标变化拒绝与末写回滚；103含未完整上传拒绝停止/缺块及原清单恢复。旧C盘库不移除，默认生产边界保持。
 - linked-next-regression-01普通服务端3220/0/0/1通过，skip为Windows符号链接；UI06为1/0/0/0，空理由拒绝/签名停止/原文保留/实际返回及截图核对通过，原签名网络重放与真实HTTP分列。UI01–05失败保留，模拟器已正常关闭，5560无监听。
 - 104实际Android组合62/0/0/1、双exit0、sourceUnchanged：先LINK→实际E2A/STOP丢响应恢复→再续作→独立确认/成功投影，Room末写故障/重启恢复通过；旧专用HTTP跳过单列。已dump认证停库，无重型在途。本切片已提交，继续D04及其他可执行项；D04–D18未通过，目标active。继承TemporarySuccessHttpTest保持，3306/13316/19387未动，19331无监听。
-- D04映射/分页切片通过：105实际组合22/0/0/1、双exit0，千条来源外精确消费、两轮同步、限仓/设备及失败回滚通过；已dump认证停库。源码逐Path/Hash无漂移，JSON枚举顺序误报保留。Android受影响206/0/0/4、默认APK/lint零错误208警告；服务端受影响136/0/0/0。skip单列，证据/产物见d04-bindings。下一步保存本切片后复核完整候选/重关联与跨来源独立审计；候选排除政策阻断保留，D04整体未通过。
+- D04映射/分页切片通过并提交：105实际组合22/0/0/1、双exit0，千条来源外精确消费、两轮同步、限仓/设备及失败回滚通过；已dump认证停库。源码逐Path/Hash无漂移，JSON枚举顺序误报保留。Android受影响206/0/0/4、默认APK/lint零错误208警告；服务端受影响136/0/0/0。skip单列，证据/产物见d04-bindings。
+- D04独立审计1034实际HTTP1/0/0/0、exit0、源码无漂移：独立来源/原文/hash、异来源改写拒绝、五阶段末SQL回滚通过。1032/1033旧夹具订单/slot不一致失败保留，1031不替代修正后结果；均dump认证停库。全dirty快照及旧看板在d04-audit/preflight-02。
+- 双LINK/Android持久映射1037为1/0/0/0、双exit0、源码无漂移；旧映射拒绝/Room末写回滚与重启、重关联服务端并发/回滚通过。完整候选1038为1/0/0/0，独立Python54/0/0/0；源码无漂移。均dump认证停库。1035初始化未建库、1036编译0测试失败保留。
+- 首轮schema兼容1042在非空V34→V36真实HTTP OPEN/RAW/PAGE/STOP通过；不完整审计前缀VERIFY拒绝且无来源集合/K占用写入，1/0/0/0、exit0，1451源码路径Hash不变。受影响来源单测343/0/0/1，唯一skip为Windows符号链接条件。
+- 1043 V34→V37旧完整合成测试在损坏凭据断言失败：原审计前缀不完整，实得E2A_AUDIT_PREFIX_UNVERIFIABLE；1/0/0/1、exit1。DB dump/SHA/XML/日志和认证停机保留于old-schema-unsubmitted-1043；1039–1041失败证据保留，不据此归因schema兼容缺陷。
+- D04技术范围有跨来源审计、候选读取、重关联、Android消费与旧schema首轮读取证据，但候选排除仍缺授权，故D04整体及D05–D18未通过。下一步D05新隔离组合：STOP→拒绝→实物核对→按P-R06-01卸货释放；取消释放保持拒绝。1042/1043实例已dump认证停机，19330/19434无监听，无Gradle测试执行器在途。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；详细阶段记录见 docs/history/AUTONOMOUS_PROGRESS_2026-10-06.md。
