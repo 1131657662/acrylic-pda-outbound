@@ -8,7 +8,7 @@ import java.util.Base64
 
 /** Historical TEMP success. This never grants a product action or local deletion. */
 object TemporarySuccessVerifier {
-    fun verify(local: TemporarySubmission, original: ByteArray, trustedKey: JSONObject): JSONObject {
+    fun verify(local: TemporarySubmission, original: ByteArray, trustedKey: JSONObject, mappedOrderId: String? = null): JSONObject {
         val envelope = TemporarySuccessJson.parse(original)
         check(envelope.get("code") == "OK") { "服务器未返回成功响应" }
         val receipt = envelope.getJSONObject("data")
@@ -32,7 +32,7 @@ object TemporarySuccessVerifier {
         check(source.get("kind") == "TEMP" && source.get("clientOrderId") == local.clientOrderId)
         check(source.get("creatorDeviceId") == body.get("freezeDeviceId"))
         check(body.isNull("assignmentId") && body.isNull("continuationId") && body.getJSONArray("dispositions").length() == 0)
-        context(local, body, receipt)
+        context(local, body, receipt, mappedOrderId)
         TemporarySuccessProducts.verify(body, receipt)
         return receipt
     }
@@ -57,7 +57,7 @@ object TemporarySuccessVerifier {
         }
     }
 
-    private fun context(local: TemporarySubmission, body: JSONObject, value: JSONObject) {
+    private fun context(local: TemporarySubmission, body: JSONObject, value: JSONObject, mappedOrderId: String?) {
         val fields = setOf("submissionId", "orderId", "status", "payloadSha256",
             "freezeDeviceId", "workRound", "issuedRecoveryEpoch", "mayResumeScanning", "stockReleased", "source",
             "orderStatus", "actualCount", "actualWeightGrams", "inventoryDeducted", "resultVersion", "receiptVersion",
@@ -81,7 +81,8 @@ object TemporarySuccessVerifier {
         local.receipt?.let { previous ->
             val old = JSONObject(previous)
             check(old.optString("status") != "ABORTED") { "本地已存取消终态，须保留冲突原件" }
-            if (!old.isNull("orderId")) check(old.get("orderId") == value.get("orderId")) { "成功目标与原待审目标不符" }
+            if (!old.isNull("orderId")) check(old.get("orderId") == value.get("orderId") ||
+                mappedOrderId == value.get("orderId")) { "成功目标与原待审目标不符" }
         }
     }
 }

@@ -15,6 +15,8 @@ internal class TemporaryContinuationHttpConnection(private val fixture: Temporar
     var loseIntake = true
     val chunked = input.optBoolean("chunked")
     val higher = input.optBoolean("higher")
+    val linked = input.optBoolean("linked")
+    var mappingReads = 0
     private var loseStop = higher
     private var loseVerify = higher
     val stopRequests = mutableListOf<String>()
@@ -27,6 +29,12 @@ internal class TemporaryContinuationHttpConnection(private val fixture: Temporar
         "X-Server-Recovery-Epoch" to epoch) + key?.let { mapOf("Idempotency-Key" to it) }.orEmpty()
 
     override fun call(request: TemporaryConnection.Call): JSONObject {
+        if (request.path.startsWith("pda/temporary-source-bindings?")) {
+            mappingReads++
+            val result = network.request(request.path, headers = headers(request.epoch)).getJSONObject("data")
+            File(evidence, "client-${++ordinal}-mapping.json").writeText(result.toString())
+            return result
+        }
         if (request.path == "pda/audit/events" || request.path.startsWith("pda/temporary-source-evidence/raw?"))
             return network.request(request.path, request.body, headers(request.epoch, request.key), request.raw).getJSONObject("data")
         if (request.raw != null) return chunk(request)

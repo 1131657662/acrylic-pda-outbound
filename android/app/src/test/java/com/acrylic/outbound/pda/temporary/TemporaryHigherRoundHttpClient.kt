@@ -19,6 +19,7 @@ internal class TemporaryHigherRoundHttpClient(private val f: TemporaryFixture,
 
     suspend fun next(frozen: TemporarySubmission): TemporarySubmission {
         recoverEvidence(frozen.clientOrderId)
+        f.db.close(); f.context.getDatabasePath("outbound-pda.db").copyTo(File(evidence, "android-before-technical-stop.db")); f.reopen()
         val reason = "隔离高轮技术停止，保留全部实物占用"
         assertThrows(IOException::class.java) { TemporarySubmissionRepository(f.db, connection, true).stopContinuation(frozen.id, reason) }
         f.reopen()

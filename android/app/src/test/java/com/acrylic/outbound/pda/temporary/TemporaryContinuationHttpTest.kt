@@ -112,6 +112,7 @@ class TemporaryContinuationHttpTest {
 
     private suspend fun consume(f: TemporaryFixture, connection: TemporaryContinuationHttpConnection, frozen: TemporarySubmission, evidence: File) {
         File(evidence, "android-uploaded.json").writeText(JSONObject().put("submissionId", frozen.id).put("payloadSha256", frozen.sha256).toString())
+        if (connection.linked) localRollback(f, connection, frozen, evidence)
         val saved = withTimeout(60_000) {
             var row: TemporarySubmission
             do { delay(250); row = TemporarySubmissionRepository(f.db, connection).upload(frozen.id) } while (row.state != "SYNCED")
@@ -122,7 +123,25 @@ class TemporaryContinuationHttpTest {
         val receipt = JSONObject(saved.receipt!!)
         assertEquals(if (connection.higher) "3" else "2", receipt.getString("workRound")); assertFalse(receipt.getBoolean("localDeletionAllowed"))
         assertNotNull(f.db.temporarySuccess().evidence(saved.id))
+        if (connection.linked) {
+            assertTrue(connection.mappingReads > 0)
+            assertTrue(f.db.sourceBindings().all().any { it.canonicalOrderId == receipt.getString("orderId") &&
+                it.mappingOrigin == "CONTROLLED_LINK" && it.workRound == receipt.getString("workRound") })
+        }
         File(evidence, "android-completed.json").writeText(JSONObject().put("submissionId", saved.id).put("status", saved.state)
             .put("localDeletionAllowed", false).put("actualCount", receipt.getString("actualCount")).toString())
+    }
+
+    private suspend fun localRollback(f: TemporaryFixture, connection: TemporaryContinuationHttpConnection,
+        frozen: TemporarySubmission, evidence: File) {
+        withTimeout(60_000) { while (!File(evidence, "android-server-confirmed.marker").exists()) delay(250) }
+        f.db.openHelper.writableDatabase.execSQL("""CREATE TRIGGER reject_linked_success BEFORE UPDATE ON temporary_submission
+            WHEN NEW.state='SYNCED' BEGIN SELECT RAISE(ABORT,'injected last product write'); END""")
+        try {
+            assertThrows(Exception::class.java) { TemporarySubmissionRepository(f.db, connection).upload(frozen.id) }
+            assertNull(f.db.temporarySuccess().evidence(frozen.id))
+            assertEquals("ACTION_REQUIRED", f.db.temporarySubmissions().get(frozen.id)!!.state)
+        } finally { f.db.openHelper.writableDatabase.execSQL("DROP TRIGGER reject_linked_success") }
+        f.reopen()
     }
 }

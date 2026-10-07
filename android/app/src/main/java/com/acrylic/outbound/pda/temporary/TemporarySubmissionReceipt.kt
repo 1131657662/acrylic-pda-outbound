@@ -5,7 +5,7 @@ import com.acrylic.outbound.pda.submission.SubmissionJson
 import org.json.JSONObject
 
 object TemporarySubmissionReceipt {
-    fun verify(local: TemporarySubmission, response: JSONObject, key: JSONObject): String {
+    fun verify(local: TemporarySubmission, response: JSONObject, key: JSONObject, mappedOrderId: String? = null): String {
         val body = JSONObject(local.payload); val status = response.getString("status")
         check(response.getString("submissionId") == local.id && response.getString("freezeDeviceId") == body.getString("freezeDeviceId") &&
             response.getString("workRound") == body.getString("workRound") && response.getString("issuedRecoveryEpoch") == body.getString("sourceRecoveryEpoch") &&
@@ -25,7 +25,8 @@ object TemporarySubmissionReceipt {
         }
         local.receipt?.let { previous ->
             val old = JSONObject(previous)
-            if (!old.isNull("orderId")) check(old.getString("orderId") == response.getString("orderId")) { "临时单正式化目标发生变化" }
+            if (!old.isNull("orderId")) check(old.getString("orderId") == response.getString("orderId") ||
+                mappedOrderId == response.getString("orderId")) { "临时单正式化目标发生变化" }
         }
         return status
     }

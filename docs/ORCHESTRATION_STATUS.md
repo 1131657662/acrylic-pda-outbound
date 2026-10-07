@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-07
 branch: codex/development
-head: eac6a2e
-dirty_entries: 65
+head: 94a0eb1
+dirty_entries: 30
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 32 }
 server: { contract: 0.42.0, paths: 139, flyway: V66, migrations: 66 }
@@ -16,7 +16,7 @@ server: { contract: 0.42.0, paths: 139, flyway: V66, migrations: 66 }
 总目标 D01–D18 执行中，必须同时通过新计划第8节才能 complete；不得按局部边界结束。逐项输入映射及开发证据见 [执行记录](history/D01_D18_EXECUTION_2026-10-07.md)。
 
 ## Git、写权与环境
-- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天idle/未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/origin 为 eac6a2e1b7437e5543c5063446bc1a61fb6e54f5；开发切片已提交推送并核对ls-remote，无main/部署/发布动作。
+- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/实际远端为94a0eb19e1f93b1ffaef9ea8926114b18e28e280；高轮技术停止切片已提交推送并核对ls-remote，无main/部署/发布动作。
 - D01预检18条继承路径的完整清单、逐文件副本、hash/diff、worktrees、进程/监听/磁盘、旧看板在 `.local/d01-d18-20261007/preflight-01/`；继承内容保护不回滚。原看板结论含前审查/计划完整保存在 board-before.md。
 - 既有MySQL3306/13316及外部Harness19387未操作；隔离76–79已dump/认证停机，19331无遗留。运行器在 `.local/d01-d18-20261007/d02-http/`，实例及证据在LOCALAPPDATA/acrylic-pda-outbound-isolated。隔离80也已dump/认证停机；D02Continuation79模拟器已正常关闭、5560监听消失。D03隔离81/82/83均已dump/认证停库，19331无遗留，无重型构建在途。
 - 历史归档在 E:/acrylic-archive-20261006/，路径按 [本机归档位置](LOCAL_ARCHIVE_LOCATIONS.md) 查找；失败库/binlog/日志/XML/原资料保持。
@@ -41,7 +41,10 @@ server: { contract: 0.42.0, paths: 139, flyway: V66, migrations: 66 }
 - 隔离92及普通全套regression-02通过，切片已提交推送eac6a2e。高轮STOP的93字段名错误失败保留；94/95均1/0/0/0、exit0、sourceUnchanged，95含两次实际高轮E2A/STOP后第四轮LINK确认及最终SQL回滚，均dump/认证停库。首轮STOP及身份仍合成。
 - stop-regression-01旧替身29失败、96根scope外键失败保留并修复。根键存储/当轮签名绑定的97实际链1/0/0/0；stop-regression-02旧夹具缺字段8失败已修，03init路径失败未执行测试（复制旧XML不计本次）；04普通回归3220/0/0/1、exit0、sourceUnchanged，符号链接环境跳过，普通test不含IT。
 - 98 Android实际组合38/0/0/0：第二轮累计E2A/VERIFY丢响应原件恢复、技术STOP丢响应/Room重启/异理由拒绝、第三轮新激活与成功签名SYNCED及四owner结算。首轮STOP/实物RETAIN/身份仍为合成或夹具；96–98均dump认证停库，无重型在途，19331无监听。
-- Android受影响回归294/0/0/6、lint零错误/208警告、默认debug APK通过，原证据与源码hash见android-regression-01；专用HTTP跳过不计通过，新增组合另在98执行。停止页面按钮实际模拟器操作尚待补。下一动作：提交本切片后继续Android关联消费、未受理高轮及关联后再续作；D03整体和D04–D18未通过。继承TemporarySuccessHttpTest保持，3306/13316/19387未动。
+- Android受影响回归294/0/0/6、lint零错误/208警告、默认debug APK通过，原证据与源码hash见android-regression-01；专用HTTP跳过不计通过，新增组合另在98执行。停止页面按钮实际模拟器操作尚待补。
+- 接续前检preflight-04保全26条脏/未跟踪路径副本/hash/diff、旧看板、进程/监听/worktrees；STOP提交回执与49路径清单在d03-linked/stop-*。新增关联目标消费要求新鲜设备范围映射，核对根来源/轮次/提交/版本，拒绝缓存自证；mapping-unit-01的28/0/0/1仅覆盖早期输入，末写回滚/映射竞态/版本倒退尚需新输入复验。mapping-compile-02成功，无重型在途。
+- 隔离99实际组合62/0/0/1、双进程exit0、sourceUnchanged：高轮STOP后第三轮LINK/独立确认、Android新鲜映射/验签、Room末写失败完整回滚及重启恢复通过；一项旧专用HTTP跳过不计通过。已dump/认证停库，四个Room截点保留。受影响回归mapping-regression-01为271/0/0/6，lint零错误/208警告、默认debug APK通过，源码/产物hash见执行记录，无重型在途。
+- 下一动作：提交关联消费切片，继续未受理高轮、关联后再续作与页面操作。D03整体和D04–D18未通过，目标active。继承TemporarySuccessHttpTest保持，3306/13316/19387未动，19331无监听。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；详细阶段记录见 docs/history/AUTONOMOUS_PROGRESS_2026-10-06.md。

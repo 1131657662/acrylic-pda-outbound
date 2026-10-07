@@ -20,15 +20,15 @@ class TemporarySuccessRepository(private val db: PdaDatabase) {
         return hash
     }
 
-    fun verify(submissionId: String, responseSha256: String, trustedKey: JSONObject): JSONObject = try {
+    fun verify(submissionId: String, responseSha256: String, trustedKey: JSONObject, mappedOrderId: String? = null): JSONObject = try {
         db.runInTransaction(Callable {
             val dao = db.temporarySuccess()
             val local = checkNotNull(db.temporarySubmissions().get(submissionId))
             val raw = checkNotNull(dao.response(submissionId, responseSha256))
             check(JwtVerifier.sha(raw.responseBytes) == responseSha256) { "耐久原响应摘要不一致" }
-            val receipt = TemporarySuccessVerifier.verify(local, raw.responseBytes, trustedKey)
-            val digest = JwtVerifier.sha(SubmissionJson.canonical(receipt).toByteArray(Charsets.UTF_8))
             val previous = dao.evidence(submissionId)
+            val receipt = TemporarySuccessVerifier.verify(local, raw.responseBytes, trustedKey, mappedOrderId ?: previous?.orderId)
+            val digest = JwtVerifier.sha(SubmissionJson.canonical(receipt).toByteArray(Charsets.UTF_8))
             if (previous == null) dao.accept(TemporarySuccessEvidence(submissionId, responseSha256, digest,
                 receipt.getString("orderId"), SubmissionJson.canonical(trustedKey)))
             else check(previous.receiptSha256 == digest && previous.orderId == receipt.getString("orderId") &&

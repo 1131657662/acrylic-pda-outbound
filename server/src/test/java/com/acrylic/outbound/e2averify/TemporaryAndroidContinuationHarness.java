@@ -26,11 +26,19 @@ public final class TemporaryAndroidContinuationHarness {
                 activated=TemporaryAndroidHigherRounds.advance(http);
             await(attempt.resolve("android-uploaded.json"));
             var upload=parse(Files.readString(attempt.resolve("android-uploaded.json")));
-            var command=confirmation(http,uuid(upload,"submissionId"));
+            TemporaryRoundLinkedFixture linked=null;
+            if(Boolean.parseBoolean(System.getenv("B4_CONTINUATION_LINK"))) {
+                var original=parse(http.app.getBean(com.acrylic.outbound.submissions.SubmissionFiles.class).read(text(upload,"payloadSha256")));
+                linked=new TemporaryRoundLinkedFixture(http,original);
+                http.accepted(confirmation(http,uuid(upload,"submissionId"),"LINK"),"android-human-link");
+            }
+            var command=confirmation(http,uuid(upload,"submissionId"),"NORMAL_CONFIRM");
             var response=http.post(command,http.otherToken,"android-independent-confirm");
             assertThat(response.statusCode()).as(new String(response.body())).isEqualTo(200);
             verify(http,upload,activated);
+            if(linked!=null)linked.effects();
             assertThat(http.post(command,http.otherToken,"android-independent-replay").body()).isEqualTo(response.body());
+            Files.writeString(attempt.resolve("android-server-confirmed.marker"),"confirmed",StandardOpenOption.CREATE_NEW);
             await(attempt.resolve("android-completed.json"));
             Files.writeString(attempt.resolve("test-completed.marker"),"Android Room + actual HTTP/MySQL, independent confirmation and signed success. Synthetic stopped source and identities.\n",StandardOpenOption.CREATE_NEW);
         }
@@ -41,17 +49,19 @@ public final class TemporaryAndroidContinuationHarness {
         var input=object().put("baseUrl","http://127.0.0.1:"+http.app.getWebServer().getPort()+"/api/v1/")
             .put("token",http.token).put("activationUtf8",new String(activated,java.nio.charset.StandardCharsets.UTF_8))
             .put("chunked",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_CHUNKS")))
-            .put("higher",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_HIGHER")));
+            .put("higher",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_HIGHER")))
+            .put("linked",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_LINK")));
         if(input.path("higher").asBoolean())TemporaryAndroidHigherRounds.device(http,input);
         input.set("vector",parse(Files.readString(attempt.resolve("private/android-source.json"))));
         Files.writeString(attempt.resolve("private/android-input.json"),canonical(input),StandardOpenOption.CREATE_NEW);
         Files.writeString(attempt.resolve("android-ready.marker"),Instant.now().toString(),StandardOpenOption.CREATE_NEW);
     }
 
-    private static ObjectNode confirmation(ContinuationReceiptHttpFixture http,UUID submission) {
+    private static ObjectNode confirmation(ContinuationReceiptHttpFixture http,UUID submission,String kind) {
         var context=http.app.getBean(CommandFacts.class).read(submission);
-        var command=object().put("commandVersion",1).put("commandType","NORMAL_CONFIRM")
-            .put("commandId",UUID.randomUUID().toString()).put("transportRecoveryEpoch","1").put("reason","");
+        var command=object().put("commandVersion",1).put("commandType",kind)
+            .put("commandId",UUID.randomUUID().toString()).put("transportRecoveryEpoch","1")
+            .put("reason",kind.equals("NORMAL_CONFIRM")?"":"Synthetic reviewed formal target");
         for(String key:List.of("warehouseId","submissionId","workRound","authorizationId","freezeDeviceId","sourceRecoveryEpoch"))command.set(key,context.json().get(key));
         command.putObject("source").put("kind","TEMP").put("creatorDeviceId",context.text("creatorDeviceId")).put("clientOrderId",context.text("clientOrderId"));
         var body=parse(http.app.getBean(com.acrylic.outbound.submissions.SubmissionFiles.class).read(context.text("receivedPayloadSha256")));

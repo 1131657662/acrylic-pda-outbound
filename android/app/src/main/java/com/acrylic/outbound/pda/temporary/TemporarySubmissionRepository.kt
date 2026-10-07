@@ -67,13 +67,14 @@ class TemporarySubmissionRepository(private val db: PdaDatabase, private val con
         return queried
     }
     private fun accept(local: TemporarySubmission, expected: JSONObject, reply: TemporarySubmissionResponses.Reply) {
+        val mapped = TemporaryMappedTarget(db, connection).refresh(local, reply.data, expected)
         db.runInTransaction {
             checkIdentity(local, expected)
             val state = if (reply.data.getString("status") == "SUCCEEDED") {
-                TemporarySuccessRepository(db).verify(local.id, reply.responseSha256, signingKey(local)); "SYNCED"
+                TemporarySuccessRepository(db).verify(local.id, reply.responseSha256, signingKey(local), mapped); "SYNCED"
             } else {
                 check(db.temporarySuccess().evidence(local.id) == null) { "已存成功原件，不能改写为其他状态" }
-                TemporarySubmissionReceipt.verify(local, reply.data, signingKey(local)).also { state ->
+                TemporarySubmissionReceipt.verify(local, reply.data, signingKey(local), mapped).also { state ->
                     if (state == "ABORTED" && JSONObject(local.payload).getString("workRound").toLong() > 1)
                         TemporaryContinuationStopRequest(db).verify(local, reply.data, signingKey(local))
                 }
