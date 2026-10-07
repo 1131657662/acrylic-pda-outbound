@@ -20,7 +20,8 @@ data class LocalE2aStop(@PrimaryKey val clientOrderId: String, val submissionId:
     val freezeDeviceId: String, val sourceRecoveryEpoch: Long, val snapshotId: String,
     val manifestId: String, val openOriginalKey: String, val stopEventId: String,
     val captureHighWatermark: Long, val auditThroughSeq: Long, val scanSnapshotCount: Long,
-    val archiveSnapshotCount: Long)
+    val archiveSnapshotCount: Long,
+    @androidx.room.ColumnInfo(defaultValue = "1") val workRound: Long = 1)
 
 @Dao
 interface LocalE2aStopDao {

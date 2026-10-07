@@ -29,7 +29,7 @@ object E2aReceiptVerifier {
         equal(value, "originalKey", expected.request.originalKey)
         equal(value, "operationKind", expected.request.operation)
         equal(value, "source", "TEMP"); equal(value, "sourceId", stop.authorizationId)
-        equal(value, "submissionId", stop.submissionId); equal(value, "workRound", 1)
+        equal(value, "submissionId", stop.submissionId); equal(value, "workRound", stop.workRound)
         equal(value, "manifestId", stop.manifestId)
         E2aItemValidation.uuid(value.getString("receiptId")); Instant.parse(value.getString("recordedAt"))
         val context = value.getJSONObject("originalContext")

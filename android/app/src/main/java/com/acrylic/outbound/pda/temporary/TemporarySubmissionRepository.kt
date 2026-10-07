@@ -25,6 +25,7 @@ class TemporarySubmissionRepository(private val db: PdaDatabase, private val con
     }
     @Synchronized fun abort(id: String, reason: String): TemporarySubmission = UpdateGate.business {
         val local = checkNotNull(db.temporarySubmissions().get(id)); if (local.state == "ABORTED") return@business local
+        check(JSONObject(local.payload).getString("workRound") == "1") { "续作取消释放政策未定义，原记录保留" }
         if (local.state == "SYNCED" || db.temporarySuccess().evidence(id) != null) return@business upload(id)
         val value = reason.trim(); check(value.isNotEmpty() && value.length <= 500) { "取消须填写1～500字原因" }
         db.runInTransaction {
@@ -36,7 +37,9 @@ class TemporarySubmissionRepository(private val db: PdaDatabase, private val con
     }
     private fun recover(local: TemporarySubmission, expected: JSONObject): TemporarySubmissionResponses.Reply {
         val responses = TemporarySubmissionResponses(db, connection, expected, local)
-        val queried = try { responses.receive("pda/submissions/${local.id}") }
+        val continuation = JSONObject(local.payload).getString("workRound").toLong() > 1
+        val path = if (continuation) "pda/temporary-orders/continuation-submissions/${local.id}" else "pda/submissions/${local.id}"
+        val queried = try { responses.receive(path) }
             catch (error: ApiFailure) { if (error.code == "SUBMISSION_NOT_FOUND") null else throw error }
         val transport = TemporarySubmissionTransport(connection, expected, responses)
         if (queried?.data?.getString("status") in setOf("ABORTED", "SUCCEEDED")) return checkNotNull(queried)
@@ -83,6 +86,7 @@ class TemporarySubmissionRepository(private val db: PdaDatabase, private val con
             current.getString("warehouseId") == draft.warehouseId && current.getString("serverRecoveryEpoch") == body.getString("sourceRecoveryEpoch")) { "须原人员、原设备及原恢复代次核对临时批次" }
         check(body.getString("authorizationId") == draft.authorizationId && body.getString("submissionId") == local.id &&
             body.getJSONObject("source").getString("clientOrderId") == draft.clientOrderId) { "原临时冻结身份不一致" }
+        TemporaryContinuationUploadValidation.verify(db, connection, local, body)
         val saved = checkNotNull(db.temporarySubmissions().get(local.id))
         check(saved.sha256 == local.sha256 && saved.payload == local.payload && saved.abortReason == local.abortReason) { "原临时请求已变化" }
     }

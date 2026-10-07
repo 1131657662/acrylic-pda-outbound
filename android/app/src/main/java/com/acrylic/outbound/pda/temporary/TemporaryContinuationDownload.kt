@@ -16,7 +16,7 @@ class TemporaryContinuationDownload(private val store: TemporaryWorkStore) {
             val sourcePreparation = checkNotNull(store.db.temporary().byAuthorization(sourceDraft.authorizationId))
             check(request.previousKey == sourcePreparation.requestKey) { "续作授权未绑定原准备请求" }
             val draft = store.load(link.newClientOrderId)
-            check(draft.state == "CONTINUATION_BLOCKED" && draft.workRound > 1) { "续作资料状态不可确认" }
+            check(draft.state in setOf("CONTINUATION_BLOCKED", "SCANNING") && draft.workRound > 1) { "续作资料状态不可确认" }
             val access = TemporaryAccess(store.db, store.connection)
             access.request(request, expected)
             val row = checkNotNull(store.db.temporary().prepared(request.key)) { "续作资料尚未完整保存" }

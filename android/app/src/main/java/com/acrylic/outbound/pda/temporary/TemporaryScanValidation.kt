@@ -5,7 +5,7 @@ class TemporaryScanValidation(private val store: TemporaryWorkStore) {
         val draft = store.check(capture.clientOrderId); val catalog = store.source(draft.clientOrderId)
         store.requireNoOtherInput(draft.clientOrderId)
         val identity = catalog.manifest.getJSONObject("identity")
-        check(draft.state == "SCANNING" && draft.revision == capture.orderRevision &&
+        check(draft.canScan(store.continuationDevelopment) && draft.revision == capture.orderRevision &&
             draft.authorizationId == capture.authorizationId && draft.creatorDeviceId == capture.originDeviceId &&
             draft.operatorId == capture.operatorId && capture.authorizationEpoch == identity.getString("authorizationEpoch") &&
             capture.sourceRecoveryEpoch == identity.getString("serverRecoveryEpoch") &&
@@ -19,7 +19,7 @@ class TemporaryScanValidation(private val store: TemporaryWorkStore) {
         availability(capture, bale)?.let { return it }
         if (store.db.scans().guard(bale.barcode) != null || store.db.temporaryScans().guard(bale.barcode) != null)
             return "该条码已在本机订单中保存，不能重复装车"
-        val actual = store.db.temporaryScans().products(draft.clientOrderId).firstOrNull { it.deliveryCode == bale.code }?.count ?: 0
+        val actual = store.products(draft.clientOrderId).firstOrNull { it.deliveryCode == bale.code }?.count ?: 0
         if (actual >= line.plannedCount) return "该产品已达计划，禁止超装"
         return null
     }

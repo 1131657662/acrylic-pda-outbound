@@ -48,8 +48,8 @@ class TemporaryDetailsActivity : ComponentActivity() {
     private fun details(): String {
         val store = (application as PdaApplication).temporaryStore(); val row = store.load(id)
         val lines = store.db.temporaryDrafts().lines(id); val scans = store.db.temporaryScans()
-        val counts = scans.products(id).associateBy { it.deliveryCode }; val page = scans.page(id, history.last())
-        next = page.lastOrNull()?.orderScanSeq?.takeIf { scans.page(id, it).isNotEmpty() }
+        val counts = store.products(id).associateBy { it.deliveryCode }; val page = store.page(id, history.last())
+        next = page.lastOrNull()?.orderScanSeq?.takeIf { store.page(id, it).isNotEmpty() }
         return "${row.temporaryNo}\n车号 ${row.vehicleNo} · 柜号 ${row.containerNo.ifBlank { "未填" }}\n原因 ${row.reason}\n" +
             lines.joinToString("\n") { "${it.deliveryCode} · ${it.model} · ${it.name}：${counts[it.deliveryCode]?.count ?: 0}/${it.plannedCount} 包" } +
             "\n\n原扫码明细\n" + page.joinToString("\n") { "${it.orderScanSeq}. ${it.barcode} · ${WorkRenderer.kg(it.weightGrams)} kg${if (it.status == "VOID") " · 已撤销" else ""}" }

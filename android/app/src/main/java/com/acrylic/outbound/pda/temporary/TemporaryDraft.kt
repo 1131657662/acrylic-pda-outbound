@@ -13,7 +13,8 @@ data class TemporaryDraft(@PrimaryKey val clientOrderId: String, val creatorDevi
     @ColumnInfo(defaultValue = "[]") val authorizationHistoryJson: String = "[]")
 
 // Continuation receipts preserve evidence; they do not grant production scanning.
-fun TemporaryDraft.canScan(): Boolean = state == "SCANNING" && workRound == 1L
+fun TemporaryDraft.canScan(development: Boolean = com.acrylic.outbound.pda.BuildConfig.TEMPORARY_CONTINUATION_DEVELOPMENT): Boolean =
+    state == "SCANNING" && (workRound == 1L || com.acrylic.outbound.pda.BuildConfig.DEBUG && development)
 
 @Entity(tableName = "temporary_line", primaryKeys = ["clientOrderId", "deliveryCode"],
     foreignKeys = [ForeignKey(entity = TemporaryDraft::class, parentColumns = ["clientOrderId"], childColumns = ["clientOrderId"])])

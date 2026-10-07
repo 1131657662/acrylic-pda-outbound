@@ -40,6 +40,7 @@ open class PdaApplication : Application(), androidx.work.Configuration.Provider 
     } }
     val localDraftRecovery by lazy { com.acrylic.outbound.pda.evidence.LocalDraftRecoveryRepository(::temporaryStore) }
     val temporaryWork by lazy { com.acrylic.outbound.pda.temporary.TemporaryEngine(temporaryStore()) { workSound.play(it) } }
+    val temporaryContinuationCoordinator by lazy { com.acrylic.outbound.pda.temporary.TemporaryContinuationCoordinator(temporaryStore()) }
     val temporarySubmissions by lazy { com.acrylic.outbound.pda.temporary.TemporarySubmissionRepository(database,
         com.acrylic.outbound.pda.temporary.TemporarySession(session)) }
     val work by lazy { WorkEngine(WorkStore(database, SessionWorkAccess(this, session))) { workSound.play(it) } }

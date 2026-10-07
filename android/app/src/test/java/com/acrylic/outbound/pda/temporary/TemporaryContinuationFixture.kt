@@ -18,6 +18,7 @@ internal class TemporaryContinuationFixture(root: File) : AutoCloseable {
     val frozen: TemporarySubmission
     val receipt: JSONObject
     val key get() = signer.key
+    fun sign(claims: JSONObject): String = signer.jwt(claims)
 
     init {
         work.start(); work.scan()

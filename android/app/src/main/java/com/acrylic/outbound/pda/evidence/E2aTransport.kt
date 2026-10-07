@@ -15,7 +15,7 @@ internal class E2aTransport(private val db: PdaDatabase, private val connection:
         val request = facts.request
         if (request.operation == "RAW") return raw(request)
         val query = query(JSONObject().put("warehouseId", facts.stop.warehouseId)
-            .put("submissionId", facts.stop.submissionId).put("workRound", 1))
+            .put("submissionId", facts.stop.submissionId).put("workRound", facts.stop.workRound))
         val original = try {
             connection.original(TemporaryConnection.Original(base + "receipts/${request.originalKey}/original?" + query, expected))
         } catch (error: ApiFailure) {

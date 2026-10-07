@@ -5,7 +5,7 @@ import java.util.concurrent.Callable
 class TemporarySaving(private val store: TemporaryWorkStore) {
     fun confirm(id: String) = store.db.runInTransaction {
         val row = checkNotNull(store.db.temporaryScans().capture(id)); val draft = store.check(row.clientOrderId)
-        check(draft.canScan())
+        check(draft.canScan(store.continuationDevelopment))
         if (row.inputSource != "MANUAL" || row.state != "WAITING_CONFIRM") return@runInTransaction
         check(store.db.temporaryScans().pending(row.clientOrderId)?.id == id && store.db.temporaryScans().failure(row.clientOrderId) == null)
         store.db.temporaryScans().updateCapture(row.copy(state = "CONFIRM_REQUESTED", confirmedAt = store.connection.now().toString()))
@@ -25,7 +25,7 @@ class TemporarySaving(private val store: TemporaryWorkStore) {
     private fun commit(row: TemporaryCapture): String {
         val draft = store.check(row.clientOrderId); val bale = store.source(row.clientOrderId).bales.getValue(row.barcode)
         // Overflow is a storage failure: leave the durable confirmation pending and roll back every fact.
-        Math.addExact(store.db.temporaryScans().total(row.clientOrderId).grams, bale.grams)
+        Math.addExact(store.total(row.clientOrderId).grams, bale.grams)
         val sequence = store.event(draft, row.id, "SAVED")
         store.db.temporaryScans().insertScan(TemporaryScan(row.id, row.clientOrderId, row.orderScanSeq, bale.barcode, bale.baleId,
             bale.code, bale.model, bale.name, bale.rawWeight, bale.grams, bale.cycle, store.connection.now().toString(), sequence))

@@ -24,6 +24,7 @@ android {
         buildConfigField("String", "PDA_SERVER_URL", "\"$serverUrl\"")
         buildConfigField("String", "PDA_ENVIRONMENT", "\"$environment\"")
         buildConfigField("String", "PDA_UPDATE_PUBLIC_KEY", "\"$updatePublicKey\"")
+        buildConfigField("boolean", "TEMPORARY_CONTINUATION_DEVELOPMENT", "false")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { viewBinding = true; buildConfig = true }
@@ -55,6 +56,9 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             buildConfigField("String", "PDA_UPDATE_CHANNEL", "\"debug\"")
+            val isolatedContinuation = providers.gradleProperty("pdaIsolatedTemporaryContinuation").orElse("false").get()
+            require(isolatedContinuation in setOf("true", "false"))
+            buildConfigField("boolean", "TEMPORARY_CONTINUATION_DEVELOPMENT", isolatedContinuation)
         }
         release {
             isMinifyEnabled = false
@@ -67,6 +71,7 @@ android {
             versionNameSuffix = "-test"
             matchingFallbacks += listOf("debug")
             buildConfigField("String", "PDA_UPDATE_CHANNEL", "\"staging\"")
+            buildConfigField("boolean", "TEMPORARY_CONTINUATION_DEVELOPMENT", "false")
         }
     }
     testOptions {

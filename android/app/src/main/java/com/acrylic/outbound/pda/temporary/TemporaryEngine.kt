@@ -47,7 +47,7 @@ class TemporaryEngine(private val store: TemporaryWorkStore, private val sound: 
         if (id != current) mutable.value = TemporaryWorkUi() else mutable.update { it.copy(ready = false) }
         enqueue {
             val draft = store.load(id); store.requireNoOtherInput(id)
-            check(draft.canScan()) { "请先保存计划并开始本单" }
+            check(draft.canScan(store.continuationDevelopment)) { "请先保存计划并开始本单" }
             current = id; fault = ""; processor.drain(id) { active(id) }
         }
     }
@@ -104,8 +104,8 @@ class TemporaryEngine(private val store: TemporaryWorkStore, private val sound: 
         if (current.isEmpty() || current != requested) { mutable.update { it.copy(ready = false, blocked = fault, queued = count.get()) }; return }
         val error = runCatching { store.check(current, store.db.localDraftStops().get(current) == null); store.requireNoOtherInput(current) }.exceptionOrNull()?.message.orEmpty()
         val scans = store.db.temporaryScans(); val draft = store.db.temporaryDrafts().get(current)
-        mutable.update { it.copy(draft = draft, lines = store.db.temporaryDrafts().lines(current), total = scans.total(current),
-            products = scans.products(current), candidate = scans.failure(current) ?: scans.pending(current), recent = scans.recent(current),
-            queued = count.get(), blocked = fault.ifEmpty { error }, ready = active(current) && error.isEmpty() && draft?.canScan() == true) }
+        mutable.update { it.copy(draft = draft, lines = store.db.temporaryDrafts().lines(current), total = store.total(current),
+            products = store.products(current), candidate = scans.failure(current) ?: scans.pending(current), recent = scans.recent(current),
+            queued = count.get(), blocked = fault.ifEmpty { error }, ready = active(current) && error.isEmpty() && draft?.canScan(store.continuationDevelopment) == true) }
     }
 }

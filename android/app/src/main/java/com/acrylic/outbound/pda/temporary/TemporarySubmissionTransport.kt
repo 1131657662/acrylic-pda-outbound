@@ -6,6 +6,11 @@ internal class TemporarySubmissionTransport(private val connection: TemporaryCon
     private val responses: TemporarySubmissionResponses) {
     fun send(local: TemporarySubmission): TemporarySubmissionResponses.Reply {
         val body = JSONObject(local.payload); val epoch = body.getString("sourceRecoveryEpoch")
+        if (body.getString("workRound").toLong() > 1) {
+            check(local.abortReason == null) { "续作取消释放政策未定义，原记录保留" }
+            check(local.payload.toByteArray(Charsets.UTF_8).size <= 1024 * 1024) { "续作分块尚未接通，请保留原正文" }
+            return responses.receive("pda/temporary-orders/continuation-submissions", body)
+        }
         val base = "pda/submissions/${local.id}"
         local.abortReason?.let { return responses.receive("$base/abort", control(body).put("reason", it)) }
         val bytes = local.payload.toByteArray(Charsets.UTF_8)

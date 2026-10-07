@@ -41,7 +41,7 @@ import com.acrylic.outbound.pda.evidence.LocalDraftQueueDao
 import com.acrylic.outbound.pda.evidence.LocalDraftQueueMigration
 
 /** The single source of truth for the Room schema version; migration tests must assert against this, not a literal. */
-const val PDA_DATABASE_VERSION = 31
+const val PDA_DATABASE_VERSION = 32
 
 @Database(entities = [PreparedOrder::class, PreparedBale::class, ClaimIntent::class, WorkOrder::class,
     WorkLine::class, WorkDevice::class, WorkCapture::class, WorkScan::class, WorkGuard::class, WorkEvent::class, LocalSubmission::class, LocalRecall::class, LocalContinuation::class, LocalDisposition::class,
@@ -56,7 +56,7 @@ const val PDA_DATABASE_VERSION = 31
     LocalDraftStop::class, LocalDraftStopItem::class, LocalDraftStopSignature::class,
     LocalDraftTransfer::class, LocalDraftRequest::class, LocalDraftReceipt::class, LocalDraftQueue::class,
     LocalSourceBinding::class, LocalHandoverStage::class, LocalHandoverContinuation::class,
-    TemporaryContinuation::class], version = PDA_DATABASE_VERSION, exportSchema = true)
+    TemporaryContinuation::class, TemporaryContinuationQueue::class], version = PDA_DATABASE_VERSION, exportSchema = true)
 abstract class PdaDatabase : RoomDatabase() {
     abstract fun preparations(): PreparationDao
     abstract fun work(): WorkDao
@@ -90,6 +90,7 @@ abstract class PdaDatabase : RoomDatabase() {
     abstract fun handoverStages(): LocalHandoverStageDao
     abstract fun handoverContinuations(): HandoverContinuationDao
     abstract fun temporaryContinuations(): TemporaryContinuationDao
+    abstract fun temporaryContinuationQueue(): TemporaryContinuationQueueDao
 
     companion object {
         fun open(context: Context): PdaDatabase = Room.databaseBuilder(context, PdaDatabase::class.java, "outbound-pda.db")
@@ -105,6 +106,7 @@ abstract class PdaDatabase : RoomDatabase() {
             .addMigrations(LocalHandoverStageMigration)
             .addMigrations(HandoverContinuationMigration)
             .addMigrations(TemporaryContinuationMigration)
+            .addMigrations(TemporaryContinuationWorkMigration)
             .addCallback(object : Callback() {
                 override fun onOpen(db: SupportSQLiteDatabase) {
                     db.query("PRAGMA synchronous").use { check(it.moveToFirst() && it.getInt(0) == 2) { "本地数据库耐久配置不正确" } }

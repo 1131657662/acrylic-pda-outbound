@@ -6,7 +6,7 @@ import org.json.JSONObject
 import java.time.Instant
 import java.util.Base64
 
-/** Historical first-round TEMP success only. This never grants a product action or local deletion. */
+/** Historical TEMP success. This never grants a product action or local deletion. */
 object TemporarySuccessVerifier {
     fun verify(local: TemporarySubmission, original: ByteArray, trustedKey: JSONObject): JSONObject {
         val envelope = TemporarySuccessJson.parse(original)
@@ -16,7 +16,16 @@ object TemporarySuccessVerifier {
         val body = JSONObject(local.payload)
         check(SubmissionJson.canonical(body) == local.payload &&
             JwtVerifier.sha(local.payload.toByteArray(Charsets.UTF_8)) == local.sha256) { "原冻结正文已变化" }
-        check(body.get("submissionId") == local.id && body.get("workRound") == "1")
+        check(body.get("submissionId") == local.id)
+        val round = TemporaryVerifier.positive(body.getString("workRound"))
+        if (round > 1) {
+            val reference = body.getJSONObject("temporaryContinuation")
+            check(reference.keys().asSequence().toSet() == setOf("version", "ticketId", "predecessorSubmissionId",
+                "predecessorPayloadSha256", "retainedManifestSha256") && reference.getInt("version") == 1)
+            TemporaryVerifier.uuid(reference.getString("ticketId")); TemporaryVerifier.uuid(reference.getString("predecessorSubmissionId"))
+            for (field in listOf("predecessorPayloadSha256", "retainedManifestSha256"))
+                check(reference.getString(field).matches(Regex("[0-9a-f]{64}")))
+        }
         check(local.state != "ABORTED" && local.state != "REJECTED") { "本地已存冲突终态，须保留原件" }
         val source = body.getJSONObject("source")
         check(source.keys().asSequence().toSet() == setOf("kind", "creatorDeviceId", "clientOrderId"))
@@ -54,7 +63,7 @@ object TemporarySuccessVerifier {
             "orderStatus", "actualCount", "actualWeightGrams", "inventoryDeducted", "resultVersion", "receiptVersion",
             "captureHighWatermark", "firstOrderScanSeq", "lastOrderScanSeq", "completedAt", "orderNo", "items", "signedReceipt"))
         mapOf("submissionId" to local.id, "payloadSha256" to local.sha256, "status" to "SUCCEEDED",
-            "orderStatus" to "COMPLETED", "resultVersion" to "1", "workRound" to "1",
+            "orderStatus" to "COMPLETED", "resultVersion" to "1", "workRound" to body.get("workRound"),
             "freezeDeviceId" to body.get("freezeDeviceId"), "issuedRecoveryEpoch" to body.get("sourceRecoveryEpoch"),
             "captureHighWatermark" to body.get("captureHighWatermark"), "actualCount" to body.get("expectedCount"),
             "actualWeightGrams" to body.get("expectedWeightGrams"), "inventoryDeducted" to body.get("autoDeductInventory"),

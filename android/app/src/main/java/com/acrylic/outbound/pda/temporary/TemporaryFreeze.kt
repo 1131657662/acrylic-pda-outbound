@@ -15,13 +15,13 @@ class TemporaryFreeze(private val store: TemporaryWorkStore) {
             val draft = store.check(id, false)
             store.db.temporarySubmissions().forOrder(id)?.let { return@Callable it }
             store.requireNoOtherInput(id)
-            val dao = store.db.temporaryScans(); check(draft.state == "SCANNING" && dao.total(id).count > 0) { "须有有效装车记录才能结单" }
+            val dao = store.db.temporaryScans(); check(draft.canScan(store.continuationDevelopment) && store.total(id).count > 0) { "须有有效装车记录才能结单" }
             check(dao.pending(id) == null && dao.failure(id) == null) { "请先处理本单全部未决输入和失败" }
-            val totals = dao.products(id).associateBy { it.deliveryCode }
+            val totals = store.products(id).associateBy { it.deliveryCode }
             val short = store.db.temporaryDrafts().lines(id).any { (totals[it.deliveryCode]?.count ?: 0) < it.plannedCount }
             check(reason.trim().length <= 500 && (!short || reason.isNotBlank())) { "短装须填写原因，等待专项审批" }
             val submission = UUID.randomUUID().toString(); store.event(draft, null, "FROZEN", submission)
-            val payload = SubmissionJson.canonical(body(draft, submission, reason.trim()))
+            val payload = SubmissionJson.canonical(TemporaryContinuationPayload(store).cumulative(draft, body(draft, submission, reason.trim())))
             check(payload.toByteArray(Charsets.UTF_8).size <= 32 * 1024 * 1024) { "冻结正文超过32MiB，请保留资料联系主管" }
             TemporarySubmission(submission, id, payload, JwtVerifier.sha(payload.toByteArray(Charsets.UTF_8))).also {
                 store.db.temporarySubmissions().insert(it); store.db.temporaryDrafts().update(draft.copy(state = "FROZEN"))
@@ -31,11 +31,11 @@ class TemporaryFreeze(private val store: TemporaryWorkStore) {
     }
     private fun body(draft: TemporaryDraft, id: String, reason: String): JSONObject {
         val source = store.source(draft.clientOrderId); val manifest = source.manifest; val dao = store.db.temporaryScans()
-        val captures = dao.captures(draft.clientOrderId); val scans = dao.allScans(draft.clientOrderId); val total = dao.total(draft.clientOrderId)
+        val captures = dao.captures(draft.clientOrderId); val scans = dao.allScans(draft.clientOrderId); val total = store.total(draft.clientOrderId)
         val policy = JSONObject(String(TemporaryParts(store.db).read(draft.authorizationId, manifest).getValue("policy"), Charsets.UTF_8))
         return JSONObject().put("schemaVersion", 2).put("submissionId", id).put("authorizationId", draft.authorizationId)
             .put("authorizationEpoch", manifest.getJSONObject("identity").getString("authorizationEpoch"))
-            .put("assignmentId", JSONObject.NULL).put("continuationId", JSONObject.NULL).put("workRound", "1")
+            .put("assignmentId", JSONObject.NULL).put("continuationId", JSONObject.NULL).put("workRound", draft.workRound.toString())
             .put("source", JSONObject().put("kind", "TEMP").put("creatorDeviceId", draft.creatorDeviceId).put("clientOrderId", draft.clientOrderId))
             .put("freezeDeviceId", draft.creatorDeviceId).put("sourceRecoveryEpoch", source.request.recoveryEpoch)
             .put("temporaryNo", draft.temporaryNo).put("temporaryOrder", TemporaryPlanDigest.body(draft, store.db.temporaryDrafts().lines(draft.clientOrderId)))

@@ -6,7 +6,11 @@ import com.acrylic.outbound.pda.work.WorkDevice
 import org.json.JSONObject
 import java.util.UUID
 
-class TemporaryWorkStore(val db: PdaDatabase, val connection: TemporaryConnection, val sample: () -> TimeSample) {
+class TemporaryWorkStore(val db: PdaDatabase, val connection: TemporaryConnection,
+    internal val continuationDevelopment: Boolean = com.acrylic.outbound.pda.BuildConfig.TEMPORARY_CONTINUATION_DEVELOPMENT,
+    val sample: () -> TimeSample) {
+    constructor(db: PdaDatabase, connection: TemporaryConnection, sample: () -> TimeSample) :
+        this(db, connection, com.acrylic.outbound.pda.BuildConfig.TEMPORARY_CONTINUATION_DEVELOPMENT, sample)
     private val access = TemporaryAccess(db, connection)
     private val catalogs = mutableMapOf<String, TemporaryCatalog>()
     private var expectedSession: JSONObject? = null
@@ -29,9 +33,13 @@ class TemporaryWorkStore(val db: PdaDatabase, val connection: TemporaryConnectio
             check(draft.state == "EVIDENCE_STOPPED") { "停止证据与本机状态冲突，请保留原资料" }
         if (draft.planSha256.isNotEmpty() || draft.state == "SCANNING")
             check(draft.planSha256 == TemporaryPlanDigest.digest(draft, db.temporaryDrafts().lines(id))) { "原临时计划摘要不一致，请停扫并保留资料" }
+        if (draft.workRound > 1) TemporaryContinuationBaseline(this).read(draft, draft.state != "CONTINUATION_BLOCKED")
         if (requireTime) TemporaryVerifier.time(catalog.manifest, connection.now())
         return draft
     }
+    fun total(id: String) = TemporaryContinuationTotals(this).total(id)
+    fun products(id: String) = TemporaryContinuationTotals(this).products(id)
+    fun page(id: String, after: Long) = TemporaryContinuationTotals(this).page(id, after)
     private fun identity(draft: TemporaryDraft, catalog: TemporaryCatalog) {
         val auth = access.snapshot(); access.request(catalog.request, auth)
         TemporaryVerifier.identity(catalog.manifest, auth)

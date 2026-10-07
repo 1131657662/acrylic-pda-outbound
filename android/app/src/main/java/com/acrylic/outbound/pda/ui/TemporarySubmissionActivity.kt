@@ -72,18 +72,27 @@ class TemporarySubmissionActivity : ComponentActivity() {
         busy = true; controls(false); binding.error.text = ""
         lifecycleScope.launch {
             try { withContext(Dispatchers.IO) { action() } }
+            catch (cancelled: CancellationException) { throw cancelled }
             catch (error: Exception) { binding.error.text = error.message ?: "操作未确认，请保留原记录" }
-            finally {
-                withContext(Dispatchers.IO) {
-                    local = app.database.temporarySubmissions().forOrder(id)?.let { app.temporarySubmissions.checked(it.id) }
-                    reconciling = app.database.sync().recovery()?.mode == "RECONCILING"
-                    evidenceState = app.database.localE2aReceipts().queue(id)
-                    val draft = app.database.temporaryDrafts().get(id); val total = app.database.temporaryScans().total(id)
-                    "${draft?.vehicleNo.orEmpty()} · ${draft?.temporaryNo.orEmpty()}\n实装 ${total.count} 包 · ${WorkRenderer.kg(total.grams)} kg"
-                }.let { binding.summary.text = it }
-                busy = false; render()
+            try {
+                binding.summary.text = withContext(Dispatchers.IO) { summary() }
+                render()
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (error: Exception) {
+                local = null; controls(false); binding.back.isEnabled = true
+                binding.status.text = "原记录核对未通过 · 不得放行"
+                binding.error.text = error.message ?: "请保留原记录，返回后重新核对"
             }
+            finally { busy = false }
         }
+    }
+    private fun summary(): String {
+        local = app.database.temporarySubmissions().forOrder(id)?.let { app.temporarySubmissions.checked(it.id) }
+        reconciling = app.database.sync().recovery()?.mode == "RECONCILING"
+        evidenceState = app.database.localE2aReceipts().queue(id)
+        val store = app.temporaryStore(); val draft = store.load(id); store.check(id, false)
+        val total = store.total(id)
+        return "${draft?.vehicleNo.orEmpty()} · ${draft?.temporaryNo.orEmpty()}\n实装 ${total.count} 包 · ${WorkRenderer.kg(total.grams)} kg"
     }
     private fun render() {
         val item = local; val terminal = item?.state in setOf("ABORTED", "SYNCED")

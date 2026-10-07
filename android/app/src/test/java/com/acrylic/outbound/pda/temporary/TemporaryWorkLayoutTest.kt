@@ -35,6 +35,21 @@ class TemporaryWorkLayoutTest {
             assertTrue(b.confirm.height >= 48)
         }
     }
+    @Test fun continuationConfirmationAndRecoveryRemainReadableAtLargeFont() {
+        contexts().forEach { context ->
+            val b = ActivityTemporaryContinuationBinding.inflate(LayoutInflater.from(context))
+            b.summary.text = "车号合成001\n原产品计划与保留包核对\n".repeat(8)
+            b.status.text = "确认请求已保存 · 网络恢复后核对原请求"
+            b.error.text = "当前身份已变化，请使用原账号重新登录；原记录和确认请求持续保留。".repeat(3)
+            measure(b.root)
+            for (button in listOf(b.confirm, b.refresh, b.open)) {
+                assertTrue(button.height >= 56); assertTrue(button.right <= b.root.getChildAt(0).width)
+            }
+            assertTrue(b.root.getChildAt(0).height > 400)
+            assertTrue(b.error.layout.height <= b.error.height - b.error.compoundPaddingTop - b.error.compoundPaddingBottom)
+            assertFalse(b.confirm.isEnabled); assertFalse(b.open.isEnabled)
+        }
+    }
     private fun contexts(): List<Context> {
         val original = ApplicationProvider.getApplicationContext<Context>()
         return listOf(1f, 2f).map { scale -> original.createConfigurationContext(Configuration(original.resources.configuration).apply { fontScale = scale }) }

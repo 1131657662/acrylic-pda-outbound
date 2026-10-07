@@ -5,25 +5,25 @@ import org.json.JSONObject
 
 internal object E2aTransferRequests {
     fun identity(stop: LocalE2aStop) = E2aWire.Identity(stop.manifestId, stop.snapshotId,
-        stop.authorizationId, stop.submissionId, 1)
+        stop.authorizationId, stop.submissionId, stop.workRound)
 
     fun open(stop: LocalE2aStop): JSONObject = JSONObject().put("operation", "OPEN")
         .put("manifestId", stop.manifestId).put("manifestVersion", 1).put("snapshotId", stop.snapshotId)
         .put("source", "TEMP").put("sourceId", stop.authorizationId)
-        .put("submissionId", stop.submissionId).put("workRound", 1)
+        .put("submissionId", stop.submissionId).put("workRound", stop.workRound)
 
     fun page(stop: LocalE2aStop, page: E2aWire.Page): JSONObject = JSONObject().put("operation", "PAGE")
         .put("openOriginalKey", stop.openOriginalKey).put("pageHash", page.hash)
         .put("pageCore", JSONObject(page.canonicalCore))
 
     fun raw(stop: LocalE2aStop, item: JSONObject): JSONObject = JSONObject()
-        .put("warehouseId", stop.warehouseId).put("submissionId", stop.submissionId).put("workRound", 1)
+        .put("warehouseId", stop.warehouseId).put("submissionId", stop.submissionId).put("workRound", stop.workRound)
         .put("openOriginalKey", stop.openOriginalKey).put("originalObjectId", item.getString("originalObjectId"))
         .put("kind", item.getString("objectKind")).put("byteCount", item.getLong("byteCount"))
         .put("bytesSha256", item.getString("itemBytesSha256"))
 
     fun facts(stop: LocalE2aStop, manifest: E2aWire.Manifest) = E2aStopProof.Facts(stop.warehouseId,
-        stop.authorizationId, stop.submissionId, 1, stop.originalOperatorId, stop.freezeDeviceId,
+        stop.authorizationId, stop.submissionId, stop.workRound, stop.originalOperatorId, stop.freezeDeviceId,
         stop.sourceRecoveryEpoch, stop.stopEventId, stop.captureHighWatermark, stop.auditThroughSeq,
         1, stop.manifestId, 1, manifest.bytesHash, manifest.setHash)
 

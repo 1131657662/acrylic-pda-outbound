@@ -38,6 +38,7 @@ internal object TemporaryContinuationSource {
         val scans = JSONObject(frozen.payload).getJSONArray("scans")
         val known = (0 until scans.length()).map { scans.getJSONObject(it) }.filter { it.get("status") == "ACTIVE" }
             .associateBy { it.getString("baleId") }
+        check(rows.length() == known.size) { "保留清单必须覆盖全部原有效包" }
         val seen = HashSet<String>()
         for (i in 0 until rows.length()) {
             val row = rows.getJSONObject(i); val bale = TemporaryContinuationProtocol.uuid(row, "baleId")

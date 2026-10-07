@@ -18,4 +18,5 @@ interface TemporaryContinuationDao {
     @Insert fun insert(row: TemporaryContinuation)
     @Query("SELECT * FROM temporary_continuation WHERE ticketId=:id") fun get(id: String): TemporaryContinuation?
     @Query("SELECT * FROM temporary_continuation WHERE sourceClientOrderId=:id") fun forSource(id: String): TemporaryContinuation?
+    @Query("SELECT * FROM temporary_continuation WHERE newClientOrderId=:id") fun forTarget(id: String): TemporaryContinuation?
 }

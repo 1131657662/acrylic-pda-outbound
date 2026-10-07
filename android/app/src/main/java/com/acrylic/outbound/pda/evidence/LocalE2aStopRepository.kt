@@ -42,7 +42,7 @@ class LocalE2aStopRepository(private val store: TemporaryWorkStore) {
             draft.authorizationId, draft.warehouseId, draft.operatorId, draft.creatorDeviceId,
             payload.getString("sourceRecoveryEpoch").toLong(), payload.getString("inventorySnapshotId"),
             UUID.randomUUID().toString(), UUID.randomUUID().toString(), stopEventId,
-            boundary.captureHighWatermark, boundary.auditThroughSeq, scanCount, archives.size.toLong()))
+            boundary.captureHighWatermark, boundary.auditThroughSeq, scanCount, archives.size.toLong(), draft.workRound))
         LocalE2aSnapshot(store.db).save(draft.clientOrderId, frozen, boundary, archives)
         LocalE2aTransferBuilder(store.db).save(checkNotNull(store.db.localE2aStops().get(draft.clientOrderId)),
             store.connection::stopProof)
@@ -55,6 +55,7 @@ class LocalE2aStopRepository(private val store: TemporaryWorkStore) {
         val payload = JSONObject(frozen.payload)
         val source = store.source(draft.clientOrderId)
         check(payload.getString("submissionId") == frozen.id &&
+            payload.getString("workRound") == draft.workRound.toString() &&
             payload.getJSONObject("source").getString("kind") == "TEMP" &&
             payload.getJSONObject("source").getString("clientOrderId") == draft.clientOrderId &&
             payload.getString("authorizationId") == draft.authorizationId &&
@@ -69,7 +70,7 @@ class LocalE2aStopRepository(private val store: TemporaryWorkStore) {
     private fun verifyExisting(row: LocalE2aStop, draft: TemporaryDraft,
         frozen: TemporarySubmission): LocalE2aStop {
         val source = store.source(draft.clientOrderId)
-        check(row.submissionId == frozen.id && row.authorizationId == draft.authorizationId &&
+        check(row.submissionId == frozen.id && row.authorizationId == draft.authorizationId && row.workRound == draft.workRound &&
             row.warehouseId == draft.warehouseId && row.originalOperatorId == draft.operatorId &&
             row.freezeDeviceId == draft.creatorDeviceId &&
             row.sourceRecoveryEpoch.toString() == source.request.recoveryEpoch &&
