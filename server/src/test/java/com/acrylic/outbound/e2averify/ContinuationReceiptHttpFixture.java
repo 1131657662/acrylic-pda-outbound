@@ -33,14 +33,17 @@ final class ContinuationReceiptHttpFixture implements AutoCloseable {
         this(migrationTarget,intake,false);
     }
     ContinuationReceiptHttpFixture(String migrationTarget,boolean intake,boolean unmapped) throws Exception {
-        database = new RetentionDatabaseFixture(intake,unmapped); database.profile.migrate(database.jdbc, migrationTarget);
+        this(migrationTarget,intake,unmapped,false);
+    }
+    ContinuationReceiptHttpFixture(String migrationTarget,boolean intake,boolean unmapped,boolean android) throws Exception {
+        database = new RetentionDatabaseFixture(intake,unmapped,android); database.profile.migrate(database.jdbc, migrationTarget);
         if(!unmapped)database.jdbc.update("INSERT INTO order_submission_slot(order_id,scope_id,work_round,current_submission_id,phase) "
             + "VALUES(?,?,1,?,'FROZEN')", Ids.bytes(database.id("orderId")), Ids.bytes(database.id("mappedScopeId")),
             Ids.bytes(database.id("mappedSubmissionId")));
         database.tx.executeWithoutResult(status -> database.apply(database.verified(), java.util.Collections.nCopies(3, "RETAIN")));
         token = session(database.id("operatorId")); otherToken = session(database.id("mismatchUserId"));
         otherDeviceToken = otherDeviceSession();
-        E2aCrossSourceHttpSetup.signing(database.profile.attempt);
+        if(!android)E2aCrossSourceHttpSetup.signing(database.profile.attempt);
         Files.createDirectory(database.profile.attempt.resolve("http"));
         app = start(intake);
     }

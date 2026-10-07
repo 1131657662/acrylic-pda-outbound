@@ -22,8 +22,11 @@ internal object TemporaryContinuationSource {
         mapOf("clientOrderId" to draft.clientOrderId, "creatorDeviceId" to draft.creatorDeviceId,
             "originalOperatorId" to draft.operatorId, "warehouseId" to draft.warehouseId,
             "submissionId" to frozen.id, "authorizationId" to draft.authorizationId,
-            "receivedPayloadSha256" to frozen.sha256, "declaredUploadSha256" to frozen.sha256,
+            "receivedPayloadSha256" to frozen.sha256,
             "planSha256" to draft.planSha256, "status" to "ABORTED").forEach { (field, expected) -> check(context.get(field) == expected) }
+        // A one-shot intake has no chunk-upload declaration; its received original digest is still mandatory.
+        check(context.has("declaredUploadSha256") && (context.isNull("declaredUploadSha256") ||
+            context.get("declaredUploadSha256") == frozen.sha256)) { "原上传声明与冻结正文摘要不符" }
         for (field in listOf("workRound", "freezeDeviceId", "sourceRecoveryEpoch", "authorizationEpoch"))
             check(context.get(field) == body.get(field))
         check(context.get("sourceRecoveryEpoch") == identity.get("serverRecoveryEpoch"))

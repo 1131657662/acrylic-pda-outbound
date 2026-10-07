@@ -35,6 +35,17 @@ class TemporaryContinuationProtocolTest {
         }
     }
 
+    @Test fun oneShotPredecessorNeedsReceivedDigestButNoChunkDeclaration() = runBlocking<Unit>(Dispatchers.IO) {
+        TemporaryContinuationFixture(folder.root).use { f ->
+            val raw = f.raw { it.getJSONObject("originalContext").put("declaredUploadSha256", JSONObject.NULL) }
+            assertEquals(2L, TemporaryContinuationProtocol.verify(raw, f.input()).toRound)
+            for (field in listOf("receivedPayloadSha256", "declaredUploadSha256")) {
+                val wrong = f.raw { it.getJSONObject("originalContext").put(field, "0".repeat(64)) }
+                assertThrows(Exception::class.java) { TemporaryContinuationProtocol.verify(wrong, f.input()) }
+            }
+        }
+    }
+
     @Test fun signedWrongSourceIdentityRoundAndSequenceAreRejected() = runBlocking<Unit>(Dispatchers.IO) {
         TemporaryContinuationFixture(folder.root).use { f ->
             val changes: List<(JSONObject) -> Unit> = listOf(

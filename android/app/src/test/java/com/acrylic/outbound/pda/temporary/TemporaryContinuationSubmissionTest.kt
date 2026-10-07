@@ -67,6 +67,21 @@ class TemporaryContinuationSubmissionTest {
         }
     }
 
+    @Test fun signedSuccessCannotOmitOrOpenContinuationDeletion() = runBlocking<Unit>(Dispatchers.IO) {
+        TemporaryContinuationFixture(folder.root).use { f ->
+            val local = frozen(f)
+            for (deletion in listOf(true, JSONObject.NULL, "missing")) {
+                val envelope = JSONObject(success(f, local).toString(Charsets.UTF_8))
+                val receipt = envelope.getJSONObject("data").apply { remove("signedReceipt") }
+                if (deletion == "missing") receipt.remove("localDeletionAllowed") else receipt.put("localDeletionAllowed", deletion)
+                val token = f.sign(JSONObject().put("iss", "acrylic-outbound").put("aud", "acrylic-pda-receipt").put("receipt", receipt))
+                receipt.put("signedReceipt", token)
+                assertThrows(Exception::class.java) { TemporarySuccessVerifier.verify(local,
+                    SubmissionJson.canonical(envelope).toByteArray(), f.key) }
+            }
+        }
+    }
+
     private fun frozen(f: TemporaryContinuationFixture): TemporarySubmission {
         val next = f.activate(); val ticket = f.receipt.getJSONObject("businessDecision").getString("ticketId")
         f.work.fixture.ack = f.downloadAck(f.db.temporary().request(ticket)!!)
@@ -86,6 +101,7 @@ class TemporaryContinuationSubmissionTest {
             .put("captureHighWatermark", body.get("captureHighWatermark")).put("firstOrderScanSeq", "1").put("lastOrderScanSeq", "1")
             .put("actualCount", "1").put("actualWeightGrams", scan.get("weightGrams")).put("inventoryDeducted", body.get("autoDeductInventory"))
             .put("completedAt", f.work.fixture.time.toString()).put("mayResumeScanning", false).put("stockReleased", false)
+            .put("localDeletionAllowed", false)
         val items = org.json.JSONArray(); val lines = body.getJSONObject("temporaryOrder").getJSONArray("lines")
         for (i in 0 until lines.length()) {
             val code = lines.getJSONObject(i).getString("deliveryCode"); val active = code == scan.getString("deliveryCode")

@@ -6,41 +6,38 @@
 ```yaml
 date: 2026-10-07
 branch: codex/development
-head: 2e129c2
-dirty_entries: 14
+head: 5e7bb7e
+dirty_entries: 33
 worktrees: 33
-android: { name: 0.16.0-r06-release, code: 21, room: 31 }
+android: { name: 0.16.0-r06-release, code: 21, room: 32 }
 server: { contract: 0.40.0, paths: 135, flyway: V66, migrations: 66 }
 ```
 <!-- FACTS_END -->
-B4 接续进行中：可信扫描高水位、独立 TEMP 新授权、ACTIVATED 消费、COMPLETED 数据库边界、受限完整intake、新轮确认记账及 Android 续作下载确认协调已实现并分层验证；Android 新草稿和确认后继续保持 CONTINUATION_BLOCKED。生产命令/放行/扫码/删除及localDeletionAllowed继续关闭，CANCELLED因释放政策未定义拒绝。
+总目标 D01–D18 执行中，必须同时通过新计划第8节才能 complete；不得按局部边界结束。逐项输入映射及开发证据见 [执行记录](history/D01_D18_EXECUTION_2026-10-07.md)。
 
 ## Git、写权与环境
-- 唯一写者为本聊天；树 D:/acrylic-pda-outbound；分支 codex/development；HEAD/origin 为 2e129c224dc9070ed7e1f33c45d5a820810e8383；确认记账与 Android 协调子项已提交推送；前序Android/服务端/注册/累积验证提交仍保留；未合 main、未部署发布。
-- 全部脏路径/源码/diff/哈希、远端和环境：.local/autonomous-20261007/b4-round-confirm/b0/及resume-01/、.local/autonomous-20261007/b4-android-coordination/；包含继承保护路径，禁止回滚清理。实际 origin 为同仓库 SSH 地址。Android 替换前看板保存在 b4-android-coordination/board-before.md。
-- 隔离59–66均已dump/哈希/认证停机，无在途项目测试；既有MySQL 3306/13316与外部Harness19387未操作。失败库、binlog、日志和原资料保留；阶段环境快照见上述证据根。
-- 历史资料已归档至 E:/acrylic-archive-20261006/；查找旧路径先读 [本机历史资料位置](LOCAL_ARCHIVE_LOCATIONS.md)。
+- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天idle/未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/origin 为 5e7bb7ec013ea3d79d0e4606a4d4624817cd8fdc；开发切片已提交推送并核对ls-remote，无main/部署/发布动作。
+- D01预检18条继承路径的完整清单、逐文件副本、hash/diff、worktrees、进程/监听/磁盘、旧看板在 `.local/d01-d18-20261007/preflight-01/`；继承内容保护不回滚。原看板结论含前审查/计划完整保存在 board-before.md。
+- 既有MySQL3306/13316及外部Harness19387未操作；隔离76–79已dump/认证停机，19331无遗留。运行器在 `.local/d01-d18-20261007/d02-http/`，实例及证据在LOCALAPPDATA/acrylic-pda-outbound-isolated。隔离80也已dump/认证停机；D02Continuation79模拟器已正常关闭、5560监听消失。没有在途重型构建；Gradle空闲守护进程保留。
+- 历史归档在 E:/acrylic-archive-20261006/，路径按 [本机归档位置](LOCAL_ARCHIVE_LOCATIONS.md) 查找；失败库/binlog/日志/XML/原资料保持。
 
-## 实现与证据
-- B4-CONTINUATION-2026-10-06 节点既有 retention-20261006-23 的 23/0/0/0 和服务端完整单测 3148/0/0/1 不重跑，按输入引用；详见当日自主进度第190、191条。
-- 高水位由已验证原 payload 的连续 orderScanSeq 派生，缺失/断档/异身份/异文保持拒绝；定向45/0/0/0，证据 .local/autonomous-20261006/b4-order-scan-high-watermark-20261006/。
-- 完成边界要求下一轮 SUCCEEDED target、原新授权、同回执和已结算 K owner；C盘 retention-20261006-46 非空升级通过 1/0/0/0；44/45夹具失败及dump/SHA/认证停机证据保留。见第193条。
-- Android 追加独立消费记录及新草稿，不替换原来源、资格、停止或扫描历史；验签绑定原 canonical payload、保留包原文、身份、轮次、连续序号及关闭能力。Room 同事务写入新资格/资料/草稿/消费/审计，支持重启精确重放和最终写入失败全回滚。
-- Android 证据 .local/autonomous-20261006/b4-android-continuation-20261006/：attempt-03相关回归189/0/0/3，attempt-05最终定向13/0/0/0，lint 0 error/199 warning。attempt-01/04依赖未缓存；attempt-02夹具 indices 假设错误11/1/0/0均保留。attempt-04复制XML为旧结果，不计当轮执行。
-- Android 验证为合成签名/身份的 JVM/Room 消费与非空迁移；无当次 APK、模拟器、真机、真实 HTTP、原设备验收。Android失败未另导出SQLite dump，只有源码/schema/XML/日志/哈希，不声称数据库dump。编译日志见 b4-ticket-lifecycle-20261006/android-compile-activation.log。
-- 本次 Android 协调提交 `e5b6f5d` 已推送：续作新请求保留原 `previousKey`；独立确认入口重验已消费票据、原准备请求、前驱、manifest、身份和保留包，在事务外取得 `download-ack` 后以未变化行条件原子保存，已有 ack 重放不再发网络请求。证据 `.local/autonomous-20261007/b4-android-coordination/`：attempt-03 15/0/0/0、attempt-04 16/0/0/0、regression-02 127/0/0/3、lint 0 error/199 warning；attempt-02 失败断言保留。
-- 本次 Android 结果仍仅为合成签名/身份与 JVM/Room fixture 验证；无 APK、模拟器、真机、原身份、真实 HTTP、共享数据库或部署。生产命令/放行/扫码/删除、CANCELLED 释放和 `localDeletionAllowed` 继续关闭。
+## D01–D18断点
+- D01已保存实际基线并建立D02–D18逐项源码/历史证据/实现与复验/政策和现场映射；历史结果不是新整合通过。
+- D02开发切片：默认关闭的隔离debug能力、续作基线/累计总量/连续输入/冻结、持久确认队列及worker、专用上传与成功消费、实际STOP轮次及迁移、确认页面已实现。自审修复损坏前驱/身份变化时的页面恢复异常，未放开生产能力。
+- D02定向17/0/0/0→28/0/0/0→35/0/0/0；最终受影响回归280/0/0/5，lint 0错误/208警告、默认debug APK通过。均为JVM/Room合成身份/签名与网络替身；5项HTTP跳过未计通过。证据在 d02-work/regression-04/，源码/报告/APK哈希见执行记录。
+- D02真实组合78的12/0/0/0、79整合受影响283/0/0/5通过：原键ACK/上传丢响应恢复、真实续扫/累计冻结、HTTP受理/独立确认、Android验签SYNCED、SQL owner/票据完成。79默认debug APK/hash、lint及Room三个截点已保存。76/77暴露并修复可空上传声明/签名删除边界兼容，失败库/日志/原回执保留（76临时Room未保留单列）。
+- D02本项开发范围通过：页面确认→续扫→累计冻结→身份变化拒绝/返回及200%大字体验证均1/0/0/0，默认共享夹具真实HTTP/SQL回滚80为1/0/0/0。UI网络为79签名ACK重放，与真实HTTP分列。wrapper、regression-02、classpath及UI01/03/04失败均保留。更高轮次/分块/关联目标属于D03。
+- D03–D17均尚未按总目标退出标准通过，逐项待补内容见执行记录映射；D18尚无最终候选输入。更高前驱轮次/分块/关联目标、候选与跨来源审计、拒绝实物链、交接/故障/更正/对账/附件、净值导出/任务、恢复/重建/升级工具、整单清理及兼容遗漏必须继续。
 
-## 下一步与未验边界
-- 新轮唯一注册a7f22c8、累积验证7a399f0、完整intake e624690、确认记账55d441d及 Android 协调 e5b6f5d 已推送；隔离轮74/75和 Android attempt-03/04通过，服务端受影响回归 672/0/0/1、Android 受影响回归 127/0/0/3，编译失败链、夹具失败轮和 Android attempt-02 失败均保留，见当日第202–204条。B4整体不标完成、不进入B5。
-- 历史REOPEN/ACTIVATE回执已改为不可变事实核验，短装审批误入与两个Spring代理问题已修复；retention-20261006-50真实HTTP专项1/0/0/0、命令/协议144/0/0/0。47/48启动失败、49合成完成事务夹具失败及各轮dump/日志/哈希/停机证据保留。停止/完成事实为合成输入，不是新轮记账验收。
-- 续作资格普通首轮submit/abort复用已在访问检查及注册写者双重拒绝；激活新增原人原机守卫。retention-20261006-53真实HTTP1/0/0/0，52为其他设备夹具重复公钥摘要失败，dump/日志保留。新轮确认仍须重验票据、新授权、前驱及K转移；不能复用FORMAL assignment。Android高轮次扫描/冻结继续关闭。
-- 新轮显式引用、旧已接受/LOCAL_FROZEN原文读取、唯一REGISTERED绑定和数据库不可变约束已实现；注册原语自身不选择新轮或移动K。unit-02为31/0/0/0，隔离56/57注册各1/0/0/0；58命令HTTP回归1/0/0/0。该组STOP/前驱及完成为合成fixture，不是受理/记账证明。证据 .local/autonomous-20261007/b4-round-intake/，见当日第198/198a条。
-- 累积证据纯验证器已实现：原数组完整不变前缀、原/新资格分别验时、新输入连续序号、精确保留集、固定计划政策、禁止新增事件改写旧包；保留原正文。定向49/0/0/0，受影响回归670/0/0/1（Windows符号链接跳过），证据 .local/autonomous-20261007/b4-round-evidence/；该组只证明纯验证器，见第199条。
-- 原身份/Keystore、真机/双设备、现场网络/断电/长时离线、TEMP更高轮次/跨来源、候选排除授权、B8 LINK currentEffect遗漏、R1生产放行保持未验或关闭。
-- 完整intake默认关闭，整笔scope/slot选择、原文/证据落库及精确K转移；已有目标固定计划/基线逐项核对，空目标完整受理后创建。最终隔离64新增扫描、65本地前驱仅保留包、66命令/默认关闭HTTP回归各1/0/0/0；受影响回归97 XML、672/0/0/1，OpenAPI通过。59–61夹具失败及62/63中间通过均保全；见 .local/autonomous-20261007/b4-round-accept/、当日第200–200b条。
-- intake验证使用合成STOP/设备/前驱，但新轮POST、K转移、待审及最终审计失败回滚实际执行；确认轮74/75另行完成download-ack、记账、成功回执和COMPLETED同事务验证，仍非原身份或原设备证明。受控LINK、续作分块上传、更高前驱轮次和取消继续拒绝。
-- R05原资料/旧BCD/526边界、R09恢复限制/备份异地取回/RPO-RTO/Linux运维继续单列，不由局部通过覆盖；Android 显式确认协议/队列接入、原身份/真实设备/真实 HTTP仍未验。详细进度见history/AUTONOMOUS_PROGRESS_2026-10-06.md第192–196条；跨日接续见history/AUTONOMOUS_PROGRESS_2026-10-07.md第197、204条。
+## 历史复用与保留边界
+- 既有R06新轮注册a7f22c8、累积证据7a399f0、完整intake e624690、确认记账55d441d、Android下载协调e5b6f5d已推送；详见当日第197–204条。服务端受影响672/0/0/1和Android127/0/0/3仅按原输入引用，不冒充当次通过。
+- 服务端隔离74/75含download-ack、确认账务/成功回执与COMPLETED同事务；此前失败编译/夹具库/日志保留。可信STOP/设备仍为合成输入，不代替原身份/原设备。
+- 普通有权正常确认允许空理由；短装与占用/库存冲突分开。候选排除无明确依据不开放，CANCELLED缺释放政策继续拒绝并列开发阻断，仍推进其他项。
+- 所有生产决定handler/POST/放行/扫码/删除默认继续关闭，localDeletionAllowed=false；不接原库/现网，不使用正式签名，不合main/标签/Release/部署。
+- 原资料/旧BCD/526、R09历史恢复限制保持单列；原身份/Keystore、真实双设备、实体键/断电/长时/规模、正式HTTPS渠道、异地介质、生产RPO-RTO/Linux现场等只按新计划第9节C01–C08保留。任何代码/迁移/权限/客户端/导出/恢复缺口不得转入C档。
+
+## 下一动作
+- D02真实组合两处协议兼容修复/夹具/页面证据按明确范围提交推送；继承TemporarySuccessHttpTest不修改。继续D03高轮次来源链、分块续传、关联目标及真实HTTP/MySQL反例，再持续D04–D17及D18。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；详细阶段记录见 docs/history/AUTONOMOUS_PROGRESS_2026-10-06.md。

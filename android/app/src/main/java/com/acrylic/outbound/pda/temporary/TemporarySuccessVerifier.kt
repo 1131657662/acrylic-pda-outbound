@@ -58,10 +58,14 @@ object TemporarySuccessVerifier {
     }
 
     private fun context(local: TemporarySubmission, body: JSONObject, value: JSONObject) {
-        check(value.keys().asSequence().toSet() == setOf("submissionId", "orderId", "status", "payloadSha256",
+        val fields = setOf("submissionId", "orderId", "status", "payloadSha256",
             "freezeDeviceId", "workRound", "issuedRecoveryEpoch", "mayResumeScanning", "stockReleased", "source",
             "orderStatus", "actualCount", "actualWeightGrams", "inventoryDeducted", "resultVersion", "receiptVersion",
-            "captureHighWatermark", "firstOrderScanSeq", "lastOrderScanSeq", "completedAt", "orderNo", "items", "signedReceipt"))
+            "captureHighWatermark", "firstOrderScanSeq", "lastOrderScanSeq", "completedAt", "orderNo", "items", "signedReceipt")
+        val deletion = value.has("localDeletionAllowed")
+        check(body.getString("workRound") == "1" || deletion) { "续作成功回执缺少删除边界" }
+        check(!deletion || value.get("localDeletionAllowed") == false) { "成功回执不能开放本地删除" }
+        check(value.keys().asSequence().toSet() == fields + if (deletion) setOf("localDeletionAllowed") else emptySet())
         mapOf("submissionId" to local.id, "payloadSha256" to local.sha256, "status" to "SUCCEEDED",
             "orderStatus" to "COMPLETED", "resultVersion" to "1", "workRound" to body.get("workRound"),
             "freezeDeviceId" to body.get("freezeDeviceId"), "issuedRecoveryEpoch" to body.get("sourceRecoveryEpoch"),

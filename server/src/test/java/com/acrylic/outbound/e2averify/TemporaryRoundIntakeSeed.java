@@ -11,13 +11,17 @@ final class TemporaryRoundIntakeSeed {
     private final RetentionDatabaseFixture f;
     TemporaryRoundIntakeSeed(RetentionDatabaseFixture f) { this.f=f; }
     void prepare(boolean local) throws java.io.IOException {
+        prepare(local,false);
+    }
+    void prepare(boolean local,boolean android) throws java.io.IOException {
         baseline();var body=new TemporaryRoundIntakeBody(f).original();
+        if(android)new TemporaryAndroidIntakeSeed(f).prepare(body);
         for(var scan:body.path("scans"))f.jdbc.update("UPDATE source_evidence_item SET record_sha256=? WHERE set_id=UUID_TO_BIN(?) AND capture_id=UUID_TO_BIN(?)",
             sha(scan),f.seed.get("mappedSetId"),text(scan,"captureId"));
         byte[] bytes=canonical(body).getBytes(java.nio.charset.StandardCharsets.UTF_8);
         String hash=new SubmissionFiles(f.profile.attempt.resolve("storage").toString()).store(bytes);
         new TemporaryRoundIntakeArchive(f).store(body,local);
-        f.seed.put("intakePredecessorHash",hash);parts();
+        f.seed.put("intakePredecessorHash",hash);if(!android)parts();
     }
     private void baseline() {
         var jdbc=f.jdbc;String warehouse=f.seed.get("warehouseId");

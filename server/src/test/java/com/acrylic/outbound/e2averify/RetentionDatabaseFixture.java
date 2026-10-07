@@ -28,6 +28,9 @@ final class RetentionDatabaseFixture {
         this(intake,false);
     }
     RetentionDatabaseFixture(boolean intake,boolean unmapped) throws Exception {
+        this(intake,unmapped,false);
+    }
+    RetentionDatabaseFixture(boolean intake,boolean unmapped,boolean android) throws Exception {
         profile = new RetentionDatabaseProfile(); jdbc = profile.connect(""); restore = profile.connect("_restore");
         Files.createFile(profile.attempt.resolve("test-started.marker"));
         profile.migrate(jdbc, "34"); seed = E2aV34Seed.seed(jdbc, profile.attempt.resolve("storage"));
@@ -38,7 +41,7 @@ final class RetentionDatabaseFixture {
             seed.get("mappedVerificationId"));
         addScan("mapped", 3); addScan("mapped", 4);
         jdbc.update("UPDATE source_evidence_set SET item_count=4,capture_high_watermark=4 WHERE id=UUID_TO_BIN(?)", seed.get("mappedSetId"));
-        if(intake)new TemporaryRoundIntakeSeed(this).prepare(unmapped);
+        if(intake)new TemporaryRoundIntakeSeed(this).prepare(unmapped,android);
         if(unmapped) {
             jdbc.update("UPDATE temporary_source_mapping SET canonical_order_id=NULL,mapping_version=0 WHERE scope_id=UUID_TO_BIN(?)",seed.get("mappedScopeId"));
             jdbc.update("UPDATE submission_scope SET canonical_order_id=NULL,mapping_version=0 WHERE id=UUID_TO_BIN(?)",seed.get("mappedScopeId"));
