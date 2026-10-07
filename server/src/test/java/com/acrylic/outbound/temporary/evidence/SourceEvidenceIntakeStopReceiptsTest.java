@@ -84,6 +84,22 @@ class SourceEvidenceIntakeStopReceiptsTest {
                 error -> assertThat(error.code()).isEqualTo("E2A_STOP_RECEIPT_INTEGRITY_FAILURE"));
     }
 
+    @Test void readSnapshotReprovesOriginalReferenceAndRefusesCorruptedReceipt() {
+        org.springframework.transaction.support.TransactionSynchronizationManager.setCurrentTransactionReadOnly(true);
+        try {
+            when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(row()));
+            assertThat(receipts.objectIdForRead(key, REQUEST)).isEqualTo(objectId);
+            var corrupt = row(); corrupt.put("original_response_sha256", "0".repeat(64));
+            when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(corrupt));
+            assertThatThrownBy(() -> receipts.objectIdForRead(key, REQUEST)).isInstanceOfSatisfying(BusinessException.class,
+                error -> assertThat(error.code()).isEqualTo("E2A_STOP_RECEIPT_INTEGRITY_FAILURE"));
+        } finally { org.springframework.transaction.support.TransactionSynchronizationManager.setCurrentTransactionReadOnly(false); }
+    }
+
+    @Test void readConsumptionCannotReplaceTheWriteTransactionLockingPath() {
+        assertThatThrownBy(() -> receipts.objectIdForRead(key, REQUEST)).isInstanceOf(IllegalStateException.class);
+    }
+
     @Test void insertPreservesStopObjectReferenceButNoSetOrVerification() throws Exception {
         when(jdbc.update(anyString(), any(Object[].class))).thenReturn(1);
         var context = new SourceEvidenceIntakeReceipts.OpenInsert(operator, stopKey, warehouse, UUID.randomUUID(),

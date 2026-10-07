@@ -102,38 +102,6 @@ public class HandoverActivation {
         String inventorySha256, String startOrderScanSeq, String allocationVersion, String userAuthVersion,
         String deviceVersion, String scope, long iat, long exp) { }
 
-    /** Empty checklists are legal only after the same complete-package review as nonempty lists. */
-    static final class Prepare implements HandoverCommand.Operation {
-        private final HandoverStore store;
-        private final HandoverTargetQualification targets;
-        Prepare(HandoverStore store, HandoverTargetQualification targets) {
-            this.store = store;
-            this.targets = targets;
-        }
-        @Override public String commandType() { return "PREPARE"; }
-        @Override public JsonNode execute(HandoverCommand.Write write) {
-            var input = write.command();
-            var facts = write.caseFacts();
-            if ("TEMP".equals(facts.path("sourceKind").asText())) throw new BusinessException(409,
-                "HANDOVER_TEMP_TARGET_NOT_READY", "临时来源接收机资格尚未接通，请保留已批准清单");
-            if (!facts.path("status").asText().equals("APPROVED"))
-                throw new BusinessException(409, "HANDOVER_STATE_INVALID", "只有已批准的案件可以准备接收机");
-            UUID device = input.uuid("targetDeviceId"), user = input.uuid("targetUserId");
-            targets.require(device, user, SubmissionJson.uuid(facts, "warehouseId"));
-            UUID approver = UUID.fromString(write.actor().path("principalId").asText());
-            byte[] ticket = HandoverReceiptCodec.bytes(SubmissionJson.object().put("caseId", write.caseId().toString())
-                .put("targetDeviceId", device.toString()).put("targetUserId", user.toString())
-                .put("inputHighWatermark", facts.path("inputHighWatermark").asText())
-                .put("canonicalOrderId", facts.path("canonicalOrderId").asText())
-                .put("issuedAt", write.recordedAt().toString()));
-            store.advanceCase(write.caseId(), write.caseVersion(), "TARGET_PREPARED", null, null, null,
-                null, null, null, device, user, ticket, null, approver, write.recordedAt());
-            return SubmissionJson.object().put("caseId", write.caseId().toString()).put("status", "TARGET_PREPARED")
-                .put("targetDeviceId", device.toString()).put("targetUserId", user.toString())
-                .put("preparedTicketSha256", HandoverCommand.sha(ticket));
-        }
-    }
-
     static final class Activate implements HandoverCommand.Operation {
         private final HandoverStore store;
         private final HandoverActivation activation;

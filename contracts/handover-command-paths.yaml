@@ -8,7 +8,12 @@ Execute:
       已有 canonical 目标的 TEMP 来源支持 REQUEST 及原机 stop-ack 后的主管 APPROVE；审批人与申请人须不同。
       TEMP 审批重验原 E2A OPEN/STOP/完整页和审计、冻结正文、原资格与完整实物清单；inputHighWatermark 是来源订单序号。
       本阶段 TEMP 清单仅支持全部 RETAINED，保留原占用及账务，库存或基线冲突不能因审批清除。
-      TEMP 减包、PREPARE 和 ACTIVATE 消费者未完成时明确拒绝；审批回执不授予接收机作业资格。
+      TEMP PREPARE 须额外传 targetAuthorizationId，绑定指定接收人本机的通用 TEMP 授权及原下载确认；
+      原签名、身份版本、恢复代次、库存/映射/政策和期限均重新核验，R06 专用续作授权不可替代。
+      准备票据在原字段外包含 temporaryQualification，固定原来源/轮次/计划/正文和接收资格；不签发 FORMAL assignment，不延长授权。
+      接收机 manifest 标明 sourceKind=TEMP、packageKind=TEMP_FROZEN_PAYLOAD；recoveryPackageSha256 是原冻结正文摘要，
+      recovery-package 返回逐字节一致的原冻结正文。两者均仅限指定人员/设备且每次重验原证据与有效资格。
+      TEMP 减包及 ACTIVATE 消费者未完成时明确拒绝；审批和准备回执不授予接收机扫码资格。
     security: [{webSession: []}]
     responses:
       '200':
@@ -23,3 +28,61 @@ Execute:
       '403': {$ref: './openapi.yaml#/components/responses/Error'}
       '404': {$ref: './openapi.yaml#/components/responses/Error'}
       '409': {$ref: './openapi.yaml#/components/responses/Error'}
+
+TemporaryPreparation:
+  description: TEMP 来源的 PREPARE 命令；不适用于 FORMAL 来源。
+  type: object
+  additionalProperties: false
+  required: [commandVersion, commandType, commandId, warehouseId, caseId, transportRecoveryEpoch, targetDeviceId, targetUserId, targetAuthorizationId, expected]
+  properties:
+    commandVersion: {type: integer, const: 1}
+    commandType: {type: string, const: PREPARE}
+    commandId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    caseId: {type: string, format: uuid}
+    transportRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    targetDeviceId: {type: string, format: uuid}
+    targetUserId: {type: string, format: uuid}
+    targetAuthorizationId: {type: string, format: uuid}
+    reason: {type: string}
+    expected:
+      type: object
+      additionalProperties: false
+      required: [caseId, caseVersion, status, userAuthVersion]
+      properties:
+        caseId: {type: string, format: uuid}
+        caseVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+        status: {type: string, const: APPROVED}
+        userAuthVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+
+TemporaryQualification:
+  type: object
+  additionalProperties: false
+  required: [authorizationId, manifestSha256, expiresAt, serverRecoveryEpoch, userAuthVersion, deviceVersion, sourceKind, scopeId, mappingVersion, fromWorkRound, toWorkRound, planSha256, payloadSha256]
+  properties:
+    authorizationId: {type: string, format: uuid}
+    manifestSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    expiresAt: {type: string, format: date-time}
+    serverRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    userAuthVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    deviceVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    sourceKind: {type: string, const: TEMP}
+    scopeId: {type: string, format: uuid}
+    mappingVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    fromWorkRound: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    toWorkRound: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    planSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+
+TemporaryPreparedTicket:
+  type: object
+  additionalProperties: false
+  required: [caseId, targetDeviceId, targetUserId, inputHighWatermark, canonicalOrderId, issuedAt, temporaryQualification]
+  properties:
+    caseId: {type: string, format: uuid}
+    targetDeviceId: {type: string, format: uuid}
+    targetUserId: {type: string, format: uuid}
+    inputHighWatermark: {type: string, pattern: '^(0|[1-9][0-9]{0,17})$'}
+    canonicalOrderId: {type: string, format: uuid}
+    issuedAt: {type: string, format: date-time}
+    temporaryQualification: {$ref: '#/TemporaryQualification'}

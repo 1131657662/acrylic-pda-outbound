@@ -23,7 +23,10 @@ public class HandoverPdaPackageService {
     }
 
     public byte[] download(UUID caseId) {
-        var manifest = evidence.manifest(caseId);
+        var verified = evidence.read(caseId);
+        var manifest = verified.manifest();
+        if ("TEMP".equals(manifest.path("sourceKind").asText()))
+            return HandoverReceiptCodec.bytes(verified.body());
         try { return files.read(manifest.path("recoveryPackageSha256").asText()); }
         catch (UncheckedIOException unavailable) {
             throw new BusinessException(409, "HANDOVER_STOP_FILE_UNAVAILABLE", "原恢复包不可读取或摘要不符，请保留资料");

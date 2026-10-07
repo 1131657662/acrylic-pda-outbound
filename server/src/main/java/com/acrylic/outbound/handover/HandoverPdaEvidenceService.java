@@ -24,14 +24,21 @@ public class HandoverPdaEvidenceService {
     private final HandoverReadReceipt receipts;
     private final HandoverApprovalEvidence evidence;
     private final HandoverChecklist checklist;
+    private final HandoverTemporaryTarget temporary;
 
     HandoverPdaEvidenceService(PdaAccess access, HandoverStore cases, HandoverPdaEvidenceStore commands,
-            HandoverReadReceipt receipts, HandoverApprovalEvidence evidence, HandoverChecklist checklist) {
+            HandoverReadReceipt receipts, HandoverApprovalEvidence evidence, HandoverChecklist checklist,
+            HandoverTemporaryTarget temporary) {
         this.access = access; this.cases = cases; this.commands = commands;
         this.receipts = receipts; this.evidence = evidence; this.checklist = checklist;
+        this.temporary = temporary;
     }
 
     public JsonNode manifest(UUID caseId) {
+        return read(caseId).manifest();
+    }
+
+    Evidence read(UUID caseId) {
         var principal = access.require("pda:scan");
         principal = access.require("pda:submit");
         var facts = cases.caseFacts(caseId);
@@ -46,13 +53,16 @@ public class HandoverPdaEvidenceService {
         var lines = approval.path("checklist");
         checklist.dispositions(stop.body(), lines);
         checklist.compareStored(cases.checklist(caseId), lines, true);
-        var ticket = ticket(facts, prepared);
-        var recoveryHash = stop.receipt().path("originalCommand").path("command").path("payloadSha256").asText();
+        var ticket = ticket(facts, prepared, stop.body());
+        boolean isTemporary = "TEMP".equals(facts.path("sourceKind").asText());
+        var recoveryHash = isTemporary ? SubmissionJson.sha(stop.body())
+            : stop.receipt().path("originalCommand").path("command").path("payloadSha256").asText();
         corruptUnless(recoveryHash.matches("[a-f0-9]{64}"));
         var result = SubmissionJson.object().put("caseId", caseId.toString())
             .put("status", facts.path("status").asText()).put("recoveryPackageSha256", recoveryHash)
             .put("inputHighWatermark", facts.path("inputHighWatermark").asText())
             .put("preparedTicketSha256", facts.path("preparedTicketSha256").asText());
+        if (isTemporary) result.put("sourceKind", "TEMP").put("packageKind", "TEMP_FROZEN_PAYLOAD");
         result.set("preparedTicket", ticket);
         result.set("checklist", lines.deepCopy());
         result.set("stopReceipt", stop.receipt());
@@ -61,7 +71,7 @@ public class HandoverPdaEvidenceService {
         if (activated != null) result.set("activationReceipt", SubmissionJson.parse(activated.bytes()));
         result.set("capabilities", HandoverReceiptCodec.capabilities());
         requireTarget(access.current(), cases.caseFacts(caseId));
-        return result;
+        return new Evidence(result, stop.body());
     }
 
     private HandoverReadReceipt.Verified verified(UUID caseId, String kind) {
@@ -104,7 +114,7 @@ public class HandoverPdaEvidenceService {
             .equals(facts.path("activationSha256").asText()));
     }
 
-    private JsonNode ticket(JsonNode facts, HandoverReadReceipt.Verified prepared) {
+    private JsonNode ticket(JsonNode facts, HandoverReadReceipt.Verified prepared, JsonNode body) {
         var command = prepared.command(); var receipt = prepared.receipt();
         corruptUnless("TARGET_PREPARED".equals(receipt.path("businessDecision").path("status").asText())
             && command.path("targetDeviceId").equals(facts.path("targetDeviceId"))
@@ -116,8 +126,15 @@ public class HandoverPdaEvidenceService {
             .put("inputHighWatermark", facts.path("inputHighWatermark").asText())
             .put("canonicalOrderId", facts.path("canonicalOrderId").asText())
             .put("issuedAt", receipt.path("recordedAt").asText());
+        if ("TEMP".equals(facts.path("sourceKind").asText())) {
+            var qualification = temporary.require(command, facts, body);
+            corruptUnless(qualification.equals(receipt.path("businessDecision").path("temporaryQualification")));
+            ticket.set("temporaryQualification", qualification);
+        }
         corruptUnless(HandoverCommand.sha(HandoverReceiptCodec.bytes(ticket))
             .equals(facts.path("preparedTicketSha256").asText()));
         return ticket;
     }
+
+    record Evidence(JsonNode manifest, JsonNode body) { }
 }

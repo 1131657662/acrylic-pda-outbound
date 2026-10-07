@@ -47,7 +47,8 @@ public class SourceEvidenceIntakeVerifyPreflight {
         SourceEvidenceIntakeStop.Parsed stop;
         try { stop = SourceEvidenceIntakeStop.parse(originalStopBytes, trusted); }
         catch (RuntimeException invalid) { throw conflict("E2A_STOP_PROOF_UNVERIFIABLE"); }
-        var receiptObjectId = receipts.objectIdForLockedReplay(key, stop.canonicalBytes());
+        var receiptObjectId = org.springframework.transaction.support.TransactionSynchronizationManager.isCurrentTransactionReadOnly()
+            ? receipts.objectIdForRead(key, stop.canonicalBytes()) : receipts.objectIdForLockedReplay(key, stop.canonicalBytes());
         var object = stops.findAfterSourceLock(stopBinding, stop.stopEventId());
         if (object == null || !receiptObjectId.equals(object.id())
             || !ImportFiles.sha256(stop.canonicalStopProofBytes()).equals(object.stored().sha256())

@@ -54,7 +54,7 @@ public final class HandoverTemporaryApprovalChecks {
             Ids.bytes(f.kase))).isEqualTo(supervisor.toString());
         assertThat(reviewer.command(approved, 200, null)).isEqualTo(receipt);
         reviewer.command(approved.deepCopy().put("reason", "changed"), 409, "IDEMPOTENCY_CONTENT_MISMATCH");
-        refusal(command(reviewer, "PREPARE"), "HANDOVER_TEMP_TARGET_NOT_READY", "target");
+        reviewer.command(command(reviewer, "PREPARE"), 400, "HANDOVER_TARGET_AUTHORIZATION_REQUIRED");
         f.sync();
     }
 
@@ -182,4 +182,7 @@ public final class HandoverTemporaryApprovalChecks {
         assertThat(new HandoverApprovalHttp(username, f.directory).command(approved, 200, null)).isEqualTo(receipt);
         assertThat(HandoverApprovalEvidenceProbe.consume(app, f.kase, f.command.path("orderScanHighWatermark").asLong())).isEqualTo(originalBody);
     }
+
+    TargetContext targetContext() { return new TargetContext(f, reviewer, originalBody, username); }
+    record TargetContext(HandoverTemporaryStopFixture source, HandoverApprovalHttp reviewer, JsonNode body, String username) { }
 }

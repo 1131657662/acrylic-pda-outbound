@@ -59,6 +59,20 @@ public class SourceEvidenceIntakeStopReceipts {
         return new UUID(buffer.getLong(), buffer.getLong());
     }
 
+    /** Immutable evidence consumption inside the caller's consistent read snapshot; never acquires write locks. */
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
+    public UUID objectIdForRead(SourceEvidenceIntakeReceipts.BoundKey key, byte[] bytes) {
+        if (!org.springframework.transaction.support.TransactionSynchronizationManager.isCurrentTransactionReadOnly())
+            throw new IllegalStateException("STOP_RECEIPT_READ_REQUIRES_READ_ONLY_TRANSACTION");
+        if (lookup(key, bytes, false).status() != SourceEvidenceIntakeReplay.Status.REPLAY)
+            throw new BusinessException(409, "E2A_STOP_RECEIPT_INTEGRITY_FAILURE", "原停止回执不可核验");
+        var rows = jdbc.queryForList(FIND, Ids.bytes(key.principalId()), E2aProtocol.ROUTE_SCOPE, Ids.bytes(key.originalKey()));
+        if (rows.size() != 1 || !(rows.getFirst().get("object_id") instanceof byte[] id) || id.length != 16)
+            throw new BusinessException(409, "E2A_STOP_RECEIPT_INTEGRITY_FAILURE", "原停止回执不可核验");
+        var buffer = ByteBuffer.wrap(id);
+        return new UUID(buffer.getLong(), buffer.getLong());
+    }
+
     @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
     public SourceEvidenceIntakeReplay.Decision recheckAfterRollback(SourceEvidenceIntakeReceipts.BoundKey key,
         byte[] bytes) {

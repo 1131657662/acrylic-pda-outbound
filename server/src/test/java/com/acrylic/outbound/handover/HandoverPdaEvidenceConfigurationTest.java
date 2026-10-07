@@ -20,6 +20,7 @@ class HandoverPdaEvidenceConfigurationTest {
         .withBean(HandoverReadReceipt.class, () -> mock(HandoverReadReceipt.class))
         .withBean(HandoverApprovalEvidence.class, () -> mock(HandoverApprovalEvidence.class))
         .withBean(HandoverChecklist.class, () -> mock(HandoverChecklist.class))
+        .withBean(HandoverTemporaryTarget.class, () -> mock(HandoverTemporaryTarget.class))
         .withBean(SubmissionFiles.class, () -> mock(SubmissionFiles.class))
         .withBean(AssignmentStore.class, () -> mock(AssignmentStore.class))
         .withBean(ApiResponses.class, () -> mock(ApiResponses.class));

@@ -19,7 +19,7 @@ class E2aHandoverPdaManifestIT {
         Files.createFile(profile.attempt.resolve("test-started.marker"));
         profile.migrate(jdbc, "34");
         E2aV34Seed.seed(jdbc, profile.attempt.resolve("storage"));
-        profile.migrate(jdbc, "58");
+        profile.migrate(jdbc);
         E2aCrossSourceHttpSetup.signing(profile.attempt);
         String[] options = {"--outbound.handover.commands.enabled=true", "--server.servlet.session.cookie.secure=false"};
         try (var app = E2aCrossSourceHttpIT.start(profile, options)) {
