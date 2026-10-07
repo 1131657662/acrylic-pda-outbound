@@ -13,10 +13,10 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 @Component
 @Transactional(propagation=Propagation.MANDATORY)
 public class TemporaryRoundSelection {
-    private final JdbcTemplate jdbc;
-    public TemporaryRoundSelection(JdbcTemplate jdbc) { this.jdbc=jdbc; }
+    private final JdbcTemplate jdbc;private final TemporaryRoundLinkedTarget linked;
+    public TemporaryRoundSelection(JdbcTemplate jdbc,TemporaryRoundLinkedTarget linked) { this.jdbc=jdbc;this.linked=linked; }
     public void select(SubmissionStore.Head head,TemporaryRoundFacts.Source source,TemporarySubmissionPlan.Plan plan) {
-        if(head.order()!=null)requireTarget(head,source,plan);
+        if(head.order()!=null && !linked.requirePredecessor(head,source,plan))requireTarget(head,source,plan);
         int changed=jdbc.update("""
             UPDATE submission_scope SET current_submission_id=?,work_round=?
             WHERE id=? AND current_submission_id=? AND work_round=? AND source_order_id IS NULL

@@ -25,6 +25,7 @@ final class TemporaryAndroidHigherRounds {
 
     static byte[] advance(ContinuationReceiptHttpFixture http) throws Exception {
         var db=http.database;Path attempt=db.profile.attempt;
+        if(Boolean.parseBoolean(System.getenv("B4_CONTINUATION_LINK_BEFORE_STOP")))link(http);
         TemporaryAndroidContinuationHarness.await(attempt.resolve("android-stopped.json"));
         var stop=parse(Files.readString(attempt.resolve("android-stopped.json")));UUID id=uuid(stop,"submissionId");
         assertThat(db.jdbc.queryForObject("SELECT status FROM submission WHERE id=UUID_TO_BIN(?)",String.class,id.toString())).isEqualTo("ABORTED");
@@ -40,5 +41,14 @@ final class TemporaryAndroidHigherRounds {
         byte[] activated=http.accepted(commands.request(uuid(issued.path("businessDecision"),"ticketId"),id,set,next),"android-higher-activation");
         Files.write(attempt.resolve("android-next-activation.json"),activated,StandardOpenOption.CREATE_NEW);
         return activated;
+    }
+    private static void link(ContinuationReceiptHttpFixture http) throws Exception {
+        var attempt=http.database.profile.attempt;
+        TemporaryAndroidContinuationHarness.await(attempt.resolve("android-before-link.json"));
+        var input=parse(Files.readString(attempt.resolve("android-before-link.json")));
+        var body=parse(http.app.getBean(SubmissionFiles.class).read(text(input,"payloadSha256")));
+        var target=new TemporaryRoundLinkedFixture(http,body);
+        http.accepted(TemporaryAndroidContinuationHarness.confirmation(http,uuid(input,"submissionId"),"LINK"),"android-before-stop-link");
+        Files.writeString(attempt.resolve("android-linked.json"),canonical(object().put("targetOrderId",target.target)),StandardOpenOption.CREATE_NEW);
     }
 }

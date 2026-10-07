@@ -27,7 +27,7 @@ public final class TemporaryAndroidContinuationHarness {
             await(attempt.resolve("android-uploaded.json"));
             var upload=parse(Files.readString(attempt.resolve("android-uploaded.json")));
             TemporaryRoundLinkedFixture linked=null;
-            if(Boolean.parseBoolean(System.getenv("B4_CONTINUATION_LINK"))) {
+            if(Boolean.parseBoolean(System.getenv("B4_CONTINUATION_LINK")) && !Boolean.parseBoolean(System.getenv("B4_CONTINUATION_LINK_BEFORE_STOP"))) {
                 var original=parse(http.app.getBean(com.acrylic.outbound.submissions.SubmissionFiles.class).read(text(upload,"payloadSha256")));
                 linked=new TemporaryRoundLinkedFixture(http,original);
                 http.accepted(confirmation(http,uuid(upload,"submissionId"),"LINK"),"android-human-link");
@@ -50,14 +50,15 @@ public final class TemporaryAndroidContinuationHarness {
             .put("token",http.token).put("activationUtf8",new String(activated,java.nio.charset.StandardCharsets.UTF_8))
             .put("chunked",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_CHUNKS")))
             .put("higher",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_HIGHER")))
-            .put("linked",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_LINK")));
+            .put("linked",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_LINK")))
+            .put("linkBeforeStop",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_LINK_BEFORE_STOP")));
         if(input.path("higher").asBoolean())TemporaryAndroidHigherRounds.device(http,input);
         input.set("vector",parse(Files.readString(attempt.resolve("private/android-source.json"))));
         Files.writeString(attempt.resolve("private/android-input.json"),canonical(input),StandardOpenOption.CREATE_NEW);
         Files.writeString(attempt.resolve("android-ready.marker"),Instant.now().toString(),StandardOpenOption.CREATE_NEW);
     }
 
-    private static ObjectNode confirmation(ContinuationReceiptHttpFixture http,UUID submission,String kind) {
+    static ObjectNode confirmation(ContinuationReceiptHttpFixture http,UUID submission,String kind) {
         var context=http.app.getBean(CommandFacts.class).read(submission);
         var command=object().put("commandVersion",1).put("commandType",kind)
             .put("commandId",UUID.randomUUID().toString()).put("transportRecoveryEpoch","1")

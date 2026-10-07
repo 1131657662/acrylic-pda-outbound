@@ -124,6 +124,8 @@ class TemporaryContinuationHttpTest {
         assertEquals(if (connection.higher) "3" else "2", receipt.getString("workRound")); assertFalse(receipt.getBoolean("localDeletionAllowed"))
         assertNotNull(f.db.temporarySuccess().evidence(saved.id))
         if (connection.linked) {
+            if (connection.linkBeforeStop) SourceBindingRepository(f.db, { checkNotNull(connection.current()) },
+                { path, epoch, auth -> connection.call(TemporaryConnection.Call(path, auth, epoch = epoch)) }).installBindings()
             assertTrue(connection.mappingReads > 0)
             assertTrue(f.db.sourceBindings().all().any { it.canonicalOrderId == receipt.getString("orderId") &&
                 it.mappingOrigin == "CONTROLLED_LINK" && it.workRound == receipt.getString("workRound") })

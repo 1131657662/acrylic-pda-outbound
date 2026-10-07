@@ -6,7 +6,7 @@ import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-/** Separate one-shot C-drive fixture; does not weaken the existing E2a workspace guards. */
+/** One-shot fixture in either fixed isolated root; database identity and disk guards are unchanged. */
 final class RetentionDatabaseProfile {
     final Path attempt;
     final String database;
@@ -17,7 +17,9 @@ final class RetentionDatabaseProfile {
     RetentionDatabaseProfile() throws Exception {
         String run = System.getenv("B4_RETENTION_RUN");
         require(run != null && run.matches("[1-9][0-9]{0,3}"), "Invalid retention attempt");
-        Path parent = Path.of(System.getenv("LOCALAPPDATA"), "acrylic-pda-outbound-isolated");
+        Path parent = "true".equals(System.getenv("B4_RETENTION_WORKSPACE_ISOLATION"))
+            ? Path.of("D:/acrylic-pda-outbound/.local/acrylic-pda-outbound-isolated")
+            : Path.of(System.getenv("LOCALAPPDATA"), "acrylic-pda-outbound-isolated");
         attempt = parent.resolve("retention-20261006-" + run);
         require(parent.toRealPath().equals(parent.toAbsolutePath()), "Redirected isolated root");
         require(attempt.toRealPath().equals(attempt.toAbsolutePath()), "Redirected attempt");

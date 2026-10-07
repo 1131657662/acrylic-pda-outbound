@@ -30,9 +30,9 @@ public class TemporaryRoundStop {
         var request=new TemporaryRoundControl(head.control(),facts.reference(id));
         var actor=access.verify(request,epoch,true);registration.register(request,actor);head=submissions.required(id);
         if("ABORTED".equals(head.status()))return replay(head,body);
-        submissions.current(head);
         if(!"REVIEW_REQUIRED".equals(head.status()) || submissions.payloadHash(id)==null)
             throw conflict("TEMP_CONTINUATION_STOP_STATE_CONFLICT");
+        submissions.current(head);
         proof.require(head,body);
         var receipt=receipts.continuationStop(head,submissions.payloadHash(id),body);
         submissions.state(id,"ABORTED",null,canonical(receipt));events.aborted(head,receipt);

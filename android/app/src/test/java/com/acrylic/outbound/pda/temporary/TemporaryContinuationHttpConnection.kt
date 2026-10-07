@@ -16,6 +16,7 @@ internal class TemporaryContinuationHttpConnection(private val fixture: Temporar
     val chunked = input.optBoolean("chunked")
     val higher = input.optBoolean("higher")
     val linked = input.optBoolean("linked")
+    val linkBeforeStop = input.optBoolean("linkBeforeStop")
     var mappingReads = 0
     private var loseStop = higher
     private var loseVerify = higher

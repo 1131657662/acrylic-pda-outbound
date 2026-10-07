@@ -25,9 +25,9 @@ class TemporaryHigherRoundStopHttpIT {
             assertThat(parse(TemporaryRoundStopHttp.ok(protocol.stop(request,f.http.token),"stop replay")).path("data")).isEqualTo(receipt);
             assertThat(protocol.stop(request.deepCopy().put("reason","changed"),f.http.token).statusCode()).isEqualTo(409);
             next(f,request);
+            var linked=new TemporaryRoundLinkedFixture(f);f.http.accepted(f.command("LINK"),"protocol-third-link");
             var third=new TemporaryRoundStopHttp(f,protocol.key);var thirdRequest=third.verify();
-            TemporaryRoundStopHttp.ok(third.stop(thirdRequest,f.http.token),"third technical stop");next(f,thirdRequest);
-            var linked=new TemporaryRoundLinkedFixture(f);f.http.accepted(f.command("LINK"),"protocol-final-link");
+            TemporaryRoundStopHttp.ok(third.stop(thirdRequest,f.http.token),"third technical stop");next(f,thirdRequest,linked);
             f.http.accepted(f.command("NORMAL_CONFIRM"),"protocol-final-confirm");linked.effects();
             Files.writeString(f.http.database.profile.attempt.resolve("test-completed.marker"),
                 "Real HTTP high-round audit/OPEN/RAW/PAGE/STOP/VERIFY/technical stop and next linked confirmation. Synthetic EC device identity and first STOP; no physical-device claim.\n");
@@ -42,6 +42,9 @@ class TemporaryHigherRoundStopHttpIT {
         finally { j.execute("DROP TRIGGER continuation_stop_failure"); }
     }
     private void next(TemporaryRoundConfirmationHttpFixture f,com.fasterxml.jackson.databind.JsonNode request) throws Exception {
+        next(f,request,null);
+    }
+    private void next(TemporaryRoundConfirmationHttpFixture f,com.fasterxml.jackson.databind.JsonNode request,TemporaryRoundLinkedFixture linked) throws Exception {
         var db=f.http.database;var previous=f.body.deepCopy();UUID set=uuid(request,"sourceEvidenceSetId");
         db.tx.executeWithoutResult(status->{
             var proof=new PhysicalDispositionVerification(db.jdbc).readForContinuation(db.id("warehouseId"),db.id("mappedScopeId"),
@@ -56,6 +59,7 @@ class TemporaryHigherRoundStopHttpIT {
         ((com.fasterxml.jackson.databind.node.ObjectNode)array(body,"events").get(array(body,"events").size()-1))
             .put("localSeq",Long.toString(number(array(previous,"events").get(array(previous,"events").size()-1),"localSeq")+2));
         f.body.removeAll();f.body.setAll(body);f.acknowledge(activated,label+"-ack");
+        if(linked!=null)new TemporaryLinkedContinuationChecks(f,linked).beforeIntake();
         TemporaryRoundStopHttp.ok(f.http.continuation(body,f.http.token,label+"-intake"),"next intake");
     }
 }

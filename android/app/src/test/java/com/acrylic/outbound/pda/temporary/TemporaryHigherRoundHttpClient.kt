@@ -18,6 +18,7 @@ internal class TemporaryHigherRoundHttpClient(private val f: TemporaryFixture,
     }
 
     suspend fun next(frozen: TemporarySubmission): TemporarySubmission {
+        if (connection.linkBeforeStop) link(frozen)
         recoverEvidence(frozen.clientOrderId)
         f.db.close(); f.context.getDatabasePath("outbound-pda.db").copyTo(File(evidence, "android-before-technical-stop.db")); f.reopen()
         val reason = "隔离高轮技术停止，保留全部实物占用"
@@ -43,6 +44,16 @@ internal class TemporaryHigherRoundHttpClient(private val f: TemporaryFixture,
         assertEquals("4", JSONObject(result.payload).getString("expectedCount"))
         assertEquals("ABORTED", f.db.temporarySubmissions().get(frozen.id)!!.state)
         return result
+    }
+
+    private suspend fun link(frozen: TemporarySubmission) {
+        File(evidence, "android-before-link.json").writeText(JSONObject().put("submissionId", frozen.id)
+            .put("payloadSha256", frozen.sha256).toString())
+        withTimeout(60_000) { while (!File(evidence, "android-linked.json").exists()) delay(250) }
+        val target = JSONObject(File(evidence, "android-linked.json").readText()).getString("targetOrderId")
+        val refreshed = TemporarySubmissionRepository(f.db, connection).upload(frozen.id)
+        assertEquals(target, JSONObject(refreshed.receipt!!).getString("orderId"))
+        assertTrue(connection.mappingReads > 0)
     }
 
     private fun recoverEvidence(id: String) {
