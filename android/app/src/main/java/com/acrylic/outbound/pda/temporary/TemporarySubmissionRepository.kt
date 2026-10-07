@@ -8,7 +8,8 @@ import com.acrylic.outbound.pda.update.UpdateGate
 import org.json.JSONObject
 
 /** Application singleton serializes manual/worker recovery of the original durable submission. */
-class TemporarySubmissionRepository(private val db: PdaDatabase, private val connection: TemporaryConnection) {
+class TemporarySubmissionRepository(private val db: PdaDatabase, private val connection: TemporaryConnection,
+    private val continuationDevelopment: Boolean = com.acrylic.outbound.pda.BuildConfig.TEMPORARY_CONTINUATION_DEVELOPMENT) {
     @Synchronized fun upload(id: String): TemporarySubmission = UpdateGate.business {
         val local = checkNotNull(db.temporarySubmissions().get(id))
         if (local.state == "ABORTED") return@business local
@@ -35,6 +36,21 @@ class TemporarySubmissionRepository(private val db: PdaDatabase, private val con
         }
         upload(id)
     }
+    @Synchronized fun stopContinuation(id: String, reason: String): TemporarySubmission = UpdateGate.business {
+        check(continuationDevelopment) { "续作停止开发入口未启用" }
+        val local = checkNotNull(db.temporarySubmissions().get(id))
+        check(JSONObject(local.payload).getString("workRound").toLong() > 1)
+        if (local.state == "SYNCED" || db.temporarySuccess().evidence(id) != null) return@business upload(id)
+        val value = reason.trim(); check(value.isNotEmpty() && value.length <= 500) { "停止须填写1～500字原因" }
+        db.runInTransaction {
+            checkIdentity(local, checkNotNull(connection.current()))
+            TemporaryContinuationStopRequest(db).body(local, value, signingKey(local))
+            check(local.abortReason == null || local.abortReason == value) { "须恢复原停止请求" }
+            db.temporarySubmissions().abortIntent(id, value)
+            db.temporarySubmissions().queue(id)
+        }
+        upload(id)
+    }
     private fun recover(local: TemporarySubmission, expected: JSONObject): TemporarySubmissionResponses.Reply {
         val responses = TemporarySubmissionResponses(db, connection, expected, local)
         val continuation = JSONObject(local.payload).getString("workRound").toLong() > 1
@@ -43,6 +59,10 @@ class TemporarySubmissionRepository(private val db: PdaDatabase, private val con
             catch (error: ApiFailure) { if (error.code == "SUBMISSION_NOT_FOUND") null else throw error }
         val transport = TemporarySubmissionTransport(connection, expected, responses)
         if (queried?.data?.getString("status") in setOf("ABORTED", "SUCCEEDED")) return checkNotNull(queried)
+        if (continuation && local.abortReason != null) {
+            check(continuationDevelopment) { "续作停止开发入口未启用" }
+            return responses.receive("$path/stop", TemporaryContinuationStopRequest(db).body(local, local.abortReason, signingKey(local)))
+        }
         if (local.abortReason != null || queried == null || queried.data.getString("status") in setOf("REGISTERED", "RECEIVING")) return transport.send(local)
         return queried
     }
@@ -53,7 +73,10 @@ class TemporarySubmissionRepository(private val db: PdaDatabase, private val con
                 TemporarySuccessRepository(db).verify(local.id, reply.responseSha256, signingKey(local)); "SYNCED"
             } else {
                 check(db.temporarySuccess().evidence(local.id) == null) { "已存成功原件，不能改写为其他状态" }
-                TemporarySubmissionReceipt.verify(local, reply.data, signingKey(local))
+                TemporarySubmissionReceipt.verify(local, reply.data, signingKey(local)).also { state ->
+                    if (state == "ABORTED" && JSONObject(local.payload).getString("workRound").toLong() > 1)
+                        TemporaryContinuationStopRequest(db).verify(local, reply.data, signingKey(local))
+                }
             }
             save(local, expected, reply.data, state)
         }

@@ -66,7 +66,7 @@ class SourceEvidenceIntakeStopServiceTest {
             List.of(warehouse.toString()));
         var data = SubmissionJson.object().put("scopeId", scope.toString()).put("warehouseId", warehouse.toString())
             .put("creatorDeviceId", device.toString()).put("freezeDeviceId", device.toString())
-            .put("clientOrderId", clientOrder.toString()).put("submissionId", submission.toString())
+            .put("clientOrderId", clientOrder.toString()).put("scopeClientOrderId", clientOrder.toString()).put("submissionId", submission.toString())
             .put("currentSubmissionId", submission.toString()).put("workRound", "3").put("scopeRound", "3")
             .put("originalOperatorId", operator.toString()).put("authorizationId", authorization.toString())
             .put("sourceRecoveryEpoch", "4");

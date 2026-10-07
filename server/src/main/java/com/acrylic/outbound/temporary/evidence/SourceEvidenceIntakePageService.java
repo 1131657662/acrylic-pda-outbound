@@ -159,7 +159,7 @@ public class SourceEvidenceIntakePageService {
             context.id("submissionId"),context.version("workRound"),context.id("creatorDeviceId"),
             context.id("clientOrderId"),context.id("authorizationId"),context.id("originalOperatorId"),
             Long.parseLong(context.text("sourceRecoveryEpoch")),actor.pda().sessionId(),actor.authVersion(),
-            actor.pda().deviceVersion(),page.canonicalBytes(),page.requestSha256());
+            actor.pda().deviceVersion(),page.canonicalBytes(),page.requestSha256(),context.id("scopeClientOrderId"));
     }
 
     private byte[] result(SourceEvidenceIntakeReplay.Decision decision) {

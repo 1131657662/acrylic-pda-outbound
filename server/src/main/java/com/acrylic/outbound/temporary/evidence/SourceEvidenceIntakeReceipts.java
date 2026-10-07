@@ -147,7 +147,7 @@ public class SourceEvidenceIntakeReceipts {
         if(!insert.principalId().equals(insert.originalOperatorId()))throw new IllegalArgumentException("OPEN_PRINCIPAL_OPERATOR");
         if(jdbc.update(INSERT_SQL,Ids.bytes(receipt.id()),1,Ids.bytes(insert.principalId()),E2aProtocol.ROUTE_SCOPE,
             Ids.bytes(insert.originalKey()),Ids.bytes(insert.currentSessionId()),Ids.bytes(insert.warehouseId()),Ids.bytes(insert.scopeId()),Ids.bytes(insert.submissionId()),
-            insert.workRound(),Ids.bytes(insert.creatorDeviceId()),Ids.bytes(insert.clientOrderId()),Ids.bytes(insert.authorizationId()),
+            insert.workRound(),Ids.bytes(insert.creatorDeviceId()),Ids.bytes(insert.scopeClientOrderId()),Ids.bytes(insert.authorizationId()),
             Ids.bytes(insert.originalOperatorId()),insert.sourceRecoveryEpoch(),"OPEN","RECEIVED",insert.requestBytes(),insert.requestSha256(),
             receipt.originalResponseBytes(),receipt.originalResponseSha256(),receipt.signatureKeyId(),receipt.signedReceipt(),Timestamp.from(receipt.recordedAt()))!=1)
             throw new IllegalStateException("OPEN_RECEIPT_INSERT_COUNT");
@@ -162,13 +162,21 @@ public class SourceEvidenceIntakeReceipts {
     private byte[] bytes(Map<String,Object> row,String key) { return row.get(key) instanceof byte[] value?value:null; }
     private String text(Map<String,Object> row,String key) { return row.get(key)==null?null:row.get(key).toString(); }
 
+    /** clientOrderId binds the signed current round; scopeClientOrderId preserves the root scope foreign key. */
     public record OpenInsert(UUID principalId,UUID originalKey,UUID warehouseId,UUID scopeId,UUID submissionId,long workRound,
                              UUID creatorDeviceId,UUID clientOrderId,UUID authorizationId,UUID originalOperatorId,
                              long sourceRecoveryEpoch,UUID currentSessionId,String userAuthVersion,String deviceVersion,
-                             byte[] requestBytes,String requestSha256) {
+                             byte[] requestBytes,String requestSha256,UUID scopeClientOrderId) {
+        public OpenInsert(UUID principalId,UUID originalKey,UUID warehouseId,UUID scopeId,UUID submissionId,long workRound,
+            UUID creatorDeviceId,UUID clientOrderId,UUID authorizationId,UUID originalOperatorId,long sourceRecoveryEpoch,
+            UUID currentSessionId,String userAuthVersion,String deviceVersion,byte[] requestBytes,String requestSha256) {
+            this(principalId,originalKey,warehouseId,scopeId,submissionId,workRound,creatorDeviceId,clientOrderId,
+                authorizationId,originalOperatorId,sourceRecoveryEpoch,currentSessionId,userAuthVersion,deviceVersion,
+                requestBytes,requestSha256,clientOrderId);
+        }
         public OpenInsert {
             if(principalId==null || originalKey==null || warehouseId==null || scopeId==null || submissionId==null
-                || creatorDeviceId==null || clientOrderId==null || authorizationId==null || originalOperatorId==null
+                || creatorDeviceId==null || clientOrderId==null || scopeClientOrderId==null || authorizationId==null || originalOperatorId==null
                 || currentSessionId==null || userAuthVersion==null || userAuthVersion.isBlank()
                 || deviceVersion==null || deviceVersion.isBlank() || workRound<1 || sourceRecoveryEpoch<0
                 || requestBytes==null || requestSha256==null)throw new IllegalArgumentException("OPEN_INSERT_CONTEXT");

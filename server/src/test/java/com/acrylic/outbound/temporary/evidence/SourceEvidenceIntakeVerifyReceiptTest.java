@@ -115,6 +115,7 @@ class SourceEvidenceIntakeVerifyReceiptTest {
         return new CommandContext(SubmissionJson.object().put("warehouseId",context.warehouseId().toString())
             .put("scopeId",context.scopeId().toString()).put("submissionId",submission.toString()).put("workRound","2")
             .put("creatorDeviceId",context.creatorDeviceId().toString()).put("clientOrderId",context.clientOrderId().toString())
+            .put("scopeClientOrderId",context.scopeClientOrderId().toString())
             .put("authorizationId",authorization.toString()).put("originalOperatorId",context.originalOperatorId().toString())
             .put("sourceRecoveryEpoch","1"));
     }

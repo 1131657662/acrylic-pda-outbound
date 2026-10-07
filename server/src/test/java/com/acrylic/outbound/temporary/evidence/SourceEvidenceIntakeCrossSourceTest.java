@@ -36,9 +36,10 @@ class SourceEvidenceIntakeCrossSourceTest {
     @BeforeEach void storedFacts() {
         when(jdbc.queryForList(contains("payload_sha256"), eq(String.class), any(Object[].class)))
             .thenAnswer(call -> Arrays.equals((byte[]) call.getArgument(2), Ids.bytes(binding.submissionId()))
-                ? List.of("a".repeat(64)) : List.of("b".repeat(64)));
-        when(files.read("a".repeat(64))).thenReturn(bytes(payload(current, ownScan)));
-        when(files.read("b".repeat(64))).thenAnswer(call -> bytes(priorPayload));
+                ? List.of(SubmissionJson.sha(payload(current, ownScan))) : List.of(SubmissionJson.sha(priorPayload)));
+        when(files.read(anyString())).thenAnswer(call ->
+            call.getArgument(0).equals(SubmissionJson.sha(payload(current, ownScan)))
+                ? bytes(payload(current, ownScan)) : bytes(priorPayload));
         when(jdbc.queryForList(contains("BIN_TO_UUID(c.submission_id)"), eq(String.class), any(Object[].class)))
             .thenReturn(List.of(otherSubmission.toString()));
         when(jdbc.queryForObject(anyString(), eq(Integer.class), any(Object[].class))).thenReturn(1);
@@ -60,7 +61,7 @@ class SourceEvidenceIntakeCrossSourceTest {
     }
 
     @Test void missingOtherPayloadFailsClosed() {
-        when(files.read("b".repeat(64))).thenThrow(new IllegalStateException("missing original"));
+        when(files.read(SubmissionJson.sha(priorPayload))).thenThrow(new IllegalStateException("missing original"));
 
         rejected("E2A_SOURCE_PAYLOAD_UNAVAILABLE", items());
     }
@@ -113,6 +114,13 @@ class SourceEvidenceIntakeCrossSourceTest {
     @Test void otherScanWithoutItsCaptureFailsClosed() {
         rejected("E2A_OTHER_SCAN_CAPTURE_MISSING", List.of(item("CAPTURE", current),
             item("SCAN", ownScan), item("SCAN", priorScan)));
+    }
+
+    @Test void changedStoredOriginalCannotBeUsedAsCrossSourceProof() {
+        var changed = priorPayload.deepCopy().put("unexpected", "changed");
+        when(files.read(SubmissionJson.sha(priorPayload))).thenReturn(bytes(changed));
+
+        rejected("E2A_SOURCE_PAYLOAD_UNAVAILABLE", items());
     }
 
     @Test void otherCaptureWithoutStoredScanDoesNotInventOne() {

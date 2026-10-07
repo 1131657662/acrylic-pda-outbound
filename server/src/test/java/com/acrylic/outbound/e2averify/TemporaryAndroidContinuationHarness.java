@@ -22,6 +22,8 @@ public final class TemporaryAndroidContinuationHarness {
             var activated=http.accepted(commands.request(uuid(parse(issued).path("businessDecision"),"ticketId")),"android-activation");
             Path attempt=http.database.profile.attempt;
             export(http,activated);
+            if(Boolean.parseBoolean(System.getenv("B4_CONTINUATION_HIGHER")))
+                activated=TemporaryAndroidHigherRounds.advance(http);
             await(attempt.resolve("android-uploaded.json"));
             var upload=parse(Files.readString(attempt.resolve("android-uploaded.json")));
             var command=confirmation(http,uuid(upload,"submissionId"));
@@ -38,7 +40,9 @@ public final class TemporaryAndroidContinuationHarness {
         Path attempt=http.database.profile.attempt;
         var input=object().put("baseUrl","http://127.0.0.1:"+http.app.getWebServer().getPort()+"/api/v1/")
             .put("token",http.token).put("activationUtf8",new String(activated,java.nio.charset.StandardCharsets.UTF_8))
-            .put("chunked",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_CHUNKS")));
+            .put("chunked",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_CHUNKS")))
+            .put("higher",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_HIGHER")));
+        if(input.path("higher").asBoolean())TemporaryAndroidHigherRounds.device(http,input);
         input.set("vector",parse(Files.readString(attempt.resolve("private/android-source.json"))));
         Files.writeString(attempt.resolve("private/android-input.json"),canonical(input),StandardOpenOption.CREATE_NEW);
         Files.writeString(attempt.resolve("android-ready.marker"),Instant.now().toString(),StandardOpenOption.CREATE_NEW);
@@ -64,7 +68,7 @@ public final class TemporaryAndroidContinuationHarness {
         assertThat(jdbc.queryForObject("SELECT status FROM temporary_source_continuation WHERE id=UUID_TO_BIN(?)",String.class,text(parse(activation).path("businessDecision"),"ticketId"))).isEqualTo("COMPLETED");
     }
 
-    private static void await(Path marker) throws Exception {
+    static void await(Path marker) throws Exception {
         long end=System.nanoTime()+java.util.concurrent.TimeUnit.MINUTES.toNanos(15);
         while(!Files.exists(marker) && System.nanoTime()<end) {
             assertThat(Files.exists(marker.getParent().resolve("android-failed.marker"))).as("Android consumer failed; preserve this attempt").isFalse();

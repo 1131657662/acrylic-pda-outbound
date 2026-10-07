@@ -97,7 +97,7 @@ public class SourceEvidenceIntakeOpenService {
         return new SourceEvidenceIntakeReceipts.OpenInsert(context.id("originalOperatorId"),originalKey,context.id("warehouseId"),
             context.id("scopeId"),parsed.submissionId(),parsed.workRound(),context.id("creatorDeviceId"),context.id("clientOrderId"),
             context.id("authorizationId"),actor.id(),Long.parseLong(context.text("sourceRecoveryEpoch")),
-            actor.pda().sessionId(),actor.authVersion(),actor.pda().deviceVersion(),parsed.canonicalBytes(),parsed.requestSha256());
+            actor.pda().sessionId(),actor.authVersion(),actor.pda().deviceVersion(),parsed.canonicalBytes(),parsed.requestSha256(),context.id("scopeClientOrderId"));
     }
 
     private byte[] result(SourceEvidenceIntakeReplay.Decision decision) {

@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/pda/temporary-orders/continuation-submissions")
 @ConditionalOnProperty(prefix="outbound.temporary.continuation-intake",name="enabled",havingValue="true")
 public class TemporaryRoundController {
-    private final TemporaryRoundIntake intake;private final ApiResponses responses;
-    public TemporaryRoundController(TemporaryRoundIntake intake,ApiResponses responses) { this.intake=intake;this.responses=responses; }
+    private final TemporaryRoundIntake intake;private final TemporaryRoundStop stops;private final ApiResponses responses;
+    public TemporaryRoundController(TemporaryRoundIntake intake,TemporaryRoundStop stops,ApiResponses responses) {
+        this.intake=intake;this.stops=stops;this.responses=responses;
+    }
     @PostMapping
     public ApiEnvelope<?> submit(@RequestHeader("X-Server-Recovery-Epoch") String epoch,@RequestBody byte[] bytes,HttpServletRequest request) {
         if(bytes.length>1048576)throw new BusinessException(413,"TEMP_CONTINUATION_PAYLOAD_TOO_LARGE","续作正文超过此入口的完整传输限额，请保留原文");
@@ -21,4 +23,10 @@ public class TemporaryRoundController {
     }
     @GetMapping("/{id}")
     public ApiEnvelope<?> read(@PathVariable UUID id,HttpServletRequest request) { return responses.ok(intake.read(id),request); }
+    @PostMapping("/{id}/stop")
+    public ApiEnvelope<?> stop(@PathVariable UUID id,@RequestHeader("X-Server-Recovery-Epoch") String epoch,
+        @RequestBody byte[] bytes,HttpServletRequest request) {
+        if(bytes.length>8192)throw new BusinessException(413,"TEMP_CONTINUATION_STOP_TOO_LARGE","停止请求过大");
+        return responses.ok(stops.stop(id,SubmissionJson.parse(bytes),epoch),request);
+    }
 }

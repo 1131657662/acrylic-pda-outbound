@@ -5,12 +5,14 @@ import org.json.JSONObject
 
 /** Revalidates the immutable signed predecessor; no original scan is copied into a mutable local row. */
 internal class TemporaryContinuationBaseline(private val store: TemporaryWorkStore) {
-    data class Baseline(val link: TemporaryContinuation, val original: JSONObject, val decision: JSONObject)
+    data class Baseline(val link: TemporaryContinuation, val original: JSONObject, val decision: JSONObject, val rootClientOrderId: String)
 
     fun read(draft: TemporaryDraft, requireAck: Boolean = true): Baseline? {
         if (draft.workRound == 1L) return null
         val link = checkNotNull(store.db.temporaryContinuations().forTarget(draft.clientOrderId)) { "续作消费记录缺失" }
         val old = checkNotNull(store.db.temporaryDrafts().get(link.sourceClientOrderId))
+        check(old.workRound >= 1L && Math.addExact(old.workRound, 1) == draft.workRound) { "续作前驱轮次不连续" }
+        val earlier = read(old, requireAck = false)
         val frozen = checkNotNull(store.db.temporarySubmissions().get(link.sourceSubmissionId))
         check(frozen.clientOrderId == old.clientOrderId && frozen.sha256 == link.sourcePayloadSha256)
         val prepared = checkNotNull(store.db.temporary().byAuthorization(old.authorizationId))
@@ -18,17 +20,21 @@ internal class TemporaryContinuationBaseline(private val store: TemporaryWorkSto
         val source = TemporaryCatalog.load(store.db, request)
         val verified = TemporaryContinuationProtocol.verify(link.receiptJson.toByteArray(Charsets.UTF_8),
             TemporaryContinuationProtocol.Input(old, frozen, source.manifest,
-                TemporaryAccess(store.db, store.connection).snapshot(), JSONObject(request.signingKeyJson)))
+                TemporaryAccess(store.db, store.connection).snapshot(), JSONObject(request.signingKeyJson),
+                earlier?.original, earlier?.rootClientOrderId ?: old.clientOrderId))
         check(verified.ticketId == link.ticketId && verified.newClientOrderId == draft.clientOrderId)
         check(verified.toRound == draft.workRound && verified.authorization.getString("authorizationId") == draft.authorizationId)
-        val current = store.source(draft.clientOrderId)
+        val currentPreparation = checkNotNull(store.db.temporary().byAuthorization(draft.authorizationId))
+        val currentRequest = checkNotNull(store.db.temporary().request(currentPreparation.requestKey))
+        val current = TemporaryCatalog.load(store.db, currentRequest)
         check(current.request.key == link.ticketId && current.request.previousKey == request.key)
         if (requireAck) TemporaryAckVerifier.verify(current.preparation, current.request,
             JSONObject(checkNotNull(current.preparation.ackJson) { "续作下载确认尚未完成" }))
         val original = JSONObject(frozen.payload)
         plan(draft, original)
         sequence(draft, verified.nextOrderScanSeq)
-        return Baseline(link, original, JSONObject(link.receiptJson).getJSONObject("businessDecision"))
+        return Baseline(link, original, JSONObject(link.receiptJson).getJSONObject("businessDecision"),
+            earlier?.rootClientOrderId ?: old.clientOrderId)
     }
 
     private fun sequence(draft: TemporaryDraft, start: Long) {

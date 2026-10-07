@@ -59,7 +59,7 @@ public class SourceEvidenceIntakeVerifyReceipts {
         if (jdbc.update(INSERT, Ids.bytes(receipt.id()), 1, Ids.bytes(context.principalId()), E2aProtocol.ROUTE_SCOPE,
             Ids.bytes(context.originalKey()), Ids.bytes(context.currentSessionId()), Ids.bytes(context.warehouseId()),
             Ids.bytes(context.scopeId()), Ids.bytes(context.submissionId()), context.workRound(),
-            Ids.bytes(context.creatorDeviceId()), Ids.bytes(context.clientOrderId()), Ids.bytes(context.authorizationId()),
+            Ids.bytes(context.creatorDeviceId()), Ids.bytes(context.scopeClientOrderId()), Ids.bytes(context.authorizationId()),
             Ids.bytes(context.originalOperatorId()), context.sourceRecoveryEpoch(), "VERIFY", status(receipt.originalResponseBytes()),
             context.requestBytes(), context.requestSha256(), receipt.originalResponseBytes(), receipt.originalResponseSha256(),
             receipt.signatureKeyId(), receipt.signedReceipt(), Ids.bytes(setId), Ids.bytes(verificationId),

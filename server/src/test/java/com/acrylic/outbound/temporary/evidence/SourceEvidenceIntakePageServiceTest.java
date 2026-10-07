@@ -66,6 +66,7 @@ class SourceEvidenceIntakePageServiceTest {
         context=new CommandContext(SubmissionJson.parse("""
             {"scopeId":"33333333-3333-4333-8333-333333333333","warehouseId":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
              "creatorDeviceId":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","clientOrderId":"44444444-4444-4444-8444-444444444444",
+             "scopeClientOrderId":"44444444-4444-4444-8444-444444444444",
              "submissionId":"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee","workRound":"3","scopeRound":"3",
              "originalOperatorId":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","freezeDeviceId":"cccccccc-cccc-4ccc-8ccc-cccccccccccc",
              "authorizationId":"22222222-2222-4222-8222-222222222222","sourceRecoveryEpoch":"4",

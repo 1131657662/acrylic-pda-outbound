@@ -42,8 +42,8 @@ class SourceEvidenceIntakeBusinessFactsLockOrderTest {
         payload.putArray("scans").add(low).add(high);
         byte[] bytes=SubmissionJson.canonical(payload).getBytes(StandardCharsets.UTF_8);
         when(jdbc.queryForList(anyString(),eq(String.class),any(Object[].class)))
-            .thenReturn(List.of("a".repeat(64)));
-        when(files.read("a".repeat(64))).thenReturn(bytes);
+            .thenReturn(List.of(SubmissionJson.sha(payload)));
+        when(files.read(SubmissionJson.sha(payload))).thenReturn(bytes);
         when(jdbc.queryForObject(anyString(),eq(Integer.class),any(Object[].class))).thenReturn(1);
         var stock=mock(ResultSet.class);
         when(stock.getString(1)).thenReturn(WAREHOUSE.toString());
@@ -67,8 +67,8 @@ class SourceEvidenceIntakeBusinessFactsLockOrderTest {
         payload.putArray("captures").add(capture);
         payload.putArray("scans").add(scan);
         when(jdbc.queryForList(anyString(),eq(String.class),any(Object[].class)))
-            .thenReturn(List.of("a".repeat(64)));
-        when(files.read("a".repeat(64))).thenReturn(SubmissionJson.canonical(payload).getBytes(StandardCharsets.UTF_8));
+            .thenReturn(List.of(SubmissionJson.sha(payload)));
+        when(files.read(SubmissionJson.sha(payload))).thenReturn(SubmissionJson.canonical(payload).getBytes(StandardCharsets.UTF_8));
         when(jdbc.queryForObject(anyString(),eq(Integer.class),any(Object[].class))).thenReturn(1);
         UUID setId=UUID.randomUUID();
         var stock=mock(ResultSet.class);

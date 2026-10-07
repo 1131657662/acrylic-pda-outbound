@@ -17,7 +17,7 @@ Control:
     continuationId: {type: 'null'}
     authorizationId: {type: string, format: uuid, description: 激活签发的独立新资格}
     freezeDeviceId: {type: string, format: uuid}
-    workRound: {const: '2'}
+    workRound: {type: string, pattern: '^([2-9]|[1-9][0-9]+)$', description: 与不可变前驱轮次加一严格一致}
     sourceRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
     temporaryContinuation: {$ref: '#/Reference'}
   description: source.clientOrderId使用激活给出的新client，creatorDeviceId和freezeDeviceId保持原设备；不复用FORMAL assignment。
@@ -27,9 +27,20 @@ Body:
     - $ref: './temporary-submission-schemas.yaml#/Body/allOf/1'
   description: |
     temporaryOrder使用新client和新authorization，其余计划固定不变。原数组按原文作为完整前缀。
-    captures与events前缀仍使用原来源/资格，新增部分使用新来源/资格。
+    captures与events前缀按每轮不可变前驱边界使用对应原来源/资格，新增部分使用新来源/资格。
     新轮至少追加一条新来源FROZEN事件；只有保留包时也不得复用前驱冻结事件。
     localDeletionAllowed保持false，接收正文不产生库存扣账或成功回执。
+Stop:
+  type: object
+  additionalProperties: false
+  required: [submissionId, reason, sourceEvidenceSetId, verificationId, setSha256]
+  properties:
+    submissionId: {type: string, format: uuid}
+    reason: {type: string, minLength: 1, maxLength: 500}
+    sourceEvidenceSetId: {type: string, format: uuid}
+    verificationId: {type: string, format: uuid}
+    setSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+  description: 已受理续作的技术停止。先完成当轮E2A停止证据验证；不取消票据、不释放占用、不允许删除。
 Upload:
   allOf:
     - $ref: '#/Control'

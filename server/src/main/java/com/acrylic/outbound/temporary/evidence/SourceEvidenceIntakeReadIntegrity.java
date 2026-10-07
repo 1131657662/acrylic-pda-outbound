@@ -38,7 +38,7 @@ public class SourceEvidenceIntakeReadIntegrity {
             && id(row, "submission_id").equals(source.id("submissionId"))
             && number(row, "work_round") == source.version("workRound")
             && id(row, "creator_device_id").equals(source.id("creatorDeviceId"))
-            && id(row, "client_order_id").equals(source.id("clientOrderId"))
+            && id(row, "client_order_id").equals(source.id(source.version("workRound") == 1 ? "clientOrderId" : "scopeClientOrderId"))
             && id(row, "temporary_authorization_id").equals(source.id("authorizationId"))
             && id(row, "original_operator_id").equals(source.id("originalOperatorId"))
             && number(row, "source_recovery_epoch") == source.version("sourceRecoveryEpoch"));
@@ -60,6 +60,7 @@ public class SourceEvidenceIntakeReadIntegrity {
             && "TEMP".equals(receipt.path("source").asText())
             && SourceEvidenceIntakeReceiptCodec.capabilities().equals(receipt.path("capabilities")));
         context(row, receipt.path("originalContext"));
+        require(source.text("clientOrderId").equals(receipt.path("originalContext").path("clientOrderId").asText()));
         references(row, receipt);
         String token = text(row, "signed_receipt");
         require(token.equals(receipt.path("signedReceipt").asText())
@@ -73,7 +74,7 @@ public class SourceEvidenceIntakeReadIntegrity {
     private static void context(Map<String, Object> row, JsonNode context) {
         require(context.isObject());
         for (var entry : Map.of("principalId", "principal_id", "warehouseId", "warehouse_id",
-            "scopeId", "scope_id", "creatorDeviceId", "creator_device_id", "clientOrderId", "client_order_id",
+            "scopeId", "scope_id", "creatorDeviceId", "creator_device_id",
             "temporaryAuthorizationId", "temporary_authorization_id", "originalOperatorId", "original_operator_id").entrySet())
             require(id(row, entry.getValue()).toString().equals(context.path(entry.getKey()).asText()));
         require(number(row, "source_recovery_epoch") == context.path("sourceRecoveryEpoch").asLong());

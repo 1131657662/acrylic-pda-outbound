@@ -19,10 +19,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SourceEvidenceIntakeBusinessFacts {
-    private static final String CAPTURE = """
-        SELECT COUNT(*) FROM submitted_capture
-        WHERE id=? AND submission_id=? AND origin_device_id=? AND device_capture_seq=? AND record_sha256=?
-        """;
     private static final String STOCK = """
         SELECT BIN_TO_UUID(b.warehouse_id),b.dispatch_cycle,p.upstream_present,p.book_status,p.blocked_reason,
           BIN_TO_UUID(k.submission_id),k.dispatch_cycle,k.state,
@@ -104,7 +100,9 @@ public class SourceEvidenceIntakeBusinessFacts {
             String.class, Ids.bytes(submissionId));
         if (hashes.size() != 1) throw conflict("E2A_SOURCE_PAYLOAD_UNAVAILABLE");
         try {
-            return SubmissionJson.parse(files.read(hashes.getFirst()));
+            var body=SubmissionJson.parse(files.read(hashes.getFirst()));
+            require(SubmissionJson.sha(body).equals(hashes.getFirst()),"E2A_SOURCE_PAYLOAD_UNAVAILABLE");
+            return body;
         } catch (RuntimeException failure) {
             throw conflict("E2A_SOURCE_PAYLOAD_UNAVAILABLE");
         }
@@ -119,9 +117,7 @@ public class SourceEvidenceIntakeBusinessFacts {
             && SubmissionJson.sha(capture).equals(item.recordSha256())
             && SubmissionJson.text(capture, "state").equals(item.recordStatus()), "E2A_CAPTURE_FACT_CONFLICT");
         if (!received) return;
-        var count = jdbc.queryForObject(CAPTURE, Integer.class, Ids.bytes(item.originalRecordId()),
-            Ids.bytes(binding.submissionId()), Ids.bytes(binding.creatorDeviceId()), item.originalDeviceSeq(), item.recordSha256());
-        require(count != null && count == 1, "E2A_CAPTURE_FACT_NOT_STORED");
+        SourceEvidenceIntakeStoredCaptures.require(jdbc,binding,item);
     }
 
     private void requireScan(SourceEvidenceIntakePageObjects.Binding binding, E2aPageItem item,

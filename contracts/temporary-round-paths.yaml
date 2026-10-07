@@ -3,11 +3,12 @@ Submit:
     summary: 显式提交已激活的 TEMP 新轮累积冻结正文
     description: |
       默认关闭的独立 intake 入口。隔离验证须显式启用 continuation-intake；生产入口保持关闭。
-      仅支持原人原机、第一轮前驱及其下一轮，前驱须已停止且完整核验，票据须已激活。
+      仅支持原人原机、连续前驱及其下一轮，沿不可变注册和原文逐轮重验；前驱须已停止且完整核验，票据须已激活。
       原 captures/scans/events 必须是不可改写的完整前缀；原扫描按原资格、新增扫描按新资格验证。
       原计划与库存政策固定，新增序号沿可信高水位连续递增。一次事务绑定唯一提交、选择新轮、
       保存正文及证据、将票据精确保留占用转移到新提交，并形成待审状态；不确认记账或放行。
-      支持尚未生成正式目标的来源，以及未改动的初始 PDA_TEMP 待审目标；受控 LINK 目标拒绝。
+      支持尚未生成正式目标的来源，以及未改动的初始 PDA_TEMP 待审目标；入库后可经既有人工LINK决定关联并确认正式目标。
+      已关联目标的后续再次续作尚未接通，保持拒绝。
       submissionId 为幂等键，完全相同正文可恢复；同键异文、换提交或跨身份重放拒绝。
       新资格缺 download-ack 时保留未激活确认问题，不以票据激活代替资料下载确认。
       此入口支持不超过 1MiB 的完整正文；更大原文使用专用续作分块入口，不得改投普通首轮接口。
@@ -26,6 +27,33 @@ Submit:
       '404': {$ref: './openapi.yaml#/components/responses/Error'}
       '409': {$ref: './openapi.yaml#/components/responses/Error'}
       '413': {description: 超过完整正文限额，使用专用续作分块上传并保留原文}
+Stop:
+  post:
+    summary: 完整停止证据核验后终止当轮技术提交并保留全部占用
+    description: |
+      默认关闭，复用continuation-intake开关。要求原人原机及pda:submit权限、恢复代次和不可变票据绑定。
+      只接受已经受理且REVIEW_REQUIRED的高轮提交，以及当轮VERIFIED_COMPLETE_AT_STOP集合和设备签名STOP原件。
+      返回签名ABORTED回执；所有owner保留，stockReleased、mayResumeScanning、localDeletionAllowed均false。
+      同提交同请求恢复原回执，同提交异请求拒绝；最终审计失败时状态和回执全部回滚。
+      签名stopRequestSha256绑定规范停止请求；sourceEvidenceSetId、verificationId及setSha256保留原验证引用。
+      本入口不取消续作票据或授予库存释放；后续仍需受控实物核对、新票据和独立新资格。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: '#/Id'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './temporary-round-schemas.yaml#/Stop'}
+    responses:
+      '200': {$ref: './submission-paths.yaml#/Result'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '413': {$ref: './openapi.yaml#/components/responses/Error'}
 Read:
   get:
     summary: 原人原机读取显式续作提交状态

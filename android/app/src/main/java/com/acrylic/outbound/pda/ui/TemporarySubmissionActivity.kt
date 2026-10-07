@@ -21,6 +21,7 @@ class TemporarySubmissionActivity : ComponentActivity() {
     private var local: TemporarySubmission? = null
     private var busy = false
     private var reconciling = false
+    private var continuation = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState); id = intent.getStringExtra("clientOrderId").orEmpty()
         if (id.isEmpty()) { finish(); return }
@@ -53,10 +54,17 @@ class TemporarySubmissionActivity : ComponentActivity() {
     }
     private fun abort() {
         val item = local ?: return; if (busy) return
-        val input = EditText(this).apply { hint = "取消原因"; setText(item.abortReason.orEmpty()); isEnabled = item.abortReason == null }
-        AlertDialog.Builder(this).setTitle("取消原上传批次").setMessage("取消不会卸货、解除占用或恢复扫码。请保留实物，联系主管办理后续处置。")
-            .setView(input).setNegativeButton("返回", null).setPositiveButton("确认取消") { _, _ ->
-                val reason = input.text.toString(); run { app.temporarySubmissions.abort(item.id, reason) }
+        val input = EditText(this).apply { hint = if (continuation) "停止原因" else "取消原因"; setText(item.abortReason.orEmpty()); isEnabled = item.abortReason == null }
+        AlertDialog.Builder(this).setTitle(if (continuation) "停止本轮续作" else "取消原上传批次")
+            .setMessage(if (continuation) "请先完成原机证据补传核验。停止后保留全部实物、占用和记录，等待主管处置。"
+                else "取消不会卸货、解除占用或恢复扫码。请保留实物，联系主管办理后续处置。")
+            .setView(input).setNegativeButton("返回", null).setPositiveButton(if (continuation) "确认停止" else "确认取消") { _, _ ->
+                val reason = input.text.toString(); run {
+                    try {
+                        if (continuation) app.temporarySubmissions.stopContinuation(item.id, reason)
+                        else app.temporarySubmissions.abort(item.id, reason)
+                    } finally { TemporaryUploadWorker.schedule(app, item.id) }
+                }
             }.show()
     }
     private fun evidence() {
@@ -91,6 +99,7 @@ class TemporarySubmissionActivity : ComponentActivity() {
         reconciling = app.database.sync().recovery()?.mode == "RECONCILING"
         evidenceState = app.database.localE2aReceipts().queue(id)
         val store = app.temporaryStore(); val draft = store.load(id); store.check(id, false)
+        continuation = draft.workRound > 1
         val total = store.total(id)
         return "${draft?.vehicleNo.orEmpty()} · ${draft?.temporaryNo.orEmpty()}\n实装 ${total.count} 包 · ${WorkRenderer.kg(total.grams)} kg"
     }
@@ -99,7 +108,7 @@ class TemporarySubmissionActivity : ComponentActivity() {
         binding.status.text = when (item?.state) {
             "SYNCED" -> "成功原回执已核验 · 保留实物及记录"
             "REVIEW_REQUIRED" -> "已接收，待独立确认 · 不得放行"
-            "ABORTED" -> "取消回执已验签 · 实物及占用保留"
+            "ABORTED" -> if (continuation) "停止回执已验签 · 实物及占用保留" else "取消回执已验签 · 实物及占用保留"
             "FROZEN" -> "原临时单已冻结 · 尚未上传 · 不得放行"
             "RESULT_UNKNOWN" -> "结果待核对 · 不得放行"
             "ACTION_REQUIRED" -> "上传待处理 · 不得放行"
@@ -111,12 +120,16 @@ class TemporarySubmissionActivity : ComponentActivity() {
         binding.freeze.visibility = if (item == null) View.VISIBLE else View.GONE
         binding.reason.visibility = binding.freeze.visibility
         binding.upload.isEnabled = item != null && !terminal; binding.refresh.isEnabled = item != null && !terminal
-        abort.visibility = if (item != null && !terminal) View.VISIBLE else View.GONE
+        abort.text = if (continuation) "停止本轮续作 · 保留实物占用" else "取消原批次 · 保留实物占用"
+        abort.visibility = if (item != null && !terminal && (!continuation ||
+            com.acrylic.outbound.pda.BuildConfig.TEMPORARY_CONTINUATION_DEVELOPMENT)) View.VISIBLE else View.GONE
         evidence.visibility = if (item != null && !terminal) View.VISIBLE else View.GONE
     }
     private fun renderNotice(item: TemporarySubmission?) {
         binding.notice.text = item?.let { "批次：${it.id}\n${it.error}\n" +
-            if (it.abortReason != null && it.state != "SYNCED") "原取消意图已保存，后续只恢复原取消请求" else "原资格、冻结正文与实物占用持续保留" }
+            if (it.abortReason != null && it.state != "SYNCED") {
+                if (continuation) "原停止意图已保存，后续只恢复原停止请求" else "原取消意图已保存，后续只恢复原取消请求"
+            } else "原资格、冻结正文与实物占用持续保留" }
             ?: "短装须填写原因；整单0包不能结单。"
         if (item?.autoRetry == true) binding.notice.append("\n已排队：Wi-Fi恢复后核对原批次")
         if (item?.state == "REVIEW_REQUIRED") binding.notice.append("\n独立确认入口尚未开放，请联系主管保留待办。")

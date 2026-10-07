@@ -31,6 +31,10 @@ internal class TemporaryContinuationFixture(root: File) : AutoCloseable {
         checkNotNull(work.fixture.auth), key)
     fun raw(change: (JSONObject) -> Unit = {}): ByteArray {
         val value = JSONObject(receipt.toString()).also(change)
+        return signed(value)
+    }
+    fun nextRaw(draft: TemporaryDraft, frozen: TemporarySubmission): ByteArray = signed(receipt(draft, frozen))
+    private fun signed(value: JSONObject): ByteArray {
         val claims = JSONObject().put("iss", "acrylic-outbound").put("aud", "acrylic-r06-command-receipt-v1").put("receipt", value)
         val token = signer.jwt(claims)
         return SubmissionJson.canonical(value.put("signedReceipt", token)).toByteArray(Charsets.UTF_8)
@@ -62,8 +66,10 @@ internal class TemporaryContinuationFixture(root: File) : AutoCloseable {
         return value
     }
 
-    private fun authorization(): JSONObject {
-        val old = work.fixture.receipt; val manifest = JSONObject(old.getString("manifest"))
+    private fun authorization(draft: TemporaryDraft): JSONObject {
+        val prepared = checkNotNull(db.temporary().byAuthorization(draft.authorizationId))
+        val old = JSONObject(checkNotNull(checkNotNull(db.temporary().request(prepared.requestKey)).receiptJson))
+        val manifest = JSONObject(old.getString("manifest"))
         val identity = manifest.getJSONObject("identity")
         val authorization = UUID.randomUUID().toString(); val bundle = UUID.randomUUID().toString()
         identity.put("authorizationId", authorization).put("bundleId", bundle)
@@ -75,13 +81,14 @@ internal class TemporaryContinuationFixture(root: File) : AutoCloseable {
             .put("manifestSha256", hash).put("offlineToken", signer.jwt(offline)).put("signedManifest", signer.jwt(signed))
     }
 
-    private fun receipt(): JSONObject {
-        val auth = authorization(); val body = JSONObject(frozen.payload); val session = checkNotNull(work.fixture.auth)
+    private fun receipt(draft: TemporaryDraft = this.draft, frozen: TemporarySubmission = this.frozen): JSONObject {
+        val auth = authorization(draft); val body = JSONObject(frozen.payload); val session = checkNotNull(work.fixture.auth)
         val scan = body.getJSONArray("scans").getJSONObject(0); val scope = UUID.randomUUID().toString()
         val rows = JSONArray().put(JSONObject().put("baleId", scan.get("baleId"))
             .put("expectedDispatchCycle", scan.get("expectedDispatchCycle")).put("recordSha256", sha(scan)))
         val decision = JSONObject().put("kind", "ACTIVATE_CONTINUATION").put("status", "ACTIVATED")
-            .put("ticketId", UUID.randomUUID().toString()).put("scopeId", scope).put("fromWorkRound", "1").put("toWorkRound", "2")
+            .put("ticketId", UUID.randomUUID().toString()).put("scopeId", scope).put("fromWorkRound", draft.workRound.toString())
+            .put("toWorkRound", Math.addExact(draft.workRound, 1).toString())
             .put("nextOrderScanSeq", draft.nextScanSeq.toString()).put("targetDeviceId", draft.creatorDeviceId)
             .put("targetOperatorId", draft.operatorId).put("newClientOrderId", UUID.randomUUID().toString())
             .put("newAuthorizationId", auth.get("authorizationId")).put("newBundleId", auth.get("bundleId")).put("authorization", auth)
@@ -96,13 +103,13 @@ internal class TemporaryContinuationFixture(root: File) : AutoCloseable {
             .put("recordedAt", work.fixture.time.toString()).put("expected", JSONObject()
                 .put("retainedManifestSha256", decision.get("retainedManifestSha256")).put("retainedManifestVersion", "1"))
             .put("status", "RECORDED").put("commandType", "ACTIVATE_CONTINUATION").put("businessDecision", decision)
-            .put("originalContext", context(body).put("scopeId", scope)).put("actor", actor)
+            .put("originalContext", context(body, draft, frozen).put("scopeId", scope)).put("actor", actor)
             .put("capabilities", JSONObject().put("writeConfirmationAvailable", false).put("releaseAllowed", false)
                 .put("mayResumeScanning", false).put("stockReleased", false).put("localDeletionAllowed", false))
     }
 
-    private fun context(body: JSONObject): JSONObject {
-        val result = JSONObject().put("clientOrderId", draft.clientOrderId).put("creatorDeviceId", draft.creatorDeviceId)
+    private fun context(body: JSONObject, draft: TemporaryDraft, frozen: TemporarySubmission): JSONObject {
+        val result = JSONObject().put("clientOrderId", work.id).put("creatorDeviceId", draft.creatorDeviceId)
             .put("originalOperatorId", draft.operatorId).put("warehouseId", draft.warehouseId).put("submissionId", frozen.id)
             .put("authorizationId", draft.authorizationId).put("receivedPayloadSha256", frozen.sha256)
             .put("declaredUploadSha256", frozen.sha256).put("planSha256", draft.planSha256).put("status", "ABORTED")

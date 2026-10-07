@@ -91,8 +91,14 @@ public class SourceEvidenceIntakeAuditPrefix {
                 || !authorization.equals(SubmissionJson.uuid(payload, "authorizationId"))
                 || !submission.toString().equals(SubmissionJson.text(payload, "detail"))) throw conflict();
             var clients = jdbc.queryForList("""
-                SELECT BIN_TO_UUID(c.client_order_id) FROM submission s
-                JOIN submission_scope c ON c.id=s.scope_id WHERE s.id=?
+                SELECT BIN_TO_UUID(CASE WHEN s.work_round=1 THEN c.client_order_id ELSE n.new_client_order_id END)
+                FROM submission s JOIN submission_scope c ON c.id=s.scope_id
+                LEFT JOIN temporary_source_continuation_submission r ON r.submission_id=s.id AND r.scope_id=c.id
+                  AND r.to_work_round=s.work_round AND r.from_work_round=s.work_round-1
+                LEFT JOIN temporary_source_continuation_activation n ON n.ticket_id=r.ticket_id AND n.scope_id=c.id
+                  AND n.from_work_round=r.from_work_round AND n.new_authorization_id=s.temporary_authorization_id
+                  AND n.target_device_id=s.freeze_device_id AND n.target_operator_id=s.operator_id
+                WHERE s.id=?
                 """, String.class, Ids.bytes(submission));
             if (clients.size() != 1 || !clients.getFirst().equals(
                 SubmissionJson.text(payload.path("source"), "clientOrderId"))) throw conflict();

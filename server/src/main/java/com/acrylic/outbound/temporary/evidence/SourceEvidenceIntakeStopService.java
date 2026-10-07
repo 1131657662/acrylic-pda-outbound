@@ -169,7 +169,7 @@ public class SourceEvidenceIntakeStopService {
             context.id("creatorDeviceId"), context.id("clientOrderId"), context.id("authorizationId"),
             context.id("originalOperatorId"), Long.parseLong(context.text("sourceRecoveryEpoch")),
             actor.pda().sessionId(), actor.authVersion(), actor.pda().deviceVersion(),
-            stop.canonicalBytes(), stop.requestSha256());
+            stop.canonicalBytes(), stop.requestSha256(), context.id("scopeClientOrderId"));
     }
 
     private static byte[] result(SourceEvidenceIntakeReplay.Decision decision) {

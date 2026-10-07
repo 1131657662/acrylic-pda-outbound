@@ -167,7 +167,7 @@ class SourceEvidenceIntakeReceiptCodecTest {
             .put("scopeId",input.scopeId().toString()).put("submissionId",input.submissionId().toString())
             .put("workRound",Long.toString(input.workRound()))
             .put("creatorDeviceId",input.creatorDeviceId().toString())
-            .put("clientOrderId",input.clientOrderId().toString())
+            .put("clientOrderId",input.clientOrderId().toString()).put("scopeClientOrderId",input.scopeClientOrderId().toString())
             .put("authorizationId",input.authorizationId().toString())
             .put("originalOperatorId",input.originalOperatorId().toString())
             .put("sourceRecoveryEpoch",Long.toString(input.sourceRecoveryEpoch()));

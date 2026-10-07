@@ -136,7 +136,7 @@ public class SourceEvidenceIntakeVerifyService {
         return new SourceEvidenceIntakeReceipts.OpenInsert(actor.id(), key, context.id("warehouseId"), context.id("scopeId"),
             context.id("submissionId"), context.version("workRound"), context.id("creatorDeviceId"), context.id("clientOrderId"),
             context.id("authorizationId"), context.id("originalOperatorId"), Long.parseLong(context.text("sourceRecoveryEpoch")),
-            actor.pda().sessionId(), actor.authVersion(), actor.pda().deviceVersion(), verify.canonicalBytes(), verify.requestSha256());
+            actor.pda().sessionId(), actor.authVersion(), actor.pda().deviceVersion(), verify.canonicalBytes(), verify.requestSha256(), context.id("scopeClientOrderId"));
     }
 
     private byte[] findings(SourceEvidenceIntakeStop.Parsed stop, long items) {

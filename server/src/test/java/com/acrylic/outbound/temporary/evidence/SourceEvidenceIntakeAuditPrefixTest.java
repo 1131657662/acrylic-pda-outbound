@@ -111,16 +111,16 @@ class SourceEvidenceIntakeAuditPrefixTest {
         stored.put("client_order_id", Ids.bytes(client));
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(stored));
 
-        when(jdbc.queryForList(contains("SELECT BIN_TO_UUID(c.client_order_id)"), eq(String.class), any(Object[].class)))
+        when(jdbc.queryForList(contains("WHERE s.id=?"), eq(String.class), any(Object[].class)))
             .thenReturn(List.of(client.toString()));
         prefix.requireStopEvent(device, warehouse, operator, authorization, 3, 1, event.path("id").asText(), submission);
         assertThatThrownBy(() -> prefix.requireStopEvent(device, warehouse, operator, authorization,
             3, 1, event.path("id").asText(), UUID.randomUUID())).isInstanceOf(BusinessException.class);
-        when(jdbc.queryForList(contains("SELECT BIN_TO_UUID(c.client_order_id)"), eq(String.class), any(Object[].class)))
+        when(jdbc.queryForList(contains("WHERE s.id=?"), eq(String.class), any(Object[].class)))
             .thenReturn(List.of(UUID.randomUUID().toString()));
         assertThatThrownBy(() -> prefix.requireStopEvent(device, warehouse, operator, authorization,
             3, 1, event.path("id").asText(), submission)).isInstanceOf(BusinessException.class);
-        when(jdbc.queryForList(contains("SELECT BIN_TO_UUID(c.client_order_id)"), eq(String.class), any(Object[].class)))
+        when(jdbc.queryForList(contains("WHERE s.id=?"), eq(String.class), any(Object[].class)))
             .thenReturn(List.of(client.toString()));
         assertThatThrownBy(() -> prefix.requireStopEvent(device, warehouse, operator, authorization,
             3, 1, UUID.randomUUID().toString(), submission)).isInstanceOf(BusinessException.class);

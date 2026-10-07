@@ -64,12 +64,14 @@ class SourceEvidenceIntakeOpenServiceTest {
         hint=new CommandContext(SubmissionJson.parse("""
             {"scopeId":"11111111-1111-4111-8111-111111111111","warehouseId":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
              "creatorDeviceId":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","clientOrderId":"22222222-2222-4222-8222-222222222222",
+             "scopeClientOrderId":"22222222-2222-4222-8222-222222222222",
              "submissionId":"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee","originalOperatorId":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
              "authorizationId":"33333333-3333-4333-8333-333333333333","canonicalOrderId":null}
             """));
         context=new CommandContext(SubmissionJson.parse("""
             {"scopeId":"11111111-1111-4111-8111-111111111111","warehouseId":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
              "creatorDeviceId":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","clientOrderId":"22222222-2222-4222-8222-222222222222",
+             "scopeClientOrderId":"22222222-2222-4222-8222-222222222222",
              "submissionId":"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee","workRound":"2","scopeRound":"2","status":"NORMAL",
              "authorizationId":"33333333-3333-4333-8333-333333333333","authorizationUserVersion":"7",
              "freezeDeviceId":"cccccccc-cccc-4ccc-8ccc-cccccccccccc","originalOperatorId":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",

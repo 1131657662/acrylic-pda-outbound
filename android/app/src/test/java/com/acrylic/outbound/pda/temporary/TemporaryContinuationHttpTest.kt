@@ -105,6 +105,12 @@ class TemporaryContinuationHttpTest {
         assertEquals("REVIEW_REQUIRED", TemporarySubmissionRepository(f.db, connection).upload(frozen.id).state)
         if (connection.chunked) assertArrayEquals(frozen.payload.toByteArray(Charsets.UTF_8),
             connection.chunks.entries.sortedBy { it.key.substringAfterLast('/').toInt() }.flatMap { it.value.toList() }.toByteArray())
+        val final = if (connection.higher) TemporaryHigherRoundHttpClient(f, connection, evidence).next(frozen) else frozen
+        if (connection.higher) assertEquals("REVIEW_REQUIRED", TemporarySubmissionRepository(f.db, connection).upload(final.id).state)
+        consume(f, connection, final, evidence)
+    }
+
+    private suspend fun consume(f: TemporaryFixture, connection: TemporaryContinuationHttpConnection, frozen: TemporarySubmission, evidence: File) {
         File(evidence, "android-uploaded.json").writeText(JSONObject().put("submissionId", frozen.id).put("payloadSha256", frozen.sha256).toString())
         val saved = withTimeout(60_000) {
             var row: TemporarySubmission
@@ -114,7 +120,7 @@ class TemporaryContinuationHttpTest {
         f.reopen()
         assertEquals("SYNCED", TemporarySubmissionRepository(f.db, connection).checked(saved.id).state)
         val receipt = JSONObject(saved.receipt!!)
-        assertEquals("2", receipt.getString("workRound")); assertFalse(receipt.getBoolean("localDeletionAllowed"))
+        assertEquals(if (connection.higher) "3" else "2", receipt.getString("workRound")); assertFalse(receipt.getBoolean("localDeletionAllowed"))
         assertNotNull(f.db.temporarySuccess().evidence(saved.id))
         File(evidence, "android-completed.json").writeText(JSONObject().put("submissionId", saved.id).put("status", saved.state)
             .put("localDeletionAllowed", false).put("actualCount", receipt.getString("actualCount")).toString())

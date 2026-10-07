@@ -7,7 +7,8 @@ import java.util.Base64
 
 object TemporaryContinuationProtocol {
     data class Input(val draft: TemporaryDraft, val frozen: TemporarySubmission, val manifest: JSONObject,
-        val session: JSONObject, val key: JSONObject)
+        val session: JSONObject, val key: JSONObject, val predecessor: JSONObject? = null,
+        val rootClientOrderId: String = draft.clientOrderId)
     data class Verified(val ticketId: String, val newClientOrderId: String, val authorization: JSONObject,
         val toRound: Long, val nextOrderScanSeq: Long, val receiptJson: String)
 

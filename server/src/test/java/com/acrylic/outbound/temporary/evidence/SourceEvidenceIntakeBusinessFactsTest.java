@@ -168,8 +168,8 @@ class SourceEvidenceIntakeBusinessFactsTest {
 
     private void stubPayload(JsonNode body) {
         var bytes=SubmissionJson.canonical(body).getBytes(StandardCharsets.UTF_8);
-        when(jdbc.queryForList(anyString(),eq(String.class),any(Object[].class))).thenReturn(List.of("a".repeat(64)));
-        when(files.read("a".repeat(64))).thenReturn(bytes);
+        when(jdbc.queryForList(anyString(),eq(String.class),any(Object[].class))).thenReturn(List.of(SubmissionJson.sha(body)));
+        when(files.read(SubmissionJson.sha(body))).thenReturn(bytes);
     }
 
     private JsonNode payload(JsonNode... values) {

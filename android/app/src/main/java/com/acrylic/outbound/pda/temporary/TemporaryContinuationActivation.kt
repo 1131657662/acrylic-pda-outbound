@@ -15,7 +15,9 @@ class TemporaryContinuationActivation(private val store: TemporaryWorkStore) {
             val source = store.source(id)
             val frozen = checkNotNull(store.db.temporarySubmissions().forOrder(id)) { "原冻结正文不存在" }
             LocalE2aStopRepository(store).record(id)
-            val input = TemporaryContinuationProtocol.Input(draft, frozen, source.manifest, expected, JSONObject(source.request.signingKeyJson))
+            val baseline = TemporaryContinuationBaseline(store).read(draft, requireAck = false)
+            val input = TemporaryContinuationProtocol.Input(draft, frozen, source.manifest, expected, JSONObject(source.request.signingKeyJson),
+                baseline?.original, baseline?.rootClientOrderId ?: draft.clientOrderId)
             val verified = TemporaryContinuationProtocol.verify(raw, input)
             val saved = store.db.temporaryContinuations().forSource(id)
             val result = if (saved != null) replay(saved, verified, frozen) else persist(draft, verified, frozen)
