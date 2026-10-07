@@ -10,6 +10,18 @@ import java.io.File
 import java.util.UUID
 
 class HandoverImportRepository(private val db: PdaDatabase, private val session: PdaSession) {
+    fun receive(caseId: String) {
+        val id = UUID.fromString(caseId).toString()
+        val expected = JSONObject(session.requireSession().toString())
+        val manifest = JSONObject(session.original(PdaSession.Original("pda/handovers/$id/manifest", null,
+            expected.getString("serverRecoveryEpoch"), maximumBytes = 2 * 1024 * 1024), expected).toString(Charsets.UTF_8))
+        SessionIdentity.requireSame(expected, session.saved())
+        if (manifest.optString("sourceKind") == "TEMP")
+            com.acrylic.outbound.pda.temporary.TemporaryHandoverRepository(db,
+                com.acrylic.outbound.pda.temporary.TemporarySession(session)).stage(id)
+        else stage(id)
+    }
+
     fun continueWork(caseId: String): String =
         HandoverContinuationRepository(db, HandoverDownloadSession(session)).activate(caseId)
 

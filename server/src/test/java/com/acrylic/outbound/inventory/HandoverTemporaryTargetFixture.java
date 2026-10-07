@@ -20,6 +20,7 @@ final class HandoverTemporaryTargetFixture {
     final UUID device, user;
     final String token;
     final JsonNode authorization, manifest;
+    final JsonNode session;
     final Path directory;
     private int calls;
 
@@ -33,6 +34,7 @@ final class HandoverTemporaryTargetFixture {
         var setup = new TemporaryFixture(new PublicationDriver(mvc, app.getBean(com.fasterxml.jackson.databind.ObjectMapper.class),
             new IdentityFixture(identity.user(), source.head.warehouse())), source.jdbc);
         device = UUID.fromString(setup.device.id()); token = setup.tokens.path("accessToken").asText();
+        session = setup.tokens.deepCopy();
         authorization = SubmissionJson.parse(post("/temporary-preparations", setup.request(), 200)).path("data");
         manifest = SubmissionJson.parse(authorization.path("manifest").asText());
     }

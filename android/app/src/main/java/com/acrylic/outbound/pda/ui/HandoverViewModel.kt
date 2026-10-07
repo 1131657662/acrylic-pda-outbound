@@ -23,10 +23,10 @@ class HandoverViewModel(application: Application) : AndroidViewModel(application
 
     fun reload() = run("正在读取本机交接资料") { load() }
     fun more() = run("正在读取更多交接") { limit += 20; load() }
-    fun stage(caseId: String) = run("正在核验原交接资料") { app.handovers.stage(caseId.trim()); load() }
+    fun stage(caseId: String) = run("正在核验原交接资料") { app.handovers.receive(caseId.trim()); load() }
     fun perform(card: HandoverCard) = run("正在处理交接；完成前保持冻结") {
         when (card.action) {
-            "REFRESH" -> app.handovers.stage(card.caseId)
+            "REFRESH" -> app.handovers.receive(card.caseId)
             "IMPORT" -> app.handovers.downloadAndImport(card.caseId, File(app.cacheDir, "handovers")) { text ->
                 mutable.update { it.copy(message = text) }
             }
@@ -41,9 +41,20 @@ class HandoverViewModel(application: Application) : AndroidViewModel(application
         val auth = JSONObject(app.session.requireSession().toString())
         val ids = app.database.handoverStages().cases(auth.getString("userId"), auth.getString("deviceId"),
             auth.getString("warehouseId"), limit + 1)
-        val cards = ids.take(limit).map(::card)
+        val temporary = app.database.temporaryHandoverStages().cases(auth.getString("userId"), auth.getString("deviceId"),
+            auth.getString("warehouseId"), limit + 1)
+        val all = (ids + temporary).distinct().sortedDescending()
+        val cards = all.take(limit).map { if (it in temporary) temporaryCard(it) else card(it) }
         SessionIdentity.requireSame(auth, app.session.saved())
-        mutable.update { it.copy(cards = cards, hasMore = ids.size > limit) }
+        mutable.update { it.copy(cards = cards, hasMore = all.size > limit) }
+    }
+
+    private fun temporaryCard(id: String): HandoverCard {
+        val repository = com.acrylic.outbound.pda.temporary.TemporaryHandoverRepository(app.database,
+            com.acrylic.outbound.pda.temporary.TemporarySession(app.session))
+        val status = runCatching { repository.read(id); "原临时记录已保存；接收确认和激活尚未完成，保持停止" }
+            .getOrElse { "${it.message ?: "临时交接需核对"}；原资料保留" }
+        return HandoverCard(id, "", "临时作业交接", status, "REFRESH", "核对接收资格与原资料")
     }
 
     private fun card(id: String): HandoverCard {

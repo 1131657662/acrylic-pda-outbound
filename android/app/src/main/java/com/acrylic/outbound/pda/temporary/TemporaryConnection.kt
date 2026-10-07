@@ -22,14 +22,15 @@ interface TemporaryConnection {
         val raw: ByteArray? = null, val epoch: String = expected.getString("serverRecoveryEpoch"))
     data class Download(val path: String, val expected: JSONObject, val target: File)
     data class Original(val path: String, val expected: JSONObject, val body: ByteArray? = null,
-        val epoch: String = expected.getString("serverRecoveryEpoch"), val raw: ByteArray? = null)
+        val epoch: String = expected.getString("serverRecoveryEpoch"), val raw: ByteArray? = null,
+        val maximumBytes: Int = 262144)
 }
 
 class TemporarySession(private val session: PdaSession) : TemporaryConnection {
     override fun localDraftStopKey() = session.localDraftStopKey()
     override fun signLocalDraftStop(stop: LocalDraftStop) = session.signLocalDraftStop(stop)
     override fun original(request: TemporaryConnection.Original) = session.original(
-        PdaSession.Original(request.path, request.body, request.epoch, request.raw), request.expected)
+        PdaSession.Original(request.path, request.body, request.epoch, request.raw, request.maximumBytes), request.expected)
     override fun stopProof(facts: E2aStopProof.Facts) = session.stopProof(facts)
     override fun current() = session.saved()
     override fun now() = session.now()
