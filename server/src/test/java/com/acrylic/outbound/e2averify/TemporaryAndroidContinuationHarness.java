@@ -37,7 +37,8 @@ public final class TemporaryAndroidContinuationHarness {
     private static void export(ContinuationReceiptHttpFixture http,byte[] activated) throws Exception {
         Path attempt=http.database.profile.attempt;
         var input=object().put("baseUrl","http://127.0.0.1:"+http.app.getWebServer().getPort()+"/api/v1/")
-            .put("token",http.token).put("activationUtf8",new String(activated,java.nio.charset.StandardCharsets.UTF_8));
+            .put("token",http.token).put("activationUtf8",new String(activated,java.nio.charset.StandardCharsets.UTF_8))
+            .put("chunked",Boolean.parseBoolean(System.getenv("B4_CONTINUATION_CHUNKS")));
         input.set("vector",parse(Files.readString(attempt.resolve("private/android-source.json"))));
         Files.writeString(attempt.resolve("private/android-input.json"),canonical(input),StandardOpenOption.CREATE_NEW);
         Files.writeString(attempt.resolve("android-ready.marker"),Instant.now().toString(),StandardOpenOption.CREATE_NEW);

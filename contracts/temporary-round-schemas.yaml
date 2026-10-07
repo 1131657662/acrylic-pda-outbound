@@ -30,3 +30,15 @@ Body:
     captures与events前缀仍使用原来源/资格，新增部分使用新来源/资格。
     新轮至少追加一条新来源FROZEN事件；只有保留包时也不得复用前驱冻结事件。
     localDeletionAllowed保持false，接收正文不产生库存扣账或成功回执。
+Upload:
+  allOf:
+    - $ref: '#/Control'
+    - type: object
+      required: [schemaVersion, submissionId, payloadSha256, byteCount, chunkCount]
+      properties:
+        schemaVersion: {const: 2}
+        submissionId: {type: string, format: uuid}
+        payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+        byteCount: {type: string, pattern: '^[1-9][0-9]*$', description: 不超过33554432}
+        chunkCount: {type: string, pattern: '^[1-9][0-9]*$', description: ceil(byteCount/262144)，不超过128}
+  unevaluatedProperties: false

@@ -30,7 +30,7 @@ public class TemporaryRoundIntake {
         submissions.requireUploadHash(head.control().id(),hash);
         if(previous!=null && !previous.equals(hash))throw new BusinessException(409,"IDEMPOTENCY_CONTENT_MISMATCH","同一续作提交ID正文不同");
         if(previous!=null)return response(head);
-        if(!"REGISTERED".equals(head.status()))throw TemporaryRoundFacts.conflict("TEMP_CONTINUATION_INTAKE_STATE_CONFLICT");
+        if(!java.util.Set.of("REGISTERED","RECEIVING").contains(head.status()))throw TemporaryRoundFacts.conflict("TEMP_CONTINUATION_INTAKE_STATE_CONFLICT");
         var source=facts.read(request,new SubmissionAccess.Actor(principal.userId(),principal.warehouseId(),principal.userAuthVersion()));
         if(!"ACTIVATED".equals(source.status()))throw TemporaryRoundFacts.conflict("CONTINUATION_NOT_ACTIVATED");
         var input=new TemporaryRoundPayload.Input(request,source,head,facts.retained(request,source));

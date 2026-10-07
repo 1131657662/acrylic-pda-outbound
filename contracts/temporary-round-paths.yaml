@@ -10,7 +10,7 @@ Submit:
       支持尚未生成正式目标的来源，以及未改动的初始 PDA_TEMP 待审目标；受控 LINK 目标拒绝。
       submissionId 为幂等键，完全相同正文可恢复；同键异文、换提交或跨身份重放拒绝。
       新资格缺 download-ack 时保留未激活确认问题，不以票据激活代替资料下载确认。
-      此入口仅支持不超过 1MiB 的完整正文，未提供续作分块上传；不得改投普通首轮接口。
+      此入口支持不超过 1MiB 的完整正文；更大原文使用专用续作分块入口，不得改投普通首轮接口。
     security: [{pdaBearer: []}]
     parameters: [{$ref: './openapi.yaml#/components/parameters/Epoch'}]
     requestBody:
@@ -25,7 +25,7 @@ Submit:
       '403': {$ref: './openapi.yaml#/components/responses/Error'}
       '404': {$ref: './openapi.yaml#/components/responses/Error'}
       '409': {$ref: './openapi.yaml#/components/responses/Error'}
-      '413': {description: 超过完整正文限额，须保留原文；续作分块上传尚不可用}
+      '413': {description: 超过完整正文限额，使用专用续作分块上传并保留原文}
 Read:
   get:
     summary: 原人原机读取显式续作提交状态
@@ -42,3 +42,69 @@ Read:
       '403': {$ref: './openapi.yaml#/components/responses/Error'}
       '404': {$ref: './openapi.yaml#/components/responses/Error'}
       '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Upload:
+  post:
+    summary: 注册不可改写的续作分块清单
+    description: 默认关闭；原人原机新资格、恢复代次及激活票据须匹配。清单最多16KiB，正文最大32MiB，分块256KiB。仅落耐久传输状态，不转移占用或记账。原提交ID/清单可重试，异文拒绝；已有完整正文返回原状态。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: '#/Id'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './temporary-round-schemas.yaml#/Upload'}
+    responses:
+      '200': {$ref: './submission-paths.yaml#/Result'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '413': {$ref: './openapi.yaml#/components/responses/Error'}
+Chunk:
+  post:
+    summary: 保存续作原始分块字节
+    description: 同索引同摘要幂等，异文/错误长度/越界拒绝；身份和票据每次核对。正文受理后不再接收新分块。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: '#/Id'}
+      - name: index
+        in: path
+        required: true
+        schema: {type: integer, minimum: 0, maximum: 127}
+    requestBody:
+      required: true
+      content:
+        application/octet-stream:
+          schema: {type: string, format: binary, maxLength: 262144}
+    responses:
+      '200': {description: 分块编号与SHA-256已耐久保存}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '413': {$ref: './openapi.yaml#/components/responses/Error'}
+Finalize:
+  post:
+    summary: 核验全部续作分块并原子受理累计正文
+    description: 分块顺序/长度/原件摘要/完整摘要/规范字节/注册身份全部一致才进入同一续作受理事务。缺块、损坏或最终SQL失败不产生部分业务结果，原传输与文件保留。原键重复返回原状态及成功回执，localDeletionAllowed保持false。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: '#/Id'}
+    responses:
+      '200': {$ref: './submission-paths.yaml#/Result'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Id:
+  name: id
+  in: path
+  required: true
+  schema: {type: string, format: uuid}

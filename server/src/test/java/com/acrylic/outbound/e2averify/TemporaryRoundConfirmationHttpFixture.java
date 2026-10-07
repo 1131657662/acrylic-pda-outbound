@@ -20,6 +20,9 @@ final class TemporaryRoundConfirmationHttpFixture implements AutoCloseable {
     final byte[] issued,activated;
     final JsonNode original;
     TemporaryRoundConfirmationHttpFixture(boolean shortShipment) throws Exception {
+        this(shortShipment,true);
+    }
+    TemporaryRoundConfirmationHttpFixture(boolean shortShipment,boolean accept) throws Exception {
         http=new ContinuationReceiptHttpFixture("66",true,false);
         http.database.jdbc.update("INSERT IGNORE INTO user_role SELECT UUID_TO_BIN(?),id FROM role WHERE code IN ('TEMPORARY_ORDER_CREATOR','TEMPORARY_ORDER_CONFIRMER')",
             http.database.seed.get("operatorId"));
@@ -30,9 +33,11 @@ final class TemporaryRoundConfirmationHttpFixture implements AutoCloseable {
         activated=http.accepted(activate,"confirmation-activation");
         body=new TemporaryRoundIntakeBody(http.database).next(original,parse(activated).path("businessDecision"));
         if(shortShipment)retainedOnly();
-        var accepted=http.continuation(body,http.token,"confirmation-intake");
-        assertThat(accepted.statusCode()).as(new String(accepted.body())).isEqualTo(200);
-        assertThat(parse(accepted.body()).path("data").path("status").asText()).isEqualTo("REVIEW_REQUIRED");
+        if(accept) {
+            var accepted=http.continuation(body,http.token,"confirmation-intake");
+            assertThat(accepted.statusCode()).as(new String(accepted.body())).isEqualTo(200);
+            assertThat(parse(accepted.body()).path("data").path("status").asText()).isEqualTo("REVIEW_REQUIRED");
+        }
     }
     ObjectNode command(String kind) {
         var context=http.app.getBean(CommandFacts.class).read(uuid(body,"submissionId"));

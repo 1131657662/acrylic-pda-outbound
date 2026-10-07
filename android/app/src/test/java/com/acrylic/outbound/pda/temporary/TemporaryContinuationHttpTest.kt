@@ -75,7 +75,7 @@ class TemporaryContinuationHttpTest {
         assertEquals("READY", TemporaryContinuationCoordinator(store(f, connection)).resume(ticket).state)
     }
 
-    private fun scanAndFreeze(f: TemporaryFixture, connection: TemporaryConnection, draft: TemporaryDraft): TemporarySubmission {
+    private fun scanAndFreeze(f: TemporaryFixture, connection: TemporaryContinuationHttpConnection, draft: TemporaryDraft): TemporarySubmission {
         val store = store(f, connection); store.load(draft.clientOrderId)
         assertEquals(3L, store.total(draft.clientOrderId).count)
         val processor = TemporaryProcessor(store) {}
@@ -83,9 +83,14 @@ class TemporaryContinuationHttpTest {
         processor.drain(draft.clientOrderId)
         assertEquals("COMMITTED", f.db.temporaryScans().capture(capture.id)!!.state)
         assertEquals(5L, capture.orderScanSeq)
+        if (connection.chunked) f.db.runInTransaction {
+            // Synthetic scale input through the product audit writer; all final bytes are frozen by the product.
+            repeat(1500) { store.event(draft, null, "TEMP_CHUNK_TRANSPORT_TEST", "合成分块证据".repeat(60)) }
+        }
         val frozen = TemporaryFreeze(store).freeze(draft.clientOrderId, "")
         assertEquals("4", JSONObject(frozen.payload).getString("expectedCount"))
         assertEquals("4000", JSONObject(frozen.payload).getString("expectedWeightGrams"))
+        if (connection.chunked) assertTrue(frozen.payload.toByteArray(Charsets.UTF_8).size > 1024 * 1024)
         return frozen
     }
 
@@ -93,7 +98,13 @@ class TemporaryContinuationHttpTest {
         f.db.temporarySubmissions().queue(frozen.id)
         assertThrows(IOException::class.java) { TemporarySubmissionRepository(f.db, connection).upload(frozen.id) }
         f.reopen()
+        if (connection.chunked) repeat(2) {
+            assertThrows(IOException::class.java) { TemporarySubmissionRepository(f.db, connection).upload(frozen.id) }
+            f.reopen()
+        }
         assertEquals("REVIEW_REQUIRED", TemporarySubmissionRepository(f.db, connection).upload(frozen.id).state)
+        if (connection.chunked) assertArrayEquals(frozen.payload.toByteArray(Charsets.UTF_8),
+            connection.chunks.entries.sortedBy { it.key.substringAfterLast('/').toInt() }.flatMap { it.value.toList() }.toByteArray())
         File(evidence, "android-uploaded.json").writeText(JSONObject().put("submissionId", frozen.id).put("payloadSha256", frozen.sha256).toString())
         val saved = withTimeout(60_000) {
             var row: TemporarySubmission

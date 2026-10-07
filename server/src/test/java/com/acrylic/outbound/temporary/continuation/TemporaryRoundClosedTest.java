@@ -6,12 +6,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class TemporaryRoundClosedTest {
     private final ApplicationContextRunner context=new ApplicationContextRunner()
-        .withUserConfiguration(TemporaryRoundController.class,TemporaryRoundIntake.class);
+        .withUserConfiguration(TemporaryRoundController.class,TemporaryRoundIntake.class,TemporaryRoundChunks.class,TemporaryRoundChunksController.class);
     @Test void missingFlagDoesNotRegisterIntakeOrHttpController() {
-        context.run(c->assertThat(c).doesNotHaveBean(TemporaryRoundController.class).doesNotHaveBean(TemporaryRoundIntake.class));
+        context.run(c->assertThat(c).doesNotHaveBean(TemporaryRoundController.class).doesNotHaveBean(TemporaryRoundIntake.class)
+            .doesNotHaveBean(TemporaryRoundChunks.class).doesNotHaveBean(TemporaryRoundChunksController.class));
     }
     @Test void explicitFalseDoesNotRegisterIntakeOrHttpController() {
         context.withPropertyValues("outbound.temporary.continuation-intake.enabled=false")
-            .run(c->assertThat(c).doesNotHaveBean(TemporaryRoundController.class).doesNotHaveBean(TemporaryRoundIntake.class));
+            .run(c->assertThat(c).doesNotHaveBean(TemporaryRoundController.class).doesNotHaveBean(TemporaryRoundIntake.class)
+                .doesNotHaveBean(TemporaryRoundChunks.class).doesNotHaveBean(TemporaryRoundChunksController.class));
     }
 }
