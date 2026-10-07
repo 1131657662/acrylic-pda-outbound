@@ -24,8 +24,10 @@ public class TemporarySourceBindingController {
 
     @GetMapping
     public ApiEnvelope<?> mine(@RequestParam(defaultValue="") String cursor,@RequestParam(defaultValue="20") int limit,
+        @RequestParam(required=false) java.util.UUID clientOrderId,
         HttpServletRequest request) {
         var principal=access.current();
-        return responses.ok(bindings.mine(principal.deviceId(),cursor,limit),request);
+        var scope=new TemporarySourceBindingQueries.Scope(principal.deviceId(),principal.warehouseId(),clientOrderId);
+        return responses.ok(bindings.mine(scope,cursor,limit),request);
     }
 }

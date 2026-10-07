@@ -27,7 +27,7 @@ internal class TemporaryMappedTarget(private val db: PdaDatabase, private val co
                     matched++
                 }
                 page
-            }).installBindings()
+            }).installSource(root)
         check(matched == 1) { "正式目标已变化，缺少本轮人工关联记录，请保留原件后重试" }
         return target
     }

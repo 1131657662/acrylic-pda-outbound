@@ -83,10 +83,16 @@ DetailResponses:
 PdaSourceBindings:
   get:
     summary: 读取本机 TEMP 来源当前绑定（只读，设备域）
-    description: 设备用它得知自己的 TEMP 来源是否已被主管关联到正式单（映射版本+1）。仅返回 creator_device_id=本机的 scope：canonicalOrderId、mappingVersion、workRound、phase、submissionStatus、mappingOrigin、orderNo/orderSource/orderStatus，以及 installRequired（映射来源为 CONTROLLED_LINK）。与 temporary commands 同一开关；默认关闭时该路径不存在。不授予任何写入或业务能力。
+    description: 设备用它得知自己的 TEMP 来源是否已被主管关联到正式单（映射版本+1）。仅返回本登录仓库且 creator_device_id=本机的 scope；可按原 clientOrderId 精确读取，不受批量同步页数影响。包含 canonicalOrderId、mappingVersion、workRound、phase、submissionStatus、mappingOrigin、orderNo/orderSource/orderStatus，以及 installRequired（映射来源为 CONTROLLED_LINK）。与 temporary commands 同一开关；默认关闭时该路径不存在。不授予任何写入或业务能力。
     security: [{pdaBearer: []}]
-    parameters: [{$ref: '#/BindingCursor'}, {$ref: '#/PageLimit'}]
+    parameters: [{$ref: '#/BindingCursor'}, {$ref: '#/PageLimit'}, {$ref: '#/BindingClientOrder'}]
     responses: {$ref: '#/BindingResponses'}
+BindingClientOrder:
+  name: clientOrderId
+  in: query
+  required: false
+  schema: {type: string, format: uuid}
+  description: 原TEMP来源的clientOrderId；仍限定本登录仓库和本设备，不存在或不可见时返回空页。
 BindingCursor:
   name: cursor
   in: query

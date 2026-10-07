@@ -1,13 +1,14 @@
 BindingPage:
   type: object
   additionalProperties: false
-  required: [items, nextCursor]
+  required: [items, nextCursor, hasMore]
   properties:
     items:
       type: array
-      maxItems: 50
+      maxItems: 200
       items: {$ref: '#/Binding'}
     nextCursor: {type: [string, 'null'], description: 下一页游标；为空表示没有更多}
+    hasMore: {type: boolean}
 Binding:
   type: object
   additionalProperties: false
@@ -20,7 +21,7 @@ Binding:
     mappingVersion: {type: string, pattern: '^[0-9]+$'}
     workRound: {type: string, pattern: '^[1-9][0-9]*$'}
     currentSubmissionId: {type: string, description: 'uuid 或字符串 null'}
-    phase: {type: string, description: 'FROZEN/COMPLETED 或字符串 null'}
+    phase: {type: string, description: 'FROZEN/CONTINUING/COMPLETED/CLOSED 或字符串 null'}
     submissionStatus: {type: string, description: '提交状态或字符串 null'}
     mappingId: {type: string, description: 'uuid 或字符串 null'}
     mappingOrigin: {type: string, description: 'MIGRATED_BASELINE/INITIAL_ACCEPTANCE/SOURCE_REGISTERED/CONTROLLED_LINK 或字符串 null'}

@@ -61,32 +61,32 @@ class SourceBindingRepositoryTest {
         .put("nextCursor", JSONObject.NULL)
 
     @Test fun installsLinkedBindingAndKeepsLocalStateConsistent() {
-        val repo = SourceBindingRepository(db, ::auth) { _, _ -> page(binding("scope-1", true)) }
+        val repo = SourceBindingRepository(db, ::auth) { _, _ -> page(binding("01994300-0000-7000-8000-000000000101", true)) }
         val result = repo.installBindings(run = SyncRun())
         assertEquals(1, db.sourceBindings().count())
-        val row = db.sourceBindings().get("scope-1")
+        val row = db.sourceBindings().get("01994300-0000-7000-8000-000000000101")
         assertNotNull(row)
         assertEquals("01994300-0000-7000-8000-000000000020", row!!.canonicalOrderId)
         assertEquals("2", row.mappingVersion)
         assertEquals("CONTROLLED_LINK", row.mappingOrigin)
         assertEquals("FH-0001", row.orderNo)
         assertEquals("FROZEN", row.phase)
-        assertEquals("来源绑定无变化".length >= 0, result.more == false)
+        org.junit.Assert.assertFalse(result.more)
     }
 
     @Test fun skipsBindingWhenInstallIsNotRequired() {
-        val repo = SourceBindingRepository(db, ::auth) { _, _ -> page(binding("scope-2", false)) }
+        val repo = SourceBindingRepository(db, ::auth) { _, _ -> page(binding("01994300-0000-7000-8000-000000000102", false)) }
         repo.installBindings(run = SyncRun())
         assertEquals(0, db.sourceBindings().count())
-        assertNull(db.sourceBindings().get("scope-2"))
+        assertNull(db.sourceBindings().get("01994300-0000-7000-8000-000000000102"))
     }
 
     @Test fun reinstallingTheSamePageDoesNotDuplicateRows() {
-        val repo = SourceBindingRepository(db, ::auth) { _, _ -> page(binding("scope-3", true)) }
+        val repo = SourceBindingRepository(db, ::auth) { _, _ -> page(binding("01994300-0000-7000-8000-000000000103", true)) }
         repo.installBindings(run = SyncRun())
         repo.installBindings(run = SyncRun())
         assertEquals(1, db.sourceBindings().count())
-        assertEquals("2", db.sourceBindings().get("scope-3")!!.mappingVersion)
+        assertEquals("2", db.sourceBindings().get("01994300-0000-7000-8000-000000000103")!!.mappingVersion)
     }
 
     @Test fun migration27To28KeepsExistingRowsAndAddsTheNewTable() {

@@ -16,6 +16,7 @@ public final class TemporaryAndroidContinuationHarness {
     public static void main(String[] args) throws Exception {
         assertThat(System.getenv("B4_RETENTION_VERIFY")).isEqualTo("true");
         try(var http=new ContinuationReceiptHttpFixture("66",true,false,true)) {
+            if(Boolean.parseBoolean(System.getenv("D04_BINDINGS_VERIFY")))new TemporaryBindingHttpChecks(http).prepare();
             http.database.jdbc.update("INSERT IGNORE INTO user_role SELECT UUID_TO_BIN(?),id FROM role WHERE code='TEMPORARY_ORDER_CREATOR'",http.database.seed.get("operatorId"));
             var commands=new ContinuationReceiptHttpCommands(http);
             var issued=http.accepted(commands.request(null),"android-ticket");

@@ -13,10 +13,14 @@ public class TemporarySourceBindingQueries {
     private final JdbcTemplate jdbc;
     public TemporarySourceBindingQueries(JdbcTemplate jdbc) { this.jdbc=jdbc; }
 
-    public Page<ObjectNode> mine(UUID device,String before,int pageSize) {
+    public record Scope(UUID device,UUID warehouse,UUID clientOrder) { }
+    public Page<ObjectNode> mine(Scope scope,String before,int pageSize) {
         int limit=Page.checkedLimit(pageSize);
         UUID cursor;
-        try { cursor=before.isEmpty()?new UUID(-1L,-1L):UUID.fromString(before); }
+        try {
+            cursor=before.isEmpty()?new UUID(-1L,-1L):UUID.fromString(before);
+            if(!before.isEmpty() && !cursor.toString().equals(before))throw new IllegalArgumentException();
+        }
         catch(IllegalArgumentException error) { throw new BusinessException(400,"INVALID_CURSOR","绑定分页游标无效"); }
         var rows=jdbc.query("""
             SELECT BIN_TO_UUID(c.id) scope_id,BIN_TO_UUID(c.client_order_id) client_order_id,
@@ -31,7 +35,8 @@ public class TemporarySourceBindingQueries {
             LEFT JOIN submission s ON s.id=c.current_submission_id
             LEFT JOIN temporary_source_mapping m ON m.scope_id=c.id AND m.mapping_version=c.mapping_version
             LEFT JOIN outbound_order o ON o.id=c.canonical_order_id
-            WHERE c.creator_device_id=? AND c.id<?
+            WHERE c.creator_device_id=? AND c.warehouse_id=? AND c.id<?
+              AND (? IS NULL OR c.client_order_id=?)
             ORDER BY c.id DESC LIMIT ?
             """,(rs,n)->{
                 var node=SubmissionJson.object().put("scopeId",rs.getString(1)).put("clientOrderId",rs.getString(2))
@@ -44,7 +49,9 @@ public class TemporarySourceBindingQueries {
                 node.put("installRequired",rs.getString(10)!=null && rs.getString(10).equals("CONTROLLED_LINK"));
                 node.put("scopeCursor",rs.getString(1));
                 return node;
-            },Ids.bytes(device),Ids.bytes(cursor),limit+1);
+            },Ids.bytes(scope.device()),Ids.bytes(scope.warehouse()),Ids.bytes(cursor),
+                scope.clientOrder()==null?null:Ids.bytes(scope.clientOrder()),
+                scope.clientOrder()==null?null:Ids.bytes(scope.clientOrder()),limit+1);
         return Page.from(rows,limit,node->node.path("scopeCursor").asText());
     }
 

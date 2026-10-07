@@ -16,10 +16,11 @@ class TemporarySourceBindingQueriesTest {
     private final JdbcTemplate jdbc=mock(JdbcTemplate.class);
     private final TemporarySourceBindingQueries queries=new TemporarySourceBindingQueries(jdbc);
     private final UUID device=UUID.randomUUID();
+    private final TemporarySourceBindingQueries.Scope scope=new TemporarySourceBindingQueries.Scope(device,UUID.randomUUID(),null);
 
     @Test void extraRowProducesContinuationFromLastReturnedItem() {
         var rows=rows(3); stub(rows);
-        var page=queries.mine(device,"",2);
+        var page=queries.mine(scope,"",2);
         assertThat(page.items()).containsExactlyElementsOf(rows.subList(0,2));
         assertThat(page.hasMore()).isTrue();
         assertThat(page.nextCursor()).isEqualTo(rows.get(1).path("scopeCursor").asText());
@@ -27,7 +28,7 @@ class TemporarySourceBindingQueriesTest {
 
     @Test void exactlyFullPageEndsWithoutContinuation() {
         var rows=rows(2); stub(rows);
-        var page=queries.mine(device,"",2);
+        var page=queries.mine(scope,"",2);
         assertThat(page.items()).containsExactlyElementsOf(rows);
         assertThat(page.hasMore()).isFalse();
         assertThat(page.nextCursor()).isNull();
@@ -35,26 +36,27 @@ class TemporarySourceBindingQueriesTest {
 
     @Test void emptyPageEndsWithoutContinuation() {
         stub(List.of());
-        var page=queries.mine(device,"",2);
+        var page=queries.mine(scope,"",2);
         assertThat(page.items()).isEmpty();
         assertThat(page.hasMore()).isFalse();
         assertThat(page.nextCursor()).isNull();
     }
 
     @Test void malformedCursorNeverQueriesDatabase() {
-        assertThatThrownBy(()->queries.mine(device,"not-a-uuid",2)).isInstanceOf(BusinessException.class);
+        assertThatThrownBy(()->queries.mine(scope,"not-a-uuid",2)).isInstanceOf(BusinessException.class);
+        assertThatThrownBy(()->queries.mine(scope,"1-1-1-1-1",2)).isInstanceOf(BusinessException.class);
         verifyNoInteractions(jdbc);
     }
 
     @Test void invalidPageSizeNeverQueriesDatabase() {
         for(int limit:List.of(0,201))
-            assertThatThrownBy(()->queries.mine(device,"",limit)).isInstanceOf(BusinessException.class);
+            assertThatThrownBy(()->queries.mine(scope,"",limit)).isInstanceOf(BusinessException.class);
         verifyNoInteractions(jdbc);
     }
 
     private void stub(List<ObjectNode> rows) {
         when(jdbc.query(anyString(),org.mockito.ArgumentMatchers.<RowMapper<ObjectNode>>any(),
-            any(byte[].class),any(byte[].class),anyInt())).thenReturn(rows);
+            any(byte[].class),any(byte[].class),any(byte[].class),nullable(byte[].class),nullable(byte[].class),anyInt())).thenReturn(rows);
     }
 
     private List<ObjectNode> rows(int count) {
