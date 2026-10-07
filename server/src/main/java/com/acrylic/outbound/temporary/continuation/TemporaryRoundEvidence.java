@@ -15,25 +15,30 @@ public class TemporaryRoundEvidence {
     private final TemporarySubmissionEvidence evidence;
     public TemporaryRoundEvidence(TemporarySubmissionEvidence evidence) { this.evidence=evidence; }
     public void validate(Input input,JsonNode body) {
+        require(input.previous().control().round()==1,"高轮次必须重验完整前驱链");
+        validate(input,body,TemporaryEvidenceOrigins.initial(input.previous(),input.originalPlan()));
+    }
+    public TemporaryEvidenceOrigins validate(Input input,JsonNode body,TemporaryEvidenceOrigins previousOrigins) {
         var request=TemporaryRoundControl.read(body);var current=input.current();var previous=input.previous();
         equal(request.control(),current.control(),"续作控制头与正文不符");
         input.source().require(request,new SubmissionAccess.Actor(current.actor(),current.warehouse(),""));
         requireOriginal(input,request);
-        evidence.validate(previous,input.originalPlan(),input.original());
+        evidence.validate(previous,input.originalPlan(),input.original(),previousOrigins);
+        var origins=previousOrigins.append(current,input.plan(),input.original());
         TemporaryRoundPrefixes.require(input.original(),body,input.retained());
         fixedPlan(input,body);
         long expected=Math.addExact(number(input.original(),"captureHighWatermark"),1);
         if(input.source().nextSequence()!=expected)throw conflict("CONTINUATION_HIGH_WATERMARK_CHANGED");
-        var origins=new TemporaryEvidenceOrigins(new TemporaryEvidenceOrigins.Origin(current.control().source(),input.plan().authorization()),
-            new TemporaryEvidenceOrigins.Origin(previous.control().source(),input.originalPlan().authorization()),
-            array(input.original(),"captures").size(),array(input.original(),"events").size());
         evidence.validate(current,input.plan(),body,origins);
+        return origins;
     }
     private void requireOriginal(Input input,TemporaryRoundControl request) {
         var old=input.previous();var source=input.source();var c=old.control();
         equal(sha(input.original()),request.predecessor().payloadSha256(),"续作前驱原文摘要不符");
-        equal(SubmissionControl.read(uuid(input.original(),"submissionId"),input.original()),c,"续作前驱控制头不符");
-        require(c.temporary()!=null && c.round()==1 && c.round()==source.fromRound()
+        var originalControl=c.round()==1?SubmissionControl.read(uuid(input.original(),"submissionId"),input.original())
+            :TemporaryRoundControl.read(input.original()).control();
+        equal(originalControl,c,"续作前驱控制头不符");
+        require(c.temporary()!=null && c.round()==source.fromRound()
             && c.id().equals(source.previous()) && c.device().equals(source.device())
             && old.actor().equals(source.operator()) && old.warehouse().equals(source.warehouse())
             && "ABORTED".equals(old.status()) && c.epoch().equals(source.epoch()),"续作前驱来源不符");

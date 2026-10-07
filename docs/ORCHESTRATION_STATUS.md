@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-07
 branch: codex/development
-head: e7f5039
-dirty_entries: 34
+head: bad2870
+dirty_entries: 45
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 32 }
 server: { contract: 0.41.0, paths: 138, flyway: V66, migrations: 66 }
@@ -16,7 +16,7 @@ server: { contract: 0.41.0, paths: 138, flyway: V66, migrations: 66 }
 总目标 D01–D18 执行中，必须同时通过新计划第8节才能 complete；不得按局部边界结束。逐项输入映射及开发证据见 [执行记录](history/D01_D18_EXECUTION_2026-10-07.md)。
 
 ## Git、写权与环境
-- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天idle/未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/origin 为 e7f5039bcc42b25d88bc6182d4243e6d95f5b1a9；开发切片已提交推送并核对ls-remote，无main/部署/发布动作。
+- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天idle/未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/origin 为 bad287021f703e2885c8495cf3744c6c37a5b344；开发切片已提交推送并核对ls-remote，无main/部署/发布动作。
 - D01预检18条继承路径的完整清单、逐文件副本、hash/diff、worktrees、进程/监听/磁盘、旧看板在 `.local/d01-d18-20261007/preflight-01/`；继承内容保护不回滚。原看板结论含前审查/计划完整保存在 board-before.md。
 - 既有MySQL3306/13316及外部Harness19387未操作；隔离76–79已dump/认证停机，19331无遗留。运行器在 `.local/d01-d18-20261007/d02-http/`，实例及证据在LOCALAPPDATA/acrylic-pda-outbound-isolated。隔离80也已dump/认证停机；D02Continuation79模拟器已正常关闭、5560监听消失。D03隔离81/82/83均已dump/认证停库，19331无遗留，无重型构建在途。
 - 历史归档在 E:/acrylic-archive-20261006/，路径按 [本机归档位置](LOCAL_ARCHIVE_LOCATIONS.md) 查找；失败库/binlog/日志/XML/原资料保持。
@@ -37,8 +37,8 @@ server: { contract: 0.41.0, paths: 138, flyway: V66, migrations: 66 }
 - 原资料/旧BCD/526、R09历史恢复限制保持单列；原身份/Keystore、真实双设备、实体键/断电/长时/规模、正式HTTPS渠道、异地介质、生产RPO-RTO/Linux现场等只按新计划第9节C01–C08保留。任何代码/迁移/权限/客户端/导出/恢复缺口不得转入C档。
 
 ## 下一动作
-- D02已按17条明确路径提交推送并核对远端。D03分块81/83真实HTTP各1/0/0/0、82 Android真实组合147/0/0/3及默认APK/lint通过；自审修复终态清单长度，保存范围开发提交。继续高轮次来源链及关联目标，再持续D04–D17及D18。继承TemporarySuccessHttpTest不修改。
+- D03分块已提交bad2870；关联目标88真实HTTP1/0/0/0；高轮次91真实HTTP1/0/0/0（STOP合成），84/85/87/89/90失败及全部停机证据保留。自审改为从不可变前驱链重建逐轮来源边界，拒绝新增记录借旧资格；根命令context与新client分开核验。尚未提交的源码/测试完整清单以前检 d03-linked/preflight-02/ 和实际status为准。
+- 隔离92通过1/0/0/0、exit0且sourceUnchanged；激活最后审计失败全部回滚、第三轮同键并发只记账一次。已dump/认证停库，19331无监听。普通全套regression-01为3219/3/0/1（旧SQL mock参数数目不匹配），修正替身后regression-02为3219/0/0/1；跳过符号链接环境用例，普通test不含IT。无重型任务在途。提交该开发切片后继续实际高轮停止/证据链及Android高轮次/关联消费，持续D04–D17及D18。继承TemporarySuccessHttpTest保持。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；详细阶段记录见 docs/history/AUTONOMOUS_PROGRESS_2026-10-06.md。
-

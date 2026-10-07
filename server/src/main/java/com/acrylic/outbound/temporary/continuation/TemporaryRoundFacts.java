@@ -63,6 +63,7 @@ public class TemporaryRoundFacts {
             var c=request.control();var ref=request.predecessor();var temp=c.temporary();
             if(temp==null || !warehouse.equals(actor.warehouse()) || !operator.equals(actor.user())
                 || !device.equals(c.device()) || !device.equals(temp.creator()) || !client.equals(temp.client())
+                || fromRound<1 || toRound!=fromRound+1
                 || !authorization.equals(temp.authorization()) || c.round()!=toRound || !epoch.equals(c.epoch())
                 || !previous.equals(ref.submission()) || !retainedHash.equals(ref.retainedSha256())
                 || c.order()!=null || c.assignment()!=null || c.continuation()!=null)

@@ -37,13 +37,15 @@ public class CommandHistoricalIdentity {
             WHERE a.id=? AND ((?=1 AND t.authorization_id=a.id) OR EXISTS (
               SELECT 1 FROM temporary_source_continuation_submission r
               JOIN temporary_source_continuation_activation n ON n.ticket_id=r.ticket_id AND n.scope_id=r.scope_id AND n.from_work_round=r.from_work_round
-              JOIN temporary_source_continuation q ON q.id=n.ticket_id AND q.previous_authorization_id=t.authorization_id
+              JOIN temporary_source_continuation q ON q.id=n.ticket_id AND q.scope_id=r.scope_id AND q.from_work_round=r.from_work_round
+              JOIN submission p ON p.id=q.previous_submission_id AND p.scope_id=q.scope_id
+                AND p.work_round=q.from_work_round AND p.temporary_authorization_id=q.previous_authorization_id
               JOIN submission_scope c ON c.id=r.scope_id AND c.creator_device_id=t.creator_device_id AND c.client_order_id=t.client_order_id
               JOIN temporary_work_origin fresh ON fresh.creator_device_id=n.target_device_id AND fresh.client_order_id=n.new_client_order_id AND fresh.authorization_id=a.id
-              WHERE r.submission_id=? AND r.scope_id=? AND r.to_work_round=? AND r.from_work_round=1
+              WHERE r.submission_id=? AND r.scope_id=? AND r.to_work_round=? AND r.from_work_round=?
                 AND n.new_authorization_id=a.id AND n.target_device_id=a.device_id AND n.target_operator_id=a.user_id))
             """,id(context,"creatorDeviceId"),id(context,"clientOrderId"),id(context,"authorizationId"),context.path("workRound").asLong(),
-            id(context,"submissionId"),id(context,"scopeId"),context.path("workRound").asLong());
+            id(context,"submissionId"),id(context,"scopeId"),context.path("workRound").asLong(),context.path("workRound").asLong()-1);
         CommandErrors.integrity(rows.size()==1);var row=rows.getFirst();
         equal(row,"warehouse_id",context,"warehouseId");equal(row,"device_id",context,"freezeDeviceId");equal(row,"user_id",context,"originalOperatorId");
         var versions=Map.of("authorization_epoch","authorizationEpoch","user_auth_version","authorizationUserVersion",

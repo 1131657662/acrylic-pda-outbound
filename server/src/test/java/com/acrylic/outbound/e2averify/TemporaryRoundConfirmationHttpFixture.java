@@ -52,19 +52,22 @@ final class TemporaryRoundConfirmationHttpFixture implements AutoCloseable {
         result.set("expected",expected);return result;
     }
     void acknowledge() throws Exception {
-        var auth=parse(activated).path("businessDecision").path("authorization");
+        acknowledge(parse(activated),"new-authorization-ack");
+    }
+    void acknowledge(JsonNode activation,String label) throws Exception {
+        var auth=activation.path("businessDecision").path("authorization");
         var ack=object().put("bundleId",text(auth,"bundleId")).put("manifestSha256",text(auth,"manifestSha256"))
             .put("authorizationEpoch",text(body,"authorizationEpoch")).put("activatedAt",Instant.now().toString());
         var path=http.database.profile.attempt.resolve("http");
-        Files.writeString(path.resolve("new-authorization-ack-request.json"),canonical(ack),StandardOpenOption.CREATE_NEW);
+        Files.writeString(path.resolve(label+"-request.json"),canonical(ack),StandardOpenOption.CREATE_NEW);
         var request=HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+http.app.getWebServer().getPort()
             +"/api/v1/pda/temporary-preparations/"+text(auth,"authorizationId")+"/download-ack"))
             .timeout(Duration.ofSeconds(30)).header("Authorization","Bearer "+http.token).header("Content-Type","application/json")
             .header("X-Server-Recovery-Epoch","1").header("Idempotency-Key",UUID.randomUUID().toString())
             .POST(HttpRequest.BodyPublishers.ofString(canonical(ack))).build();
         var response=HttpClient.newHttpClient().send(request,HttpResponse.BodyHandlers.ofByteArray());
-        Files.write(path.resolve("new-authorization-ack-response.json"),response.body(),StandardOpenOption.CREATE_NEW);
-        Files.writeString(path.resolve("new-authorization-ack-status.txt"),Integer.toString(response.statusCode()));
+        Files.write(path.resolve(label+"-response.json"),response.body(),StandardOpenOption.CREATE_NEW);
+        Files.writeString(path.resolve(label+"-status.txt"),Integer.toString(response.statusCode()));
         assertThat(response.statusCode()).as(new String(response.body())).isEqualTo(200);
     }
     void reject(ObjectNode command,String code,String label) throws Exception {

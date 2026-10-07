@@ -11,18 +11,21 @@ final class TemporaryRoundReceiptIntegrity {
     private TemporaryRoundReceiptIntegrity() { }
     static void original(JdbcTemplate jdbc,JsonNode context,JsonNode body) {
         var request=TemporaryRoundControl.read(body);var reference=request.predecessor();
+        long fromRound=Math.subtractExact(request.control().round(),1);
         int valid=jdbc.queryForObject("""
             SELECT COUNT(*) FROM temporary_source_continuation_submission r
             JOIN temporary_source_continuation_activation n ON n.ticket_id=r.ticket_id AND n.scope_id=r.scope_id AND n.from_work_round=r.from_work_round
             JOIN temporary_source_continuation q ON q.id=n.ticket_id AND q.scope_id=r.scope_id AND q.from_work_round=r.from_work_round
             JOIN submission_scope c ON c.id=r.scope_id
-            JOIN temporary_work_origin o ON o.creator_device_id=c.creator_device_id AND o.client_order_id=c.client_order_id AND o.authorization_id=q.previous_authorization_id
-            WHERE r.submission_id=? AND r.scope_id=? AND r.ticket_id=? AND r.from_work_round=1 AND r.to_work_round=?
-              AND c.creator_device_id=? AND c.client_order_id=? AND n.new_client_order_id=? AND n.new_authorization_id=?
+            JOIN submission p ON p.id=q.previous_submission_id AND p.scope_id=q.scope_id AND p.work_round=q.from_work_round
+              AND p.temporary_authorization_id=q.previous_authorization_id AND p.operator_id=q.previous_operator_id
+              AND p.freeze_device_id=q.freeze_device_id AND p.source_recovery_epoch=q.source_recovery_epoch
+            WHERE r.submission_id=? AND r.scope_id=? AND r.ticket_id=? AND r.from_work_round=? AND r.to_work_round=?
+              AND q.previous_submission_id=? AND n.new_client_order_id=? AND n.new_authorization_id=?
               AND r.predecessor_payload_sha256=? AND q.previous_submission_id=? AND q.retained_manifest_sha256=?
-            """,Integer.class,Ids.bytes(request.control().id()),Ids.bytes(uuid(context,"scopeId")),Ids.bytes(reference.ticket()),request.control().round(),
-            Ids.bytes(uuid(context,"creatorDeviceId")),Ids.bytes(uuid(context,"clientOrderId")),Ids.bytes(request.control().temporary().client()),
-            Ids.bytes(request.control().temporary().authorization()),reference.payloadSha256(),Ids.bytes(reference.submission()),reference.retainedSha256());
+            """,Integer.class,Ids.bytes(request.control().id()),Ids.bytes(uuid(context,"scopeId")),Ids.bytes(reference.ticket()),fromRound,request.control().round(),
+            Ids.bytes(reference.submission()),Ids.bytes(request.control().temporary().client()),Ids.bytes(request.control().temporary().authorization()),
+            reference.payloadSha256(),Ids.bytes(reference.submission()),reference.retainedSha256());
         CommandErrors.integrity(valid==1,"continuation receipt origin");
     }
     static void completed(JdbcTemplate jdbc,JsonNode receipt) {

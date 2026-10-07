@@ -24,6 +24,21 @@ class TemporaryRoundEvidenceTest {
         f.ordinary.validate(input.previous(),input.originalPlan(),f.original);
         assertThatThrownBy(()->f.ordinary.validate(input.current(),input.plan(),f.body)).isInstanceOf(BusinessException.class);
     }
+    @Test void rejectsConsistentOldIdentityOnANewFreezeEvent() {
+        var f=new TemporaryRoundEvidenceFixture();var last=row(f,"events",10);
+        last.put("authorizationId",f.oldAuthorization.id().toString()).set("source",f.original.get("source"));
+        assertThatThrownBy(f::validate).isInstanceOfSatisfying(BusinessException.class,
+            e->assertThat(e.getMessage()).isEqualTo("审计原来源错误"));
+    }
+    @Test void rejectsConsistentOldQualificationOnANewCaptureEvenInsideItsOriginalWindow() {
+        var f=new TemporaryRoundEvidenceFixture();var capture=row(f,"captures",2);
+        capture.put("authorizationId",f.oldAuthorization.id().toString()).put("authorizationEpoch",f.oldAuthorization.authorizationEpoch())
+            .put("clientOrderId",f.oldClient.toString()).put("confirmedAt","2026-10-05T00:00:30Z");
+        row(f,"scans",1).put("savedAt","2026-10-05T00:01:00Z");
+        for(int i=7;i<11;i++)row(f,"events",i).put("authorizationId",f.oldAuthorization.id().toString()).set("source",f.original.get("source"));
+        assertThatThrownBy(f::validate).isInstanceOfSatisfying(BusinessException.class,
+            e->assertThat(e.getMessage()).isEqualTo("输入原临时单错误"));
+    }
     @ParameterizedTest @ValueSource(strings={"captures","scans","events"})
     void rejectsMissingOrReorderedOriginalPrefix(String key) {
         var f=new TemporaryRoundEvidenceFixture();array(f.body,key).remove(0);

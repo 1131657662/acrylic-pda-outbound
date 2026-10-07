@@ -35,7 +35,7 @@ public class TemporarySubmissionEvidence {
     private Map<String,JsonNode> captures(JsonNode body,TemporaryEvidenceOrigins origins) {
         var result=new LinkedHashMap<String,JsonNode>();long seq=0,deviceSeq=0;int index=0;
         for(var c:array(body,"captures")) {
-            var origin=origins.capture(index++);var a=origin.authorization();
+            var origin=origins.capture(c,index++);var a=origin.authorization();
             String id=uuid(c,"id").toString();require(result.put(id,c)==null,"输入ID重复");equal(number(c,"orderScanSeq"),++seq,"输入缺口或乱序");
             long d=number(c,"deviceCaptureSeq");require(d>deviceSeq,"设备输入序号乱序");deviceSeq=d;
             equal(text(c,"clientOrderId"),text(origin.source(),"clientOrderId"),"输入原临时单错误");
@@ -56,10 +56,10 @@ public class TemporarySubmissionEvidence {
     private List<JsonNode> events(SubmissionStore.Head head,JsonNode body,Map<String,JsonNode> captures,TemporaryEvidenceOrigins origins) {
         var result=new ArrayList<JsonNode>();var ids=new HashSet<UUID>();long previous=0;int index=0;
         for(var e:array(body,"events")) {
-            var origin=origins.event(index++);
+            var origin=origins.event(e,index++);
             PdaAuditFacts.validate(e);equal(e.get("source"),origin.source(),"审计原来源错误");
             equal(text(e,"authorizationId"),origin.authorization().id().toString(),"审计原资格错误");
-            equal(uuid(e,"operatorId"),head.actor(),"审计原人员错误");require(ids.add(uuid(e,"id")),"事件重复");
+            equal(uuid(e,"operatorId"),origin.authorization().userId(),"审计原人员错误");require(ids.add(uuid(e,"id")),"事件重复");
             long sequence=number(e,"localSeq");require(sequence>previous,"事件乱序");previous=sequence;
             if(!e.path("captureId").isNull())require(captures.containsKey(text(e,"captureId")),"事件引用未知输入");result.add(e);
         }

@@ -30,7 +30,7 @@ class TemporaryRoundPredecessorTest {
         source=new TemporaryRoundFacts.Source(UUID.randomUUID(),UUID.randomUUID(),uuid(original,"submissionId"),
             uuid(original,"authorizationId"),1,2,"1",UUID.randomUUID(),1,"b".repeat(64),"ACTIVATED",
             uuid(request,"authorizationId"),uuid(request.path("source"),"clientOrderId"),uuid(request,"freezeDeviceId"),UUID.randomUUID());
-        when(jdbc.queryForObject(anyString(),eq(Integer.class),any(),any(),any())).thenReturn(1);
+        when(jdbc.queryForObject(anyString(),eq(Integer.class),any(Object[].class))).thenReturn(1);
         when(jdbc.queryForList(anyString(),eq(String.class),any())).thenReturn(List.of());
     }
     @Test void readsOriginalAcceptedBytesWithoutRewritingIdentity() {
@@ -58,7 +58,7 @@ class TemporaryRoundPredecessorTest {
     }
     @Test void rejectsOriginalClientFromAnotherScope() {
         accepted(canonical(original));
-        when(jdbc.queryForObject(anyString(),eq(Integer.class),any(),any(),any())).thenReturn(0);
+        when(jdbc.queryForObject(anyString(),eq(Integer.class),any(Object[].class))).thenReturn(0);
         fails("TEMP_CONTINUATION_PREDECESSOR_MISMATCH");
     }
     @Test void readsCanonicalLocalFrozenObjectWhenNoBusinessPayloadWasAccepted() throws Exception {

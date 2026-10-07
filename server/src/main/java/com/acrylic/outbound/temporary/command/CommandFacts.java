@@ -46,10 +46,12 @@ public class CommandFacts {
             JOIN temporary_work_origin t ON t.creator_device_id=c.creator_device_id AND t.client_order_id=c.client_order_id
             LEFT JOIN temporary_source_continuation_submission b ON b.submission_id=s.id AND b.scope_id=c.id AND b.to_work_round=s.work_round
             LEFT JOIN temporary_source_continuation_activation n ON n.ticket_id=b.ticket_id AND n.scope_id=b.scope_id AND n.from_work_round=b.from_work_round
-            LEFT JOIN temporary_source_continuation q ON q.id=n.ticket_id AND q.scope_id=c.id AND q.previous_authorization_id=t.authorization_id
+            LEFT JOIN temporary_source_continuation q ON q.id=n.ticket_id AND q.scope_id=c.id AND q.from_work_round=b.from_work_round
+            LEFT JOIN submission previous ON previous.id=q.previous_submission_id AND previous.scope_id=c.id
+              AND previous.work_round=b.from_work_round AND previous.temporary_authorization_id=q.previous_authorization_id
             JOIN temporary_authorization a ON a.id=s.temporary_authorization_id
              AND ((s.work_round=1 AND a.id=t.authorization_id) OR
-               (s.work_round=2 AND b.from_work_round=1 AND q.id IS NOT NULL AND a.id=n.new_authorization_id
+               (s.work_round>1 AND b.from_work_round=s.work_round-1 AND previous.id IS NOT NULL AND a.id=n.new_authorization_id
                 AND a.device_id=n.target_device_id AND a.user_id=n.target_operator_id))
              AND a.device_id=c.creator_device_id AND a.device_id=s.freeze_device_id AND a.user_id=s.operator_id
              AND a.warehouse_id=c.warehouse_id AND a.recovery_epoch=s.source_recovery_epoch

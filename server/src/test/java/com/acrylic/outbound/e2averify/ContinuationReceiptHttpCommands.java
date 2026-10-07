@@ -14,12 +14,15 @@ final class ContinuationReceiptHttpCommands {
     ContinuationReceiptHttpCommands(ContinuationReceiptHttpFixture fixture) { this.fixture = fixture; }
 
     ObjectNode request(UUID ticket) {
+        return request(ticket,fixture.database.id("mappedSubmissionId"),fixture.database.id("mappedSetId"),5);
+    }
+    ObjectNode request(UUID ticket,UUID submission,UUID set,long next) {
         var database = fixture.database;
-        var context = fixture.app.getBean(CommandFacts.class).read(database.id("mappedSubmissionId"));
+        var context = fixture.app.getBean(CommandFacts.class).read(submission);
         var body = SubmissionJson.object().put("commandVersion", 1)
             .put("commandType", ticket == null ? "REOPEN_WORK" : "ACTIVATE_CONTINUATION")
             .put("commandId", UUID.randomUUID().toString()).put("transportRecoveryEpoch", "1")
-            .put("reason", "Synthetic stopped-source HTTP replay proof").put("nextOrderScanSeq", "5");
+            .put("reason", "Synthetic stopped-source HTTP replay proof").put("nextOrderScanSeq", Long.toString(next));
         if (ticket != null) body.put("continuationTicketId", ticket.toString());
         for (String key : List.of("warehouseId", "submissionId", "workRound", "authorizationId", "freezeDeviceId", "sourceRecoveryEpoch"))
             body.set(key, context.json().get(key));
@@ -28,12 +31,12 @@ final class ContinuationReceiptHttpCommands {
         var expected = CommandExpected.current(context, "1");
         for (String key : List.of("evidenceSetId", "evidenceSetSha256", "verificationId", "verificationVersion", "verificationAlgorithmVersion"))
             expected.set(key, context.json().get(key));
-        var manifest = manifest(); body.set("retainedManifest", manifest);
+        var manifest = manifest(set); body.set("retainedManifest", manifest);
         expected.put("retainedManifestSha256", SubmissionJson.sha(manifest)).put("retainedManifestVersion", "1");
         body.set("expected", expected); return body;
     }
 
-    private ObjectNode manifest() {
+    private ObjectNode manifest(UUID set) {
         var manifest = SubmissionJson.object().put("version", 1); var rows = manifest.putArray("items");
         fixture.database.jdbc.query("""
             SELECT BIN_TO_UUID(bale_id),CAST(original_cycle AS CHAR),record_sha256 FROM source_evidence_item
@@ -41,7 +44,7 @@ final class ContinuationReceiptHttpCommands {
             """, (rs, n) -> {
                 rows.addObject().put("baleId", rs.getString(1)).put("expectedDispatchCycle", rs.getString(2))
                     .put("recordSha256", rs.getString(3)); return rs.getString(1);
-            }, Ids.bytes(fixture.database.id("mappedSetId")));
+            }, Ids.bytes(set));
         return manifest;
     }
 }

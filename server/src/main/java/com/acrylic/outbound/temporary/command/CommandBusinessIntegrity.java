@@ -27,7 +27,7 @@ public class CommandBusinessIntegrity {
         }
         if (Set.of("REOPEN_WORK","ACTIVATE_CONTINUATION").contains(receipt.path("commandType").asText())) { continuation.verify(receipt); return; }
         var context=receipt.path("originalContext");var decision=receipt.path("businessDecision");
-        if(context.path("workRound").asLong()>1)CommandErrors.integrity(Set.of("NORMAL_CONFIRM","SHORT_APPROVE").contains(receipt.path("commandType").asText()));
+        if(context.path("workRound").asLong()>1)CommandErrors.integrity(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK").contains(receipt.path("commandType").asText()));
         String hash=context.path("receivedPayloadSha256").asText();var body=parse(files.read(hash));
         CommandErrors.integrity(sha(body).equals(hash) && context.path("status").asText().equals("REVIEW_REQUIRED")
             && context.path("planSha256").equals(body.path("planSha256"))
@@ -163,8 +163,11 @@ public class CommandBusinessIntegrity {
         if(context.path("workRound").asLong()==1)CommandErrors.integrity(context.path("clientOrderId").equals(body.path("source").path("clientOrderId")));
         else TemporaryRoundReceiptIntegrity.original(jdbc,context,body);
         CommandErrors.integrity(body.path("source").path("kind").asText().equals("TEMP")
-            && body.path("assignmentId").isNull() && body.path("continuationId").isNull()
-            && context.path("targetRevision").equals(body.path("orderRevision")));
+            && body.path("assignmentId").isNull() && body.path("continuationId").isNull());
+        if(context.path("mappingVersion").asLong()<=1)CommandErrors.integrity(context.path("targetRevision").equals(body.path("orderRevision")));
+        else CommandErrors.integrity(jdbc.queryForObject("SELECT COUNT(*) FROM temporary_source_mapping m JOIN order_revision r ON r.order_id=m.canonical_order_id "
+            +"WHERE m.scope_id=? AND m.mapping_version=? AND m.origin='CONTROLLED_LINK' AND m.canonical_order_id=? AND r.revision=?",Integer.class,
+            Ids.bytes(uuid(context,"scopeId")),context.path("mappingVersion").asLong(),Ids.bytes(uuid(context,"canonicalOrderId")),context.path("targetRevision").asLong())==1);
     }
     private void success(JsonNode context,JsonNode success,JsonNode body) {
         proofs.verify(success,"signedReceipt","acrylic-pda-receipt","receipt");

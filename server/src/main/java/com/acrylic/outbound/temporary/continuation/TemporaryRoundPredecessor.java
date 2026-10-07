@@ -50,15 +50,24 @@ public class TemporaryRoundPredecessor {
         catch(java.io.IOException failure) { throw conflict("TEMP_CONTINUATION_PREDECESSOR_UNAVAILABLE"); }
     }
     private void identity(TemporaryRoundFacts.Source source,JsonNode body) {
-        // Higher-round STOP verification is not implemented; do not infer its provenance from counts.
-        if(source.fromRound()!=1)throw conflict("TEMP_CONTINUATION_PREDECESSOR_ROUND_UNSUPPORTED");
-        var c=SubmissionControl.read(uuid(body,"submissionId"),body);
+        var c=source.fromRound()==1?SubmissionControl.read(uuid(body,"submissionId"),body):TemporaryRoundControl.read(body).control();
         if(c.temporary()==null || !c.id().equals(source.previous()) || c.round()!=source.fromRound()
             || !c.device().equals(source.device()) || !c.epoch().equals(source.epoch())
             || !c.temporary().authorization().equals(source.previousAuthorization()))
             throw conflict("TEMP_CONTINUATION_PREDECESSOR_MISMATCH");
-        int matches=jdbc.queryForObject("SELECT COUNT(*) FROM submission_scope WHERE id=? AND creator_device_id=? AND client_order_id=?",
-            Integer.class,Ids.bytes(source.scope()),Ids.bytes(c.temporary().creator()),Ids.bytes(c.temporary().client()));
+        int matches=jdbc.queryForObject("""
+            SELECT COUNT(*) FROM submission_scope c
+            JOIN submission s ON s.scope_id=c.id AND s.id=? AND s.work_round=? AND s.temporary_authorization_id=?
+            LEFT JOIN temporary_source_continuation_submission r ON r.submission_id=s.id AND r.scope_id=c.id
+              AND r.to_work_round=s.work_round AND r.from_work_round=s.work_round-1
+            LEFT JOIN temporary_source_continuation_activation a ON a.ticket_id=r.ticket_id AND a.scope_id=c.id
+              AND a.from_work_round=r.from_work_round AND a.new_authorization_id=s.temporary_authorization_id
+            JOIN temporary_work_origin o ON o.creator_device_id=c.creator_device_id
+              AND o.client_order_id=COALESCE(a.new_client_order_id,c.client_order_id) AND o.authorization_id=s.temporary_authorization_id
+            WHERE c.id=? AND c.creator_device_id=? AND o.client_order_id=?
+              AND (s.work_round=1 OR a.ticket_id IS NOT NULL)
+            """,Integer.class,Ids.bytes(c.id()),c.round(),Ids.bytes(c.temporary().authorization()),
+            Ids.bytes(source.scope()),Ids.bytes(c.temporary().creator()),Ids.bytes(c.temporary().client()));
         if(matches!=1)throw conflict("TEMP_CONTINUATION_PREDECESSOR_MISMATCH");
     }
 }

@@ -31,13 +31,12 @@ final class SubmissionAccountingPolicy {
         var rows = jdbc.query("""
             SELECT p.version,p.auto_deduct_inventory,v.payload_sha256
             FROM submission s JOIN submission_scope c ON c.id=s.scope_id
-            JOIN temporary_work_origin t ON t.creator_device_id=c.creator_device_id AND t.client_order_id=c.client_order_id
+            LEFT JOIN temporary_work_origin t ON t.creator_device_id=c.creator_device_id AND t.client_order_id=c.client_order_id
             LEFT JOIN temporary_source_continuation_submission r ON r.submission_id=s.id AND r.scope_id=c.id AND r.to_work_round=s.work_round
             LEFT JOIN temporary_source_continuation_activation n ON n.ticket_id=r.ticket_id AND n.scope_id=r.scope_id AND n.from_work_round=r.from_work_round
-            LEFT JOIN temporary_source_continuation q ON q.id=n.ticket_id AND q.scope_id=c.id AND q.previous_authorization_id=t.authorization_id
             JOIN temporary_authorization a ON a.id=s.temporary_authorization_id
-              AND ((s.work_round=1 AND a.id=t.authorization_id) OR (s.work_round=2 AND r.from_work_round=1
-                AND a.id=n.new_authorization_id AND n.new_client_order_id=? AND q.status='ACTIVATED'))
+              AND ((s.work_round=1 AND a.id=t.authorization_id) OR (s.work_round>1 AND r.from_work_round=s.work_round-1
+                AND a.id=n.new_authorization_id AND n.new_client_order_id=? AND n.ticket_id=r.ticket_id))
             JOIN policy_version p ON p.id=a.policy_id AND p.warehouse_id=a.warehouse_id
             JOIN submission_payload v ON v.submission_id=s.id
             JOIN outbound_order o ON o.id=c.canonical_order_id AND o.warehouse_id=c.warehouse_id
@@ -45,7 +44,7 @@ final class SubmissionAccountingPolicy {
               AND c.current_submission_id=s.id AND c.source_order_id IS NULL
               AND o.id=? AND o.current_result_version IS NULL
               AND ((c.mapping_version=1 AND o.source='PDA_TEMP' AND o.status='REVIEW_REQUIRED')
-                OR (s.work_round=1 AND c.mapping_version>1 AND o.source='WEB' AND o.status='READY'
+                OR (c.mapping_version>1 AND o.source='WEB' AND o.status='READY'
                     AND EXISTS(SELECT 1 FROM temporary_source_mapping m WHERE m.scope_id=c.id
                       AND m.mapping_version=c.mapping_version AND m.canonical_order_id=o.id
                       AND m.origin='CONTROLLED_LINK')))

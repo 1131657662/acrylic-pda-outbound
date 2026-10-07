@@ -15,9 +15,12 @@ public class TemporaryRoundConfirmationSource {
     private final SubmissionStore submissions;private final SubmissionFiles files;private final TemporaryRoundFacts facts;
     private final TemporaryRoundPayload payload;private final TemporaryRoundSelection selection;private final JdbcTemplate jdbc;
     private final TemporaryRoundConfirmationOwners owners;
+    private final TemporaryRoundLinkedTarget linkedTargets;
     public TemporaryRoundConfirmationSource(SubmissionStore submissions,SubmissionFiles files,TemporaryRoundFacts facts,
-        TemporaryRoundPayload payload,TemporaryRoundSelection selection,JdbcTemplate jdbc,TemporaryRoundConfirmationOwners owners) {
+        TemporaryRoundPayload payload,TemporaryRoundSelection selection,JdbcTemplate jdbc,TemporaryRoundConfirmationOwners owners,
+        TemporaryRoundLinkedTarget linkedTargets) {
         this.submissions=submissions;this.files=files;this.facts=facts;this.payload=payload;this.selection=selection;this.jdbc=jdbc;this.owners=owners;
+        this.linkedTargets=linkedTargets;
     }
     public Checked read(SubmissionStore.Head head) {
         String hash=submissions.payloadHash(head.control().id());if(hash==null)throw TemporaryRoundFacts.conflict("TEMP_CONTINUATION_PAYLOAD_UNAVAILABLE");
@@ -28,9 +31,10 @@ public class TemporaryRoundConfirmationSource {
         var source=facts.read(request,new SubmissionAccess.Actor(head.actor(),head.warehouse(),""));
         if(!"ACTIVATED".equals(source.status()))throw TemporaryRoundFacts.conflict("CONTINUATION_NOT_ACTIVATED");
         var input=new TemporaryRoundPayload.Input(request,source,head,facts.retained(request,source));
-        var checked=payload.validate(input,body);selection.requireTarget(head,source,checked.plan());
+        var checked=payload.validate(input,body);boolean linked=linkedTargets.require(head,checked.plan());
+        if(!linked)selection.requireTarget(head,source,checked.plan());
         owners.require(input,checked.snapshot());
-        return new Checked(new TemporaryConfirmationSource.Value(head,body,checked.snapshot(),false),checked.plan().authorization());
+        return new Checked(new TemporaryConfirmationSource.Value(head,body,checked.snapshot(),linked),checked.plan().authorization());
     }
     public record Checked(TemporaryConfirmationSource.Value value,com.acrylic.outbound.temporary.TemporaryStore.Stored authorization) { }
 }

@@ -29,18 +29,23 @@ final class TemporaryRoundIntakeBody {
         event(b,null,"FROZEN");summary(b,4,3);return b;
     }
     ObjectNode next(JsonNode original,JsonNode decision) {
+        return next(original,decision,true);
+    }
+    ObjectNode next(JsonNode original,JsonNode decision,boolean addScan) {
         var b=original.deepCopy();var result=(ObjectNode)b;
         result.put("submissionId",UUID.randomUUID().toString()).put("authorizationId",text(decision,"newAuthorizationId"))
             .put("authorizationEpoch",f.jdbc.queryForObject("SELECT CAST(authorization_epoch AS CHAR) FROM temporary_authorization WHERE id=UUID_TO_BIN(?)",String.class,text(decision,"newAuthorizationId")))
-            .put("workRound","2").putNull("shortShipmentReason");
+            .put("workRound",text(decision,"toWorkRound")).putNull("shortShipmentReason");
         ((ObjectNode)b.get("source")).put("clientOrderId",text(decision,"newClientOrderId"));
         ((ObjectNode)b.get("temporaryOrder")).put("clientOrderId",text(decision,"newClientOrderId")).put("authorizationId",text(decision,"newAuthorizationId"));
         result.put("planSha256",sha(b.get("temporaryOrder")));
         result.putObject("temporaryContinuation").put("version",1).put("ticketId",text(decision,"ticketId"))
             .put("predecessorSubmissionId",text(original,"submissionId")).put("predecessorPayloadSha256",sha(original))
             .put("retainedManifestSha256",text(decision,"retainedManifestSha256"));
-        String at=java.time.Instant.now().toString();add(result,UUID.randomUUID().toString(),f.seed.get("intakeNewBale"),5,at);
-        event(result,null,"FROZEN");result.put("closedAt",at);summary(result,5,4);return result;
+        String at=java.time.Instant.now().toString();
+        if(addScan)add(result,UUID.randomUUID().toString(),f.seed.get("intakeNewBale"),Math.toIntExact(number(original,"captureHighWatermark")+1),at);
+        event(result,null,"FROZEN");result.put("closedAt",at);
+        summary(result,array(result,"captures").size(),array(result,"scans").size());return result;
     }
     private void add(ObjectNode b,String capture,String bale,int seq,String at) {
         array(b,"captures").add(capture(b,capture,seq,at));event(b,capture,"RECEIVED");event(b,capture,"CONFIRM_REQUESTED");event(b,capture,"SAVED");

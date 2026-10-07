@@ -33,11 +33,19 @@ public final class TemporaryContinuationActivationOperation implements CommandOp
         requireItems(ticket, items);
         int moved = jdbc.update("""
             UPDATE bale_commitment k JOIN temporary_source_continuation_bale r ON r.bale_id=k.bale_id
-            SET k.state='TEMP_CONTINUATION_RESERVED',k.temporary_continuation_id=?
-            WHERE r.continuation_id=? AND k.source_scope_id=? AND k.source_evidence_set_id=?
-              AND k.dispatch_cycle=r.expected_cycle
-              AND k.state='SOURCE_RESERVED' AND k.submission_id IS NULL AND k.temporary_continuation_id IS NULL
-            """, Ids.bytes(ticket), Ids.bytes(ticket), Ids.bytes(write.context().id("scopeId")), source.source().evidenceSet());
+            SET k.state='TEMP_CONTINUATION_RESERVED',k.temporary_continuation_id=?,k.source_evidence_set_id=?,
+              k.submission_id=NULL,k.order_id=NULL
+            WHERE r.continuation_id=? AND k.source_scope_id=? AND k.source_warehouse_id=?
+              AND k.dispatch_cycle=r.expected_cycle AND k.temporary_continuation_id IS NULL
+              AND k.disposition_id IS NULL AND k.continuation_id IS NULL AND k.recovery_package_id IS NULL
+              AND k.disposition_evidence_id IS NULL AND k.pc_work_id IS NULL AND k.pc_disposition_id IS NULL
+              AND ((k.state='SOURCE_RESERVED' AND k.submission_id IS NULL AND k.source_evidence_set_id=?)
+                OR (k.state='REVIEW_RESERVED' AND k.source_evidence_set_id IS NULL AND k.submission_id=?
+                  AND EXISTS(SELECT 1 FROM submission s JOIN submission_scope c ON c.id=s.scope_id
+                    WHERE s.id=k.submission_id AND c.id=k.source_scope_id AND c.canonical_order_id=k.order_id
+                      AND c.current_submission_id=s.id AND c.work_round=s.work_round AND s.status='ABORTED')))
+            """, Ids.bytes(ticket),source.source().evidenceSet(),Ids.bytes(ticket),Ids.bytes(write.context().id("scopeId")),
+            source.source().warehouse(),source.source().evidenceSet(),Ids.bytes(write.context().id("submissionId")));
         require(moved == items.size(), "CONTINUATION_OWNER_CHANGED");
         var decision = decision(write, ticket, source, items);
         insertActivation(write, ticket, source, decision);
