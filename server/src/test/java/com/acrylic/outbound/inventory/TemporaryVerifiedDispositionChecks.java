@@ -71,7 +71,7 @@ public final class TemporaryVerifiedDispositionChecks {
         assertThat(http.command(reject, 200)).isEqualTo(rejected);
         var disposition = disposition(close);
         var receipts = new TemporaryDispositionReceiptChecks(jdbc, http, sql);
-        receipts.unsupportedReopen(disposition);
+        receipts.rejectedSourceCannotReopen(disposition);
         access.noPermission(disposition);
         sql.rollback(http, disposition);
         byte[] receipt = concurrentDisposition(disposition);
@@ -79,7 +79,7 @@ public final class TemporaryVerifiedDispositionChecks {
         committed(disposition, retained, close);
         originals(reject, rejected);
         originals(disposition, receipt);
-        receipts.corruptCycle(reject, rejected);
+        receipts.immutableCycleCannotBeChanged(reject, rejected);
         unchangedFacts(baseline);
         requireTrustedStop();
         Files.writeString(attempt.resolve("verified-disposition-completed.json"), SubmissionJson.canonical(

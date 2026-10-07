@@ -14,7 +14,7 @@ class E2aTemporaryConfirmationIT {
         Files.createFile(profile.attempt.resolve("test-started.marker"));
         profile.migrate(jdbc,"34");E2aV34Seed.seed(jdbc,profile.attempt.resolve("storage"));
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM submission",Integer.class)).isPositive();
-        profile.migrate(jdbc,"36");E2aCrossSourceHttpSetup.signing(profile.attempt);
+        profile.migrate(jdbc);E2aCrossSourceHttpSetup.signing(profile.attempt);
         try(var context=E2aCrossSourceHttpIT.start(profile)) {
             new TemporaryConfirmationChecks((WebApplicationContext)context).verify();
         }

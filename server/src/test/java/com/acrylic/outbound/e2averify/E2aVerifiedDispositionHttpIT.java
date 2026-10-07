@@ -20,7 +20,7 @@ class E2aVerifiedDispositionHttpIT {
         Files.createFile(profile.attempt.resolve("test-started.marker"));
         profile.migrate(jdbc, "34");
         E2aV34Seed.seed(jdbc, profile.attempt.resolve("storage"));
-        profile.migrate(jdbc, "59");
+        profile.migrate(jdbc);
         E2aCrossSourceHttpSetup.signing(profile.attempt);
         try (var context = E2aCrossSourceHttpIT.start(profile,
             "--outbound.temporary.commands.enabled=true", "--server.servlet.session.cookie.secure=false")) {

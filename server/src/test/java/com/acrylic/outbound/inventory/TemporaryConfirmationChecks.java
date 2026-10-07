@@ -17,6 +17,7 @@ public final class TemporaryConfirmationChecks {
         new TemporaryConfirmationFailureChecks(context).verify();
         new TemporaryConfirmationEffectChecks(context).verify();
         new TemporaryConfirmationEligibilityChecks(context).verify();
+        new TemporaryConfirmationStockConflictChecks(context).verify();
         new TemporaryConfirmationLedgerChecks(context).verify();
         new TemporaryConfirmationConcurrencyChecks(context).verify();
     }

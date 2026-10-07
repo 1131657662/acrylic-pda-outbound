@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-07
 branch: codex/development
-head: 7514bf9
-dirty_entries: 27
+head: 7a53987
+dirty_entries: 31
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 32 }
 server: { contract: 0.43.0, paths: 139, flyway: V66, migrations: 66 }
@@ -16,7 +16,7 @@ server: { contract: 0.43.0, paths: 139, flyway: V66, migrations: 66 }
 总目标 D01–D18 执行中，必须同时通过新计划第8节才能 complete；不得按局部边界结束。逐项输入映射及开发证据见 [执行记录](history/D01_D18_EXECUTION_2026-10-07.md)。
 
 ## Git、写权与环境
-- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/实际远端为7514bf9bd32b6f61574fde78c680d847313b840b；D04映射/分页切片已提交推送并核对ls-remote，无main/部署/发布动作。
+- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/实际远端均为7a53987efa0a0a695b6215d9b6da02d4d1bbb247；D04来源/审计/旧schema兼容切片已提交推送并核对ls-remote，无main/部署/发布动作。
 - D01预检18条继承路径的完整清单、逐文件副本、hash/diff、worktrees、进程/监听/磁盘、旧看板在 `.local/d01-d18-20261007/preflight-01/`；继承内容保护不回滚。原看板结论含前审查/计划完整保存在 board-before.md。
 - 既有MySQL3306/13316及外部Harness19387未操作；隔离76–79已dump/认证停机，19331无遗留。运行器在 `.local/d01-d18-20261007/d02-http/`，实例及证据在LOCALAPPDATA/acrylic-pda-outbound-isolated。隔离80也已dump/认证停机；D02Continuation79模拟器已正常关闭、5560监听消失。D03隔离81/82/83均已dump/认证停库，19331无遗留，无重型构建在途。
 - 历史归档在 E:/acrylic-archive-20261006/，路径按 [本机归档位置](LOCAL_ARCHIVE_LOCATIONS.md) 查找；失败库/binlog/日志/XML/原资料保持。
@@ -32,7 +32,7 @@ server: { contract: 0.43.0, paths: 139, flyway: V66, migrations: 66 }
 ## 历史复用与保留边界
 - 既有R06新轮注册a7f22c8、累积证据7a399f0、完整intake e624690、确认记账55d441d、Android下载协调e5b6f5d已推送；详见当日第197–204条。服务端受影响672/0/0/1和Android127/0/0/3仅按原输入引用，不冒充当次通过。
 - 服务端隔离74/75含download-ack、确认账务/成功回执与COMPLETED同事务；此前失败编译/夹具库/日志保留。可信STOP/设备仍为合成输入，不代替原身份/原设备。
-- 普通有权正常确认允许空理由；短装与占用/库存冲突分开。候选排除无明确依据不开放，CANCELLED缺释放政策继续拒绝并列开发阻断，仍推进其他项。
+- 普通有权正常确认允许空理由；P-R06-02短装原因/主管批准与库存冲突独立，1050内部命令和1052实际HTTP已验证审批不清冲突。候选排除无明确依据不开放，D04仍受阻。CANCELLED缺释放政策继续拒绝，D05未整体通过，独立对账业务闭环衔接D09。
 - 所有生产决定handler/POST/放行/扫码/删除默认继续关闭，localDeletionAllowed=false；不接原库/现网，不使用正式签名，不合main/标签/Release/部署。
 - 原资料/旧BCD/526、R09历史恢复限制保持单列；原身份/Keystore、真实双设备、实体键/断电/长时/规模、正式HTTPS渠道、异地介质、生产RPO-RTO/Linux现场等只按新计划第9节C01–C08保留。任何代码/迁移/权限/客户端/导出/恢复缺口不得转入C档。
 
@@ -53,6 +53,8 @@ server: { contract: 0.43.0, paths: 139, flyway: V66, migrations: 66 }
 - 首轮schema兼容1042在非空V34→V36真实HTTP OPEN/RAW/PAGE/STOP通过；不完整审计前缀VERIFY拒绝且无来源集合/K占用写入，1/0/0/0、exit0，1451源码路径Hash不变。受影响来源单测343/0/0/1，唯一skip为Windows符号链接条件。
 - 1043 V34→V37旧完整合成测试在损坏凭据断言失败：原审计前缀不完整，实得E2A_AUDIT_PREFIX_UNVERIFIABLE；1/0/0/1、exit1。DB dump/SHA/XML/日志和认证停机保留于old-schema-unsubmitted-1043；1039–1041失败证据保留，不据此归因schema兼容缺陷。
 - D04技术范围有跨来源审计、候选读取、重关联、Android消费与旧schema首轮读取证据，但候选排除仍缺授权，故D04整体及D05–D18未通过。下一步D05新隔离组合：STOP→拒绝→实物核对→按P-R06-01卸货释放；取消释放保持拒绝。1042/1043实例已dump认证停机，19330/19434无监听，无Gradle测试执行器在途。
+- D05的1048真实HTTP/Android Room拒绝→实物→释放通过；1050确认全组及批准后库存锁拒绝、1052实际HTTP两冲突/原件/25业务表守恒均1/0/0/0，源码hash一致。失败1044–1047/1049/1051及dump/SHA/XML保留，1049/1050只读副本补dump且原数据hash不变。1052已dump认证停机；无专项监听/重型在途，既有3306/13316/19387未动。
+- D05本批31条dirty副本/hash/diff、旧看板/环境在d05-review；测试/工具/文档尚待明确路径提交。D04/D05政策阻断保持，D06–D18未通过。下一步D06 TEMP原机可用交接适配，补来源/STOP/审批/指定接收机/最终提交，随后D07–D17依赖推进及D18整合；总目标active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；详细阶段记录见 docs/history/AUTONOMOUS_PROGRESS_2026-10-06.md。

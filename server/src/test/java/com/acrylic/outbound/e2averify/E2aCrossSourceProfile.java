@@ -53,6 +53,10 @@ final class E2aCrossSourceProfile {
         Flyway.configure().dataSource(jdbc.getDataSource()).target(target).load().migrate();
     }
 
+    void migrate(JdbcTemplate jdbc) {
+        Flyway.configure().dataSource(jdbc.getDataSource()).load().migrate();
+    }
+
     static void require(boolean condition, String message) {
         if (!condition) throw new IllegalStateException(message);
     }
