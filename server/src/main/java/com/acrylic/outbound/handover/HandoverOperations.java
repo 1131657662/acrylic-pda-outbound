@@ -6,7 +6,7 @@ import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.*;
 
-/** FORMAL request and approval effects; locked evidence/stock review is required before these operations run. */
+/** Source request and approval effects; locked evidence/stock review precedes approval. */
 final class HandoverOperations {
     private HandoverOperations() { }
 
@@ -17,7 +17,7 @@ final class HandoverOperations {
         @Override public JsonNode execute(HandoverCommand.Write write) {
             var input=write.command();var anchor=write.caseFacts();
             String sourceKind=anchor.path("sourceKind").asText("FORMAL");
-            if (!sourceKind.equals("FORMAL")) throw new BusinessException(409,"HANDOVER_TEMP_NOT_OPEN","临时来源交接尚未开放（R07-2）");
+            if (!Set.of("FORMAL", "TEMP").contains(sourceKind)) throw HandoverCommand.missing();
             String originalResult=originalResult(anchor.path("submissionStatus").asText(""));
             int fromRound=Integer.parseInt(anchor.path("fromWorkRound").asText());
             if (anchor.path("currentSubmissionId").isNull()) throw new BusinessException(

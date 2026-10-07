@@ -358,7 +358,7 @@
 - [续作HTTP回执子项前看板](ORCHESTRATION_STATE_before_continuation_receipt_http_2026-10-06.md)：回执修复、真实HTTP及失败保全见自主进度第195条。
 - [续作资格隔离子项前看板](ORCHESTRATION_STATE_before_continuation_intake_guard_2026-10-06.md)：原人原机/首轮复用拒绝、HTTP及受影响回归见自主进度第196条。
 - [2026-10-07自主进度](AUTONOMOUS_PROGRESS_2026-10-07.md)：从已推送的受限续作子项接续新轮intake/记账。
-- [D01–D18执行记录](D01_D18_EXECUTION_2026-10-07.md)：D01–D04历史复用与D05当前隔离执行证据、失败及阻断；对应看板旧区快照见 [D05 前看板](ORCHESTRATION_STATE_before_D05_disposition_2026-10-07.md)。
+- [D01–D18执行记录](D01_D18_EXECUTION_2026-10-07.md)：逐项隔离执行证据、失败及阻断；阶段看板快照见 [D05 前看板](ORCHESTRATION_STATE_before_D05_disposition_2026-10-07.md)、[D06 前看板](ORCHESTRATION_STATE_before_D06_temp_stop_2026-10-07.md)。
 - [新轮唯一注册前看板](ORCHESTRATION_STATE_before_round_registration_2026-10-07.md)：原断点字节快照；唯一注册、前驱原文绑定和迁移证据见当日自主进度第198条。
 - [累积证据验证前看板](ORCHESTRATION_STATE_before_round_evidence_2026-10-07.md)：当次纯验证器、受影响回归及边界见当日自主进度第199条。
 - [实际intake开发前看板](ORCHESTRATION_STATE_before_round_accept_2026-10-07.md)：已推送子项及未验证intake接续见当日自主进度第200条。

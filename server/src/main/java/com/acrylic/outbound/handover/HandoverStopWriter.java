@@ -33,7 +33,9 @@ final class HandoverStopWriter {
             "DEVICE_ACKED", "COMPLETE", null, null, null, null, null, null, origin.operator(), now);
         requests.record(HandoverStopService.key(command, context), command.digest(), receiptId);
         var details = SubmissionJson.object().put("caseId", command.caseId().toString()).put("commandSha256", command.digest())
-            .put("originalResponseSha256", HandoverCommand.sha(receipt)).put("recoveryPackageId", command.packageId().toString());
+            .put("originalResponseSha256", HandoverCommand.sha(receipt));
+        if (command.temporary() == null) details.put("recoveryPackageId", command.packageId().toString());
+        else details.put("sourceEvidenceSetId", command.temporary().evidenceSet().toString());
         audit.append(new AuditWriter.Event(origin.operator(), "HANDOVER_STOPPED", "HANDOVER_STOP", receiptId, details.toString()), requestId);
         var payload = details.deepCopy().put("orderId", origin.order().toString()).put("scopeId", origin.scope().toString())
             .put("status", "RECALL_PENDING").put("caseStatus", "EVIDENCE_PENDING").put("receiptId", receiptId.toString());

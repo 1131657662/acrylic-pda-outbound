@@ -13,6 +13,7 @@ class HandoverStopConfigurationTest {
         .withUserConfiguration(HandoverStopController.class, HandoverStopStore.class)
         .withBean(HandoverStopService.class, () -> mock(HandoverStopService.class))
         .withBean(JdbcTemplate.class, () -> mock(JdbcTemplate.class))
+        .withBean(com.acrylic.outbound.submissions.SubmissionStore.class, () -> mock(com.acrylic.outbound.submissions.SubmissionStore.class))
         .withBean(PersistenceExceptionTranslationPostProcessor.class);
 
     @Test void defaultGateHasNoStopControllerAndRepositorySupportsExceptionTranslation() {

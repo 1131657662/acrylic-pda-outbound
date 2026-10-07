@@ -19,14 +19,17 @@ final class HandoverStopRecovery {
     private final AssignmentStore assignments;
     private final RecoveryEvidence evidence;
     private final SubmissionFiles files;
+    private final HandoverTemporaryStopEvidence temporary;
 
     HandoverStopRecovery(RecallStore recalls, RecallStops stops, AssignmentStore assignments,
-            RecoveryEvidence evidence, SubmissionFiles files) {
+            RecoveryEvidence evidence, SubmissionFiles files, HandoverTemporaryStopEvidence temporary) {
         this.recalls = recalls; this.stops = stops; this.assignments = assignments;
         this.evidence = evidence; this.files = files;
+        this.temporary = temporary;
     }
 
     JsonNode stop(HandoverStopCommand command, HandoverStopStore.Origin origin) {
+        if (command.temporary() != null) return temporary.verify(command, origin);
         var recall = recalls.get(command.recallId());
         require(recall.warehouse().equals(origin.warehouse()) && recall.order().equals(origin.order())
             && recall.assignment().equals(origin.assignment()) && recall.epoch().equals(origin.epoch()));

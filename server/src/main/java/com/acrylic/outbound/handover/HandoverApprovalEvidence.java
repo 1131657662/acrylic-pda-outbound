@@ -23,6 +23,8 @@ final class HandoverApprovalEvidence {
     }
 
     Verified verify(JsonNode facts, long requestedHigh) {
+        if ("TEMP".equals(facts.path("sourceKind").asText())) throw new BusinessException(409,
+            "HANDOVER_TEMP_APPROVAL_NOT_READY", "此临时来源尚不具备接收机交接资格，请保留停止证据");
         var caseId = uuid(facts, "caseId");
         var origin = stops.origin(caseId);
         var stop = stops.original(caseId); var packRow = stops.recovery(caseId);

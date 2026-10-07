@@ -1,14 +1,17 @@
 Path:
   post:
-    summary: 原人员及原设备确认正式来源交接停止
+    summary: 原人员及原设备确认来源交接停止
     description: >-
       仅在 outbound.handover.commands.enabled=true 的隔离或明确授权环境存在；默认关闭。
-      须先经既有 recovery-packages 入口上传完整耐久恢复包。本入口重验原交接申请、实时来源、原包摘要、输入和完整设备审计，
-      复用召回停止链撤销原授权，并在同一事务保存停止与恢复包描述证据、案件状态、审计、同步通知和幂等索引。
+      FORMAL 须先经既有 recovery-packages 入口上传完整耐久恢复包，并复用召回停止链撤销原授权。
+      本入口核对原交接申请、实时来源与对应停止证明，同一事务保存停止及恢复资料描述证据、案件状态、审计、同步通知和幂等索引。
       必须为原人员及原设备的有效在线 PDA 身份，具有 pda:recover；离线凭据过期不妨碍提交停止证据。
       原键按人员和路由确定，同键同文重放原 JSON 字节；同键异文、跨案件复用原键或不同键重复停止均拒绝。
       重放仍校验身份、签名和两份证据及索引的一致性，不重签。回执仅证明已记录停止；全部能力为 false。
-      原批次未终结时仍不能批准；实物清单、TEMP 来源、接收机和最终提交不由本接口授权。
+      TEMP 请求引用已完整核验的 E2A set/verification 和原设备 STOP，原提交必须已 ABORTED；
+      适用于已有 canonical 目标的来源，不能借用 FORMAL assignment 或召回包，也不撤销其他来源共用的 TEMP 资格。
+      TEMP 回执保存 temporaryStop，FORMAL 保持 recallStop。原批次未终结时仍不能批准；
+      实物清单、接收机和最终提交不由本接口授权。TEMP 后续审批消费者未接通时明确拒绝。
     security: [{pdaBearer: []}]
     parameters:
       - {name: caseId, in: path, required: true, schema: {type: string, format: uuid}}
@@ -36,6 +39,10 @@ IntegerText:
   type: string
   pattern: '^(0|[1-9][0-9]{0,17})$'
 Command:
+  oneOf:
+    - {$ref: '#/FormalCommand'}
+    - {$ref: '#/TemporaryCommand'}
+FormalCommand:
   type: object
   additionalProperties: false
   description: 最大 8192 字节；拒绝重复字段和尾随 JSON；所有 UUID 为规范小写格式。
@@ -48,14 +55,37 @@ Command:
     payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
     captureHighWatermark: {$ref: '#/IntegerText', description: 原订单输入序列高水位}
     auditThroughSeq: {$ref: '#/IntegerText', description: 原设备完整审计覆盖终点}
+TemporaryCommand:
+  type: object
+  additionalProperties: false
+  description: 与 FORMAL 命令相同的大小/规范格式限制；绑定已验 E2A 证据而非召回包。
+  required: [sourceKind, commandId, expectedCaseVersion, sourceEvidenceSetId, verificationId, setSha256, captureHighWatermark, auditThroughSeq]
+  properties:
+    sourceKind: {type: string, const: TEMP}
+    commandId: {type: string, format: uuid}
+    expectedCaseVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    sourceEvidenceSetId: {type: string, format: uuid}
+    verificationId: {type: string, format: uuid}
+    setSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    captureHighWatermark: {$ref: '#/IntegerText'}
+    auditThroughSeq: {$ref: '#/IntegerText'}
 Receipt:
   type: object
   additionalProperties: false
-  required: [receiptVersion, receiptId, packageEvidenceId, routeScope, status, commandSha256, recordedAt, originalCommand, source, caseContext, actor, recallStop, capabilities, signedReceipt]
+  required: [receiptVersion, receiptId, packageEvidenceId, routeScope, status, commandSha256, recordedAt, originalCommand, source, caseContext, actor, capabilities, signedReceipt]
+  oneOf:
+    - required: [recallStop]
+      properties:
+        source: {not: {required: [sourceKind]}}
+        originalCommand: {properties: {command: {$ref: '#/FormalCommand'}}}
+    - required: [temporaryStop]
+      properties:
+        source: {required: [sourceKind]}
+        originalCommand: {properties: {command: {$ref: '#/TemporaryCommand'}}}
   properties:
     receiptVersion: {type: integer, const: 1}
     receiptId: {type: string, format: uuid, description: STOP_PROOF 证据标识}
-    packageEvidenceId: {type: string, format: uuid, description: RECOVERY_PACKAGE 证据标识；描述原包，不复制原正文}
+    packageEvidenceId: {type: string, format: uuid, description: RECOVERY_PACKAGE 证据行标识；描述 FORMAL 原包或 TEMP 已验 E2A 集合，不复制原正文}
     routeScope: {type: string, const: handover.stop}
     status: {type: string, const: STOPPED}
     commandSha256: {type: string, pattern: '^[a-f0-9]{64}$', description: originalCommand 规范 JSON 的 SHA-256}
@@ -72,12 +102,21 @@ Receipt:
       type: object
       additionalProperties: false
       required: [warehouseId, scopeId, orderId, submissionId, assignmentId, deviceId, operatorId, sourceRecoveryEpoch, workRound]
+      oneOf:
+        - properties: {assignmentId: {type: string, format: uuid}}
+          not: {required: [sourceKind]}
+        - required: [sourceKind, authorizationId, creatorDeviceId, clientOrderId]
+          properties: {assignmentId: {type: 'null'}}
       properties:
         warehouseId: {type: string, format: uuid}
         scopeId: {type: string, format: uuid}
         orderId: {type: string, format: uuid}
         submissionId: {type: string, format: uuid}
-        assignmentId: {type: string, format: uuid}
+        assignmentId: {type: [string, 'null'], format: uuid, description: TEMP 固定为 null}
+        sourceKind: {type: string, const: TEMP}
+        authorizationId: {type: string, format: uuid}
+        creatorDeviceId: {type: string, format: uuid}
+        clientOrderId: {type: string, format: uuid}
         deviceId: {type: string, format: uuid}
         operatorId: {type: string, format: uuid}
         sourceRecoveryEpoch: {$ref: '#/IntegerText'}
@@ -93,6 +132,23 @@ Receipt:
         sessionId: {type: string, format: uuid}
         userAuthVersion: {$ref: '#/IntegerText'}
     recallStop: {type: object, description: 已验签的原召回 STOPPED 回执，包含原包计数、重量、摘要、高水位及其独立 signedReceipt}
+    temporaryStop:
+      type: object
+      additionalProperties: false
+      required: [sourceKind, status, sourceEvidenceSetId, verificationId, setSha256, submissionId, workRound, authorizationId, captureHighWatermark, auditThroughSeq, mayResumeScanning, stockReleased]
+      properties:
+        sourceKind: {type: string, const: TEMP}
+        status: {type: string, const: VERIFIED_COMPLETE_AT_STOP}
+        sourceEvidenceSetId: {type: string, format: uuid}
+        verificationId: {type: string, format: uuid}
+        setSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+        submissionId: {type: string, format: uuid}
+        workRound: {$ref: '#/IntegerText'}
+        authorizationId: {type: string, format: uuid}
+        captureHighWatermark: {$ref: '#/IntegerText'}
+        auditThroughSeq: {$ref: '#/IntegerText'}
+        mayResumeScanning: {type: boolean, const: false}
+        stockReleased: {type: boolean, const: false}
     capabilities:
       type: object
       additionalProperties: false

@@ -18,12 +18,12 @@ final class HandoverStopReceipts {
     byte[] sign(HandoverStopCommand command, HandoverStopAccess.Context context, JsonNode recall,
             UUID receiptId, UUID packageEvidenceId, Instant now) {
         requireActor(context);
-        verifyRecall(recall, command, context.origin());
+        verifyStop(recall, command, context.origin());
         var receipt = SubmissionJson.object().put("receiptVersion", 1).put("receiptId", receiptId.toString())
             .put("packageEvidenceId", packageEvidenceId.toString()).put("routeScope", HandoverStopService.ROUTE)
             .put("status", "STOPPED").put("commandSha256", command.digest()).put("recordedAt", now.toString());
         receipt.set("originalCommand", command.bound()); receipt.set("source", source(context.origin()));
-        receipt.set("caseContext", context.facts()); receipt.set("recallStop", recall);
+        receipt.set("caseContext", context.facts()); receipt.set(command.temporary() == null ? "recallStop" : "temporaryStop", recall);
         var actor = context.actor();
         receipt.putObject("actor").put("principalId", actor.userId().toString()).put("deviceId", actor.deviceId().toString())
             .put("sessionId", actor.sessionId().toString()).put("userAuthVersion", actor.userAuthVersion());
@@ -50,7 +50,7 @@ final class HandoverStopReceipts {
             var command = HandoverStopCommand.parse(SubmissionJson.uuid(bound, "caseId"),
                 SubmissionJson.text(bound, "transportRecoveryEpoch"), HandoverReceiptCodec.bytes(bound.path("command")));
             bind(receipt, command, origin, facts);
-            verifyRecall(receipt.path("recallStop"), command, origin);
+            verifyStop(receipt.path(command.temporary() == null ? "recallStop" : "temporaryStop"), command, origin);
             row(stop, "STOP_PROOF", SubmissionJson.uuid(receipt, "receiptId"), command, origin, HandoverCommand.sha(bytes), receipt);
             row(pack, "RECOVERY_PACKAGE", SubmissionJson.uuid(receipt, "packageEvidenceId"), command, origin, command.payloadHash(), receipt);
             return receipt;
@@ -89,6 +89,12 @@ final class HandoverStopReceipts {
         command.acknowledgement().fields().forEachRemaining(e -> corruptUnless(e.getValue().equals(recall.path(e.getKey()))));
     }
 
+    private void verifyStop(JsonNode stop, HandoverStopCommand command, HandoverStopStore.Origin origin) {
+        corruptUnless((command.temporary() == null) == (origin.temporary() == null));
+        if (command.temporary() == null) verifyRecall(stop, command, origin);
+        else corruptUnless(stop.equals(HandoverTemporaryStopEvidence.descriptor(command, origin)));
+    }
+
     private void row(Map<String, Object> row, String kind, UUID id, HandoverStopCommand command,
             HandoverStopStore.Origin origin, String digest, JsonNode receipt) {
         corruptUnless(kind.equals(row.get("kind")) && Arrays.equals(Ids.bytes(id), (byte[]) row.get("id"))
@@ -106,10 +112,14 @@ final class HandoverStopReceipts {
     }
 
     private JsonNode source(HandoverStopStore.Origin origin) {
-        return SubmissionJson.object().put("warehouseId", origin.warehouse().toString()).put("scopeId", origin.scope().toString())
+        var result = SubmissionJson.object().put("warehouseId", origin.warehouse().toString()).put("scopeId", origin.scope().toString())
             .put("orderId", origin.order().toString()).put("submissionId", origin.submission().toString())
-            .put("assignmentId", origin.assignment().toString()).put("deviceId", origin.device().toString())
+            .put("assignmentId", origin.assignment() == null ? null : origin.assignment().toString()).put("deviceId", origin.device().toString())
             .put("operatorId", origin.operator().toString()).put("sourceRecoveryEpoch", origin.epoch())
             .put("workRound", Long.toString(origin.round()));
+        if (origin.temporary() != null) result.put("sourceKind", "TEMP")
+            .put("authorizationId", origin.temporary().authorization().toString())
+            .put("creatorDeviceId", origin.temporary().creator().toString()).put("clientOrderId", origin.temporary().client().toString());
+        return result;
     }
 }
