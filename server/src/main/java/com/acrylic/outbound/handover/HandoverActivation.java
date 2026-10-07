@@ -114,6 +114,8 @@ public class HandoverActivation {
         @Override public JsonNode execute(HandoverCommand.Write write) {
             var input = write.command();
             var facts = write.caseFacts();
+            if ("TEMP".equals(facts.path("sourceKind").asText())) throw new BusinessException(409,
+                "HANDOVER_TEMP_TARGET_NOT_READY", "临时来源接收机资格尚未接通，请保留已批准清单");
             if (!facts.path("status").asText().equals("APPROVED"))
                 throw new BusinessException(409, "HANDOVER_STATE_INVALID", "只有已批准的案件可以准备接收机");
             UUID device = input.uuid("targetDeviceId"), user = input.uuid("targetUserId");
@@ -143,6 +145,8 @@ public class HandoverActivation {
         @Override public JsonNode execute(HandoverCommand.Write write) {
             var input = write.command();
             var facts = write.caseFacts();
+            if ("TEMP".equals(facts.path("sourceKind").asText())) throw new BusinessException(409,
+                "HANDOVER_TEMP_TARGET_NOT_READY", "临时来源接收机资格尚未接通，请保留已批准清单");
             if (!facts.path("status").asText().equals("TARGET_PREPARED"))
                 throw new BusinessException(409, "HANDOVER_STATE_INVALID", "只有已准备接收机的案件可以激活");
             UUID warehouse = SubmissionJson.uuid(facts, "warehouseId");

@@ -16,15 +16,15 @@ final class HandoverApprovalEvidence {
     private final HandoverStopReceipts receipts;
     private final RecallStore recalls;
     private final SubmissionFiles files;
+    private final HandoverTemporaryApprovalEvidence temporary;
 
     HandoverApprovalEvidence(HandoverStopStore stops, HandoverStopReceipts receipts, RecallStore recalls,
-            SubmissionFiles files) {
+            SubmissionFiles files, HandoverTemporaryApprovalEvidence temporary) {
         this.stops = stops; this.receipts = receipts; this.recalls = recalls; this.files = files;
+        this.temporary = temporary;
     }
 
     Verified verify(JsonNode facts, long requestedHigh) {
-        if ("TEMP".equals(facts.path("sourceKind").asText())) throw new BusinessException(409,
-            "HANDOVER_TEMP_APPROVAL_NOT_READY", "此临时来源尚不具备接收机交接资格，请保留停止证据");
         var caseId = uuid(facts, "caseId");
         var origin = stops.origin(caseId);
         var stop = stops.original(caseId); var packRow = stops.recovery(caseId);
@@ -34,6 +34,7 @@ final class HandoverApprovalEvidence {
         var command = HandoverStopCommand.parse(caseId, text(bound, "transportRecoveryEpoch"),
             HandoverReceiptCodec.bytes(bound.path("command")));
         caseBinding(facts, receipt, command, requestedHigh);
+        if (origin.temporary() != null) return new Verified(receipt, temporary.read(command, origin));
         var recall = recalls.get(command.recallId());
         var pack = recalls.recovery(command.recallId());
         recoveryBinding(origin, command, receipt.path("recallStop"), recall, pack);
@@ -43,7 +44,7 @@ final class HandoverApprovalEvidence {
     }
 
     private void caseBinding(JsonNode facts, JsonNode receipt, HandoverStopCommand command, long high) {
-        requireSame(high == command.captureHigh() && number(facts, "inputHighWatermark") == high
+        requireSame(high == command.inputHigh() && number(facts, "inputHighWatermark") == high
             && number(facts, "caseVersion") > command.caseVersion()
             && text(facts, "stopState").equals("DEVICE_ACKED") && text(facts, "integrityState").equals("COMPLETE"));
         for (String field : List.of("warehouseId", "scopeId", "submissionId", "canonicalOrderId", "sourceKind", "fromWorkRound", "toWorkRound"))

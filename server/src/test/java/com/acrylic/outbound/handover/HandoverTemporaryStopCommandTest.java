@@ -32,6 +32,29 @@ class HandoverTemporaryStopCommandTest {
         assertThatThrownBy(() -> parse(body().put("sourceKind", "FORMAL"))).isInstanceOf(BusinessException.class);
     }
 
+    @Test void explicitSourceBoundaryIsDistinctFromDeviceBoundaryAndBindsDigest() {
+        var body = body().put("captureHighWatermark", "7").put("orderScanHighWatermark", "2");
+        var command = parse(body);
+        assertThat(command.captureHigh()).isEqualTo(7);
+        assertThat(command.inputHigh()).isEqualTo(2);
+        assertThat(parse(body.deepCopy().put("orderScanHighWatermark", "3")).digest()).isNotEqualTo(command.digest());
+        body.remove("orderScanHighWatermark");
+        var legacy = parse(body);
+        assertThat(legacy.inputHigh()).isEqualTo(7);
+        assertThat(legacy.bound().path("command").has("orderScanHighWatermark")).isFalse();
+        assertThat(legacy.digest()).isNotEqualTo(command.digest());
+    }
+
+    @ParameterizedTest @ValueSource(strings={"-1", "01", "", "9223372036854775808"})
+    void rejectsMalformedSourceBoundary(String high) {
+        assertThatThrownBy(() -> parse(body().put("orderScanHighWatermark", high))).isInstanceOf(BusinessException.class);
+    }
+
+    @Test void rejectsNullAndNumericSourceBoundary() {
+        assertThatThrownBy(() -> parse(body().putNull("orderScanHighWatermark"))).isInstanceOf(BusinessException.class);
+        assertThatThrownBy(() -> parse(body().put("orderScanHighWatermark", 2))).isInstanceOf(BusinessException.class);
+    }
+
     private HandoverStopCommand parse(ObjectNode body) { return HandoverStopCommand.parse(kase, "1", HandoverReceiptCodec.bytes(body)); }
     private ObjectNode body() {
         return SubmissionJson.object().put("commandId", UUID.randomUUID().toString()).put("expectedCaseVersion", "1")

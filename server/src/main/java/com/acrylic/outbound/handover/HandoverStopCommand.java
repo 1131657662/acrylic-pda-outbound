@@ -24,6 +24,7 @@ record HandoverStopCommand(UUID caseId, String epoch, UUID key, long caseVersion
             var body = SubmissionJson.parse(bytes);
             var fields = new HashSet<String>(); body.fieldNames().forEachRemaining(fields::add);
             boolean temporary = "TEMP".equals(body.path("sourceKind").asText());
+            if (temporary && body.has("orderScanHighWatermark")) fields.remove("orderScanHighWatermark");
             require(body.isObject() && fields.equals(temporary ? TEMP_FIELDS : FIELDS));
             long version = SubmissionJson.number(body, "expectedCaseVersion"); require(version > 0);
             String hash = SubmissionJson.text(body, temporary ? "setSha256" : "payloadSha256"); require(hash.matches("[a-f0-9]{64}"));
@@ -34,7 +35,8 @@ record HandoverStopCommand(UUID caseId, String epoch, UUID key, long caseVersion
                 temporary ? null : SubmissionJson.uuid(body, "recoveryPackageId"), hash,
                 SubmissionJson.number(body, "captureHighWatermark"), SubmissionJson.number(body, "auditThroughSeq"),
                 SubmissionJson.canonical(bound), temporary ? new Temporary(SubmissionJson.uuid(body, "sourceEvidenceSetId"),
-                    SubmissionJson.uuid(body, "verificationId")) : null);
+                    SubmissionJson.uuid(body, "verificationId"), body.has("orderScanHighWatermark")
+                        ? SubmissionJson.number(body, "orderScanHighWatermark") : null) : null);
         } catch (IllegalArgumentException | BusinessException invalid) {
             throw new BusinessException(400, "INVALID_HANDOVER_STOP", "交接停止命令格式无效");
         }
@@ -42,10 +44,11 @@ record HandoverStopCommand(UUID caseId, String epoch, UUID key, long caseVersion
 
     JsonNode bound() { return SubmissionJson.parse(canonical); }
     String digest() { return SubmissionJson.sha(bound()); }
+    long inputHigh() { return temporary != null && temporary.orderHigh() != null ? temporary.orderHigh() : captureHigh; }
     ObjectNode acknowledgement() {
         return SubmissionJson.object().put("recoveryPackageId", packageId.toString()).put("payloadSha256", payloadHash)
             .put("captureHighWatermark", Long.toString(captureHigh)).put("auditThroughSeq", Long.toString(auditHigh));
     }
-    record Temporary(UUID evidenceSet, UUID verification) { }
+    record Temporary(UUID evidenceSet, UUID verification, Long orderHigh) { }
     private static void require(boolean valid) { if (!valid) throw new IllegalArgumentException(); }
 }

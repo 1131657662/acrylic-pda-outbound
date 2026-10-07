@@ -18,7 +18,8 @@ class HandoverApprovalEvidenceTest {
     private final HandoverStopReceipts receipts = mock(HandoverStopReceipts.class);
     private final RecallStore recalls = mock(RecallStore.class);
     private final SubmissionFiles files = mock(SubmissionFiles.class);
-    private final HandoverApprovalEvidence consumer = new HandoverApprovalEvidence(stops, receipts, recalls, files);
+    private final HandoverApprovalEvidence consumer = new HandoverApprovalEvidence(stops, receipts, recalls, files,
+        mock(HandoverTemporaryApprovalEvidence.class));
     private final UUID kase = UUID.randomUUID(), recallId = UUID.randomUUID(), packageId = UUID.randomUUID();
     private final HandoverStopStore.Origin origin = new HandoverStopStore.Origin(id(), id(), id(), id(), id(), id(), id(), "1", 1);
     private final ObjectNode facts = SubmissionJson.object(), receipt = SubmissionJson.object(), body = SubmissionJson.object();

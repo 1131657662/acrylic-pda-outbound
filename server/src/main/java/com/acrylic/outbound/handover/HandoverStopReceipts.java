@@ -101,7 +101,7 @@ final class HandoverStopReceipts {
             && Arrays.equals(Ids.bytes(command.caseId()), (byte[]) row.get("case_id"))
             && Arrays.equals(Ids.bytes(origin.device()), (byte[]) row.get("device_id"))
             && digest.equals(HexFormat.of().formatHex((byte[]) row.get("payload_sha256")))
-            && row.get("high_watermark") instanceof Number high && high.longValue() == command.captureHigh()
+            && row.get("high_watermark") instanceof Number high && high.longValue() == command.inputHigh()
             && recorded(row.get("recorded_at")).equals(Instant.parse(receipt.path("recordedAt").asText())));
     }
 

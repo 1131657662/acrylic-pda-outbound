@@ -18,6 +18,9 @@ public final class HandoverTemporaryStopChecks {
 
     public HandoverTemporaryStopChecks(WebApplicationContext app, Path attempt) throws Exception {
         f = new HandoverTemporaryStopFixture(app, attempt);
+        // This equal-boundary input deliberately exercises the pre-extension command and exact replay.
+        f.command.remove("orderScanHighWatermark");
+        Files.writeString(f.directory.resolve("stop-command.json"), SubmissionJson.canonical(f.command));
         sql = new TemporaryDispositionSqlChecks(f.jdbc, f.directory.resolve("sql"));
     }
 
@@ -39,6 +42,7 @@ public final class HandoverTemporaryStopChecks {
         receipt.path("capabilities").forEach(value -> assertThat(value.asBoolean()).isFalse());
         assertThat(f.jdbc.queryForObject("SELECT status FROM submission WHERE id=?", String.class, Ids.bytes(f.head.control().id()))).isEqualTo("ABORTED");
         assertThat(f.jdbc.queryForObject("SELECT stop_state FROM handover_case WHERE id=?", String.class, Ids.bytes(f.kase))).isEqualTo("DEVICE_ACKED");
+        f.sync();
     }
 
     private void invalidProofs() throws Exception {
@@ -46,6 +50,7 @@ public final class HandoverTemporaryStopChecks {
         f.stop(f.command.deepCopy().put("setSha256", "0".repeat(64)), 409, "TEMP_CONTINUATION_STOP_PROOF_REQUIRED");
         f.stop(f.command.deepCopy().put("verificationId", UUID.randomUUID().toString()), 409, "TEMP_CONTINUATION_STOP_PROOF_REQUIRED");
         f.stop(f.command.deepCopy().put("captureHighWatermark", "999"), 409, "HANDOVER_STOP_CONTEXT_CHANGED");
+        f.stop(f.command.deepCopy().put("orderScanHighWatermark", "999"), 409, "HANDOVER_STOP_CONTEXT_CHANGED");
         f.post("/handovers/" + f.kase + "/stop-ack", f.command, "invalid", 401);
         byte[] denied = f.post("/handovers/" + f.kase + "/stop-ack", f.command, f.otherDeviceToken, 404);
         assertThat(SubmissionJson.parse(denied).path("code").asText()).isEqualTo("HANDOVER_CASE_NOT_FOUND");

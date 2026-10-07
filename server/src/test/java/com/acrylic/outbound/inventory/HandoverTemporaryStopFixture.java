@@ -69,14 +69,16 @@ final class HandoverTemporaryStopFixture {
     private ObjectNode stopCommand() {
         var row = jdbc.queryForMap("""
             SELECT BIN_TO_UUID(v.id) verification,BIN_TO_UUID(e.id) evidence,e.set_sha256,
-              CAST(e.capture_high_watermark AS CHAR) capture,CAST(e.audit_through_seq AS CHAR) audit
+              CAST(e.capture_high_watermark AS CHAR) capture,CAST(e.audit_through_seq AS CHAR) audit,
+              CAST(e.order_scan_high_watermark AS CHAR) input_high
             FROM source_evidence_set e JOIN source_evidence_verification v ON v.set_id=e.id
             WHERE e.submission_id=? AND v.result='VERIFIED_COMPLETE_AT_STOP'
             """, Ids.bytes(head.control().id()));
         return SubmissionJson.object().put("sourceKind", "TEMP").put("commandId", UUID.randomUUID().toString())
             .put("expectedCaseVersion", "1").put("sourceEvidenceSetId", row.get("evidence").toString())
             .put("verificationId", row.get("verification").toString()).put("setSha256", row.get("set_sha256").toString())
-            .put("captureHighWatermark", row.get("capture").toString()).put("auditThroughSeq", row.get("audit").toString());
+            .put("captureHighWatermark", row.get("capture").toString()).put("auditThroughSeq", row.get("audit").toString())
+            .put("orderScanHighWatermark", row.get("input_high").toString());
     }
 
     void abort() throws Exception {
@@ -94,6 +96,26 @@ final class HandoverTemporaryStopFixture {
         byte[] bytes = post("/handovers/" + kase + "/stop-ack", body, token, expected);
         if (code != null) assertThat(SubmissionJson.parse(bytes).path("code").asText()).isEqualTo(code);
         return bytes;
+    }
+
+    void sync() throws Exception {
+        var request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:19434/api/v1/pda/sync/orders"))
+            .timeout(java.time.Duration.ofSeconds(30)).header("X-Server-Recovery-Epoch", "1")
+            .header("Authorization", "Bearer " + token).GET().build();
+        var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofByteArray());
+        Files.write(directory.resolve("sync-after-stop.json"), response.body());
+        assertThat(response.statusCode()).as(new String(response.body(), java.nio.charset.StandardCharsets.UTF_8)).isEqualTo(200);
+        var row = jdbc.queryForMap("""
+            SELECT o.status,p.status projected,JSON_UNQUOTE(JSON_EXTRACT(x.payload,'$.status')) notified
+            FROM outbound_order o JOIN sync_order_projection p ON p.order_id=o.id AND p.warehouse_id=o.warehouse_id
+              AND p.recovery_epoch=1
+            JOIN order_sync_outbox x ON x.order_id=o.id AND x.event_type='HANDOVER_STOPPED'
+            WHERE o.id=? AND JSON_UNQUOTE(JSON_EXTRACT(x.payload,'$.caseId'))=?
+            """, Ids.bytes(head.order()), kase.toString());
+        assertThat(row.get("status")).isEqualTo("REVIEW_REQUIRED");
+        assertThat(row.get("projected")).isEqualTo(row.get("status"));
+        assertThat(row.get("notified")).isEqualTo(row.get("status"));
+        Files.writeString(directory.resolve("sync-status.json"), new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(row));
     }
 
     byte[] post(String path, JsonNode body, String bearer, int expected) throws Exception {

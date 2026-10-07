@@ -26,10 +26,10 @@ final class HandoverStopWriter {
         var receiptId = Ids.next(); var packageId = Ids.next(); var now = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         byte[] receipt = receipts.sign(command, context, stop, receiptId, packageId, now);
         cases.insertEvidence(receiptId, command.caseId(), "STOP_PROOF", origin.device(), HandoverCommand.sha(receipt),
-            command.captureHigh(), receipt, now);
+            command.inputHigh(), receipt, now);
         cases.insertEvidence(packageId, command.caseId(), "RECOVERY_PACKAGE", origin.device(), command.payloadHash(),
-            command.captureHigh(), receipt, now);
-        cases.advanceCase(command.caseId(), command.caseVersion(), "EVIDENCE_PENDING", null, command.captureHigh(),
+            command.inputHigh(), receipt, now);
+        cases.advanceCase(command.caseId(), command.caseVersion(), "EVIDENCE_PENDING", null, command.inputHigh(),
             "DEVICE_ACKED", "COMPLETE", null, null, null, null, null, null, origin.operator(), now);
         requests.record(HandoverStopService.key(command, context), command.digest(), receiptId);
         var details = SubmissionJson.object().put("caseId", command.caseId().toString()).put("commandSha256", command.digest())
@@ -38,7 +38,7 @@ final class HandoverStopWriter {
         else details.put("sourceEvidenceSetId", command.temporary().evidenceSet().toString());
         audit.append(new AuditWriter.Event(origin.operator(), "HANDOVER_STOPPED", "HANDOVER_STOP", receiptId, details.toString()), requestId);
         var payload = details.deepCopy().put("orderId", origin.order().toString()).put("scopeId", origin.scope().toString())
-            .put("status", "RECALL_PENDING").put("caseStatus", "EVIDENCE_PENDING").put("receiptId", receiptId.toString());
+            .put("status", cases.orderStatus(origin.order())).put("caseStatus", "EVIDENCE_PENDING").put("receiptId", receiptId.toString());
         long epoch = cases.serverRecoveryEpoch();
         cases.insertOutbox(origin.order(), epoch, cases.nextOutboxEntityVersion(origin.order(), epoch), "HANDOVER_STOPPED", payload.toString(), now);
         return receipt;

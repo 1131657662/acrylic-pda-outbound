@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-07
 branch: codex/development
-head: 3694824
-dirty_entries: 40
+head: b09adf9
+dirty_entries: 49
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 32 }
 server: { contract: 0.44.0, paths: 139, flyway: V67, migrations: 67 }
@@ -16,7 +16,7 @@ server: { contract: 0.44.0, paths: 139, flyway: V67, migrations: 67 }
 总目标 D01–D18 执行中，必须同时通过新计划第8节才能 complete；不得按局部边界结束。逐项输入映射及开发证据见 [执行记录](history/D01_D18_EXECUTION_2026-10-07.md)。
 
 ## Git、写权与环境
-- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/实际远端均为369482419e5270bd47a2647fae26038e6a596ef2；D05拒绝处置与短装冲突切片15路径已提交推送，Git回执在d05-review，无main/部署/发布动作。
+- 唯一写者为总目标聊天 `01a113b0-7cca-76c1-aacb-e311871e3d5a`；其他聊天未加载。树 D:/acrylic-pda-outbound，分支 codex/development，HEAD/实际远端均为b09adf96c458c748ed7b29505a5057b9ade14280；D06申请/停止证据25路径已提交推送，Git回执在d06-stop-review，无main/部署/发布动作。
 - D01预检18条继承路径的完整清单、逐文件副本、hash/diff、worktrees、进程/监听/磁盘、旧看板在 `.local/d01-d18-20261007/preflight-01/`；继承内容保护不回滚。原看板结论含前审查/计划完整保存在 board-before.md。
 - 既有MySQL3306/13316及外部Harness19387未操作；隔离76–79已dump/认证停机，19331无遗留。运行器在 `.local/d01-d18-20261007/d02-http/`，实例及证据在LOCALAPPDATA/acrylic-pda-outbound-isolated。隔离80也已dump/认证停机；D02Continuation79模拟器已正常关闭、5560监听消失。D03隔离81/82/83均已dump/认证停库，19331无遗留，无重型构建在途。
 - 历史归档在 E:/acrylic-archive-20261006/，路径按 [本机归档位置](LOCAL_ARCHIVE_LOCATIONS.md) 查找；失败库/binlog/日志/XML/原资料保持。
@@ -56,7 +56,7 @@ server: { contract: 0.44.0, paths: 139, flyway: V67, migrations: 67 }
 - D05的1048真实HTTP/Android Room拒绝→实物→释放通过；1050确认全组及批准后库存锁拒绝、1052实际HTTP两冲突/原件/25业务表守恒均1/0/0/0，源码hash一致。失败1044–1047/1049/1051及dump/SHA/XML保留，1049/1050只读副本补dump且原数据hash不变。1052已dump认证停机；无专项监听/重型在途，既有3306/13316/19387未动。
 - D05本批31条dirty副本/hash/diff、旧看板/环境在d05-review；已提交范围清单同目录，继承路径保留。D04/D05政策阻断保持，D06–D18未通过。
 - D06 TEMP申请/stop-ack使用原E2A设备STOP及ABORTED终态，不造FORMAL资格；unit-01为132/0/0/0。1053来源约束、1054快照序列化、1055权限夹具预期失败保留。1056实际HTTP为1/0/0/0，非空FORMAL迁移/原件、TEMP停止/身份撤权/缺原文/末SQL回滚/并发重启及业务守恒通过；源码无漂移，已dump认证停库。
-- D06此阶段待提交。1057 FORMAL旧迁移缺表、1058编译失败均保留；1059非空种子完整迁移的FORMAL全专项1/0/0/0、exit0、源码无漂移，已dump认证停机。TEMP/FORMAL实际请求和回执独立契约10项通过；无重型/专项监听在途。后续TEMP审批/接收机/最终提交和空canonical仍是开发缺口；继续D07–D17及D18，总目标active。
+- D06申请/停止阶段已提交。1057 FORMAL旧迁移缺表、1058编译失败均保留；1059非空种子完整迁移的FORMAL全专项1/0/0/0、exit0、源码无漂移，已dump认证停机。独立契约10项通过；40条dirty快照与16条继承hash核对在d06-stop-review。TEMP完整根/页/冻结正文重验及独立主管审批已编码，1060服务端/Android各1/0/0/0，源码1469路径无漂移、末SQL故障回滚，已dump认证停库。双高水位1061/1062真实跨来源通过；unit-03为144/0/0/0，FORMAL审批/证据/边界1063–1065通过。outbox真实状态修复后1067旧格式停止/同步通过；1066夹具空字段失败保留。1068/1069均1/0/0/0，unit-04交接/同步164/0/0/0；契约20项通过。1065–1069源码1472路径无漂移且dump重算一致，均认证停机、无重型在途。30条dirty前快照在d06-temp-approval/preflight-01；本切片提交后继续指定接收机准备/自身资格及最终链。减包/接收机/最终提交和空canonical仍缺，D04–D18未通过、目标active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；详细阶段记录见 docs/history/AUTONOMOUS_PROGRESS_2026-10-06.md。

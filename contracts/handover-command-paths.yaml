@@ -1,7 +1,14 @@
 Execute:
   post:
     summary: 执行一次 PDA 交接命令（REQUEST/APPROVE/PREPARE/ACTIVATE）
-    description: 请求体是规范 JSON 命令，原键为命令体里的 commandId：同键同文返回原回执字节，同键异文返回 409 IDEMPOTENCY_CONTENT_MISMATCH。命令面默认关闭（outbound.handover.commands.enabled=false 时该路径不存在）；即使启用，签名回执的五项能力仍全为 false——批准或激活交接都不放行库存、不恢复扫码、不允许本机删除。激活在服务端代目标设备签发离线授权，输入形状与 PDA 领取一致，否则设备端验签失败。
+    description: >-
+      请求体是规范 JSON 命令，原键为 commandId：同键同文返回原回执字节，同键异文返回 409 IDEMPOTENCY_CONTENT_MISMATCH。
+      命令面默认关闭（outbound.handover.commands.enabled=false 时路径不存在）；签名回执五项能力仍全为 false。
+      FORMAL 激活在服务端代目标设备签发离线授权；批准或激活本身不放行库存、不恢复扫码、不允许本机删除。
+      已有 canonical 目标的 TEMP 来源支持 REQUEST 及原机 stop-ack 后的主管 APPROVE；审批人与申请人须不同。
+      TEMP 审批重验原 E2A OPEN/STOP/完整页和审计、冻结正文、原资格与完整实物清单；inputHighWatermark 是来源订单序号。
+      本阶段 TEMP 清单仅支持全部 RETAINED，保留原占用及账务，库存或基线冲突不能因审批清除。
+      TEMP 减包、PREPARE 和 ACTIVATE 消费者未完成时明确拒绝；审批回执不授予接收机作业资格。
     security: [{webSession: []}]
     responses:
       '200':

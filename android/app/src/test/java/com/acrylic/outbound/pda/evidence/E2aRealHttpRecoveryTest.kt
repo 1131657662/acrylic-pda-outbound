@@ -36,6 +36,7 @@ class E2aRealHttpRecoveryTest {
             val connection = E2aRealHttpConnection(work, input)
             val store = { TemporaryWorkStore(work.db, connection, work.store.sample) }
             work.start("1"); work.scan()
+            if (input.optBoolean("otherSourceBeforeFreeze")) E2aRealHttpOtherSource.capture(work)
             if (input.optBoolean("partialUploadBeforeAbort")) E2aRealHttpPartialUpload.grow(work)
             val frozen = TemporaryFreeze(store()).freeze(work.id, "合成短装待核对")
             if (input.optBoolean("partialUploadBeforeAbort")) E2aRealHttpPartialUpload.start(frozen, connection)

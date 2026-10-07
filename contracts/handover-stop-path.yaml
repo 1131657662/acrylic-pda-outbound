@@ -11,7 +11,9 @@ Path:
       TEMP 请求引用已完整核验的 E2A set/verification 和原设备 STOP，原提交必须已 ABORTED；
       适用于已有 canonical 目标的来源，不能借用 FORMAL assignment 或召回包，也不撤销其他来源共用的 TEMP 资格。
       TEMP 回执保存 temporaryStop，FORMAL 保持 recallStop。原批次未终结时仍不能批准；
-      实物清单、接收机和最终提交不由本接口授权。TEMP 后续审批消费者未接通时明确拒绝。
+      TEMP 的 captureHighWatermark 为设备全局采集边界，orderScanHighWatermark 为来源订单序号；案件和证据行的输入高水位使用后者。
+      旧 TEMP 命令缺少 orderScanHighWatermark 时，仅可信来源与设备高水位相同才可首次收存，已存原件保持原字节。
+      实物清单、主管审批、接收机和最终提交不由本接口授权。
     security: [{pdaBearer: []}]
     parameters:
       - {name: caseId, in: path, required: true, schema: {type: string, format: uuid}}
@@ -67,12 +69,21 @@ TemporaryCommand:
     sourceEvidenceSetId: {type: string, format: uuid}
     verificationId: {type: string, format: uuid}
     setSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
-    captureHighWatermark: {$ref: '#/IntegerText'}
+    captureHighWatermark: {$ref: '#/IntegerText', description: 原设备全局采集序号高水位}
+    orderScanHighWatermark: {$ref: '#/IntegerText', description: 本来源订单输入序号高水位；旧命令省略时须等于设备高水位}
     auditThroughSeq: {$ref: '#/IntegerText'}
 Receipt:
   type: object
   additionalProperties: false
   required: [receiptVersion, receiptId, packageEvidenceId, routeScope, status, commandSha256, recordedAt, originalCommand, source, caseContext, actor, capabilities, signedReceipt]
+  allOf:
+    - if:
+        properties:
+          originalCommand: {properties: {command: {required: [orderScanHighWatermark]}}}
+      then:
+        properties: {temporaryStop: {required: [orderScanHighWatermark]}}
+      else:
+        properties: {temporaryStop: {not: {required: [orderScanHighWatermark]}}}
   oneOf:
     - required: [recallStop]
       properties:
@@ -145,7 +156,8 @@ Receipt:
         submissionId: {type: string, format: uuid}
         workRound: {$ref: '#/IntegerText'}
         authorizationId: {type: string, format: uuid}
-        captureHighWatermark: {$ref: '#/IntegerText'}
+        captureHighWatermark: {$ref: '#/IntegerText', description: 原设备全局采集序号高水位}
+        orderScanHighWatermark: {$ref: '#/IntegerText', description: 新格式命令绑定的来源订单输入序号；旧原件不补写}
         auditThroughSeq: {$ref: '#/IntegerText'}
         mayResumeScanning: {type: boolean, const: false}
         stockReleased: {type: boolean, const: false}

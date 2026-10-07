@@ -55,6 +55,8 @@ final class HandoverOperations {
             var lines=input.body().path("checklist");
             if (store.checklist(write.caseId()).isEmpty()) append(write,lines);
             UUID approver=UUID.fromString(write.actor().path("principalId").asText());
+            if ("TEMP".equals(facts.path("sourceKind").asText()) && approver.toString().equals(facts.path("requestedBy").asText()))
+                throw new BusinessException(403,"HANDOVER_SELF_APPROVAL_DENIED","交接申请人不能批准本人申请");
             store.advanceCase(write.caseId(),write.caseVersion(),"APPROVED",approver,high,"DEVICE_ACKED","COMPLETE",
                 input.text("originalResultState"),"MATCHED",null,null,null,null,approver,write.recordedAt());
             long retained=0;for (var line:lines) if (line.path("state").asText().equals("RETAINED")) retained++;

@@ -190,6 +190,10 @@ public class HandoverStore {
         return jdbc.queryForObject("SELECT recovery_epoch FROM server_state WHERE id=1",Long.class);
     }
 
+    public String orderStatus(UUID order) {
+        return jdbc.queryForObject("SELECT status FROM outbound_order WHERE id=?",String.class,Ids.bytes(order));
+    }
+
     private static byte[] unhex(String hex) {
         return java.util.HexFormat.of().parseHex(hex);
     }

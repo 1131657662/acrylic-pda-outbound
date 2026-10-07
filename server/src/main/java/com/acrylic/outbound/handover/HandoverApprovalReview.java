@@ -15,11 +15,13 @@ final class HandoverApprovalReview {
     private final HandoverStore store;
     private final HandoverReadReceipt receipts;
     private final JdbcTemplate jdbc;
+    private final HandoverTemporaryApprovalStock temporary;
 
     HandoverApprovalReview(HandoverApprovalEvidence evidence, HandoverChecklist checklist, HandoverApprovalStock stock,
-            HandoverStore store, HandoverReadReceipt receipts, JdbcTemplate jdbc) {
+            HandoverStore store, HandoverReadReceipt receipts, JdbcTemplate jdbc, HandoverTemporaryApprovalStock temporary) {
         this.evidence = evidence; this.checklist = checklist; this.stock = stock;
         this.store = store; this.receipts = receipts; this.jdbc = jdbc;
+        this.temporary = temporary;
     }
 
     void require(HandoverCommand.Input input, JsonNode facts) {
@@ -29,7 +31,8 @@ final class HandoverApprovalReview {
         var body = verified.body(); var lines = command.path("checklist");
         var dispositions = checklist.dispositions(body, lines);
         checklist.compareStored(store.checklist(uuid(facts, "caseId")), lines, approved);
-        stock.require(facts, body, dispositions);
+        if ("TEMP".equals(facts.path("sourceKind").asText())) temporary.require(facts, verified, dispositions);
+        else stock.require(facts, body, dispositions);
     }
 
     private JsonNode originalApproval(JsonNode facts) {
