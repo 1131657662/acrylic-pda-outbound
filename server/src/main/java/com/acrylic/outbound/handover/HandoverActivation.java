@@ -105,16 +105,17 @@ public class HandoverActivation {
     static final class Activate implements HandoverCommand.Operation {
         private final HandoverStore store;
         private final HandoverActivation activation;
-        Activate(HandoverStore store, HandoverActivation activation) {
+        private final HandoverTemporaryActivationOperation temporary;
+        Activate(HandoverStore store, HandoverActivation activation, HandoverTemporaryActivationOperation temporary) {
             this.store = store;
             this.activation = activation;
+            this.temporary = temporary;
         }
         @Override public String commandType() { return "ACTIVATE"; }
         @Override public JsonNode execute(HandoverCommand.Write write) {
             var input = write.command();
             var facts = write.caseFacts();
-            if ("TEMP".equals(facts.path("sourceKind").asText())) throw new BusinessException(409,
-                "HANDOVER_TEMP_TARGET_NOT_READY", "临时来源接收机资格尚未接通，请保留已批准清单");
+            if ("TEMP".equals(facts.path("sourceKind").asText())) return temporary.execute(write);
             if (!facts.path("status").asText().equals("TARGET_PREPARED"))
                 throw new BusinessException(409, "HANDOVER_STATE_INVALID", "只有已准备接收机的案件可以激活");
             UUID warehouse = SubmissionJson.uuid(facts, "warehouseId");
@@ -155,5 +156,6 @@ public class HandoverActivation {
                 "HANDOVER_ACTIVATED", SubmissionJson.canonical(payload), write.recordedAt());
             return decision.put("status", "ACTIVATED").put("retainedReservations", Long.toString(after));
         }
+
     }
 }

@@ -27,7 +27,7 @@ final class HandoverTemporaryConfirmationReceipt {
         body.set("capabilities", HandoverReceiptCodec.capabilities());
         body.putObject("actor").put("userId", actor.userId().toString()).put("deviceId", actor.deviceId().toString())
             .put("warehouseId", actor.warehouseId().toString()).put("userAuthVersion", actor.userAuthVersion())
-            .put("deviceVersion", actor.deviceVersion());
+            .put("deviceVersion", actor.deviceVersion()).put("sessionId", actor.sessionId().toString());
         return new HandoverTemporaryConfirmationStore.Receipt(id, at, canonical(signatures.signTemporaryConfirmation(body)).getBytes(StandardCharsets.UTF_8));
     }
 
@@ -40,6 +40,17 @@ final class HandoverTemporaryConfirmationReceipt {
         corruptUnless(command.caseId().toString().equals(row.get("case_id")));
         if (!Arrays.equals((byte[]) row.get("command_bytes"), command.bytes())) throw HandoverCommand.conflict();
         return response.clone();
+    }
+
+    JsonNode verifyForActivation(Map<String, Object> row, PdaSessions.Principal actor) {
+        corruptUnless(actor.sessionId().toString().equals(row.get("session_id"))
+            && actor.userId().toString().equals(row.get("actor_id")) && actor.deviceId().toString().equals(row.get("device_id")));
+        JsonNode receipt;
+        try { receipt = parse(verified(row, actor)); }
+        catch (RuntimeException invalid) { throw HandoverCommand.corrupt(); }
+        corruptUnless(receipt.path("actor").path("userAuthVersion").asText().equals(actor.userAuthVersion())
+            && receipt.path("actor").path("deviceVersion").asText().equals(actor.deviceVersion()));
+        return receipt;
     }
 
     private byte[] verified(Map<String, Object> row, PdaSessions.Principal actor) {
@@ -69,6 +80,8 @@ final class HandoverTemporaryConfirmationReceipt {
         var signedActor = receipt.path("actor");
         corruptUnless(signedActor.path("userId").asText().equals(row.get("actor_id"))
             && signedActor.path("deviceId").asText().equals(row.get("device_id"))
+            && (row.get("session_id") == null ? !signedActor.has("sessionId")
+                : signedActor.path("sessionId").asText().equals(row.get("session_id")))
             && signedActor.path("warehouseId").asText().equals(actor.warehouseId().toString())
             && receipt.path("receiptVersion").asInt() == 1
             && Instant.parse(receipt.path("recordedAt").asText()).equals(recordedAt(row.get("recorded_at")))

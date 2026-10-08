@@ -15,7 +15,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 final class HandoverTemporaryConfirmationSql {
     private static final List<String> EXTRA = List.of("temporary_handover_confirmation", "handover_case", "handover_evidence",
         "handover_checklist", "handover_command_receipt", "temporary_authorization", "temporary_preparation_ack", "order_assignment",
-        "temporary_source_continuation", "temporary_source_continuation_activation");
+        "temporary_source_continuation", "temporary_source_continuation_activation", "temporary_handover_activation_ticket",
+        "temporary_handover_activation_owner", "temporary_handover_activation", "temporary_work_origin", "temporary_preparation_part",
+        "pda_session");
     private final HandoverTemporaryConfirmationHttp http;
     private final TemporaryDispositionSqlChecks stock;
     HandoverTemporaryConfirmationSql(HandoverTemporaryConfirmationHttp http) throws Exception {

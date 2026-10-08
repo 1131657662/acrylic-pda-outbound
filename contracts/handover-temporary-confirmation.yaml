@@ -99,4 +99,5 @@ Receipt:
         warehouseId: {type: string, format: uuid}
         userAuthVersion: {$ref: '#/PositiveText'}
         deviceVersion: {$ref: '#/PositiveText'}
+        sessionId: {type: string, format: uuid, description: 新确认绑定生成确认的本人在线会话；历史无此字段的确认仅可重放，不可激活}
     signedReceipt: {type: string, description: RS256 JWT，iss=acrylic-outbound、aud=acrylic-pda-temporary-handover-confirmation；receipt 绑定除 signedReceipt 外全部字段}

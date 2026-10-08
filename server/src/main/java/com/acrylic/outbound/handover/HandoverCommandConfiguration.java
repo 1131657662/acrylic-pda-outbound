@@ -29,12 +29,14 @@ public class HandoverCommandConfiguration {
 
     @Bean
     HandoverCommand.Operation handoverPrepare(HandoverStore store, HandoverTargetQualification targets,
-            HandoverTemporaryTarget temporary, HandoverApprovalEvidence evidence) {
-        return new HandoverPreparation(store, targets, temporary, evidence);
+            HandoverTemporaryTarget temporary, HandoverApprovalEvidence evidence,
+            HandoverTemporaryActivationTicketStore tickets) {
+        return new HandoverPreparation(store, targets, temporary, evidence, tickets);
     }
 
     @Bean
-    HandoverCommand.Operation handoverActivate(HandoverStore store, HandoverActivation activation) {
-        return new HandoverActivation.Activate(store, activation);
+    HandoverCommand.Operation handoverActivate(HandoverStore store, HandoverActivation activation,
+            HandoverTemporaryActivation temporaryActivation, HandoverTemporaryRoundStore rounds) {
+        return new HandoverActivation.Activate(store, activation, new HandoverTemporaryActivationOperation(store, temporaryActivation, rounds));
     }
 }

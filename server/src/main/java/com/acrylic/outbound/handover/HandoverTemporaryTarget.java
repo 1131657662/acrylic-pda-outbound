@@ -27,8 +27,10 @@ final class HandoverTemporaryTarget {
         var manifest = credentials.verify(row);
         baseline(uuid(facts, "warehouseId"), manifest, body);
         var scope = cases.scopeFacts(uuid(facts, "scopeId"));
-        for (String field : java.util.List.of("canonicalOrderId", "sourceKind", "fromWorkRound"))
+        for (String field : java.util.List.of("canonicalOrderId", "sourceKind"))
             HandoverCommand.corruptUnless(facts.path(field).equals(scope.path(field)));
+        String round = "ACTIVATED".equals(facts.path("status").asText()) ? "toWorkRound" : "fromWorkRound";
+        HandoverCommand.corruptUnless(facts.path(round).equals(scope.path("fromWorkRound")));
         return object().put("authorizationId", row.id().toString()).put("manifestSha256", row.receipt().manifestSha256())
             .put("expiresAt", row.expiresAt().toString()).put("serverRecoveryEpoch", row.recoveryEpoch())
             .put("userAuthVersion", row.userVersion()).put("deviceVersion", row.deviceVersion())

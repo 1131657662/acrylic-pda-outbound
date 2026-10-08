@@ -13,6 +13,9 @@ public class TemporaryIssuer {
     public TemporaryIssuer(OfflineSigner signer,JsonText json) { this.signer=signer;this.json=json; }
     public Work issue(Binding binding,TemporaryBaseline.View baseline,List<PreparationArchive> parts) {
         Instant issued=Instant.now().truncatedTo(ChronoUnit.SECONDS),expires=issued.plusSeconds(172800);
+        if (binding.expiresAtLimit()!=null && binding.expiresAtLimit().isBefore(expires))
+            expires=binding.expiresAtLimit().truncatedTo(ChronoUnit.SECONDS);
+        if (!expires.isAfter(issued)) throw new BusinessException(409,"TEMPORARY_AUTH_EXPIRED","临时授权期限已到，请保留资料");
         var identity=new Identity(binding.id(),binding.bundle(),binding.principal().userId(),binding.principal().deviceId(),binding.principal().warehouseId(),
             Long.toString(binding.sequence()),binding.principal().userAuthVersion(),binding.principal().deviceVersion(),binding.recoveryEpoch());
         var manifest=new Manifest(1,"TEMP_WORK",identity,baseline.inventorySnapshotId(),baseline.inventoryVersion(),baseline.mappingRevision(),
@@ -31,7 +34,11 @@ public class TemporaryIssuer {
             row.receipt().manifestSha256(),json.digest(command),row.recoveryEpoch(),row.userId().toString(),row.deviceId().toString(),
             command.activatedAt().truncatedTo(ChronoUnit.MILLIS).toString(),time.toString())).token();
     }
-    public record Binding(UUID id,UUID bundle,long sequence,String recoveryEpoch,PdaSessions.Principal principal) { }
+    public record Binding(UUID id,UUID bundle,long sequence,String recoveryEpoch,PdaSessions.Principal principal,Instant expiresAtLimit) {
+        public Binding(UUID id,UUID bundle,long sequence,String recoveryEpoch,PdaSessions.Principal principal) {
+            this(id,bundle,sequence,recoveryEpoch,principal,null);
+        }
+    }
     public record Work(Binding binding,TemporaryBaseline.View baseline,Instant issued,Instant expires,String keyId,
         TemporaryCommands.Receipt receipt,List<PreparationArchive> parts) { }
     public record Identity(UUID authorizationId,UUID bundleId,UUID userId,UUID deviceId,UUID warehouseId,String authorizationEpoch,

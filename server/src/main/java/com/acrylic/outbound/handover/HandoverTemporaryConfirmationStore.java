@@ -17,6 +17,7 @@ final class HandoverTemporaryConfirmationStore {
         var rows = jdbc.queryForList("""
             SELECT BIN_TO_UUID(id) id,BIN_TO_UUID(case_id) case_id,BIN_TO_UUID(command_id) command_id,
               BIN_TO_UUID(authorization_id) authorization_id,BIN_TO_UUID(actor_id) actor_id,BIN_TO_UUID(device_id) device_id,
+              BIN_TO_UUID(session_id) session_id,
               LOWER(HEX(command_sha256)) command_sha256,command_bytes,
               LOWER(HEX(receipt_sha256)) receipt_sha256,receipt_bytes,recorded_at
             FROM temporary_handover_confirmation WHERE case_id=?
@@ -26,11 +27,11 @@ final class HandoverTemporaryConfirmationStore {
 
     void insert(HandoverTemporaryConfirmationCommand command, Receipt receipt, PdaSessions.Principal actor) {
         try { jdbc.update("""
-            INSERT INTO temporary_handover_confirmation(case_id,id,command_id,authorization_id,actor_id,device_id,
+            INSERT INTO temporary_handover_confirmation(case_id,id,command_id,authorization_id,actor_id,device_id,session_id,
                 command_sha256,command_bytes,receipt_sha256,receipt_bytes,recorded_at)
-            VALUES(?,?,?,?,?,?,UNHEX(?),?,UNHEX(?),?,?)
+            VALUES(?,?,?,?,?,?,?,UNHEX(?),?,UNHEX(?),?,?)
             """, Ids.bytes(command.caseId()), Ids.bytes(receipt.id()), Ids.bytes(command.key()), Ids.bytes(command.authorization()),
-            Ids.bytes(actor.userId()), Ids.bytes(actor.deviceId()), command.digest(), command.bytes(),
+                Ids.bytes(actor.userId()), Ids.bytes(actor.deviceId()), Ids.bytes(actor.sessionId()), command.digest(), command.bytes(),
             HandoverCommand.sha(receipt.bytes()), receipt.bytes(), Timestamp.from(receipt.recordedAt())); }
         catch (org.springframework.dao.DuplicateKeyException collision) { throw HandoverCommand.conflict(); }
     }

@@ -11,10 +11,12 @@ final class HandoverPreparation implements HandoverCommand.Operation {
     private final HandoverTargetQualification targets;
     private final HandoverTemporaryTarget temporary;
     private final HandoverApprovalEvidence evidence;
+    private final HandoverTemporaryActivationTicketStore tickets;
 
     HandoverPreparation(HandoverStore store, HandoverTargetQualification targets,
-            HandoverTemporaryTarget temporary, HandoverApprovalEvidence evidence) {
-        this.store = store; this.targets = targets; this.temporary = temporary; this.evidence = evidence;
+            HandoverTemporaryTarget temporary, HandoverApprovalEvidence evidence,
+            HandoverTemporaryActivationTicketStore tickets) {
+        this.store = store; this.targets = targets; this.temporary = temporary; this.evidence = evidence; this.tickets = tickets;
     }
 
     @Override public String commandType() { return "PREPARE"; }
@@ -24,14 +26,18 @@ final class HandoverPreparation implements HandoverCommand.Operation {
         if (!facts.path("status").asText().equals("APPROVED"))
             throw new BusinessException(409, "HANDOVER_STATE_INVALID", "只有已批准的案件可以准备接收机");
         UUID device = input.uuid("targetDeviceId"), user = input.uuid("targetUserId");
-        targets.require(device, user, SubmissionJson.uuid(facts, "warehouseId"));
+        if ("TEMP".equals(facts.path("sourceKind").asText())) targets.temporary(device, user, SubmissionJson.uuid(facts, "warehouseId"));
+        else targets.require(device, user, SubmissionJson.uuid(facts, "warehouseId"));
         var ticket = SubmissionJson.object().put("caseId", write.caseId().toString())
             .put("targetDeviceId", device.toString()).put("targetUserId", user.toString())
             .put("inputHighWatermark", facts.path("inputHighWatermark").asText())
             .put("canonicalOrderId", facts.path("canonicalOrderId").asText()).put("issuedAt", write.recordedAt().toString());
         if ("TEMP".equals(facts.path("sourceKind").asText())) {
-            var body = evidence.verify(facts, SubmissionJson.number(facts, "inputHighWatermark")).body();
+            var verified = evidence.verify(facts, SubmissionJson.number(facts, "inputHighWatermark"));
+            var body = verified.body();
             ticket.set("temporaryQualification", temporary.require(input.body(), facts, body));
+            tickets.issue(new HandoverTemporaryActivationTicketStore.Preparation(facts, input.body(), ticket, body,
+                verified.receipt().path("temporaryStop"), store.checklist(write.caseId()), write.recordedAt()));
         } else if (input.body().has("targetAuthorizationId")) throw new BusinessException(400,
             "INVALID_HANDOVER_COMMAND", "正式来源不使用临时授权");
         byte[] bytes = HandoverReceiptCodec.bytes(ticket);

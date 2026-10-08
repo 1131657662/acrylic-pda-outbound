@@ -21,6 +21,15 @@ final class HandoverTargetQualification {
     }
 
     Target require(UUID deviceId, UUID userId, UUID warehouseId) {
+        return require(new Selection(deviceId, userId, warehouseId), PDA_PERMISSIONS);
+    }
+
+    Target temporary(UUID deviceId, UUID userId, UUID warehouseId) {
+        return require(new Selection(deviceId, userId, warehouseId), List.of("pda:login", "pda:scan", "pda:submit"));
+    }
+
+    private Target require(Selection selection, List<String> permissions) {
+        var deviceId = selection.device(); var userId = selection.user(); var warehouseId = selection.warehouse();
         if (deviceId == null || userId == null)
             throw new BusinessException(400, "HANDOVER_TARGET_REQUIRED", "必须指定目标设备与人员");
         var devices = jdbc.query("""
@@ -31,12 +40,13 @@ final class HandoverTargetQualification {
         var users = jdbc.query("""
             SELECT username, CAST(auth_version AS CHAR) FROM app_user WHERE id=? AND status='ACTIVE'
             """, (rs, n) -> new User(rs.getString(1), rs.getString(2)), Ids.bytes(userId));
-        if (users.isEmpty() || !identities.permissions(userId).containsAll(PDA_PERMISSIONS)
+        if (users.isEmpty() || !identities.permissions(userId).containsAll(permissions)
                 || identities.warehouses(userId).stream().noneMatch(w -> w.id().equals(warehouseId)))
             throw new BusinessException(409, "HANDOVER_TARGET_USER_INVALID", "目标人员无效或没有本仓 PDA 作业资格");
         return new Target(users.getFirst().username(), users.getFirst().authVersion(), devices.getFirst());
     }
 
     private record User(String username, String authVersion) { }
+    private record Selection(UUID device, UUID user, UUID warehouse) { }
     record Target(String username, String authVersion, String deviceVersion) { }
 }

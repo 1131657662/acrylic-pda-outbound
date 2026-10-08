@@ -57,6 +57,28 @@ class HandoverTemporaryConfirmationReceiptTest {
         expect("HANDOVER_CASE_NOT_FOUND", () -> f.receipts.replay(row, f.parsed(f.command), f.actor));
     }
 
+    @Test void activationRequiresOriginalSessionAndCurrentActorVersions() throws Exception {
+        var f = new HandoverTemporaryConfirmationFixture(directory); var row = f.stored();
+        assertThat(f.receipts.verifyForActivation(row, f.actor).path("actor").path("sessionId").asText())
+            .isEqualTo(f.actor.sessionId().toString());
+        var other = new com.acrylic.outbound.pda.PdaSessions.Principal(UUID.randomUUID(), f.actor.userId(), "recipient",
+            f.actor.deviceId(), f.actor.warehouseId(), "1", "2");
+        expect("HANDOVER_RECEIPT_INTEGRITY_FAILURE", () -> f.receipts.verifyForActivation(row, other));
+        var changed = new com.acrylic.outbound.pda.PdaSessions.Principal(f.actor.sessionId(), f.actor.userId(), "recipient",
+            f.actor.deviceId(), f.actor.warehouseId(), "2", "2");
+        expect("HANDOVER_RECEIPT_INTEGRITY_FAILURE", () -> f.receipts.verifyForActivation(row, changed));
+    }
+
+    @Test void historicalConfirmationWithoutSessionCanReplayButCannotActivate() throws Exception {
+        var f = new HandoverTemporaryConfirmationFixture(directory); var row = f.stored();
+        var body = (com.fasterxml.jackson.databind.node.ObjectNode) parse((byte[]) row.get("receipt_bytes"));
+        body.withObject("actor").remove("sessionId"); body.remove("signedReceipt");
+        byte[] historical = canonical(f.signatures.signTemporaryConfirmation(body)).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        row.remove("session_id"); row.put("receipt_bytes", historical); row.put("receipt_sha256", HandoverCommand.sha(historical));
+        assertThat(f.receipts.replay(row, f.parsed(f.command), f.actor)).isEqualTo(historical);
+        expect("HANDOVER_RECEIPT_INTEGRITY_FAILURE", () -> f.receipts.verifyForActivation(row, f.actor));
+    }
+
     private void expect(String code, org.assertj.core.api.ThrowableAssert.ThrowingCallable action) {
         assertThatThrownBy(action).isInstanceOfSatisfying(BusinessException.class,
             failure -> assertThat(failure.code()).isEqualTo(code));

@@ -26,7 +26,7 @@ final class HandoverTemporaryEligibility {
 
     TemporaryStore.Stored require(JsonNode command, JsonNode facts, String epoch) {
         var device = uuid(command, "targetDeviceId"); var user = uuid(command, "targetUserId"); var warehouse = uuid(facts, "warehouseId");
-        var target = targets.require(device, user, warehouse);
+        var target = targets.temporary(device, user, warehouse);
         var row = authorizations.get(authorization(command));
         var principal = new PdaSessions.Principal(null, user, target.username(), device, warehouse, target.authVersion(), target.deviceVersion());
         access.usable(row, principal, epoch); access.unexpired(row);

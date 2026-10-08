@@ -44,6 +44,17 @@ public final class HandoverTemporaryConfirmationChecks {
         immutable(); Files.writeString(http.directory.resolve("verified.marker"), "Original confirmation is immutable; no stock, round, assignment or accounting change.\n");
     }
 
+    public void recipientWithoutFormalAssignmentPermission() {
+        var jdbc = http.f.source.jdbc; var role = UUID.randomUUID();
+        jdbc.update("INSERT INTO role VALUES(?,?,?)", Ids.bytes(role), "D06_" + role, "TEMP recipient without FORMAL assignment");
+        jdbc.update("INSERT INTO role_permission SELECT ?,p.id FROM permission p JOIN role_permission rp ON rp.permission_id=p.id "
+            + "JOIN role r ON r.id=rp.role_id WHERE r.code='WAREHOUSE_ADMIN' AND p.code<>'pda:assign'", Ids.bytes(role));
+        jdbc.update("DELETE FROM user_role WHERE user_id=? AND role_id=(SELECT id FROM role WHERE code='WAREHOUSE_ADMIN')", Ids.bytes(http.f.user));
+        jdbc.update("INSERT INTO user_role VALUES(?,?)", Ids.bytes(http.f.user), Ids.bytes(role));
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM user_role ur JOIN role_permission rp ON rp.role_id=ur.role_id "
+            + "JOIN permission p ON p.id=rp.permission_id WHERE ur.user_id=? AND p.code='pda:assign'", Long.class, Ids.bytes(http.f.user))).isZero();
+    }
+
     private void refusals() throws Exception {
         var before = facts.snapshot("refusals-before");
         http.submit(command.deepCopy().put("physicalConfirmed", false), 400, "INVALID_TEMP_HANDOVER_CONFIRMATION");
@@ -109,4 +120,6 @@ public final class HandoverTemporaryConfirmationChecks {
 
     public void restart() throws Exception { assertThat(http.submit(command, 200, null)).isEqualTo(receipt); }
     public void defaultClosed() throws Exception { http.submit(command, 404, null); }
+    HandoverTemporaryTargetFixture fixture() { return http.f; }
+    Map<String, List<String>> snapshot(String label) throws Exception { return facts.snapshot(label); }
 }

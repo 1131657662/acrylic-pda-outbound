@@ -108,7 +108,7 @@ public class HandoverPdaEvidenceService {
             && decision.path("targetDeviceId").equals(facts.path("targetDeviceId"))
             && decision.path("targetUserId").equals(facts.path("targetUserId")));
         var activation = ((ObjectNode) decision.deepCopy());
-        activation.remove(List.of("status", "retainedReservations"));
+        activation.remove(List.of("status", "retainedReservations", "retainedCount"));
         activation.put("activatedAt", receipt.path("recordedAt").asText());
         corruptUnless(HandoverCommand.sha(HandoverReceiptCodec.bytes(activation))
             .equals(facts.path("activationSha256").asText()));

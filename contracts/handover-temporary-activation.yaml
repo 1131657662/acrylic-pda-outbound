@@ -1,0 +1,49 @@
+PositiveText: {type: string, pattern: '^[1-9][0-9]{0,18}$'}
+NonnegativeText: {type: string, pattern: '^(0|[1-9][0-9]{0,18})$'}
+Hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+Command:
+  description: 使用同一命令入口的 TEMP 专用激活；本人准备和确认是先决条件，不能借用 FORMAL 或 R06 票据。
+  type: object
+  additionalProperties: false
+  required: [commandVersion, commandType, commandId, warehouseId, caseId, transportRecoveryEpoch, targetDeviceId, targetUserId, expected]
+  properties:
+    commandVersion: {type: integer, const: 1}
+    commandType: {type: string, const: ACTIVATE}
+    commandId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    caseId: {type: string, format: uuid}
+    transportRecoveryEpoch: {$ref: '#/PositiveText'}
+    targetDeviceId: {type: string, format: uuid}
+    targetUserId: {type: string, format: uuid}
+    reason: {type: string}
+    expected:
+      type: object
+      additionalProperties: false
+      required: [caseId, caseVersion, status, userAuthVersion]
+      properties:
+        caseId: {type: string, format: uuid}
+        caseVersion: {$ref: '#/PositiveText'}
+        status: {type: string, const: TARGET_PREPARED}
+        userAuthVersion: {$ref: '#/PositiveText'}
+Decision:
+  description: 签名交接回执 businessDecision；外层原命令/案件/actor/capabilities 一起验签，新授权不能单独用来放行。
+  type: object
+  additionalProperties: false
+  required: [kind, status, caseId, ticketId, proofId, fromWorkRound, toWorkRound, newAuthorizationId, newClientOrderId, targetDeviceId, targetUserId, targetSessionId, startOrderScanSeq, retainedCount, sourcePrefixSha256, authorization]
+  properties:
+    kind: {type: string, const: TEMP_HANDOVER_ACTIVATE}
+    status: {type: string, const: ACTIVATED}
+    caseId: {type: string, format: uuid}
+    ticketId: {type: string, format: uuid}
+    proofId: {type: string, format: uuid}
+    fromWorkRound: {$ref: '#/PositiveText'}
+    toWorkRound: {$ref: '#/PositiveText', description: fromWorkRound 加一；值不得超出有符号长整数}
+    newAuthorizationId: {type: string, format: uuid}
+    newClientOrderId: {type: string, format: uuid}
+    targetDeviceId: {type: string, format: uuid}
+    targetUserId: {type: string, format: uuid}
+    targetSessionId: {type: string, format: uuid, description: 生成原接收确认且激活时仍有效的本人会话}
+    startOrderScanSeq: {$ref: '#/PositiveText', description: 原 inputHighWatermark 加一}
+    retainedCount: {$ref: '#/NonnegativeText'}
+    sourcePrefixSha256: {$ref: '#/Hash', description: 固定 scope/submission/canonical/原轮次/高水位/正文/批准清单的规范摘要}
+    authorization: {$ref: './temporary-preparation-schemas.yaml#/Receipt'}

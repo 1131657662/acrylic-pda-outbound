@@ -13,7 +13,13 @@ Execute:
       准备票据在原字段外包含 temporaryQualification，固定原来源/轮次/计划/正文和接收资格；不签发 FORMAL assignment，不延长授权。
       接收机 manifest 标明 sourceKind=TEMP、packageKind=TEMP_FROZEN_PAYLOAD；recoveryPackageSha256 是原冻结正文摘要，
       recovery-package 返回逐字节一致的原冻结正文。两者均仅限指定人员/设备且每次重验原证据与有效资格。
-      TEMP 减包及 ACTIVATE 消费者未完成时明确拒绝；审批和准备回执不授予接收机扫码资格。
+      TEMP ACTIVATE 只消费本案件 PREPARE 生成的专用票据及指定接收人在同一本人在线会话生成的原确认；
+      在锁内重验原来源、本人资格、权限/身份版本/期限/恢复代次、完整清单与原签名，缺 session 的历史确认仅可重放。
+      激活推进唯一 scope/slot 轮次并关闭本案件开案槽，保留占用直接转 TEMP_HANDOVER_RESERVED，不释放或记账。
+      新 TEMP 授权及 clientOrderId 独立于 FORMAL assignment 和 R06 同人同机票据，新期限不得超过本人原资格。
+      同事务保存消费证明、原回执、审计及 outbox；重试返回原字节，异文/新键不得重复激活。
+      TEMP 接收人不要求 FORMAL pda:assign 权限。审批、准备及激活回执五项能力均为 false；
+      TEMP 减包及 Android 后续扫码/提交消费者仍须另行完成与验证。
     security: [{webSession: []}]
     responses:
       '200':
@@ -86,3 +92,9 @@ TemporaryPreparedTicket:
     canonicalOrderId: {type: string, format: uuid}
     issuedAt: {type: string, format: date-time}
     temporaryQualification: {$ref: '#/TemporaryQualification'}
+
+TemporaryActivation:
+  $ref: './handover-temporary-activation.yaml#/Command'
+
+TemporaryActivationDecision:
+  $ref: './handover-temporary-activation.yaml#/Decision'
