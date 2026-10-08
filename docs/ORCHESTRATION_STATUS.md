@@ -6,20 +6,20 @@
 ```yaml
 date: 2026-10-09
 branch: codex/development
-head: 4e03f9b
-dirty_entries: 38
+head: f6d392f
+dirty_entries: 56
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
-server: { contract: 0.49.0, paths: 146, flyway: V74, migrations: 74 }
+server: { contract: 0.49.1, paths: 146, flyway: V74, migrations: 74 }
 ```
 <!-- FACTS_END -->
 总目标D01–D18 active、未完成；只有原计划第8节全部满足才可complete。当前规则见AGENTS.md；版本只读生成事实块。旧看板已在.local/d01-d18-20261008/d06-reverse-checkpoint-03/board-before.md归档；详细结果见[执行记录](history/D01_D18_EXECUTION_2026-10-07.md)、[多跳记录](history/D06_MULTIHOP_EXECUTION_2026-10-08.md)、[混合记录](history/D06_MIXED_EXECUTION_2026-10-09.md)，暂停输入见[暂停记录](history/D01_D18_PAUSE_2026-10-08.md)。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，分支codex/development；反向范围提交前HEAD/实际远端均4e03f9b997156ff1a8fbeeed5eee919d9362a1d8。本聊天唯一源码/测试/记录写者，其他项目聊天notLoaded；清理工具及其余19条继承路径逐hash保护，不混入本批。
+- 主树D:/acrylic-pda-outbound，分支codex/development；反向19条范围已提交推送，HEAD/实际远端均f6d392f1c2f790caed3ddd4cd92694c23ec5a46b。暂存/提交/推送回执见d06-reverse-checkpoint-04。本聊天唯一写者，其他项目聊天notLoaded；19条继承路径逐hash保护，不混入本批。
 - 本轮36条dirty完整副本/hash/diff、Git/全部进程/监听/磁盘在d06-reverse-checkpoint-03，早于收口文档更新；d06-reverse-checkpoint-02保存修复前29条及自审。原d06-stop-close-20261008三项hash仍一致，原891c1f0接续基线已沿授权开发提交推进，未重置或复用旧失败库。
-- 1119失败及1120成功均完成dump独立重算、认证停机/原PID退出；19330/19434无监听，没有重型构建/模拟器在途。3306/13316/ADB及19387 Harness属既有环境不操作，空闲Gradle daemon不作为活动写者。
-- C/D可用80779796480/24158343168字节；新增日志、数据库/datadir/dump/binlog、HTTP/Room/XML及TEMP/Java临时/缓存均D盘任务范围，失败及不可替代原件不清理。归档取回位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
+- 1119失败、1120成功及1121启动失败均完成dump独立重算、认证停机/原PID退出；19330/19434无监听。LOCAL定向unit-02为585/0/0/1、Android仅编译exit0；1121为1/1/0/0（final事务类代理失败）；1122为1/1/0/0（清单注册通过后结果名不符，未到E2A/STOP）。1121–1123失败、1124/1125成功均已保全停机。LOCAL三轮与无canonical实际专项通过，服务端普通回归3364/0/0/1；Android受影响回归514/0/0/10、exit0/sourceUnchanged，当次默认APK/lint通过（0 errors/221提示），产物hash见LOCAL记录；无重型任务。完整53条dirty副本/hash与环境在d06-local-matrix-03（继承19条hash一致），前次46条在d06-local-resume-02；无模拟器。3306/13316/ADB及19387 Harness属既有环境不操作。
+- C/D可用80760406016/23205154816字节；新增日志、数据库/datadir/dump/binlog、HTTP/Room/XML及TEMP/Java临时/缓存均D盘任务范围，失败及不可替代原件不清理。归档取回位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## D01–D18范围与证据
 - D01证据映射/基线已建立，D02/D03开发范围有分层证据，不拼旧输入为最终整合通过。D04候选排除、D05取消释放缺政策，拒绝保持、整体未通过；其他可执行范围继续。
@@ -32,11 +32,11 @@ server: { contract: 0.49.0, paths: 146, flyway: V74, migrations: 74 }
 - 1120实际A→TEMP B→R06 B短装→本人E2A/专用STOP→独立主管审批→TEMP C→成功/重启消费，专项1/0/0/0，19个Android阶段各1/0/0/0；第三轮STOP及最终确认精确尾SQL/全表回滚、Room末写/丢响应/重开通过。非空迁移全表/私有字节与非法origin拒绝通过；dump/hash/认证停机/PID/端口回执见d06-mixed-1120/retention.json。
 - 反向独立Node RSA/canonical与只读SQLite消费者在d06-reverse-consumers，核四轮逐值前缀/前驱、三设备局部counter重叠、实际STOP请求/签名、原件/guards、最终总量及唯一耐久成功。仅独立工具/合成身份/开发密钥，非独立人员或原身份/真机。
 - 反向服务端普通全回归3360/0/0/1（Windows符号链接skip、普通test不含IT）；Android受影响回归456/0/0/10，均exit0/sourceUnchanged。HTTP条件skip未执行。无Android产品/契约/迁移变化，默认APK只引用上一混合批产品输入和已登记hash，不冒充当次构建。作者自审与失败原件均保留。
-- D06 LOCAL_FROZEN_PAYLOAD-only正向、未冻结/无canonical在相应阶段真实拒绝仍未完成；D07–D17未通过，D18无最终候选。原资料/旧BCD/526、历史失败及恢复限制不得被局部通过覆盖，开发缺口不转现场清单。
+- D06 LOCAL三轮1124及无canonical1125专项各1/0/0/0、exit0/sourceUnchanged，16+1份Android XML各1/0/0/0；REQUEST未冻结/清单-only、APPROVE/PREPARE缺文件/坏字节/减包/撤权拒绝且事实守恒，精确SQL/Room尾回滚、独立Node/只读Room通过，详见[LOCAL记录](history/D06_LOCAL_EXECUTION_2026-10-09.md)。D06整体仍未通过；D07–D17未通过，D18无最终候选。原资料/旧BCD/526、历史失败及恢复限制不得被局部通过覆盖，开发缺口不转现场清单。
 
 ## 边界与下一动作
-- 收反向证据、复核19条继承hash及明确路径暂存后提交推送codex/development，再实现LOCAL-only最小合法路径：真实已激活接收轮冻结并注册RECEIVING清单，本人LOCAL原件/E2A与专用STOP严格绑定；无accepted payload、不手造canonical、不删除已受理正文。设计在d06-local-only-design.md，scope/slot与held owner原子转换尚待核实现。
-- LOCAL-only须实际HTTP/MySQL/Android、前置拒绝、精确SQL/Room故障、丢响应/重开、独立消费者、自审与受影响回归；然后按依赖持续D07–D18及第8节全部闸门，不能结束在本范围提交。
+- LOCAL本范围已验：只为真实已激活/不可变登记/清单绑定的RECEIVING轮接受E2A transport，current仍为null；LOCAL正文重验完整历史、清单hash/bytes/count、本人suffix审计及未受理capture。STOP原子选择scope/slot并精确将继承TEMP_HANDOVER_RESERVED转本轮REVIEW_RESERVED，suffix保持SOURCE_RESERVED，不放库存；签名payloadPresent=false/payloadSha=null且另绑定localFrozenPayloadSha256。设计及边界在d06-local-only-design.md。实际证据见LOCAL记录；37条范围拟提交，19条继承路径保护。
+- LOCAL完成范围提交推送后核D06剩余覆盖；下一可执行D07按已确认主管同意政策接故障围栏/R09可信事实，不伪造STOP/ACK；持续D07–D18及第8节，不能结束在本范围提交。
 - 生产默认开关/签名能力、七类生产决定handler/POST/放行/证据写入/关闭能力均false，localDeletionAllowed=false。不接原库/现网、不合main、不发布部署/正式签名/标签/Release，不绕设备或审批阻断。原身份/Keystore、真实双机、实体键/断电/长时/规模、正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 <!-- CURRENT_STATE_END -->
 

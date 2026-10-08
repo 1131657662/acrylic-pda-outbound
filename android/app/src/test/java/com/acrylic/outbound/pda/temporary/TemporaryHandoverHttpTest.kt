@@ -27,7 +27,7 @@ class TemporaryHandoverHttpTest {
         val path = System.getenv("TEMP_HANDOVER_ANDROID_HTTP_PRIVATE")
         assumeTrue("Requires isolated actual source and target server", !path.isNullOrBlank())
         val phase = checkNotNull(System.getenv("TEMP_HANDOVER_ANDROID_PHASE"))
-        check(phase in setOf("prepare", "stage", "confirm", "activate", "freeze", "upload", "work", "success", "evidence", "stop", "continuation", "continuationShort", "continuationEvidence", "continuationStop", "continuationSuccess"))
+        check(phase in setOf("prepare", "stage", "confirm", "activate", "freeze", "upload", "work", "success", "evidence", "localRegister", "localEvidence", "localStop", "stop", "continuation", "continuationShort", "continuationEvidence", "continuationStop", "continuationSuccess"))
         initialize(File(checkNotNull(path)).canonicalFile, phase)
         try { runPhase(phase) }
         finally { preserve("$phase-final") }
@@ -39,6 +39,9 @@ class TemporaryHandoverHttpTest {
             "prepare" -> prepare(); "stage" -> stage(); "confirm" -> confirm(); "activate" -> activate()
             "freeze" -> work.freeze(); "upload" -> work.upload()
             "evidence" -> TemporaryHandoverHttpStop(this).evidence(); "stop" -> TemporaryHandoverHttpStop(this).stop()
+            "localRegister" -> TemporaryHandoverHttpLocal(this).register()
+            "localEvidence" -> TemporaryHandoverHttpStop(this).evidence("localEvidence")
+            "localStop" -> TemporaryHandoverHttpStop(this).stop("localStop")
             "continuation" -> TemporaryHandoverHttpContinuation(this).activateAndSubmit()
             "continuationShort" -> TemporaryHandoverHttpContinuation(this).activateAndSubmit(1)
             "continuationEvidence" -> TemporaryHandoverHttpContinuationStop(this).evidence()
@@ -69,6 +72,7 @@ class TemporaryHandoverHttpTest {
         "stage" -> "prepare"; "confirm" -> "stage"; "activate" -> "confirm"
         "work", "freeze" -> "activate"; "upload" -> "freeze"
         "evidence" -> "upload"; "stop" -> "evidence"
+        "localRegister" -> "freeze"; "localEvidence" -> "localRegister"; "localStop" -> "localEvidence"
         "continuation", "continuationShort" -> "stop"; "continuationSuccess" -> "continuation"
         "continuationEvidence" -> "continuationShort"; "continuationStop" -> "continuationEvidence"
         else -> if (File(evidence, "upload-final.db").exists()) "upload" else "work"

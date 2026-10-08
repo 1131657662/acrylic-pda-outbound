@@ -24,9 +24,7 @@ final class HandoverTemporarySubmissionChecks {
         assertThat(head.actor()).isEqualTo(f.user);assertThat(head.control().device()).isEqualTo(f.device);
         assertThat(head.status()).isEqualTo("REVIEW_REQUIRED");assertThat(head.control().temporary().client()).isEqualTo(uuid(body.path("source"),"clientOrderId"));
         assertThat(body.has("temporaryContinuation")).isFalse();assertThat(head.control().assignment()).isNull();
-        var originalHash=f.source.jdbc.queryForObject("SELECT payload_sha256 FROM submission_payload WHERE submission_id=?",String.class,
-            Ids.bytes(f.source.head.control().id()));
-        var original=parse(app.getBean(SubmissionFiles.class).read(originalHash));
+        var original=original();
         for(String field:List.of("captures","scans","events"))for(int i=0;i<array(original,field).size();i++)
             assertThat(array(body,field).get(i)).isEqualTo(array(original,field).get(i));
         assertThat(f.source.jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE submission_id=? AND state='REVIEW_RESERVED'",Long.class,
@@ -40,6 +38,18 @@ final class HandoverTemporarySubmissionChecks {
         assertThat(f.source.jdbc.queryForObject("SELECT COUNT(*) FROM temporary_source_continuation_submission WHERE submission_id=?",Long.class,Ids.bytes(submission))).isZero();
         Files.write(directory.resolve("server-success-command.json"),canonical(commandForReplay).getBytes(java.nio.charset.StandardCharsets.UTF_8));
         Files.write(directory.resolve("server-success.json"),receipt);
+    }
+    private com.fasterxml.jackson.databind.JsonNode original() throws Exception {
+        var original=parse(Files.readAllBytes(directory.resolve("android-original.json")));
+        assertThat(original).isEqualTo(f.context.body());
+        var hashes=f.source.jdbc.queryForList("SELECT payload_sha256 FROM submission_payload WHERE submission_id=?",String.class,
+            Ids.bytes(f.source.head.control().id()));
+        if(hashes.isEmpty()) {
+            var stopped=parse(f.source.head.receipt());assertThat(stopped.path("payloadPresent").asBoolean()).isFalse();
+            assertThat(stopped.path("payloadSha256").isNull()).isTrue();
+            assertThat(stopped.path("localFrozenPayloadSha256").asText()).isEqualTo(sha(original));
+        } else assertThat(hashes).containsExactly(sha(original));
+        return original;
     }
     private ObjectNode commandForReplay;
     private void authorize() throws Exception {

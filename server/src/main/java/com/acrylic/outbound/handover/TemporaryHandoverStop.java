@@ -19,11 +19,13 @@ public class TemporaryHandoverStop {
     private final TemporaryHandoverIntakeFacts facts;private final SubmissionStore submissions;
     private final TemporaryRoundStopProof proof;private final SubmissionReceipts receipts;
     private final SubmissionEvents events;private final SubmissionArchiveProofs signatures;
+    private final TemporaryHandoverLocalStop local;
     TemporaryHandoverStop(TemporaryHandoverIntakeAccess access,TemporaryHandoverRegistration registration,
         TemporaryHandoverIntakeFacts facts,SubmissionStore submissions,TemporaryRoundStopProof proof,
-        SubmissionReceipts receipts,SubmissionEvents events,SubmissionArchiveProofs signatures) {
+        SubmissionReceipts receipts,SubmissionEvents events,SubmissionArchiveProofs signatures,TemporaryHandoverLocalStop local) {
         this.access=access;this.registration=registration;this.facts=facts;this.submissions=submissions;
         this.proof=proof;this.receipts=receipts;this.events=events;this.signatures=signatures;
+        this.local=local;
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode stop(UUID id,JsonNode body,String epoch) {
@@ -32,6 +34,10 @@ public class TemporaryHandoverStop {
         equal(request.predecessor(),facts.reference(id),"交接停止原票据引用不符");
         var actor=access.require(request,epoch);registration.register(request,actor);head=submissions.required(id);
         if("ABORTED".equals(head.status()))return replay(head,body);
+        if("RECEIVING".equals(head.status()) && submissions.payloadHash(id)==null) {
+            proof.require(head,body);var receipt=local.close(head,body);
+            submissions.state(id,"ABORTED",null,canonical(receipt));events.aborted(head,receipt);return receipt;
+        }
         if(!"REVIEW_REQUIRED".equals(head.status()) || submissions.payloadHash(id)==null)
             throw new BusinessException(409,"TEMP_HANDOVER_STOP_STATE_CONFLICT","交接新轮尚未受理或已有终态，请保留原件");
         submissions.current(head);proof.require(head,body);

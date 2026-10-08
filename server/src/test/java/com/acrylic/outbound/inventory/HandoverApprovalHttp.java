@@ -13,15 +13,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 final class HandoverApprovalHttp {
     private final HttpClient client = HttpClient.newBuilder().cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL)).build();
     private final Path directory;
+    private final String username;
     private int calls;
     HandoverApprovalHttp(String username, Path directory) throws Exception {
-        this.directory = directory;
+        this.directory = directory; this.username = username;
         var csrf = csrf();
         send(request("/auth/web/login").header(csrf.path("headerName").asText(), csrf.path("token").asText())
             .header("Content-Type", "application/x-www-form-urlencoded").POST(HttpRequest.BodyPublishers.ofString(
                 "username=" + URLEncoder.encode(username, StandardCharsets.UTF_8) + "&password=Test-password-123")), 200, null);
     }
     byte[] get(String path) throws Exception { return send(request(path).GET(), 200, null); }
+    byte[] get(String path,int status,String code) throws Exception { return send(request(path).GET(),status,code); }
+    String username() { return username; }
     byte[] command(JsonNode command, int expected, String code) throws Exception { return post("/handover-commands", command, expected, code); }
     byte[] post(String path, JsonNode body, int expected, String code) throws Exception {
         var csrf = csrf();

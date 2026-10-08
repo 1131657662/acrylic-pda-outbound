@@ -67,3 +67,15 @@ lint Analyze任务当次执行，但Report最初复用旧XML；第一次产物�
 反向服务端普通全回归`d06-reverse-server-regression-01/`为3360/0/0/1、exit0、sourceUnchanged；唯一skip为Windows符号链接，普通test不含IT。Android受影响回归`d06-reverse-android-regression-01/`为456/0/0/10、exit0、sourceUnchanged；HTTP条件skip不计通过。本范围没有Android产品源码、契约或迁移变化；默认APK仅引用上一混合批的产品输入与已登记SHA256，未声称当次重新构建。作者自审在`d06-reverse-checkpoint-02/self-review.md`，补收两端回归后通过。
 
 提交前36条dirty完整副本/hash/diff、Git/进程/监听/磁盘在`d06-reverse-checkpoint-03/`，早于本段文档更新；19条继承路径继续逐hash保护。LOCAL-only正向和未冻结/无canonical相应阶段拒绝仍未完成，D06整体及D07–D18、第8节闸门不计通过。LOCAL-only设计在`.local/d01-d18-20261008/d06-local-only-design.md`：真实已激活接收轮先冻结并注册RECEIVING清单，不上传/finalize正文；本人LOCAL冻结/E2A与专用STOP绑定清单和不可变来源，不手造canonical，不删除已受理payload。
+
+反向范围19条明确路径已提交正常推送`f6d392f1c2f790caed3ddd4cd92694c23ec5a46b`，实际远端匹配；提交标题`fix(D06): 验证R06停止后反向交接四轮链`。38条完整dirty快照、明确暂存清单/diff/提交与push回执在`d06-reverse-checkpoint-04/`，19条继承路径未混入。未合main或生产动作。
+
+## LOCAL-only接续（开发中）
+
+核源码确认：pending接收轮注册后scope/slot current为null、phase CONTINUING；旧E2A入口要求current，旧LOCAL验证只认首轮无canonical取消；继承包仍归TEMP_HANDOVER_RESERVED activation。最小方案不投影伪current，E2A transport另核唯一已激活、原登记、本人身份、canonical与RECEIVING固定清单；VERIFY仍须真实规范LOCAL正文、完整历史/资格/本轮suffix审计和未受理capture，普通REGISTERED/无清单/无canonical拒绝。
+
+专用STOP初稿原子选择scope/slot并将继承owner精确转本轮REVIEW_RESERVED，新增suffix保持SOURCE_RESERVED；这是维持全集合占用的技术转换，不释放、不扣账、不新增accepted payload/submitted_capture。签名保持payloadPresent=false/payloadSha256=null，单独绑定localFrozenPayloadSha256；原已受理协议保持。Android回执消费者验证该独立摘要。定向unit-01为581/0/0/1、unit-02为585/0/0/1，均exit0/sourceUnchanged；Androidcompile-01仅编译exit0、0业务测试。
+
+1121专项1/1/0/0、exit1/sourceUnchanged，新增final事务类不能由Spring代理，未进入业务链。去掉final后1122专项仍1/1/0/0，Android首轮及B prepare/stage/confirm/activate/freeze/localRegister各1/0/0/0，但运行器要求localRegister-result.json而作者写成local-register-result.json；未到E2A或STOP，不计LOCAL链通过。两次均dump独立重算匹配、认证停机、原PID退出、19330/19434无监听，失败库/datadir/binlog/日志/XML完整保留、不复用。
+
+对齐LOCAL阶段结果名和下一跳引用后，1123新编号跨33树核无占用，使用新库执行相同真实组合；须先收报告，再补独立消费者、前置拒绝矩阵、自审及受影响回归/APK/lint。46条dirty完整副本/hash/diff、Git/进程/监听/磁盘见d06-local-resume-02，原stop-close三项hash一致；19条继承路径保护。

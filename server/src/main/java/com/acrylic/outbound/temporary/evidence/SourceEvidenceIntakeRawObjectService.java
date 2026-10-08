@@ -81,7 +81,7 @@ public class SourceEvidenceIntakeRawObjectService {
         require(actor.pda().deviceId().equals(context.id("creatorDeviceId"))
             && actor.pda().deviceId().equals(context.id("freezeDeviceId")),"E2A_SOURCE_NOT_DEVICE");
         require(context.id("submissionId").equals(request.submissionId())
-            && context.id("currentSubmissionId").equals(request.submissionId())
+            && (request.submissionId().equals(context.id("currentSubmissionId")) || facts.currentOrPendingHandover(context,request.submissionId()))
             && context.version("workRound")==request.workRound()
             && context.version("scopeRound")==request.workRound(),"E2A_SOURCE_CONTEXT_CHANGED");
         return new SourceEvidenceIntakeRawObjects.Binding(request.warehouseId(),context.id("scopeId"),

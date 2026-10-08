@@ -78,7 +78,8 @@ public class SourceEvidenceIntakeOpenService {
         require(parsed.sourceId().equals(context.text("authorizationId")),"E2A_SOURCE_ID_CHANGED");
         require(context.id("submissionId").equals(parsed.submissionId()),"E2A_SOURCE_SUBMISSION_CHANGED");
         require(context.version("workRound")==parsed.workRound() && context.version("scopeRound")==parsed.workRound(),"E2A_SOURCE_ROUND_CHANGED");
-        require(context.id("currentSubmissionId").equals(parsed.submissionId()),"E2A_SOURCE_NOT_CURRENT");
+        require(parsed.submissionId().equals(context.id("currentSubmissionId"))
+            || facts.currentOrPendingHandover(context,parsed.submissionId()),"E2A_SOURCE_NOT_CURRENT");
         require(context.id("warehouseId").equals(request.warehouseId()),"E2A_SOURCE_WAREHOUSE_CHANGED");
     }
 

@@ -14,6 +14,10 @@ public class SourceEvidenceIntakeFacts {
 
     public SourceEvidenceIntakeFacts(JdbcTemplate jdbc) { this.jdbc=jdbc; }
 
+    boolean currentOrPendingHandover(CommandContext context,UUID submission) {
+        return SourceEvidencePendingHandover.matches(jdbc,context,submission);
+    }
+
     public CommandContext read(UUID submission) {
         var handover=SourceEvidenceHandoverFacts.read(jdbc,submission);
         if(!handover.isEmpty()) {

@@ -13,7 +13,7 @@ internal class TemporaryHandoverHttpStop(private val fixture: TemporaryHandoverH
     private val connection get() = fixture.connection
     private val client get() = db.temporaryHandoverActivations().get(fixture.caseId)!!.newClientOrderId
     private val reason = "隔离交接新轮技术停止，保留实物占用"
-    fun evidence() {
+    fun evidence(resultPhase: String = "evidence") {
         fun recovery() = LocalE2aRecoveryRepository(fixture::store) { control ->
             AuditRepository(db, { connection.current() }, { body, epoch ->
                 connection.call(TemporaryConnection.Call("pda/audit/events", connection.current(), JSONObject(body), epoch = epoch))
@@ -26,9 +26,9 @@ internal class TemporaryHandoverHttpStop(private val fixture: TemporaryHandoverH
         val request = TemporaryHandoverStopRequest(db).body(frozen, reason, connection.session.getJSONObject("signingKey"))
         File(fixture.output.parentFile, "android-handover-stop-request.json").writeText(
             com.acrylic.outbound.pda.submission.SubmissionJson.canonical(request))
-        result("evidence", frozen)
+        result(resultPhase, frozen)
     }
-    fun stop() {
+    fun stop(resultPhase: String = "stop") {
         connection.loseSubmission = false
         val frozen = db.temporarySubmissions().forOrder(client)!!
         assertThrows(IOException::class.java) { TemporaryHandoverStopRepository(db, connection, true).stop(frozen.id, reason) }
@@ -42,7 +42,7 @@ internal class TemporaryHandoverHttpStop(private val fixture: TemporaryHandoverH
         val saved = TemporarySubmissionRepository(db, connection).upload(frozen.id)
         assertEquals("ABORTED", saved.state); assertFalse(saved.autoRetry)
         assertEquals(frozen.payload, saved.payload); assertNull(db.temporarySuccess().evidence(frozen.id))
-        result("stop", saved)
+        result(resultPhase, saved)
     }
     private fun result(phase: String, frozen: TemporarySubmission) {
         File(fixture.output.parentFile, "$phase-result.json").writeText(JSONObject().put("submissionId", frozen.id)

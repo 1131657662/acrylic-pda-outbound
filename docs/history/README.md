@@ -1,5 +1,7 @@
 # 历史归档
 
+- [D06 LOCAL独立冻结与前置拒绝（2026-10-09）](D06_LOCAL_EXECUTION_2026-10-09.md)：1124真实三轮LOCAL-only至最终成功、1125无canonical、REQUEST/APPROVE/PREPARE拒绝与独立消费者；失败/回归/当批产物分列，不计D06整体通过。
+
 - [D01–D18 可控暂停断点（2026-10-08）](D01_D18_PAUSE_2026-10-08.md)：用户要求收口；TEMP专用STOP开发备份、1100–1102失败与保全、全部继承改动、环境及接续第一步；总目标未完成。
 - [D06 STOP暂停前看板快照](ORCHESTRATION_STATE_before_d06_stop_pause_2026-10-08.md)：历史快照，接续以主看板及暂停记录为准。
 

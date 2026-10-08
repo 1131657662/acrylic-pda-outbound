@@ -78,6 +78,12 @@ public final class HandoverTemporaryAndroidBridge {
         f.source.jdbc=app.getBean(org.springframework.jdbc.core.JdbcTemplate.class);
         HandoverMixedR06StopChecks.verify(f,directory);
     }
+    public void local(WebApplicationContext app,String phase) throws Exception {
+        f.source.jdbc=app.getBean(org.springframework.jdbc.core.JdbcTemplate.class);var checks=new HandoverTemporaryLocalChecks(f,directory);
+        switch(phase) {case "registered" -> checks.registered();case "before" -> checks.before();case "after" -> checks.after();
+            default -> throw new IllegalArgumentException("Unknown LOCAL phase");}
+    }
+    public void pendingRequest(String phase) throws Exception {HandoverTemporaryPendingRequestChecks.verify(f,directory,phase);}
 
     public void intakeDisabled() throws Exception {
         new HandoverTemporaryIntakeChecks(f,directory).disabled();
@@ -93,6 +99,9 @@ public final class HandoverTemporaryAndroidBridge {
         var id = prepared.path("authorizationId").asText();
         assertThat(f.source.jdbc.queryForObject("SELECT COUNT(*) FROM temporary_preparation_ack WHERE authorization_id=UUID_TO_BIN(?)", Long.class, id)).isEqualTo(1);
         var command = f.command().put("targetAuthorizationId", id);
+        if(f.source.head.receipt()!=null && SubmissionJson.parse(f.source.head.receipt()).path("payloadPresent").isBoolean()
+            && !SubmissionJson.parse(f.source.head.receipt()).path("payloadPresent").asBoolean())
+            HandoverTemporaryLocalBoundaryChecks.preparation(f,command);
         var receipt = f.context.reviewer().command(command, 200, null);
         Files.write(directory.resolve("server-prepared.json"), receipt);
     }

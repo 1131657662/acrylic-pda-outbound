@@ -39,6 +39,13 @@ public class SubmissionReceipts {
         for(String field:java.util.List.of("sourceEvidenceSetId","verificationId","setSha256"))receipt.set(field,request.get(field));
         return sign(receipt);
     }
+    public ObjectNode localFrozenHandoverStop(SubmissionStore.Head head,String localHash,JsonNode request) {
+        var receipt=base(head,"ABORTED",null).put("payloadPresent",false).put("localFrozenPayloadSha256",localHash)
+            .put("reason",text(request,"reason")).put("abortedAt",Instant.now().toString())
+            .put("localDeletionAllowed",false).put("stopRequestSha256",sha(request));
+        for(String field:java.util.List.of("sourceEvidenceSetId","verificationId","setSha256"))receipt.set(field,request.get(field));
+        return sign(receipt);
+    }
     private ObjectNode sign(ObjectNode receipt) {
         var claims=object().put("iss","acrylic-outbound").put("aud","acrylic-pda-receipt");claims.set("receipt",receipt.deepCopy());
         var signed=signer.sign(claims);receipt.put("signedReceipt",signed.token());return receipt;

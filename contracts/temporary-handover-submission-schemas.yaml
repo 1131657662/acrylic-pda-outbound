@@ -30,7 +30,7 @@ Body:
   description: |
     完整原captures/scans/events按原文保留，新增输入及审计按接收机本机序号。
     计划除新client/设备/资格身份外固定不变，目标逐产品计划重验。
-    受理仅支持首轮前驱；高轮与多跳尚未实现。大于1MiB正文使用持久分块，最大32MiB；已受理交接新轮可用独立STOP及完整本人E2A证明关闭，不释放占用。
+    高轮混合历史按各轮独立资格和不可变前驱重验。大于1MiB正文使用持久分块，最大32MiB；已受理交接新轮可用独立STOP及完整本人E2A证明关闭，不释放占用。
     保存原正文并将保留owner直接转新submission待审；不会扣账、放行或允许删除。
 Upload:
   allOf:
@@ -55,3 +55,7 @@ Stop:
     verificationId: {type: string, format: uuid}
     setSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
     temporaryHandover: {$ref: '#/Reference'}
+  description: |
+    REVIEW_REQUIRED已受理轮保持原协议。已激活、固定分块清单的RECEIVING轮可使用未受理LOCAL_FROZEN_PAYLOAD及完整本人E2A停止；
+    必须有原canonical、完整历史/冻结/清单hash与长度证明。该停止签名返回payloadPresent=false、payloadSha256=null、localFrozenPayloadSha256；
+    原请求/证据set/verification仍绑定，不写accepted payload、不扣账、不释放、不删除。无冻结/无canonical/普通REGISTERED拒绝。

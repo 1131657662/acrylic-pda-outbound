@@ -29,13 +29,17 @@ public class SourceEvidenceIntakeLocalPayload {
     private final TemporarySubmissionSnapshot snapshots;
     private final SourceEvidenceIntakeAuditPrefix audits;
     private final JdbcTemplate jdbc;
+    private final com.acrylic.outbound.handover.TemporaryHandoverFrozenSource handovers;
+    private final SourceEvidenceIntakePayload payloads;
 
     public SourceEvidenceIntakeLocalPayload(SourceEvidenceIntakeRawObjects objects,
         SourceEvidenceIntakeObjectFiles files, SubmissionStore submissions, SourceEvidenceProof proofs,
         TemporarySubmissionPlan plans, TemporarySubmissionEvidence evidence,
-        TemporarySubmissionSnapshot snapshots, SourceEvidenceIntakeAuditPrefix audits, JdbcTemplate jdbc) {
+        TemporarySubmissionSnapshot snapshots, SourceEvidenceIntakeAuditPrefix audits, JdbcTemplate jdbc,
+        com.acrylic.outbound.handover.TemporaryHandoverFrozenSource handovers,SourceEvidenceIntakePayload payloads) {
         this.objects = objects; this.files = files; this.submissions = submissions; this.proofs = proofs;
         this.plans = plans; this.evidence = evidence; this.snapshots = snapshots; this.audits = audits; this.jdbc = jdbc;
+        this.handovers=handovers;this.payloads=payloads;
     }
 
     JsonNode require(SourceEvidenceIntakePageObjects.Binding binding, List<E2aPageItem> items, long auditThrough) {
@@ -48,26 +52,34 @@ public class SourceEvidenceIntakeLocalPayload {
             && auditThrough > 0 && item.originalDeviceSeq() == auditThrough
             && binding.submissionId().equals(item.originalRecordId()), "E2A_LOCAL_PAYLOAD_BINDING_CONFLICT");
         var body = read(binding, item);
-        require(SubmissionControl.read(SubmissionJson.uuid(body, "submissionId"), body).equals(head.control()),
+        var control=head.control().round()>1?com.acrylic.outbound.handover.TemporaryHandoverControl.read(body).control()
+            :SubmissionControl.read(SubmissionJson.uuid(body, "submissionId"), body);
+        require(control.equals(head.control()),
             "E2A_LOCAL_PAYLOAD_SOURCE_CONFLICT");
         submissions.requireUploadHash(binding.submissionId(), SubmissionJson.sha(body));
-        var plan = plans.validate(head, body);
-        evidence.validate(head, plan, body);
-        snapshots.validate(plan, body);
-        requireAudits(binding, head, body, auditThrough);
-        requireUnclaimedCaptures(body);
+        if(head.control().round()>1)handovers.require(head,body);
+        else {
+            var plan = plans.validate(head, body);
+            evidence.validate(head, plan, body);snapshots.validate(plan, body);
+        }
+        var own=payloads.require(binding,body).own();
+        requireAudits(binding, head, own, auditThrough);
+        requireUnclaimedCaptures(own);
         return body;
     }
 
     private void requireHead(SourceEvidenceIntakePageObjects.Binding binding, SubmissionStore.Head head) {
         var control = head.control();
-        require("ABORTED".equals(head.status()) && head.order() == null && control.temporary() != null
+        require(control.temporary() != null
             && binding.warehouseId().equals(head.warehouse()) && binding.originalOperatorId().equals(head.actor())
             && binding.creatorDeviceId().equals(control.device()) && binding.workRound() == control.round(),
             "E2A_LOCAL_PAYLOAD_SOURCE_CONFLICT");
-        submissions.current(head);
-        require("VERIFIED".equals(proofs.read(head, null).path("verification").textValue()),
-            "E2A_ABORT_PROOF_UNVERIFIABLE");
+        if(control.round()==1)require("ABORTED".equals(head.status()) && head.order()==null,"E2A_LOCAL_PAYLOAD_SOURCE_CONFLICT");
+        else require(head.order()!=null && java.util.Set.of("RECEIVING","ABORTED").contains(head.status()),"E2A_LOCAL_PAYLOAD_SOURCE_CONFLICT");
+        if("ABORTED".equals(head.status())) {
+            submissions.current(head);
+            require("VERIFIED".equals(proofs.read(head, null).path("verification").textValue()),"E2A_ABORT_PROOF_UNVERIFIABLE");
+        }
     }
 
     private JsonNode read(SourceEvidenceIntakePageObjects.Binding binding, E2aPageItem item) {

@@ -31,7 +31,7 @@ class TemporaryHandoverRegistration {
         jdbc.queryForList("SELECT order_id FROM order_submission_slot WHERE order_id=? FOR UPDATE",row.get("canonical_order_id"));
         jdbc.queryForList("SELECT id FROM submission WHERE id=? FOR UPDATE",row.get("submission_id"));
     }
-    private void requireOpen(HandoverTemporaryActivationTicketStore.Ticket t) {
+    void requireOpen(HandoverTemporaryActivationTicketStore.Ticket t) {
         int valid=jdbc.queryForObject("""
             SELECT COUNT(*) FROM submission_scope c JOIN order_submission_slot l ON l.scope_id=c.id AND l.order_id=c.canonical_order_id
             JOIN outbound_order o ON o.id=l.order_id JOIN submission p ON p.id=? AND p.scope_id=c.id

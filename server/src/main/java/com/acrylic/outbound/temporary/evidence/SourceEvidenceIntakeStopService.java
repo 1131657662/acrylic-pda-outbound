@@ -143,7 +143,7 @@ public class SourceEvidenceIntakeStopService {
             && open.submissionId().equals(request.submissionId()) && open.workRound() == request.workRound()
             && context.version("workRound") == request.workRound()
             && context.version("scopeRound") == request.workRound()
-            && context.id("currentSubmissionId").equals(request.submissionId()), "E2A_SOURCE_CONTEXT_CHANGED");
+            && (request.submissionId().equals(context.id("currentSubmissionId")) || facts.currentOrPendingHandover(context,request.submissionId())), "E2A_SOURCE_CONTEXT_CHANGED");
     }
 
     private SourceEvidenceIntakeReceipts.BoundKey bound(UUID originalKey, StopRequest request,

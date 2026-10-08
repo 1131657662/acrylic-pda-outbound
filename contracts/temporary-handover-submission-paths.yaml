@@ -26,7 +26,7 @@ Submit:
 Stop:
   post:
     summary: 接收人用完整本人E2A证明关闭独立交接新轮
-    description: 默认关闭。独立交接票据/本人Session/新资格/原提交/完整原机STOP签名及审计绑定；仅已受理REVIEW_REQUIRED可中止。保留原文、实物占用及原轮墓碑，不放库存、不恢复扫码、不允许删除。原请求及签名回执重试一致，异文拒绝。
+    description: 默认关闭。独立交接票据/本人Session/新资格/原提交/完整原机STOP签名及审计绑定；支持已受理REVIEW_REQUIRED，或有canonical及固定分块清单且完整LOCAL冻结原件已核验的RECEIVING轮。后者签名payloadPresent=false、payloadSha256=null，localFrozenPayloadSha256绑定本机原件，原子选定scope/slot并保全全集合占用，不写accepted payload。保留原文、实物占用及原轮墓碑，不放库存、不恢复扫码、不允许删除。原请求及签名回执重试一致，异文拒绝；普通REGISTERED/未冻结/无canonical拒绝。
     security: [{pdaBearer: []}]
     parameters:
       - {$ref: './openapi.yaml#/components/parameters/Epoch'}
