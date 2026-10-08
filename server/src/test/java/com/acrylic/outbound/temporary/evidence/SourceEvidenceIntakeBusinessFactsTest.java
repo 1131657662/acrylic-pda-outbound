@@ -29,7 +29,7 @@ class SourceEvidenceIntakeBusinessFactsTest {
     private static final UUID OPERATOR=UUID.fromString("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee");
     private final JdbcTemplate jdbc=mock(JdbcTemplate.class);
     private final SubmissionFiles files=mock(SubmissionFiles.class);
-    private final SourceEvidenceIntakeBusinessFacts facts=new SourceEvidenceIntakeBusinessFacts(jdbc,files,unavailableLocal(),null);
+    private final SourceEvidenceIntakeBusinessFacts facts=new SourceEvidenceIntakeBusinessFacts(jdbc,files,unavailableLocal(),null,new SourceEvidenceIntakePayload(null));
     private final SourceEvidenceIntakePageObjects.Binding binding=new SourceEvidenceIntakePageObjects.Binding(
         WAREHOUSE,SCOPE,SUBMISSION,1,DEVICE,OPERATOR,UUID.randomUUID());
 

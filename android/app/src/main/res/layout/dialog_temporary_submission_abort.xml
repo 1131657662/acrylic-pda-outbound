@@ -1,0 +1,14 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="24dp">
+        <TextView android:id="@+id/abortNotice" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:textSize="16sp" />
+        <EditText android:id="@+id/abortReason" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:maxLines="3" android:inputType="textMultiLine" />
+        <Button android:id="@+id/abortConfirm" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="56dp" />
+        <Button android:id="@+id/abortReturn" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="56dp" android:text="返回" />
+    </LinearLayout>
+</ScrollView>

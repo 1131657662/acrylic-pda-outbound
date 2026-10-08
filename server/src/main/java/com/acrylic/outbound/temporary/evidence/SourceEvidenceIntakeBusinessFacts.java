@@ -31,13 +31,15 @@ public class SourceEvidenceIntakeBusinessFacts {
     private final SubmissionFiles files;
     private final SourceEvidenceIntakeLocalPayload localPayload;
     private final UnsubmittedSourceFacts unsubmitted;
+    private final SourceEvidenceIntakePayload payloads;
 
     public SourceEvidenceIntakeBusinessFacts(JdbcTemplate jdbc, SubmissionFiles files,
-        SourceEvidenceIntakeLocalPayload localPayload, UnsubmittedSourceFacts unsubmitted) {
+        SourceEvidenceIntakeLocalPayload localPayload, UnsubmittedSourceFacts unsubmitted, SourceEvidenceIntakePayload payloads) {
         this.jdbc = jdbc;
         this.files = files;
         this.localPayload = localPayload;
         this.unsubmitted = unsubmitted;
+        this.payloads = payloads;
     }
 
     public List<E2aPageItem> require(SourceEvidenceIntakePageObjects.Binding binding, List<E2aPageItem> items,
@@ -60,8 +62,9 @@ public class SourceEvidenceIntakeBusinessFacts {
         var hashes = jdbc.queryForList("SELECT payload_sha256 FROM submission_payload WHERE submission_id=?",
             String.class, Ids.bytes(binding.submissionId()));
         boolean received = !hashes.isEmpty();
-        var payload = received ? payload(binding.submissionId()) : localPayload.require(binding, items, auditThrough);
-        long orderScanHighWatermark = SourceEvidenceIntakeOrderScanSequence.require(payload, binding.creatorDeviceId());
+        var checked = payloads.require(binding, received ? payload(binding.submissionId()) : localPayload.require(binding, items, auditThrough));
+        var payload = checked.own();
+        long orderScanHighWatermark = checked.orderHigh();
         var captures = byId(SubmissionJson.array(payload, "captures"), "id");
         var scans = byCapture(SubmissionJson.array(payload, "scans"));
         require(captures.size() <= captureHighWatermark, "E2A_CAPTURE_FACT_COUNT_CONFLICT");

@@ -26,7 +26,7 @@ final class TemporaryHandoverPayload {
         prefix(original,body);fixedPlan(oldPlan,plan,original,body);
         var origins=TemporaryEvidenceOrigins.initial(previous,oldPlan).append(head,plan,original);
         evidence.validate(head,plan,body,origins);
-        return new Checked(plan,snapshots.validate(plan,body));
+        return new Checked(plan,snapshots.validate(plan,body),original.deepCopy());
     }
     private void prefix(JsonNode original,JsonNode body) {
         for(String field:List.of("captures","scans","events")) {
@@ -48,5 +48,5 @@ final class TemporaryHandoverPayload {
         equal(oldPlan.authorization().warehouseId(),plan.authorization().warehouseId(),"交接资格仓库不符");
         equal(oldPlan.authorization().recoveryEpoch(),plan.authorization().recoveryEpoch(),"交接资格恢复代次不符");
     }
-    record Checked(TemporarySubmissionPlan.Plan plan,SubmissionSnapshot.Validated snapshot) { }
+    record Checked(TemporarySubmissionPlan.Plan plan,SubmissionSnapshot.Validated snapshot,JsonNode predecessor) { }
 }

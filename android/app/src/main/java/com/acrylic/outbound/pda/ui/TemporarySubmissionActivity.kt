@@ -55,19 +55,34 @@ class TemporarySubmissionActivity : ComponentActivity() {
     }
     private fun abort() {
         val item = local ?: return; if (busy) return
-        val input = EditText(this).apply { hint = if (continuation) "停止原因" else "取消原因"; setText(item.abortReason.orEmpty()); isEnabled = item.abortReason == null }
-        AlertDialog.Builder(this).setTitle(if (handover) "停止本轮临时交接" else if (continuation) "停止本轮续作" else "取消原上传批次")
-            .setMessage(if (continuation) "请先完成本轮作业机证据补传核验。停止后保留全部实物、占用和记录，等待主管处置。"
-                else "取消不会卸货、解除占用或恢复扫码。请保留实物，联系主管办理后续处置。")
-            .setView(input).setNegativeButton("返回", null).setPositiveButton(if (continuation) "确认停止" else "确认取消") { _, _ ->
-                val reason = input.text.toString(); run {
-                    try {
-                        if (handover) app.temporaryHandoverStops.stop(item.id, reason)
-                        else if (continuation) app.temporarySubmissions.stopContinuation(item.id, reason)
-                        else app.temporarySubmissions.abort(item.id, reason)
-                    } finally { TemporaryUploadWorker.schedule(app, item.id) }
-                }
-            }.show()
+        val content = layoutInflater.inflate(com.acrylic.outbound.pda.R.layout.dialog_temporary_submission_abort, null)
+        val input = content.findViewById<EditText>(com.acrylic.outbound.pda.R.id.abortReason).apply {
+            hint = if (continuation) "停止原因" else "取消原因"; setText(item.abortReason.orEmpty()); isEnabled = item.abortReason == null
+        }
+        content.findViewById<TextView>(com.acrylic.outbound.pda.R.id.abortNotice).text = if (continuation)
+            "请先完成本轮作业机证据补传核验。停止后保留全部实物、占用和记录，等待主管处置。"
+            else "取消不会卸货、解除占用或恢复扫码。请保留实物，联系主管办理后续处置。"
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(if (handover) "停止本轮临时交接" else if (continuation) "停止本轮续作" else "取消原上传批次")
+            .setView(content).create()
+        content.findViewById<Button>(com.acrylic.outbound.pda.R.id.abortReturn).setOnClickListener { dialog.dismiss() }
+        content.findViewById<Button>(com.acrylic.outbound.pda.R.id.abortConfirm).apply {
+            text = if (continuation) "确认停止" else "确认取消"
+            setOnClickListener {
+                dialog.dismiss()
+                abort(item, input.text.toString())
+            }
+        }
+        dialog.show()
+    }
+    private fun abort(item: TemporarySubmission, reason: String) {
+        run {
+            try {
+                if (handover) app.temporaryHandoverStops.stop(item.id, reason)
+                else if (continuation) app.temporarySubmissions.stopContinuation(item.id, reason)
+                else app.temporarySubmissions.abort(item.id, reason)
+            } finally { TemporaryUploadWorker.schedule(app, item.id) }
+        }
     }
     private fun evidence() {
         if (busy || local == null) return

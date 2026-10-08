@@ -50,10 +50,59 @@ class SourceEvidenceIntakeOrderScanSequenceTest {
             .isInstanceOf(BusinessException.class);
     }
 
+    @Test void receivingDeviceContinuesAfterVerifiedForeignPrefixWithoutRenumberingDevices() {
+        var original = capture(1).put("originDeviceId", UUID.randomUUID().toString()).put("deviceCaptureSeq", "1");
+        var current = capture(2).put("deviceCaptureSeq", "1");
+        var prefix = payload(original, scan(original));
+        var cumulative = payload(original, current, scan(original), scan(current));
+
+        assertThat(SourceEvidenceIntakeOrderScanSequence.require(cumulative, DEVICE, prefix)).isEqualTo(2);
+        assertThat(current.path("deviceCaptureSeq").asText()).isEqualTo("1");
+    }
+
+    @Test void rejectsForeignCaptureOutsideTheVerifiedPrefix() {
+        var original = capture(1).put("originDeviceId", UUID.randomUUID().toString());
+        var foreign = capture(2).put("originDeviceId", original.path("originDeviceId").asText());
+
+        assertCode("E2A_ORDER_SCAN_SOURCE_CONFLICT", () -> SourceEvidenceIntakeOrderScanSequence.require(
+            payload(original, foreign), DEVICE, payload(original)));
+    }
+
+    @Test void rejectsRewrittenPrefixEvenWhenSequenceAndDeviceRemainPlausible() {
+        var original = capture(1).put("deviceCaptureSeq", "23");
+        var rewritten = original.deepCopy().put("deviceCaptureSeq", "24");
+
+        assertCode("E2A_ORDER_SCAN_PREFIX_CONFLICT", () -> SourceEvidenceIntakeOrderScanSequence.require(
+            payload(rewritten, capture(2)), DEVICE, payload(original)));
+    }
+
+    @Test void rejectsReceivingSequenceRestartInsteadOfRenumberingTheCumulativeOrder() {
+        var original = capture(1);
+
+        assertCode("E2A_ORDER_SCAN_SEQUENCE_CONFLICT", () -> SourceEvidenceIntakeOrderScanSequence.require(
+            payload(original, capture(1)), DEVICE, payload(original)));
+    }
+
+    @Test void rejectsDuplicatedCaptureIdAcrossThePrefixBoundary() {
+        var original = capture(1);
+        var duplicate = capture(2).put("id", original.path("id").asText());
+
+        assertCode("E2A_ORDER_SCAN_SEQUENCE_CONFLICT", () -> SourceEvidenceIntakeOrderScanSequence.require(
+            payload(original, duplicate), DEVICE, payload(original)));
+    }
+
+    @Test void rejectsOmittedOriginalScan() {
+        var original = capture(1);
+
+        assertCode("E2A_ORDER_SCAN_PREFIX_CONFLICT", () -> SourceEvidenceIntakeOrderScanSequence.require(
+            payload(original, capture(2)), DEVICE, payload(original, scan(original))));
+    }
+
     private static ObjectNode payload(ObjectNode... values) {
         var payload = SubmissionJson.object();
         var captures = payload.putArray("captures");
         var scans = payload.putArray("scans");
+        payload.putArray("events");
         for (var value : values) {
             if (value.has("captureId")) scans.add(value); else captures.add(value);
         }
