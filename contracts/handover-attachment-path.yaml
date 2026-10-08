@@ -1,0 +1,68 @@
+Path:
+  parameters:
+    - {name: caseId, in: path, required: true, schema: {type: string, format: uuid}}
+    - name: attachmentKey
+      in: path
+      required: true
+      description: PUT为客户端原上传键；GET为成功上传返回的attachmentId，两者不是同一标识。
+      schema: {type: string, format: uuid}
+    - {name: warehouseId, in: query, required: true, schema: {type: string, format: uuid}}
+  put:
+    summary: 上传已有故障案件的受控原附件
+    description: >-
+      仅Web独立主管order:handover。commands/fault/attachments三开关均显式true才装配，默认关闭。
+      先授权，再有界读取最多10MiB+1；实际摘要及字节数重验，空文件拒绝。
+      事务中重新核人员/权限/仓库/案件和恢复epoch，按案件/仓库/人员/原上传键幂等，异文409。
+      上传不产生故障围栏或主管同意；FAULT_FENCE命令另行消费原件、签入有序引用并与审计原子提交。
+    parameters:
+      - {name: X-Server-Recovery-Epoch, in: header, required: true, schema: {type: string, pattern: '^[1-9][0-9]{0,18}$'}}
+      - {name: X-Content-SHA256, in: header, required: true, schema: {type: string, pattern: '^[a-f0-9]{64}$'}}
+    requestBody:
+      required: true
+      content:
+        application/octet-stream:
+          schema: {type: string, format: binary, minLength: 1, maxLength: 10485760}
+    responses:
+      '200':
+        description: 不缓存的受控原件引用；丢响应须使用原上传键和相同字节重试。
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: {$ref: '#/Reference'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '405': {$ref: './openapi.yaml#/components/responses/Error'}
+      '429': {$ref: './openapi.yaml#/components/responses/Error'}
+      '500': {$ref: './openapi.yaml#/components/responses/Error'}
+  get:
+    summary: 下载原附件字节
+    description: >-
+      要求commands开关及本仓库Web主管order:handover；不依赖fault/attachments写开关。
+      本人同案件未绑定上传可读，其他主管仅能读取已被原FAULT_FENCE命令绑定原件。
+      故障案件先重新核原签名、归档和全部附件引用/实际字节；跨案、跨仓、撤权、他人未绑定上传拒绝。
+      只返回opaque application/octet-stream、attachment下载、不缓存和nosniff；不作为HTML或图像内联信任。
+    responses:
+      '200':
+        description: 受控原字节
+        content:
+          application/octet-stream:
+            schema: {type: string, format: binary}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+
+Reference:
+  type: object
+  additionalProperties: false
+  required: [attachmentId, evidenceSha256, sizeBytes]
+  properties:
+    attachmentId: {type: string, format: uuid}
+    evidenceSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    sizeBytes: {type: string, pattern: '^[1-9][0-9]{0,7}$', description: 实际正整数字节数，不超过10485760。}

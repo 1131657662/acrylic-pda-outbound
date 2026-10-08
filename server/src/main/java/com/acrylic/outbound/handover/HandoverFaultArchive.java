@@ -10,10 +10,13 @@ final class HandoverFaultArchive {
     private final HandoverTemporaryOriginal originals;
     private final HandoverFaultStore store;
     private final HandoverReadReceipt receipts;
+    private final HandoverAttachmentConsumer attachments;
 
-    HandoverFaultArchive(HandoverTemporaryOriginal originals, HandoverFaultStore store, HandoverReadReceipt receipts) {
+    HandoverFaultArchive(HandoverTemporaryOriginal originals, HandoverFaultStore store, HandoverReadReceipt receipts,
+            HandoverAttachmentConsumer attachments) {
         this.originals = originals;
         this.store = store; this.receipts = receipts;
+        this.attachments = attachments;
     }
 
     JsonNode read(HandoverFaultInput input, HandoverStopStore.Origin origin) {
@@ -23,6 +26,7 @@ final class HandoverFaultArchive {
 
     HandoverApprovalEvidence.Verified verify(JsonNode facts, HandoverStopStore.Origin origin, long high) {
         var recorded = receipts.verify(store.command(uuid(facts, "caseId")));
+        attachments.verify(recorded);
         var input = HandoverFaultInput.read(recorded.command(), java.time.Instant.parse(text(recorded.receipt(), "recordedAt")));
         require(high == input.archive().inputHigh() && high == number(facts, "inputHighWatermark")
             && origin.device().equals(input.device()) && number(facts, "caseVersion") > number(recorded.command().path("expected"), "caseVersion"));

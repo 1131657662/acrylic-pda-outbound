@@ -11,8 +11,10 @@ record HandoverFaultInput(UUID device, Instant controlledAt, String deviceLocati
         HandoverTemporaryArchive archive) {
     static HandoverFaultInput read(JsonNode command, Instant now) {
         try {
-            fields(command, Set.of("commandVersion", "commandType", "commandId", "warehouseId", "caseId",
+            var allowed = new HashSet<>(Set.of("commandVersion", "commandType", "commandId", "warehouseId", "caseId",
                 "transportRecoveryEpoch", "expected", "sourceDeviceId", "physicalControl", "archivedEvidence"));
+            if (command.has("attachments")) allowed.add("attachments");
+            fields(command, allowed); HandoverAttachmentRefs.read(command);
             var control = command.path("physicalControl");
             fields(control, Set.of("deviceState", "controlledAt", "deviceLocation", "goodsLocation", "unresolvedInputCount"));
             require("POWERED_OFF_IN_CUSTODY".equals(text(control, "deviceState"))

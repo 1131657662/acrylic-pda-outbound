@@ -12,6 +12,7 @@ class HandoverFaultConfigurationTest {
         .withBean(HandoverFaultArchive.class, () -> mock(HandoverFaultArchive.class))
         .withBean(HandoverTemporaryApprovalEvidence.class, () -> mock(HandoverTemporaryApprovalEvidence.class))
         .withBean(HandoverFaultStore.class, () -> mock(HandoverFaultStore.class))
+        .withBean(HandoverAttachmentConsumer.class, () -> mock(HandoverAttachmentConsumer.class))
         .withBean(HandoverStore.class, () -> mock(HandoverStore.class))
         .withBean(com.acrylic.outbound.devices.DeviceStore.class, () -> mock(com.acrylic.outbound.devices.DeviceStore.class));
 

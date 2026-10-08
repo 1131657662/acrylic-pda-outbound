@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 const output = process.env.HANDOVER_FAULT_BOUNDARY_OUTPUT;
 export default defineConfig({
-  testDir: './tests', testMatch: 'handover-fault-recovery.spec.ts', workers: 1, retries: 0, timeout: 30000,
+  testDir: './tests', testMatch: ['handover-fault-recovery.spec.ts', 'handover-attachment-recovery.spec.ts'], workers: 1, retries: 0, timeout: 30000,
   outputDir: `${output ?? './test-results/handover-fault-recovery'}/artifacts`,
   reporter: [['list'], ['json', { outputFile: `${output ?? './test-results/handover-fault-recovery'}/results.json` }]],
   use: { baseURL: 'http://127.0.0.1:5173', channel: 'chrome', actionTimeout: 10000,

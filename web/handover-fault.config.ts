@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 const output = process.env.HANDOVER_FAULT_OUTPUT;
 export default defineConfig({
   testDir: './tests', testMatch: 'handover-fault.spec.ts', workers: 1, retries: 0, timeout: 120000,
-  outputDir: output ?? './test-results/handover-fault',
+  outputDir: output ? `${output}/artifacts` : './test-results/handover-fault/artifacts',
   reporter: [['list'], ['json', { outputFile: `${output ?? './test-results/handover-fault'}/results.json` }]],
   use: { baseURL: 'http://127.0.0.1:5173', channel: 'chrome', viewport: { width: 1440, height: 900 },
     actionTimeout: 15000,

@@ -2,8 +2,10 @@ import { test, expect, type Page } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { z } from 'zod';
 import { faultCommandSchema, faultReceiptSchema } from '../src/handover/fault-contracts';
+import { testFaultAttachments, attachmentFixtureSchema } from './support/handover-fault-attachments';
 
-const fixtureSchema = z.object({ username: z.string(), password: z.string(), command: faultCommandSchema });
+const fixtureSchema = z.object({ username: z.string(), password: z.string(), command: faultCommandSchema,
+  attachmentFixture: attachmentFixtureSchema.optional(), attachmentDirectory: z.string().optional() });
 test.skip(process.env.HANDOVER_FAULT_VERIFY !== 'true', 'Requires a fresh explicitly enabled isolated source');
 function fixture() { return fixtureSchema.parse(JSON.parse(readFileSync(process.env.HANDOVER_FAULT_FIXTURE!, 'utf8'))); }
 
@@ -31,6 +33,8 @@ async function layouts(page: Page, name: string): Promise<void> {
     if (name === 'form') {
       const custody = page.getByRole('checkbox', { name: '确认原机已断电收回保管、货物位置已核对，且没有未核明的输入' });
       await custody.scrollIntoViewIfNeeded(); await expect(custody).toBeInViewport(); await expect(custody).toBeChecked();
+      await expect(page.getByRole('button', { name: '返回核对', exact: true })).toBeInViewport({ ratio: 1 });
+      await expect(page.getByRole('button', { name: '确认提交故障围栏', exact: true })).toBeInViewport({ ratio: 1 });
     } else {
       await expect(page.getByRole('button', { name: '刷新交接记录', exact: true })).toBeEnabled();
       await expect(page.getByRole('heading', { name: '主管故障围栏凭据', exact: true })).toBeVisible();
@@ -96,7 +100,9 @@ test('actual supervisor form, lost reply, reload and exact original retry to ver
   await openCase(page);
   await page.getByRole('button', { name: '主管确认故障围栏', exact: true }).click();
   await expect(page.getByRole('button', { name: '确认提交故障围栏', exact: true })).toBeDisabled();
-  await fill(page); await refusal(page); await layouts(page, 'form');
+  await fill(page); await refusal(page);
+  await testFaultAttachments(page, fixture());
+  await layouts(page, 'form');
   const state = await replies(page);
   await page.getByRole('button', { name: '确认提交故障围栏', exact: true }).click();
   await expect(page.getByRole('button', { name: '重试原请求', exact: true })).toBeVisible();

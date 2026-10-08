@@ -68,6 +68,7 @@ export function bind(receipt: FaultReceipt, command: FaultCommand, owner: FaultO
       || receipt.actor.warehouseId !== command.warehouseId || receipt.businessDecision.caseId !== command.caseId
       || receipt.businessDecision.sourceDeviceId !== command.sourceDeviceId
       || canonical(receipt.expected) !== canonical(command.expected)
+      || canonical(receipt.businessDecision.attachments ?? null) !== canonical(command.attachments ?? null)
       || canonical(receipt.businessDecision.physicalControl) !== canonical(command.physicalControl))
     throw new FaultPersistenceError('故障回执与原请求不一致，原键已保留，请核对后重试。');
   for (const name of ['sourceEvidenceSetId', 'verificationId', 'setSha256', 'captureHighWatermark', 'auditThroughSeq', 'orderScanHighWatermark'] as const)

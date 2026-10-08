@@ -22,14 +22,17 @@ public class HandoverCommandService {
     private final List<HandoverCommand.Operation> operations;
     private final HandoverSourceGuard sources;private final HandoverApprovalReview approvals;
     private final HandoverWriteAccess access;
+    private final HandoverReadReceipt reader; private final HandoverAttachmentConsumer attachments;
     private final TransactionTemplate read;private final TransactionTemplate write;
 
     public HandoverCommandService(HandoverCommand.Identity identities,HandoverCommand.Locks locks,HandoverStore store,
         HandoverReceiptCodec codec,AuditWriter audit,
         org.springframework.beans.factory.ObjectProvider<HandoverCommand.Operation> operations,
-        PlatformTransactionManager manager,HandoverSourceGuard sources,HandoverApprovalReview approvals,HandoverWriteAccess access) {
+        PlatformTransactionManager manager,HandoverSourceGuard sources,HandoverApprovalReview approvals,HandoverWriteAccess access,
+        HandoverReadReceipt reader,HandoverAttachmentConsumer attachments) {
         this.identities=identities;this.locks=locks;this.store=store;this.codec=codec;this.audit=audit;
         this.sources=sources;this.approvals=approvals;this.access=access;this.operations=operations.orderedStream().toList();
+        this.reader=reader;this.attachments=attachments;
         this.read=template(manager,true);this.write=template(manager,false);
     }
 
@@ -56,6 +59,7 @@ public class HandoverCommandService {
         if (row==null) return null;
         if (!Arrays.equals((byte[])row.get("canonical_command_bytes"),input.bytes())) throw HandoverCommand.conflict();
         codec.verify(row);
+        if (input.kind().equals("FAULT_FENCE")) attachments.verify(reader.verify(row));
         return (byte[])row.get("response_bytes");
     }
 

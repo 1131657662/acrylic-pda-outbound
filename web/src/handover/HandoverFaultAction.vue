@@ -6,17 +6,21 @@ import { faultArchiveSchema, faultControlSchema } from './fault-contracts';
 import { faultBody } from './pending-fault';
 import { useFaultCommand } from './useFaultCommand';
 import HandoverFaultEvidence from './HandoverFaultEvidence.vue';
+import HandoverFaultAttachments from './HandoverFaultAttachments.vue';
+import type { AttachmentRef } from './attachment-contracts';
 const props = defineProps<{ detail: CaseContext }>();
 const emit = defineEmits<{ refresh: [] }>();
 const session = useSessionStore(); const dialog = ref(false); const confirmed = ref(false);
 const deviceLocation = ref(''); const goodsLocation = ref(''); const controlledAt = ref('');
+const attachments = ref<AttachmentRef[]>([]); const attachmentsReady = ref(false); const attachmentsBusy = ref(false);
+const attachmentOwner = computed(() => ({ userId: session.identity?.id ?? '', warehouseId: session.warehouseId, caseId: props.detail.context.caseId }));
 const archive = ref({ sourceEvidenceSetId: '', verificationId: '', setSha256: '', captureHighWatermark: '', auditThroughSeq: '', orderScanHighWatermark: '' });
-const { original, busy, error, restore, execute, recheck } = useFaultCommand(
+const { original, busy, error, unreadable, restore, execute, recheck } = useFaultCommand(
   () => ({ userId: session.identity?.id ?? '', warehouseId: session.warehouseId, caseId: props.detail.context.caseId }), () => props.detail);
 const allowed = computed(() => session.identity?.permissions.includes('order:handover'));
 const receipt = computed(() => props.detail.fault.receipt);
 const valid = computed(() => {
-  if (!confirmed.value || !controlledAt.value || Number.isNaN(Date.parse(controlledAt.value))) return false;
+  if (!confirmed.value || !controlledAt.value || Number.isNaN(Date.parse(controlledAt.value)) || !attachmentsReady.value) return false;
   return faultArchiveSchema.safeParse(archive.value).success && faultControlSchema.safeParse(control()).success;
 });
 function control() {
@@ -35,21 +39,25 @@ function open(): void {
 }
 async function submit(): Promise<void> {
   if (!original.value && !valid.value) return;
-  const input = original.value ? faultBody(original.value) : { physicalControl: control(), archivedEvidence: faultArchiveSchema.parse(archive.value) };
+  const input = original.value ? faultBody(original.value) : { physicalControl: control(), archivedEvidence: faultArchiveSchema.parse(archive.value),
+    ...(attachments.value.length ? { attachments: attachments.value } : {}) };
   await execute(input);
   if (original.value?.receipt && !error.value) { dialog.value = false; emit('refresh'); }
 }
 async function edit(): Promise<void> { await recheck(); if (!error.value) { confirmed.value = false; } }
+function changedAttachments(refs: AttachmentRef[], ready: boolean, uploading: boolean): void {
+  attachments.value = refs; attachmentsReady.value = ready; attachmentsBusy.value = uploading;
+}
 onMounted(restore);
 </script>
 <template>
   <HandoverFaultEvidence v-if="receipt" :receipt="receipt" />
   <section v-if="allowed && !original?.receipt && (detail.fault.entryAvailable || original || error)" class="panel">
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
-    <el-button :disabled="busy || (!!error && !original)" @click="open">{{ original ? '核对原故障请求' : '主管确认故障围栏' }}</el-button>
+    <el-button :disabled="busy || unreadable" @click="open">{{ original ? '核对原故障请求' : '主管确认故障围栏' }}</el-button>
     <p>仅原机已断电收回、实物位置明确、原输入全部核明且有可信归档截点时可申请；服务端将再次核对原提交终态。</p>
   </section>
-  <el-dialog v-model="dialog" class="fault-dialog" title="主管确认故障围栏" width="min(620px, 94vw)" :close-on-click-modal="false" :show-close="!busy">
+  <el-dialog v-model="dialog" class="fault-dialog" title="主管确认故障围栏" width="min(620px, 94vw)" destroy-on-close :close-on-click-modal="false" :show-close="!busy && !attachmentsBusy">
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
     <el-alert v-if="original && !original.receipt" :title="original.refusal ? `原请求已拒绝：${original.refusal.message}` : '原结果未确认，请重试同一原请求；原键和内容已保留。'" type="warning" :closable="false" />
     <p>故障设备：{{ detail.fault.sourceDeviceId }}</p>
@@ -66,15 +74,18 @@ onMounted(restore);
       <el-form-item><label class="fault-custody"><input v-model="confirmed" type="checkbox" :disabled="busy || !!original" />
         <span>确认原机已断电收回保管、货物位置已核对，且没有未核明的输入</span></label></el-form-item>
     </el-form>
+    <HandoverFaultAttachments :owner="attachmentOwner" :locked="busy || !!original" :available="detail.fault.attachmentsAvailable" @change="changedAttachments" />
     <p v-if="original">原请求编号：{{ faultBody(original).commandId }}</p>
     <template #footer>
-      <el-button :disabled="busy" @click="dialog = false">返回核对</el-button>
+      <el-button :disabled="busy || attachmentsBusy" @click="dialog = false">返回核对</el-button>
       <el-button v-if="original?.refusal" :disabled="busy" @click="edit">重新核对资料</el-button>
-      <el-button type="primary" :loading="busy" :disabled="busy || (!original && !valid)" @click="submit">{{ original ? '重试原请求' : '确认提交故障围栏' }}</el-button>
+      <el-button type="primary" :loading="busy" :disabled="busy || attachmentsBusy || (!original && !valid)" @click="submit">{{ original ? '重试原请求' : '确认提交故障围栏' }}</el-button>
     </template>
   </el-dialog>
 </template>
 <style scoped>
+:global(.fault-dialog.el-dialog) { margin-block: var(--space-4); max-height: calc(100dvh - 2 * var(--space-4)); }
+:global(.fault-dialog .el-dialog__footer) { flex-shrink: 0; }
 .fault-custody { display: flex; align-items: flex-start; gap: var(--el-font-size-base); }
 .fault-custody input { flex: none; accent-color: var(--el-color-primary); }
 .fault-custody span { white-space: normal; overflow-wrap: anywhere; }

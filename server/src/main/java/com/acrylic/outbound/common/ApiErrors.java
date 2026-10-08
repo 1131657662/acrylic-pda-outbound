@@ -68,6 +68,11 @@ public class ApiErrors {
         return business(new BusinessException(404, "NOT_FOUND", "接口不存在"), request);
     }
 
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<?> method(HttpServletRequest request) {
+        return business(new BusinessException(405, "METHOD_NOT_ALLOWED", "此接口不接受该请求方法"), request);
+    }
+
     @ExceptionHandler(DuplicateKeyException.class)
     public ResponseEntity<?> duplicate(HttpServletRequest request) {
         return business(new BusinessException(409, "WRITE_CONFLICT", "并发写入冲突，请核对后重试"), request);

@@ -18,6 +18,7 @@ final class HandoverFaultRollbackChecks {
             + "BEGIN IF NEW.entity_type='HANDOVER_COMMAND' AND NEW.event_type='HANDOVER_FAULT_FENCE' "
             + "AND EXISTS(SELECT 1 FROM handover_fault_fence WHERE case_id=UUID_TO_BIN('" + f.source.kase + "')) "
             + "AND EXISTS(SELECT 1 FROM handover_command_receipt WHERE id=NEW.entity_id AND command_type='FAULT_FENCE') "
+            + (command.has("attachments") ? "AND (SELECT COUNT(*) FROM handover_attachment_use WHERE case_id=UUID_TO_BIN('" + f.source.kase + "'))=5 " : "")
             + "THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='D07_FAULT_FINAL_SQL'; END IF; END");
         try {
             f.faultReviewer.command(command, 500, "INTERNAL_ERROR");

@@ -10,7 +10,7 @@ class HandoverFaultViewTest {
     @Test void defaultGateDoesNotReadOrOfferFaultWrite() {
         var origins = mock(HandoverStopStore.class);
         var archives = mock(HandoverFaultArchive.class);
-        var view = new HandoverFaultView(origins, archives, false);
+        var view = new HandoverFaultView(origins, archives, false, false);
         var context = SubmissionJson.object().put("stopState", "REQUESTED").put("sourceKind", "TEMP")
             .put("status", "EVIDENCE_PENDING").put("requestedBy", UUID.randomUUID().toString());
         var actor = new HandoverCommand.Actor(UUID.randomUUID(), UUID.randomUUID(), "1", null, List.of("order:handover"), List.of());
@@ -22,7 +22,7 @@ class HandoverFaultViewTest {
 
     @Test void resumePermissionAndOwnRequestCannotOfferFaultWrite() {
         var origins = mock(HandoverStopStore.class); var archives = mock(HandoverFaultArchive.class);
-        var view = new HandoverFaultView(origins, archives, true); var user = UUID.randomUUID();
+        var view = new HandoverFaultView(origins, archives, true, false); var user = UUID.randomUUID();
         var context = SubmissionJson.object().put("stopState", "REQUESTED").put("sourceKind", "TEMP")
             .put("status", "EVIDENCE_PENDING").put("requestedBy", user.toString());
         for (var permissions : List.of(List.of("order:resume"), List.of("order:handover"))) {

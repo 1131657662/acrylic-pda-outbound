@@ -9,8 +9,9 @@ class HandoverReadConfigurationTest {
         .withUserConfiguration(HandoverReadService.class, HandoverReadController.class)
         .withBean(HandoverCommand.Identity.class, () -> new HandoverCommand.Identity(null, null, null))
         .withBean(HandoverStore.class, () -> new HandoverStore(null))
+        .withBean(HandoverAttachmentConsumer.class, () -> new HandoverAttachmentConsumer(null, false))
         .withBean(HandoverReadStore.class, () -> new HandoverReadStore(null))
-        .withBean(HandoverFaultView.class, () -> new HandoverFaultView(null, null, false))
+        .withBean(HandoverFaultView.class, () -> new HandoverFaultView(null, null, false, false))
         .withBean(HandoverReadReceipt.class, () -> new HandoverReadReceipt(null));
 
     @Test void defaultClosesReadRoutes() {

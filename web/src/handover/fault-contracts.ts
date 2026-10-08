@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { attachmentRefsSchema } from './attachment-contracts';
 
 const id = z.uuid();
 const decimal = z.string().regex(/^(0|[1-9]\d*)$/);
@@ -14,7 +15,8 @@ export const faultControlSchema = z.object({ deviceState: z.literal('POWERED_OFF
   unresolvedInputCount: z.literal('0') }).strict();
 export const faultCommandSchema = z.object({ commandVersion: z.literal(1), commandType: z.literal('FAULT_FENCE'),
   commandId: id, warehouseId: id, caseId: id, transportRecoveryEpoch: positive, expected: faultExpectedSchema,
-  sourceDeviceId: id, physicalControl: faultControlSchema, archivedEvidence: faultArchiveSchema }).strict();
+  sourceDeviceId: id, physicalControl: faultControlSchema, archivedEvidence: faultArchiveSchema,
+  attachments: attachmentRefsSchema.optional() }).strict();
 export const faultReceiptSchema = z.object({ receiptVersion: z.literal(1), commandType: z.literal('FAULT_FENCE'),
   receiptId: id, eventId: id, routeScope: z.literal('r07.handover.v1'),
   status: z.literal('RECORDED'), commandId: id, commandSha256: hash, recordedAt: z.iso.datetime({ offset: true }),
@@ -25,6 +27,7 @@ export const faultReceiptSchema = z.object({ receiptVersion: z.literal(1), comma
     requestedBy: id, fromWorkRound: positive, toWorkRound: positive, sourceKind: z.literal('TEMP'), stopState: z.literal('REQUESTED') }),
   businessDecision: z.object({ caseId: id, status: z.literal('FAULT_FENCED'), stopKind: z.literal('FAULT_FENCE'),
     sourceDeviceId: id, disabledDeviceVersion: positive, oldDeviceAcknowledged: z.literal(false), payloadSha256: hash,
+    attachments: attachmentRefsSchema.optional(),
     physicalControl: faultControlSchema, source: z.object({ operatorId: id, deviceId: id }),
     archivedEvidence: faultArchiveSchema.extend({ sourceKind: z.literal('TEMP'), status: z.literal('VERIFIED_COMPLETE_AT_STOP'),
       submissionId: id, authorizationId: id, workRound: positive, mayResumeScanning: z.literal(false), stockReleased: z.literal(false) }) }),

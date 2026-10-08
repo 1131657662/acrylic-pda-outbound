@@ -22,7 +22,8 @@ export const caseContextSchema = z.object({
     scopeId: id, reason: z.string() }),
   capabilities: z.record(z.string(), z.literal(false)),
   expected: faultExpectedSchema,
-  fault: z.object({ entryAvailable: z.boolean(), sourceDeviceId: id.nullable(), receipt: faultReceiptSchema.nullable() })
+  fault: z.object({ entryAvailable: z.boolean(), attachmentsAvailable: z.boolean().optional().default(false),
+    sourceDeviceId: id.nullable(), receipt: faultReceiptSchema.nullable() })
     .refine(f => !f.entryAvailable || (f.sourceDeviceId !== null && f.receipt === null)),
 });
 export type CasePage = z.infer<typeof casePageSchema>;

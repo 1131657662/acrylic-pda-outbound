@@ -58,9 +58,10 @@ export async function faultBrowser(page: Page) {
     return faultReceiptSchema.parse({ ...receipt, commandId: command.commandId, commandSha256: await faultDigest(command),
       recordedAt: new Date().toISOString(), expected: command.expected, actor: { ...receipt.actor, principalId: user },
       businessDecision: { ...receipt.businessDecision, physicalControl: command.physicalControl,
+        attachments: command.attachments,
         archivedEvidence: { ...receipt.businessDecision.archivedEvidence, ...command.archivedEvidence } } });
   }
-  return { controls, facts, posts, url, key, user, otherWarehouse, response };
+  return { controls, facts, posts, url, key, user, otherWarehouse, response, receipt };
 }
 export async function openFault(page: Page): Promise<void> {
   await page.getByRole('button', { name: /主管确认故障围栏|核对原故障请求/, exact: true }).click();

@@ -26,6 +26,12 @@ final class HandoverApprovalHttp {
     byte[] get(String path,int status,String code) throws Exception { return send(request(path).GET(),status,code); }
     String username() { return username; }
     byte[] command(JsonNode command, int expected, String code) throws Exception { return post("/handover-commands", command, expected, code); }
+    byte[] put(String path, byte[] body, String sha, int expected, String code) throws Exception {
+        var csrf = csrf();
+        return send(request(path).header(csrf.path("headerName").asText(), csrf.path("token").asText())
+            .header("Content-Type", "application/octet-stream").header("X-Server-Recovery-Epoch", "1")
+            .header("X-Content-SHA256", sha).PUT(HttpRequest.BodyPublishers.ofInputStream(() -> new java.io.ByteArrayInputStream(body))), expected, code);
+    }
     byte[] post(String path, JsonNode body, int expected, String code) throws Exception {
         var csrf = csrf();
         return send(request(path).header(csrf.path("headerName").asText(), csrf.path("token").asText())

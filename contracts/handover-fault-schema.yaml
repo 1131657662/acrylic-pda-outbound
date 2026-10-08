@@ -3,6 +3,12 @@ Command:
   additionalProperties: false
   required: [commandVersion, commandType, commandId, warehouseId, caseId, transportRecoveryEpoch, expected, sourceDeviceId, physicalControl, archivedEvidence]
   properties:
+    attachments:
+      type: array
+      minItems: 1
+      maxItems: 5
+      description: 可省略以兼容旧命令；显式空/null拒绝。只引用本人同案件/仓库已上传原件，逐件不超过10MiB、总量不超过50MiB；独立附件写开关默认关闭。
+      items: {$ref: './handover-attachment-path.yaml#/Reference'}
     commandVersion: {type: integer, const: 1}
     commandType: {type: string, const: FAULT_FENCE}
     commandId: {type: string, format: uuid}

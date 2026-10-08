@@ -13,11 +13,14 @@ final class HandoverFaultOperation implements HandoverCommand.Operation {
     private final HandoverFaultStore fences;
     private final HandoverStore cases;
     private final DeviceStore devices;
+    private final HandoverAttachmentConsumer attachments;
 
     HandoverFaultOperation(HandoverStopStore origins, HandoverFaultArchive archives,
-            HandoverTemporaryApprovalEvidence validation, HandoverFaultStore fences, HandoverStore cases, DeviceStore devices) {
+            HandoverTemporaryApprovalEvidence validation, HandoverFaultStore fences, HandoverStore cases, DeviceStore devices,
+            HandoverAttachmentConsumer attachments) {
         this.origins = origins; this.archives = archives; this.validation = validation;
         this.fences = fences; this.cases = cases; this.devices = devices;
+        this.attachments = attachments;
     }
 
     @Override public String commandType() { return "FAULT_FENCE"; }
@@ -43,6 +46,7 @@ final class HandoverFaultOperation implements HandoverCommand.Operation {
             .put("oldDeviceAcknowledged", false).put("payloadSha256", sha(body));
         decision.set("source", source(origin)); decision.set("archivedEvidence", input.archive().descriptor(origin));
         decision.set("physicalControl", write.command().body().path("physicalControl"));
+        attachments.consume(write, decision);
         notify(write, origin, decision);
         return decision;
     }

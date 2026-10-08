@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FaultReceipt } from './fault-contracts';
+import { attachmentDownload } from './attachment-api';
 defineProps<{ receipt: FaultReceipt }>();
 </script>
 <template>
@@ -21,6 +22,13 @@ defineProps<{ receipt: FaultReceipt }>();
       <p>验证记录 {{ receipt.businessDecision.archivedEvidence.verificationId }}</p>
       <p>采集截至 {{ receipt.businessDecision.archivedEvidence.captureHighWatermark }} · 审计截至 {{ receipt.businessDecision.archivedEvidence.auditThroughSeq }} · 扫描截至 {{ receipt.businessDecision.archivedEvidence.orderScanHighWatermark }}</p>
     </details>
+    <div v-if="receipt.businessDecision.attachments?.length" aria-label="已核验原附件">
+      <h3>已核验原附件</h3>
+      <ul><li v-for="(file, index) in receipt.businessDecision.attachments" :key="file.attachmentId">
+        <a :href="attachmentDownload(receipt.businessDecision.caseId, receipt.actor.warehouseId, file.attachmentId)" download>下载原附件 {{ index + 1 }}</a>
+        · {{ file.sizeBytes }} 字节<br />摘要 {{ file.evidenceSha256 }}
+      </li></ul>
+    </div>
     <p>此凭据保留原占用和资料；接收端须另行准备、本人确认及激活。</p>
   </section>
 </template>

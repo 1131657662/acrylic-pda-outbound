@@ -4,12 +4,14 @@ import { faultCommandSchema, faultReceiptSchema, type FaultCommand, type FaultCo
 import { bind, clearRefusedFault, faultBody, faultDigest, loadFault, lockFault, saveFault,
   FaultPersistenceError, faultResultUnresolved, type FaultOwner, type SavedFault } from './pending-fault';
 import type { CaseContext } from './contracts';
+import type { AttachmentRef } from './attachment-contracts';
+import { readUploads } from './attachment-storage';
 
-interface FaultInput { physicalControl: FaultControl; archivedEvidence: FaultArchive }
+interface FaultInput { physicalControl: FaultControl; archivedEvidence: FaultArchive; attachments?: AttachmentRef[] }
 
 /** One mounted fault decision; exact request bytes remain bound to the original person, warehouse and case. */
 export function useFaultCommand(scope: () => FaultOwner, detail: () => CaseContext) {
-  const original = ref<SavedFault | null>(null); const busy = ref(false); const error = ref('');
+  const original = ref<SavedFault | null>(null); const busy = ref(false); const error = ref(''); const unreadable = ref(false);
   let mounted = true;
   onBeforeUnmount(() => { mounted = false; });
   function assertOwner(owner: FaultOwner): void {
@@ -19,10 +21,13 @@ export function useFaultCommand(scope: () => FaultOwner, detail: () => CaseConte
   }
   function report(cause: unknown): void { error.value = cause instanceof FaultPersistenceError ? cause.message : errorText(cause); }
   function restore(): void {
-    error.value = ''; original.value = null;
-    try { original.value = loadFault(scope()); } catch (cause) { report(cause); }
+    error.value = ''; original.value = null; unreadable.value = false;
+    try { original.value = loadFault(scope()); } catch (cause) { unreadable.value = true; report(cause); }
   }
   function prepare(owner: FaultOwner, input: FaultInput): SavedFault {
+    const uploads = readUploads(owner);
+    if (uploads.some(row => !row.reference) || JSON.stringify(uploads.map(row => row.reference)) !== JSON.stringify(input.attachments ?? []))
+      throw new FaultPersistenceError('原附件上传状态已变化，请重新打开表单核对全部原件。');
     const value = detail(); const context = value.context;
     if (!value.fault.entryAvailable || !value.fault.sourceDeviceId || context.caseId !== owner.caseId
         || context.warehouseId !== owner.warehouseId) throw new FaultPersistenceError('故障入口或交接资料已变化，请重新查询核对。');
@@ -68,5 +73,5 @@ export function useFaultCommand(scope: () => FaultOwner, detail: () => CaseConte
     } catch (cause) { report(cause); }
     finally { busy.value = false; }
   }
-  return { original, busy, error, restore, execute, recheck };
+  return { original, busy, error, unreadable, restore, execute, recheck };
 }

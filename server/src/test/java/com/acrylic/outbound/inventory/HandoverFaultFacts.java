@@ -13,8 +13,7 @@ final class HandoverFaultFacts {
         this.jdbc = jdbc; this.directory = Files.createDirectory(directory);
     }
     ObjectNode snapshot(String label) throws Exception {
-        var result = new E2aSnapshotRows(jdbc).capture();
-        result.remove(java.util.List.of("spring_session", "spring_session_attributes"));
+        var result = HandoverFaultSnapshot.capture(jdbc);
         Files.writeString(directory.resolve(label + ".json"), result.toString(), StandardOpenOption.CREATE_NEW);
         return result;
     }

@@ -32,8 +32,18 @@ public final class HandoverTemporaryFaultFenceChecks {
     }
 
     public void verify() throws Exception {
+        verify(false);
+    }
+
+    public void verifyAttachments() throws Exception {
+        verify(true);
+    }
+
+    private void verify(boolean withAttachments) throws Exception {
         new HandoverFaultRejectionChecks(this).verify();
         var valid = faultCommand();
+        var attachments = withAttachments ? new HandoverFaultAttachmentChecks(this) : null;
+        if (attachments != null) attachments.prepare(valid);
         byte[] receipt = "true".equals(System.getenv("HANDOVER_FAULT_BROWSER_VERIFY"))
             ? HandoverFaultBrowserChecks.execute(this, valid) : HandoverFaultConcurrentChecks.execute(this, valid);
         Files.write(directory.resolve("fault-receipt.json"), receipt);
@@ -46,6 +56,7 @@ public final class HandoverTemporaryFaultFenceChecks {
         faultReviewer.command(valid.deepCopy().put("reason", "异文"), 409, "IDEMPOTENCY_CONTENT_MISMATCH");
         fenced(); disabled();
         HandoverFaultReadChecks.verify(this);
+        if (attachments != null) attachments.recorded(valid, receipt);
         approveAfterFence(faultReviewer);
     }
 

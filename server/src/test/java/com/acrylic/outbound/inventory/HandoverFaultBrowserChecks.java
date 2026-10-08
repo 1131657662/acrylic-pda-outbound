@@ -39,6 +39,11 @@ final class HandoverFaultBrowserChecks {
             format.format(java.time.Instant.parse(command.path("physicalControl").path("controlledAt").asText())));
         var value = SubmissionJson.object().put("username", f.faultReviewer.username()).put("password", "Test-password-123");
         value.set("command", command);
+        var attachmentFixture = f.directory.resolve("attachment-browser-fixture.json");
+        if (Files.exists(attachmentFixture)) {
+            value.set("attachmentFixture", SubmissionJson.parse(Files.readAllBytes(attachmentFixture)));
+            value.put("attachmentDirectory", f.directory.toString());
+        }
         Files.writeString(input, SubmissionJson.canonical(value), StandardOpenOption.CREATE_NEW);
     }
 }

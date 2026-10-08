@@ -10,7 +10,8 @@ import org.springframework.context.annotation.*;
 class HandoverFaultConfiguration {
     @Bean
     HandoverCommand.Operation handoverFaultFence(HandoverStopStore origins, HandoverFaultArchive archives,
-            HandoverTemporaryApprovalEvidence validation, HandoverFaultStore fences, HandoverStore cases, DeviceStore devices) {
-        return new HandoverFaultOperation(origins, archives, validation, fences, cases, devices);
+            HandoverTemporaryApprovalEvidence validation, HandoverFaultStore fences, HandoverStore cases, DeviceStore devices,
+            HandoverAttachmentConsumer attachments) {
+        return new HandoverFaultOperation(origins, archives, validation, fences, cases, devices, attachments);
     }
 }
