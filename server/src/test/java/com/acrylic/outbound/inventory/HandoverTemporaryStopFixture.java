@@ -24,15 +24,20 @@ final class HandoverTemporaryStopFixture {
     final ObjectNode command;
     final String token;
     final String otherDeviceToken;
+    final String supervisorUsername;
     private final AtomicInteger calls = new AtomicInteger();
 
     HandoverTemporaryStopFixture(WebApplicationContext app, Path attempt) throws Exception {
-        directory = Files.createDirectory(attempt.resolve("temporary-handover-stop"));
+        this(app, attempt, original(attempt));
+    }
+
+    HandoverTemporaryStopFixture(WebApplicationContext app, Path attempt, Source source) throws Exception {
+        directory = Files.createDirectory(attempt.resolve(source.directory()));
         jdbc = app.getBean(JdbcTemplate.class);
-        var result = SubmissionJson.parse(Files.readString(attempt.resolve("android-result.json")));
-        head = app.getBean(SubmissionStore.class).required(UUID.fromString(result.path("submissionId").asText()));
-        token = SubmissionJson.parse(Files.readString(attempt.resolve("private/android-http-input.json"))).path("accessToken").asText();
+        head = app.getBean(SubmissionStore.class).required(source.submission());
+        token = source.token();
         var supervisor = IdentityFixture.create(jdbc, app.getBean(PasswordEncoder.class), "WAREHOUSE_ADMIN");
+        supervisorUsername = supervisor.user().username();
         jdbc.update("INSERT INTO user_role SELECT ?,id FROM role WHERE code='SUPERVISOR'", Ids.bytes(supervisor.user().id()));
         jdbc.update("INSERT INTO user_warehouse VALUES(?,?)", Ids.bytes(supervisor.user().id()), Ids.bytes(head.warehouse()));
         web = new HandoverApprovalHttp(supervisor.user().username(), directory);
@@ -40,6 +45,14 @@ final class HandoverTemporaryStopFixture {
         kase = request(); command = stopCommand();
         Files.writeString(directory.resolve("stop-command.json"), SubmissionJson.canonical(command));
     }
+
+    private static Source original(Path attempt) throws Exception {
+        var result = SubmissionJson.parse(Files.readString(attempt.resolve("android-result.json")));
+        var input = SubmissionJson.parse(Files.readString(attempt.resolve("private/android-http-input.json")));
+        return new Source(UUID.fromString(result.path("submissionId").asText()), input.path("accessToken").asText(), "temporary-handover-stop");
+    }
+
+    record Source(UUID submission, String token, String directory) { }
 
     private String otherDevice(WebApplicationContext app) throws Exception {
         var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup(app)

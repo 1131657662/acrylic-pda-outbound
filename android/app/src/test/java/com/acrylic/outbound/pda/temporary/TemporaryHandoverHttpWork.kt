@@ -17,18 +17,24 @@ internal class TemporaryHandoverHttpWork(private val fixture: TemporaryHandoverH
         TemporaryHandoverWork(fixture.store(), true).start(client)
         val working = fixture.store(); working.load(client)
         if (connection.largePayload) appendInvalidInputs(working)
-        val actual = working.products(client).associate { it.deliveryCode to it.count }
-        val remaining = db.temporaryDrafts().lines(client).filter { (actual[it.deliveryCode] ?: 0) < it.plannedCount }.map { it.deliveryCode }.toSet()
-        val bale = working.source(client).bales.values.first { it.status == "AVAILABLE" && it.code in remaining }
-        val processor = TemporaryProcessor(working) {}
-        val capture = processor.reception.receive(TemporaryInput(client, bale.barcode, "BROADCAST", working.sample()))
-        processor.drain(client); assertEquals("COMMITTED", db.temporaryScans().capture(capture.id)!!.state)
-        val frozen = TemporaryFreeze(working).freeze(client, "")
+        repeat(connection.scanCount) { scan(working) }
+        val frozen = TemporaryFreeze(working).freeze(client, connection.shortShipmentReason)
         if (connection.largePayload) assertTrue(frozen.payload.toByteArray(Charsets.UTF_8).size > 1048576)
         File(fixture.output.parentFile, "android-handover-payload.json").writeText(frozen.payload)
         File(fixture.output.parentFile, "freeze-result.json").writeText(JSONObject().put("submissionId", frozen.id)
             .put("state", frozen.state).put("payloadSha256", frozen.sha256).toString())
         fixture.reopen("work-frozen")
+    }
+
+    private fun scan(working: TemporaryWorkStore) {
+        val actual = working.products(client).associate { it.deliveryCode to it.count }
+        val remaining = db.temporaryDrafts().lines(client).filter { (actual[it.deliveryCode] ?: 0) < it.plannedCount }.map { it.deliveryCode }.toSet()
+        val existing = (db.temporaryScans().allScans(client).map { it.barcode } +
+            db.temporaryHandoverGuards().forCase(fixture.caseId).map { it.barcode }).toSet()
+        val bale = working.source(client).bales.values.first { it.status == "AVAILABLE" && it.code in remaining && it.barcode !in existing }
+        val processor = TemporaryProcessor(working) {}
+        val capture = processor.reception.receive(TemporaryInput(client, bale.barcode, "BROADCAST", working.sample()))
+        processor.drain(client); assertEquals("COMMITTED", db.temporaryScans().capture(capture.id)!!.state)
     }
 
     private fun appendInvalidInputs(working: TemporaryWorkStore) {

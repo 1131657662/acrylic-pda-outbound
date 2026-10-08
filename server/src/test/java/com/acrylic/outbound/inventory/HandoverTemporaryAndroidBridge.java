@@ -14,7 +14,11 @@ public final class HandoverTemporaryAndroidBridge {
     private final Path privateInput;
 
     public HandoverTemporaryAndroidBridge(WebApplicationContext app, HandoverTemporaryApprovalChecks approval, Path attempt) throws Exception {
-        f = new HandoverTemporaryTargetFixture(app, approval.targetContext());
+        this(app, approval.targetContext(), attempt);
+    }
+
+    HandoverTemporaryAndroidBridge(WebApplicationContext app, HandoverTemporaryApprovalChecks.TargetContext context, Path attempt) throws Exception {
+        f = new HandoverTemporaryTargetFixture(app, context);
         directory = Files.createDirectory(attempt.resolve("temporary-handover-android"));
         var session = ((ObjectNode) f.session).deepCopy();
         var response = SubmissionJson.parse(f.get("/signing-key", f.token, 200, null));
@@ -37,6 +41,15 @@ public final class HandoverTemporaryAndroidBridge {
     public void enableLargeWork() throws Exception {
         enableWork();var input=(ObjectNode)SubmissionJson.parse(Files.readAllBytes(privateInput));
         input.put("largePayload",true);Files.writeString(privateInput,SubmissionJson.canonical(input));
+    }
+    public void enableShortWork() throws Exception {
+        enableWork();var input=(ObjectNode)SubmissionJson.parse(Files.readAllBytes(privateInput));
+        input.put("shortShipmentReason","多跳隔离测试，剩余实物由主管核对短装");
+        Files.writeString(privateInput,SubmissionJson.canonical(input));
+    }
+    public void enableFinalWork() throws Exception {
+        enableWork();var input=(ObjectNode)SubmissionJson.parse(Files.readAllBytes(privateInput));
+        input.put("scanCount",2);Files.writeString(privateInput,SubmissionJson.canonical(input));
     }
 
     public void chunks(WebApplicationContext app,String phase) throws Exception {

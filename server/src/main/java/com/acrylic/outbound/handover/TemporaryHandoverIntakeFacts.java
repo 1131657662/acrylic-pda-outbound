@@ -18,7 +18,13 @@ final class TemporaryHandoverIntakeFacts {
         this.jdbc=jdbc;this.tickets=tickets;this.cases=cases;this.activations=activations;
     }
     Facts read(TemporaryHandoverControl request) {
-        var reference=request.predecessor();var ticket=tickets.lock(reference.caseId());
+        return verify(request, tickets.lock(request.predecessor().caseId()));
+    }
+    Facts readHistory(TemporaryHandoverControl request) {
+        return verify(request, tickets.readImmutable(request.predecessor().caseId()));
+    }
+    private Facts verify(TemporaryHandoverControl request,HandoverTemporaryActivationTicketStore.Ticket ticket) {
+        var reference=request.predecessor();
         var facts=cases.caseFacts(reference.caseId());HandoverTemporaryActivation.verifyTicket(ticket,facts);
         if(!"ACTIVATED".equals(text(facts,"status")) || !ticket.id().equals(reference.ticket())
             || !ticket.submissionId().equals(reference.submission()) || !ticket.payloadSha().equals(reference.payloadSha256())

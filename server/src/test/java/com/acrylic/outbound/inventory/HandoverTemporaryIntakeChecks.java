@@ -31,7 +31,7 @@ final class HandoverTemporaryIntakeChecks {
         assertThat(registrations()).isZero();
     }
     void verify() throws Exception {
-        assertThat(registrations()).isZero();fault("order_sync_outbox","SUBMISSION_REVIEW_REQUIRED");
+        assertThat(registrations()).isZero();rejectIncomplete();fault("order_sync_outbox","SUBMISSION_REVIEW_REQUIRED");
         fault("operation_event","SUBMISSION_REVIEW_REQUIRED");racingRetries();
         assertThat(registrations()).isEqualTo(1);
         assertThat(f.source.jdbc.queryForObject("SELECT COUNT(*) FROM submission_payload WHERE submission_id=?",Long.class,
@@ -41,7 +41,17 @@ final class HandoverTemporaryIntakeChecks {
         Files.writeString(directory.resolve("verified.marker"),"Actual HTTP: default closed, outbox and last audit SQL rollback, concurrent identical retries, alternate submission rejected; unique registration and retained owners.\n");
     }
     private long registrations() {
-        return f.source.jdbc.queryForObject("SELECT COUNT(*) FROM temporary_handover_submission",Long.class);
+        return f.source.jdbc.queryForObject("SELECT COUNT(*) FROM temporary_handover_submission WHERE submission_id=?",Long.class,
+            Ids.bytes(uuid(body,"submissionId")));
+    }
+    private void rejectIncomplete() throws Exception {
+        var sql=new TemporaryDispositionSqlChecks(f.source.jdbc,directory.resolve("incomplete-sql"));var before=sql.snapshot("before");
+        var reduced=body.deepCopy();array(reduced,"scans").remove(0);post(reduced,400,"INVALID_SUBMISSION");
+        var unfrozen=body.deepCopy();var events=array(unfrozen,"events");events.remove(events.size()-1);
+        post(unfrozen,400,"INVALID_SUBMISSION");
+        var rewritten=body.deepCopy();((ObjectNode)array(rewritten,"captures").get(0)).put("rawInput","changed");
+        post(rewritten,400,"INVALID_SUBMISSION");assertThat(sql.snapshot("after")).isEqualTo(before);
+        assertThat(registrations()).isZero();
     }
     private void fault(String table,String event) throws Exception {
         var sql=new TemporaryDispositionSqlChecks(f.source.jdbc,directory.resolve(table+"-sql"));
@@ -54,7 +64,8 @@ final class HandoverTemporaryIntakeChecks {
         try {post(body,500,"INTERNAL_ERROR");requireFault(logs.list,message);}
         finally {f.source.jdbc.execute("DROP TRIGGER d06_intake_tail");logger.detachAppender(logs);logs.stop();}
         assertThat(sql.snapshot("after")).isEqualTo(before);assertThat(registrations()).isZero();
-        assertThat(f.source.jdbc.queryForObject("SELECT COUNT(*) FROM temporary_handover_completion",Long.class)).isZero();
+        assertThat(f.source.jdbc.queryForObject("SELECT COUNT(*) FROM temporary_handover_completion WHERE submission_id=?",Long.class,
+            Ids.bytes(uuid(body,"submissionId")))).isZero();
         Files.writeString(directory.resolve(table+"-fault.txt"),message+" SQLSTATE=45000 code=1644; full business snapshot and registration unchanged\n");
     }
     static void requireFault(List<ILoggingEvent> logs,String message) {

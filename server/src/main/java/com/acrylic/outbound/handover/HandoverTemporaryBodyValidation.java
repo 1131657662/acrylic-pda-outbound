@@ -13,22 +13,16 @@ final class HandoverTemporaryBodyValidation {
     private final TemporarySubmissionPlan plans;
     private final TemporarySubmissionEvidence evidence;
     private final TemporarySubmissionSnapshot snapshots;
-    private final TemporaryRoundFacts rounds;
-    private final TemporaryRoundPayload payloads;
+    private final TemporaryRoundHistory history;
 
     HandoverTemporaryBodyValidation(TemporarySubmissionPlan plans, TemporarySubmissionEvidence evidence,
-            TemporarySubmissionSnapshot snapshots, TemporaryRoundFacts rounds, TemporaryRoundPayload payloads) {
-        this.plans = plans; this.evidence = evidence; this.snapshots = snapshots; this.rounds = rounds; this.payloads = payloads;
+            TemporarySubmissionSnapshot snapshots, TemporaryRoundHistory history) {
+        this.plans = plans; this.evidence = evidence; this.snapshots = snapshots; this.history = history;
     }
 
     void require(SubmissionStore.Head head, JsonNode body) {
-        if (head.control().round() == 1) {
-            var plan = plans.validate(head, body); evidence.validate(head, plan, body); snapshots.validate(plan, body);
-            return;
-        }
-        var request = TemporaryRoundControl.read(body);
-        equal(request.predecessor(), rounds.reference(head.control().id()), "原临时续作不可变引用不符");
-        var source = rounds.read(request, new SubmissionAccess.Actor(head.actor(), head.warehouse(), ""));
-        payloads.validate(new TemporaryRoundPayload.Input(request, source, head, rounds.retained(request, source)), body);
+        var plan = plans.validate(head, body);
+        evidence.validate(head, plan, body, history.read(head, body, plan));
+        snapshots.validate(plan, body);
     }
 }

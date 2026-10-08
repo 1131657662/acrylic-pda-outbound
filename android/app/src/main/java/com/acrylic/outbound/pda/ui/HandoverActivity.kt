@@ -70,9 +70,7 @@ class HandoverActivity : ComponentActivity() {
             return
         }
         if (card.action == "TEMP_START") {
-            AlertDialog.Builder(this).setTitle("核对临时交接新轮")
-                .setMessage("请核对原计划、保留实物和本人的新资格。联网确认资料后开启本轮，原记录与占用继续保留。")
-                .setNegativeButton("返回核对", null).setPositiveButton("确认资料并开启") { _, _ -> model.perform(card) }.show()
+            TemporaryHandoverStartDialog.show(this) { model.perform(card) }
             return
         }
         if (card.action == "TEMP_CONFIRM") {

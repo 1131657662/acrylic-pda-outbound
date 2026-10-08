@@ -43,7 +43,7 @@ final class HandoverApprovalEvidence {
         return new Verified(receipt, body);
     }
 
-    private void caseBinding(JsonNode facts, JsonNode receipt, HandoverStopCommand command, long high) {
+    static void caseBinding(JsonNode facts, JsonNode receipt, HandoverStopCommand command, long high) {
         requireSame(high == command.inputHigh() && number(facts, "inputHighWatermark") == high
             && number(facts, "caseVersion") > command.caseVersion()
             && text(facts, "stopState").equals("DEVICE_ACKED") && text(facts, "integrityState").equals("COMPLETE"));
@@ -81,7 +81,7 @@ final class HandoverApprovalEvidence {
         }
     }
 
-    private void requireSame(boolean valid) {
+    private static void requireSame(boolean valid) {
         if (!valid) throw new BusinessException(409, "HANDOVER_EVIDENCE_CHANGED", "交接停止证据或恢复包已变化，请重新核对");
     }
 

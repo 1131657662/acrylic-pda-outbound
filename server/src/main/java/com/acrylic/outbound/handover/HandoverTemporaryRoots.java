@@ -71,8 +71,9 @@ final class HandoverTemporaryRoots {
 
     void events(JsonNode body, HandoverStopCommand command, HandoverStopStore.Origin origin) {
         for (var event : array(body, "events")) {
-            if (number(event, "localSeq") >= command.auditHigh()) throw changed();
-            audits.requireArchiveEvent(event, origin.device(), origin.warehouse(), Long.parseLong(origin.epoch()));
+            var device = uuid(event, "originDeviceId");
+            if (device.equals(origin.device()) && number(event, "localSeq") >= command.auditHigh()) throw changed();
+            audits.requireArchiveEvent(event, device, origin.warehouse(), Long.parseLong(origin.epoch()));
         }
     }
 

@@ -86,7 +86,9 @@ class PhysicalDispositionOperationTest {
         when(jdbc.queryForList(contains("FROM source_evidence_verification"), any(Object[].class)))
             .thenReturn(List.of(Map.of("submission_status", status, "issues_json", "[{\"code\":\"SUPERVISOR_REJECTED\"}]",
                 "result", result, "set_sha256", "a".repeat(64), "verification_version", 1L, "algorithm_version", 1L)));
-        when(jdbc.query(anyString(), any(RowMapper.class), any(Object[].class)))
+        when(jdbc.query(contains("FROM source_evidence_item"), any(RowMapper.class), any(Object[].class)))
+            .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(bale, 7)));
+        when(jdbc.query(contains("FROM bale_commitment"), any(RowMapper.class), any(Object[].class)))
             .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(bale, 7)));
         when(jdbc.queryForList(contains("SELECT k.bale_id"), any(Object[].class)))
             .thenReturn(List.of(Map.of("bale_id", Ids.bytes(bale))));

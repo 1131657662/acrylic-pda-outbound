@@ -9,6 +9,8 @@ import java.time.Instant
 internal class TemporaryHandoverHttpConnection(input: JSONObject, private val output: File) : TemporaryConnection {
     val exerciseWork = input.optBoolean("exerciseWork", false)
     val largePayload = input.optBoolean("largePayload", false)
+    val shortShipmentReason = input.optString("shortShipmentReason", "")
+    val scanCount = input.optInt("scanCount", 1)
     private val privateKey = input.optString("devicePrivateKey")
     private val publicKey = input.optString("devicePublicKey")
     var session = JSONObject(input.getJSONObject("session").toString()).put("localSessionId", "isolated-temp-recipient")

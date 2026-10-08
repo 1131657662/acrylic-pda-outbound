@@ -50,8 +50,16 @@ internal object TemporaryHandoverPayload {
         check(proof.getString("orderScanHighWatermark") == high.toString())
         check(command.optString("orderScanHighWatermark", high.toString()) == high.toString())
         val captures = body.getJSONArray("captures")
-        val sourceHigh = (0 until captures.length()).maxOfOrNull { captures.getJSONObject(it).getString("orderScanSeq").toLong() } ?: 0L
+        val records = (0 until captures.length()).map { captures.getJSONObject(it) }
+        records.forEachIndexed { index, row ->
+            check(row.getString("orderScanSeq") == (index + 1L).toString()) { "交接累计输入序号不连续" }
+        }
+        val sourceHigh = captures.length().toLong()
+        val ownHigh = records.filter { it.getString("originDeviceId") == body.getString("freezeDeviceId") }
+            .maxOfOrNull { TemporaryVerifier.positive(it.getString("deviceCaptureSeq")) } ?: 0L
         val deviceHigh = proof.getString("captureHighWatermark").toLong()
-        check(sourceHigh == high && deviceHigh >= body.getString("captureHighWatermark").toLong()) { "交接来源与设备高水位不一致" }
+        check(sourceHigh == high && high.toString() == body.getString("captureHighWatermark") && deviceHigh >= ownHigh) {
+            "交接来源与设备高水位不一致"
+        }
     }
 }

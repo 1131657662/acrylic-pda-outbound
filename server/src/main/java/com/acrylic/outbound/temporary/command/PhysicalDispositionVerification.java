@@ -57,12 +57,13 @@ public class PhysicalDispositionVerification {
     }
 
     private List<UUID> reservations(Verified proof) {
-        var expected = jdbc.query("""
+        var expected = new ArrayList<>(jdbc.query("""
             SELECT bale_id,original_cycle FROM source_evidence_item
             WHERE set_id=? AND scope_id=? AND submission_id=? AND work_round=? AND warehouse_id=?
               AND item_kind='SCAN' AND record_status='ACTIVE' ORDER BY bale_id FOR UPDATE
             """, (rs, n) -> new Reservation(uuid(rs.getBytes(1)), rs.getLong(2)), Ids.bytes(proof.set()),
-            Ids.bytes(proof.scope()), Ids.bytes(proof.submission()), proof.round(), Ids.bytes(proof.warehouse()));
+            Ids.bytes(proof.scope()), Ids.bytes(proof.submission()), proof.round(), Ids.bytes(proof.warehouse())));
+        expected.addAll(inherited(proof));
         var actual = jdbc.query("""
             SELECT k.bale_id,k.dispatch_cycle,b.dispatch_cycle AS current_cycle
             FROM bale_commitment k JOIN bale b ON b.id=k.bale_id JOIN submission_scope c ON c.id=k.source_scope_id
@@ -81,6 +82,22 @@ public class PhysicalDispositionVerification {
             || expected.stream().map(Reservation::bale).distinct().count() != expected.size())
             throw conflict("DISPOSITION_RESERVATION_CORRUPT");
         return expected.stream().map(Reservation::bale).sorted().toList();
+    }
+
+    private List<Reservation> inherited(Verified proof) {
+        // Receiving-device pages attest only its suffix. The immutable activation retains earlier owners.
+        return jdbc.query("""
+            SELECT r.bale_id,r.dispatch_cycle
+            FROM temporary_handover_activation_owner r
+            JOIN temporary_handover_submission s ON s.ticket_id=r.ticket_id
+            JOIN temporary_handover_activation_ticket t ON t.id=s.ticket_id AND t.scope_id=s.scope_id
+              AND t.from_work_round=s.from_work_round AND t.to_work_round=s.to_work_round
+            JOIN handover_case h ON h.id=t.case_id AND h.scope_id=s.scope_id
+            WHERE s.scope_id=? AND s.submission_id=? AND s.to_work_round=? AND h.warehouse_id=?
+              AND h.status='ACTIVATED' AND h.source_kind='TEMP'
+            ORDER BY r.bale_id FOR UPDATE
+            """, (rs,n)->new Reservation(uuid(rs.getBytes(1)),rs.getLong(2)), Ids.bytes(proof.scope()),
+            Ids.bytes(proof.submission()),proof.round(),Ids.bytes(proof.warehouse()));
     }
 
     private static void requireRejected(Map<String, Object> row) {

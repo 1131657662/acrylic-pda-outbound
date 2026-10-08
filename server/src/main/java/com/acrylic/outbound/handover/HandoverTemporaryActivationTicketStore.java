@@ -80,6 +80,26 @@ final class HandoverTemporaryActivationTicketStore {
         return rows.getFirst();
     }
 
+    /** Historical tickets are append-only; read-only original download must not acquire write locks. */
+    Ticket readImmutable(UUID caseId) {
+        var rows = jdbc.query("""
+            SELECT BIN_TO_UUID(id),BIN_TO_UUID(case_id),BIN_TO_UUID(scope_id),BIN_TO_UUID(submission_id),
+              BIN_TO_UUID(canonical_order_id),BIN_TO_UUID(source_authorization_id),BIN_TO_UUID(source_client_order_id),
+              BIN_TO_UUID(source_evidence_set_id),source_recovery_epoch,from_work_round,to_work_round,input_high_watermark,
+              prepared_ticket_sha256,payload_sha256,checklist_sha256,source_prefix_sha256,BIN_TO_UUID(target_authorization_id),
+              BIN_TO_UUID(target_device_id),BIN_TO_UUID(target_user_id),target_user_auth_version,target_device_version,ticket_bytes
+            FROM temporary_handover_activation_ticket WHERE case_id=?
+            """,
+            (rs, n) -> new Ticket(UUID.fromString(rs.getString(1)), UUID.fromString(rs.getString(2)), UUID.fromString(rs.getString(3)),
+                UUID.fromString(rs.getString(4)), UUID.fromString(rs.getString(5)), UUID.fromString(rs.getString(6)), UUID.fromString(rs.getString(7)),
+                UUID.fromString(rs.getString(8)), rs.getLong(9), rs.getLong(10), rs.getLong(11), rs.getLong(12), rs.getString(13), rs.getString(14),
+                rs.getString(15), rs.getString(16), UUID.fromString(rs.getString(17)), UUID.fromString(rs.getString(18)), UUID.fromString(rs.getString(19)),
+                rs.getLong(20), rs.getLong(21), rs.getBytes(22)), Ids.bytes(caseId));
+        if (rows.size() != 1) throw new com.acrylic.outbound.common.BusinessException(409,
+            "HANDOVER_TEMP_ACTIVATION_TICKET_MISSING", "临时交接激活票据缺失");
+        return rows.getFirst();
+    }
+
     List<Owner> owners(UUID ticket) {
         return jdbc.query("SELECT BIN_TO_UUID(bale_id),dispatch_cycle,record_sha256 FROM temporary_handover_activation_owner WHERE ticket_id=? ORDER BY bale_id",
             (rs, n) -> new Owner(UUID.fromString(rs.getString(1)), rs.getLong(2), rs.getString(3)), Ids.bytes(ticket));

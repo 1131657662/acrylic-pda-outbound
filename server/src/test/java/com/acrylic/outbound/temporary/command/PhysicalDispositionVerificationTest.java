@@ -14,6 +14,11 @@ class PhysicalDispositionVerificationTest {
     private final UUID warehouse = UUID.randomUUID(), scope = UUID.randomUUID(), submission = UUID.randomUUID();
     private final UUID set = UUID.randomUUID(), verification = UUID.randomUUID(), bale = UUID.randomUUID();
 
+    @org.junit.jupiter.api.BeforeEach void noHandoverPrefixByDefault() {
+        when(jdbc.query(contains("temporary_handover_activation_owner"), any(org.springframework.jdbc.core.RowMapper.class),
+            any(Object[].class))).thenReturn(List.of());
+    }
+
     @org.junit.jupiter.params.ParameterizedTest
     @org.junit.jupiter.params.provider.ValueSource(strings = {
         "[{\"code\":\"SUPERVISOR_REJECTED\",\"reason\":\"unload\"}]",
@@ -22,7 +27,7 @@ class PhysicalDispositionVerificationTest {
     void readsCompleteVerificationAndReservations(String issues) {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
             row("REJECTED", issues, "VERIFIED_COMPLETE_AT_STOP")));
-        when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
             .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(bale, 7)));
         var result = reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1);
         assertThat(result.activeBales()).containsExactly(bale);
@@ -33,7 +38,7 @@ class PhysicalDispositionVerificationTest {
         UUID second = UUID.fromString("00000000-0000-0000-0000-000000000002");
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
             row("REJECTED", "{\"issues\":[{\"code\":\"SUPERVISOR_REJECTED\"}]}", "VERIFIED_COMPLETE_AT_STOP")));
-        when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
             .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(second, 7),
                 new PhysicalDispositionVerification.Reservation(first, 3)));
         assertThat(reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1).activeBales())
@@ -61,7 +66,7 @@ class PhysicalDispositionVerificationTest {
             case "extra-bale" -> List.of(original, foreign);
             default -> List.of(original, original);
         };
-        when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
             .thenReturn(expected, actual);
         assertThatThrownBy(() -> reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1))
             .isInstanceOfSatisfying(BusinessException.class,
@@ -78,7 +83,7 @@ class PhysicalDispositionVerificationTest {
     @Test void permitsAbortedSourceOnlyForCloseDisposition() {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
             row("ABORTED", "{\"issues\":[]}", "VERIFIED_COMPLETE_AT_STOP")));
-        when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
             .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(bale, 1)));
         var result = reader.readForClose(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1);
         assertThat(result.activeBales()).containsExactly(bale);
@@ -87,7 +92,7 @@ class PhysicalDispositionVerificationTest {
     @Test void permitsCompleteAbortedSourceForContinuation() {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
             row("ABORTED", "{\"issues\":[]}", "VERIFIED_COMPLETE_AT_STOP")));
-        when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
             .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(bale, 1)));
 
         var result = reader.readForContinuation(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1);
@@ -125,6 +130,25 @@ class PhysicalDispositionVerificationTest {
             row("ABORTED", "{\"issues\":[]}", "VERIFIED_COMPLETE_AT_STOP")));
         assertThatThrownBy(() -> reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1))
             .isInstanceOfSatisfying(BusinessException.class, e -> assertThat(e.code()).isEqualTo("DISPOSITION_REJECTION_REQUIRED"));
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings={"valid","missingInheritedOwner","wrongInheritedCycle","duplicateInherited"})
+    void matchesCurrentSuffixWithImmutableHandoverOwners(String mutation) {
+        var old=new PhysicalDispositionVerification.Reservation(UUID.randomUUID(),3);
+        var own=new PhysicalDispositionVerification.Reservation(bale,7);
+        when(jdbc.queryForList(anyString(),any(Object[].class))).thenReturn(List.of(row("ABORTED","[]","VERIFIED_COMPLETE_AT_STOP")));
+        when(jdbc.query(contains("FROM source_evidence_item"),any(org.springframework.jdbc.core.RowMapper.class),any(Object[].class)))
+            .thenReturn(List.of(own));
+        when(jdbc.query(contains("temporary_handover_activation_owner"),any(org.springframework.jdbc.core.RowMapper.class),any(Object[].class)))
+            .thenReturn(mutation.equals("duplicateInherited")?List.of(old,old):List.of(old));
+        var actual=mutation.equals("missingInheritedOwner")?List.of(own):List.of(own,
+            new PhysicalDispositionVerification.Reservation(old.bale(),mutation.equals("wrongInheritedCycle")?4:3));
+        when(jdbc.query(contains("FROM bale_commitment"),any(org.springframework.jdbc.core.RowMapper.class),any(Object[].class))).thenReturn(actual);
+        if(mutation.equals("valid")) assertThat(reader.readForContinuation(warehouse,scope,submission,2,set,verification,"a".repeat(64),1,1)
+            .activeBales()).containsExactlyInAnyOrder(bale,old.bale());
+        else assertThatThrownBy(()->reader.readForContinuation(warehouse,scope,submission,2,set,verification,"a".repeat(64),1,1))
+            .isInstanceOfSatisfying(BusinessException.class,e->assertThat(e.code()).isEqualTo("DISPOSITION_RESERVATION_CORRUPT"));
     }
 
     @Test void rejectsSubstringWithoutSupervisorIssueCode() {
