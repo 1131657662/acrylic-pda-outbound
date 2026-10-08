@@ -43,6 +43,8 @@ open class PdaApplication : Application(), androidx.work.Configuration.Provider 
     val temporaryContinuationCoordinator by lazy { com.acrylic.outbound.pda.temporary.TemporaryContinuationCoordinator(temporaryStore()) }
     val temporarySubmissions by lazy { com.acrylic.outbound.pda.temporary.TemporarySubmissionRepository(database,
         com.acrylic.outbound.pda.temporary.TemporarySession(session)) }
+    val temporaryHandoverStops by lazy { com.acrylic.outbound.pda.temporary.TemporaryHandoverStopRepository(database,
+        com.acrylic.outbound.pda.temporary.TemporarySession(session)) }
     val work by lazy { WorkEngine(WorkStore(database, SessionWorkAccess(this, session))) { workSound.play(it) } }
     val submissions by lazy { SubmissionRepository(database, session) }
     val freezer by lazy { SubmissionFreeze(WorkStore(database, SessionWorkAccess(this, session)), session::now) }

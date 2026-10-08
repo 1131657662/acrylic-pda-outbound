@@ -23,7 +23,7 @@ public record TemporaryHandoverControl(SubmissionControl control, Reference pred
         return new TemporaryHandoverControl(control,reference);
     }
     public record Reference(UUID ticket,UUID caseId,UUID submission,String payloadSha256,String prefixSha256) {
-        private static Reference read(JsonNode row) {
+        public static Reference read(JsonNode row) {
             require(row.isObject() && row.size()==6 && row.path("version").isInt()
                 && row.path("version").intValue()==1,"临时交接引用字段或版本错误");
             String payload=text(row,"predecessorPayloadSha256"),prefix=text(row,"sourcePrefixSha256");

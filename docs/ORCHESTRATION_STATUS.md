@@ -6,46 +6,35 @@
 ```yaml
 date: 2026-10-08
 branch: codex/development
-head: d7503e4
-dirty_entries: 34
+head: 076ff6a
+dirty_entries: 46
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
-server: { contract: 0.48.0, paths: 145, flyway: V71, migrations: 71 }
+server: { contract: 0.49.0, paths: 146, flyway: V72, migrations: 72 }
 ```
 <!-- FACTS_END -->
-总目标 D01–D18 active；第8节全部同时满足才可 complete。逐项实现、输入与证据见[执行记录](history/D01_D18_EXECUTION_2026-10-07.md)，上一看板结论已[归档](history/ORCHESTRATION_STATE_before_d06_chunks_2026-10-08.md)。
+总目标 D01–D18 按用户要求暂停，未完成；仅原计划第8节全部同时满足才可complete。详细接续见[暂停断点](history/D01_D18_PAUSE_2026-10-08.md)和[执行记录](history/D01_D18_EXECUTION_2026-10-07.md)，暂停前看板已[归档](history/ORCHESTRATION_STATE_before_d06_stop_pause_2026-10-08.md)。
 
 ## Git、写权与环境
-- 树D:/acrylic-pda-outbound、分支codex/development；HEAD/实际远端均d7503e47829a0661fe11d2091ebbe6ce4340b6c1。3fe15d5已正常补推；独立单跳受理/成功链52条路径提交推送完成。原回执保存d06-handover-work的intake-*。
-- 唯一写者本聊天，其他项目聊天notLoaded。受理提交前69条完整副本/hash/diff/环境在d06-intake-resume-checkpoint-04；随后33条dirty完整快照在.local/d01-d18-20261008/d06-chunks-checkpoint-01。17条继承及本机断点保持；新分块输入由1097源码hash/diff固定。
-- 分块两端chunks-regression-01收口：服务端普通3311/0/0/1、Android378/0/0/8，exit0/sourceUnchanged；默认APK/lint通过，0 errors/208 warnings，hash见执行记录。无重型任务；1096/1097/1098及1092诊断均停机，19330/19331/19434无监听；既有3306/13316/ADB未操作。
-- 1088及此前隔离库均保留dump/hash/binlog/日志并认证停机；全部早期失败原件保留。完整环境、证据和本机路径见执行记录及[归档位置](LOCAL_ARCHIVE_LOCATIONS.md)。
+- 树D:/acrylic-pda-outbound、分支codex/development；阶段备份前HEAD/实际远端均076ff6ab30d2a0f96080773923a4c165f2f06964，原3fe15d5已正常补推。专用STOP未通过，只做明确路径开发备份；提交/推送/实际远端回执见.local/d01-d18-20261008/d06-stop-pause-01，完成后本行刷新精确Git。
+- 唯一写者本聊天，其他项目聊天notLoaded；按用户要求停止新业务开发。17条继承dirty逐SHA256保持，不混入提交；清单/副本见d06-stop-checkpoint-01，接续前37条dirty见d06-stop-checkpoint-02，暂停全量dirty副本/hash/diff及提交前后Git/环境见d06-stop-pause-01。
+- 1099编译失败未建库；1100/1101/1102均失败保全并认证停机，dump独立重算匹配、源码hash无漂移、原进程已退出。19330/19331/19434及相邻测试监听无占用，无在途重型Wrapper/Test Executor；既有3306/13316/ADB与空闲daemon未操作。
+- 所有失败库/datadir/dump/hash/binlog/日志、历史AVD与本机材料保留，不代表已异地备份；位置见暂停记录和[归档位置](LOCAL_ARCHIVE_LOCATIONS.md)。
 
-## D01–D18验收断点
-- D01基线与全项证据映射已建立；D02/D03开发范围已通过，其输入/失败/跳过/真实HTTP/Android/页面分别留证，历史结果不拼接成最终整合通过。
-- D04技术链已验但候选排除缺政策，保持拒绝且整体未通过。D05拒绝→实物→卸货释放与冲突分流已验，取消释放缺政策，保持拒绝且整体未通过。普通有权确认允许空理由、短装批准不清库存冲突。
-- D06 TEMP原STOP/来源、独立主管审批、本人准备/下载/暂存/确认与服务端专用激活已验。1086激活HTTP/MySQL及1087 FORMAL回归通过；提交22cbebf已推送实际远端一致。
-- 1088服务端与四段Android各1/0/0/0，实际独立激活原件安装/丢响应/末Room回滚/重开；SQLite/hash独立消费者22项。身份/Keystore为合成。UI-08安装/恢复/大字页通过；UI-04–07失败保持。真实HTTP与UI签名原件重放分列。
-- D06本轮补独立新资格ACK、原键重试、HANDOVER_BLOCKED→SCANNING唯一开轮、新输入、只读原前缀累计冻结/本机STOP，保留贡献不改原事实。FORMAL/R06混用拒绝，来源记录不复制成可改行，计数器按接收机原本机序号。
-- unit-01为34/0/0/1、unit-02为36/1/0/1（夹具无第二条码，失败保持）、修后unit-03为36/0/0/1；regression-01为378/0/0/8、exit0/sourceUnchanged，默认APK/lint零错误208警告，hash/原XML见执行记录。HTTP条件跳过不计通过。
-- 自审修复本机临时单列表交接阻断态路由，regression-02已通过。新开轮产品页仅编译未实际验证。专用受理/确认/completion与Android上传/成功验签1093历史输入通过，补验1096收口已推送d7503e4；不能称D06整体通过。
-- 专用交接受理绑定独立激活/本人新资格/唯一submission，原前缀按各设备序号校验，保留owner直接转待审；新增迁移已跨树核占号。Android intake-android-unit-02为37/0/0/1、exit0/sourceUnchanged；编译失败原件保持，条件HTTP跳过不计通过。
-- 1089因夹具新store未加载原草稿失败；1090 Android work已通过，主管合成身份缺确认权限，未到SQL故障点。1091修权限并验证403守恒，但固定账务消费者仍误读R06引用，1/1/0/0、exit1。三次原日志/XML/Room/dump/hash及认证停机保持，不计完整链通过。
-- 1092 Android至work通过，但账务SQL的nullable来源表达式与JDBC二进制参数类型不匹配，1/1/0/0；失败库保全。自有只读诊断证明显式BINARY(16)匹配原行，未复用失败库运行种子；诊断/停机回执另存。
-- 修账务原控制及新资格/本人work-origin与不可变registration绑定、明确SQL参数类型；重验激活原签名决定/关系列/案件锚点，以及完整清单及逐包owner摘要。1093历史输入服务端1/0/0/0、六段接收Android各1/0/0/0；正常确认、completion末SQL回滚、原键重放及重启成功验签已执行，已随d7503e4提交。
-- 独立Node/AJV实际正文7项、Node原激活/外层命令/内层成功三签名、SQLite只读25项通过。首版SQLite将本机冻结后STOP额外事件误作历史复制，失败原件保持，修消费者判据后25项通过；不称独立人员审查、原设备或最终整合通过。
-- 1094重启夹具旧连接、1095已受理后GET未触发POST丢响应注入，两次失败保持且停机。修消费者后1096服务端1/0/0/0、来源及七段接收Android分别1/0/0/0；默认关闭、outbox/末审计SQL回滚、同原文并发/唯一提交、异ID/异文拒绝及最终成功通过。2249源码hash无漂移，独立正文7项/三签名/SQLite25项通过。
-- 专用分块1097为1/1/0/0，满块长度加一夹具触数据库CHECK，失败原件保全。修后1098服务端1/0/0/0，来源/七段接收Android各1/0/0/0；实际1,572,898字节/7块由Android发送并finalize。重启/并发/末SQL回滚/丢响应/Room回滚/最终成功通过，2254源码hash无漂移；独立清单10项/正文7项/三签名/Room25项通过，dump/hash/停机已核。33条完整快照另存d06-chunks-checkpoint-02；回归收口后明确路径提交，尚未提交。
-- D06高轮/多跳/局部ID重叠/减包/未冻结/无canonical/LOCAL_FROZEN_PAYLOAD-only仍必做；D07–D17未通过，D18尚无最终候选。任何开发缺口不转现场清单。
+## D01–D18断点
+- D01证据映射/基线已建立；D02/D03开发范围已有分层通过证据，旧输入不拼成最终整合通过。D04候选排除和D05取消释放缺政策，保持拒绝且整体未通过。
+- D06独立TEMP审批/本人准备下载暂存确认/专用激活/Android安装、新输入冻结上传成功验签及真实大正文分块已有范围交付；22cbebf、d7503e4、076ff6a已推送。1096/1098与失败对照、原件消费者、两端chunks-regression-01及默认APK/lint详见执行记录，不覆盖新STOP。
+- 新STOP两端/契约及产品页专用路由开发中；保留原正文、占用及墓碑，不借FORMAL assignment或R06票据。E2A来源从不可变交接registration/activation读取本人；scope创建机不改，约束分别绑定scope原client和本轮submission/auth/freeze机/操作人/epoch。
+- 1100为1/1/0/0，E2A OPEN触原创建机scope外键；1101为1/1/0/0，非空升级比较通过但夹具UPDATE先触不可变触发器，未到预计外键。失败完整保留，未计通过。
+- 1102为1/1/0/0、exit1；非空升级全表/私有字节与不可变/错误设备/client约束通过。来源Android及接收prepare/stage/confirm/activate/freeze/upload各1/0/0/0，evidence为1/1/0/0。累计captures仍被E2A序列消费者要求全属本轮设备且从1起，接收机被拒；未进入专用STOP。
+- 新STOP末SQL、丢响应、Room回滚及重启重放尚未到达；受影响普通回归、默认APK/lint、独立STOP契约/签名/Room消费者和实际页面未跑。产品页经组合编译但未操作，不称验收通过。
+- D06高轮/多跳/局部ID重叠/减包/未冻结/无canonical/LOCAL_FROZEN_PAYLOAD-only及新开轮实际页面仍必做。D07–D17未通过，D18无最终候选；开发缺口不得转现场清单。
 
-## 保持边界
-- 默认生产开关、七类决定handler/POST/放行/证据写入/关闭及签名能力均false；localDeletionAllowed=false。不接原库/现网，不合main/正式签名/标签/Release/发布部署，不删除证据。
-- 原资料/旧BCD/526及历史恢复限制继续单列；原身份/Keystore、真实双机、实体键/断电/长时/规模、正式HTTPS/异地介质/生产RPO-RTO/Linux现场仅按计划C01–C08保留。
-
-## 下一动作
-- 分块定向/受影响回归/APK/lint、自审与独立消费者均收口；按17条明确路径提交推送后继续D06专用STOP/高轮与多跳。17条继承路径及本机证据保持。
-- 接续D06高轮/多跳/局部ID重叠/减包/未冻结/无canonical/LOCAL_FROZEN_PAYLOAD-only及专用STOP/分块，不以拒绝替代允许范围。
-- 补同输入真实隔离HTTP/MySQL/Android与页面及D06相邻反例，然后按依赖继续D07–D17、D18全部闸门。目标保持active。
+## 边界与下一动作
+- 生产默认开关、签名能力、七类决定handler/POST/放行/证据写入/关闭能力均false；localDeletionAllowed=false。不接原库/现网、不合main、不发布部署/正式签名/标签/Release，不删证据、不绕审批。
+- 原资料/旧BCD/526及历史失败、恢复限制保持；原身份/Keystore、真实双机、实体键/断电/长时/规模、正式HTTPS/异地介质/生产RPO-RTO/Linux现场仅按C01–C08保留。
+- 用户恢复后先核规则/Git/继承hash/写权/监听，再修接收机E2A的只读历史前缀与本轮订单序列边界，分别验各轮原设备证明；不伪造旧机STOP/审计、不放宽全部origin。重新分配新一次性编号，禁止重跑1100–1102种子。
+- 新输入补STOP完整组合、自审/回归/默认APK/lint/独立消费者/产品页面后再收口；继续D06其余范围及D07–D18全部完成闸门。目标暂停不等于完成。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；详细阶段记录见 docs/history/AUTONOMOUS_PROGRESS_2026-10-06.md。

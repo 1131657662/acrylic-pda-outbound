@@ -49,6 +49,12 @@ public final class HandoverTemporaryAndroidBridge {
     public void completeWork(WebApplicationContext app) throws Exception {
         new HandoverTemporarySubmissionChecks(f,app,directory).verify();
     }
+    public void stop(WebApplicationContext app,String phase) throws Exception {
+        f.source.jdbc=app.getBean(org.springframework.jdbc.core.JdbcTemplate.class);
+        var checks=new HandoverTemporaryReceivingStopChecks(f,directory);
+        switch(phase) {case "disabled" -> checks.disabled();case "before" -> checks.before();case "after" -> checks.after();
+            default -> throw new IllegalArgumentException("Unknown stop phase");}
+    }
 
     public void intakeDisabled() throws Exception {
         new HandoverTemporaryIntakeChecks(f,directory).disabled();

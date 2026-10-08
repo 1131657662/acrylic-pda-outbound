@@ -23,6 +23,30 @@ Submit:
       '404': {$ref: './openapi.yaml#/components/responses/Error'}
       '409': {$ref: './openapi.yaml#/components/responses/Error'}
       '413': {$ref: './openapi.yaml#/components/responses/Error'}
+Stop:
+  post:
+    summary: 接收人用完整本人E2A证明关闭独立交接新轮
+    description: 默认关闭。独立交接票据/本人Session/新资格/原提交/完整原机STOP签名及审计绑定；仅已受理REVIEW_REQUIRED可中止。保留原文、实物占用及原轮墓碑，不放库存、不恢复扫码、不允许删除。原请求及签名回执重试一致，异文拒绝。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - name: id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './temporary-handover-submission-schemas.yaml#/Stop'}
+    responses:
+      '200': {$ref: './submission-paths.yaml#/Result'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '413': {$ref: './openapi.yaml#/components/responses/Error'}
 Read:
   get:
     summary: 接收人读取独立TEMP交接新轮原状态或成功回执

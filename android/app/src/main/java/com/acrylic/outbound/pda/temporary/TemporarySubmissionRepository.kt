@@ -63,7 +63,7 @@ class TemporarySubmissionRepository(private val db: PdaDatabase, private val con
         val transport = TemporarySubmissionTransport(connection, expected, responses)
         if (queried?.data?.getString("status") in setOf("ABORTED", "SUCCEEDED")) return checkNotNull(queried)
         if (continuation && local.abortReason != null) {
-            check(!handover) { "交接新轮不能使用R06停止票据，原记录保留" }
+            if (handover) return responses.receive("$path/stop", TemporaryHandoverStopRequest(db).body(local, local.abortReason, signingKey(local)))
             check(continuationDevelopment) { "续作停止开发入口未启用" }
             return responses.receive("$path/stop", TemporaryContinuationStopRequest(db).body(local, local.abortReason, signingKey(local)))
         }
@@ -79,8 +79,10 @@ class TemporarySubmissionRepository(private val db: PdaDatabase, private val con
             } else {
                 check(db.temporarySuccess().evidence(local.id) == null) { "已存成功原件，不能改写为其他状态" }
                 TemporarySubmissionReceipt.verify(local, reply.data, signingKey(local), mapped).also { state ->
-                    if (state == "ABORTED" && JSONObject(local.payload).getString("workRound").toLong() > 1)
-                        TemporaryContinuationStopRequest(db).verify(local, reply.data, signingKey(local))
+                    if (state == "ABORTED" && JSONObject(local.payload).getString("workRound").toLong() > 1) {
+                        if (JSONObject(local.payload).has("temporaryHandover")) TemporaryHandoverStopRequest(db).verify(local, reply.data, signingKey(local))
+                        else TemporaryContinuationStopRequest(db).verify(local, reply.data, signingKey(local))
+                    }
                 }
             }
             save(local, expected, reply.data, state)

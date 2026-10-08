@@ -15,6 +15,11 @@ public class SourceEvidenceIntakeFacts {
     public SourceEvidenceIntakeFacts(JdbcTemplate jdbc) { this.jdbc=jdbc; }
 
     public CommandContext read(UUID submission) {
+        var handover=SourceEvidenceHandoverFacts.read(jdbc,submission);
+        if(!handover.isEmpty()) {
+            if(handover.size()!=1)throw new BusinessException(409,"E2A_HANDOVER_ORIGIN_CONFLICT","原交接来源绑定冲突");
+            return new CommandContext(SubmissionJson.parse(handover.getFirst()));
+        }
         var rows=continuationTablesInstalled() ? readWithContinuations(submission) : readInitialOnly(submission);
         if(rows.size()!=1)throw new BusinessException(404,"E2A_SOURCE_NOT_FOUND","原来源不存在或无权访问");
         return new CommandContext(SubmissionJson.parse(rows.getFirst()));

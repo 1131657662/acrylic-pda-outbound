@@ -22,6 +22,7 @@ class TemporarySubmissionActivity : ComponentActivity() {
     private var busy = false
     private var reconciling = false
     private var continuation = false
+    private var handover = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState); id = intent.getStringExtra("clientOrderId").orEmpty()
         if (id.isEmpty()) { finish(); return }
@@ -55,13 +56,14 @@ class TemporarySubmissionActivity : ComponentActivity() {
     private fun abort() {
         val item = local ?: return; if (busy) return
         val input = EditText(this).apply { hint = if (continuation) "停止原因" else "取消原因"; setText(item.abortReason.orEmpty()); isEnabled = item.abortReason == null }
-        AlertDialog.Builder(this).setTitle(if (continuation) "停止本轮续作" else "取消原上传批次")
-            .setMessage(if (continuation) "请先完成原机证据补传核验。停止后保留全部实物、占用和记录，等待主管处置。"
+        AlertDialog.Builder(this).setTitle(if (handover) "停止本轮临时交接" else if (continuation) "停止本轮续作" else "取消原上传批次")
+            .setMessage(if (continuation) "请先完成本轮作业机证据补传核验。停止后保留全部实物、占用和记录，等待主管处置。"
                 else "取消不会卸货、解除占用或恢复扫码。请保留实物，联系主管办理后续处置。")
             .setView(input).setNegativeButton("返回", null).setPositiveButton(if (continuation) "确认停止" else "确认取消") { _, _ ->
                 val reason = input.text.toString(); run {
                     try {
-                        if (continuation) app.temporarySubmissions.stopContinuation(item.id, reason)
+                        if (handover) app.temporaryHandoverStops.stop(item.id, reason)
+                        else if (continuation) app.temporarySubmissions.stopContinuation(item.id, reason)
                         else app.temporarySubmissions.abort(item.id, reason)
                     } finally { TemporaryUploadWorker.schedule(app, item.id) }
                 }
@@ -100,6 +102,7 @@ class TemporarySubmissionActivity : ComponentActivity() {
         evidenceState = app.database.localE2aReceipts().queue(id)
         val store = app.temporaryStore(); val draft = store.load(id); store.check(id, false)
         continuation = draft.workRound > 1
+        handover = local?.let { org.json.JSONObject(it.payload).has("temporaryHandover") } == true
         val total = store.total(id)
         return "${draft?.vehicleNo.orEmpty()} · ${draft?.temporaryNo.orEmpty()}\n实装 ${total.count} 包 · ${WorkRenderer.kg(total.grams)} kg"
     }
@@ -120,9 +123,11 @@ class TemporarySubmissionActivity : ComponentActivity() {
         binding.freeze.visibility = if (item == null) View.VISIBLE else View.GONE
         binding.reason.visibility = binding.freeze.visibility
         binding.upload.isEnabled = item != null && !terminal; binding.refresh.isEnabled = item != null && !terminal
-        abort.text = if (continuation) "停止本轮续作 · 保留实物占用" else "取消原批次 · 保留实物占用"
+        abort.text = if (handover) "停止本轮临时交接 · 保留实物占用" else if (continuation) "停止本轮续作 · 保留实物占用" else "取消原批次 · 保留实物占用"
         abort.visibility = if (item != null && !terminal && (!continuation ||
-            com.acrylic.outbound.pda.BuildConfig.TEMPORARY_CONTINUATION_DEVELOPMENT)) View.VISIBLE else View.GONE
+            if (handover) com.acrylic.outbound.pda.BuildConfig.TEMPORARY_HANDOVER_DEVELOPMENT
+            else com.acrylic.outbound.pda.BuildConfig.TEMPORARY_CONTINUATION_DEVELOPMENT)) View.VISIBLE else View.GONE
+        evidence.text = if (handover) "补传接收机本轮证据 · 保留待核对" else "补传原机证据 · 保留待核对"
         evidence.visibility = if (item != null && !terminal) View.VISIBLE else View.GONE
     }
     private fun renderNotice(item: TemporarySubmission?) {

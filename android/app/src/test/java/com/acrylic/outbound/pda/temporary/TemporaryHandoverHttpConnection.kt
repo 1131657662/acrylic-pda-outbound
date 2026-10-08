@@ -20,6 +20,7 @@ internal class TemporaryHandoverHttpConnection(input: JSONObject, private val ou
     var loseActivation = true
     var loseSubmission = true
     var loseSuccess = true
+    var loseStop = true
     init { check(input.getString("baseUrl") == "http://127.0.0.1:19434/api/v1/") }
     override fun current() = session
     override fun now(): Instant = Instant.now()
@@ -40,6 +41,9 @@ internal class TemporaryHandoverHttpConnection(input: JSONObject, private val ou
         recordTransport(request.path, request.body?.size ?: request.raw?.size ?: 0, JSONObject(bytes.toString(Charsets.UTF_8)).optJSONObject("data")?.optString("status").orEmpty())
         File(output, "original-${++ordinal}.json").writeBytes(bytes)
         request.body?.let { File(output, "command-$ordinal.json").writeBytes(it) }
+        if (request.path.endsWith("/stop") && request.path.contains("handover-submissions/") && loseStop) {
+            loseStop = false; throw java.io.IOException("Injected lost actual independent handover STOP response")
+        }
         val handoverRead = request.path.contains("handover-submissions/")
         val handoverAccepted = request.path.endsWith("handover-submissions") && request.body != null ||
             handoverRead && JSONObject(bytes.toString(Charsets.UTF_8)).getJSONObject("data").optString("status") == "REVIEW_REQUIRED"

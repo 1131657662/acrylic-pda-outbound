@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D01–D18 可控暂停断点（2026-10-08）](D01_D18_PAUSE_2026-10-08.md)：用户要求收口；TEMP专用STOP开发备份、1100–1102失败与保全、全部继承改动、环境及接续第一步；总目标未完成。
+- [D06 STOP暂停前看板快照](ORCHESTRATION_STATE_before_d06_stop_pause_2026-10-08.md)：历史快照，接续以主看板及暂停记录为准。
+
 - [B4 TEMP 续作票据收口节点（2026-10-06）](ORCHESTRATION_STATE_before_b4_continuation_checkpoint_2026-10-06.md)：本次看板替换前快照；下次接续入口见 `AUTONOMOUS_PLAN_2026-10-05_UNATTENDED.md` 收口节点章节和 `AUTONOMOUS_PROGRESS_2026-10-06.md` 第191条。
 
 - [B4 TEMP 续作票据验证收口（2026-10-06）](ORCHESTRATION_STATE_before_b4_continuation_close_2026-10-06.md)：看板替换前断点；当日详细结果见 `AUTONOMOUS_PROGRESS_2026-10-06.md` 第190条。

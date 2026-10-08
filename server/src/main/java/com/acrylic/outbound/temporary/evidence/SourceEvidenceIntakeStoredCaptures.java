@@ -18,10 +18,10 @@ final class SourceEvidenceIntakeStoredCaptures {
     private static Integer earlier(JdbcTemplate jdbc,SourceEvidenceIntakePageObjects.Binding binding,E2aPageItem item) {
         return jdbc.queryForObject("""
             SELECT COUNT(*) FROM submitted_capture r JOIN submission s ON s.id=r.submission_id
-            JOIN submission_scope c ON c.id=s.scope_id AND c.warehouse_id=? AND c.creator_device_id=?
+            JOIN submission_scope c ON c.id=s.scope_id AND c.warehouse_id=?
             WHERE r.id=? AND s.scope_id=? AND s.work_round<=? AND r.origin_device_id=?
               AND r.device_capture_seq=? AND r.record_sha256=?
-            """,Integer.class,Ids.bytes(binding.warehouseId()),Ids.bytes(binding.creatorDeviceId()),
+            """,Integer.class,Ids.bytes(binding.warehouseId()),
             Ids.bytes(item.originalRecordId()),Ids.bytes(binding.scopeId()),binding.workRound(),
             Ids.bytes(binding.creatorDeviceId()),item.originalDeviceSeq(),item.recordSha256());
     }

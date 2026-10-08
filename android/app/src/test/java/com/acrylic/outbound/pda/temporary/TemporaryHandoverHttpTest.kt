@@ -27,7 +27,7 @@ class TemporaryHandoverHttpTest {
         val path = System.getenv("TEMP_HANDOVER_ANDROID_HTTP_PRIVATE")
         assumeTrue("Requires isolated actual source and target server", !path.isNullOrBlank())
         val phase = checkNotNull(System.getenv("TEMP_HANDOVER_ANDROID_PHASE"))
-        check(phase in setOf("prepare", "stage", "confirm", "activate", "freeze", "upload", "work", "success"))
+        check(phase in setOf("prepare", "stage", "confirm", "activate", "freeze", "upload", "work", "success", "evidence", "stop"))
         initialize(File(checkNotNull(path)).canonicalFile, phase)
         try { runPhase(phase) }
         finally { preserve("$phase-final") }
@@ -38,6 +38,7 @@ class TemporaryHandoverHttpTest {
         when (phase) {
             "prepare" -> prepare(); "stage" -> stage(); "confirm" -> confirm(); "activate" -> activate()
             "freeze" -> work.freeze(); "upload" -> work.upload()
+            "evidence" -> TemporaryHandoverHttpStop(this).evidence(); "stop" -> TemporaryHandoverHttpStop(this).stop()
             "work" -> { work.freeze(); work.upload() }; else -> work.success()
         }
     }
@@ -62,6 +63,7 @@ class TemporaryHandoverHttpTest {
     private fun previousPhase(phase: String, evidence: File) = when (phase) {
         "stage" -> "prepare"; "confirm" -> "stage"; "activate" -> "confirm"
         "work", "freeze" -> "activate"; "upload" -> "freeze"
+        "evidence" -> "upload"; "stop" -> "evidence"
         else -> if (File(evidence, "upload-final.db").exists()) "upload" else "work"
     }
 
