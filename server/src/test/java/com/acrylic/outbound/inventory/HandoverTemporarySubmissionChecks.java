@@ -68,11 +68,17 @@ final class HandoverTemporarySubmissionChecks {
     private void rollback() throws Exception {
         var before=new TemporaryDispositionSqlChecks(f.source.jdbc,directory.resolve("submission-sql"));
         var snapshot=before.snapshot("before-final-fault");var failed=command();
-        f.source.jdbc.execute("CREATE TRIGGER d06_handover_completion_fault BEFORE INSERT ON temporary_handover_completion FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='D06_HANDOVER_FINAL_SQL'");
-        try { f.context.reviewer().post("/temporary-commands",failed,500,"INTERNAL_ERROR"); }
-        finally { f.source.jdbc.execute("DROP TRIGGER d06_handover_completion_fault"); }
+        var continuation=new HandoverMixedContinuationSql(f.source.jdbc,directory.resolve("submission-sql"));
+        var original=continuation.snapshot("before-final-fault");
+        var logger=(ch.qos.logback.classic.Logger)org.slf4j.LoggerFactory.getLogger(com.acrylic.outbound.common.ApiErrors.class);
+        var logs=new ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent>();logs.start();logger.addAppender(logs);
+        f.source.jdbc.execute("CREATE TRIGGER d06_handover_completion_fault AFTER INSERT ON temporary_handover_completion FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='D06_HANDOVER_FINAL_SQL'");
+        try { f.context.reviewer().post("/temporary-commands",failed,500,"INTERNAL_ERROR");HandoverTemporaryIntakeChecks.requireFault(logs.list,"D06_HANDOVER_FINAL_SQL"); }
+        finally { f.source.jdbc.execute("DROP TRIGGER d06_handover_completion_fault");logger.detachAppender(logs);logs.stop(); }
         assertThat(before.snapshot("after-final-fault")).isEqualTo(snapshot);
+        assertThat(continuation.snapshot("after-final-fault")).isEqualTo(original);
         assertThat(f.source.jdbc.queryForObject("SELECT COUNT(*) FROM temporary_handover_completion WHERE submission_id=?",Long.class,Ids.bytes(submission))).isZero();
+        Files.writeString(directory.resolve("submission-sql/exact-sql-fault.txt"),"D06_HANDOVER_FINAL_SQL SQLSTATE=45000 code=1644; handover completion and all business/continuation rows rolled back\n");
     }
     private ObjectNode command() {
         var context=app.getBean(CommandFacts.class).read(submission);

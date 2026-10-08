@@ -362,8 +362,8 @@
 - [续作资格隔离子项前看板](ORCHESTRATION_STATE_before_continuation_intake_guard_2026-10-06.md)：原人原机/首轮复用拒绝、HTTP及受影响回归见自主进度第196条。
 - [2026-10-07自主进度](AUTONOMOUS_PROGRESS_2026-10-07.md)：从已推送的受限续作子项接续新轮intake/记账。
 - [D01–D18执行记录](D01_D18_EXECUTION_2026-10-07.md)：逐项隔离执行证据、失败及阻断；阶段看板快照见 [D05 前看板](ORCHESTRATION_STATE_before_D05_disposition_2026-10-07.md)、[D06 前看板](ORCHESTRATION_STATE_before_D06_temp_stop_2026-10-07.md)。
-- [D06累计历史与多跳接续执行记录](D06_MULTIHOP_EXECUTION_2026-10-08.md)：1110真实多跳、受影响回归、产品页UI-04及失败/消费者证据；混合前驱和LOCAL-only真实组合仍未完成。
-- [D06混合交接与续作执行记录](D06_MIXED_EXECUTION_2026-10-09.md)：真实隔离混合链、原scan与owner摘要边界、接收机记账身份、命令origin、精确SQL尾故障及独立消费者；反向与LOCAL-only范围另验。
+- [D06累计历史与多跳接续执行记录](D06_MULTIHOP_EXECUTION_2026-10-08.md)：1110真实多跳、受影响回归、产品页UI-04及失败/消费者证据；混合接续见下一入口，LOCAL-only仍未完成。
+- [D06混合交接与续作执行记录](D06_MIXED_EXECUTION_2026-10-09.md)：1118混合链及1120反向四轮，原scan/owner、独立来源、精确SQL/Room尾故障、原件消费者及两端回归；失败/skip保全，LOCAL-only正向与前置拒绝仍未完成。
 - [新轮唯一注册前看板](ORCHESTRATION_STATE_before_round_registration_2026-10-07.md)：原断点字节快照；唯一注册、前驱原文绑定和迁移证据见当日自主进度第198条。
 - [累积证据验证前看板](ORCHESTRATION_STATE_before_round_evidence_2026-10-07.md)：当次纯验证器、受影响回归及边界见当日自主进度第199条。
 - [实际intake开发前看板](ORCHESTRATION_STATE_before_round_accept_2026-10-07.md)：已推送子项及未验证intake接续见当日自主进度第200条。

@@ -47,3 +47,23 @@ compile-01误用不存在的compileIntegrationTestJava任务，exit1、0测试�
 lint Analyze任务当次执行，但Report最初复用旧XML；第一次产物消费者因缺文件未正确终止，结果标为无效并保留`android-artifacts-01-invalid.json`。后显式`:app:lintReportDebug --rerun`在`d06-mixed-lint-report-01/`生成当次XML/HTML，exit0、sourceUnchanged，严格消费者核0 errors；该次0业务测试，不重复计Android回归。默认APK SHA256为`81C6BEDE90C960C36C1C81FC8DDC58A232E6802DF3C7663DD7BC79D13F6C4D79`，只保存在本机D盘，未发布。
 
 生产与签名能力、七类生产决定和localDeletionAllowed=false保持；不接原库/现网、不合main、不部署发布或正式签名。失败库不复用、1100–1102不重跑；反方向R06→TEMP交接、LOCAL-only实际正向及未冻结/无canonical前置拒绝仍待验，D04/D05政策阻断及D07–D18、第8节闸门保持未完成。
+
+## 范围提交与反向接续
+
+本批41条明确路径已提交推送：`4e03f9b997156ff1a8fbeeed5eee919d9362a1d8`，分支codex/development，实际远端匹配。提交标题`fix(D06): 打通交接接收机R06混合续作与最终确认`；提交前完整60条dirty副本/hash/diff、暂存清单及commit/push回执在`d06-mixed-checkpoint-10/`。19条继承路径保持，不含密钥/原资料/数据库/产物，无main或生产动作。
+
+反向四轮设计在`.local/d01-d18-20261008/d06-reverse-design.md`：A→TEMP B→R06 B第三轮短装→该轮真实E2A/专用STOP→独立主管批准→TEMP C第四轮→成功。新增测试消费者只读该轮实际正文与STOP，不借旧STOP；SQL尾故障核精确归因，Room末写与丢响应/重开分别留证。两端compile-01/02各exit0、0业务测试、sourceUnchanged。1119已跨33树核无占用，使用新隔离库；完整28条dirty快照在`d06-reverse-checkpoint-01/`，专项在途，不计通过。产品代码若发现实际缺陷再最小修复并用新编号复验。
+
+1119专项失败1/1/0/0、exit1、sourceUnchanged。第三轮R06实际扫码/冻结/HTTP受理通过，continuationEvidence阶段失败“原机订单扫码序列不可核验”；E2A仅为temporaryHandover读取可信前缀，未为temporaryContinuation分离混合历史。未进入第三轮STOP或第四轮交接，不计通过。dump独立重算匹配、认证停机/原PID退出/19330与19434无监听通过，失败库/datadir/binlog/原日志/XML保留。完整29条dirty副本/hash/diff在d06-reverse-checkpoint-02，19条继承路径及原stop-close快照hash一致。
+
+补TemporaryRoundEvidenceSource，通过不可变registration及原控制身份、activation来源、完整历史/原资格/冻结原文重验前驱；E2A只消费本轮suffix，累计orderScanSeq仍严格连续、历史逐值不改。unit-01作者参数错误、unit-02漏更新两个测试构造器导致编译失败均0业务测试且保留；unit-03定向47/0/0/0、exit0、sourceUnchanged。1120新编号跨33树核无占用，四轮专项在途，19330/19434仅隔离测试；完成后先核实际报告与保全，再独立Node/RSA/canonical及只读Room消费者。LOCAL-only合法前置取消/注册路径仍在核对，禁止删除已受理payload伪造独立冻结原件。
+
+1120最终专项1/0/0/0、exit0、sourceUnchanged；实际A首轮→TEMP B第二轮→R06 B第三轮短装→该轮本人E2A/专用STOP→独立主管批准→TEMP C第四轮→最终成功→Android重启消费完成。来源及18个接收阶段共19份Android XML各1/0/0/0。第三轮STOP与最终确认尾SQL均核精确注入message、SQLSTATE45000/code1644及完整业务/续作表回滚；丢STOP/upload/success响应、Room尾写及重开留有原件，未用第二轮STOP替代第三轮证据。
+
+独立消费者`d06-reverse-consumers/verify-chain.cjs`当次核四轮逐值前缀/前驱digest、三设备局部counter重叠、第三轮实际STOP请求hash与RSA、最终签名/总量及删除false，输出chain-1120.json/hashes-1120.json；`verify-room.py`只读SQLite核第三轮STOP回滚/原件与累计事实、第四轮stage原件/guards、丢响应和唯一耐久成功，输出room-1120.json/third-stop-1120.json。合成身份与开发密钥，独立工具不等于独立人员、原身份或真机。
+
+非空迁移全表与私有字节守恒、非法origin插入拒绝通过；原始证据在`.local/e2a-cross-20260925-1120/`的e2a-origin-before/after.json与marker。1119/1120 dump均独立重算匹配；认证停机、原PID退出、19330/19434无监听通过，1120回执在`d06-mixed-1120/retention.json`。失败1119的库/datadir/binlog/XML/日志继续保留，不复用。
+
+反向服务端普通全回归`d06-reverse-server-regression-01/`为3360/0/0/1、exit0、sourceUnchanged；唯一skip为Windows符号链接，普通test不含IT。Android受影响回归`d06-reverse-android-regression-01/`为456/0/0/10、exit0、sourceUnchanged；HTTP条件skip不计通过。本范围没有Android产品源码、契约或迁移变化；默认APK仅引用上一混合批的产品输入与已登记SHA256，未声称当次重新构建。作者自审在`d06-reverse-checkpoint-02/self-review.md`，补收两端回归后通过。
+
+提交前36条dirty完整副本/hash/diff、Git/进程/监听/磁盘在`d06-reverse-checkpoint-03/`，早于本段文档更新；19条继承路径继续逐hash保护。LOCAL-only正向和未冻结/无canonical相应阶段拒绝仍未完成，D06整体及D07–D18、第8节闸门不计通过。LOCAL-only设计在`.local/d01-d18-20261008/d06-local-only-design.md`：真实已激活接收轮先冻结并注册RECEIVING清单，不上传/finalize正文；本人LOCAL冻结/E2A与专用STOP绑定清单和不可变来源，不手造canonical，不删除已受理payload。

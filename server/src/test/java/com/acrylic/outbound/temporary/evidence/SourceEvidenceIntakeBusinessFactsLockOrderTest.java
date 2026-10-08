@@ -26,7 +26,7 @@ class SourceEvidenceIntakeBusinessFactsLockOrderTest {
     private static final UUID SUBMISSION=UUID.randomUUID(), DEVICE=UUID.randomUUID();
     private final JdbcTemplate jdbc=mock(JdbcTemplate.class);
     private final SubmissionFiles files=mock(SubmissionFiles.class);
-    private final SourceEvidenceIntakeBusinessFacts facts=new SourceEvidenceIntakeBusinessFacts(jdbc,files,unavailableLocal(),null,new SourceEvidenceIntakePayload(null));
+    private final SourceEvidenceIntakeBusinessFacts facts=new SourceEvidenceIntakeBusinessFacts(jdbc,files,unavailableLocal(),null,new SourceEvidenceIntakePayload(null,null));
     private final SourceEvidenceIntakePageObjects.Binding binding=new SourceEvidenceIntakePageObjects.Binding(
         WAREHOUSE,SCOPE,SUBMISSION,1,DEVICE,UUID.randomUUID(),UUID.randomUUID());
 

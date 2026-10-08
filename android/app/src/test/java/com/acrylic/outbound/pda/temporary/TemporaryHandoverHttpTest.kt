@@ -27,7 +27,7 @@ class TemporaryHandoverHttpTest {
         val path = System.getenv("TEMP_HANDOVER_ANDROID_HTTP_PRIVATE")
         assumeTrue("Requires isolated actual source and target server", !path.isNullOrBlank())
         val phase = checkNotNull(System.getenv("TEMP_HANDOVER_ANDROID_PHASE"))
-        check(phase in setOf("prepare", "stage", "confirm", "activate", "freeze", "upload", "work", "success", "evidence", "stop", "continuation", "continuationSuccess"))
+        check(phase in setOf("prepare", "stage", "confirm", "activate", "freeze", "upload", "work", "success", "evidence", "stop", "continuation", "continuationShort", "continuationEvidence", "continuationStop", "continuationSuccess"))
         initialize(File(checkNotNull(path)).canonicalFile, phase)
         try { runPhase(phase) }
         finally { preserve("$phase-final") }
@@ -40,6 +40,9 @@ class TemporaryHandoverHttpTest {
             "freeze" -> work.freeze(); "upload" -> work.upload()
             "evidence" -> TemporaryHandoverHttpStop(this).evidence(); "stop" -> TemporaryHandoverHttpStop(this).stop()
             "continuation" -> TemporaryHandoverHttpContinuation(this).activateAndSubmit()
+            "continuationShort" -> TemporaryHandoverHttpContinuation(this).activateAndSubmit(1)
+            "continuationEvidence" -> TemporaryHandoverHttpContinuationStop(this).evidence()
+            "continuationStop" -> TemporaryHandoverHttpContinuationStop(this).stop()
             "continuationSuccess" -> TemporaryHandoverHttpContinuation(this).success()
             "work" -> { work.freeze(); work.upload() }; else -> work.success()
         }
@@ -66,7 +69,8 @@ class TemporaryHandoverHttpTest {
         "stage" -> "prepare"; "confirm" -> "stage"; "activate" -> "confirm"
         "work", "freeze" -> "activate"; "upload" -> "freeze"
         "evidence" -> "upload"; "stop" -> "evidence"
-        "continuation" -> "stop"; "continuationSuccess" -> "continuation"
+        "continuation", "continuationShort" -> "stop"; "continuationSuccess" -> "continuation"
+        "continuationEvidence" -> "continuationShort"; "continuationStop" -> "continuationEvidence"
         else -> if (File(evidence, "upload-final.db").exists()) "upload" else "work"
     }
 

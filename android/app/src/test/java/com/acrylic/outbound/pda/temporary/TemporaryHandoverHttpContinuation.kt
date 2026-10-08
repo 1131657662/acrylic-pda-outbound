@@ -30,7 +30,7 @@ internal class TemporaryHandoverHttpContinuation(private val fixture: TemporaryH
     }
     private fun store() = TemporaryWorkStore(db, connection, true, true) { TimeSample(1000, 500, 1) }
 
-    fun activateAndSubmit() {
+    fun activateAndSubmit(scanCount: Int = 2) {
         val original = db.temporarySubmissions().forOrder(source)!!
         val raw = File(root,"server-continuation-activation.json").readBytes()
         rollback(raw)
@@ -46,15 +46,17 @@ internal class TemporaryHandoverHttpContinuation(private val fixture: TemporaryH
         fixture.reopen("continuation-lost-ack")
         assertEquals("READY",TemporaryContinuationCoordinator(store()).resume(link.ticketId).state)
         val working=store();working.load(next.clientOrderId)
-        repeat(2) { scan(working,next.clientOrderId) }
-        val frozen=TemporaryFreeze(working).freeze(next.clientOrderId,"")
-        prefix(original,frozen)
+        repeat(scanCount) { scan(working,next.clientOrderId) }
+        val reason = if (scanCount == 1) "隔离反向混合链，剩余实物在停止后交接" else ""
+        val frozen=TemporaryFreeze(working).freeze(next.clientOrderId,reason)
+        prefix(original,frozen,scanCount)
         File(root,"android-continuation-payload.json").writeText(frozen.payload)
         assertThrows(IOException::class.java) { TemporarySubmissionRepository(db,connection).upload(frozen.id) }
         fixture.reopen("continuation-lost-upload")
         assertEquals("REVIEW_REQUIRED",TemporarySubmissionRepository(db,connection).upload(frozen.id).state)
         assertEquals(original,db.temporarySubmissions().get(original.id))
-        File(root,"continuation-result.json").writeText(JSONObject().put("submissionId",frozen.id)
+        val phase = if (scanCount == 1) "continuationShort" else "continuation"
+        File(root,"$phase-result.json").writeText(JSONObject().put("submissionId",frozen.id)
             .put("state","REVIEW_REQUIRED").put("payloadSha256",frozen.sha256).toString())
     }
 
@@ -77,9 +79,10 @@ internal class TemporaryHandoverHttpContinuation(private val fixture: TemporaryH
         processor.drain(id);assertEquals("COMMITTED",db.temporaryScans().capture(row.id)!!.state)
     }
 
-    private fun prefix(original: TemporarySubmission,next: TemporarySubmission) {
+    private fun prefix(original: TemporarySubmission,next: TemporarySubmission,scanCount: Int) {
         val old=JSONObject(original.payload);val body=JSONObject(next.payload)
-        assertEquals("3",body.getString("workRound"));assertEquals("4",body.getString("expectedCount"))
+        assertEquals("3",body.getString("workRound"))
+        assertEquals((old.getString("expectedCount").toLong() + scanCount).toString(),body.getString("expectedCount"))
         assertFalse(body.has("temporaryHandover"));assertTrue(body.has("temporaryContinuation"))
         for(field in listOf("captures","scans","events")) {
             val previous=old.getJSONArray(field);val actual=body.getJSONArray(field)

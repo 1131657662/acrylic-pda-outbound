@@ -6,41 +6,38 @@
 ```yaml
 date: 2026-10-09
 branch: codex/development
-head: db33fb7
-dirty_entries: 60
+head: 4e03f9b
+dirty_entries: 38
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
 server: { contract: 0.49.0, paths: 146, flyway: V74, migrations: 74 }
 ```
 <!-- FACTS_END -->
-总目标 D01–D18 已按用户明确指令恢复，未完成；仅原计划第8节全部同时满足才可complete。混合接续完整快照见.local/d01-d18-20261008/d06-mixed-checkpoint-09（57条dirty及副本/hash/diff/进程/监听/磁盘，早于SQL快照补强），旧看板在board-before.md。详细接续见[暂停断点](history/D01_D18_PAUSE_2026-10-08.md)、[执行记录](history/D01_D18_EXECUTION_2026-10-07.md)和[混合记录](history/D06_MIXED_EXECUTION_2026-10-09.md)。
+总目标D01–D18 active、未完成；只有原计划第8节全部满足才可complete。当前规则见AGENTS.md；版本只读生成事实块。旧看板已在.local/d01-d18-20261008/d06-reverse-checkpoint-03/board-before.md归档；详细结果见[执行记录](history/D01_D18_EXECUTION_2026-10-07.md)、[多跳记录](history/D06_MULTIHOP_EXECUTION_2026-10-08.md)、[混合记录](history/D06_MIXED_EXECUTION_2026-10-09.md)，暂停输入见[暂停记录](history/D01_D18_PAUSE_2026-10-08.md)。
 
 ## Git、写权与环境
-- 树D:/acrylic-pda-outbound、分支codex/development；HEAD/实际远端均db33fb77399c208b25ad060799766b117a8d594d。本批40条D06路径已提交推送；回执/暂存清单见d06-multihop-checkpoint-05。19条继承dirty逐hash保持、不混入本批。
-- 本聊天唯一源码/测试及记录写者；前开发聊天idle，其余项目聊天notLoaded。tools/cleanup-rebuildable.ps1属清理聊天，保护且不混入本批。提交前全部59条dirty副本/hash/diff和Git/环境在d06-multihop-checkpoint-05；原收口快照三项登记hash重算一致。1104–1109失败及1110成功保全并认证停机；19330/19434无监听，19387属Harness，既有3306/13316不操作。
-- 1099编译失败未建库；1100/1101/1102失败保全并认证停机，不复用。1103完成真实HTTP/MySQL/Android STOP组合并认证停机，19330/19434无监听。UI-08已认证停机；1118及两端回归已结束，没有重型Gradle或模拟器在途，未操作真机或既有MySQL。
-- D盘失败库/datadir/dump/hash/binlog/日志保全；C盘旧清理回执见D:/disk-audits/c-cleanup-20261008-01，历史取回仍核[归档位置](LOCAL_ARCHIVE_LOCATIONS.md)。本次C/D可用80780091392/24711811072字节；新增缓存/TEMP/TMP/Java临时/AVD均任务级指向D盘，不清理业务证据。
+- 主树D:/acrylic-pda-outbound，分支codex/development；反向范围提交前HEAD/实际远端均4e03f9b997156ff1a8fbeeed5eee919d9362a1d8。本聊天唯一源码/测试/记录写者，其他项目聊天notLoaded；清理工具及其余19条继承路径逐hash保护，不混入本批。
+- 本轮36条dirty完整副本/hash/diff、Git/全部进程/监听/磁盘在d06-reverse-checkpoint-03，早于收口文档更新；d06-reverse-checkpoint-02保存修复前29条及自审。原d06-stop-close-20261008三项hash仍一致，原891c1f0接续基线已沿授权开发提交推进，未重置或复用旧失败库。
+- 1119失败及1120成功均完成dump独立重算、认证停机/原PID退出；19330/19434无监听，没有重型构建/模拟器在途。3306/13316/ADB及19387 Harness属既有环境不操作，空闲Gradle daemon不作为活动写者。
+- C/D可用80779796480/24158343168字节；新增日志、数据库/datadir/dump/binlog、HTTP/Room/XML及TEMP/Java临时/缓存均D盘任务范围，失败及不可替代原件不清理。归档取回位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
-## D01–D18断点
-- D01证据映射/基线已建立；D02/D03开发范围已有分层通过证据，旧输入不拼成最终整合通过。D04候选排除和D05取消释放缺政策，保持拒绝且整体未通过。
-- D06独立TEMP审批/本人准备下载暂存确认/专用激活/Android安装、新输入冻结上传成功验签及真实大正文分块已有范围交付；22cbebf、d7503e4、076ff6a已推送。1096/1098与失败对照、原件消费者、两端chunks-regression-01及默认APK/lint详见执行记录，不覆盖新STOP。
-- 新STOP两端/契约及产品页专用路由开发中；保留原正文、占用及墓碑，不借FORMAL assignment或R06票据。E2A来源从不可变交接registration/activation读取本人；scope创建机不改，约束分别绑定scope原client和本轮submission/auth/freeze机/操作人/epoch。
-- 1100为1/1/0/0，E2A OPEN触原创建机scope外键；1101为1/1/0/0，非空升级比较通过但夹具UPDATE先触不可变触发器，未到预计外键。失败完整保留，未计通过。
-- 1102为1/1/0/0、exit1；非空升级全表/私有字节与不可变/错误设备/client约束通过。来源Android及接收prepare/stage/confirm/activate/freeze/upload各1/0/0/0，evidence为1/1/0/0。累计captures仍被E2A序列消费者要求全属本轮设备且从1起，接收机被拒；未进入专用STOP。
-- 累计来源修复初稿重验不可变registration/独立激活/原资格与原证据，精确只读前缀与本机suffix分开，累计orderScanSeq连续且不改设备号；定向普通test d06-stop-unit-02为42/0/0/0，不能代IT。高轮原守卫仍在，整体未完。
-- 1103专项IT为1/0/0/0，接收prepare/stage/confirm/activate/freeze/upload/evidence/stop各1/0/0/0；默认关闭、错机/坏证明/混票拒绝、末SQL/丢响应/末Room回滚/重开/服务重启原请求及正文/占用/墓碑守恒通过。证据在.local/d01-d18-20261007/d04-audit/handover-stop-1103和.local/e2a-cross-20260925-1103，dump重算匹配、sourceUnchanged。
-- server-regression-01为3317/0/0/1（Windows符号链接条件skip），普通test不含IT。Android-03为118/4/0/2，SQLite打开失败；同源码短D盘TEMP在04复验7/0/0/0、05受影响回归118/0/0/2，默认APK/lint通过。HTTP条件skip不计通过，旧失败保留，路径长度仅推断归因。
-- 独立契约/RSA签名与只读Room消费者通过（d06-stop-consumers），不等于独立人员或原身份。UI-01导航未到弹窗，02动态按钮scrollTo失败，03忙状态竞态，04模拟器内存不足未开机，05/06大字确认按钮裁剪，各失败保全不计通过。修复后UI-08在font_scale=2.0、640x960模拟器实际验证空原因拒绝、有效停止、签名STOP、原件保持和重开，单次STOP调用；合成身份与回放HTTP不替代1103真实HTTP。Android-06受影响回归/默认APK/lint为445/0/0/9、0 lint errors，跳过不计通过。
-- D06多跳1104/1105分别失败于B清单未覆盖A前缀、占用核对漏继承包；原件及失败库保全，停机/PID/端口/hash核对见[多跳记录](history/D06_MULTIHOP_EXECUTION_2026-10-08.md)。1106为1/1/0/0，原文/占用/错误周期拒绝通过，审批夹具本人自批被正确拒绝；下一批改独立主管并保留自批反例。1107为1/1/0/0，C prepare通过，stage下载原文时历史读取FOR UPDATE触只读事务拒绝；dump/认证停机/PID/无监听通过。两批sourceUnchanged，不计多跳成功。
-- 历史读取补append-only票据非锁查询，写入/激活保持加锁与不可变触发器；history-unit-01为312/0/0/0。1108provision失败0业务测试、1109为1/1/0/0，均保全停机；C只读故障和Android本机/累计high误比已修。android-unit-01编译失败0未执行，02夹具初始化38/14/0/1均保留，03为38/0/0/1。1110实际A→B→C专项1/0/0/0，各阶段及C最终成功/账务/原件通过，sourceUnchanged；dump/hash/认证停机/PID/无监听通过。混合R06/TEMP消费者未完。
-- TEMP_START产品页build-01编译失败，02/03/04通过；UI-01产物复制失败0未执行，02实际1失败：大字返回按钮仅44%可见。纵排滚动弹窗后UI-03实际1/1/0/0，因回放缺少完整服务信封未入Room；UI-04 opening/restore各1/0/0/0，取消、丢ACK阻断、原键重试、真实作业页、force-stop重开均通过。模拟器已退出、原日志/tar/截图保留。服务端全回归3339/0/0/1，唯一skip为Windows符号链接条件；受影响Android回归448/0/0/9、APK/lint成功。合成身份/回放HTTP及混合R06/TEMP、LOCAL-only真实组合仍不计D06整体通过。
-- 占用补不可变activation owner与本轮suffix精确合并，定向33/0/0/0；LOCAL-only前驱补绑定读取后34/0/0/0，真实组合仍待验。高轮/多跳/局部ID重叠/减包/未冻结/无canonical/LOCAL_FROZEN_PAYLOAD-only及新开轮实际页面仍须相应证据。D07–D17未通过，D18无最终候选；开发缺口不得转现场清单。
+## D01–D18范围与证据
+- D01证据映射/基线已建立，D02/D03开发范围有分层证据，不拼旧输入为最终整合通过。D04候选排除、D05取消释放缺政策，拒绝保持、整体未通过；其他可执行范围继续。
+- D06独立TEMP审批/本人准备下载暂存确认/专用激活/Android安装冻结上传/成功、真实大正文分块已有范围提交；证据见执行记录，不能覆盖后续STOP或多跳。默认APK/lint、独立消费者、实际HTTP与页面分别计证。
+- 1099编译失败未建库；1100–1102失败库/原日志/XML完整保留并认证停机，不重跑或复用。1103单跳专用STOP专项1/0/0/0；末SQL、丢响应、Room尾回滚、重开、正文/占用/墓碑守恒及独立签名/Room消费者通过，不外推D06整体。
+- 接收机E2A按不可变registration/activation重验历史前缀，只证明本轮suffix，scope创建机与本轮身份分开绑定。UI-08实际小屏大字STOP页面通过；早期导航/动态按钮/忙态/内存不足/裁剪失败保留。STOP受影响回归及APK/lint详见暂停收口，条件skip不计通过。
+- 1104–1109多跳失败分别保全停机；1110实际A→B→C专项1/0/0/0、sourceUnchanged；独立原件/签名/Room消费者及受影响回归通过。TEMP_START产品页UI-04实际opening/restore各1/0/0/0，丢ACK、原键重试、真实作业页和force-stop重开通过；早期build/UI失败保留。合成身份/回放HTTP不替代真实组合或真机。
+- 混合前驱、原scan与owner摘要、本轮记账身份及command origin已补；1111–1116失败不计通过并保全。1118实际A→TEMP B→R06 B→成功专项1/0/0/0，10个Android阶段各1/0/0/0；减包/权限/释放隔离拒绝、精确45000/1644尾SQL及完整续作表回滚、非空迁移/私有字节、独立消费者/两端回归通过。41条范围已提交推送，失败/skip及lint无效消费另列。
+- 1119反向链1/1/0/0：R06第三轮E2A缺可信前驱，未到STOP/第四轮。补TemporaryRoundEvidenceSource及严格前缀选择，定向unit-03为47/0/0/0；unit-01参数错误/02构造器编译失败0测试保留。
+- 1120实际A→TEMP B→R06 B短装→本人E2A/专用STOP→独立主管审批→TEMP C→成功/重启消费，专项1/0/0/0，19个Android阶段各1/0/0/0；第三轮STOP及最终确认精确尾SQL/全表回滚、Room末写/丢响应/重开通过。非空迁移全表/私有字节与非法origin拒绝通过；dump/hash/认证停机/PID/端口回执见d06-mixed-1120/retention.json。
+- 反向独立Node RSA/canonical与只读SQLite消费者在d06-reverse-consumers，核四轮逐值前缀/前驱、三设备局部counter重叠、实际STOP请求/签名、原件/guards、最终总量及唯一耐久成功。仅独立工具/合成身份/开发密钥，非独立人员或原身份/真机。
+- 反向服务端普通全回归3360/0/0/1（Windows符号链接skip、普通test不含IT）；Android受影响回归456/0/0/10，均exit0/sourceUnchanged。HTTP条件skip未执行。无Android产品/契约/迁移变化，默认APK只引用上一混合批产品输入和已登记hash，不冒充当次构建。作者自审与失败原件均保留。
+- D06 LOCAL_FROZEN_PAYLOAD-only正向、未冻结/无canonical在相应阶段真实拒绝仍未完成；D07–D17未通过，D18无最终候选。原资料/旧BCD/526、历史失败及恢复限制不得被局部通过覆盖，开发缺口不转现场清单。
 
 ## 边界与下一动作
-- 混合R06/TEMP前驱、历史身份、owner及设备/累计high已补；server-unit-04为224/0/0/0，Android-unit-05为13/0/0/0含实际扫码suffix。1111分配格式拒绝/0测试/未建库；1112专项1/1/0/0，接收至STOP通过，高轮RETAIN被旧总门拒绝；dump/hash/认证停机/PID/端口通过。修复仅已ABORTED高轮全RETAIN，释放/隔离/关闭仍拒绝；1113失败1/1/0/0：非空迁移比较通过，接收人缺resume；仅合成夹具显式授权，生产岗位不改。1114失败1/1/0/0：交接owner清单摘要误作scan摘要，未到SQL尾写。两批sourceUnchanged、dump/hash/认证停机/PID/端口通过。原件读取及精确合法owner转移断言已修，unit-05为45/0/0/0；unit-06为163/0/0/0。1115确认漏R06 activation身份，1116命令receipt origin触发器拒绝；两批1/1/0/0、保全停机。补严格记账身份与新增command origin迁移、直接伪造反例、精确SQL故障检查后1117专项1/0/0/0、sourceUnchanged，实际A→TEMP B→R06 B→成功及重启消费通过；独立Node签名/原文及只读Room消费者通过。1116/1117 dump独立重算、认证停机/PID/端口通过。补强续作票据/激活/保留包/closure回滚快照后1118专项1/0/0/0、10个Android实际阶段各1/0/0/0，独立消费者/非空迁移全表及私有字节/dump重算/停机通过。服务端普通全回归02为3355/0/0/1，01参数错误0测试保留；Android受影响回归514/0/0/10、默认debug APK/lint通过（0 lint errors），HTTP skip未执行。compile/单测失败及skip保留。下一步明确41条范围提交推送，再补反向与LOCAL-only；19条继承dirty逐hash一致。
-- 生产默认开关、签名能力、七类决定handler/POST/放行/证据写入/关闭能力均false；localDeletionAllowed=false。不接原库/现网、不合main、不发布部署/正式签名/标签/Release，不删证据、不绕审批。
-- 原资料/旧BCD/526及历史失败、恢复限制保持；原身份/Keystore、真实双机、实体键/断电/长时/规模、正式HTTPS/异地介质/生产RPO-RTO/Linux现场仅按C01–C08保留。
-- STOP修复、专项组合、产品页和受影响回归已自审并提交推送。本次已完成D06高轮完整历史链/多跳/局部设备序号重叠的离线链证据与受影响服务端回归；1110真实隔离HTTP/MySQL/Android链和UI-04页面证据见`history/D06_MULTIHOP_EXECUTION_2026-10-08.md`及`.local/d01-d18-20261008/d06-multihop-consumers/`。高轮链及continuation/handover回归、源证据边界回归均通过。减包、未冻结/无canonical、LOCAL_FROZEN_PAYLOAD-only虽已有拒绝实现/单测证据，尚未在本轮真实HTTP/MySQL/Android组合复验；混合R06/TEMP历史仍有只认单一前驱格式的开发缺口。禁止复用失败库或把1103单跳外推为D06整体通过。之后继续分配新隔离编号完成真实组合，再按依赖推进D07–D18；目标active，不拼接历史输入为最终整合通过。
+- 收反向证据、复核19条继承hash及明确路径暂存后提交推送codex/development，再实现LOCAL-only最小合法路径：真实已激活接收轮冻结并注册RECEIVING清单，本人LOCAL原件/E2A与专用STOP严格绑定；无accepted payload、不手造canonical、不删除已受理正文。设计在d06-local-only-design.md，scope/slot与held owner原子转换尚待核实现。
+- LOCAL-only须实际HTTP/MySQL/Android、前置拒绝、精确SQL/Room故障、丢响应/重开、独立消费者、自审与受影响回归；然后按依赖持续D07–D18及第8节全部闸门，不能结束在本范围提交。
+- 生产默认开关/签名能力、七类生产决定handler/POST/放行/证据写入/关闭能力均false，localDeletionAllowed=false。不接原库/现网、不合main、不发布部署/正式签名/标签/Release，不绕设备或审批阻断。原身份/Keystore、真实双机、实体键/断电/长时/规模、正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；详细阶段记录见 docs/history/AUTONOMOUS_PROGRESS_2026-10-06.md。
