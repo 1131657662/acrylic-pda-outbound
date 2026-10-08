@@ -19,11 +19,15 @@ object TemporarySuccessVerifier {
         check(body.get("submissionId") == local.id)
         val round = TemporaryVerifier.positive(body.getString("workRound"))
         if (round > 1) {
-            val reference = body.getJSONObject("temporaryContinuation")
-            check(reference.keys().asSequence().toSet() == setOf("version", "ticketId", "predecessorSubmissionId",
-                "predecessorPayloadSha256", "retainedManifestSha256") && reference.getInt("version") == 1)
+            val handover = body.has("temporaryHandover")
+            check(!handover || !body.has("temporaryContinuation"))
+            val reference = body.getJSONObject(if (handover) "temporaryHandover" else "temporaryContinuation")
+            val fields = setOf("version", "ticketId", "predecessorSubmissionId", "predecessorPayloadSha256") +
+                if (handover) setOf("caseId", "sourcePrefixSha256") else setOf("retainedManifestSha256")
+            check(reference.keys().asSequence().toSet() == fields && reference.get("version") == 1)
             TemporaryVerifier.uuid(reference.getString("ticketId")); TemporaryVerifier.uuid(reference.getString("predecessorSubmissionId"))
-            for (field in listOf("predecessorPayloadSha256", "retainedManifestSha256"))
+            if (handover) TemporaryVerifier.uuid(reference.getString("caseId"))
+            for (field in listOf("predecessorPayloadSha256", if (handover) "sourcePrefixSha256" else "retainedManifestSha256"))
                 check(reference.getString(field).matches(Regex("[0-9a-f]{64}")))
         }
         check(local.state != "ABORTED" && local.state != "REJECTED") { "本地已存冲突终态，须保留原件" }

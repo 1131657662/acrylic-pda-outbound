@@ -7,6 +7,7 @@ import org.json.JSONObject
 internal object TemporaryContinuationUploadValidation {
     fun verify(db: PdaDatabase, connection: TemporaryConnection, local: TemporarySubmission, body: JSONObject) {
         if (body.getString("workRound") == "1") return
+        if (body.has("temporaryHandover")) { TemporaryHandoverUploadValidation.verify(db, connection, local, body); return }
         val store = TemporaryWorkStore(db, connection) { error("Upload verification cannot create local events") }
         val draft = store.load(local.clientOrderId); store.check(draft.clientOrderId, false)
         check(body.getString("workRound") == draft.workRound.toString())

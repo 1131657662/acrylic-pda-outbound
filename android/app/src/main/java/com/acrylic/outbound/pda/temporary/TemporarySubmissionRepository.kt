@@ -39,6 +39,7 @@ class TemporarySubmissionRepository(private val db: PdaDatabase, private val con
     @Synchronized fun stopContinuation(id: String, reason: String): TemporarySubmission = UpdateGate.business {
         check(continuationDevelopment) { "续作停止开发入口未启用" }
         val local = checkNotNull(db.temporarySubmissions().get(id))
+        check(!JSONObject(local.payload).has("temporaryHandover")) { "交接新轮停止须使用专用协议，原记录保留" }
         check(JSONObject(local.payload).getString("workRound").toLong() > 1)
         if (local.state == "SYNCED" || db.temporarySuccess().evidence(id) != null) return@business upload(id)
         val value = reason.trim(); check(value.isNotEmpty() && value.length <= 500) { "停止须填写1～500字原因" }
@@ -53,13 +54,16 @@ class TemporarySubmissionRepository(private val db: PdaDatabase, private val con
     }
     private fun recover(local: TemporarySubmission, expected: JSONObject): TemporarySubmissionResponses.Reply {
         val responses = TemporarySubmissionResponses(db, connection, expected, local)
-        val continuation = JSONObject(local.payload).getString("workRound").toLong() > 1
-        val path = if (continuation) "pda/temporary-orders/continuation-submissions/${local.id}" else "pda/submissions/${local.id}"
+        val body = JSONObject(local.payload); val continuation = body.getString("workRound").toLong() > 1
+        val handover = body.has("temporaryHandover")
+        val path = when { handover -> "pda/temporary-orders/handover-submissions/${local.id}"
+            continuation -> "pda/temporary-orders/continuation-submissions/${local.id}"; else -> "pda/submissions/${local.id}" }
         val queried = try { responses.receive(path) }
             catch (error: ApiFailure) { if (error.code == "SUBMISSION_NOT_FOUND") null else throw error }
         val transport = TemporarySubmissionTransport(connection, expected, responses)
         if (queried?.data?.getString("status") in setOf("ABORTED", "SUCCEEDED")) return checkNotNull(queried)
         if (continuation && local.abortReason != null) {
+            check(!handover) { "交接新轮不能使用R06停止票据，原记录保留" }
             check(continuationDevelopment) { "续作停止开发入口未启用" }
             return responses.receive("$path/stop", TemporaryContinuationStopRequest(db).body(local, local.abortReason, signingKey(local)))
         }

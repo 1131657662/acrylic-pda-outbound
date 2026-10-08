@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public final class HandoverTemporaryAndroidBridge {
     private final HandoverTemporaryTargetFixture f;
     private final Path directory;
+    private final Path privateInput;
 
     public HandoverTemporaryAndroidBridge(WebApplicationContext app, HandoverTemporaryApprovalChecks approval, Path attempt) throws Exception {
         f = new HandoverTemporaryTargetFixture(app, approval.targetContext());
@@ -22,7 +23,28 @@ public final class HandoverTemporaryAndroidBridge {
         var input = SubmissionJson.object().put("fixturePurpose", "SYNTHETIC_TEMP_HANDOVER_HTTP")
             .put("baseUrl", "http://127.0.0.1:19434/api/v1/").put("caseId", f.source.kase.toString());
         input.set("session", session);
-        Files.writeString(attempt.resolve("private/temporary-handover-input.json"), SubmissionJson.canonical(input), StandardOpenOption.CREATE_NEW);
+        privateInput=attempt.resolve("private/temporary-handover-input.json");
+        Files.writeString(privateInput, SubmissionJson.canonical(input), StandardOpenOption.CREATE_NEW);
+    }
+
+    public void enableWork() throws Exception {
+        var input=(ObjectNode)SubmissionJson.parse(Files.readAllBytes(privateInput));input.put("exerciseWork",true);
+        input.put("devicePrivateKey",java.util.Base64.getEncoder().encodeToString(f.deviceKey.getPrivate().getEncoded()));
+        input.put("devicePublicKey",java.util.Base64.getEncoder().encodeToString(f.deviceKey.getPublic().getEncoded()));
+        Files.writeString(privateInput,SubmissionJson.canonical(input));
+    }
+
+    public void completeWork(WebApplicationContext app) throws Exception {
+        new HandoverTemporarySubmissionChecks(f,app,directory).verify();
+    }
+
+    public void intakeDisabled() throws Exception {
+        new HandoverTemporaryIntakeChecks(f,directory).disabled();
+    }
+
+    public void verifyIntake(WebApplicationContext app) throws Exception {
+        f.source.jdbc=app.getBean(org.springframework.jdbc.core.JdbcTemplate.class);
+        new HandoverTemporaryIntakeChecks(f,directory).verify();
     }
 
     public void prepare() throws Exception {

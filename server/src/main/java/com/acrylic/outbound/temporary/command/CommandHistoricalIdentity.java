@@ -31,7 +31,30 @@ public class CommandHistoricalIdentity {
             && !recorded.isBefore(time(row,"created_at")) && recorded.isBefore(time(row,"expires_at")));
     }
     private void source(JsonNode context,Instant recorded) {
-        var rows=jdbc.queryForList("""
+        var rows=handoverSource(context);if(rows.isEmpty())rows=ordinarySource(context);
+        CommandErrors.integrity(rows.size()==1);var row=rows.getFirst();
+        equal(row,"warehouse_id",context,"warehouseId");equal(row,"device_id",context,"freezeDeviceId");equal(row,"user_id",context,"originalOperatorId");
+        var versions=Map.of("authorization_epoch","authorizationEpoch","user_auth_version","authorizationUserVersion",
+            "device_version","authorizationDeviceVersion","recovery_epoch","sourceRecoveryEpoch");
+        versions.forEach((sql,json)->CommandErrors.integrity(row.get(sql).toString().equals(context.get(json).textValue())));
+        CommandErrors.integrity(!recorded.isBefore(time(row,"issued_at")));
+    }
+    private List<Map<String,Object>> handoverSource(JsonNode context) {
+        return jdbc.queryForList("""
+            SELECT a.*,o.creator_device_id,o.client_order_id FROM temporary_authorization a
+            JOIN temporary_handover_submission r ON r.submission_id=? AND r.scope_id=? AND r.to_work_round=?
+              AND r.from_work_round=r.to_work_round-1
+            JOIN temporary_handover_activation n ON n.ticket_id=r.ticket_id AND n.new_authorization_id=a.id
+              AND n.to_work_round=r.to_work_round AND n.target_device_id=a.device_id AND n.target_user_id=a.user_id
+            JOIN submission s ON s.id=r.submission_id AND s.scope_id=r.scope_id AND s.work_round=r.to_work_round
+              AND s.temporary_authorization_id=a.id AND s.freeze_device_id=n.target_device_id AND s.operator_id=n.target_user_id
+            JOIN temporary_work_origin o ON o.creator_device_id=n.target_device_id AND o.client_order_id=n.new_client_order_id AND o.authorization_id=a.id
+            WHERE a.id=? AND o.creator_device_id=? AND o.client_order_id=?
+            """,id(context,"submissionId"),id(context,"scopeId"),context.path("workRound").asLong(),
+            id(context,"authorizationId"),id(context,"creatorDeviceId"),id(context,"clientOrderId"));
+    }
+    private List<Map<String,Object>> ordinarySource(JsonNode context) {
+        return jdbc.queryForList("""
             SELECT a.*,t.creator_device_id,t.client_order_id FROM temporary_authorization a
             JOIN temporary_work_origin t ON t.creator_device_id=? AND t.client_order_id=?
             WHERE a.id=? AND ((?=1 AND t.authorization_id=a.id) OR EXISTS (
@@ -46,12 +69,6 @@ public class CommandHistoricalIdentity {
                 AND n.new_authorization_id=a.id AND n.target_device_id=a.device_id AND n.target_operator_id=a.user_id))
             """,id(context,"creatorDeviceId"),id(context,"clientOrderId"),id(context,"authorizationId"),context.path("workRound").asLong(),
             id(context,"submissionId"),id(context,"scopeId"),context.path("workRound").asLong(),context.path("workRound").asLong()-1);
-        CommandErrors.integrity(rows.size()==1);var row=rows.getFirst();
-        equal(row,"warehouse_id",context,"warehouseId");equal(row,"device_id",context,"freezeDeviceId");equal(row,"user_id",context,"originalOperatorId");
-        var versions=Map.of("authorization_epoch","authorizationEpoch","user_auth_version","authorizationUserVersion",
-            "device_version","authorizationDeviceVersion","recovery_epoch","sourceRecoveryEpoch");
-        versions.forEach((sql,json)->CommandErrors.integrity(row.get(sql).toString().equals(context.get(json).textValue())));
-        CommandErrors.integrity(!recorded.isBefore(time(row,"issued_at")));
     }
     private byte[] id(JsonNode node,String key) { return Ids.bytes(UUID.fromString(node.get(key).textValue())); }
     private void equal(Map<String,Object> row,String column,JsonNode node,String field) {

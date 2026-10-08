@@ -10,7 +10,7 @@ final class TemporaryHandoverAndroidProcess {
     static void run(Path attempt, String phase) throws Exception {
         var output = attempt.resolve("temporary-handover-android");
         var builder = new ProcessBuilder("cmd.exe", "/c", "gradlew.bat", "-p", "android", ":app:testDebugUnitTest",
-            "--tests", "*TemporaryHandoverHttpTest", "--no-daemon", "--offline", "--rerun-tasks", "--max-workers=1", "--console=plain");
+            "--tests", "*TemporaryHandoverHttpTest", "--no-daemon", "--offline", "--rerun", "--max-workers=1", "--console=plain");
         builder.directory(E2aCrossSourceProfile.ROOT.toFile());
         builder.environment().put("TEMP_HANDOVER_ANDROID_HTTP_PRIVATE", attempt.resolve("private/temporary-handover-input.json").toString());
         builder.environment().put("TEMP_HANDOVER_ANDROID_PHASE", phase);

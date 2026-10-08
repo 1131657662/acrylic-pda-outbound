@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /** Uses the TEMP source and device STOP previously uploaded by the actual Android HTTP consumer. */
 final class HandoverTemporaryStopFixture {
-    final JdbcTemplate jdbc;
+    JdbcTemplate jdbc;
     final SubmissionStore.Head head;
     final Path directory;
     final HandoverApprovalHttp web;

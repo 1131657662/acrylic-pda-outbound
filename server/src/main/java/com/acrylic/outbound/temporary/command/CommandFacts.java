@@ -14,10 +14,13 @@ public class CommandFacts {
     public CommandContext hint(UUID submission) {
         var rows=jdbc.queryForList("""
             SELECT JSON_OBJECT('scopeId',BIN_TO_UUID(c.id),'warehouseId',BIN_TO_UUID(c.warehouse_id),
-             'creatorDeviceId',BIN_TO_UUID(c.creator_device_id),'clientOrderId',BIN_TO_UUID(c.client_order_id),
+             'creatorDeviceId',BIN_TO_UUID(COALESCE(ha.target_device_id,c.creator_device_id)),'clientOrderId',BIN_TO_UUID(COALESCE(ha.new_client_order_id,c.client_order_id)),
              'submissionId',BIN_TO_UUID(s.id),'originalOperatorId',BIN_TO_UUID(s.operator_id),
              'authorizationId',BIN_TO_UUID(s.temporary_authorization_id),'canonicalOrderId',BIN_TO_UUID(c.canonical_order_id))
             FROM submission s JOIN submission_scope c ON c.id=s.scope_id
+            LEFT JOIN temporary_handover_submission hr ON hr.submission_id=s.id AND hr.scope_id=c.id AND hr.to_work_round=s.work_round
+            LEFT JOIN temporary_handover_activation ha ON ha.ticket_id=hr.ticket_id AND ha.new_authorization_id=s.temporary_authorization_id
+              AND ha.to_work_round=hr.to_work_round AND ha.target_device_id=s.freeze_device_id AND ha.target_user_id=s.operator_id
             WHERE s.id=? AND c.source_order_id IS NULL AND s.temporary_authorization_id IS NOT NULL
             """,String.class,Ids.bytes(submission));
         if(rows.size()!=1)throw CommandErrors.missing();
@@ -26,7 +29,7 @@ public class CommandFacts {
     public CommandContext read(UUID submission) {
         var rows=jdbc.queryForList("""
             SELECT JSON_OBJECT('scopeId',BIN_TO_UUID(c.id),'warehouseId',BIN_TO_UUID(c.warehouse_id),
-             'creatorDeviceId',BIN_TO_UUID(c.creator_device_id),'clientOrderId',BIN_TO_UUID(c.client_order_id),
+             'creatorDeviceId',BIN_TO_UUID(COALESCE(ha.target_device_id,c.creator_device_id)),'clientOrderId',BIN_TO_UUID(COALESCE(ha.new_client_order_id,c.client_order_id)),
              'submissionId',BIN_TO_UUID(s.id),'workRound',CAST(s.work_round AS CHAR),'status',s.status,
              'authorizationId',BIN_TO_UUID(a.id),'authorizationEpoch',CAST(a.authorization_epoch AS CHAR),
              'authorizationUserVersion',CAST(a.user_auth_version AS CHAR),'authorizationDeviceVersion',CAST(a.device_version AS CHAR),
@@ -43,7 +46,12 @@ public class CommandFacts {
              'verificationAlgorithmVersion',CAST(ev.algorithm_version AS CHAR),'dispositionManifestSha256',NULL,
              'dispositionManifestVersion',NULL)
             FROM submission s JOIN submission_scope c ON c.id=s.scope_id
+            LEFT JOIN temporary_handover_submission hr ON hr.submission_id=s.id AND hr.scope_id=c.id AND hr.to_work_round=s.work_round
+            LEFT JOIN temporary_handover_activation ha ON ha.ticket_id=hr.ticket_id AND ha.new_authorization_id=s.temporary_authorization_id
+              AND ha.to_work_round=hr.to_work_round AND ha.target_device_id=s.freeze_device_id AND ha.target_user_id=s.operator_id
             JOIN temporary_work_origin t ON t.creator_device_id=c.creator_device_id AND t.client_order_id=c.client_order_id
+            LEFT JOIN temporary_work_origin ho ON ho.creator_device_id=ha.target_device_id AND ho.client_order_id=ha.new_client_order_id
+              AND ho.authorization_id=ha.new_authorization_id
             LEFT JOIN temporary_source_continuation_submission b ON b.submission_id=s.id AND b.scope_id=c.id AND b.to_work_round=s.work_round
             LEFT JOIN temporary_source_continuation_activation n ON n.ticket_id=b.ticket_id AND n.scope_id=b.scope_id AND n.from_work_round=b.from_work_round
             LEFT JOIN temporary_source_continuation q ON q.id=n.ticket_id AND q.scope_id=c.id AND q.from_work_round=b.from_work_round
@@ -52,8 +60,10 @@ public class CommandFacts {
             JOIN temporary_authorization a ON a.id=s.temporary_authorization_id
              AND ((s.work_round=1 AND a.id=t.authorization_id) OR
                (s.work_round>1 AND b.from_work_round=s.work_round-1 AND previous.id IS NOT NULL AND a.id=n.new_authorization_id
-                AND a.device_id=n.target_device_id AND a.user_id=n.target_operator_id))
-             AND a.device_id=c.creator_device_id AND a.device_id=s.freeze_device_id AND a.user_id=s.operator_id
+                AND a.device_id=n.target_device_id AND a.user_id=n.target_operator_id) OR
+               (s.work_round>1 AND hr.from_work_round=s.work_round-1 AND ho.authorization_id=a.id
+                AND a.device_id=ha.target_device_id AND a.user_id=ha.target_user_id))
+             AND a.device_id=COALESCE(ha.target_device_id,c.creator_device_id) AND a.device_id=s.freeze_device_id AND a.user_id=s.operator_id
              AND a.warehouse_id=c.warehouse_id AND a.recovery_epoch=s.source_recovery_epoch
             LEFT JOIN temporary_source_mapping m ON m.scope_id=c.id AND m.mapping_version=c.mapping_version
             JOIN temporary_decision_state d ON d.scope_id=c.id

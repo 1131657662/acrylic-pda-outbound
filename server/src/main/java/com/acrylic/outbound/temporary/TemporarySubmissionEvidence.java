@@ -33,11 +33,11 @@ public class TemporarySubmissionEvidence {
         summary(body,captures.values(),saved,voided);require(saved>0,"零包不能结单");
     }
     private Map<String,JsonNode> captures(JsonNode body,TemporaryEvidenceOrigins origins) {
-        var result=new LinkedHashMap<String,JsonNode>();long seq=0,deviceSeq=0;int index=0;
+        var result=new LinkedHashMap<String,JsonNode>();long seq=0;int index=0;var deviceSequences=new HashMap<UUID,Long>();
         for(var c:array(body,"captures")) {
             var origin=origins.capture(c,index++);var a=origin.authorization();
             String id=uuid(c,"id").toString();require(result.put(id,c)==null,"输入ID重复");equal(number(c,"orderScanSeq"),++seq,"输入缺口或乱序");
-            long d=number(c,"deviceCaptureSeq");require(d>deviceSeq,"设备输入序号乱序");deviceSeq=d;
+            long d=number(c,"deviceCaptureSeq");require(d>deviceSequences.getOrDefault(a.deviceId(),0L),"设备输入序号乱序");deviceSequences.put(a.deviceId(),d);
             equal(text(c,"clientOrderId"),text(origin.source(),"clientOrderId"),"输入原临时单错误");
             equal(text(c,"originDeviceId"),a.deviceId().toString(),"输入原设备错误");equal(text(c,"operatorId"),a.userId().toString(),"输入原人员错误");
             equal(text(c,"authorizationId"),a.id().toString(),"输入原资格错误");equal(text(c,"authorizationEpoch"),a.authorizationEpoch(),"输入资格序号错误");
@@ -54,13 +54,15 @@ public class TemporarySubmissionEvidence {
         equal(number(body,"captureHighWatermark"),seq,"输入高水位不符");return result;
     }
     private List<JsonNode> events(SubmissionStore.Head head,JsonNode body,Map<String,JsonNode> captures,TemporaryEvidenceOrigins origins) {
-        var result=new ArrayList<JsonNode>();var ids=new HashSet<UUID>();long previous=0;int index=0;
+        var result=new ArrayList<JsonNode>();var ids=new HashSet<UUID>();var deviceSequences=new HashMap<UUID,Long>();int index=0;
         for(var e:array(body,"events")) {
             var origin=origins.event(e,index++);
             PdaAuditFacts.validate(e);equal(e.get("source"),origin.source(),"审计原来源错误");
             equal(text(e,"authorizationId"),origin.authorization().id().toString(),"审计原资格错误");
+            equal(uuid(e,"originDeviceId"),origin.authorization().deviceId(),"审计原设备错误");
             equal(uuid(e,"operatorId"),origin.authorization().userId(),"审计原人员错误");require(ids.add(uuid(e,"id")),"事件重复");
-            long sequence=number(e,"localSeq");require(sequence>previous,"事件乱序");previous=sequence;
+            long sequence=number(e,"localSeq");var device=origin.authorization().deviceId();
+            require(sequence>deviceSequences.getOrDefault(device,0L),"事件乱序");deviceSequences.put(device,sequence);
             if(!e.path("captureId").isNull())require(captures.containsKey(text(e,"captureId")),"事件引用未知输入");result.add(e);
         }
         require(!result.isEmpty(),"缺少冻结事件");var last=result.getLast();equal(text(last,"type"),"FROZEN","缺少冻结事件");

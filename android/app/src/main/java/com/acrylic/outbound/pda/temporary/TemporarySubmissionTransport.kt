@@ -7,12 +7,15 @@ internal class TemporarySubmissionTransport(private val connection: TemporaryCon
     fun send(local: TemporarySubmission): TemporarySubmissionResponses.Reply {
         val body = JSONObject(local.payload); val epoch = body.getString("sourceRecoveryEpoch")
         val continuation = body.getString("workRound").toLong() > 1
+        val handover = body.has("temporaryHandover")
         check(!continuation || local.abortReason == null) { "续作取消释放政策未定义，原记录保留" }
-        val route = if (continuation) "pda/temporary-orders/continuation-submissions" else "pda/temporary-orders/submissions"
+        val route = when { handover -> "pda/temporary-orders/handover-submissions"
+            continuation -> "pda/temporary-orders/continuation-submissions"; else -> "pda/temporary-orders/submissions" }
         val base = if (continuation) "$route/${local.id}" else "pda/submissions/${local.id}"
         local.abortReason?.let { return responses.receive("$base/abort", control(body).put("reason", it)) }
         val bytes = local.payload.toByteArray(Charsets.UTF_8)
         if (bytes.size <= 1024 * 1024) return responses.receive(route, body)
+        check(!handover) { "交接分块上传协议尚未启用，请保留完整原文" }
         check(bytes.size <= 32 * 1024 * 1024) { "冻结正文超过上传限额，请保留原记录" }
         val manifest = control(body).put("payloadSha256", local.sha256).put("byteCount", bytes.size.toString())
             .put("chunkCount", ((bytes.size + 262143) / 262144).toString())

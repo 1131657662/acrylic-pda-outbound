@@ -1,0 +1,34 @@
+Reference:
+  type: object
+  additionalProperties: false
+  required: [version, ticketId, caseId, predecessorSubmissionId, predecessorPayloadSha256, sourcePrefixSha256]
+  properties:
+    version: {const: 1}
+    ticketId: {type: string, format: uuid}
+    caseId: {type: string, format: uuid}
+    predecessorSubmissionId: {type: string, format: uuid}
+    predecessorPayloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    sourcePrefixSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+Control:
+  type: object
+  required: [source, assignmentId, continuationId, authorizationId, freezeDeviceId, workRound, sourceRecoveryEpoch, temporaryHandover]
+  not: {required: [temporaryContinuation]}
+  properties:
+    source: {$ref: './temporary-submission-schemas.yaml#/Source'}
+    assignmentId: {type: 'null'}
+    continuationId: {type: 'null'}
+    authorizationId: {type: string, format: uuid, description: 独立TEMP交接激活签发的接收人新资格}
+    freezeDeviceId: {type: string, format: uuid}
+    workRound: {type: string, pattern: '^([2-9]|[1-9][0-9]+)$'}
+    sourceRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    temporaryHandover: {$ref: '#/Reference'}
+  description: source使用激活给出的新client和接收机，freezeDeviceId须一致；前驱/票据/scope/轮次/本人Session及新资格绑定，不能借FORMAL assignment或R06同人同机票据。
+Body:
+  allOf:
+    - $ref: '#/Control'
+    - $ref: './temporary-submission-schemas.yaml#/Body/allOf/1'
+  description: |
+    完整原captures/scans/events按原文保留，新增输入及审计按接收机本机序号。
+    计划除新client/设备/资格身份外固定不变，目标逐产品计划重验。
+    当前受理仅支持首轮前驱；高轮与多跳尚未实现。大于1MiB正文、分块及交接停止尚未接入，明确拒绝。
+    保存原正文并将保留owner直接转新submission待审；不会扣账、放行或允许删除。

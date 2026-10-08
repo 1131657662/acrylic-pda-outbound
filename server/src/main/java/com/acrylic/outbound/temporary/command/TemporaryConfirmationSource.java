@@ -16,16 +16,23 @@ public class TemporaryConfirmationSource {
     private final TemporaryReviewEligibility eligibility; private final ServerState server;
     private final org.springframework.jdbc.core.JdbcTemplate jdbc;
     private final com.acrylic.outbound.temporary.continuation.TemporaryRoundConfirmationSource rounds;
+    private final com.acrylic.outbound.handover.TemporaryHandoverConfirmationSource handovers;
     public TemporaryConfirmationSource(SubmissionStore submissions,SubmissionFiles files,TemporarySubmissionPlan plans,
         TemporarySubmissionEvidence evidence,TemporarySubmissionSnapshot snapshots,TemporaryReviewEligibility eligibility,ServerState server,
-        org.springframework.jdbc.core.JdbcTemplate jdbc,com.acrylic.outbound.temporary.continuation.TemporaryRoundConfirmationSource rounds) {
+        org.springframework.jdbc.core.JdbcTemplate jdbc,com.acrylic.outbound.temporary.continuation.TemporaryRoundConfirmationSource rounds,
+        com.acrylic.outbound.handover.TemporaryHandoverConfirmationSource handovers) {
         this.submissions=submissions;this.files=files;this.plans=plans;this.evidence=evidence;this.snapshots=snapshots;
-        this.eligibility=eligibility;this.server=server;this.jdbc=jdbc;this.rounds=rounds;
+        this.eligibility=eligibility;this.server=server;this.jdbc=jdbc;this.rounds=rounds;this.handovers=handovers;
     }
     public Value read(CommandContext context) {
         var head=submissions.required(context.id("submissionId"));submissions.current(head);
         if(head.control().temporary()==null || head.order()==null || !head.status().equals("REVIEW_REQUIRED"))throw CommandErrors.stale();
         if(head.control().round()!=1) {
+            if(handovers.contains(head.control().id())) {
+                var checked=handovers.read(head);var issues=reasons(checked.authorization());
+                if(!issues.isEmpty())throw new BusinessException(409,issues.getFirst(),"交接新资格条件不满足，保留待审及占用");
+                return checked.value();
+            }
             var checked=rounds.read(head);var issues=reasons(checked.authorization());
             if(!issues.isEmpty())throw new BusinessException(409,issues.getFirst(),"续作新资格条件不满足，保留待审及占用");
             return checked.value();

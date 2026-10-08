@@ -1,0 +1,41 @@
+Submit:
+  post:
+    summary: 接收人提交独立TEMP交接新轮冻结正文
+    description: |
+      默认关闭，须显式启用outbound.temporary.handover-intake.enabled。
+      要求本人pda:submit会话、新TEMP资格下载确认、独立激活票据及不可变原前缀。
+      单次正文最多1MiB；原键同文恢复、异文拒绝，唯一票据只能绑定一个新submission。
+      保留owner直接由TEMP_HANDOVER_RESERVED转为REVIEW_RESERVED；确认记账另走独立交接消费者。
+      所有生产签名能力及localDeletionAllowed保持false。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './temporary-handover-submission-schemas.yaml#/Body'}
+    responses:
+      '200': {$ref: './submission-paths.yaml#/Result'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '413': {$ref: './openapi.yaml#/components/responses/Error'}
+Read:
+  get:
+    summary: 接收人读取独立TEMP交接新轮原状态或成功回执
+    description: 默认关闭。重验本人Session/身份版本、新资格、不可变激活与submission绑定；不激活、不放行、不删除。
+    security: [{pdaBearer: []}]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    responses:
+      '200': {$ref: './submission-paths.yaml#/Result'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}

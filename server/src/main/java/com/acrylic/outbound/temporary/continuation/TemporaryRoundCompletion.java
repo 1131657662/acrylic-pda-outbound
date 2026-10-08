@@ -12,9 +12,12 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 @Transactional(propagation=Propagation.MANDATORY)
 public class TemporaryRoundCompletion {
     private final TemporaryRoundFacts facts;private final TemporaryContinuationLifecycleStore lifecycle;
-    public TemporaryRoundCompletion(TemporaryRoundFacts facts,TemporaryContinuationLifecycleStore lifecycle) { this.facts=facts;this.lifecycle=lifecycle; }
+    private final com.acrylic.outbound.handover.TemporaryHandoverCompletion handovers;
+    public TemporaryRoundCompletion(TemporaryRoundFacts facts,TemporaryContinuationLifecycleStore lifecycle,
+        com.acrylic.outbound.handover.TemporaryHandoverCompletion handovers) { this.facts=facts;this.lifecycle=lifecycle;this.handovers=handovers; }
     public void complete(CommandWrite write,TemporaryConfirmationSource.Value value,JsonNode receipt) {
         var head=value.head();if(head.control().round()==1)return;
+        if(value.body().has("temporaryHandover")) { handovers.complete(write,value,receipt);return; }
         var request=TemporaryRoundControl.read(value.body());
         equal(request.predecessor(),facts.reference(head.control().id()),"续作结算绑定不符");
         var source=facts.read(request,new SubmissionAccess.Actor(head.actor(),head.warehouse(),""));

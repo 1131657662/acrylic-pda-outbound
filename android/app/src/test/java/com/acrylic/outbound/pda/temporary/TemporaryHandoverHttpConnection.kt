@@ -7,6 +7,9 @@ import java.time.Instant
 
 /** Only login and clock are synthetic; all preparation and evidence downloads use the live isolated HTTP server. */
 internal class TemporaryHandoverHttpConnection(input: JSONObject, private val output: File) : TemporaryConnection {
+    val exerciseWork = input.optBoolean("exerciseWork", false)
+    private val privateKey = input.optString("devicePrivateKey")
+    private val publicKey = input.optString("devicePublicKey")
     var session = JSONObject(input.getJSONObject("session").toString()).put("localSessionId", "isolated-temp-recipient")
     private val network = PdaNetwork(input.getString("baseUrl"))
     private var ordinal = 0
@@ -14,6 +17,8 @@ internal class TemporaryHandoverHttpConnection(input: JSONObject, private val ou
     var losePackage = true
     var loseConfirmation = true
     var loseActivation = true
+    var loseSubmission = true
+    var loseSuccess = true
     init { check(input.getString("baseUrl") == "http://127.0.0.1:19434/api/v1/") }
     override fun current() = session
     override fun now(): Instant = Instant.now()
@@ -32,6 +37,15 @@ internal class TemporaryHandoverHttpConnection(input: JSONObject, private val ou
         val bytes = network.original(request.path, request.body, headers(request.epoch), request.raw, request.maximumBytes)
         File(output, "original-${++ordinal}.json").writeBytes(bytes)
         request.body?.let { File(output, "command-$ordinal.json").writeBytes(it) }
+        val handoverRead = request.path.contains("handover-submissions/")
+        val handoverAccepted = request.path.endsWith("handover-submissions") && request.body != null ||
+            handoverRead && JSONObject(bytes.toString(Charsets.UTF_8)).getJSONObject("data").optString("status") == "REVIEW_REQUIRED"
+        if (handoverAccepted && loseSubmission) {
+            loseSubmission = false; throw java.io.IOException("Injected lost actual handover acceptance response")
+        }
+        if (request.path.contains("handover-submissions/") && JSONObject(bytes.toString(Charsets.UTF_8)).getJSONObject("data").optString("status") == "SUCCEEDED" && loseSuccess) {
+            loseSuccess = false; throw java.io.IOException("Injected lost actual handover success response")
+        }
         if (request.path.endsWith("/manifest") && JSONObject(bytes.toString(Charsets.UTF_8)).optString("status") == "ACTIVATED" && loseActivation) {
             loseActivation = false; throw java.io.IOException("Injected lost actual target activation response")
         }
@@ -46,7 +60,18 @@ internal class TemporaryHandoverHttpConnection(input: JSONObject, private val ou
     override fun download(request: TemporaryConnection.Download) {
         network.download(request.path, request.target, headers(request.expected.getString("serverRecoveryEpoch")))
     }
-    override fun stopProof(facts: com.acrylic.outbound.pda.evidence.E2aStopProof.Facts): com.acrylic.outbound.pda.evidence.E2aStopProof.Signed = error("Target stage cannot issue source STOP")
+    override fun stopProof(facts: com.acrylic.outbound.pda.evidence.E2aStopProof.Facts): com.acrylic.outbound.pda.evidence.E2aStopProof.Signed {
+        check(exerciseWork && facts.freezeDeviceId == session.getString("deviceId"))
+        return com.acrylic.outbound.pda.evidence.E2aStopProof.Signed(publicKey,
+            com.acrylic.outbound.pda.evidence.E2aStopProof.sign(facts, publicKey, ::sign))
+    }
+    private fun sign(text: String): String {
+        val key = java.security.KeyFactory.getInstance("EC").generatePrivate(
+            java.security.spec.PKCS8EncodedKeySpec(java.util.Base64.getDecoder().decode(privateKey)))
+        return java.security.Signature.getInstance("SHA256withECDSA").run {
+            initSign(key); update(text.toByteArray(Charsets.UTF_8)); java.util.Base64.getEncoder().encodeToString(sign())
+        }
+    }
     override fun localDraftStopKey(): String = error("Target stage cannot issue source STOP")
     override fun signLocalDraftStop(stop: com.acrylic.outbound.pda.evidence.LocalDraftStop): com.acrylic.outbound.pda.evidence.LocalDraftStopProof.Signed = error("Target stage cannot issue source STOP")
 }

@@ -45,7 +45,10 @@ public class CommandBusinessIntegrity {
         }
         CommandErrors.integrity(shortShipment!=decision.path("shortApprovalReceiptId").isNull());
         success(context,decision.path("submissionReceipt"),body);
-        if(context.path("workRound").asLong()>1)TemporaryRoundReceiptIntegrity.completed(jdbc,receipt);
+        if(context.path("workRound").asLong()>1) {
+            if(body.has("temporaryHandover"))TemporaryHandoverReceiptIntegrity.completed(jdbc,receipt,body);
+            else TemporaryRoundReceiptIntegrity.completed(jdbc,receipt);
+        }
     }
     private void verifyDisposition(JsonNode receipt) {
         var context = receipt.path("originalContext");
@@ -161,6 +164,7 @@ public class CommandBusinessIntegrity {
             CommandErrors.integrity(context.path(field).equals(body.path(field)));
         CommandErrors.integrity(context.path("creatorDeviceId").equals(body.path("source").path("creatorDeviceId")));
         if(context.path("workRound").asLong()==1)CommandErrors.integrity(context.path("clientOrderId").equals(body.path("source").path("clientOrderId")));
+        else if(body.has("temporaryHandover"))TemporaryHandoverReceiptIntegrity.original(jdbc,context,body);
         else TemporaryRoundReceiptIntegrity.original(jdbc,context,body);
         CommandErrors.integrity(body.path("source").path("kind").asText().equals("TEMP")
             && body.path("assignmentId").isNull() && body.path("continuationId").isNull());

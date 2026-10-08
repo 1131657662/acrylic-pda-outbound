@@ -37,7 +37,8 @@ final class TemporaryConfirmationEligibilityChecks {
         var source=new com.acrylic.outbound.temporary.command.TemporaryConfirmationSource(f.bean(com.acrylic.outbound.submissions.SubmissionStore.class),
             f.bean(com.acrylic.outbound.submissions.SubmissionFiles.class),f.bean(com.acrylic.outbound.temporary.TemporarySubmissionPlan.class),
             f.bean(com.acrylic.outbound.temporary.TemporarySubmissionEvidence.class),f.bean(com.acrylic.outbound.temporary.TemporarySubmissionSnapshot.class),eligibility,f.bean(com.acrylic.outbound.common.ServerState.class),f.jdbc,
-            f.bean(com.acrylic.outbound.temporary.continuation.TemporaryRoundConfirmationSource.class));
+            f.bean(com.acrylic.outbound.temporary.continuation.TemporaryRoundConfirmationSource.class),
+            f.bean(com.acrylic.outbound.handover.TemporaryHandoverConfirmationSource.class));
         var service=f.service(new TemporaryConfirmationFixture.Assembly(f.bean(com.acrylic.outbound.temporary.command.CommandReceiptCodec.class),
             f.bean(com.acrylic.outbound.audit.AuditWriter.class),f.bean(com.acrylic.outbound.temporary.command.CommandLocks.class),source,f.bean(com.acrylic.outbound.submissions.SubmissionAccounting.class)));
         assertThat(SubmissionJson.parse(f.execute(service,f.command("NORMAL_CONFIRM",actor),actor)).at("/businessDecision/submissionReceipt/status").asText()).isEqualTo("SUCCEEDED");
