@@ -57,7 +57,7 @@ final class HandoverTemporaryIntakeChecks {
         assertThat(f.source.jdbc.queryForObject("SELECT COUNT(*) FROM temporary_handover_completion",Long.class)).isZero();
         Files.writeString(directory.resolve(table+"-fault.txt"),message+" SQLSTATE=45000 code=1644; full business snapshot and registration unchanged\n");
     }
-    private void requireFault(List<ILoggingEvent> logs,String message) {
+    static void requireFault(List<ILoggingEvent> logs,String message) {
         for(var log:logs)if(log.getThrowableProxy() instanceof ThrowableProxy proxy)
             for(Throwable cause=proxy.getThrowable();cause!=null;cause=cause.getCause())
                 if(cause instanceof SQLException sql && message.equals(sql.getMessage())) {

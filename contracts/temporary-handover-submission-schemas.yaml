@@ -30,5 +30,17 @@ Body:
   description: |
     完整原captures/scans/events按原文保留，新增输入及审计按接收机本机序号。
     计划除新client/设备/资格身份外固定不变，目标逐产品计划重验。
-    当前受理仅支持首轮前驱；高轮与多跳尚未实现。大于1MiB正文、分块及交接停止尚未接入，明确拒绝。
+    当前受理仅支持首轮前驱；高轮与多跳尚未实现。大于1MiB正文使用持久分块，最大32MiB；交接停止尚未接入。
     保存原正文并将保留owner直接转新submission待审；不会扣账、放行或允许删除。
+Upload:
+  allOf:
+    - $ref: '#/Control'
+    - type: object
+      required: [schemaVersion, submissionId, payloadSha256, byteCount, chunkCount]
+      properties:
+        schemaVersion: {const: 2}
+        submissionId: {type: string, format: uuid}
+        payloadSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+        byteCount: {type: string, pattern: '^[1-9][0-9]*$'}
+        chunkCount: {type: string, pattern: '^([1-9]|[1-9][0-9]|1[01][0-9]|12[0-8])$'}
+  unevaluatedProperties: false

@@ -8,6 +8,7 @@ import java.time.Instant
 /** Only login and clock are synthetic; all preparation and evidence downloads use the live isolated HTTP server. */
 internal class TemporaryHandoverHttpConnection(input: JSONObject, private val output: File) : TemporaryConnection {
     val exerciseWork = input.optBoolean("exerciseWork", false)
+    val largePayload = input.optBoolean("largePayload", false)
     private val privateKey = input.optString("devicePrivateKey")
     private val publicKey = input.optString("devicePublicKey")
     var session = JSONObject(input.getJSONObject("session").toString()).put("localSessionId", "isolated-temp-recipient")
@@ -27,6 +28,7 @@ internal class TemporaryHandoverHttpConnection(input: JSONObject, private val ou
 
     override fun call(request: TemporaryConnection.Call): JSONObject {
         val response = network.request(request.path, request.body, headers(request.epoch, request.key), request.raw).getJSONObject("data")
+        recordTransport(request.path, request.raw?.size ?: request.body?.toString()?.toByteArray(Charsets.UTF_8)?.size ?: 0, response.optString("status"))
         File(output, "call-${++ordinal}.json").writeText(response.toString())
         if (request.path.endsWith("download-ack") && loseAck) {
             loseAck = false; throw java.io.IOException("Injected lost actual target ACK response")
@@ -35,6 +37,7 @@ internal class TemporaryHandoverHttpConnection(input: JSONObject, private val ou
     }
     override fun original(request: TemporaryConnection.Original): ByteArray {
         val bytes = network.original(request.path, request.body, headers(request.epoch), request.raw, request.maximumBytes)
+        recordTransport(request.path, request.body?.size ?: request.raw?.size ?: 0, JSONObject(bytes.toString(Charsets.UTF_8)).optJSONObject("data")?.optString("status").orEmpty())
         File(output, "original-${++ordinal}.json").writeBytes(bytes)
         request.body?.let { File(output, "command-$ordinal.json").writeBytes(it) }
         val handoverRead = request.path.contains("handover-submissions/")
@@ -59,6 +62,9 @@ internal class TemporaryHandoverHttpConnection(input: JSONObject, private val ou
     }
     override fun download(request: TemporaryConnection.Download) {
         network.download(request.path, request.target, headers(request.expected.getString("serverRecoveryEpoch")))
+    }
+    private fun recordTransport(path: String, size: Int, status: String) {
+        File(output, "transport.tsv").appendText("$path\t$size\t$status\n")
     }
     override fun stopProof(facts: com.acrylic.outbound.pda.evidence.E2aStopProof.Facts): com.acrylic.outbound.pda.evidence.E2aStopProof.Signed {
         check(exerciseWork && facts.freezeDeviceId == session.getString("deviceId"))

@@ -34,6 +34,18 @@ public final class HandoverTemporaryAndroidBridge {
         Files.writeString(privateInput,SubmissionJson.canonical(input));
     }
 
+    public void enableLargeWork() throws Exception {
+        enableWork();var input=(ObjectNode)SubmissionJson.parse(Files.readAllBytes(privateInput));
+        input.put("largePayload",true);Files.writeString(privateInput,SubmissionJson.canonical(input));
+    }
+
+    public void chunks(WebApplicationContext app,String phase) throws Exception {
+        f.source.jdbc=app.getBean(org.springframework.jdbc.core.JdbcTemplate.class);
+        var checks=new HandoverTemporaryChunkChecks(f,directory);
+        switch(phase) { case "disabled" -> checks.disabled();case "begin" -> checks.begin();case "finish" -> checks.finish();case "accepted" -> checks.accepted();
+            default -> throw new IllegalArgumentException("Unknown chunk test phase"); }
+    }
+
     public void completeWork(WebApplicationContext app) throws Exception {
         new HandoverTemporarySubmissionChecks(f,app,directory).verify();
     }

@@ -15,11 +15,11 @@ internal class TemporarySubmissionTransport(private val connection: TemporaryCon
         local.abortReason?.let { return responses.receive("$base/abort", control(body).put("reason", it)) }
         val bytes = local.payload.toByteArray(Charsets.UTF_8)
         if (bytes.size <= 1024 * 1024) return responses.receive(route, body)
-        check(!handover) { "交接分块上传协议尚未启用，请保留完整原文" }
         check(bytes.size <= 32 * 1024 * 1024) { "冻结正文超过上传限额，请保留原记录" }
         val manifest = control(body).put("payloadSha256", local.sha256).put("byteCount", bytes.size.toString())
             .put("chunkCount", ((bytes.size + 262143) / 262144).toString())
-        if (continuation) for (key in listOf("schemaVersion", "submissionId", "temporaryContinuation")) manifest.put(key, body.get(key))
+        if (continuation) for (key in listOf("schemaVersion", "submissionId",
+                if (handover) "temporaryHandover" else "temporaryContinuation")) manifest.put(key, body.get(key))
         val started = responses.receive("$base/upload", manifest)
         if (started.data.getString("status") !in setOf("REGISTERED", "RECEIVING")) return started
         var offset = 0; var index = 0

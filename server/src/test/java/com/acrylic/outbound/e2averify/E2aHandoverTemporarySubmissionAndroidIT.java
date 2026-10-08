@@ -33,11 +33,11 @@ class E2aHandoverTemporarySubmissionAndroidIT {
         Files.writeString(profile.attempt.resolve("test-completed.marker"),
             "Actual source/recipient Android and isolated HTTP/MySQL: independent handover, own ACK, new scan, cumulative freeze, upload, final SQL rollback, accounting and success after restart. Synthetic identity/keys.\n");
     }
-    private String[] options(boolean intake) {
+    static String[] options(boolean intake) {
         return new String[]{"--outbound.handover.commands.enabled=true","--outbound.temporary.handover-intake.enabled="+intake,
             "--outbound.temporary.commands.enabled=true","--server.servlet.session.cookie.secure=false"};
     }
-    private HandoverTemporaryAndroidBridge source(E2aCrossSourceProfile profile,WebApplicationContext web) throws Exception {
+    static HandoverTemporaryAndroidBridge source(E2aCrossSourceProfile profile,WebApplicationContext web) throws Exception {
         E2aAndroidPreparation.write(web,profile.attempt.resolve("private"));
         var input=profile.attempt.resolve("private/android-http-input.json");
         var contract=(com.fasterxml.jackson.databind.node.ObjectNode)SubmissionJson.parse(Files.readString(input));

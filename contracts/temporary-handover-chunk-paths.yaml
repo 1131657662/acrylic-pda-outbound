@@ -1,0 +1,66 @@
+Upload:
+  post:
+    summary: 注册不可改写的交接分块清单
+    description: 默认关闭；本人接收机新资格、恢复代次及激活票据须匹配。清单最多16KiB，正文最大32MiB，分块256KiB。仅落耐久传输状态，不转移占用或记账。原提交ID/清单可重试，异文拒绝；已有完整正文返回原状态。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: '#/Id'}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './temporary-handover-submission-schemas.yaml#/Upload'}
+    responses:
+      '200': {$ref: './submission-paths.yaml#/Result'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '413': {$ref: './openapi.yaml#/components/responses/Error'}
+Chunk:
+  post:
+    summary: 保存交接原始分块字节
+    description: 同索引同摘要幂等，异文/错误长度/越界拒绝；身份和票据每次核对。正文受理后不再接收新分块。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: '#/Id'}
+      - name: index
+        in: path
+        required: true
+        schema: {type: integer, minimum: 0, maximum: 127}
+    requestBody:
+      required: true
+      content:
+        application/octet-stream:
+          schema: {type: string, format: binary, maxLength: 262144}
+    responses:
+      '200': {description: 分块编号与SHA-256已耐久保存}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '413': {$ref: './openapi.yaml#/components/responses/Error'}
+Finalize:
+  post:
+    summary: 核验全部交接分块并原子受理累计正文
+    description: 分块顺序/长度/原件摘要/完整摘要/规范字节/注册身份全部一致才进入同一交接受理事务。缺块、损坏或最终SQL失败不产生部分业务结果，原传输与文件保留。原键重复返回原状态及成功回执，localDeletionAllowed保持false。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: '#/Id'}
+    responses:
+      '200': {$ref: './submission-paths.yaml#/Result'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Id:
+  name: id
+  in: path
+  required: true
+  schema: {type: string, format: uuid}
