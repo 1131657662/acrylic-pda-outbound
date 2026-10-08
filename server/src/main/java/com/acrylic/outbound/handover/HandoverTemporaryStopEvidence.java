@@ -20,22 +20,27 @@ final class HandoverTemporaryStopEvidence {
     }
 
     JsonNode verify(HandoverStopCommand command, HandoverStopStore.Origin origin) {
+        verify(HandoverTemporaryArchive.fromDevice(command), origin);
+        return descriptor(command, origin);
+    }
+
+    JsonNode verify(HandoverTemporaryArchive command, HandoverStopStore.Origin origin) {
         var head = submissions.required(origin.submission());
         if (!"ABORTED".equals(head.status())) throw new BusinessException(409, "HANDOVER_ORIGINAL_RESULT_OPEN",
             "原临时批次须先停止并取得中止回执，才能登记交接停止证据");
-        var request = object().put("verificationId", command.temporary().verification().toString())
-            .put("sourceEvidenceSetId", command.temporary().evidenceSet().toString()).put("setSha256", command.payloadHash());
+        var request = object().put("verificationId", command.verification().toString())
+            .put("sourceEvidenceSetId", command.evidenceSet().toString()).put("setSha256", command.payloadHash());
         proof.require(head, request);
         var rows = jdbc.queryForList("""
             SELECT capture_high_watermark,order_scan_high_watermark,audit_through_seq FROM source_evidence_set
             WHERE id=? AND submission_id=? AND scope_id=? AND work_round=? AND warehouse_id=?
-            """, Ids.bytes(command.temporary().evidenceSet()), Ids.bytes(origin.submission()),
+            """, Ids.bytes(command.evidenceSet()), Ids.bytes(origin.submission()),
             Ids.bytes(origin.scope()), origin.round(), Ids.bytes(origin.warehouse()));
         if (rows.size() != 1 || ((Number) rows.getFirst().get("capture_high_watermark")).longValue() != command.captureHigh()
                 || ((Number) rows.getFirst().get("order_scan_high_watermark")).longValue() != command.inputHigh()
                 || ((Number) rows.getFirst().get("audit_through_seq")).longValue() != command.auditHigh())
             throw new BusinessException(409, "HANDOVER_STOP_CONTEXT_CHANGED", "TEMP 停止证据高水位或来源不符");
-        return descriptor(command, origin);
+        return command.descriptor(origin);
     }
 
     static JsonNode descriptor(HandoverStopCommand command, HandoverStopStore.Origin origin) {

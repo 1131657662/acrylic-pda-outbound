@@ -51,13 +51,14 @@ final class HandoverOperations {
             if (!Set.of("REQUESTED","EVIDENCE_PENDING","REVIEW_READY").contains(facts.path("status").asText()))
                 throw new BusinessException(409,"HANDOVER_STATE_INVALID","当前案件状态不能批准");
             dimensions(input);
+            if (!facts.path("stopState").asText().equals(input.text("stopState"))) throw HandoverCommand.stale();
             long high=SubmissionJson.number(input.body(),"inputHighWatermark");
             var lines=input.body().path("checklist");
             if (store.checklist(write.caseId()).isEmpty()) append(write,lines);
             UUID approver=UUID.fromString(write.actor().path("principalId").asText());
             if ("TEMP".equals(facts.path("sourceKind").asText()) && approver.toString().equals(facts.path("requestedBy").asText()))
                 throw new BusinessException(403,"HANDOVER_SELF_APPROVAL_DENIED","交接申请人不能批准本人申请");
-            store.advanceCase(write.caseId(),write.caseVersion(),"APPROVED",approver,high,"DEVICE_ACKED","COMPLETE",
+            store.advanceCase(write.caseId(),write.caseVersion(),"APPROVED",approver,high,input.text("stopState"),"COMPLETE",
                 input.text("originalResultState"),"MATCHED",null,null,null,null,approver,write.recordedAt());
             long retained=0;for (var line:lines) if (line.path("state").asText().equals("RETAINED")) retained++;
             return SubmissionJson.object().put("caseId",write.caseId().toString()).put("status","APPROVED")
@@ -68,7 +69,7 @@ final class HandoverOperations {
         private void dimensions(HandoverCommand.Input input) {
             if (!"COMPLETE".equals(input.text("integrityState")))
                 throw new BusinessException(409,"HANDOVER_INTEGRITY_INCOMPLETE","证据不完整不能批准交接");
-            if (!"DEVICE_ACKED".equals(input.text("stopState")))
+            if (!Set.of("DEVICE_ACKED", "FAULT_FENCED").contains(input.text("stopState")))
                 throw new BusinessException(409,"HANDOVER_STOP_NOT_PROVEN","缺少原机停止证明，不能批准");
             if (!"MATCHED".equals(input.text("physicalState")))
                 throw new BusinessException(409,"HANDOVER_PHYSICAL_MISMATCH","实物集合未核对一致，不能批准");

@@ -11,14 +11,20 @@ final class TemporaryHandoverPredecessor {
     private final HandoverStopStore stops;
     private final HandoverStopReceipts receipts;
     private final HandoverTemporaryOriginal originals;
+    private final HandoverFaultArchive faults;
 
     TemporaryHandoverPredecessor(HandoverStopStore stops, HandoverStopReceipts receipts,
-            HandoverTemporaryOriginal originals) {
-        this.stops = stops; this.receipts = receipts; this.originals = originals;
+            HandoverTemporaryOriginal originals, HandoverFaultArchive faults) {
+        this.stops = stops; this.receipts = receipts; this.originals = originals; this.faults = faults;
     }
 
     JsonNode read(TemporaryHandoverIntakeFacts.Facts facts) {
         var ticket = facts.ticket(); var origin = stops.origin(ticket.caseId());
+        if ("FAULT_FENCED".equals(text(facts.caseFacts(), "stopState"))) {
+            var body = faults.verify(facts.caseFacts(), origin, ticket.inputHighWatermark()).body();
+            equal(sha(body), ticket.payloadSha(), "故障交接原正文摘要不符");
+            return body;
+        }
         var stop = stops.original(ticket.caseId()); var pack = stops.recovery(ticket.caseId());
         if (stop == null || pack == null)
             throw new BusinessException(409, "HANDOVER_STOP_NOT_PROVEN", "缺少原机签名停止证明或恢复包证据");

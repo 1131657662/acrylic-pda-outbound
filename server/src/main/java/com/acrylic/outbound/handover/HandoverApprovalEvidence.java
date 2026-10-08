@@ -17,16 +17,23 @@ final class HandoverApprovalEvidence {
     private final RecallStore recalls;
     private final SubmissionFiles files;
     private final HandoverTemporaryApprovalEvidence temporary;
+    private final HandoverFaultArchive faults;
 
     HandoverApprovalEvidence(HandoverStopStore stops, HandoverStopReceipts receipts, RecallStore recalls,
-            SubmissionFiles files, HandoverTemporaryApprovalEvidence temporary) {
+            SubmissionFiles files, HandoverTemporaryApprovalEvidence temporary, HandoverFaultArchive faults) {
         this.stops = stops; this.receipts = receipts; this.recalls = recalls; this.files = files;
-        this.temporary = temporary;
+        this.temporary = temporary; this.faults = faults;
     }
 
     Verified verify(JsonNode facts, long requestedHigh) {
         var caseId = uuid(facts, "caseId");
         var origin = stops.origin(caseId);
+        if ("FAULT_FENCED".equals(text(facts, "stopState"))) {
+            requireSame(origin.temporary() != null && faults != null && "COMPLETE".equals(text(facts, "integrityState")));
+            var verified = faults.verify(facts, origin, requestedHigh);
+            temporary.require(origin, verified.body());
+            return verified;
+        }
         var stop = stops.original(caseId); var packRow = stops.recovery(caseId);
         if (stop == null || packRow == null) throw new BusinessException(409, "HANDOVER_STOP_NOT_PROVEN", "缺少原机签名停止证明或恢复包证据");
         var receipt = receipts.verifyEvidence(stop, packRow, origin, facts);

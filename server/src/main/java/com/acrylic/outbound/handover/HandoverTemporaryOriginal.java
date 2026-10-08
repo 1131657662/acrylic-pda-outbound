@@ -23,4 +23,12 @@ final class HandoverTemporaryOriginal {
         roots.events(body, command, origin);
         return body;
     }
+
+    JsonNode read(HandoverTemporaryArchive archive, HandoverStopStore.Origin origin) {
+        stopped.verify(archive, origin);
+        var body = payload.read(roots.require(archive, origin), origin);
+        if (number(body, "captureHighWatermark") != archive.inputHigh()) throw HandoverTemporaryRoots.changed();
+        roots.events(body, archive.auditHigh(), origin);
+        return body;
+    }
 }

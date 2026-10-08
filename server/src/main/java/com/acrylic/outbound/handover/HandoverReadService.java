@@ -32,7 +32,7 @@ public class HandoverReadService {
     }
 
     public JsonNode kase(UUID warehouse, UUID caseId, String kind) {
-        if (!Set.of("APPROVE", "PREPARE", "ACTIVATE").contains(kind)) throw HandoverCommand.missing();
+        if (!Set.of("APPROVE", "PREPARE", "ACTIVATE", "FAULT_FENCE").contains(kind)) throw HandoverCommand.missing();
         var actor = identity.current(warehouse); var context = facts.caseFacts(caseId);
         requireWarehouse(actor, context);
         var original = verifier.verify(store.originalRequest(caseId));

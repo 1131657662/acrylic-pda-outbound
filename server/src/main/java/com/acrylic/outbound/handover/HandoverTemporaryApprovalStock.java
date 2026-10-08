@@ -23,7 +23,8 @@ final class HandoverTemporaryApprovalStock {
     void require(JsonNode facts, HandoverApprovalEvidence.Verified evidence, JsonNode dispositions) {
         for (var line : array(dispositions, "dispositions")) if (!"RETAIN".equals(line.path("action").asText()))
             throw failure("HANDOVER_TEMP_REDUCTION_NOT_READY", "临时来源减包须先完成对应实物处置，不能由交接审批释放");
-        var stop = evidence.receipt().path("temporaryStop");
+        var stop = "FAULT_FENCED".equals(text(facts, "stopState"))
+            ? evidence.receipt().path("businessDecision").path("archivedEvidence") : evidence.receipt().path("temporaryStop");
         var proof = verification.readForContinuation(uuid(facts, "warehouseId"), uuid(facts, "scopeId"),
             uuid(facts, "submissionId"), number(facts, "fromWorkRound"), uuid(stop, "sourceEvidenceSetId"),
             uuid(stop, "verificationId"), text(stop, "setSha256"), 1, 1);

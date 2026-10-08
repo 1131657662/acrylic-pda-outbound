@@ -36,8 +36,10 @@ final class HandoverPreparation implements HandoverCommand.Operation {
             var verified = evidence.verify(facts, SubmissionJson.number(facts, "inputHighWatermark"));
             var body = verified.body();
             ticket.set("temporaryQualification", temporary.require(input.body(), facts, body));
+            var archived = "FAULT_FENCED".equals(facts.path("stopState").asText())
+                ? verified.receipt().path("businessDecision").path("archivedEvidence") : verified.receipt().path("temporaryStop");
             tickets.issue(new HandoverTemporaryActivationTicketStore.Preparation(facts, input.body(), ticket, body,
-                verified.receipt().path("temporaryStop"), store.checklist(write.caseId()), write.recordedAt()));
+                archived, store.checklist(write.caseId()), write.recordedAt()));
         } else if (input.body().has("targetAuthorizationId")) throw new BusinessException(400,
             "INVALID_HANDOVER_COMMAND", "正式来源不使用临时授权");
         byte[] bytes = HandoverReceiptCodec.bytes(ticket);

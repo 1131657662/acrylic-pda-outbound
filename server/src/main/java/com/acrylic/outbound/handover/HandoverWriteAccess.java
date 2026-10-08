@@ -38,6 +38,12 @@ final class HandoverWriteAccess {
         if (targetCommand(input) && input.uuid("targetDeviceId") != null)
             jdbc.queryForList("SELECT id FROM device WHERE id=? AND warehouse_id=? FOR UPDATE",
                 Ids.bytes(input.uuid("targetDeviceId")), Ids.bytes(before.warehouse()));
+        if (input.kind().equals("FAULT_FENCE")) {
+            if (before.pda() != null) throw HandoverCommand.denied();
+            jdbc.queryForList("SELECT id FROM device WHERE id=? AND warehouse_id=? FOR UPDATE",
+                Ids.bytes(input.uuid("sourceDeviceId")), Ids.bytes(before.warehouse()));
+            new com.acrylic.outbound.pda.PdaSessionLocks(jdbc).device(input.uuid("sourceDeviceId"));
+        }
         return identities.current(before.warehouse());
     }
 

@@ -16,6 +16,8 @@ final class HandoverApprovalReview {
     private final HandoverReadReceipt receipts;
     private final JdbcTemplate jdbc;
     private final HandoverTemporaryApprovalStock temporary;
+    @org.springframework.beans.factory.annotation.Value("${outbound.handover.fault.enabled:false}")
+    private boolean faultEnabled;
 
     HandoverApprovalReview(HandoverApprovalEvidence evidence, HandoverChecklist checklist, HandoverApprovalStock stock,
             HandoverStore store, HandoverReadReceipt receipts, JdbcTemplate jdbc, HandoverTemporaryApprovalStock temporary) {
@@ -25,6 +27,7 @@ final class HandoverApprovalReview {
     }
 
     void require(HandoverCommand.Input input, JsonNode facts) {
+        if ("FAULT_FENCED".equals(facts.path("stopState").asText()) && !faultEnabled) throw HandoverCommand.unsupported();
         boolean approved = !input.kind().equals("APPROVE");
         JsonNode command = approved ? originalApproval(facts) : input.body();
         var verified = evidence.verify(facts, number(command, "inputHighWatermark"));

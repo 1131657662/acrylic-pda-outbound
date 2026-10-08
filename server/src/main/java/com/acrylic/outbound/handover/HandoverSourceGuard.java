@@ -25,8 +25,11 @@ final class HandoverSourceGuard {
     void require(HandoverCommand.Input command, JsonNode facts) {
         var submission = lock(facts);
         String result = originalResult(submission.path("status").asText());
-        String expected = command.kind().equals("APPROVE") ? command.text("originalResultState")
-            : facts.path("originalResultState").asText();
+        String expected = switch (command.kind()) {
+            case "APPROVE" -> command.text("originalResultState");
+            case "FAULT_FENCE" -> "ABORTED";
+            default -> facts.path("originalResultState").asText();
+        };
         requireSame(result.equals(expected));
     }
 

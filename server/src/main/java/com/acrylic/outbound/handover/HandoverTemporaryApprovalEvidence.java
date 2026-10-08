@@ -19,7 +19,11 @@ final class HandoverTemporaryApprovalEvidence {
 
     JsonNode read(HandoverStopCommand command, HandoverStopStore.Origin origin) {
         var body = originals.read(command, origin);
-        validation.require(submissions.required(origin.submission()), body);
+        require(origin, body);
         return body;
+    }
+
+    void require(HandoverStopStore.Origin origin, JsonNode body) {
+        validation.require(submissions.required(origin.submission()), body);
     }
 }

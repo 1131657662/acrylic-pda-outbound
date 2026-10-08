@@ -1,0 +1,42 @@
+Command:
+  type: object
+  additionalProperties: false
+  required: [commandVersion, commandType, commandId, warehouseId, caseId, transportRecoveryEpoch, expected, sourceDeviceId, physicalControl, archivedEvidence]
+  properties:
+    commandVersion: {type: integer, const: 1}
+    commandType: {type: string, const: FAULT_FENCE}
+    commandId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    caseId: {type: string, format: uuid}
+    transportRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]{0,18}$'}
+    sourceDeviceId: {type: string, format: uuid}
+    expected:
+      type: object
+      additionalProperties: false
+      required: [caseId, caseVersion, status, userAuthVersion]
+      properties:
+        caseId: {type: string, format: uuid}
+        caseVersion: {type: string, pattern: '^[1-9][0-9]{0,18}$'}
+        status: {type: string, const: EVIDENCE_PENDING}
+        userAuthVersion: {type: string, pattern: '^[1-9][0-9]{0,18}$'}
+    physicalControl:
+      type: object
+      additionalProperties: false
+      required: [deviceState, controlledAt, deviceLocation, goodsLocation, unresolvedInputCount]
+      properties:
+        deviceState: {type: string, const: POWERED_OFF_IN_CUSTODY}
+        controlledAt: {type: string, format: date-time, description: 不晚于服务端命令记录时间，且不早于所引归档验证时间。}
+        deviceLocation: {type: string, minLength: 1, maxLength: 200}
+        goodsLocation: {type: string, minLength: 1, maxLength: 200}
+        unresolvedInputCount: {type: string, const: '0'}
+    archivedEvidence:
+      type: object
+      additionalProperties: false
+      required: [sourceEvidenceSetId, verificationId, setSha256, captureHighWatermark, auditThroughSeq, orderScanHighWatermark]
+      properties:
+        sourceEvidenceSetId: {type: string, format: uuid}
+        verificationId: {type: string, format: uuid}
+        setSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+        captureHighWatermark: {type: string, pattern: '^(0|[1-9][0-9]{0,18})$'}
+        auditThroughSeq: {type: string, pattern: '^[1-9][0-9]{0,18}$'}
+        orderScanHighWatermark: {type: string, pattern: '^(0|[1-9][0-9]{0,18})$'}

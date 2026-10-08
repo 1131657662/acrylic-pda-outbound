@@ -1,11 +1,18 @@
 Execute:
   post:
-    summary: 执行一次 PDA 交接命令（REQUEST/APPROVE/PREPARE/ACTIVATE）
+    summary: 执行一次 PDA 交接命令（REQUEST/APPROVE/PREPARE/ACTIVATE/FAULT_FENCE）
     description: >-
       请求体是规范 JSON 命令，原键为 commandId：同键同文返回原回执字节，同键异文返回 409 IDEMPOTENCY_CONTENT_MISMATCH。
       命令面默认关闭（outbound.handover.commands.enabled=false 时路径不存在）；签名回执五项能力仍全为 false。
       FORMAL 激活在服务端代目标设备签发离线授权；批准或激活本身不放行库存、不恢复扫码、不允许本机删除。
       已有 canonical 目标的 TEMP 来源支持 REQUEST 及原机 stop-ack 后的主管 APPROVE；审批人与申请人须不同。
+      TEMP 故障分支额外要求 outbound.handover.fault.enabled=true，默认关闭；仅接受已有可信归档截点且原提交实际 ABORTED。
+      FAULT_FENCE 由独立有 order:handover 的 Web 主管提交，严格匹配 FaultFence schema；原机须断电收回保管、实物位置明确且无未决输入。
+      归档原 E2A STOP 是历史事实，故障分支不要求原机生成新的 handover STOP/ACK；失联可能仍作业、缺钥/原件/审计/截点一律拒绝。
+      同事务写不可变故障围栏、原设备禁用/会话撤销/版本推进、案件 FAULT_FENCED、主管原请求/签名、审计与 outbox；不释放库存或记账。
+      普通设备启用不能解除围栏（409 DEVICE_FAULT_FENCED），改钥/重新启用同时受数据库保护；无故障解除入口。
+      故障 manifest 用 stopKind=FAULT_FENCE 与 faultReceipt，不包含 stopReceipt；审批、准备、确认、激活与历史消费重验原来源。
+      FORMAL 故障、无可信归档的代传及跨截点恢复不属于本分支。
       TEMP 审批重验原 E2A OPEN/STOP/完整页和审计、冻结正文、原资格与完整实物清单；inputHighWatermark 是来源订单序号。
       本阶段 TEMP 清单仅支持全部 RETAINED，保留原占用及账务，库存或基线冲突不能因审批清除。
       TEMP PREPARE 须额外传 targetAuthorizationId，绑定指定接收人本机的通用 TEMP 授权及原下载确认；
@@ -19,7 +26,7 @@ Execute:
       新 TEMP 授权及 clientOrderId 独立于 FORMAL assignment 和 R06 同人同机票据，新期限不得超过本人原资格。
       同事务保存消费证明、原回执、审计及 outbox；重试返回原字节，异文/新键不得重复激活。
       TEMP 接收人不要求 FORMAL pda:assign 权限。审批、准备及激活回执五项能力均为 false；
-      TEMP 减包及 Android 后续扫码/提交消费者仍须另行完成与验证。
+      TEMP 减包保持拒绝；Android 受控接收、继承前缀、新扫码、冻结/上传与成功回执消费沿独立临时交接协议执行。
     security: [{webSession: []}]
     responses:
       '200':
@@ -34,6 +41,9 @@ Execute:
       '403': {$ref: './openapi.yaml#/components/responses/Error'}
       '404': {$ref: './openapi.yaml#/components/responses/Error'}
       '409': {$ref: './openapi.yaml#/components/responses/Error'}
+
+FaultFence:
+  $ref: './handover-fault-schema.yaml#/Command'
 
 TemporaryPreparation:
   description: TEMP 来源的 PREPARE 命令；不适用于 FORMAL 来源。

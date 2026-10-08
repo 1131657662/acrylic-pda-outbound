@@ -65,7 +65,10 @@ public class HandoverPdaEvidenceService {
         if (isTemporary) result.put("sourceKind", "TEMP").put("packageKind", "TEMP_FROZEN_PAYLOAD");
         result.set("preparedTicket", ticket);
         result.set("checklist", lines.deepCopy());
-        result.set("stopReceipt", stop.receipt());
+        if ("FAULT_FENCED".equals(facts.path("stopState").asText())) {
+            result.put("stopKind", "FAULT_FENCE");
+            result.set("faultReceipt", stop.receipt());
+        } else result.set("stopReceipt", stop.receipt());
         result.set("approvalReceipt", SubmissionJson.parse(approved.bytes()));
         result.set("preparationReceipt", SubmissionJson.parse(prepared.bytes()));
         if (activated != null) result.set("activationReceipt", SubmissionJson.parse(activated.bytes()));

@@ -22,7 +22,7 @@ final class HandoverCommand {
 
     static final String ROUTE_SCOPE = "r07.handover.v1";
     /** Kept out of the TEMP permission model: handover has its own confirmation gate. */
-    static final List<String> KINDS = List.of("REQUEST", "APPROVE", "PREPARE", "ACTIVATE");
+    static final List<String> KINDS = List.of("REQUEST", "APPROVE", "PREPARE", "ACTIVATE", "FAULT_FENCE");
     static final Set<String> KINDS_SET = Set.copyOf(KINDS);
     static final String APPROVE_PERMISSION = "order:handover";
     static final String RESUME_PERMISSION = "order:resume";

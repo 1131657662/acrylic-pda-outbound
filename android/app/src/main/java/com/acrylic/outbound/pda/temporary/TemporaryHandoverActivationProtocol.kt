@@ -41,7 +41,9 @@ internal object TemporaryHandoverActivationProtocol {
             "preparedTicketSha256" to JSONObject(stage.manifestJson).getString("preparedTicketSha256"),
             "inputHighWatermark" to stage.inputHighWatermark.toString())
         expected.forEach { (field, value) -> check(context.getString(field) == value) { "交接激活与原来源不一致" } }
-        check(context.getString("originalResultState") == "ABORTED" && context.getString("stopState") == "DEVICE_ACKED")
+        val staged = JSONObject(stage.manifestJson)
+        val stopState = if (staged.optString("stopKind") == "FAULT_FENCE") "FAULT_FENCED" else "DEVICE_ACKED"
+        check(context.getString("originalResultState") == "ABORTED" && context.getString("stopState") == stopState)
         check(context.getString("integrityState") == "COMPLETE" && context.getString("physicalState") == "MATCHED")
         val before = JSONObject(stage.manifestJson).getJSONObject("preparationReceipt").getJSONObject("caseContext").getString("caseVersion").toLong()
         check(context.getString("caseVersion") == Math.addExact(before, 1).toString())

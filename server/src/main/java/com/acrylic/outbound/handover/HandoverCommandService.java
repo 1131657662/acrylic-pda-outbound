@@ -71,7 +71,10 @@ public class HandoverCommandService {
             :HandoverCommand.Expected.forCase(anchor,Long.parseLong(actor.authVersion()));
         HandoverCommand.Expected.validate(input.expected(),current);
         if (operation.requiresApproval() && !actor.mayApprove()) throw HandoverCommand.denied();
-        if (!request) { sources.require(input,anchor); approvals.require(input,anchor); }
+        if (!request) {
+            sources.require(input,anchor);
+            if (!input.kind().equals("FAULT_FENCE")) approvals.require(input,anchor);
+        }
         var write=new HandoverCommand.Write(Ids.next(),Ids.next(),Ids.next(),caseId,
             Instant.now().truncatedTo(ChronoUnit.MILLIS),input,anchor,snapshot(actor));
         return record(write,actor,operation,requestId);

@@ -37,7 +37,9 @@ final class HandoverTemporaryActivationGuard {
         var confirmation = receipts.verifyForActivation(row, actor);
         var verified = evidence.verify(write.caseFacts(), ticket.inputHighWatermark());
         var body = verified.body();
-        requireSource(ticket, body, verified.receipt().path("temporaryStop"));
+        var archived = "FAULT_FENCED".equals(text(write.caseFacts(), "stopState"))
+            ? verified.receipt().path("businessDecision").path("archivedEvidence") : verified.receipt().path("temporaryStop");
+        requireSource(ticket, body, archived);
         var prepared = parse(ticket.ticketBytes());
         ObjectNode command = (ObjectNode) write.command().body();
         command.put("commandType", "PREPARE").put("targetAuthorizationId", ticket.targetAuthorizationId().toString());

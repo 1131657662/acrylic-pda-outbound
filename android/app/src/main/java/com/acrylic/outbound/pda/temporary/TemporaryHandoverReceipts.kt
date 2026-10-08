@@ -7,7 +7,7 @@ import org.json.JSONObject
 
 /** Verifies the signed milestone chain before consuming any receiving qualification. */
 internal object TemporaryHandoverReceipts {
-    data class Verified(val stop: JSONObject, val preparation: JSONObject, val qualification: JSONObject)
+    data class Verified(val stop: JSONObject, val preparation: JSONObject, val qualification: JSONObject, val fault: Boolean = false)
 
     fun verify(manifest: JSONObject, session: JSONObject): Verified {
         check(manifest.getString("sourceKind") == "TEMP" && manifest.getString("packageKind") == "TEMP_FROZEN_PAYLOAD")
@@ -15,11 +15,14 @@ internal object TemporaryHandoverReceipts {
             "临时交接尚未支持此接收状态，请保留原资料"
         }
         val key = session.getJSONObject("signingKey")
-        val stop = HandoverReceiptVerifier.verify(manifest.getJSONObject("stopReceipt"), key,
-            "acrylic-pda-handover-stop", "acrylic-outbound")
+        val fault = manifest.optString("stopKind") == "FAULT_FENCE"
+        if (!fault) check(!manifest.has("faultReceipt") && !manifest.has("stopKind"))
+        val stop = if (fault) TemporaryHandoverFault.verify(manifest, key)
+            else HandoverReceiptVerifier.verify(manifest.getJSONObject("stopReceipt"), key,
+                "acrylic-pda-handover-stop", "acrylic-outbound")
         val approval = command(manifest.getJSONObject("approvalReceipt"), key, "APPROVE", "APPROVED")
         val preparation = command(manifest.getJSONObject("preparationReceipt"), key, "PREPARE", "TARGET_PREPARED")
-        contexts(manifest, stop, listOf(approval, preparation))
+        contexts(manifest, stop, listOf(approval, preparation), fault)
         target(manifest, session, preparation)
         check(approval.getJSONObject("businessDecision").getString("inputHighWatermark") == manifest.getString("inputHighWatermark"))
         val qualification = manifest.getJSONObject("preparedTicket").getJSONObject("temporaryQualification")
@@ -28,10 +31,11 @@ internal object TemporaryHandoverReceipts {
         for (field in listOf("sourceKind", "scopeId", "fromWorkRound", "toWorkRound"))
             check(qualification.getString(field) == stop.getJSONObject("caseContext").getString(field))
         val context = preparation.getJSONObject("caseContext")
-        check(context.getString("originalResultState") == "ABORTED" && context.getString("stopState") == "DEVICE_ACKED" &&
+        check(context.getString("originalResultState") == "ABORTED" && context.getString("stopState") ==
+            (if (fault) "FAULT_FENCED" else "DEVICE_ACKED") &&
             context.getString("integrityState") == "COMPLETE" && context.getString("physicalState") == "MATCHED")
         capabilities(listOf(manifest, stop, approval, preparation))
-        return Verified(stop, preparation, qualification)
+        return Verified(stop, preparation, qualification, fault)
     }
 
     private fun capabilities(receipts: List<JSONObject>) {
@@ -49,10 +53,10 @@ internal object TemporaryHandoverReceipts {
         return result
     }
 
-    private fun contexts(manifest: JSONObject, stop: JSONObject, commands: List<JSONObject>) {
+    private fun contexts(manifest: JSONObject, stop: JSONObject, commands: List<JSONObject>, fault: Boolean) {
         val context = stop.getJSONObject("caseContext")
         val id = TemporaryVerifier.uuid(manifest.getString("caseId"))
-        check(stop.getString("status") == "STOPPED" && context.getString("sourceKind") == "TEMP" && context.getString("caseId") == id)
+        check((fault || stop.getString("status") == "STOPPED") && context.getString("sourceKind") == "TEMP" && context.getString("caseId") == id)
         for (field in listOf("warehouseId", "scopeId", "submissionId", "canonicalOrderId")) TemporaryVerifier.uuid(context.getString(field))
         check(Math.addExact(TemporaryVerifier.positive(context.getString("fromWorkRound")), 1) ==
             TemporaryVerifier.positive(context.getString("toWorkRound")))

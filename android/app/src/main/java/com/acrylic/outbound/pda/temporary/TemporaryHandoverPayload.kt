@@ -14,26 +14,50 @@ internal object TemporaryHandoverPayload {
         check(body.has("assignmentId") && body.isNull("assignmentId") && body.getInt("schemaVersion") == 2)
         val planSha = JwtVerifier.sha(SubmissionJson.canonical(body.getJSONObject("temporaryOrder")).toByteArray(Charsets.UTF_8))
         check(planSha == body.getString("planSha256") && planSha == receipts.qualification.getString("planSha256"))
-        source(body, receipts.stop)
-        watermarks(manifest, body, receipts.stop)
+        val proof = if (receipts.fault) receipts.stop.getJSONObject("businessDecision") else receipts.stop
+        source(body, proof, receipts)
+        if (receipts.fault) fault(manifest, body, proof) else watermarks(manifest, body, receipts.stop)
         return body
     }
 
-    private fun source(body: JSONObject, stop: JSONObject) {
-        val source = stop.getJSONObject("source"); val context = stop.getJSONObject("caseContext")
+    private fun source(body: JSONObject, proof: JSONObject, receipts: TemporaryHandoverReceipts.Verified) {
+        val source = proof.getJSONObject("source"); val context = receipts.stop.getJSONObject("caseContext")
         check(source.getString("sourceKind") == "TEMP" && source.has("assignmentId") && source.isNull("assignmentId"))
         for (field in listOf("scopeId", "submissionId", "warehouseId")) check(source.getString(field) == context.getString(field))
         check(source.getString("orderId") == context.getString("canonicalOrderId") &&
             source.getString("workRound") == context.getString("fromWorkRound"))
         for (field in listOf("authorizationId", "submissionId", "sourceRecoveryEpoch", "workRound"))
             check(source.getString(field) == body.getString(field))
-        check(source.getString("deviceId") == body.getString("freezeDeviceId") &&
-            source.getString("deviceId") == stop.getJSONObject("actor").getString("deviceId") &&
-            source.getString("operatorId") == stop.getJSONObject("actor").getString("principalId"))
+        check(source.getString("deviceId") == body.getString("freezeDeviceId"))
+        if (!receipts.fault) check(source.getString("deviceId") == receipts.stop.getJSONObject("actor").getString("deviceId") &&
+            source.getString("operatorId") == receipts.stop.getJSONObject("actor").getString("principalId"))
         val origin = body.getJSONObject("source")
         check(origin.getString("kind") == "TEMP")
         for (field in listOf("clientOrderId", "creatorDeviceId"))
             check(source.getString(field) == origin.getString(field) && origin.getString(field) == body.getJSONObject("temporaryOrder").getString(field))
+    }
+
+    private fun fault(manifest: JSONObject, body: JSONObject, decision: JSONObject) {
+        check(decision.getString("payloadSha256") == manifest.getString("recoveryPackageSha256"))
+        val archive = decision.getJSONObject("archivedEvidence")
+        check(archive.getString("sourceKind") == "TEMP" && archive.getString("status") == "VERIFIED_COMPLETE_AT_STOP" &&
+            archive.get("mayResumeScanning") == false && archive.get("stockReleased") == false)
+        for (field in listOf("sourceEvidenceSetId", "verificationId")) TemporaryVerifier.uuid(archive.getString(field))
+        check(archive.getString("setSha256").matches(Regex("[a-f0-9]{64}")) && archive.getString("auditThroughSeq").toLong() > 0)
+        for (field in listOf("authorizationId", "submissionId", "workRound")) check(archive.getString(field) == body.getString(field))
+        val high = manifest.getString("inputHighWatermark").toLong()
+        check(high >= 0 && high.toString() == manifest.getString("inputHighWatermark") &&
+            archive.getString("orderScanHighWatermark") == high.toString() && body.getString("captureHighWatermark") == high.toString())
+        val captures = body.getJSONArray("captures")
+        check(captures.length().toLong() == high)
+        var ownHigh = 0L
+        for (index in 0 until captures.length()) {
+            val capture = captures.getJSONObject(index)
+            check(capture.getString("orderScanSeq") == (index + 1L).toString())
+            if (capture.getString("originDeviceId") == body.getString("freezeDeviceId"))
+                ownHigh = maxOf(ownHigh, TemporaryVerifier.positive(capture.getString("deviceCaptureSeq")))
+        }
+        check(archive.getString("captureHighWatermark").toLong() >= ownHigh)
     }
 
     private fun watermarks(manifest: JSONObject, body: JSONObject, stop: JSONObject) {
