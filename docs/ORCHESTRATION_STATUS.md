@@ -6,20 +6,20 @@
 ```yaml
 date: 2026-10-09
 branch: codex/development
-head: 75024cb
-dirty_entries: 68
+head: ea1add9
+dirty_entries: 50
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
-server: { contract: 0.50.0, paths: 146, flyway: V75, migrations: 75 }
+server: { contract: 0.50.1, paths: 147, flyway: V75, migrations: 75 }
 ```
 <!-- FACTS_END -->
-总目标D01–D18 active、未完成；只有原计划第8节全部满足才可complete。当前规则见AGENTS.md；版本只读生成事实块。旧看板已在.local/d01-d18-20261008/d07-resume-04/board-before.md归档；详细结果见[执行记录](history/D01_D18_EXECUTION_2026-10-07.md)、[多跳记录](history/D06_MULTIHOP_EXECUTION_2026-10-08.md)、[混合记录](history/D06_MIXED_EXECUTION_2026-10-09.md)、[故障记录](history/D07_TEMP_FAULT_EXECUTION_2026-10-09.md)，暂停输入见[暂停记录](history/D01_D18_PAUSE_2026-10-08.md)。
+总目标D01–D18 active、未完成；只有原计划第8节全部满足才可complete。当前规则见AGENTS.md；版本只读生成事实块。旧看板已在.local/d01-d18-20261008/d07-ui-close-11/board-before.md归档；详细结果见[执行记录](history/D01_D18_EXECUTION_2026-10-07.md)、[多跳记录](history/D06_MULTIHOP_EXECUTION_2026-10-08.md)、[混合记录](history/D06_MIXED_EXECUTION_2026-10-09.md)、[故障记录](history/D07_TEMP_FAULT_EXECUTION_2026-10-09.md)，暂停输入见[暂停记录](history/D01_D18_PAUSE_2026-10-08.md)。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，分支codex/development；LOCAL37条范围已提交推送，HEAD/实际远端均75024cb86a7217dbe51e69f3f94399e7f322d701。暂存/提交/推送回执见d06-local-close-04。本聊天唯一写者，其他项目聊天notLoaded；19条继承路径逐hash保护，不混入本批。
-- D07接续68条dirty完整副本/hash/diff、Git/全部进程/监听/磁盘在d07-resume-04；19条继承逐hash未动，原d06-stop-close-20261008三项hash仍一致。原891c1f0接续基线已沿授权开发提交推进，未重置或复用旧失败库。
+- 主树D:/acrylic-pda-outbound，分支codex/development；D07 TEMP故障48条开发中范围已提交推送，HEAD/实际远端均ea1add92b28f8567129a2646826ef05f6832996b。暂存/提交/推送回执见d07-close-05。本聊天唯一写者，其他项目聊天notLoaded；19条继承路径逐hash保护，不混入本批。
+- D07页面收口50条dirty完整副本/hash/diff、Git/全部进程/监听/磁盘在d07-ui-close-11；19条继承及原d06-stop-close-20261008三项hash逐值一致，回执protection.json。快照保存最终页面源码和测试，不能覆盖其后断点文档。原891c1f0接续基线已沿授权开发提交推进，未重置或复用旧失败库。
 - 1119失败、1120成功及1121启动失败均完成dump独立重算、认证停机/原PID退出；19330/19434无监听。LOCAL定向unit-02为585/0/0/1、Android仅编译exit0；1121为1/1/0/0（final事务类代理失败）；1122为1/1/0/0（清单注册通过后结果名不符，未到E2A/STOP）。1121–1123失败、1124/1125成功均已保全停机。LOCAL三轮与无canonical实际专项通过，服务端普通回归3364/0/0/1；Android受影响回归514/0/0/10、exit0/sourceUnchanged，当次默认APK/lint通过（0 errors/221提示），产物hash见LOCAL记录；无重型任务。完整53条dirty副本/hash与环境在d06-local-matrix-03（继承19条hash一致），前次46条在d06-local-resume-02；无模拟器。3306/13316/ADB及19387 Harness属既有环境不操作。
-- C/D可用80742965248/22567567360字节（d07-resume-04核对）；新增日志、数据库/datadir/dump/binlog、HTTP/Room/XML及TEMP/Java临时/缓存均D盘任务范围，失败及不可替代原件不清理。归档取回位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
+- C/D可用81994682368/21622816768字节（页面收口核对）；新增日志、数据库/datadir/dump/binlog、HTTP/Room/XML及TEMP/Java临时/缓存均D盘任务范围，失败及不可替代原件不清理。归档取回位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## D01–D18范围与证据
 - D01证据映射/基线已建立，D02/D03开发范围有分层证据，不拼旧输入为最终整合通过。D04候选排除、D05取消释放缺政策，拒绝保持、整体未通过；其他可执行范围继续。
@@ -38,7 +38,7 @@ server: { contract: 0.50.0, paths: 146, flyway: V75, migrations: 75 }
 - LOCAL本范围已验：只为真实已激活/不可变登记/清单绑定的RECEIVING轮接受E2A transport，current仍为null；LOCAL正文重验完整历史、清单hash/bytes/count、本人suffix审计及未受理capture。STOP原子选择scope/slot并精确将继承TEMP_HANDOVER_RESERVED转本轮REVIEW_RESERVED，suffix保持SOURCE_RESERVED，不放库存；签名payloadPresent=false/payloadSha=null且另绑定localFrozenPayloadSha256。设计及边界在d06-local-only-design.md。实际证据见LOCAL记录；37条范围已提交推送，19条继承路径保护。
 - D07开发中：先做NORMAL未回退TEMP可信已归档截点→独立主管FAULT_FENCE→接收链，设计在.local/d01-d18-20261008/d07-design.md；无原机新STOP/ACK，故障门默认关闭。实现含不可变围栏、设备禁用/会话撤销、原件重验与Android分支，未交付。FORMAL/无可信截点/R09重建/故障页面仍未验。
 - D07编译/早期unit/运行器失败保留，详见故障记录；1129真实中止后旧终态比较失败，修后1130至接收激活通过，1131/1132故障围栏→接收最终记账/重启成功消费各1/0/0/0、exit0/sourceUnchanged；非空升级/权限与截点反例/精确SQL尾回滚、设备禁用会话撤销及不可变围栏通过。1132同键真实HTTP并发两等待者返回同原字节且唯一围栏。各库dump/hash/认证停机、原PID退出，19330/19434空监听；独立Node/只读Room消费1130–1132通过。Android故障定向2/0/0/0、契约解析通过，合成身份/开发钥不代原机/实物。
-- D07普通服务端回归3379/0/0/1，Android受影响回归516/0/0/10，均exit0/sourceUnchanged；条件skip未执行、普通test不含IT。默认APK/assemble/lint通过，0 errors/221提示，产物/hash见故障记录。作者自审d07-self-review-02；无重型任务。下一步明确48条路径保存开发中进度，继续故障产品操作/凭据页面、附件、FORMAL和无归档/跨截点R09，再D08–D18及第8节；不能结束在局部提交。
+- D07页面子项已验：1137真实纯主管表单/错误高水位拒绝及重核/处理后丢响应/重载同原字节原键/可信读面反例/接收最终记账重启1/0/0/0，源码与Web无漂移；独立Node RSA/原件摘要、只读Room及Web5/0通过，dump/hash/认证停机/PID/空监听已核。作者查看390小屏确认表单及稳定完整凭据。1135成功但加载态截图不计布局；1136提前刷新仅捕一次发送失败，原件保全。浏览器边界01为5/2、02为7/0且输出目录清空预存日志，03修目录8/0；自审补未知结果及旧保存兼容不得换键，最终04类型/构建及10/0/0/0、sourceUnchanged，合成网络边界单列；最终Web原件消费5/0。普通服务端全回归3381/0/0/1、源码无漂移，普通test不含IT/Windows符号链接skip未执行；Android产品未改、APK/lint只按产品输入引用围栏批。自审d07-ui-self-review-01；页面记录和明确30条范围待提交，不代表D07整体。无重型任务；下一步故障/交接附件、FORMAL及无归档/跨截点R09，再D08–D18/第8节。
 - 生产默认开关/签名能力、七类生产决定handler/POST/放行/证据写入/关闭能力均false，localDeletionAllowed=false。不接原库/现网、不合main、不发布部署/正式签名/标签/Release，不绕设备或审批阻断。原身份/Keystore、真实双机、实体键/断电/长时/规模、正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 <!-- CURRENT_STATE_END -->
 

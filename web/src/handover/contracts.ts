@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { faultExpectedSchema, faultReceiptSchema } from './fault-contracts';
 
 const id = z.string().uuid();
 const decimal = z.string().regex(/^(0|[1-9]\d*)$/);
@@ -20,6 +21,9 @@ export const caseContextSchema = z.object({
   originalCommand: z.object({ commandType: z.literal('REQUEST'), commandId: id, warehouseId: id,
     scopeId: id, reason: z.string() }),
   capabilities: z.record(z.string(), z.literal(false)),
+  expected: faultExpectedSchema,
+  fault: z.object({ entryAvailable: z.boolean(), sourceDeviceId: id.nullable(), receipt: faultReceiptSchema.nullable() })
+    .refine(f => !f.entryAvailable || (f.sourceDeviceId !== null && f.receipt === null)),
 });
 export type CasePage = z.infer<typeof casePageSchema>;
 export type CaseContext = z.infer<typeof caseContextSchema>;

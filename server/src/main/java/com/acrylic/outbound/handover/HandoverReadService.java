@@ -17,10 +17,11 @@ public class HandoverReadService {
     private final HandoverStore facts;
     private final HandoverReadStore store;
     private final HandoverReadReceipt verifier;
+    private final HandoverFaultView fault;
 
     HandoverReadService(HandoverCommand.Identity identity, HandoverStore facts, HandoverReadStore store,
-            HandoverReadReceipt verifier) {
-        this.identity = identity; this.facts = facts; this.store = store; this.verifier = verifier;
+            HandoverReadReceipt verifier, HandoverFaultView fault) {
+        this.identity = identity; this.facts = facts; this.store = store; this.verifier = verifier; this.fault = fault;
     }
 
     public JsonNode scope(UUID warehouse, UUID scope) {
@@ -44,6 +45,7 @@ public class HandoverReadService {
         var result = SubmissionJson.object(); result.set("context", context);
         result.set("expected", HandoverCommand.Expected.forCase(context, Long.parseLong(actor.authVersion())));
         result.set("originalCommand", original.command()); result.set("capabilities", HandoverReceiptCodec.capabilities());
+        result.set("fault", fault.read(context, actor));
         return result;
     }
 

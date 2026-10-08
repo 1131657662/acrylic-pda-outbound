@@ -10,6 +10,7 @@ class HandoverReadConfigurationTest {
         .withBean(HandoverCommand.Identity.class, () -> new HandoverCommand.Identity(null, null, null))
         .withBean(HandoverStore.class, () -> new HandoverStore(null))
         .withBean(HandoverReadStore.class, () -> new HandoverReadStore(null))
+        .withBean(HandoverFaultView.class, () -> new HandoverFaultView(null, null, false))
         .withBean(HandoverReadReceipt.class, () -> new HandoverReadReceipt(null));
 
     @Test void defaultClosesReadRoutes() {

@@ -15,6 +15,7 @@ const route = useRoute(); const router = useRouter(); const session = useSession
 const page = ref<CasePage | null>(null); const detail = ref<CaseContext | null>(null);
 const busy = ref(false); const error = ref(''); const detailError = ref('');
 const permitted = computed(() => session.identity?.permissions.some(p => p === 'order:handover' || p === 'order:resume'));
+const canReadOrder = computed(() => session.identity?.permissions.includes('order:read'));
 const cursor = computed(() => typeof route.query.handoverCursor === 'string' ? route.query.handoverCursor : '');
 const order = computed(() => typeof route.params.id === 'string' ? route.params.id : '');
 const selected = computed(() => typeof route.params.caseId === 'string' ? route.params.caseId : '');
@@ -53,7 +54,7 @@ onBeforeUnmount(() => { active?.abort(); active = undefined; });
 </script>
 <template>
   <WorkspaceLayout title="换机交接">
-    <PageHeading :title="page ? `${page.orderNo} · 换机交接` : '换机交接'" back
+    <PageHeading :title="page ? `${page.orderNo} · 换机交接` : '换机交接'" :back="!!selected || canReadOrder"
       :back-label="selected ? '返回交接列表' : '返回订单'" @back="back">
       <el-button :disabled="busy || !permitted" @click="load">刷新交接记录</el-button>
     </PageHeading>
@@ -61,7 +62,7 @@ onBeforeUnmount(() => { active?.abort(); active = undefined; });
     <FeedbackState v-else-if="!page" :loading="busy" :error="!!error" :title="busy ? '正在读取交接记录' : '暂时无法查看交接记录'"
       :description="error" :action="busy ? undefined : '重新查询'" @action="load" />
     <template v-else-if="selected">
-      <HandoverDetails v-if="detail" :detail="detail" />
+      <HandoverDetails v-if="detail" :key="`${session.identity?.id}:${session.warehouseId}:${selected}`" :detail="detail" @refresh="load" />
       <FeedbackState v-else :loading="busy" :error="!!detailError" title="交接详情待核对" :description="detailError"
         :action="busy ? undefined : '重新查询'" @action="load" />
     </template>

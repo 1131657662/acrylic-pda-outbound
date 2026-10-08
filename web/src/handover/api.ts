@@ -36,5 +36,10 @@ export async function caseContext(warehouse: string, order: string, id: string, 
   const c = result.context; const original = result.originalCommand;
   if (c.warehouseId !== warehouse || c.canonicalOrderId !== order || c.caseId !== id
       || original.warehouseId !== warehouse || original.scopeId !== c.scopeId) throw new Error('交接详情对象不一致');
+  const fault = result.fault.receipt;
+  if (fault && (fault.caseContext.caseId !== id || fault.caseContext.warehouseId !== warehouse
+      || fault.caseContext.scopeId !== c.scopeId || fault.caseContext.canonicalOrderId !== order
+      || fault.businessDecision.sourceDeviceId !== result.fault.sourceDeviceId || c.stopState !== 'FAULT_FENCED'))
+    throw new Error('故障凭据与交接来源不一致');
   return result;
 }

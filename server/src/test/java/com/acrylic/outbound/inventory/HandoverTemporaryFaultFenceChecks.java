@@ -34,7 +34,8 @@ public final class HandoverTemporaryFaultFenceChecks {
     public void verify() throws Exception {
         new HandoverFaultRejectionChecks(this).verify();
         var valid = faultCommand();
-        byte[] receipt = HandoverFaultConcurrentChecks.execute(this, valid);
+        byte[] receipt = "true".equals(System.getenv("HANDOVER_FAULT_BROWSER_VERIFY"))
+            ? HandoverFaultBrowserChecks.execute(this, valid) : HandoverFaultConcurrentChecks.execute(this, valid);
         Files.write(directory.resolve("fault-receipt.json"), receipt);
         var parsed = SubmissionJson.parse(receipt); var decision = parsed.path("businessDecision");
         assertThat(decision.path("status").asText()).isEqualTo("FAULT_FENCED");
@@ -44,6 +45,7 @@ public final class HandoverTemporaryFaultFenceChecks {
         assertThat(faultReviewer.command(valid, 200, null)).isEqualTo(receipt);
         faultReviewer.command(valid.deepCopy().put("reason", "异文"), 409, "IDEMPOTENCY_CONTENT_MISMATCH");
         fenced(); disabled();
+        HandoverFaultReadChecks.verify(this);
         approveAfterFence(faultReviewer);
     }
 

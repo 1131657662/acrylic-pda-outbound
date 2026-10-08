@@ -15,7 +15,11 @@ const props = defineProps<{ title: string; busy?: boolean; list?: boolean; wareh
 const session = useSessionStore(); const route = useRoute(); const router = useRouter();
 const error = ref(''); const drawer = ref(false); const collapsed = navigationCollapsed;
 const current = computed(() => navigation.flatMap(group => group.items).find(item => route.path.startsWith(item.path)));
-const authorized = computed(() => !current.value || canNavigate(current.value, session.identity?.permissions));
+const authorized = computed(() => {
+  const permissions = session.identity?.permissions ?? []; const declared = route.meta.anyPermission;
+  if (Array.isArray(declared)) return declared.some(value => typeof value === 'string' && permissions.includes(value));
+  return !current.value || canNavigate(current.value, permissions);
+});
 const environment = import.meta.env.VITE_ENVIRONMENT_NAME?.trim() || (import.meta.env.DEV ? '开发环境' : '');
 const parentLink = computed(() => ({ path: current.value?.path ?? '/orders', query: current.value?.path === '/orders'
   ? orderRouteQuery(parseOrderQuery(route.query), session.warehouseId) : {} }));
@@ -50,7 +54,7 @@ async function reconnect(): Promise<void> {
         <div class="topbar-location">
           <el-tooltip :content="collapsed ? '展开导航' : '折叠导航'"><el-button class="icon-button desktop-navigation" :icon="collapsed ? Expand : Fold" :aria-label="collapsed ? '展开导航' : '折叠导航'" @click="collapsed = !collapsed" /></el-tooltip>
           <el-button class="icon-button mobile-navigation" :icon="Menu" aria-label="打开导航" @click="drawer = true" />
-          <nav class="breadcrumb" aria-label="当前位置"><router-link v-if="current && route.path !== current.path" :to="parentLink">{{ current.label }}</router-link><span v-if="current && route.path !== current.path"> / </span>{{ title }}</nav>
+          <nav class="breadcrumb" aria-label="当前位置"><router-link v-if="current && canNavigate(current, session.identity?.permissions) && route.path !== current.path" :to="parentLink">{{ current.label }}</router-link><span v-if="current && canNavigate(current, session.identity?.permissions) && route.path !== current.path"> / </span>{{ title }}</nav>
         </div>
         <div class="topbar-actions">
           <span class="warehouse-caption">仓库</span><el-select :model-value="session.warehouseId" aria-label="当前仓库" class="warehouse-select" :disabled="busy || warehouseLocked" @update:model-value="changeWarehouse">

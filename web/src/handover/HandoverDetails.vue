@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { CaseContext } from './contracts';
 import { stateLabel, factLabel } from './contracts';
+import HandoverFaultAction from './HandoverFaultAction.vue';
 defineProps<{ detail: CaseContext }>();
+const emit = defineEmits<{ refresh: [] }>();
 </script>
 <template>
   <section class="panel handover-details" aria-label="交接详情">
@@ -25,6 +27,7 @@ defineProps<{ detail: CaseContext }>();
       <p>原申请凭据：{{ detail.originalCommand.commandId }}</p>
     </details>
   </section>
+  <HandoverFaultAction :detail="detail" @refresh="emit('refresh')" />
 </template>
 <style scoped>
 .handover-details { overflow-wrap: anywhere; }
