@@ -37,6 +37,12 @@ class HandoverViewModel(application: Application) : AndroidViewModel(application
                 com.acrylic.outbound.pda.temporary.TemporaryHandoverConfirmationWorker.schedule(app, card.caseId)
                 app.temporaryHandoverConfirmations.resume(card.caseId)
             }
+            "TEMP_INSTALL" -> app.temporaryHandoverActivations.restore(card.caseId)
+            "TEMP_START" -> {
+                val store = app.temporaryStore()
+                com.acrylic.outbound.pda.temporary.TemporaryHandoverDownload(store).acknowledge(card.assignment)
+                com.acrylic.outbound.pda.temporary.TemporaryHandoverWork(store).start(card.assignment)
+            }
             else -> error("交接状态已变化，请重新读取")
         }
         load()
@@ -54,26 +60,7 @@ class HandoverViewModel(application: Application) : AndroidViewModel(application
         mutable.update { it.copy(cards = cards, hasMore = all.size > limit) }
     }
 
-    private fun temporaryCard(id: String): HandoverCard {
-        val repository = com.acrylic.outbound.pda.temporary.TemporaryHandoverRepository(app.database,
-            com.acrylic.outbound.pda.temporary.TemporarySession(app.session))
-        return runCatching {
-            val row = repository.read(id)
-            val pending = app.temporaryHandoverConfirmations.read(id)
-            val plan = JSONObject(row.payloadBytes.toString(Charsets.UTF_8)).getJSONObject("temporaryOrder")
-            val details = "车号 ${plan.getString("vehicleNo")} · 柜号 ${plan.optString("containerNo")}\n原记录 ${row.inputHighWatermark} 条"
-            val enabled = com.acrylic.outbound.pda.BuildConfig.DEBUG && com.acrylic.outbound.pda.BuildConfig.TEMPORARY_HANDOVER_DEVELOPMENT
-            val (action, label, status) = when {
-                pending?.state == "CONFIRMED" -> Triple("REFRESH", "核对主管处理结果", "接收确认已保存，等待独立激活；保持停止")
-                !enabled -> Triple("REFRESH", "核对接收资格与原资料", "原临时记录已保存，接收确认尚未开放；保持停止")
-                pending != null -> Triple("TEMP_CONFIRM", "恢复原接收确认", "${pending.error.ifBlank { "接收确认结果待核对" }}；原请求保留")
-                else -> Triple("TEMP_CONFIRM", "核对实物并确认接收", "原临时记录已保存，尚未确认实物和资料")
-            }
-            HandoverCard(id, "", "临时作业交接", "$details\n$status", action, label,
-                "$details\n交接编号 $id\n请逐包核对下方主管批准的保留清单。确认只记录接收事实，激活完成前保持停止。\n" +
-                    com.acrylic.outbound.pda.temporary.TemporaryHandoverConfirmationDisplay.lines(row))
-        }.getOrElse { HandoverCard(id, "", "临时作业交接", "${it.message ?: "临时交接需核对"}；原资料保留", "REFRESH", "核对接收资格与原资料") }
-    }
+    private fun temporaryCard(id: String) = TemporaryHandoverCardReader(app).read(id)
 
     private fun card(id: String): HandoverCard {
         val stage = checkNotNull(app.database.handoverStages().header(id))

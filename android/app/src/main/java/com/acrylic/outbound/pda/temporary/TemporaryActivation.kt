@@ -10,7 +10,7 @@ class TemporaryActivation(private val db: PdaDatabase, private val connection: T
     data class Input(val request: TemporaryRequest, val expected: JSONObject, val payloads: Map<String, ByteArray>)
     fun activate(input: Input): TemporaryPreparation {
         val receipt = JSONObject(checkNotNull(input.request.receiptJson))
-        val manifest = TemporaryVerifier.manifest(receipt, JSONObject(input.request.signingKeyJson))
+        val manifest = TemporaryHandoverAuthorization.declaration(input.request)
         TemporaryVerifier.request(manifest, input.request); TemporaryVerifier.identity(manifest, input.expected)
         TemporaryPayloads.verify(manifest, input.payloads)
         return db.runInTransaction(Callable {

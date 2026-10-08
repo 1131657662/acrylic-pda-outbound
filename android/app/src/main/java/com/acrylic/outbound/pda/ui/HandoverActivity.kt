@@ -55,6 +55,11 @@ class HandoverActivity : ComponentActivity() {
     }
 
     private fun act(card: HandoverCard) {
+        if (card.action in setOf("TEMP_WORK", "TEMP_SUBMISSION")) {
+            val page = if (card.action == "TEMP_SUBMISSION") TemporarySubmissionActivity::class.java else TemporaryWorkActivity::class.java
+            startActivity(Intent(this, page).putExtra("clientOrderId", card.assignment))
+            return
+        }
         if (card.action in setOf("WORK", "SUBMISSION", "RECALL")) {
             val page = when (card.action) {
                 "SUBMISSION" -> SubmissionActivity::class.java
@@ -62,6 +67,12 @@ class HandoverActivity : ComponentActivity() {
                 else -> WorkActivity::class.java
             }
             startActivity(Intent(this, page).putExtra("assignmentId", card.assignment))
+            return
+        }
+        if (card.action == "TEMP_START") {
+            AlertDialog.Builder(this).setTitle("核对临时交接新轮")
+                .setMessage("请核对原计划、保留实物和本人的新资格。联网确认资料后开启本轮，原记录与占用继续保留。")
+                .setNegativeButton("返回核对", null).setPositiveButton("确认资料并开启") { _, _ -> model.perform(card) }.show()
             return
         }
         if (card.action == "TEMP_CONFIRM") {

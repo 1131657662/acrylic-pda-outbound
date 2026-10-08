@@ -59,4 +59,30 @@ public final class HandoverTemporaryAndroidBridge {
         assertThat(f.source.jdbc.queryForObject("SELECT COUNT(*) FROM order_assignment WHERE device_id=?", Long.class, Ids.bytes(f.device))).isZero();
         Files.writeString(directory.resolve("confirmation-verified.marker"), "Actual Android immutable confirmation, lost-response recovery and Room rollback; no activation.\n");
     }
+
+    public void activate() throws Exception {
+        var view = SubmissionJson.parse(f.context.reviewer().get("/handovers/" + f.source.kase + "/context?warehouseId="
+            + f.source.head.warehouse() + "&commandType=ACTIVATE"));
+        var command = SubmissionJson.object().put("commandVersion", 1).put("commandType", "ACTIVATE")
+            .put("commandId", java.util.UUID.randomUUID().toString()).put("warehouseId", f.source.head.warehouse().toString())
+            .put("caseId", f.source.kase.toString()).put("transportRecoveryEpoch", "1").put("reason", "本人已确认，接收机安装原激活结果")
+            .put("targetDeviceId", f.device.toString()).put("targetUserId", f.user.toString());
+        command.set("expected", view.path("expected"));
+        Files.write(directory.resolve("server-activation.json"), f.context.reviewer().command(command, 200, null));
+    }
+
+    public void verifyActivation() throws Exception {
+        var result = SubmissionJson.parse(Files.readAllBytes(directory.resolve("activate-result.json")));
+        var receipt = Files.readAllBytes(directory.resolve("server-activation.json"));
+        assertThat(Files.readAllBytes(directory.resolve("android-activation.json"))).isEqualTo(receipt);
+        var decision = SubmissionJson.parse(receipt).path("businessDecision");
+        assertThat(result.path("authorizationId")).isEqualTo(decision.path("newAuthorizationId"));
+        assertThat(result.path("clientOrderId")).isEqualTo(decision.path("newClientOrderId"));
+        assertThat(result.path("workRound")).isEqualTo(decision.path("toWorkRound"));
+        assertThat(result.path("nextScanSeq")).isEqualTo(decision.path("startOrderScanSeq"));
+        assertThat(result.path("retainedCount").asLong()).isEqualTo(Long.parseLong(decision.path("retainedCount").asText()));
+        assertThat(result.path("state").asText()).isEqualTo("HANDOVER_BLOCKED");
+        assertThat(f.source.jdbc.queryForObject("SELECT COUNT(*) FROM order_assignment WHERE device_id=?", Long.class, Ids.bytes(f.device))).isZero();
+        Files.writeString(directory.resolve("activation-verified.marker"), "Actual Android installs original TEMP activation atomically with independent credential and retained guards; Room rollback/restart.\n");
+    }
 }

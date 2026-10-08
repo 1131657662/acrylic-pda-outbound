@@ -11,6 +11,7 @@ internal class TemporaryHandoverQualification(private val db: PdaDatabase, priva
         val prepared = checkNotNull(db.temporary().byAuthorization(id)) { "请先在本机完整准备接收人的临时资料" }
         val request = checkNotNull(db.temporary().request(prepared.requestKey))
         check(db.temporaryContinuations().get(request.key) == null) { "专用续作资格不能用于接收交接" }
+        check(!JSONObject(request.bodyJson).has("temporaryHandoverActivation")) { "接收人须准备本人通用临时资格" }
         TemporaryAccess(db, connection).request(request, expected)
         val catalog = TemporaryCatalog.load(db, request)
         TemporaryAckVerifier.verify(prepared, request, JSONObject(checkNotNull(prepared.ackJson) { "请先确认临时资料下载" }))

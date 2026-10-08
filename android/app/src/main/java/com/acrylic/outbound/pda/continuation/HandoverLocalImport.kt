@@ -43,7 +43,8 @@ internal class HandoverLocalImport(private val db: PdaDatabase) {
         rows.events.forEach(db.work()::insertEvent)
         rows.dispositions.forEach(db.dispositions()::insert)
         work.guards.forEach { guard ->
-            check(db.temporaryScans().guard(guard.barcode) == null) { "原包与本机临时作业防重冲突" }
+            check(db.temporaryScans().guard(guard.barcode) == null &&
+                db.temporaryHandoverGuards().get(guard.barcode) == null) { "原包与本机临时作业防重冲突" }
             db.scans().insertGuard(guard)
         }
         db.work().insertDevice(WorkDevice(work.targetDevice))

@@ -26,7 +26,8 @@ class WorkValidation(private val store: WorkStore) {
             bale.dispatchCycle != c.expectedDispatchCycle -> "出库周期不一致，请保留记录并核对"
             !bale.available -> "该包在准备时已不可用"
             cloudReason != null -> cloudReason
-            store.db.scans().guard(c.barcode) != null || store.db.temporaryScans().guard(c.barcode) != null -> "该条码已在本机订单中保存，不能重复装车"
+            store.db.scans().guard(c.barcode) != null || store.db.temporaryScans().guard(c.barcode) != null ||
+                store.db.temporaryHandoverGuards().get(c.barcode) != null -> "该条码已在本机订单中保存，不能重复装车"
             line.actualCount >= line.plannedCount -> "该产品已达计划，禁止超装"
             order.actualCount >= order.plannedTotal -> "整单已达计划，禁止超装"
             else -> null

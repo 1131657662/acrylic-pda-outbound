@@ -6,6 +6,7 @@ import org.json.JSONObject
 /** Produces the cumulative wire facts from immutable original bytes plus separately owned new facts. */
 internal class TemporaryContinuationPayload(private val store: TemporaryWorkStore) {
     fun cumulative(draft: TemporaryDraft, body: JSONObject): JSONObject {
+        if (store.isHandover(draft.clientOrderId)) return TemporaryHandoverPayloadBuilder(store).cumulative(draft, body)
         val baseline = TemporaryContinuationBaseline(store).read(draft) ?: return body
         val original = baseline.original
         for (field in listOf("captures", "scans", "events")) {

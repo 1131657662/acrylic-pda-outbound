@@ -13,8 +13,9 @@ internal object HandoverReceiptVerifier {
             "交接回执正文与签名不一致"
         }
         val flags = unsigned.getJSONObject("capabilities")
-        for (field in listOf("writeConfirmationAvailable", "releaseAllowed", "mayResumeScanning", "stockReleased", "localDeletionAllowed"))
-            check(!flags.getBoolean(field)) { "交接回执包含未开放能力" }
+        val fields = setOf("writeConfirmationAvailable", "releaseAllowed", "mayResumeScanning", "stockReleased", "localDeletionAllowed")
+        check(flags.keys().asSequence().toSet() == fields) { "交接回执包含未知能力" }
+        for (field in fields) check(flags.get(field) == false) { "交接回执包含未开放能力" }
         return unsigned
     }
 }

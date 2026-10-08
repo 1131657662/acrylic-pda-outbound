@@ -5,7 +5,7 @@ import java.util.concurrent.Callable
 class TemporarySaving(private val store: TemporaryWorkStore) {
     fun confirm(id: String) = store.db.runInTransaction {
         val row = checkNotNull(store.db.temporaryScans().capture(id)); val draft = store.check(row.clientOrderId)
-        check(draft.canScan(store.continuationDevelopment))
+        check(store.canScan(draft))
         if (row.inputSource != "MANUAL" || row.state != "WAITING_CONFIRM") return@runInTransaction
         check(store.db.temporaryScans().pending(row.clientOrderId)?.id == id && store.db.temporaryScans().failure(row.clientOrderId) == null)
         store.db.temporaryScans().updateCapture(row.copy(state = "CONFIRM_REQUESTED", confirmedAt = store.connection.now().toString()))

@@ -47,7 +47,7 @@ class TemporaryEngine(private val store: TemporaryWorkStore, private val sound: 
         if (id != current) mutable.value = TemporaryWorkUi() else mutable.update { it.copy(ready = false) }
         enqueue {
             val draft = store.load(id); store.requireNoOtherInput(id)
-            check(draft.canScan(store.continuationDevelopment)) { "请先保存计划并开始本单" }
+            check(store.canScan(draft)) { "请先保存计划并开始本单" }
             current = id; fault = ""; processor.drain(id) { active(id) }
         }
     }
@@ -106,6 +106,6 @@ class TemporaryEngine(private val store: TemporaryWorkStore, private val sound: 
         val scans = store.db.temporaryScans(); val draft = store.db.temporaryDrafts().get(current)
         mutable.update { it.copy(draft = draft, lines = store.db.temporaryDrafts().lines(current), total = store.total(current),
             products = store.products(current), candidate = scans.failure(current) ?: scans.pending(current), recent = scans.recent(current),
-            queued = count.get(), blocked = fault.ifEmpty { error }, ready = active(current) && error.isEmpty() && draft?.canScan(store.continuationDevelopment) == true) }
+            queued = count.get(), blocked = fault.ifEmpty { error }, ready = active(current) && error.isEmpty() && draft?.let(store::canScan) == true) }
     }
 }

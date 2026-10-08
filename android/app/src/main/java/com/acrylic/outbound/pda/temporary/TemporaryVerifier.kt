@@ -7,7 +7,7 @@ import java.util.UUID
 
 object TemporaryVerifier {
     val parts = setOf("inventory", "mapping", "policy", "rules", "availability")
-    fun manifest(receipt: JSONObject, key: JSONObject): JSONObject {
+    internal fun manifest(receipt: JSONObject, key: JSONObject, handoverRecordedAt: Instant? = null): JSONObject {
         val text = receipt.getString("manifest")
         check(text.toByteArray(Charsets.UTF_8).size <= 65536) { "临时清单过大" }
         val sha = JwtVerifier.sha(text.toByteArray(Charsets.UTF_8))
@@ -27,7 +27,9 @@ object TemporaryVerifier {
         for (field in listOf("authorizationId", "bundleId")) check(signed.getString(field) == receipt.getString(field))
         check(claims.getString("manifestSha256") == sha && signed.getString("manifestSha256") == sha)
         val issued = Instant.parse(manifest.getString("issuedAt")); val expires = Instant.parse(manifest.getString("expiresAt"))
-        check(issued.nano == 0 && expires.nano == 0 && expires.epochSecond - issued.epochSecond == 172800L) { "临时资格期限错误" }
+        val duration = Math.subtractExact(expires.epochSecond, issued.epochSecond)
+        check(issued.nano == 0 && expires.nano == 0 &&
+            if (handoverRecordedAt == null) duration == 172800L else !issued.isBefore(handoverRecordedAt) && duration in 1..172800L) { "临时资格期限错误" }
         for (proof in listOf(claims, signed)) check(proof.getLong("iat") == issued.epochSecond && proof.getLong("exp") == expires.epochSecond)
         descriptors(manifest); return manifest
     }

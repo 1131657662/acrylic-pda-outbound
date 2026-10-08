@@ -37,6 +37,12 @@ internal class TemporaryHandoverUiFixture(val app: PdaApplication) : AutoCloseab
 
     private fun dispatcher(command: JSONObject) = object : Dispatcher() {
         override fun dispatch(request: RecordedRequest): MockResponse {
+            if (input.has("activationManifest") && request.path == "/api/v1/pda/handovers/$id/manifest") {
+                check(request.method == "GET")
+                calls.incrementAndGet()
+                return MockResponse().setHeader("Content-Type", "application/json").setHeader("Cache-Control", "no-store")
+                    .setBody(input.getString("activationManifest"))
+            }
             if (request.path != "/api/v1/pda/handovers/$id/temporary-confirmation") return MockResponse().setResponseCode(404)
                 .setHeader("Content-Type", "application/json").setBody("{\"code\":\"NOT_FOUND\",\"message\":\"isolated UI replay only\"}")
             check(SubmissionJson.canonical(JSONObject(request.body.readUtf8())) == SubmissionJson.canonical(command))

@@ -13,6 +13,7 @@ internal class TemporaryHandoverHttpConnection(input: JSONObject, private val ou
     var loseAck = true
     var losePackage = true
     var loseConfirmation = true
+    var loseActivation = true
     init { check(input.getString("baseUrl") == "http://127.0.0.1:19434/api/v1/") }
     override fun current() = session
     override fun now(): Instant = Instant.now()
@@ -31,6 +32,9 @@ internal class TemporaryHandoverHttpConnection(input: JSONObject, private val ou
         val bytes = network.original(request.path, request.body, headers(request.epoch), request.raw, request.maximumBytes)
         File(output, "original-${++ordinal}.json").writeBytes(bytes)
         request.body?.let { File(output, "command-$ordinal.json").writeBytes(it) }
+        if (request.path.endsWith("/manifest") && JSONObject(bytes.toString(Charsets.UTF_8)).optString("status") == "ACTIVATED" && loseActivation) {
+            loseActivation = false; throw java.io.IOException("Injected lost actual target activation response")
+        }
         if (request.path.endsWith("temporary-confirmation") && loseConfirmation) {
             loseConfirmation = false; throw java.io.IOException("Injected lost actual target confirmation response")
         }

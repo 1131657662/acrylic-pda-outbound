@@ -66,7 +66,7 @@ class TemporaryHandoverConfirmationDeviceTest {
             assertEquals("CONFIRMED", app.database.temporaryHandoverConfirmations().get(f.id)!!.state)
             ActivityScenario.launch<HandoverActivity>(Intent(app, HandoverActivity::class.java)).use { scenario ->
                 await { onView(withText(containsString("接收确认已保存"))).check(matches(withEffectiveVisibility(Visibility.VISIBLE))) }
-                reveal("核对主管处理结果", upwards = true)
+                reveal("核对并保存激活结果", upwards = true)
                 scenario.onActivity { activity ->
                     val cards = activity.findViewById<android.widget.LinearLayout>(R.id.cards)
                     val card = cards.getChildAt(0)

@@ -15,10 +15,10 @@ object TemporaryAckVerifier {
         return JwtVerifier.sha(text.toByteArray(Charsets.UTF_8))
     }
     fun declaration(row: TemporaryPreparation, request: TemporaryRequest): JSONObject {
-        val manifest = TemporaryVerifier.manifest(JSONObject(checkNotNull(request.receiptJson)), JSONObject(request.signingKeyJson))
+        val manifest = TemporaryHandoverAuthorization.declaration(request)
         val body = JSONObject(row.ackBodyJson); TemporaryVerifier.request(manifest, request)
         check(row.requestKey == request.key && row.authorizationId == manifest.getJSONObject("identity").getString("authorizationId"))
-        check(row.bundleId == manifest.getJSONObject("identity").getString("bundleId") && row.manifestSha256 == JSONObject(request.receiptJson).getString("manifestSha256"))
+        check(row.bundleId == manifest.getJSONObject("identity").getString("bundleId") && row.manifestSha256 == JSONObject(checkNotNull(request.receiptJson)).getString("manifestSha256"))
         check(body.keys().asSequence().toSet() == setOf("bundleId", "manifestSha256", "authorizationEpoch", "activatedAt"))
         check(body.getString("bundleId") == row.bundleId && body.getString("manifestSha256") == row.manifestSha256)
         check(Instant.parse(body.getString("activatedAt")).truncatedTo(java.time.temporal.ChronoUnit.MILLIS) == Instant.parse(row.activatedAt))

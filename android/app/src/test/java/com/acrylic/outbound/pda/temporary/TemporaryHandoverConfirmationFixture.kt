@@ -7,7 +7,8 @@ import java.io.File
 import java.util.UUID
 
 /** Network-boundary fixture signs only a generated recipient receipt; product Room operations remain real. */
-internal class TemporaryHandoverConfirmationFixture(root: File) : AutoCloseable {
+internal class TemporaryHandoverConfirmationFixture(root: File,
+    configure: (TemporaryHandoverFixture) -> Unit = {}) : AutoCloseable {
     val stage = TemporaryHandoverFixture(root)
     val db get() = stage.db
     val id get() = stage.caseId
@@ -25,7 +26,10 @@ internal class TemporaryHandoverConfirmationFixture(root: File) : AutoCloseable 
         }
     }
     val repository get() = TemporaryHandoverConfirmationRepository(db, connection, true)
-    init { stage.repository.stage(id) }
+    init {
+        if (!stage.session.has("sessionId")) stage.session.put("sessionId", UUID.randomUUID().toString())
+        configure(stage); stage.repository.stage(id)
+    }
 
     private fun signed(command: JSONObject, epoch: String): ByteArray {
         val bound = JSONObject().put("caseId", id).put("transportRecoveryEpoch", epoch).put("command", command)
@@ -35,7 +39,7 @@ internal class TemporaryHandoverConfirmationFixture(root: File) : AutoCloseable 
             .put("preparedTicket", stage.manifest.getJSONObject("preparedTicket"))
             .put("checklist", stage.manifest.getJSONArray("checklist")).put("capabilities", stage.manifest.getJSONObject("capabilities"))
         val actor = JSONObject()
-        for (field in listOf("userId", "deviceId", "warehouseId", "userAuthVersion", "deviceVersion")) actor.put(field, stage.session.getString(field))
+        for (field in listOf("userId", "deviceId", "warehouseId", "userAuthVersion", "deviceVersion", "sessionId")) actor.put(field, stage.session.getString(field))
         receipt.put("actor", actor); transform(receipt)
         val token = stage.signer.jwt(JSONObject().put("iss", "acrylic-outbound")
             .put("aud", "acrylic-pda-temporary-handover-confirmation").put("receipt", receipt))

@@ -15,7 +15,7 @@ class TemporaryFreeze(private val store: TemporaryWorkStore) {
             val draft = store.check(id, false)
             store.db.temporarySubmissions().forOrder(id)?.let { return@Callable it }
             store.requireNoOtherInput(id)
-            val dao = store.db.temporaryScans(); check(draft.canScan(store.continuationDevelopment) && store.total(id).count > 0) { "须有有效装车记录才能结单" }
+            val dao = store.db.temporaryScans(); check(store.canScan(draft) && store.total(id).count > 0) { "须有有效装车记录才能结单" }
             check(dao.pending(id) == null && dao.failure(id) == null) { "请先处理本单全部未决输入和失败" }
             val totals = store.products(id).associateBy { it.deliveryCode }
             val short = store.db.temporaryDrafts().lines(id).any { (totals[it.deliveryCode]?.count ?: 0) < it.plannedCount }
