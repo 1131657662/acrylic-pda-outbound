@@ -6,20 +6,20 @@
 ```yaml
 date: 2026-10-09
 branch: codex/development
-head: 891c1f0
-dirty_entries: 59
+head: db33fb7
+dirty_entries: 60
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
-server: { contract: 0.49.0, paths: 146, flyway: V72, migrations: 72 }
+server: { contract: 0.49.0, paths: 146, flyway: V74, migrations: 74 }
 ```
 <!-- FACTS_END -->
-总目标 D01–D18 已按用户明确指令恢复，未完成；仅原计划第8节全部同时满足才可complete。本次接续完整快照见.local/d01-d18-20261008/d06-matrix-resume-01，旧看板已保全至其board-before.md。详细接续见[暂停断点](history/D01_D18_PAUSE_2026-10-08.md)和[执行记录](history/D01_D18_EXECUTION_2026-10-07.md)。
+总目标 D01–D18 已按用户明确指令恢复，未完成；仅原计划第8节全部同时满足才可complete。混合接续完整快照见.local/d01-d18-20261008/d06-mixed-checkpoint-09（57条dirty及副本/hash/diff/进程/监听/磁盘，早于SQL快照补强），旧看板在board-before.md。详细接续见[暂停断点](history/D01_D18_PAUSE_2026-10-08.md)、[执行记录](history/D01_D18_EXECUTION_2026-10-07.md)和[混合记录](history/D06_MIXED_EXECUTION_2026-10-09.md)。
 
 ## Git、写权与环境
-- 树D:/acrylic-pda-outbound、分支codex/development；HEAD/实际远端均891c1f0136278b95400b934b19c2b9b1afd7bdcc。STOP修复与收口记录已正常提交推送；旧看板SHA落后，本次按实际核对纠正。接续前全部19条dirty/未跟踪路径有完整副本/hash/diff，不混入本批。
-- 本聊天唯一源码/测试及记录写者；前开发聊天idle，其余项目聊天notLoaded。tools/cleanup-rebuildable.ps1属清理聊天，保护且不混入本批。全部57条dirty副本/hash/diff和Git/环境在d06-multihop-checkpoint-04；原收口快照三项登记hash重算一致。1104–1109失败及1110成功保全并认证停机；19330/19434无监听，19387属Harness，既有3306/13316不操作。
-- 1099编译失败未建库；1100/1101/1102失败保全并认证停机，不复用。1103完成真实HTTP/MySQL/Android STOP组合并认证停机，19330/19434无监听。UI-08已认证停机；没有重型Gradle或模拟器在途，未操作真机或既有MySQL。
-- D盘失败库/datadir/dump/hash/binlog/日志保全；C盘旧清理回执见D:/disk-audits/c-cleanup-20261008-01，历史取回仍核[归档位置](LOCAL_ARCHIVE_LOCATIONS.md)。本次C/D可用约75.6/41.4GiB，精确字节见接续快照disks.json；新增缓存/TEMP/TMP/Java临时/AVD均任务级指向D盘，不清理业务证据。
+- 树D:/acrylic-pda-outbound、分支codex/development；HEAD/实际远端均db33fb77399c208b25ad060799766b117a8d594d。本批40条D06路径已提交推送；回执/暂存清单见d06-multihop-checkpoint-05。19条继承dirty逐hash保持、不混入本批。
+- 本聊天唯一源码/测试及记录写者；前开发聊天idle，其余项目聊天notLoaded。tools/cleanup-rebuildable.ps1属清理聊天，保护且不混入本批。提交前全部59条dirty副本/hash/diff和Git/环境在d06-multihop-checkpoint-05；原收口快照三项登记hash重算一致。1104–1109失败及1110成功保全并认证停机；19330/19434无监听，19387属Harness，既有3306/13316不操作。
+- 1099编译失败未建库；1100/1101/1102失败保全并认证停机，不复用。1103完成真实HTTP/MySQL/Android STOP组合并认证停机，19330/19434无监听。UI-08已认证停机；1118及两端回归已结束，没有重型Gradle或模拟器在途，未操作真机或既有MySQL。
+- D盘失败库/datadir/dump/hash/binlog/日志保全；C盘旧清理回执见D:/disk-audits/c-cleanup-20261008-01，历史取回仍核[归档位置](LOCAL_ARCHIVE_LOCATIONS.md)。本次C/D可用80780091392/24711811072字节；新增缓存/TEMP/TMP/Java临时/AVD均任务级指向D盘，不清理业务证据。
 
 ## D01–D18断点
 - D01证据映射/基线已建立；D02/D03开发范围已有分层通过证据，旧输入不拼成最终整合通过。D04候选排除和D05取消释放缺政策，保持拒绝且整体未通过。
@@ -37,6 +37,7 @@ server: { contract: 0.49.0, paths: 146, flyway: V72, migrations: 72 }
 - 占用补不可变activation owner与本轮suffix精确合并，定向33/0/0/0；LOCAL-only前驱补绑定读取后34/0/0/0，真实组合仍待验。高轮/多跳/局部ID重叠/减包/未冻结/无canonical/LOCAL_FROZEN_PAYLOAD-only及新开轮实际页面仍须相应证据。D07–D17未通过，D18无最终候选；开发缺口不得转现场清单。
 
 ## 边界与下一动作
+- 混合R06/TEMP前驱、历史身份、owner及设备/累计high已补；server-unit-04为224/0/0/0，Android-unit-05为13/0/0/0含实际扫码suffix。1111分配格式拒绝/0测试/未建库；1112专项1/1/0/0，接收至STOP通过，高轮RETAIN被旧总门拒绝；dump/hash/认证停机/PID/端口通过。修复仅已ABORTED高轮全RETAIN，释放/隔离/关闭仍拒绝；1113失败1/1/0/0：非空迁移比较通过，接收人缺resume；仅合成夹具显式授权，生产岗位不改。1114失败1/1/0/0：交接owner清单摘要误作scan摘要，未到SQL尾写。两批sourceUnchanged、dump/hash/认证停机/PID/端口通过。原件读取及精确合法owner转移断言已修，unit-05为45/0/0/0；unit-06为163/0/0/0。1115确认漏R06 activation身份，1116命令receipt origin触发器拒绝；两批1/1/0/0、保全停机。补严格记账身份与新增command origin迁移、直接伪造反例、精确SQL故障检查后1117专项1/0/0/0、sourceUnchanged，实际A→TEMP B→R06 B→成功及重启消费通过；独立Node签名/原文及只读Room消费者通过。1116/1117 dump独立重算、认证停机/PID/端口通过。补强续作票据/激活/保留包/closure回滚快照后1118专项1/0/0/0、10个Android实际阶段各1/0/0/0，独立消费者/非空迁移全表及私有字节/dump重算/停机通过。服务端普通全回归02为3355/0/0/1，01参数错误0测试保留；Android受影响回归514/0/0/10、默认debug APK/lint通过（0 lint errors），HTTP skip未执行。compile/单测失败及skip保留。下一步明确41条范围提交推送，再补反向与LOCAL-only；19条继承dirty逐hash一致。
 - 生产默认开关、签名能力、七类决定handler/POST/放行/证据写入/关闭能力均false；localDeletionAllowed=false。不接原库/现网、不合main、不发布部署/正式签名/标签/Release，不删证据、不绕审批。
 - 原资料/旧BCD/526及历史失败、恢复限制保持；原身份/Keystore、真实双机、实体键/断电/长时/规模、正式HTTPS/异地介质/生产RPO-RTO/Linux现场仅按C01–C08保留。
 - STOP修复、专项组合、产品页和受影响回归已自审并提交推送。本次已完成D06高轮完整历史链/多跳/局部设备序号重叠的离线链证据与受影响服务端回归；1110真实隔离HTTP/MySQL/Android链和UI-04页面证据见`history/D06_MULTIHOP_EXECUTION_2026-10-08.md`及`.local/d01-d18-20261008/d06-multihop-consumers/`。高轮链及continuation/handover回归、源证据边界回归均通过。减包、未冻结/无canonical、LOCAL_FROZEN_PAYLOAD-only虽已有拒绝实现/单测证据，尚未在本轮真实HTTP/MySQL/Android组合复验；混合R06/TEMP历史仍有只认单一前驱格式的开发缺口。禁止复用失败库或把1103单跳外推为D06整体通过。之后继续分配新隔离编号完成真实组合，再按依赖推进D07–D18；目标active，不拼接历史输入为最终整合通过。

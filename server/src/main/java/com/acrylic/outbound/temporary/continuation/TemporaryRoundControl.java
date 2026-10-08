@@ -12,7 +12,8 @@ public record TemporaryRoundControl(SubmissionControl control, Reference predece
             "TEMP续作正文版本错误");
         var source=body.path("source");
         require(source.isObject() && source.size()==3 && "TEMP".equals(text(source,"kind")),"TEMP续作来源错误");
-        require(body.path("assignmentId").isNull() && body.path("continuationId").isNull(),"TEMP续作不得使用正式授权");
+        require(body.path("assignmentId").isNull() && body.path("continuationId").isNull()
+            && !body.has("temporaryHandover"),"TEMP续作不得使用正式授权或交接票据");
         UUID creator=uuid(source,"creatorDeviceId"),device=uuid(body,"freezeDeviceId");
         equal(creator,device,"TEMP续作须原设备冻结");
         long round=number(body,"workRound");String epoch=text(body,"sourceRecoveryEpoch");

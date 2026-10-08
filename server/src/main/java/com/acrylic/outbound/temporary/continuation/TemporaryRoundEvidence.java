@@ -36,6 +36,7 @@ public class TemporaryRoundEvidence {
         var old=input.previous();var source=input.source();var c=old.control();
         equal(sha(input.original()),request.predecessor().payloadSha256(),"续作前驱原文摘要不符");
         var originalControl=c.round()==1?SubmissionControl.read(uuid(input.original(),"submissionId"),input.original())
+            :input.original().has("temporaryHandover")?com.acrylic.outbound.handover.TemporaryHandoverControl.read(input.original()).control()
             :TemporaryRoundControl.read(input.original()).control();
         equal(originalControl,c,"续作前驱控制头不符");
         require(c.temporary()!=null && c.round()==source.fromRound()

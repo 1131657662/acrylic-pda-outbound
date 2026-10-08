@@ -62,6 +62,11 @@ public final class HandoverTemporaryAndroidBridge {
     public void completeWork(WebApplicationContext app) throws Exception {
         new HandoverTemporarySubmissionChecks(f,app,directory).verify();
     }
+    public void continuation(WebApplicationContext app,String phase) throws Exception {
+        var checks=new HandoverTemporaryReceivingContinuation(f,app,directory);
+        switch(phase) {case "activate" -> checks.activate();case "complete" -> checks.complete();
+            default -> throw new IllegalArgumentException("Unknown mixed continuation phase");}
+    }
     public void stop(WebApplicationContext app,String phase) throws Exception {
         f.source.jdbc=app.getBean(org.springframework.jdbc.core.JdbcTemplate.class);
         var checks=new HandoverTemporaryReceivingStopChecks(f,directory);

@@ -37,7 +37,7 @@ class HandoverTemporaryPayloadTest {
         String hash = files.store(HandoverReceiptCodec.bytes(body));
         var jdbc = mock(JdbcTemplate.class);
         when(jdbc.queryForList(anyString(), eq(String.class), any(Object.class))).thenReturn(List.of(hash));
-        return new HandoverTemporaryPayload(jdbc, files, null, null, null);
+        return new HandoverTemporaryPayload(jdbc, files, null, null, null, null, null);
     }
 
     private HandoverTemporaryRoots.Verified roots() {

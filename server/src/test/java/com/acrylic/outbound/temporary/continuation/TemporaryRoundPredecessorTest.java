@@ -72,6 +72,31 @@ class TemporaryRoundPredecessorTest {
         when(jdbc.query(anyString(),any(RowMapper.class),any(Object[].class))).thenReturn(List.of());
         fails("TEMP_CONTINUATION_PREDECESSOR_UNAVAILABLE");
     }
+    @Test void readsAcceptedHandoverRoundBeforeContinuationWithoutChangingItsDevice() {
+        handoverOriginal();accepted(canonical(original));
+        assertThat(reader.read(control(),source)).isEqualTo(original);
+        assertThat(reader.read(control(),source).path("source")).isEqualTo(original.path("source"));
+    }
+    @Test void readsLocalFrozenHandoverRoundBeforeContinuation() throws Exception {
+        handoverOriginal();byte[] raw=canonical(original).getBytes(StandardCharsets.UTF_8);
+        var stored=files.store(new java.io.ByteArrayInputStream(raw),raw.length,sha(original));
+        reference().put("predecessorPayloadSha256",sha(original));
+        when(jdbc.query(anyString(),any(RowMapper.class),any(Object[].class))).thenReturn(List.of(stored));
+        assertThat(reader.read(control(),source)).isEqualTo(original);
+    }
+    @Test void refusesTwoTicketKindsInFrozenHandoverOriginal() {
+        handoverOriginal();original.set("temporaryContinuation",reference().deepCopy());accepted(canonical(original));
+        assertThatThrownBy(()->reader.read(control(),source)).isInstanceOf(BusinessException.class);
+    }
+    private void handoverOriginal() {
+        original.put("schemaVersion",2).put("workRound","2");request.put("workRound","3");
+        original.putObject("temporaryHandover").put("version",1).put("ticketId",UUID.randomUUID().toString())
+            .put("caseId",UUID.randomUUID().toString()).put("predecessorSubmissionId",UUID.randomUUID().toString())
+            .put("predecessorPayloadSha256","c".repeat(64)).put("sourcePrefixSha256","d".repeat(64));
+        source=new TemporaryRoundFacts.Source(source.scope(),source.warehouse(),source.previous(),source.previousAuthorization(),
+            2,3,source.epoch(),source.evidenceSet(),source.nextSequence(),source.retainedHash(),source.status(),
+            source.authorization(),source.client(),source.device(),source.operator());
+    }
     private void accepted(String text) {
         String hash=submissions.store(text.getBytes(StandardCharsets.UTF_8));
         reference().put("predecessorPayloadSha256",hash);

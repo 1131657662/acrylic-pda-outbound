@@ -10,9 +10,11 @@ internal class TemporaryContinuationBaseline(private val store: TemporaryWorkSto
     fun read(draft: TemporaryDraft, requireAck: Boolean = true): Baseline? {
         if (draft.workRound == 1L) return null
         val link = checkNotNull(store.db.temporaryContinuations().forTarget(draft.clientOrderId)) { "续作消费记录缺失" }
+        check(store.db.temporaryHandoverActivations().caseForTarget(draft.clientOrderId) == null) { "前驱票据类型冲突" }
         val old = checkNotNull(store.db.temporaryDrafts().get(link.sourceClientOrderId))
         check(old.workRound >= 1L && Math.addExact(old.workRound, 1) == draft.workRound) { "续作前驱轮次不连续" }
-        val earlier = read(old, requireAck = false)
+        val handover = if (store.isHandover(old.clientOrderId)) TemporaryHandoverBaseline(store).read(old, false) else null
+        val earlier = if (handover == null) read(old, requireAck = false) else null
         val frozen = checkNotNull(store.db.temporarySubmissions().get(link.sourceSubmissionId))
         check(frozen.clientOrderId == old.clientOrderId && frozen.sha256 == link.sourcePayloadSha256)
         val prepared = checkNotNull(store.db.temporary().byAuthorization(old.authorizationId))
@@ -21,7 +23,7 @@ internal class TemporaryContinuationBaseline(private val store: TemporaryWorkSto
         val verified = TemporaryContinuationProtocol.verify(link.receiptJson.toByteArray(Charsets.UTF_8),
             TemporaryContinuationProtocol.Input(old, frozen, source.manifest,
                 TemporaryAccess(store.db, store.connection).snapshot(), JSONObject(request.signingKeyJson),
-                earlier?.original, earlier?.rootClientOrderId ?: old.clientOrderId))
+                handover?.original ?: earlier?.original, earlier?.rootClientOrderId ?: old.clientOrderId))
         check(verified.ticketId == link.ticketId && verified.newClientOrderId == draft.clientOrderId)
         check(verified.toRound == draft.workRound && verified.authorization.getString("authorizationId") == draft.authorizationId)
         val currentPreparation = checkNotNull(store.db.temporary().byAuthorization(draft.authorizationId))

@@ -15,9 +15,10 @@ class TemporaryContinuationActivation(private val store: TemporaryWorkStore) {
             val source = store.source(id)
             val frozen = checkNotNull(store.db.temporarySubmissions().forOrder(id)) { "原冻结正文不存在" }
             LocalE2aStopRepository(store).record(id)
-            val baseline = TemporaryContinuationBaseline(store).read(draft, requireAck = false)
+            val handover = if (store.isHandover(id)) TemporaryHandoverBaseline(store).read(draft, false) else null
+            val baseline = if (handover == null) TemporaryContinuationBaseline(store).read(draft, requireAck = false) else null
             val input = TemporaryContinuationProtocol.Input(draft, frozen, source.manifest, expected, JSONObject(source.request.signingKeyJson),
-                baseline?.original, baseline?.rootClientOrderId ?: draft.clientOrderId)
+                handover?.original ?: baseline?.original, baseline?.rootClientOrderId ?: draft.clientOrderId)
             val verified = TemporaryContinuationProtocol.verify(raw, input)
             val saved = store.db.temporaryContinuations().forSource(id)
             val result = if (saved != null) replay(saved, verified, frozen) else persist(draft, verified, frozen)
@@ -29,7 +30,8 @@ class TemporaryContinuationActivation(private val store: TemporaryWorkStore) {
         val source = store.source(draft.clientOrderId)
         val manifest = JSONObject(verified.authorization.getString("manifest"))
         TemporaryVerifier.time(manifest, store.connection.now())
-        val newRequest = source.request.copy(key = verified.ticketId, receiptJson = verified.authorization.toString(),
+        val command = JSONObject(source.request.bodyJson).apply { remove("temporaryHandoverActivation") }
+        val newRequest = source.request.copy(key = verified.ticketId, bodyJson = SubmissionJson.canonical(command), receiptJson = verified.authorization.toString(),
             previousKey = source.request.key)
         store.db.temporary().insertRequest(newRequest)
         val payloads = TemporaryParts(store.db).read(draft.authorizationId, source.manifest)

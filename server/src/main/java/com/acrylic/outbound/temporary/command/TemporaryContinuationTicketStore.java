@@ -17,8 +17,10 @@ import org.springframework.transaction.annotation.*;
 public class TemporaryContinuationTicketStore {
     private final JdbcTemplate jdbc;
     private final TemporaryTrustedScanHighWatermark highWatermarks;
-    public TemporaryContinuationTicketStore(JdbcTemplate jdbc, TemporaryTrustedScanHighWatermark highWatermarks) {
-        this.jdbc = jdbc; this.highWatermarks = highWatermarks;
+    private final TemporaryContinuationRetainedScans retainedScans;
+    public TemporaryContinuationTicketStore(JdbcTemplate jdbc, TemporaryTrustedScanHighWatermark highWatermarks,
+            TemporaryContinuationRetainedScans retainedScans) {
+        this.jdbc = jdbc; this.highWatermarks = highWatermarks; this.retainedScans=retainedScans;
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
@@ -65,17 +67,30 @@ public class TemporaryContinuationTicketStore {
 
     private List<History> history(PhysicalDispositionVerification.Verified verified) {
         var rows = jdbc.query("""
-            SELECT h.disposition_id,h.bale_id,h.dispatch_cycle,h.action,i.record_sha256
+            SELECT h.disposition_id,h.bale_id,h.dispatch_cycle,h.action,COALESCE(i.record_sha256,b.record_sha256),o.bale_id
             FROM temporary_physical_disposition_history h
             JOIN temporary_physical_disposition d ON d.id=h.disposition_id
-            JOIN source_evidence_item i ON i.set_id=d.evidence_set_id AND i.scope_id=h.scope_id
+            JOIN submission s ON s.id=h.submission_id AND s.scope_id=h.scope_id AND s.work_round=h.work_round
+            LEFT JOIN source_evidence_item i ON i.set_id=d.evidence_set_id AND i.scope_id=h.scope_id
               AND i.submission_id=h.submission_id AND i.work_round=h.work_round AND i.bale_id=h.bale_id
               AND i.item_kind='SCAN' AND i.record_status='ACTIVE' AND i.original_cycle=h.dispatch_cycle
+            LEFT JOIN temporary_handover_submission hr ON hr.submission_id=s.id AND hr.scope_id=s.scope_id AND hr.to_work_round=s.work_round
+            LEFT JOIN temporary_handover_activation a ON a.ticket_id=hr.ticket_id AND a.to_work_round=s.work_round
+              AND a.new_authorization_id=s.temporary_authorization_id AND a.target_device_id=s.freeze_device_id AND a.target_user_id=s.operator_id
+            LEFT JOIN temporary_handover_activation_owner o ON o.ticket_id=a.ticket_id AND o.bale_id=h.bale_id AND o.dispatch_cycle=h.dispatch_cycle
+            LEFT JOIN temporary_source_continuation_submission r ON r.submission_id=s.id AND r.scope_id=s.scope_id AND r.to_work_round=s.work_round
+            LEFT JOIN temporary_source_continuation_activation n ON n.ticket_id=r.ticket_id AND n.scope_id=r.scope_id AND n.from_work_round=r.from_work_round
+              AND n.new_authorization_id=s.temporary_authorization_id AND n.target_device_id=s.freeze_device_id AND n.target_operator_id=s.operator_id
+            LEFT JOIN temporary_source_continuation_bale b ON b.continuation_id=n.ticket_id AND b.scope_id=s.scope_id
+              AND b.from_work_round=r.from_work_round AND b.bale_id=h.bale_id AND b.expected_cycle=h.dispatch_cycle
             WHERE h.scope_id=? AND h.submission_id=? AND h.work_round=? AND d.evidence_set_id=?
               AND d.evidence_verification_id=? AND d.close_mode=FALSE
+              AND (i.record_sha256 IS NOT NULL OR o.bale_id IS NOT NULL OR b.record_sha256 IS NOT NULL)
+              AND (i.record_sha256 IS NULL OR b.record_sha256 IS NULL OR i.record_sha256=b.record_sha256)
+              AND (a.ticket_id IS NULL OR n.ticket_id IS NULL)
             ORDER BY h.bale_id FOR UPDATE
             """, (rs, n) -> new History(toUuid(rs.getBytes(1)), toUuid(rs.getBytes(2)), rs.getLong(3),
-                rs.getString(4), rs.getString(5)), Ids.bytes(verified.scope()), Ids.bytes(verified.submission()), verified.round(),
+                rs.getString(4), rs.getString(5),rs.getBytes(6)!=null), Ids.bytes(verified.scope()), Ids.bytes(verified.submission()), verified.round(),
                 Ids.bytes(verified.set()), Ids.bytes(verified.verification()));
         if (rows.isEmpty() || rows.stream().anyMatch(row -> !"RETAIN".equals(row.action())))
             throw conflict("CONTINUATION_RETAINED_SET_INVALID");
@@ -83,7 +98,16 @@ public class TemporaryContinuationTicketStore {
         if (new HashSet<>(ids).size() != ids.size()
             || !new HashSet<>(verified.activeBales()).equals(new HashSet<>(ids)))
             throw conflict("CONTINUATION_RETAINED_SET_INVALID");
-        return List.copyOf(rows);
+        if(rows.stream().noneMatch(History::handoverOwner))return List.copyOf(rows);
+        var original=retainedScans.read(verified);
+        return rows.stream().map(row->scanHistory(row,original)).toList();
+    }
+
+    private History scanHistory(History row,Map<UUID,TemporaryContinuationRetainedScans.Scan> original) {
+        var scan=original.get(row.bale());
+        if(scan==null || scan.cycle()!=row.cycle() || (row.recordSha256()!=null && !row.recordSha256().equals(scan.sha256())))
+            throw conflict("CONTINUATION_RETAINED_SET_INVALID");
+        return new History(row.disposition(),row.bale(),row.cycle(),row.action(),scan.sha256(),row.handoverOwner());
     }
 
     private void insertBale(UUID ticket, UUID scope, long round, History row) {
@@ -108,6 +132,6 @@ public class TemporaryContinuationTicketStore {
         var buffer = java.nio.ByteBuffer.wrap(bytes); return new UUID(buffer.getLong(), buffer.getLong());
     }
     private static BusinessException conflict(String code) { return new BusinessException(409, code, "TEMP continuation ticket cannot be issued"); }
-    private record History(UUID disposition, UUID bale, long cycle, String action, String recordSha256) { }
+    private record History(UUID disposition, UUID bale, long cycle, String action, String recordSha256,boolean handoverOwner) { }
     public record Ticket(UUID id, long fromRound, long toRound, List<TemporaryRetainedManifest.Item> items) { }
 }

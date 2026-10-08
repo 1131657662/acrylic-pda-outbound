@@ -102,13 +102,26 @@ public class PhysicalDispositionStore {
               AND ((k.state='SOURCE_RESERVED' AND k.source_evidence_set_id=? AND k.submission_id IS NULL)
                 OR (k.state='REVIEW_RESERVED' AND k.submission_id=? AND k.source_evidence_set_id IS NULL
                     AND k.order_id=c.canonical_order_id))
-              AND EXISTS (SELECT 1 FROM source_evidence_item i WHERE i.set_id=? AND i.scope_id=?
+              AND (EXISTS (SELECT 1 FROM source_evidence_item i WHERE i.set_id=? AND i.scope_id=?
                 AND i.submission_id=? AND i.work_round=? AND i.warehouse_id=? AND i.bale_id=k.bale_id
                 AND i.original_cycle=k.dispatch_cycle AND i.item_kind='SCAN' AND i.record_status='ACTIVE')
+                OR EXISTS (SELECT 1 FROM submission s
+                  LEFT JOIN temporary_handover_submission hr ON hr.submission_id=s.id AND hr.scope_id=s.scope_id AND hr.to_work_round=s.work_round
+                  LEFT JOIN temporary_handover_activation ha ON ha.ticket_id=hr.ticket_id AND ha.to_work_round=s.work_round
+                    AND ha.new_authorization_id=s.temporary_authorization_id AND ha.target_device_id=s.freeze_device_id AND ha.target_user_id=s.operator_id
+                  LEFT JOIN temporary_handover_activation_owner o ON o.ticket_id=ha.ticket_id AND o.bale_id=k.bale_id AND o.dispatch_cycle=k.dispatch_cycle
+                  LEFT JOIN temporary_source_continuation_submission r ON r.submission_id=s.id AND r.scope_id=s.scope_id AND r.to_work_round=s.work_round
+                  LEFT JOIN temporary_source_continuation_activation a ON a.ticket_id=r.ticket_id AND a.scope_id=r.scope_id AND a.from_work_round=r.from_work_round
+                    AND a.new_authorization_id=s.temporary_authorization_id AND a.target_device_id=s.freeze_device_id AND a.target_operator_id=s.operator_id
+                  LEFT JOIN temporary_source_continuation_bale b ON b.continuation_id=a.ticket_id AND b.scope_id=r.scope_id
+                    AND b.from_work_round=r.from_work_round AND b.bale_id=k.bale_id AND b.expected_cycle=k.dispatch_cycle
+                  WHERE s.id=? AND s.scope_id=k.source_scope_id AND s.work_round=?
+                    AND (ha.ticket_id IS NULL OR a.ticket_id IS NULL) AND (o.bale_id IS NOT NULL OR b.bale_id IS NOT NULL)))
             FOR UPDATE
             """, Ids.bytes(bale), Ids.bytes(verified.scope()), Ids.bytes(verified.warehouse()), cycle,
             Ids.bytes(verified.set()), Ids.bytes(verified.submission()), Ids.bytes(verified.set()),
-            Ids.bytes(verified.scope()), Ids.bytes(verified.submission()), verified.round(), Ids.bytes(verified.warehouse())).size();
+            Ids.bytes(verified.scope()), Ids.bytes(verified.submission()), verified.round(), Ids.bytes(verified.warehouse()),
+            Ids.bytes(verified.submission()),verified.round()).size();
     }
 
     private int release(PhysicalDispositionVerification.Verified verified, UUID bale, long cycle) {

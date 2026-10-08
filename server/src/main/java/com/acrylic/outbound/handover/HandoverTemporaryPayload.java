@@ -3,6 +3,8 @@ package com.acrylic.outbound.handover;
 import com.acrylic.outbound.common.*;
 import com.acrylic.outbound.submissions.*;
 import com.acrylic.outbound.temporary.continuation.TemporaryRoundControl;
+import com.acrylic.outbound.temporary.continuation.TemporaryRoundFacts;
+import com.acrylic.outbound.temporary.continuation.TemporaryRoundPredecessor;
 import com.acrylic.outbound.temporary.evidence.*;
 import com.acrylic.outbound.temporary.protocol.E2aPageItem;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,10 +23,14 @@ final class HandoverTemporaryPayload {
     private final SourceEvidenceIntakeObjectFiles objects;
     private final SourceEvidenceIntakePageObjects pages;
     private final SourceEvidenceIntakeFiles pageFiles;
+    private final TemporaryRoundFacts continuations;
+    private final TemporaryRoundPredecessor continuationOriginals;
 
     HandoverTemporaryPayload(JdbcTemplate jdbc, SubmissionFiles submissions, SourceEvidenceIntakeObjectFiles objects,
-            SourceEvidenceIntakePageObjects pages, SourceEvidenceIntakeFiles pageFiles) {
+            SourceEvidenceIntakePageObjects pages, SourceEvidenceIntakeFiles pageFiles,
+            TemporaryRoundFacts continuations, TemporaryRoundPredecessor continuationOriginals) {
         this.jdbc = jdbc; this.submissions = submissions; this.objects = objects; this.pages = pages; this.pageFiles = pageFiles;
+        this.continuations = continuations; this.continuationOriginals = continuationOriginals;
     }
 
     JsonNode read(HandoverTemporaryRoots.Verified roots, HandoverStopStore.Origin origin) {
@@ -37,14 +43,19 @@ final class HandoverTemporaryPayload {
                 || !control.temporary().authorization().equals(origin.temporary().authorization())
                 || !control.temporary().creator().equals(origin.temporary().creator())
                 || !control.temporary().client().equals(origin.temporary().client())) throw HandoverTemporaryRoots.changed();
-        var predecessor = predecessor(body);
+        var predecessor = predecessor(body, origin);
         if (predecessor != null) prefix(body, predecessor);
         records(items, array(body, "captures"), "CAPTURE", "id", predecessor);
         records(items, array(body, "scans"), "SCAN", "captureId", predecessor);
         return body;
     }
 
-    private JsonNode predecessor(JsonNode body) {
+    private JsonNode predecessor(JsonNode body, HandoverStopStore.Origin origin) {
+        if (body.has("temporaryContinuation")) {
+            var request = TemporaryRoundControl.read(body);
+            var source = continuations.read(request, new SubmissionAccess.Actor(origin.operator(), origin.warehouse(), ""));
+            return continuationOriginals.read(request, source);
+        }
         if (!body.has("temporaryHandover")) return null;
         var reference = body.path("temporaryHandover");
         var id = uuid(reference, "predecessorSubmissionId");

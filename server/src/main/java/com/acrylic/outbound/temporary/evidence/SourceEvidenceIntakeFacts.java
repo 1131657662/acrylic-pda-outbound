@@ -54,7 +54,7 @@ public class SourceEvidenceIntakeFacts {
     private java.util.List<String> readWithContinuations(UUID submission) {
         return jdbc.queryForList("""
             SELECT JSON_OBJECT('scopeId',BIN_TO_UUID(c.id),'warehouseId',BIN_TO_UUID(c.warehouse_id),
-              'creatorDeviceId',BIN_TO_UUID(c.creator_device_id),'scopeClientOrderId',BIN_TO_UUID(c.client_order_id),
+              'creatorDeviceId',BIN_TO_UUID(COALESCE(n.target_device_id,c.creator_device_id)),'scopeClientOrderId',BIN_TO_UUID(c.client_order_id),
               'clientOrderId',BIN_TO_UUID(CASE WHEN s.work_round=1 THEN c.client_order_id ELSE n.new_client_order_id END),
               'submissionId',BIN_TO_UUID(s.id),'workRound',CAST(s.work_round AS CHAR),'scopeRound',CAST(c.work_round AS CHAR),
               'originalOperatorId',BIN_TO_UUID(s.operator_id),'freezeDeviceId',BIN_TO_UUID(s.freeze_device_id),
@@ -71,7 +71,7 @@ public class SourceEvidenceIntakeFacts {
             JOIN temporary_authorization a ON a.id=s.temporary_authorization_id
               AND ((s.work_round=1 AND a.id=t.authorization_id) OR (s.work_round>1 AND a.id=n.new_authorization_id
                 AND fresh.authorization_id=a.id AND n.target_operator_id=s.operator_id AND n.target_device_id=s.freeze_device_id))
-              AND a.device_id=c.creator_device_id AND a.device_id=s.freeze_device_id AND a.user_id=s.operator_id
+              AND a.device_id=COALESCE(n.target_device_id,c.creator_device_id) AND a.device_id=s.freeze_device_id AND a.user_id=s.operator_id
               AND a.warehouse_id=c.warehouse_id AND a.recovery_epoch=s.source_recovery_epoch
             WHERE s.id=? AND c.source_order_id IS NULL AND s.assignment_id IS NULL AND s.continuation_id IS NULL
             """,String.class,Ids.bytes(submission));

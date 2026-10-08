@@ -50,7 +50,9 @@ public class TemporaryRoundPredecessor {
         catch(java.io.IOException failure) { throw conflict("TEMP_CONTINUATION_PREDECESSOR_UNAVAILABLE"); }
     }
     private void identity(TemporaryRoundFacts.Source source,JsonNode body) {
-        var c=source.fromRound()==1?SubmissionControl.read(uuid(body,"submissionId"),body):TemporaryRoundControl.read(body).control();
+        var c=source.fromRound()==1?SubmissionControl.read(uuid(body,"submissionId"),body)
+            :body.has("temporaryHandover")?com.acrylic.outbound.handover.TemporaryHandoverControl.read(body).control()
+            :TemporaryRoundControl.read(body).control();
         if(c.temporary()==null || !c.id().equals(source.previous()) || c.round()!=source.fromRound()
             || !c.device().equals(source.device()) || !c.epoch().equals(source.epoch())
             || !c.temporary().authorization().equals(source.previousAuthorization()))
@@ -62,10 +64,19 @@ public class TemporaryRoundPredecessor {
               AND r.to_work_round=s.work_round AND r.from_work_round=s.work_round-1
             LEFT JOIN temporary_source_continuation_activation a ON a.ticket_id=r.ticket_id AND a.scope_id=c.id
               AND a.from_work_round=r.from_work_round AND a.new_authorization_id=s.temporary_authorization_id
-            JOIN temporary_work_origin o ON o.creator_device_id=c.creator_device_id
-              AND o.client_order_id=COALESCE(a.new_client_order_id,c.client_order_id) AND o.authorization_id=s.temporary_authorization_id
-            WHERE c.id=? AND c.creator_device_id=? AND o.client_order_id=?
-              AND (s.work_round=1 OR a.ticket_id IS NOT NULL)
+              AND a.target_device_id=s.freeze_device_id AND a.target_operator_id=s.operator_id
+            LEFT JOIN temporary_handover_submission hr ON hr.submission_id=s.id AND hr.scope_id=c.id
+              AND hr.to_work_round=s.work_round AND hr.from_work_round=s.work_round-1
+            LEFT JOIN temporary_handover_activation ha ON ha.ticket_id=hr.ticket_id
+              AND ha.to_work_round=hr.to_work_round AND ha.new_authorization_id=s.temporary_authorization_id
+              AND ha.target_device_id=s.freeze_device_id AND ha.target_user_id=s.operator_id
+            JOIN temporary_work_origin o ON o.creator_device_id=s.freeze_device_id
+              AND o.client_order_id=COALESCE(ha.new_client_order_id,a.new_client_order_id,c.client_order_id)
+              AND o.authorization_id=s.temporary_authorization_id
+            WHERE c.id=? AND o.creator_device_id=? AND o.client_order_id=?
+              AND ((s.work_round=1 AND c.creator_device_id=s.freeze_device_id AND a.ticket_id IS NULL AND ha.ticket_id IS NULL)
+                OR (s.work_round>1 AND ((a.ticket_id IS NOT NULL AND ha.ticket_id IS NULL)
+                  OR (a.ticket_id IS NULL AND ha.ticket_id IS NOT NULL))))
             """,Integer.class,Ids.bytes(c.id()),c.round(),Ids.bytes(c.temporary().authorization()),
             Ids.bytes(source.scope()),Ids.bytes(c.temporary().creator()),Ids.bytes(c.temporary().client()));
         if(matches!=1)throw conflict("TEMP_CONTINUATION_PREDECESSOR_MISMATCH");

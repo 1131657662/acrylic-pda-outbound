@@ -76,4 +76,22 @@ class TemporaryTrustedScanHighWatermarkTest {
         when(jdbc.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
             .thenReturn(List.of(new TemporaryTrustedScanHighWatermark.Watermark(value, captureHigh)));
     }
+    @Test void cumulativeHighMayExceedDeviceHighOnlyWithVerifiedInheritedPrefix() {
+        watermark(3,1,2);
+        assertThat(high.requireNext(set,scope,submission,3,4)).isEqualTo(3);
+    }
+    @Test void refusesHighBelowImmutablePrefix() {
+        watermark(1,3,2);
+        assertThatThrownBy(()->high.requireNext(set,scope,submission,3,2)).isInstanceOfSatisfying(BusinessException.class,
+            error->assertThat(error.code()).isEqualTo("CONTINUATION_HIGH_WATERMARK_UNTRUSTED"));
+    }
+    @Test void refusesSuffixBeyondDeviceHighEvenWithImmutablePrefix() {
+        watermark(4,1,2);
+        assertThatThrownBy(()->high.requireNext(set,scope,submission,3,5)).isInstanceOfSatisfying(BusinessException.class,
+            error->assertThat(error.code()).isEqualTo("CONTINUATION_HIGH_WATERMARK_UNTRUSTED"));
+    }
+    private void watermark(long value,long captureHigh,long prefix) {
+        when(jdbc.query(anyString(),any(org.springframework.jdbc.core.RowMapper.class),any(Object[].class)))
+            .thenReturn(List.of(new TemporaryTrustedScanHighWatermark.Watermark(value,captureHigh,prefix)));
+    }
 }

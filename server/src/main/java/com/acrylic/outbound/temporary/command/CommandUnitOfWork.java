@@ -31,7 +31,7 @@ public class CommandUnitOfWork {
         state.requireWritable(input.text("transportRecoveryEpoch")); CommandPermissions.requireWrite(actor.permissions(), input.kind());
         if (Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind())) locks.sourceDisposition(hint); else locks.source(hint);
         var context = facts.read(input.uuid("submissionId")); locks.sameHint(hint, context);
-        if(context.version("workRound")>1 && !Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind()))throw CommandErrors.unsupported();
+        requireRound(input, context);
         CommandExpected.validate(input, context, actor, operation.requiresCandidateContext());
         if (!operation.recordsDecision()) eligibility.require(context);
         var write = new CommandWrite(Ids.next(), Ids.next(), Ids.next(), Instant.now().truncatedTo(ChronoUnit.MILLIS),
@@ -41,6 +41,17 @@ public class CommandUnitOfWork {
         var receipt = decision.isNull() ? codec.sign(write) : codec.sign(write, decision);
         store.receipt(write, receipt); store.event(write, receipt); audit(write, receipt, requestId);
         return replay.existing(actor, input);
+    }
+    private void requireRound(CommandInput input, CommandContext context) {
+        if (context.version("workRound") <= 1
+            || Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind())) return;
+        if ("PHYSICAL_DISPOSITION".equals(input.kind()) && "ABORTED".equals(context.text("status"))) {
+            var items = input.body().path("dispositionManifest").path("items");
+            if (items.isArray() && !items.isEmpty()
+                && java.util.stream.StreamSupport.stream(items.spliterator(), false)
+                    .allMatch(item -> "RETAIN".equals(item.path("disposition").asText()))) return;
+        }
+        throw CommandErrors.unsupported();
     }
     private CommandOperation operation(String kind) {
         if (!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(kind)) throw CommandErrors.unsupported();

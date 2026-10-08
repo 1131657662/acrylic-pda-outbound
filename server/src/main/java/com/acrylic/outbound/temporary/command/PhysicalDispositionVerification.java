@@ -64,6 +64,7 @@ public class PhysicalDispositionVerification {
             """, (rs, n) -> new Reservation(uuid(rs.getBytes(1)), rs.getLong(2)), Ids.bytes(proof.set()),
             Ids.bytes(proof.scope()), Ids.bytes(proof.submission()), proof.round(), Ids.bytes(proof.warehouse())));
         expected.addAll(inherited(proof));
+        expected.addAll(continued(proof));
         var actual = jdbc.query("""
             SELECT k.bale_id,k.dispatch_cycle,b.dispatch_cycle AS current_cycle
             FROM bale_commitment k JOIN bale b ON b.id=k.bale_id JOIN submission_scope c ON c.id=k.source_scope_id
@@ -85,6 +86,7 @@ public class PhysicalDispositionVerification {
     }
 
     private List<Reservation> inherited(Verified proof) {
+        if(proof.round()==1)return List.of();
         // Receiving-device pages attest only its suffix. The immutable activation retains earlier owners.
         return jdbc.query("""
             SELECT r.bale_id,r.dispatch_cycle
@@ -95,9 +97,29 @@ public class PhysicalDispositionVerification {
             JOIN handover_case h ON h.id=t.case_id AND h.scope_id=s.scope_id
             WHERE s.scope_id=? AND s.submission_id=? AND s.to_work_round=? AND h.warehouse_id=?
               AND h.status='ACTIVATED' AND h.source_kind='TEMP'
+              AND NOT EXISTS(SELECT 1 FROM source_evidence_item i WHERE i.set_id=? AND i.scope_id=s.scope_id
+                AND i.submission_id=s.submission_id AND i.work_round=s.to_work_round AND i.bale_id=r.bale_id
+                AND i.item_kind='SCAN' AND i.record_status='ACTIVE' AND i.original_cycle=r.dispatch_cycle)
             ORDER BY r.bale_id FOR UPDATE
             """, (rs,n)->new Reservation(uuid(rs.getBytes(1)),rs.getLong(2)), Ids.bytes(proof.scope()),
-            Ids.bytes(proof.submission()),proof.round(),Ids.bytes(proof.warehouse()));
+            Ids.bytes(proof.submission()),proof.round(),Ids.bytes(proof.warehouse()),Ids.bytes(proof.set()));
+    }
+    private List<Reservation> continued(Verified proof) {
+        if(proof.round()==1)return List.of();
+        return jdbc.query("""
+            SELECT b.bale_id,b.expected_cycle FROM temporary_source_continuation_submission r
+            JOIN temporary_source_continuation_activation a ON a.ticket_id=r.ticket_id AND a.scope_id=r.scope_id AND a.from_work_round=r.from_work_round
+            JOIN submission s ON s.id=r.submission_id AND s.scope_id=r.scope_id AND s.work_round=r.to_work_round
+              AND s.temporary_authorization_id=a.new_authorization_id AND s.freeze_device_id=a.target_device_id AND s.operator_id=a.target_operator_id
+            JOIN submission_scope c ON c.id=s.scope_id AND c.warehouse_id=?
+            JOIN temporary_source_continuation_bale b ON b.continuation_id=a.ticket_id AND b.scope_id=r.scope_id AND b.from_work_round=r.from_work_round
+            WHERE r.scope_id=? AND r.submission_id=? AND r.to_work_round=?
+              AND NOT EXISTS(SELECT 1 FROM source_evidence_item i WHERE i.set_id=? AND i.scope_id=r.scope_id
+                AND i.submission_id=r.submission_id AND i.work_round=r.to_work_round AND i.bale_id=b.bale_id
+                AND i.item_kind='SCAN' AND i.record_status='ACTIVE' AND i.original_cycle=b.expected_cycle)
+            ORDER BY b.bale_id FOR UPDATE
+            """,(rs,n)->new Reservation(uuid(rs.getBytes(1)),rs.getLong(2)),Ids.bytes(proof.warehouse()),Ids.bytes(proof.scope()),
+            Ids.bytes(proof.submission()),proof.round(),Ids.bytes(proof.set()));
     }
 
     private static void requireRejected(Map<String, Object> row) {

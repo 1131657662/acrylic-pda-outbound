@@ -35,6 +35,7 @@ class TemporaryRoundControlTest {
         return Stream.of(b->b.put("schemaVersion",3),b->b.put("workRound","1"),b->b.put("workRound",2),
             b->b.put("sourceRecoveryEpoch","01"),b->b.put("assignmentId",UUID.randomUUID().toString()),
             b->b.put("continuationId",UUID.randomUUID().toString()),b->b.remove("continuationId"),
+            b->b.putObject("temporaryHandover"),
             b->b.put("freezeDeviceId",UUID.randomUUID().toString()),b->b.remove("temporaryContinuation"),
             b->reference(b).put("version","1"),b->reference(b).put("extra",true),
             b->reference(b).put("predecessorPayloadSha256","A".repeat(64)),

@@ -46,7 +46,8 @@ public final class ContinuationDatabaseCommand {
             mock(TemporaryDecisionCandidates.class), new TemporaryContinuationIntegrity(jdbc));
         integrity = new CommandReceiptIntegrity(new CommandSignature(offlineSigner), store, new CommandHistoricalIdentity(jdbc), business);
         operation = new TemporaryReopenWorkOperation(new PhysicalDispositionVerification(jdbc),
-            new TemporaryContinuationTicketStore(jdbc, new TemporaryTrustedScanHighWatermark(jdbc)));
+            new TemporaryContinuationTicketStore(jdbc, new TemporaryTrustedScanHighWatermark(jdbc),
+                mock(TemporaryContinuationRetainedScans.class)));
         body = command();
     }
 

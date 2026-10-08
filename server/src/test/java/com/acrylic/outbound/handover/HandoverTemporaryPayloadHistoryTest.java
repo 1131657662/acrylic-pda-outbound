@@ -66,7 +66,7 @@ class HandoverTemporaryPayloadHistoryTest {
         var frozen=objects.store(new java.io.ByteArrayInputStream(bytes),bytes.length,sha(first));
         when(jdbc.query(contains("temporary_handover_activation_ticket"),any(org.springframework.jdbc.core.RowMapper.class),any(Object[].class)))
             .thenReturn(List.of(frozen));
-        return new HandoverTemporaryPayload(jdbc,files,objects,pages,pageFiles);
+        return new HandoverTemporaryPayload(jdbc,files,objects,pages,pageFiles,null,null);
     }
     private ObjectNode first() {
         var body=object().put("submissionId",old.toString());

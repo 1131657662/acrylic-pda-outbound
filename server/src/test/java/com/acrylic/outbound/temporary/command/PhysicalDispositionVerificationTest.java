@@ -17,6 +17,8 @@ class PhysicalDispositionVerificationTest {
     @org.junit.jupiter.api.BeforeEach void noHandoverPrefixByDefault() {
         when(jdbc.query(contains("temporary_handover_activation_owner"), any(org.springframework.jdbc.core.RowMapper.class),
             any(Object[].class))).thenReturn(List.of());
+        when(jdbc.query(contains("temporary_source_continuation_bale"), any(org.springframework.jdbc.core.RowMapper.class),
+            any(Object[].class))).thenReturn(List.of());
     }
 
     @org.junit.jupiter.params.ParameterizedTest
@@ -27,7 +29,7 @@ class PhysicalDispositionVerificationTest {
     void readsCompleteVerificationAndReservations(String issues) {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
             row("REJECTED", issues, "VERIFIED_COMPLETE_AT_STOP")));
-        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner") && !sql.contains("temporary_source_continuation_bale")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
             .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(bale, 7)));
         var result = reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1);
         assertThat(result.activeBales()).containsExactly(bale);
@@ -38,7 +40,7 @@ class PhysicalDispositionVerificationTest {
         UUID second = UUID.fromString("00000000-0000-0000-0000-000000000002");
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
             row("REJECTED", "{\"issues\":[{\"code\":\"SUPERVISOR_REJECTED\"}]}", "VERIFIED_COMPLETE_AT_STOP")));
-        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner") && !sql.contains("temporary_source_continuation_bale")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
             .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(second, 7),
                 new PhysicalDispositionVerification.Reservation(first, 3)));
         assertThat(reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1).activeBales())
@@ -66,7 +68,7 @@ class PhysicalDispositionVerificationTest {
             case "extra-bale" -> List.of(original, foreign);
             default -> List.of(original, original);
         };
-        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner") && !sql.contains("temporary_source_continuation_bale")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
             .thenReturn(expected, actual);
         assertThatThrownBy(() -> reader.read(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1))
             .isInstanceOfSatisfying(BusinessException.class,
@@ -83,7 +85,7 @@ class PhysicalDispositionVerificationTest {
     @Test void permitsAbortedSourceOnlyForCloseDisposition() {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
             row("ABORTED", "{\"issues\":[]}", "VERIFIED_COMPLETE_AT_STOP")));
-        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner") && !sql.contains("temporary_source_continuation_bale")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
             .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(bale, 1)));
         var result = reader.readForClose(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1);
         assertThat(result.activeBales()).containsExactly(bale);
@@ -92,7 +94,7 @@ class PhysicalDispositionVerificationTest {
     @Test void permitsCompleteAbortedSourceForContinuation() {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(
             row("ABORTED", "{\"issues\":[]}", "VERIFIED_COMPLETE_AT_STOP")));
-        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+        when(jdbc.query(argThat((String sql)->!sql.contains("temporary_handover_activation_owner") && !sql.contains("temporary_source_continuation_bale")), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
             .thenReturn(List.of(new PhysicalDispositionVerification.Reservation(bale, 1)));
 
         var result = reader.readForContinuation(warehouse, scope, submission, 1, set, verification, "a".repeat(64), 1, 1);
@@ -138,7 +140,7 @@ class PhysicalDispositionVerificationTest {
         var old=new PhysicalDispositionVerification.Reservation(UUID.randomUUID(),3);
         var own=new PhysicalDispositionVerification.Reservation(bale,7);
         when(jdbc.queryForList(anyString(),any(Object[].class))).thenReturn(List.of(row("ABORTED","[]","VERIFIED_COMPLETE_AT_STOP")));
-        when(jdbc.query(contains("FROM source_evidence_item"),any(org.springframework.jdbc.core.RowMapper.class),any(Object[].class)))
+        when(jdbc.query(contains("SELECT bale_id,original_cycle FROM source_evidence_item"),any(org.springframework.jdbc.core.RowMapper.class),any(Object[].class)))
             .thenReturn(List.of(own));
         when(jdbc.query(contains("temporary_handover_activation_owner"),any(org.springframework.jdbc.core.RowMapper.class),any(Object[].class)))
             .thenReturn(mutation.equals("duplicateInherited")?List.of(old,old):List.of(old));

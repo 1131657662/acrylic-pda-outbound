@@ -19,7 +19,8 @@ internal object TemporaryContinuationSource {
         check(identity.get("authorizationId") == draft.authorizationId && identity.get("userId") == draft.operatorId)
         check(identity.get("deviceId") == draft.creatorDeviceId && identity.get("warehouseId") == draft.warehouseId)
         val context = receipt.getJSONObject("originalContext")
-        mapOf("clientOrderId" to input.rootClientOrderId, "creatorDeviceId" to draft.creatorDeviceId,
+        check(context.get("clientOrderId") in setOf(input.rootClientOrderId, draft.clientOrderId))
+        mapOf("creatorDeviceId" to draft.creatorDeviceId,
             "originalOperatorId" to draft.operatorId, "warehouseId" to draft.warehouseId,
             "submissionId" to frozen.id, "authorizationId" to draft.authorizationId,
             "receivedPayloadSha256" to frozen.sha256,
@@ -61,8 +62,10 @@ internal object TemporaryContinuationSource {
         check(ordered.isNotEmpty())
         ordered.forEachIndexed { index, row ->
             val seq = TemporaryContinuationProtocol.positive(row, "orderScanSeq")
-            check(seq == index.toLong() + 1 && row.get("originDeviceId") == draft.creatorDeviceId)
-            if (index >= prefix) check(row.get("clientOrderId") == draft.clientOrderId && row.get("authorizationId") == draft.authorizationId)
+            check(seq == index.toLong() + 1)
+            if (index >= prefix) check(row.get("originDeviceId") == draft.creatorDeviceId &&
+                row.get("clientOrderId") == draft.clientOrderId && row.get("authorizationId") == draft.authorizationId &&
+                row.get("operatorId") == draft.operatorId)
             check(sequences.put(row.getString("id"), seq) == null)
         }
         check(draft.nextScanSeq == Math.addExact(ordered.size.toLong(), 1))
@@ -81,7 +84,8 @@ internal object TemporaryContinuationSource {
         }
         val previous = checkNotNull(input.predecessor) { "缺少已核验的续作前驱原文" }
         check(TemporaryContinuationProtocol.positive(previous, "workRound") + 1 == input.draft.workRound)
-        val reference = body.getJSONObject("temporaryContinuation")
+        check(body.has("temporaryContinuation") != body.has("temporaryHandover")) { "前驱票据类型冲突" }
+        val reference = body.getJSONObject(if (body.has("temporaryHandover")) "temporaryHandover" else "temporaryContinuation")
         check(reference.get("predecessorSubmissionId") == previous.get("submissionId") && reference.get("predecessorPayloadSha256") == sha(previous))
         for (field in listOf("captures", "scans", "events")) {
             val old = previous.getJSONArray(field); val current = body.getJSONArray(field)
