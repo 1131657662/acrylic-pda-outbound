@@ -4,9 +4,11 @@
 
 ## Git与写权
 
-树D:/acrylic-pda-outbound，分支codex/development，收口输入HEAD/实际远端均af71b5b3c8f9b0b9f8db75d48bb6824b60d153b1。原891c1f0136278b95400b934b19c2b9b1afd7bdcc仍是祖先，未重置。范围提交和推送完成后的精确SHA、实际远端、明确路径/暂存检查/原提交推送回执，以`.local/d01-d18-20261008/d07-formal-followup-close-26/`为准；接续先核实际Git，不强推、不重造已有提交。
+树D:/acrylic-pda-outbound，分支codex/development，收口输入HEAD/实际远端均af71b5b3c8f9b0b9f8db75d48bb6824b60d153b1。原891c1f0136278b95400b934b19c2b9b1afd7bdcc仍是祖先，未重置。本批18条明确路径已提交并正常推送c43101b245ade5b6d9de2dad62a17980a488d7ea，实际远端一致；标题“fix(D07): 收口FORMAL附件绑定与PDA原结果恢复页面”。其后仅补Git断点文档，不改已验产品/测试输入；最终文档提交后的精确HEAD/远端、明确路径/暂存检查/原回执，以`.local/d01-d18-20261008/d07-formal-followup-close-26/final/`及close-26下原commit/push回执为准。接续先核实际Git，不强推、不重造已有提交。
 
 本聊天为本批唯一写者；旧接续聊天01a11a5e-1f9e-7130-8708-7464bf1e546f为idle，最近记录为D06已收口，其余项目聊天notLoaded，没有其他在途写者。暂停后无业务开发写者。19条继承路径与d06-stop-close-20261008三项哈希，在pause-preflight-25及close-26各阶段protection.json逐值核验。继承文件、不属本批的先前历史/规则改动及本机资料不混入提交，不恢复、不清空dirty。全部dirty/未跟踪路径、副本、hash和binary diff，进程、监听、C/D余量，分别存close-26/precommit、postcommit、final；快照含当时的看板与暂停文档。Git仅范围源码/测试/文档备份，本机证据/数据库/APK/私有资料未上传或异地备份。
+
+范围提交后剩余22条dirty完整清单见postcommit/status.txt，final继续逐hash核对：19条继承及D06 LOCAL、D07 TEMP页面/附件三条先前历史补记均未改动或混入本批。本次提交前40条完整副本在precommit；最终文档补記也只明确暂存看板、本页和FORMAL执行记录，不机械重跑已验业务。
 
 ## 本步退出标准与结果
 

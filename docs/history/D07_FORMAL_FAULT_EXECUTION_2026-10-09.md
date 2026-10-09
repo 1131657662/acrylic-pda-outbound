@@ -90,3 +90,5 @@ PDA build-01 exit0/零测试，默认两个TEMP开发flag关闭；运行器自�
 `d07-formal-followup-android-close-01`本次受影响回归185/0/0/4、exit0/sourceUnchanged；4个一次性HTTP条件skip未执行，不以该回归替代1150/1151。默认assembleDebug任务复用已验同字节APK，和build-05/UI-06产品SHA256同为`556E1305300425938BF9A60D15438E7F828F41875E17C58450D16B965C93822B`；lintDebug本次重新生成，0 errors/221 warnings，原XML/HTML及hash在该目录。artifact-origin.json明确Gradle输入复用及mtime复制遗漏后的显式保留，不声称重新生成APK。没有release/正式签名、真机或部署。
 
 本批FORMAL非空附件/绑定及实际PDA页面退出标准已在所列边界内满足；三项附件容量继续引用未受影响1144通用实现证据，不外推全来源产品链。用户要求“做完这一步后先收口”，故停止继续无可信归档/R09及D08–D18。D06/D07整体及第8节仍未完成；详细暂停、精确Git回执位置、完整dirty/写权/环境及下一动作见[本次暂停记录](D01_D18_PAUSE_2026-10-09_FORMAL.md)。生产默认/签名/七类能力关闭、localDeletionAllowed=false，政策阻断及C01–C08保留。
+
+本批18条明确源码/测试/工具/文档已提交并正常推送c43101b245ade5b6d9de2dad62a17980a488d7ea，实际远端一致。close-26/precommit保存40条完整dirty，postcommit保存剩余22条；19条继承及原STOP三项哈希一致，三条先前历史补记也不混入提交。原暂存清单/检查/commit/push及1733条server/契约/build逐hash对应回归证据在close-26；随后仅补Git断点文档，最终HEAD/远端与环境以final为准。
