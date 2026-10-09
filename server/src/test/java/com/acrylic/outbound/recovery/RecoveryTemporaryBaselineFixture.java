@@ -15,15 +15,7 @@ final class RecoveryTemporaryBaselineFixture {
 
     RecoveryTemporaryBaselineFixture() throws Exception {
         var id = prep.state.authority.source.identity;
-        policy = SubmissionJson.object().put("id", UUID.randomUUID().toString()).put("version", "1").put("autoDeductInventory", false)
-            .put("schemaVersion", 1).put("offlineHours", 48).put("shortShipmentPolicy", "SUPERVISOR_APPROVAL")
-            .put("concurrencyMode", "PHYSICAL_SEPARATION").put("scanMode", "AUTO_SCAN_MANUAL_CONFIRM").put("reason", "fixture")
-            .put("publishedBy", "Operator").put("publishedAt", "2026-09-20T00:00:00Z");
-        rules = SubmissionJson.object().put("version", 1).put("barcodePattern", "[A-Z0-9]{11}").put("deliveryCodePrefixLength", 3)
-            .put("weightUnit", "INTEGER_GRAMS").put("maxWeightDecimals", 3).put("scanMode", "AUTO_SCAN_MANUAL_CONFIRM");
-        mapping = SubmissionJson.object().put("id", UUID.randomUUID().toString()).put("deliveryCode", "012").put("version", "1")
-            .put("productId", UUID.randomUUID().toString()).put("model", "MODEL").put("name", "Product").put("enabled", true)
-            .put("reason", "fixture").put("current", true).put("createdAt", "2026-09-20T00:00:00Z");
+        policy = policy(); rules = rules(); mapping = mapping();
         var mappings = SubmissionJson.object().putArray("rows").add(mapping);
         prep.content.put("mapping", mappings); prep.content.put("policy", policy); prep.content.put("rules", rules);
         plan = prep.state.payload.putObject("temporaryOrder").put("clientOrderId", id.clientOrderId().toString())
@@ -41,6 +33,24 @@ final class RecoveryTemporaryBaselineFixture {
         ((ObjectNode)prep.content.get("availability")).put("nextCursor", Base64.getUrlEncoder().withoutPadding()
             .encodeToString(cursor.getBytes(StandardCharsets.US_ASCII)));
         publish();
+    }
+
+    private ObjectNode policy() {
+        return SubmissionJson.object().put("id", UUID.randomUUID().toString()).put("version", "1").put("autoDeductInventory", false)
+            .put("schemaVersion", 1).put("offlineHours", 48).put("shortShipmentPolicy", "SUPERVISOR_APPROVAL")
+            .put("concurrencyMode", "PHYSICAL_SEPARATION").put("scanMode", "AUTO_SCAN_MANUAL_CONFIRM").put("reason", "fixture")
+            .put("publishedBy", "Operator").put("publishedAt", "2026-09-20T00:00:00Z");
+    }
+
+    private ObjectNode rules() {
+        return SubmissionJson.object().put("version", 1).put("barcodePattern", "[A-Z0-9]{11}").put("deliveryCodePrefixLength", 3)
+            .put("weightUnit", "INTEGER_GRAMS").put("maxWeightDecimals", 3).put("scanMode", "AUTO_SCAN_MANUAL_CONFIRM");
+    }
+
+    private ObjectNode mapping() {
+        return SubmissionJson.object().put("id", UUID.randomUUID().toString()).put("deliveryCode", "012").put("version", "1")
+            .put("productId", UUID.randomUUID().toString()).put("model", "MODEL").put("name", "Product").put("enabled", true)
+            .put("reason", "fixture").put("current", true).put("createdAt", "2026-09-20T00:00:00Z");
     }
 
     void publish() throws Exception {

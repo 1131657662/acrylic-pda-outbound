@@ -17,7 +17,7 @@ public final class RecoverySourcePreparation {
         require(source != null, "RECOVERY_SOURCE_IDENTITY");
         try {
             var claims = credentials.verify(source); var origin = SubmissionJson.parse(source.original("origin"));
-            fields(origin, "offlineToken preparationReceipt parts");
+            fields(origin, origin.has("activation") ? "offlineToken preparationReceipt parts activation" : "offlineToken preparationReceipt parts");
             var receipt = origin.path("preparationReceipt"); boolean temporary = source.identity().sourceKind().equals("TEMP");
             if (temporary) require(text(origin, "offlineToken").equals(text(receipt, "offlineToken")), "RECOVERY_SOURCE_PREPARATION_TOKEN");
             var manifest = binding.verify(receipt, claims, source.identity());
