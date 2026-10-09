@@ -16,10 +16,21 @@ public final class RecoveryInitialSource {
     }
 
     public Proof read(Request request) {
+        return read(request, null);
+    }
+
+    /** Native TEMP freezes carry events only; the original signed E2A supplies full device coverage. */
+    public Proof readTemporary(Request request, RecoveryOriginalEvidence.Request evidence) {
+        require(request != null && request.expected().sourceKind().equals("TEMP") && request.auditPrefix().isEmpty()
+            && evidence != null, "RECOVERY_INITIAL_NATIVE_REQUEST");
+        return read(request, evidence);
+    }
+
+    private Proof read(Request request, RecoveryOriginalEvidence.Request evidence) {
         require(request != null && request.expected().workRound() == 1, "RECOVERY_INITIAL_ROUND");
         var source = sources.read(request.materialRoot(), request.independentManifestSha256(), request.expected());
         try {
-            var proof = verify(source, request.auditPrefix());
+            var proof = verify(source, request.auditPrefix(), evidence);
             var after = sources.read(request.materialRoot(), request.independentManifestSha256(), request.expected());
             require(source.control().equals(after.control()), "RECOVERY_INITIAL_CONTROL_CHANGED");
             for (String kind : RecoverySourceManifest.OBJECTS)
@@ -29,15 +40,17 @@ public final class RecoveryInitialSource {
         catch (RuntimeException invalid) { throw new RecoveryControlException("RECOVERY_INITIAL_INVALID", invalid); }
     }
 
-    private Proof verify(RecoveryPinnedSource source, List<RecoveryAuditArchiveProof.Segment> prefix) {
+    private Proof verify(RecoveryPinnedSource source, List<RecoveryAuditArchiveProof.Segment> prefix,
+            RecoveryOriginalEvidence.Request evidence) {
         var activation = activation(source);
         var claims = new RecoverySourceAuthority(keys).verify(source);
         new RecoverySourceQualifications(keys).verify(source, Map.of(uuid(claims, "jti"), source));
         var terminal = new RecoverySourceTerminal(new RecoveryReceiptVerifier(keys)).verify(source);
         require("ABORTED".equals(text(terminal, "status")), "RECOVERY_INITIAL_TERMINAL");
         var identity = source.identity();
-        var events = new RecoverySourceAudit(keys).verify(source.original("payload"),
-            new RecoverySourceAudit.Context(identity, Map.of(identity.qualificationId(), identity), prefix));
+        var events = evidence == null ? new RecoverySourceAudit(keys).verify(source.original("payload"),
+            new RecoverySourceAudit.Context(identity, Map.of(identity.qualificationId(), identity), prefix))
+            : RecoveryNativeTemporaryAudit.verify(source, evidence);
         RecoveryInitialRecords.verify(source, events);
         var permission = new RecoverySourcePermission(keys).verify(source);
         var occupancy = new RecoverySourceOccupancy(keys).verify(source);
