@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-09
 branch: codex/development
-head: 2a99bff
-dirty_entries: 32
+head: 976d06b
+dirty_entries: 35
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
 server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
@@ -16,13 +16,14 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 用户已要求恢复D01–D18总目标，目标active、未完成；只有[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)第8节全部满足才可complete。规则见AGENTS.md，版本只读生成事实块。替换前原看板与结论见[归档](history/ORCHESTRATION_STATE_before_temp_activation_2026-10-09.md)及.local/d01-d18-20261009/temp-activation-resume-01/board.md；不恢复旧角色或指令。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，codex/development；FORMAL原确认7条已提交推送2a99bff9e92d21c2a12c058d0960db81a316e7ca、实际远端一致，回执formal-activation-precommit-01，25dirty/22继承保护postcommit-02。TEMP ACK55316d0、原准备26a87b9/TEMP基线5f029bc已推回执保留；原续期三条新增Java及受影响文档待明确提交，继承dirty不暂存。
-- 本聊天01a11ea9-ce8d-70d1-8182-ccf4ca0a945a唯一活动写者，其他项目聊天notLoaded。temp-activation-resume-01保存全量31dirty副本/Git/进程/全部监听/磁盘，22继承逐hash一致；ControlPaths仅既有换行差异。此前FORMAL final和磁盘final按暂停记录复用，无恢复dirty。
-- ACK回归已结束，无模拟器/页面运行器/重型Gradle在途，5560/19330/19434/5173/19387无监听；C/D余量81304576000/98882486272字节，精确余量见快照。既有3306/13316/ADB不操作。新增证据/TEMP/Java临时/隔离产物继续D盘，无新DB/HTTP/客户端/APK/部署。
+- 主树D:/acrylic-pda-outbound，codex/development；实际HEAD/远端976d06b5f565a16e4351abddf9668af921abdd28，原FORMAL续期已明确提交推送，回执formal-renewal-precommit-01及postcommit-02。FORMAL确认2a99bff、TEMP ACK55316d0等已推回执保留，不重造提交；继承dirty不暂存。
+- 本聊天01a11ea9-ce8d-70d1-8182-ccf4ca0a945a唯一活动写者，其他项目聊天notLoaded。composition-resume-01保存刷新事实后的全量26dirty副本/Git/进程/全部监听/磁盘及旧结论，22继承逐hash一致；ControlPaths仅既有换行差异。此前FORMAL final和磁盘final按暂停记录复用，无恢复dirty。
+- 续期回归已结束，无模拟器/页面运行器/重型Gradle在途，5560/19330/19434/5173/19387无监听；C/D余量81113980928/98631118848字节，精确余量见快照。既有3306/13316/ADB不操作。新增证据/TEMP/Java临时/隔离产物继续D盘，无新DB/HTTP/客户端/APK/部署。
 - 1150/1151/UI-06沿原有效证据复用未重跑；1152–1155均dump独立重算、认证停机/原PID退出，1153/1154失败库及log/XML/datadir/binlog保留不复用，retention在closed-mysql-1152至1155。
 - 22份停止AVD RAM快照仅已授权可逆NTFS压缩，SHA256一致未删；D空间恢复记录见[磁盘历史](history/D_DISK_RECOVERY_2026-10-09.md)，原审批删除拒绝未重试。必要证据/失败库/原件/Room/APK保留，本机资料未异地备份，取回位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 已验子项与边界
+- [第一轮同来源组合](history/D07_R09_INITIAL_COMPOSITION_2026-10-09.md)：同一独立pin重读准备/ACK/资格/ABORTED终态/审计/权限/占用，双水位、正文submission/source及原capture迁移/保存/VOID/失败原因绑定，结束重读控制/字节，无写权。定向01夹具与控制期待40/26、02期待40/1、04 TEMP短装字段46/3失败保留，06为52全过；回归07为3080/0/0/1、125XML、exit0/sourceUnchanged。非IT/符号链接skip未执行，无原FORMAL正向消费者/新DB/HTTP/客户端，非实际恢复。
 - [原FORMAL续期准备](history/D07_R09_FORMAL_RENEWALS_2026-10-09.md)：同一第一轮来源逐独立pin/jti完整代次/前驱/固定原窗口，首份manifest/分片/activation不改期，累计scan原基线及每条原保存重验。01重复代次拒绝码不稳定56/1原件保留，补显式重复拒绝后02为59全过；最终回归03为3034/0/0/1、123XML、exit0/sourceUnchanged。非IT/符号链接skip未执行；无原续期消费者/新DB/HTTP/客户端，不代ACK/撤销窗口/权限/占用/实际恢复。
 - [原FORMAL下载确认](history/D07_R09_FORMAL_ACTIVATION_2026-10-09.md)：原ACK无签名，必须库外pin/控制和原审计/assignment绑定，首轮原身份/修订/snapshot/授权ID代次窗口、命令/时间精度与逐保存核验；无补签。定向01为66全过，最终回归02为3012/0/0/1、122XML、exit0/sourceUnchanged，普通test非IT/符号链接skip未执行。1151缺原准备仍保留，无正向原FORMAL消费者/新DB/HTTP/客户端，非实际恢复。
 - [原TEMP激活ACK](history/D07_R09_TEMP_ACTIVATION_2026-10-09.md)：公钥用途/身份/manifest与原生Ack摘要/纳秒声明/毫秒回执、确认保存及300秒容差；延迟ACK不续期。定向01为72全过；回归02为2982/0/0/1、121XML、exit0/sourceUnchanged，Windows符号链接skip未执行，普通test非IT。新保留1151原ACK消费者compile/run exit0、三输入hash不变；提取明确读私有输入公开ACK字段、未加载/复制/用私钥，缺control/pin/scope/terminal/原身份/权限/占用，非实际恢复。
@@ -37,7 +38,7 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 
 ## 未完成与接续
 - D06/D07整体、FORMAL各阶段实际入口、无可信归档代传/R09跨截点业务重建、D08–D18及第8节仍未完成，D18无最终候选。原资料/旧BCD/526、历史失败/恢复限制保持，开发缺口不转现场。
-- 下一子项第一轮完整可信消费和新隔离原资料采集：把原准备/ACK/资格/原终态/审计/权限/占用绑定为同一个只读来源，明确故障前采集点与独立pin；1151原准备缺失保留。再实际截点前恢复→原ID/正文/序号/回执重建→D07围栏→接收激活/最终提交、尾SQL回滚/重启；续期撤销窗口/高轮/跨来源仍必做。NORMAL/未知来源拒绝，失败库不复用。
+- 下一子项故障前可信原资料采集：第一轮同来源只读组合已验，明确原设备证据/准备/ACK/权限区间/占用采集点与独立pin，1151原准备缺失保留。全新隔离实际截点恢复→原ID/正文/序号/回执重建→D07围栏→接收激活/最终提交、尾SQL回滚/重启；不能以组合证明替代原E2A/原recall包或补造STOP/ACK。续期撤销窗口/高轮/跨来源仍必做，NORMAL/未知来源拒绝，失败库不复用。
 - 生产默认/签名、七类生产决定handler/POST/放行/证据写入/关闭能力均关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/正式签名/标签/Release、不绕设备/审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08单列。
 <!-- CURRENT_STATE_END -->
 
