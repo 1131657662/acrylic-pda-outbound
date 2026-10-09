@@ -69,5 +69,6 @@ public final class HandoverFormalFaultAndroidBridge {
     public void restart(WebApplicationContext app) throws Exception {
         var jdbc = app.getBean(org.springframework.jdbc.core.JdbcTemplate.class);
         new HandoverFormalFaultCompletion(f, tokens, attempt).restart(jdbc);
+        f.verifyAttachmentDownload();
     }
 }

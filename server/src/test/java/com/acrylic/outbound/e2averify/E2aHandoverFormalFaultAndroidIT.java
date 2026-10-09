@@ -43,6 +43,7 @@ class E2aHandoverFormalFaultAndroidIT {
 
     private static String[] options() {
         return new String[]{"--outbound.handover.commands.enabled=true", "--outbound.handover.fault.enabled=true",
+            "--outbound.handover.attachments.enabled=true",
             "--server.servlet.session.cookie.secure=false"};
     }
 }

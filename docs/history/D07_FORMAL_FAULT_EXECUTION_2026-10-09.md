@@ -58,3 +58,35 @@ Android消费实际签名faultReceipt/manifest、原包前缀、Room确认/新as
 Android受影响回归`d07-formal-android-regression-04`为185/0/0/4、exit0/sourceUnchanged；4个一次性HTTP条件skip未执行，实际HTTP证据来自1148/1149。默认debug APK和lint任务exit0，未用release/正式签名或开发开关；lint报告任务UP-TO-DATE，沿Gradle输入复用并另存原XML/HTML/hash，0 errors/221提示，不伪造新生成时间。APK SHA256为`741946E9C627ADFB863E0A6B3FBB96AF0AE5B986392ED6954C04E2398ED2DA69`，一份保留在该目录，artifact-hashes.json和lint-result.json可核。
 
 阶段保存前`d07-formal-close-23`保存77条完整dirty副本/hash/diff、Git/进程/监听/磁盘/33树迁移分配；该快照早于最后证据及看板文字，不覆盖后续断点文档。明确FORMAL路径与暂存/提交/推送/实际远端回执登记同目录；19条继承与原STOP三项逐hash保护，本地数据库/私有资料/原件/APK未上传或异地备份。下一子项是FORMAL实际PDA页面、非空附件及跨源INSERT反例，之后继续无归档/R09分段接入和D08–D18/第8节。
+
+55条明确FORMAL开发路径已提交并正常推送`af71b5b3c8f9b0b9f8db75d48bb6824b60d153b1`，实际远端一致，分支codex/development。标题`feat(D07): 保存FORMAL可信归档故障链开发与组合证据`；未混入23条原起点资料/继承路径（看板为本批授权维护例外），暂存精确清单及commit/push/remote/status回执见close-23。此提交明示开发中及未验范围，不代表D07整体或总目标完成。
+
+## FORMAL附件与绑定接续
+
+接续HEAD/实际远端仍af71b5b3c8f9b0b9f8db75d48bb6824b60d153b1。`d07-formal-followup-resume-24`保存30条全量dirty副本/hash/diff、全部进程/监听/磁盘与写者；19条继承及原STOP快照三项哈希一致，其他项目聊天notLoaded，本聊天唯一写者。原891c1f0接续基线已按授权推进，不重置已验范围。快照时C/D精确余量见disks.json，新增数据库/证据/临时目录继续D盘，既有环境不操作。
+
+前次followup-compile-01已完成exit0/sourceUnchanged、零测试；1150分配核33树无同编号目录，接续后首次在新隔离库执行非空TEMP附件迁移保全、FORMAL真实附件及跨源INSERT/DELETE、最终记账与重启下载。设计为`.local/d01-d18-20261008/d07-formal-followup-design.md`；运行中状态不能计通过。实际PDA页面、独立消费者及受影响回归随后执行，D07整体/总目标未完成。
+
+1150与1151当次真实MySQL/HTTP/Android专项均1/0/0/0、exit0/sourceUnchanged，各三份Android XML均1/0/0/0。1150证明非空TEMP附件/use/原件的全表与私有文件升级保全、FORMAL chunked PUT实际原件与同键/异文/错摘要/错引用拒绝、有序签名引用及最终记账/重启下载；FORMAL跨TEMP案件INSERT和DELETE均实际拒绝，全事实守恒。作者自审补FORMAL原件损坏/缺件及权限后，1151在全新隔离输入直接覆盖原申请人、错案件/仓库、主管撤权的上传/下载拒绝；缺件及坏字节令下载、可信读面和原键回放409，全部耐久表不新增。测试只在新建合成库模拟介质故障，finally恢复精确原行/字节和原不可变触发器，损坏原件、DDL和前后快照均保留，不涉及原库或业务删除。
+
+两轮均有精确围栏末SQL/最终记账末SQL全表回滚，附件use纳入同一守恒比较；原机无新STOP/ACK、原召回仍REQUESTED，接收最终账务及Room末写/丢响应/重开沿实际链通过。两库dump独立hash一致、认证停机/原PID退出、19330/19434空监听在`d07-fault-1150/1151/retention.json`。原XML/HTTP/Room/binlog/datadir位于对应`.local/e2a-cross-20260925-编号/`，输入/源码/命令/退出在`d07-fault-test-编号`，不复用既有失败库。
+
+独立Node RSA/canonical/逐值SQL、只读SQLite和新增附件原字节/SQL引用/HTTP消费者分别exit0，入口`d07-formal-followup-consumers-1150/1151`。1150新增附件消费者首轮误把有意压缩的附件快照数组按普通表结构读取，exit1日志保留；修正为独立读取真实hash/长度、原件和HTTP字节后attachments-02 exit0。1151直接核验通过，28组全表拒绝/回滚快照及非空附件迁移原件分别核对；仍只是独立工具与合成身份/开发钥，非独立人员/原身份。
+
+普通server回归`d07-formal-followup-server-regression-01`为3420/0/0/1、exit0（Windows符号链接条件skip，普通test不含IT）。宽范围sourceUnchanged为false：唯一变化为同作者在运行中修新的Android instrumentation卡片滚动，server/契约/build输入逐hash不变，完整diff在source-drift.json、定向判断在scoped-source-result.json；不改写原result、不冒充全范围无漂移。尚未取得有效PDA页面结果，后续页面输入按新测试APK单列。
+
+PDA build-01 exit0/零测试，默认两个TEMP开发flag关闭；运行器自动取mtime遗漏复用APK导致首个ui-1151复制失败，未启动模拟器。登记复用产物/hash后ui-02实际1/1/0/0，在嵌套大字卡片Espresso scrollTo失败，未发送提交查询；原截图/Room/tar/日志保留且模拟器正常关闭。改为实际滑动到按钮完全可见后点击；build-02重新构建中，页面未验不能由两轮HTTP/JVM消费者替代。全部失败证据保留。
+
+## FORMAL页面复验与本批收口
+
+后续ui-03仍为1/1/0/0，查询按钮滑动后状态未变化；ui-04为1/1/0/0，完整文字高度检查发现固定高度按钮在大字号下裁剪；ui-05为1/1/0/0，查询滑动后的点击仍未生效。全部原日志、截图、视图描述、Room、tar和AVD保留，不计通过。产品修复只将提交页四个按钮改为wrap_content并保留原minHeight；运行器测试消费者等待实际滚动稳定后再点击，失败时保存当前页面。build-02/03/04/05只算编译构建，不算页面验收。
+
+`d07-formal-pda-ui-06`采用build-05产品及测试APK，640×960/font_scale=2.0模拟器实际HandoverActivity/SubmissionActivity两阶段各1/0/0/0；result.json为passed=true/emulatorStopped=true/sourceUnchanged=true。错身份没有交接卡片、冻结正文不变且无网络请求；接收冻结页第一次原结果GET丢响应，显示结果待核对，重试同一提交ID消费原签名成功；返回页面、真实am force-stop后新进程保持SYNCED、相同正文/回执且不再查询或上传。签名响应/原Room来自1151合成隔离输入，HTTP由MockWebServer回放，不称实时MySQL或原身份/真机。
+
+原tar及hash、请求tsv、页面png和视图描述、冻结与成功Room均在ui-06；`inspection/opening`、`inspection/restore`是原tar解包供作者看图/只读消费，原tar未改。作者已检查交接、丢响应、验签成功和重开截图；滚动区域部分离屏文字不是布局裁剪，关键按钮经过完全可见/可用断言和实际点击。独立只读SQLite/hash消费者`verify-formal-ui-close.py`核PRAGMA、冻结正文/原ID/sha256、逐值签名结果、交接stage/continuation守恒；opening仅两次同ID GET，restore的累计tsv没有新增请求，日志ui-06/room-consumer.log为exit0。独立工具不等于独立人员审查。
+
+作者自审记录`d07-formal-followup-self-review-02.md`：测试入口受debug/显式参数/模拟器限制，默认两个TEMP开发flag关闭，合成网络只接受原ID GET；共享附件生产实现未改，SQL参数化、动态trigger名仅固定allowlist，损坏/缺件模拟只在新隔离库且finally恢复原行/字节/guard。实际1150/1151、原HTTP/SQL/dump及消费者哈希对应所提交测试输入；没有扩大生产门或删除资格。
+
+`d07-formal-followup-android-close-01`本次受影响回归185/0/0/4、exit0/sourceUnchanged；4个一次性HTTP条件skip未执行，不以该回归替代1150/1151。默认assembleDebug任务复用已验同字节APK，和build-05/UI-06产品SHA256同为`556E1305300425938BF9A60D15438E7F828F41875E17C58450D16B965C93822B`；lintDebug本次重新生成，0 errors/221 warnings，原XML/HTML及hash在该目录。artifact-origin.json明确Gradle输入复用及mtime复制遗漏后的显式保留，不声称重新生成APK。没有release/正式签名、真机或部署。
+
+本批FORMAL非空附件/绑定及实际PDA页面退出标准已在所列边界内满足；三项附件容量继续引用未受影响1144通用实现证据，不外推全来源产品链。用户要求“做完这一步后先收口”，故停止继续无可信归档/R09及D08–D18。D06/D07整体及第8节仍未完成；详细暂停、精确Git回执位置、完整dirty/写权/环境及下一动作见[本次暂停记录](D01_D18_PAUSE_2026-10-09_FORMAL.md)。生产默认/签名/七类能力关闭、localDeletionAllowed=false，政策阻断及C01–C08保留。

@@ -18,23 +18,34 @@ final class HandoverFormalFaultSource {
     final ObjectNode command;
     final byte[] receipt;
     final HandoverFaultFacts facts;
+    private final HandoverFormalFaultAttachments attachments;
 
     HandoverFormalFaultSource(WebApplicationContext app, Path attempt) throws Exception {
         workflow = new HandoverApprovalWorkflowChecks(app, attempt, true);
         source = workflow.f;
         facts = new HandoverFaultFacts(source.jdbc, source.directory.resolve("formal-fault-facts"));
         abort(); command = command();
+        attachments = "true".equals(System.getenv("FORMAL_FAULT_ATTACHMENTS_VERIFY")) ? new HandoverFormalFaultAttachments(this) : null;
+        if (attachments != null) attachments.prepare();
         new HandoverFormalFaultRefusals(this).beforeFence();
         receipt = "true".equals(System.getenv("HANDOVER_FAULT_BROWSER_VERIFY"))
             ? HandoverFormalFaultBrowserChecks.execute(this) : HandoverFormalFaultConcurrentChecks.execute(this);
         Files.write(source.directory.resolve("formal-fault-receipt.json"), receipt, StandardOpenOption.CREATE_NEW);
         Files.writeString(source.directory.resolve("formal-fault-command.json"), SubmissionJson.canonical(command), StandardOpenOption.CREATE_NEW);
+        recordedChecks();
+    }
+
+    private void recordedChecks() throws Exception {
         var before = facts.snapshot("replay-before");
         assertThat(workflow.web.command(command, 200, null)).isEqualTo(receipt);
         assertThat(facts.snapshot("replay-after")).isEqualTo(before);
         new HandoverFormalFaultRefusals(this).afterFence();
+        HandoverFormalFaultBindingChecks.verify(this);
+        if (attachments != null) attachments.recorded();
         unchangedOriginal();
     }
+
+    void verifyAttachmentDownload() throws Exception { if (attachments != null) attachments.download(); }
 
     private void abort() throws Exception {
         var builder = HttpRequest.newBuilder(URI.create("http://127.0.0.1:19434/api/v1/pda/submissions/" + source.r.f.id() + "/abort"))

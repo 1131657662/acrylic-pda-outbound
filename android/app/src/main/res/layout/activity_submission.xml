@@ -1,13 +1,13 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="12dp" android:orientation="vertical">
-        <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="52dp" android:text="返回扫码作业" />
+        <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="返回扫码作业" />
         <TextView android:id="@+id/summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="21sp" android:textStyle="bold" />
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingVertical="12dp" android:textSize="18sp" android:textColor="#8A3418" />
         <TextView android:id="@+id/notice" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="15sp" />
         <EditText android:id="@+id/reason" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="64dp" android:hint="短装原因（任一产品少装时必填）" android:maxLength="500" android:inputType="textMultiLine" android:saveEnabled="false" android:autofillHints="" />
         <TextView android:id="@+id/error" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#8A3418" android:accessibilityLiveRegion="polite" />
-        <Button android:id="@+id/freeze" android:layout_width="match_parent" android:layout_height="56dp" android:text="核对后结单冻结" />
-        <Button android:id="@+id/upload" android:layout_width="match_parent" android:layout_height="56dp" android:text="上传本单（Wi‑Fi 自动重试）" />
-        <Button android:id="@+id/refresh" android:layout_width="match_parent" android:layout_height="56dp" android:text="查询原提交结果" />
+        <Button android:id="@+id/freeze" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:text="核对后结单冻结" />
+        <Button android:id="@+id/upload" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:text="上传本单（Wi‑Fi 自动重试）" />
+        <Button android:id="@+id/refresh" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:text="查询原提交结果" />
     </LinearLayout>
 </ScrollView>
