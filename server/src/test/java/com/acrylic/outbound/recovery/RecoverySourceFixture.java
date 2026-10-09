@@ -17,9 +17,11 @@ final class RecoverySourceFixture {
 
     private RecoverySourceFixture(String kind, long round) throws Exception {
         control = RecoveryControlFixture.create();
+        UUID device = UUID.randomUUID();
         identity = new RecoverySourceIdentity(kind, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), kind.equals("FORMAL") ? UUID.randomUUID() : null,
-            kind.equals("TEMP") ? UUID.randomUUID() : null, kind.equals("TEMP") ? UUID.randomUUID() : null, "1", round, 7, 12, 9);
+            device, UUID.randomUUID(), UUID.randomUUID(), kind.equals("FORMAL") ? UUID.randomUUID() : null,
+            kind.equals("TEMP") ? (round == 1 ? device : UUID.randomUUID()) : null,
+            kind.equals("TEMP") ? UUID.randomUUID() : null, "1", round, 7, 12, 9);
         bindWarehouse(); control.append(control.next("RECOVERING"));
         materials = Files.createDirectory(control.root.getParent().resolve("external-materials"));
         manifest = manifest(); publish();

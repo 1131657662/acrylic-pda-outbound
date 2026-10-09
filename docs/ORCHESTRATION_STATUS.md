@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-09
 branch: codex/development
-head: 4b2a580
-dirty_entries: 30
+head: b6f5376
+dirty_entries: 32
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
 server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
@@ -16,14 +16,15 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 用户已要求恢复D01–D18总目标，目标active、未完成，只有原计划第8节全部满足才可complete。接续依据为[暂停与指令](history/D01_D18_PAUSE_2026-10-09_FORMAL.md)；规则见AGENTS.md，版本只读生成事实块。本次替换前看板已保存在.local/d01-d18-20261009/resume-preflight-01/board-before.md，历史不恢复旧角色或指令。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，分支codex/development；可信来源首前置17条明确路径已提交推送4b2a5800f8048f7d46e9c0db0dc4bb8f8de86b19，实际远端一致，原commit/push见.local/d01-d18-20261009/source-precommit-01/。FORMAL/磁盘历史Git回执见对应记录；22条继承/历史/本机dirty逐hash保留，不強推。原资格第二前置4条源码/测试及范围文档已验、拟明确提交，完整dirty和环境见下一快照authority-precommit-01。
-- 恢复输入HEAD/实际远端均fcf7e696381149edb1b551a0c8ee7147245c8f31；本聊天01a11ea9-ce8d-70d1-8182-ccf4ca0a945a为唯一写者，两个旧接续聊天idle，其余项目聊天notLoaded。22条继承dirty与磁盘/FORMAL两个final共44条逐hash全部一致；全部dirty副本/hash/binary diff、Git、进程/监听/C-D余量在.local/d01-d18-20261009/resume-preflight-01/。无模拟器/页面运行器/重型Gradle在途，19387 Harness已无监听；既有数据库/ADB不操作。C/D实测余量81894690816/98127507456字节。
+- 主树D:/acrylic-pda-outbound，codex/development；首前置4b2a580及第二前置b6f5376947da50cdea438b5187d95f998ec85a3f已提交推送，实际HEAD/远端为后者。原回执见.local/d01-d18-20261009/source-precommit-01和authority-precommit-01。本轮第三前置审计已验拟范围提交，22条继承/历史/本机dirty逐hash保留，不强推。
+- 本聊天01a11ea9-ce8d-70d1-8182-ccf4ca0a945a唯一写者，旧接续聊天idle/notLoaded；audit-resume-preflight-02全量31条dirty副本/hash/binary diff、Git、进程/监听/C-D余量保留。22条继承hash无漂移，第三前置最近128项运行全部源文件hash仍一致，不重跑已有证据；无模拟器/页面运行器/重型Gradle在途，19387无监听，既有数据库/ADB不操作。C/D余量以该快照disks.json为准，之前看板保存在board.md。
 - 1150/1151隔离库dump独立hash一致、认证停机/原PID退出；原日志/XML/HTTP/SQL/Room/datadir/binlog保留，retention.json见d07-fault-1150/1151。UI-06 passed/emulatorStopped/sourceUnchanged均true，模拟器/qemu已退出；本轮未启动数据库/页面/模拟器，5560/19330/19434/5173/19387无监听；普通server Gradle已结束。3306/13316/ADB为既有环境不操作，其余监听以本轮快照为准。
 - D盘不足已处理：22份停止运行页面AVD RAM快照可逆NTFS压缩exit0，逐文件SHA256一致、未删除文件；D实测5.475→91.390 GiB、净增加85.915 GiB。证据/原库/失败库/全部AVD路径/APK/原件保留，22条继承dirty无漂移；逐命令/hash/占用/进程与C-D余量在.local/disk-recovery-20261009/control/及final/，详见[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)。新增产物继续D盘，既有自动审批AVD删除拒绝未重试；本机证据未异地备份，归档位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 已验子项与证据边界
 - 本轮D07/R09[最小可信来源读取层](history/D07_R09_TRUSTED_SOURCE_2026-10-09.md)：库外控制+独立pin+五类原件/来源/高水位精确绑定，公钥历史验签无需私钥，原终态/LOCAL冻结正文校验，固定只读双false。定向134/0/0/0、server普通3494/0/0/1均exit0/sourceUnchanged；Windows符号链接skip未执行。新消费者只读1151原HTTP中止/成功回执验签exit0，未重跑旧专项或接其库。首轮43/1/0/0反例取值失败原件保留；没有恢复写入/补账/新HTTP/客户端链，不计D07/D13/D14整体通过。
 - 本轮第二前置原资格只读：FORMAL/TEMP第一轮原offline token公钥、原设备/人员/资格/仓库/epoch与原正文绑定，冻结历史窗口；交接/续作轮拒绝，完整逐来源逐保存时间证明尚缺。受影响Recovery/Draft普通test 2277/0/0/0、42 XML、exit0/sourceUnchanged；01/02/03失败92/15、98/24、135/3与修后04保留。1151原接收assignment不能代原机，dump提取唯一原凭据并哈希，仅原正文/ABORTED/历史资格消费者03 exit0；01purpose误读、02loader失败保留，未核fault receipt/控制/占用/权限、不接库/私钥。自审与消费者在.local/d01-d18-20261009/；无模拟器/重型Gradle，C-D余量81880461312/100308656128字节；不外推D07/R09整体。
+- 第三前置原审计只读：固定原来源catalog、设备连续0前缀/签档/尾至audit高水位，本单原ID/摘要/资格不漏、原终态匹配，FORMAL/TEMP共用设备序号。公钥验原签档用途/仓库/epoch/字节/留存/禁删除；定向06为128/0/0/0、exit0/sourceUnchanged，01/04编译和05 fixture失败原件保留。1151原恢复包8事件新只读消费者exit0，无库/私钥访问，不重跑1151。自审/设计/原log/XML见可信来源历史页与.local/d01-d18-20261009/audit-review-01，不代逐保存时间资格/占用/权限或实际恢复。
 - D01证据映射/基线已建立，D02/D03开发范围有分层证据；D04候选排除、D05取消释放缺政策保持拒绝、整体未通过。历史通过不拼成最终整合输入。
 - D06专用STOP1103单跳专项1/0/0/0，实际大正文/末SQL/丢响应/Room回滚/重开及owner/墓碑守恒已验；1099编译失败，1100–1102失败库/原日志/XML保全停机，不重跑或复用。本轮本人suffix由STOP证明，历史前缀依不可变registration/activation重验；UI-08小屏大字页面与回归/APK分层记录，见[执行记录](history/D01_D18_EXECUTION_2026-10-07.md)及[旧暂停](history/D01_D18_PAUSE_2026-10-08.md)，不外推D06整体。
 - 1110实际A→B→C多跳及TEMP_START UI-04新开轮/丢ACK/原键/真实作业页/强停重开通过；1104–1109及早期build/UI失败保全。局部设备counter重叠、连续原前缀及独立Node/只读Room见[多跳记录](history/D06_MULTIHOP_EXECUTION_2026-10-08.md)。合成身份/回放网络不代原身份或真机。
@@ -37,7 +38,7 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 
 ## 未完成、边界与接续
 - 上步FORMAL子项已验并保存；本轮恢复开发，从D07无可信归档/R09跨截点可信来源读取接口接续。D06/D07整体、FORMAL各阶段实际产品入口覆盖、无可信归档代传/R09跨截点事实重建、D08–D18及第8节仍未完成，D18无最终候选。原资料/旧BCD/526、历史失败及恢复限制保留，开发缺口不能转现场清单。
-- 接续第二前置证据；下一子项完整逐来源资格/原审计及采集序号/占用/权限，补显式closed恢复会话受控写入与租约，不能把读取结果当NORMAL资格或绕closed purpose。新跨树隔离输入实际恢复截点前→原ID/正文/序号/回执重建→D07围栏→接收激活/最终提交及尾SQL回滚/重复重启；1150/1151/UI-06不重做、1100–1102不重跑、不复用失败库，随后按依赖继续D08–D18/全部闸门。
+- 下一子项逐来源逐保存时间资格，不能用冻结时刻拒绝原本合法的离线保存；随后原占用/权限及显式closed恢复会话受控写入/租约，不能将只读结果当NORMAL或绕closed purpose。新跨树隔离输入实际恢复截点前→原ID/正文/序号/回执重建→D07围栏→接收激活/最终提交及尾SQL回滚/重复重启；1150/1151/UI-06不重做、1100–1102不重跑、不复用失败库，继续D08–D18/全部闸门。
 - 生产默认/签名能力、七类生产决定handler/POST/放行/证据写入/关闭能力均关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/正式签名/标签/Release、不绕设备/审批阻断。原身份/Keystore、真实双机/实体键/断电/长时/规模、正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08单列。
 <!-- CURRENT_STATE_END -->
 

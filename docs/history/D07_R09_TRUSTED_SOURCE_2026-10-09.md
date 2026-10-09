@@ -36,4 +36,10 @@
 
 下一步从原资格/原审计根/占用/权限语义重验和受控恢复写入接续。必须绑定已关闭恢复会话、可信独立高水位、原终态/原来源和当事务租约，保留完整原ID/正文/事件序号/回执；不能拿本读取接口的结果当NORMAL放行许可或直接调用普通写者重放。现有closed projection purpose保持拒绝，不绕成普通写者。再用全新跨树分配的隔离输入实际恢复到截点前、重建、D07围栏、接收激活/最终提交及尾SQL回滚/重复重启；不以合成控制、fixture签名或一组拒绝反例代替该链。
 
+原资格第二前置8条明确路径已提交推送b6f5376947da50cdea438b5187d95f998ec85a3f，远端一致，原回执见`.local/d01-d18-20261009/authority-precommit-01/commit.log`及`push.log`；无其他路径混入。第三前置以该SHA为输入，`RecoverySourceAudit/RecoveryAuditArchiveProof`只读核原设备连续0前缀、签档段及尾部至固定audit高水位，本单事件id/sha逐项包含及当前qualification不漏，原FROZEN或原RECALL_STOPPED末事件匹配；不生成STOP。归档公钥/用途/原bytes/hash/字节数/设备仓库/epoch/范围/五年留存与禁删除重验，长格式号拒绝；FORMAL/TEMP共用localSeq，跨来源必须有调用者已证明的原来源catalog，不能从本包自证资格。
+
+第三前置targeted-01泛型编译失败（0 XML）、02为117/0/0/0、03为125/0/0/0；04 ArrayNode方法误用编译失败（0 XML）、05为128/1/0/0（共用fixture的第二轮creator独立反例失效），全部原log/result/XML保留。修为第一轮creator=device且第二轮仍保留原creator≠freeze后，06为128/0/0/0、7 XML、exit0/sourceUnchanged；目录`.local/d01-d18-20261008/r09-source-audit-targeted-01`至`-06/`，为普通定向test，不含IT。自审/设计`audit-self-review.md`、`audit-source-design.md`及28条dirty副本/22条继承hash/Git/进程/监听/C-D余量`audit-review-01`均在`.local/d01-d18-20261009/`。
+
+新只读消费者`retained-audit-1151-01`为exit0，实际原恢复包8条event ID/localSeq/sha保留，公钥及原资格/正文/ABORTED同时复核，不接数据库/私钥、不重跑1151。源码、编译/run参数、log/report在该目录；不代原设备签名、控制权威、库存/占用/权限、实际恢复或独立人员。下一步原资格必须逐输入保存时间验证，不能用冻结时间限制原本合法的离线提交，再接原占用/权限及关闭恢复事务。旧第一轮冻结窗口验证结果不能充当完整资格重建。
+
 D06/D07整体、FORMAL产品入口覆盖、D08–D18和第8节仍未完成；候选排除/取消释放政策、原资料/旧BCD/526、历史失败/恢复限制和C01–C08保持单列。生产默认/签名和七类生产决定能力关闭、localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名。本机证据/产物未异地备份，新增产物在D盘；阶段Git回执另行登记，范围备份不等于整体完成。
