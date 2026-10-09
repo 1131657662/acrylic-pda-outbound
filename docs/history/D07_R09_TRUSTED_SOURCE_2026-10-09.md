@@ -26,6 +26,14 @@
 
 ## 接续链与限制
 
+第二前置`RecoverySourceAuthority`只重验第一轮历史资格：显式历史RSA公钥验证原offline token，FORMAL/TEMP分别绑定scope/原assignment或authorization/原人员设备仓库/epoch，固定正文资格ID/冻结设备/kind/轮次一致，以原冻结时间核iat/exp；今日过期不替代历史窗口。交接/续作轮次明确拒绝，不能复用初始资格。原审计根、逐输入时限、原占用/权限、关闭恢复权威和事务重建仍未完成；冻结超过原有效期的合法原输入另需逐来源逐保存时间证明，不以本接口外推拒绝业务政策。
+
+该项原输入HEAD为4b2a5800f8048f7d46e9c0db0dc4bb8f8de86b19，首接口17条明确路径已按授权提交推送该SHA，远端一致，原回执见`.local/d01-d18-20261009/source-precommit-01/commit.log`和`push.log`。接续快照`authority-resume-check-01`核22条继承hash一致、全量25条dirty副本；无其他在途写者/重型Gradle/模拟器，C-D余量81880461312/100308656128字节，既有数据库/ADB未操作。
+
+原资格定向01为92/15/0/0（夹具时间戳错），02为98/24/0/0（第一轮限制后共用夹具仍第2轮），03为135/3/0/0（数字节点断言及错误码误写）；原XML/log/result全部保留。修后04为135/0/0/0，正文来源补验后的受影响Recovery/Draft回归05为2277/0/0/0、42份XML、exit0/sourceUnchanged；全部在`.local/d01-d18-20261008/r09-source-authority-targeted-01`至`-05/`。普通test不含IT，不能计当次MySQL/HTTP/客户端/恢复验证。自审范围见`.local/d01-d18-20261009/authority-self-review.md`。
+
+新消费者按原assignment从1151保留dump提取唯一原凭据（原件不修改、未启动库），仅公钥复核原资格/原正文/原ABORTED，03 exit0；源码/command/report/hash在`.local/d01-d18-20261009/retained-authority-1151-03/`，提取登记`retained-original-qualification-1151-extraction.json`。01回执purpose误用、02Java source loader访问失败原日志保留；不验证fault receipt/控制/审计根/占用/权限，report明确false，不称原身份或独立人员。未重跑1150/1151/UI-06或1100–1102。
+
 下一步从原资格/原审计根/占用/权限语义重验和受控恢复写入接续。必须绑定已关闭恢复会话、可信独立高水位、原终态/原来源和当事务租约，保留完整原ID/正文/事件序号/回执；不能拿本读取接口的结果当NORMAL放行许可或直接调用普通写者重放。现有closed projection purpose保持拒绝，不绕成普通写者。再用全新跨树分配的隔离输入实际恢复到截点前、重建、D07围栏、接收激活/最终提交及尾SQL回滚/重复重启；不以合成控制、fixture签名或一组拒绝反例代替该链。
 
 D06/D07整体、FORMAL产品入口覆盖、D08–D18和第8节仍未完成；候选排除/取消释放政策、原资料/旧BCD/526、历史失败/恢复限制和C01–C08保持单列。生产默认/签名和七类生产决定能力关闭、localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名。本机证据/产物未异地备份，新增产物在D盘；阶段Git回执另行登记，范围备份不等于整体完成。

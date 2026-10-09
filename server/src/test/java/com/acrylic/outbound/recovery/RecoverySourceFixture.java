@@ -13,11 +13,13 @@ final class RecoverySourceFixture {
     final ObjectNode manifest;
     String pin;
 
-    private RecoverySourceFixture(String kind) throws Exception {
+    private RecoverySourceFixture(String kind) throws Exception { this(kind, 2); }
+
+    private RecoverySourceFixture(String kind, long round) throws Exception {
         control = RecoveryControlFixture.create();
         identity = new RecoverySourceIdentity(kind, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
             UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), kind.equals("FORMAL") ? UUID.randomUUID() : null,
-            kind.equals("TEMP") ? UUID.randomUUID() : null, kind.equals("TEMP") ? UUID.randomUUID() : null, "1", 2, 7, 12, 9);
+            kind.equals("TEMP") ? UUID.randomUUID() : null, kind.equals("TEMP") ? UUID.randomUUID() : null, "1", round, 7, 12, 9);
         bindWarehouse(); control.append(control.next("RECOVERING"));
         materials = Files.createDirectory(control.root.getParent().resolve("external-materials"));
         manifest = manifest(); publish();
@@ -25,6 +27,7 @@ final class RecoverySourceFixture {
 
     static RecoverySourceFixture create() throws Exception { return new RecoverySourceFixture("FORMAL"); }
     static RecoverySourceFixture temporary() throws Exception { return new RecoverySourceFixture("TEMP"); }
+    static RecoverySourceFixture initial(String kind) throws Exception { return new RecoverySourceFixture(kind, 1); }
 
     private void bindWarehouse() throws Exception {
         control.command.putArray("affectedWarehouseIds").add(identity.warehouseId().toString());
