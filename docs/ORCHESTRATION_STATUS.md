@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-09
 branch: codex/development
-head: 5500a78
-dirty_entries: 39
+head: ab5d0b9
+dirty_entries: 42
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
 server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
@@ -16,14 +16,15 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 用户已要求恢复D01–D18总目标，目标active、未完成；只有[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)第8节全部满足才可complete。规则见AGENTS.md，版本只读生成事实块。替换前原看板与结论见[归档](history/ORCHESTRATION_STATE_before_temp_activation_2026-10-09.md)及.local/d01-d18-20261009/temp-activation-resume-01/board.md；不恢复旧角色或指令。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，codex/development；实际HEAD/远端5500a78d37a5a6fbffe05c9d78475f0d14959b1c，原占用观察16条明确路径已提交推送，回执original-occupancy-precommit-05；此前原登记根b10b580及native组合fa61ec2已推。提交后全部dirty/环境快照original-occupancy-postcommit-06；原E2A/第一轮组合/FORMAL续期原回执保留，不重造提交，继承dirty不暂存。
+- 主树D:/acrylic-pda-outbound，codex/development；实际HEAD/远端ab5d0b9887032dddfc6246daa4cb09a746116f22。原未收正文占用17条范围待提交；原TEMP准备/ACK、占用、登记根及native组合已推，原回执保留不重造提交。全部dirty/环境接续快照unsubmitted-occupancy-resume-01；继承dirty不混入范围。
 - [原TEMP E2A](history/D07_R09_ORIGINAL_EVIDENCE_2026-10-09.md)原字节/页链/水位/冻结与STOP分界、capture/scan原引用及未知前缀拒绝已验；定向03为82/0/0/0，回归04普通server 3110/0/0/1、126XML、exit0/sourceUnchanged；保留1151消费者03 compile/run0、13输入hash不变。消费者01登记摘要格式误读失败保留；非独立登记根/权限/占用/终态或实际恢复。
-- 本聊天01a11ea9-ce8d-70d1-8182-ccf4ca0a945a唯一活动写者，其他项目聊天notLoaded。original-occupancy-precommit-05保存全部41dirty副本/hash/diff/Git/全进程/监听/磁盘，22继承逐hash一致；12份占用观察Java已提交，ControlPaths仅既有换行差异。FORMAL final和磁盘final逐hash核对，两个HEAD均实际祖先，无恢复dirty。
-- 占用完整回归session5797已收取exit0，无重型Gradle/模拟器/页面运行器；1156–1159均dump/认证停机/原PID退出、目标端口空，1156/1158失败保留。source-capture-resume-02 C/D余量81086750720/97640689664字节；交付精确余量见original-occupancy-postcommit-06/disks.json。既有3306/13316/ADB不操作，新增证据/TEMP/Java临时/隔离产物继续D盘，无新HTTP/客户端/APK/部署。
+- 本聊天01a11ea9-ce8d-70d1-8182-ccf4ca0a945a唯一活动写者，其他项目聊天notLoaded。原FORMAL final/磁盘final的22条及TEMP准备postcommit的26条逐hash一致、旧HEAD均实际祖先；resumption保存全部dirty副本/hash/diff/Git/全进程/监听/磁盘。ControlPaths仅既有换行差异，无恢复dirty。
+- 未收正文回归session99280已收取exit0，无测试执行器/模拟器/页面运行器，仅空闲Gradle daemon。1162/1163失败及1164均dump/认证停机/原PID退出、19330/19434空；1156–1159/1161原件保留。接续C/D余量81071652864/96726835200字节，精确后续见本步postcommit/disks.json。既有3306/13316/ADB不操作；新增证据/TEMP/隔离产物继续D盘，无新HTTP/客户端/APK/部署。
 - 1150/1151/UI-06沿原有效证据复用未重跑；1152–1155均dump独立重算、认证停机/原PID退出，1153/1154失败库及log/XML/datadir/binlog保留不复用，retention在closed-mysql-1152至1155。
 - 22份停止AVD RAM快照仅已授权可逆NTFS压缩，SHA256一致未删；D空间恢复记录见[磁盘历史](history/D_DISK_RECOVERY_2026-10-09.md)，原审批删除拒绝未重试。必要证据/失败库/原件/Room/APK保留，本机资料未异地备份，取回位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 已验子项与边界
+- [原未收正文占用](history/D07_R09_UNSUBMITTED_OCCUPANCY_2026-10-09.md)：原NORMAL/无hash ABORTED、原E2A完整集合及全部item/object引用、SOURCE_RESERVED全owner列，库外独立pin/同source消费；旧入口不放宽。定向01为120全过，1162/1163 rawInput夹具失败保全、普通/带域摘要混用自审修正；新1164真实MySQL1全过，Node27输入hash不变/RSA/P256及逐原列核对。最终受影响回归02为3568/0/0/1、169XML、exit0/sourceUnchanged；新入口29执行，非完整普通test/非IT/符号链接skip未执行，非原权限历史或实际恢复。
 - [原TEMP准备/ACK采集](history/D07_R09_TEMP_PREPARATION_CAPTURE_2026-10-09.md)：NORMAL原实例只读五gzip/原token与manifest及signed_ACK，原纳秒command显式input核native摘要，独立pin/origin同source消费；定向01为71全过，新1161真实MySQL1全过，Node8输入hash不变/三RSA及五原分片逐数据库列核对。受影响回归02为3539/0/0/1、168XML、exit0/sourceUnchanged，非完整普通test/非IT/符号链接skip未执行；1160编号目录子串守卫拒绝与误调用未建库，1161 dump/认证停机/PID退出/端口空，非权限历史/实际恢复。
 - [原提交占用观察](history/D07_R09_ORIGINAL_OCCUPANCY_2026-10-09.md)：NORMAL原实例只读已收正文/ABORTED/REVIEW_RESERVED完整owner列，库外独立pin核原正文/签名回执/逐scan；定向01为56、修后03为167全过。1158小写夹具条码失败保留，新1159真实MySQL1全过，Node9输入hash不变/逐原列核对；普通完整回归02高轮拒绝顺序1失败保留，修后04为4008/0/0/1、234XML、exit0/sourceUnchanged。非IT/符号链接skip未执行，非原权限历史/实际业务恢复；1158/1159均dump/认证停机/PID退出/端口空。
 - [原TEMP正文同一pin组合](history/D07_R09_NATIVE_COMPOSITION_2026-10-09.md)：显式readTemporary重验原E2A与同一pin五原件、冻结/STOP水位及正文hash，原准备/ACK/资格/ABORTED/权限/占用/结束重读保持；定向01夹具水位失败保留，02为99全过；回归03为3127/0/0/1、127XML、exit0/sourceUnchanged。普通test非IT/符号链接skip未执行，已范围提交推送；原根保管与实际恢复仍缺。
@@ -43,7 +44,7 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 
 ## 未完成与接续
 - D06/D07整体、FORMAL各阶段实际入口、无可信归档代传/R09跨截点业务重建、D08–D18及第8节仍未完成，D18无最终候选。原资料/旧BCD/526、历史失败/恢复限制保持，开发缺口不转现场。
-- 下一子项SOURCE_RESERVED/未收正文占用及原ABORTED无正文hash与原E2A绑定、可信权限连续窗口；TEMP原准备/ACK接口沿已验输入复用，原纳秒command缺失拒绝；不能用恢复后或两份观察补造历史区间，登记根接口沿已验输入复用。随后全新隔离实际截点恢复→原ID/正文/序号/回执闭事务重建→D07围栏/接收激活/最终提交/尾SQL/重启；native差异已用显式原E2A消费者解决，不修改原正文。1151原FORMAL准备缺失、续期撤销/高轮/跨来源保持，失败库不复用。
+- 下一子项原未收正文观察接入同来源组合及可信权限连续窗口原边界；TEMP原准备/ACK与登记根沿已验输入复用，缺原纳秒command拒绝。不能用两份观察/未见撤权/恢复库权限補历史，operation_event事务内时间不代commit边界；完整原件独立pin/保管→全新隔离截点恢复→原ID/正文/序号/回执闭事务重建→D07围栏/接收激活/最终提交/尾SQL/重启，不能只堆只读观察。1151原FORMAL准备缺失、续期撤销/高轮/跨来源/失败资料保持。
 - 生产默认/签名、七类生产决定handler/POST/放行/证据写入/关闭能力均关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/正式签名/标签/Release、不绕设备/审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08单列。
 <!-- CURRENT_STATE_END -->
 

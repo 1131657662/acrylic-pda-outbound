@@ -12,8 +12,11 @@ final class RecoveryInitialFixture {
     final List<RecoveryAuditArchiveProof.Segment> prefix = new ArrayList<>();
 
     RecoveryInitialFixture(String kind) throws Exception {
-        prep = kind.equals("FORMAL") ? new RecoveryFormalActivationFixture().prep
-            : new RecoveryTemporaryActivationFixture().baseline.prep;
+        this(kind.equals("FORMAL") ? new RecoveryFormalActivationFixture().prep : new RecoveryTemporaryActivationFixture().baseline.prep);
+    }
+
+    RecoveryInitialFixture(RecoveryPreparationFixture original) throws Exception {
+        prep = original;
         state = prep.state; complete(); publish();
     }
 

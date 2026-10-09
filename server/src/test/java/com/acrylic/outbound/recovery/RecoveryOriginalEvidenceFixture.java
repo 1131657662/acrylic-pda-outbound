@@ -12,7 +12,7 @@ import static com.acrylic.outbound.recovery.RecoveryControlFormat.sha256;
 
 /** Native first-round E2A encodings with synthetic identity and development EC signing, never an original device. */
 final class RecoveryOriginalEvidenceFixture {
-    final RecoveryInitialFixture initial = new RecoveryInitialFixture("TEMP");
+    final RecoveryInitialFixture initial;
     final UUID openKey = UUID.randomUUID();
     final KeyPair key;
     final ObjectNode open, frozen, stopEvent, manifest, stopCore, stop;
@@ -24,6 +24,11 @@ final class RecoveryOriginalEvidenceFixture {
     RecoveryOriginalEvidenceFixture() throws Exception { this(ignored -> { }); }
 
     RecoveryOriginalEvidenceFixture(java.util.function.Consumer<RecoveryInitialFixture> scenario) throws Exception {
+        this(new RecoveryInitialFixture("TEMP"), scenario);
+    }
+
+    RecoveryOriginalEvidenceFixture(RecoveryInitialFixture initial, java.util.function.Consumer<RecoveryInitialFixture> scenario) throws Exception {
+        this.initial = initial;
         scenario.accept(initial);
         var generator = KeyPairGenerator.getInstance("EC"); generator.initialize(new ECGenParameterSpec("secp256r1")); key = generator.generateKeyPair();
         var id = initial.expected();
@@ -31,7 +36,7 @@ final class RecoveryOriginalEvidenceFixture {
         int captures = frozen.path("captures").size(), auditHigh = frozen.path("events").size() + 1;
         for (int index = 0; index < captures; index++) ((ObjectNode)frozen.path("captures").get(index)).put("deviceCaptureSeq", Integer.toString(index + 1));
         identity = new RecoverySourceIdentity("TEMP", id.warehouseId(), id.scopeId(), id.submissionId(), id.deviceId(), id.operatorId(),
-            id.qualificationId(), null, id.creatorDeviceId(), id.clientOrderId(), id.sourceRecoveryEpoch(), 1, captures, auditHigh, captures);
+            id.qualificationId(), id.canonicalOrderId(), id.creatorDeviceId(), id.clientOrderId(), id.sourceRecoveryEpoch(), 1, captures, auditHigh, captures);
         stopEvent = ((ObjectNode)frozen.path("events").get(auditHigh - 2)).deepCopy().put("id", UUID.randomUUID().toString())
             .put("type", "STOP").put("localSeq", Integer.toString(auditHigh));
         open = SubmissionJson.object().put("operation", "OPEN").put("manifestId", UUID.randomUUID().toString()).put("manifestVersion", 1)

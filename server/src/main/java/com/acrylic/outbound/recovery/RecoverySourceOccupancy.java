@@ -27,6 +27,21 @@ public final class RecoverySourceOccupancy {
         return checked(source, () -> value);
     }
 
+    /** Only the original signed E2A can supply a hash absent from an unsubmitted ABORTED receipt. */
+    Proof verifyUnsubmittedTemporary(RecoveryPinnedSource source, JsonNode value, RecoveryOriginalEvidence.Request evidence) {
+        require(source != null && evidence != null && source.identity().sourceKind().equals("TEMP")
+            && source.identity().workRound() == 1, "RECOVERY_UNSUBMITTED_SOURCE");
+        var payload = SubmissionJson.parse(source.original("payload"));
+        var terminal = initialTerminal(source, payload);
+        require(terminal.path("payloadSha256").isNull() && terminal.path("payloadPresent").isBoolean()
+            && !terminal.path("payloadPresent").booleanValue(), "RECOVERY_UNSUBMITTED_TERMINAL");
+        RecoveryNativeTemporaryAudit.verify(source, evidence);
+        var proof = rows(source, payload, value);
+        require(proof.sourceEvidenceSetId() != null && proof.rows().stream().allMatch(row -> row.ownerState().equals("SOURCE_RESERVED")),
+            "RECOVERY_UNSUBMITTED_OWNER");
+        return proof;
+    }
+
     private Proof checked(RecoveryPinnedSource source, java.util.function.Supplier<JsonNode> material) {
         require(source != null, "RECOVERY_SOURCE_IDENTITY");
         try {
@@ -34,23 +49,18 @@ public final class RecoverySourceOccupancy {
             var payload = SubmissionJson.parse(source.original("payload"));
             requireInitial(source, payload);
             JsonNode value = material.get();
-            fields(value, "formatVersion source payloadSha256 sourceEvidenceSetId rows"); version(value);
-            require(source.identity().equals(RecoverySourceIdentity.read(value.path("source"))), "RECOVERY_SOURCE_OCCUPANCY_SOURCE");
-            require(text(value, "payloadSha256").equals(SubmissionJson.sha(payload)), "RECOVERY_SOURCE_OCCUPANCY_PAYLOAD");
-            UUID evidence = nullable(value, "sourceEvidenceSetId");
-            var rows = new ArrayList<Row>(); var bales = new HashSet<UUID>(); var captures = new HashSet<UUID>();
-            for (JsonNode row : SubmissionJson.array(value, "rows")) {
-                fields(row, ROW_FIELDS); Row parsed = readRow(row, source.identity(), evidence);
-                require(bales.add(parsed.baleId()) && captures.add(parsed.captureId()), "RECOVERY_SOURCE_OCCUPANCY_DUPLICATE");
-                rows.add(parsed);
-            }
-            checkScans(payload, rows);
-            return new Proof(source.identity(), text(value, "payloadSha256"), evidence, List.copyOf(rows));
+            return rows(source, payload, value);
         } catch (RecoveryControlException refusal) { throw refusal; }
         catch (RuntimeException invalid) { throw new RecoveryControlException("RECOVERY_SOURCE_OCCUPANCY_INVALID", invalid); }
     }
 
     private void requireInitial(RecoveryPinnedSource source, JsonNode payload) {
+        var terminal = initialTerminal(source, payload);
+        require(terminal.hasNonNull("payloadSha256") || terminal.hasNonNull("localFrozenPayloadSha256"),
+            "RECOVERY_SOURCE_OCCUPANCY_TERMINAL_PAYLOAD");
+    }
+
+    private JsonNode initialTerminal(RecoveryPinnedSource source, JsonNode payload) {
         credentials.verify(source);
         for (String field : List.of("continuationId", "handoverSessionId", "recoveryPackageId", "handoverId"))
             require(!payload.hasNonNull(field), "RECOVERY_SOURCE_OCCUPANCY_CHAIN_UNSUPPORTED");
@@ -58,8 +68,22 @@ public final class RecoverySourceOccupancy {
             "RECOVERY_SOURCE_OCCUPANCY_CHAIN_UNSUPPORTED");
         var terminal = terminals.verify(source);
         require("ABORTED".equals(text(terminal, "status")), "RECOVERY_SOURCE_OCCUPANCY_TERMINAL_UNSUPPORTED");
-        require(terminal.hasNonNull("payloadSha256") || terminal.hasNonNull("localFrozenPayloadSha256"),
-            "RECOVERY_SOURCE_OCCUPANCY_TERMINAL_PAYLOAD");
+        return terminal;
+    }
+
+    private Proof rows(RecoveryPinnedSource source, JsonNode payload, JsonNode value) {
+        fields(value, "formatVersion source payloadSha256 sourceEvidenceSetId rows"); version(value);
+        require(source.identity().equals(RecoverySourceIdentity.read(value.path("source"))), "RECOVERY_SOURCE_OCCUPANCY_SOURCE");
+        require(text(value, "payloadSha256").equals(SubmissionJson.sha(payload)), "RECOVERY_SOURCE_OCCUPANCY_PAYLOAD");
+        UUID evidence = nullable(value, "sourceEvidenceSetId");
+        var rows = new ArrayList<Row>(); var bales = new HashSet<UUID>(); var captures = new HashSet<UUID>();
+        for (JsonNode row : SubmissionJson.array(value, "rows")) {
+            fields(row, ROW_FIELDS); Row parsed = readRow(row, source.identity(), evidence);
+            require(bales.add(parsed.baleId()) && captures.add(parsed.captureId()), "RECOVERY_SOURCE_OCCUPANCY_DUPLICATE");
+            rows.add(parsed);
+        }
+        checkScans(payload, rows);
+        return new Proof(source.identity(), text(value, "payloadSha256"), evidence, List.copyOf(rows));
     }
 
     private Row readRow(JsonNode row, RecoverySourceIdentity source, UUID evidence) {
