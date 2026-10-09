@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.*;
 
 class RecoverySourceAuthorityTest {
     @ParameterizedTest @ValueSource(strings = {"FORMAL", "TEMP"})
-    void provesHistoricalCredentialAtTheOriginalFreezeTimeWithPublicKeysOnly(String kind) throws Exception {
+    void provesHistoricalCredentialAtEachOriginalSaveTimeWithPublicKeysOnly(String kind) throws Exception {
         var f = new RecoveryAuthorityFixture(kind); var source = f.source.read();
 
         assertThat(com.acrylic.outbound.submissions.SubmissionJson.canonical(f.reader().verify(source)))
@@ -47,16 +47,16 @@ class RecoverySourceAuthorityTest {
         assertThatThrownBy(() -> f.reader().verify(f.source.read())).hasMessage("RECOVERY_SOURCE_ORIGIN_MISMATCH");
     }
 
-    @Test void refusesFreezeBeforeIssueInsteadOfUsingTodaysCredential() throws Exception {
+    @Test void refusesClosingBeforeTheOriginalSave() throws Exception {
         var f = new RecoveryAuthorityFixture("FORMAL"); f.closedAt = "2026-09-19T23:59:59Z"; f.publish();
 
         assertThatThrownBy(() -> f.reader().verify(f.source.read())).hasMessage("RECOVERY_SOURCE_ORIGIN_WINDOW");
     }
 
-    @Test void refusesFreezeAtExpiry() throws Exception {
+    @Test void retainsLegitimateSavesWhenClosingAtExpiry() throws Exception {
         var f = new RecoveryAuthorityFixture("TEMP"); f.closedAt = "2026-09-21T00:00:00Z"; f.publish();
 
-        assertThatThrownBy(() -> f.reader().verify(f.source.read())).hasMessage("RECOVERY_SOURCE_ORIGIN_WINDOW");
+        assertThat(f.reader().verify(f.source.read()).path("jti").asText()).isEqualTo(f.claims.path("jti").asText());
     }
 
     @Test void refusesReversedAuthorizationWindow() throws Exception {

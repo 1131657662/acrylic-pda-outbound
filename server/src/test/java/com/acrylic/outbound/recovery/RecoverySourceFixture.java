@@ -31,6 +31,25 @@ final class RecoverySourceFixture {
     static RecoverySourceFixture temporary() throws Exception { return new RecoverySourceFixture("TEMP"); }
     static RecoverySourceFixture initial(String kind) throws Exception { return new RecoverySourceFixture(kind, 1); }
 
+    static RecoverySourceFixture related(RecoverySourceFixture current, String kind) throws Exception {
+        var own = current.identity;
+        var identity = new RecoverySourceIdentity(kind, own.warehouseId(), UUID.randomUUID(), UUID.randomUUID(),
+            own.deviceId(), UUID.randomUUID(), UUID.randomUUID(), kind.equals("FORMAL") ? UUID.randomUUID() : null,
+            kind.equals("TEMP") ? own.deviceId() : null, kind.equals("TEMP") ? UUID.randomUUID() : null,
+            own.sourceRecoveryEpoch(), 1, 7, 12, 9);
+        return new RecoverySourceFixture(current.control, identity);
+    }
+
+    static RecoverySourceFixture credentialCopy(RecoverySourceFixture current) throws Exception {
+        return new RecoverySourceFixture(current.control, current.identity);
+    }
+
+    private RecoverySourceFixture(RecoveryControlFixture control, RecoverySourceIdentity identity) throws Exception {
+        this.control = control; this.identity = identity;
+        materials = Files.createDirectory(control.root.getParent().resolve("external-materials-" + UUID.randomUUID()));
+        manifest = manifest(); publish();
+    }
+
     private void bindWarehouse() throws Exception {
         control.command.putArray("affectedWarehouseIds").add(identity.warehouseId().toString());
         control.latest.set("command", control.command.deepCopy());

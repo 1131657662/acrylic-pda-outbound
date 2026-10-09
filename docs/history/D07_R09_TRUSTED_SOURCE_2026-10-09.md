@@ -42,4 +42,12 @@
 
 新只读消费者`retained-audit-1151-01`为exit0，实际原恢复包8条event ID/localSeq/sha保留，公钥及原资格/正文/ABORTED同时复核，不接数据库/私钥、不重跑1151。源码、编译/run参数、log/report在该目录；不代原设备签名、控制权威、库存/占用/权限、实际恢复或独立人员。下一步原资格必须逐输入保存时间验证，不能用冻结时间限制原本合法的离线提交，再接原占用/权限及关闭恢复事务。旧第一轮冻结窗口验证结果不能充当完整资格重建。
 
+第三前置10条明确路径已提交推送ff6f9fe47d6c06ee636da2c8df7d0a5d64356759，远端一致，回执`audit-precommit-03`。接续`audit-resume-preflight-02`核全部测试源码与06一致、22条继承hash不变，无重型任务/模拟器/页面在途。暂存前02快照仅包含未暂存文件，03已改并集并补32条全量dirty副本，02原件保留。
+
+第四前置以该SHA输入：`RecoverySourceAuthority/SavedTimes/CaptureCredential/Qualifications`公钥核逐独立pin第一轮FORMAL续期及混合FORMAL/TEMP原凭据；每条原保存用自身iat/exp，不由冻结时间或最后资格覆盖。原capture authorizationId/token jti、FORMAL代次/快照/修订、TEMP代次、原来源/人员/设备/epoch绑定，COMMITTED与唯一原scan相符；错目录键/控制/仓库/current pin、缺件/重复/过期/早于确认拒绝。无数据库/签发/bean/route/迁移；higher-round原激活、TEMP准备包/ACK/基线与原库存/权限完整性仍缺。
+
+定向01为152/0/0/0、9 XML，02为191/0/0/0、14 XML；回归03为2396/0/0/0、52 XML、exit0，但同期作者整理fixture/补目录上限，sourceUnchanged=false原证据保留。最终固定源码回归04为2397/0/0/0、52 XML、exit0/sourceUnchanged。全部原log/XML/命令/源码hash在`.local/d01-d18-20261008/r09-source-saved-times-*`。新消费者`retained-saved-times-1151-01`exit0，只读1151保留正文2条原save/credential/public DER/ABORTED及摘要，无库/私钥、不重跑1151。自审`.local/d01-d18-20261009/saved-times-self-review.md`；独立工具不代独立人员或实际恢复。
+
+下一步独立closed authority及恢复事务，要求明示kind/pin、原链/原checkpoint、事务生命周期和DB投影/实例一致，NORMAL/未知来源仍拒绝，不调用普通写者绕过。跨截点真实恢复、原事实重建、D07故障围栏与接收最终提交仍未实现，不计整体通过。
+
 D06/D07整体、FORMAL产品入口覆盖、D08–D18和第8节仍未完成；候选排除/取消释放政策、原资料/旧BCD/526、历史失败/恢复限制和C01–C08保持单列。生产默认/签名和七类生产决定能力关闭、localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名。本机证据/产物未异地备份，新增产物在D盘；阶段Git回执另行登记，范围备份不等于整体完成。

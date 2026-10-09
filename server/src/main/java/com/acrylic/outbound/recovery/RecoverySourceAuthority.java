@@ -4,7 +4,6 @@ import com.acrylic.outbound.pda.OfflineSigner;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.acrylic.outbound.temporary.draft.DraftPreparationProof;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.time.Instant;
 import java.util.*;
 import static com.acrylic.outbound.recovery.RecoveryControlFormat.*;
 
@@ -15,6 +14,19 @@ public final class RecoverySourceAuthority {
     public RecoverySourceAuthority(RecoveryReceiptKeys keys) { this.keys = Objects.requireNonNull(keys); }
 
     public JsonNode verify(RecoveryPinnedSource source) {
+        var claims = verifyCredential(source);
+        try {
+            var payload = SubmissionJson.parse(source.original("payload"));
+            requirePayload(payload, source.identity());
+            RecoverySourceSavedTimes.verify(payload, Map.of(uuid(claims, "jti"),
+                new RecoverySourceSavedTimes.Credential(source.identity(), claims)));
+            return claims.deepCopy();
+        } catch (RecoveryControlException refusal) { throw refusal; }
+        catch (RuntimeException invalid) { throw new RecoveryControlException("RECOVERY_SOURCE_ORIGIN_INVALID", invalid); }
+    }
+
+    /** Only proves the retained credential, never a later-round activation or a new work permit. */
+    public JsonNode verifyCredential(RecoveryPinnedSource source) {
         require(source != null, "RECOVERY_SOURCE_IDENTITY");
         try {
             var origin = SubmissionJson.parse(source.original("origin"));
@@ -23,8 +35,7 @@ public final class RecoverySourceAuthority {
             require(identity.workRound() == 1, "RECOVERY_SOURCE_ORIGIN_ROUND_UNSUPPORTED");
             String audience = identity.sourceKind().equals("FORMAL") ? "acrylic-pda-offline" : "acrylic-pda-temporary-work";
             var claims = DraftPreparationProof.verify(token, key(token), audience);
-            var payload = SubmissionJson.parse(source.original("payload"));
-            requirePayload(payload, identity); requireWindow(claims, payload);
+            RecoverySourceSavedTimes.window(claims);
             if (identity.sourceKind().equals("FORMAL")) formal(claims, identity);
             else temporary(claims, identity);
             return claims.deepCopy();
@@ -41,16 +52,7 @@ public final class RecoverySourceAuthority {
         return new OfflineSigner.PublicKeyView(id, "RS256", Base64.getEncoder().encodeToString(trusted.getEncoded()));
     }
 
-    private void requireWindow(JsonNode claims, JsonNode payload) {
-        require(claims.path("iat").isIntegralNumber() && claims.path("iat").canConvertToLong()
-            && claims.path("exp").isIntegralNumber() && claims.path("exp").canConvertToLong(), "RECOVERY_SOURCE_ORIGIN_WINDOW");
-        long issued = claims.path("iat").longValue(), expires = claims.path("exp").longValue();
-        Instant frozen = Instant.parse(text(payload, "closedAt"));
-        require(issued >= 0 && expires > issued && !frozen.isBefore(Instant.ofEpochSecond(issued))
-            && frozen.isBefore(Instant.ofEpochSecond(expires)), "RECOVERY_SOURCE_ORIGIN_WINDOW");
-    }
-
-    private void requirePayload(JsonNode payload, RecoverySourceIdentity identity) {
+    static void requirePayload(JsonNode payload, RecoverySourceIdentity identity) {
         String qualification = identity.sourceKind().equals("FORMAL") ? "assignmentId" : "authorizationId";
         require(uuid(payload, "freezeDeviceId").equals(identity.deviceId())
             && revision(payload, "workRound") == identity.workRound()

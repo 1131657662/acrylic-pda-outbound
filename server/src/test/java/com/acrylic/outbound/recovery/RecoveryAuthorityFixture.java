@@ -11,9 +11,15 @@ final class RecoveryAuthorityFixture {
     final RecoveryReceiptFixture key;
     final ObjectNode claims;
     String closedAt = "2026-09-20T01:00:00Z";
+    String confirmedAt = "2026-09-20T00:30:00Z";
+    String savedAt = "2026-09-20T00:31:00Z";
 
     RecoveryAuthorityFixture(String kind) throws Exception {
-        source = RecoverySourceFixture.initial(kind);
+        this(RecoverySourceFixture.initial(kind));
+    }
+
+    RecoveryAuthorityFixture(RecoverySourceFixture source) throws Exception {
+        this.source = source;
         key = new RecoveryReceiptFixture(); claims = claims(); publish();
     }
 
@@ -24,6 +30,7 @@ final class RecoveryAuthorityFixture {
             .put("exp", Instant.parse("2026-09-21T00:00:00Z").getEpochSecond());
         if (id.sourceKind().equals("FORMAL")) {
             return value.put("aud", "acrylic-pda-offline").put("scope", "pda:scan").put("jti", UUID.randomUUID().toString())
+                .put("assignmentEpoch", "1").put("revision", 1).put("inventorySnapshotId", UUID.randomUUID().toString())
                 .put("assignmentId", id.qualificationId().toString()).put("orderId", id.canonicalOrderId().toString())
                 .put("sub", id.operatorId().toString()).put("deviceId", id.deviceId().toString())
                 .put("warehouseId", id.warehouseId().toString()).put("serverRecoveryEpoch", id.sourceRecoveryEpoch());
@@ -33,7 +40,8 @@ final class RecoveryAuthorityFixture {
             .put("manifestSha256", "a".repeat(64));
         value.putObject("identity").put("authorizationId", id.qualificationId().toString()).put("bundleId", UUID.randomUUID().toString())
             .put("userId", id.operatorId().toString()).put("deviceId", id.deviceId().toString())
-            .put("warehouseId", id.warehouseId().toString()).put("serverRecoveryEpoch", id.sourceRecoveryEpoch());
+            .put("warehouseId", id.warehouseId().toString()).put("authorizationEpoch", "1")
+            .put("serverRecoveryEpoch", id.sourceRecoveryEpoch());
         return value;
     }
 
@@ -45,8 +53,25 @@ final class RecoveryAuthorityFixture {
             .put("workRound", Long.toString(id.workRound())).put("sourceRecoveryEpoch", id.sourceRecoveryEpoch())
             .put(id.sourceKind().equals("FORMAL") ? "assignmentId" : "authorizationId", id.qualificationId().toString());
         payload.putObject("source").put("kind", id.sourceKind());
-        key.object(source, "payload", RecoveryReceiptFixture.bytes(payload));
-        source.publish();
+        records(payload);
+        key.object(source, "payload", RecoveryReceiptFixture.bytes(payload)); source.publish();
+    }
+
+    private void records(ObjectNode payload) {
+        var id = source.identity;
+        UUID captureId = UUID.randomUUID();
+        var capture = payload.putArray("captures").addObject().put("id", captureId.toString()).put("state", "COMMITTED")
+            .put("authorizationId", claims.path("jti").asText()).put("originDeviceId", id.deviceId().toString())
+            .put("operatorId", id.operatorId().toString()).put("sourceRecoveryEpoch", id.sourceRecoveryEpoch())
+            .put("orderScanSeq", "1").put("barcode", "01234567890").put("confirmedAt", confirmedAt);
+        if (id.sourceKind().equals("FORMAL")) capture.put("assignmentId", id.qualificationId().toString())
+            .put("orderId", id.canonicalOrderId().toString()).put("warehouseId", id.warehouseId().toString())
+            .put("assignmentEpoch", claims.path("assignmentEpoch").asText()).put("orderRevision", claims.path("revision").intValue())
+            .put("snapshotId", claims.path("inventorySnapshotId").asText());
+        else capture.put("clientOrderId", id.clientOrderId().toString())
+            .put("authorizationEpoch", claims.at("/identity/authorizationEpoch").asText());
+        payload.putArray("scans").addObject().put("captureId", captureId.toString()).put("orderScanSeq", "1")
+            .put("barcode", "01234567890").put("savedAt", savedAt);
     }
 
     RecoverySourceAuthority reader() {
