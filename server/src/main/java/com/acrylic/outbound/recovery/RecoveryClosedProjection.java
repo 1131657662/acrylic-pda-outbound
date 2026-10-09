@@ -1,6 +1,5 @@
 package com.acrylic.outbound.recovery;
 
-import java.nio.file.Path;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,9 +13,9 @@ public final class RecoveryClosedProjection {
     private final RecoveryProjectionRows rows;
     private final long baseline;
 
-    public RecoveryClosedProjection(DataSource source, RecoveryControlLocation authority, Path checkpoint, long baseline) {
+    public RecoveryClosedProjection(DataSource source, RecoveryClosedAuthority authority, long baseline) {
         require(baseline > 0, "CONTROL_BASELINE_REQUIRED");
-        this.transaction = new RecoveryLeasedTransaction(source, authority, checkpoint);
+        this.transaction = new RecoveryLeasedTransaction(source, authority);
         this.rows = new RecoveryProjectionRows(new JdbcTemplate(source)); this.baseline = baseline;
     }
 

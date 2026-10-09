@@ -32,7 +32,7 @@ public final class RecoveryProjectionChecks {
         assertClosed(initial); constraints(jdbc);
         RecoveryProjectionFaultChecks.atInitial(jdbc, f, databases, baseline);
         for (String phase : List.of("RECOVERING", "VERIFYING", "RELEASE_READY")) {            f.advancePhase(phase);
-            assertThatThrownBy(first::project).hasMessage("CONTROL_INSTANCE_STALE");
+            assertThatThrownBy(first::project).hasMessage("CONTROL_CLOSED_SESSION_MISMATCH");
             var current = projection(jdbc, f, baseline); var projected = current.project();
             assertThat(projected.phase()).isEqualTo(phase); assertClosed(projected);
             assertThat(projected.numericEpoch()).isEqualTo(Long.toString(baseline + 1));
@@ -53,7 +53,11 @@ public final class RecoveryProjectionChecks {
     }
 
     static RecoveryClosedProjection projection(JdbcTemplate jdbc, RecoveryTransactionFixture f, long baseline) {
-        return new RecoveryClosedProjection(jdbc.getDataSource(), f.location, f.checkpoint, baseline);
+        try {
+            return new RecoveryClosedProjection(jdbc.getDataSource(),
+                RecoveryClosedTestSupply.control(f.location, f.checkpoint).authority(), baseline);
+        } catch (RuntimeException error) { throw error; }
+        catch (Exception error) { throw new AssertionError("Closed authority supply failed", error); }
     }
 
     private static void concurrentRegistration(JdbcTemplate jdbc, RecoveryTransactionFixture f, long baseline) throws Exception {
@@ -63,11 +67,12 @@ public final class RecoveryProjectionChecks {
             try (var statement = blocker.createStatement()) { statement.executeQuery("SELECT * FROM server_state WHERE id=1 FOR UPDATE").close(); }
             try {
                 var first = pool.submit(one::project); awaitWaiting(jdbc, 1);
-                var second = pool.submit(two::project); awaitWaiting(jdbc, 2);
+                var second = pool.submit(() -> assertThatThrownBy(two::project).hasMessage("CONTROL_TRANSACTION_OUTCOME_UNCONFIRMED"));
+                second.get(20, TimeUnit.SECONDS);
                 // This case proves duplicate registration. Durable-close admission/drain has its
                 // own transaction acceptance; publishing a close here intentionally forbids replay.
                 blocker.rollback();
-                assertThat(first.get(20, TimeUnit.SECONDS)).isEqualTo(second.get(20, TimeUnit.SECONDS));
+                assertThat(first.get(20, TimeUnit.SECONDS)).isEqualTo(two.project());
             } finally { blocker.rollback(); }
         }
         assertThat(count(jdbc, "recovery_installation_binding")).isEqualTo(1);

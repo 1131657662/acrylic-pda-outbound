@@ -33,7 +33,7 @@ class RecoveryAuthorityPurposeTest {
             RecoveryControlPurpose.NORMAL_ADMISSION)).hasMessage("CONTROL_AUTHORITY_PURPOSE_FORBIDDEN");
     }
 
-    @Test void closedProjectionAcceptsNothingToday() throws Exception {
+    @Test void closedProjectionRefusesTheLegacyOrNormalIdentity() throws Exception {
         var fixture = RecoveryControlFixture.create();
         assertThatThrownBy(() -> RecoveryControlHistory.load(fixture.location(), fixture.checkpoint,
             RecoveryControlPurpose.CLOSED_PROJECTION)).hasMessage("CONTROL_AUTHORITY_PURPOSE_FORBIDDEN");

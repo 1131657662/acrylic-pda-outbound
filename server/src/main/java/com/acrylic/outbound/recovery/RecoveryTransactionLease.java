@@ -7,11 +7,16 @@ import org.springframework.transaction.support.*;
 final class RecoveryTransactionLease implements AutoCloseable, TransactionSynchronization {
     private final RecoveryWriterLease writer;
     private final Runnable poison;
+    private final java.util.function.IntConsumer confirmed;
     private boolean started;
     private int completion = STATUS_UNKNOWN;
 
     RecoveryTransactionLease(RecoveryWriterLease writer, Runnable poison) {
-        this.writer = writer; this.poison = poison;
+        this(writer, poison, ignored -> { });
+    }
+
+    RecoveryTransactionLease(RecoveryWriterLease writer, Runnable poison, java.util.function.IntConsumer confirmed) {
+        this.writer = writer; this.poison = poison; this.confirmed = confirmed;
     }
 
     void started() {
@@ -19,7 +24,10 @@ final class RecoveryTransactionLease implements AutoCloseable, TransactionSynchr
         started = true;
     }
 
-    @Override public void afterCompletion(int status) { completion = status; }
+    @Override public void afterCompletion(int status) {
+        if (status == STATUS_COMMITTED || status == STATUS_ROLLED_BACK) confirmed.accept(status);
+        completion = status;
+    }
 
     @Override public int getOrder() { return Integer.MIN_VALUE; }
 

@@ -14,11 +14,10 @@ import static com.acrylic.outbound.recovery.RecoveryControlFormat.*;
 enum RecoveryControlPurpose {
     /** Admission, lease renewal and reads of the live (initial normal) authority. */
     NORMAL_ADMISSION(true, Set.of("INITIAL_NORMAL_INSTALL")),
-    /**
-     * Closed-chain projections. No closed authority identity exists yet (creating one belongs to B9), so
-     * this purpose accepts nothing today and always fails closed.
-     */
-    CLOSED_PROJECTION(false, Set.of());
+    /** Legacy closed control chain, usable only behind a separately pinned closed-session identity. */
+    CLOSED_CONTROL_HISTORY(true, Set.of()),
+    /** Only the separate, independently pinned closed-session identity may authorize recovery work. */
+    CLOSED_PROJECTION(false, Set.of("CLOSED_RECOVERY_SESSION"));
 
     private final boolean absentKindAllowed;
     private final Set<String> kinds;

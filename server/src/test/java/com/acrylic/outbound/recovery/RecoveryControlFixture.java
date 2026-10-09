@@ -15,7 +15,11 @@ final class RecoveryControlFixture {
     ObjectNode latest;
 
     private RecoveryControlFixture(Path base) throws IOException {
-        root = base.resolve("authority"); restoreRoot = base.resolve("business"); checkpoint = base.resolve("trusted.json");
+        this(base, base.resolve("business"));
+    }
+
+    private RecoveryControlFixture(Path base, Path restored) throws IOException {
+        root = base.resolve("authority"); restoreRoot = restored; checkpoint = base.resolve("trusted.json");
         Files.createDirectories(root.resolve("history")); Files.createDirectories(restoreRoot);
         command = command();
         var identity = JSON.createObjectNode().put("formatVersion", 1).put("installationId", installation.toString());
@@ -31,6 +35,12 @@ final class RecoveryControlFixture {
         Path retained = Path.of("../.local/control-java-cases").toAbsolutePath().normalize();
         Files.createDirectories(retained);
         return new RecoveryControlFixture(Files.createTempDirectory(retained, "case-"));
+    }
+
+    static RecoveryControlFixture forRestore(Path restored) throws IOException {
+        Path retained = Path.of("../.local/control-java-cases").toAbsolutePath().normalize();
+        Files.createDirectories(retained);
+        return new RecoveryControlFixture(Files.createTempDirectory(retained, "closed-mysql-"), restored.toRealPath());
     }
 
     private ObjectNode command() {

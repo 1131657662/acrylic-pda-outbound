@@ -16,6 +16,14 @@ final class RecoveryWriterLease implements AutoCloseable {
     private RecoveryWriterLease(String identity, Held held) { this.identity = identity; this.held = held; }
 
     static synchronized RecoveryWriterLease acquire(Path root) throws IOException {
+        return acquire(root, true);
+    }
+
+    static synchronized RecoveryWriterLease acquireClosed(Path root) throws IOException {
+        return acquire(root, false);
+    }
+
+    private static RecoveryWriterLease acquire(Path root, boolean shared) throws IOException {
         RecoveryControlLock.requireOwner(root);
         RecoveryWriterProtocol.validate(root, true);
         RecoveryControlIntents.requireAdmission(root);
@@ -23,22 +31,23 @@ final class RecoveryWriterLease implements AutoCloseable {
         String key = key(path);
         Held held = HELD.get(key);
         if (held != null) {
+            require(shared && held.shared, "CONTROL_WRITERS_ACTIVE");
             require(held.lock.isValid() && held.key.equals(key), "CONTROL_WRITER_LOCK_REPLACED");
             require(!held.poisoned, "CONTROL_WRITERS_ACTIVE");
             held.references++;
             return new RecoveryWriterLease(key, held);
         }
-        held = open(path, key); HELD.put(key, held);
+        held = open(path, key, shared); HELD.put(key, held);
         return new RecoveryWriterLease(key, held);
     }
 
-    private static Held open(Path path, String key) throws IOException {
+    private static Held open(Path path, String key, boolean shared) throws IOException {
         var channel = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE, LinkOption.NOFOLLOW_LINKS);
         try {
             require(channel.size() == 1 && key.equals(key(path)), "CONTROL_WRITER_LOCK_REPLACED");
-            var lock = channel.tryLock(0, 1, true);
+            var lock = channel.tryLock(0, 1, shared);
             require(lock != null, "CONTROL_WRITERS_ACTIVE");
-            return new Held(channel, lock, key);
+            return new Held(channel, lock, key, shared);
         } catch (IOException | RuntimeException error) {
             channel.close(); throw error;
         }
@@ -80,8 +89,9 @@ final class RecoveryWriterLease implements AutoCloseable {
         final String key;
         int references = 1;
         boolean poisoned;
-        Held(FileChannel channel, FileLock lock, String key) {
-            this.channel = channel; this.lock = lock; this.key = key;
+        final boolean shared;
+        Held(FileChannel channel, FileLock lock, String key, boolean shared) {
+            this.channel = channel; this.lock = lock; this.key = key; this.shared = shared;
         }
     }
 }

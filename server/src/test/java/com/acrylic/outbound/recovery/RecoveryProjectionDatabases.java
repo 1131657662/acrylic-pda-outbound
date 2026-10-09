@@ -14,7 +14,7 @@ final class RecoveryProjectionDatabases {
     RecoveryProjectionDatabases(JdbcTemplate jdbc) {
         source = (DriverManagerDataSource) jdbc.getDataSource();
         original = jdbc.queryForObject("SELECT DATABASE()", String.class);
-        assertThat(original).matches("acrylic_e2a_cross_20260925_[1-9][0-9]{0,2}");
+        assertThat(original).matches("acrylic_e2a_cross_20260925_[1-9][0-9]{0,3}");
     }
 
     JdbcTemplate empty(String suffix) {

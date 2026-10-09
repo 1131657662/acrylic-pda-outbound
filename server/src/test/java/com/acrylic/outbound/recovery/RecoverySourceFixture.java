@@ -16,13 +16,17 @@ final class RecoverySourceFixture {
     private RecoverySourceFixture(String kind) throws Exception { this(kind, 2); }
 
     private RecoverySourceFixture(String kind, long round) throws Exception {
-        control = RecoveryControlFixture.create();
+        this(kind, round, RecoveryControlFixture.create(), true);
+    }
+
+    private RecoverySourceFixture(String kind, long round, RecoveryControlFixture supplied, boolean advance) throws Exception {
+        control = supplied;
         UUID device = UUID.randomUUID();
         identity = new RecoverySourceIdentity(kind, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
             device, UUID.randomUUID(), UUID.randomUUID(), kind.equals("FORMAL") ? UUID.randomUUID() : null,
             kind.equals("TEMP") ? (round == 1 ? device : UUID.randomUUID()) : null,
             kind.equals("TEMP") ? UUID.randomUUID() : null, "1", round, 7, 12, 9);
-        bindWarehouse(); control.append(control.next("RECOVERING"));
+        bindWarehouse(); if (advance) control.append(control.next("RECOVERING"));
         materials = Files.createDirectory(control.root.getParent().resolve("external-materials"));
         manifest = manifest(); publish();
     }
@@ -30,6 +34,13 @@ final class RecoverySourceFixture {
     static RecoverySourceFixture create() throws Exception { return new RecoverySourceFixture("FORMAL"); }
     static RecoverySourceFixture temporary() throws Exception { return new RecoverySourceFixture("TEMP"); }
     static RecoverySourceFixture initial(String kind) throws Exception { return new RecoverySourceFixture(kind, 1); }
+    static RecoverySourceFixture forRestore(Path restored) throws Exception {
+        return new RecoverySourceFixture("FORMAL", 1, RecoveryControlFixture.forRestore(restored), false);
+    }
+
+    void advance() throws Exception {
+        control.append(control.next("RECOVERING")); manifest.put("epochId", control.read().epochId().toString()); publish();
+    }
 
     static RecoverySourceFixture related(RecoverySourceFixture current, String kind) throws Exception {
         var own = current.identity;

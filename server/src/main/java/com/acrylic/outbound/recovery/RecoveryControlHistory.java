@@ -59,8 +59,30 @@ final class RecoveryControlHistory {
         // Initial NORMAL admission is a separate durable record; its content is verified by
         // RecoveryNormalIntent, never inferred from its presence here.
         allowed.add(RecoveryNormalIntent.FILE);
+        if (Files.exists(root.resolve("closed-sessions"), LinkOption.NOFOLLOW_LINKS)) {
+            closedSessions(root.resolve("closed-sessions"));
+            allowed.add("closed-sessions");
+        }
         try (var entries = Files.newDirectoryStream(root)) {
             for (Path entry : entries) require(allowed.contains(entry.getFileName().toString()), "CONTROL_UNKNOWN_ARTIFACT");
+        }
+    }
+
+    // Registration is only a consistency witness; independent authority pins are still required.
+    private static void closedSessions(Path directory) throws IOException {
+        require(Files.isDirectory(RecoveryControlPaths.checked(directory), LinkOption.NOFOLLOW_LINKS),
+            "CONTROL_CLOSED_SESSION_LAYOUT");
+        int count = 0;
+        try (var entries = Files.newDirectoryStream(directory)) {
+            for (Path entry : entries) {
+                require(++count <= 100000 && entry.getFileName().toString().matches("[a-f0-9]{64}\\.json"),
+                    "CONTROL_CLOSED_SESSION_LAYOUT");
+                var value = read(entry);
+                fields(value, "formatVersion authorityRoot authoritySha256"); version(value);
+                hashField(value, "authoritySha256");
+                require(!ZERO_HASH.equals(text(value, "authoritySha256")), "CONTROL_CLOSED_SESSION_LAYOUT");
+                require(Path.of(text(value, "authorityRoot")).isAbsolute(), "CONTROL_CLOSED_SESSION_LAYOUT");
+            }
         }
     }
 
