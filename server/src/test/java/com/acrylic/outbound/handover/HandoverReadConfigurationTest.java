@@ -10,6 +10,7 @@ class HandoverReadConfigurationTest {
         .withBean(HandoverCommand.Identity.class, () -> new HandoverCommand.Identity(null, null, null))
         .withBean(HandoverStore.class, () -> new HandoverStore(null))
         .withBean(HandoverAttachmentConsumer.class, () -> new HandoverAttachmentConsumer(null, false))
+        .withBean(HandoverFaultReplay.class, () -> new HandoverFaultReplay(null, null, null))
         .withBean(HandoverReadStore.class, () -> new HandoverReadStore(null))
         .withBean(HandoverFaultView.class, () -> new HandoverFaultView(null, null, false, false))
         .withBean(HandoverReadReceipt.class, () -> new HandoverReadReceipt(null));

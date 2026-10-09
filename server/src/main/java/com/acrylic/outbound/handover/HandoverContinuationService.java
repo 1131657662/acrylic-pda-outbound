@@ -94,7 +94,7 @@ public class HandoverContinuationService {
 
     private CreatedContinuation createContinuation(JsonNode facts,JsonNode body,AssignmentStore.View assignment,Input input,PdaSessions.Principal principal) {
         check("ACTIVATED".equals(facts.path("status").asText()),"HANDOVER_STATE_INVALID","交接案件尚未激活");
-        UUID recall=uuid(evidence.manifest(UUID.fromString(facts.path("caseId").asText())).path("stopReceipt").path("originalCommand").path("command"),"changeRequestId");
+        UUID recall=uuid(body,"changeRequestId");
         var recoveryRows=jdbc.query("SELECT BIN_TO_UUID(id) FROM recovery_package WHERE payload_sha256=? AND request_id=? FOR UPDATE",
             (rs,n)->rs.getString(1),input.recoverySha256(),Ids.bytes(recall));
         check(recoveryRows.size()==1,"HANDOVER_RECOVERY_CHANGED","原恢复包已变化");

@@ -71,7 +71,11 @@ export function bind(receipt: FaultReceipt, command: FaultCommand, owner: FaultO
       || canonical(receipt.businessDecision.attachments ?? null) !== canonical(command.attachments ?? null)
       || canonical(receipt.businessDecision.physicalControl) !== canonical(command.physicalControl))
     throw new FaultPersistenceError('故障回执与原请求不一致，原键已保留，请核对后重试。');
-  for (const name of ['sourceEvidenceSetId', 'verificationId', 'setSha256', 'captureHighWatermark', 'auditThroughSeq', 'orderScanHighWatermark'] as const)
-    if (receipt.businessDecision.archivedEvidence[name] !== command.archivedEvidence[name])
+  const archive = receipt.businessDecision.archivedEvidence;
+  const fields = new Map(Object.entries(archive));
+  if (c.sourceKind !== ('sourceKind' in command.archivedEvidence ? 'FORMAL' : 'TEMP'))
+    throw new FaultPersistenceError('故障归档来源与原请求不一致，原键已保留。');
+  for (const [name, value] of Object.entries(command.archivedEvidence))
+    if (fields.get(name) !== value)
       throw new FaultPersistenceError('故障归档凭据与原请求不一致，原键已保留。');
 }

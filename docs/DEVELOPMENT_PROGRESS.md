@@ -12,6 +12,7 @@
 
 ## 近期验收入口
 
+- [D07 FORMAL可信归档故障链](history/D07_FORMAL_FAULT_EXECUTION_2026-10-09.md)：独立主管围栏、原机无新STOP/ACK、非空TEMP迁移保全、实际Web/HTTP/Android最终记账与重启、并发/尾SQL/Room回滚及独立消费者分层登记；FORMAL实际PDA页面/非空附件/跨源INSERT与R09仍另列未验，不计D07整体通过。
 - [D07 TEMP故障附件开发记录](history/D07_FAULT_ATTACHMENTS_2026-10-09.md)：真实原字节/三项容量、原键恢复与签名有序引用、围栏及接收最终链、损坏或缺件不可核验、关闭写门重启下载、页面恢复/布局及独立消费者分层登记；不计D07或D10整体通过。
 - [D07 TEMP故障可信归档链开发记录](history/D07_TEMP_FAULT_EXECUTION_2026-10-09.md)：范围、输入、原件消费者和失败原件分层登记；故障产品页面、FORMAL和R09接续缺口仍保留。
 - [D07 TEMP故障产品页面开发记录](history/D07_TEMP_FAULT_UI_2026-10-09.md)：实际表单/可信读面/丢响应原键与接收最终链、恢复反例、布局、自审及回归入口；页面子项不等于D07整体通过。

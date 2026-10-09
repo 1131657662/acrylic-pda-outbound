@@ -10,8 +10,10 @@ interface Controls { user: string; permissions: string[]; csrf: Promise<void> | 
 function reference() {
   const run = process.env.HANDOVER_FAULT_REFERENCE_RUN;
   if (!run || !/^[1-9]\d*$/.test(run)) throw new Error('Preserved fault reference run required');
-  const root = `../.local/e2a-cross-20260925-${run}/temporary-handover-stop/fault-fence`;
-  const receipt = faultReceiptSchema.parse(JSON.parse(readFileSync(`${root}/fault-receipt.json`, 'utf8')));
+  const referencePath = process.env.HANDOVER_FAULT_REFERENCE_KIND === 'FORMAL'
+    ? `../.local/e2a-cross-20260925-${run}/approval-workflow/formal-fault-receipt.json`
+    : `../.local/e2a-cross-20260925-${run}/temporary-handover-stop/fault-fence/fault-receipt.json`;
+  const receipt = faultReceiptSchema.parse(JSON.parse(readFileSync(referencePath, 'utf8')));
   const c = receipt.caseContext;
   const facts = caseContextSchema.parse({ context: { ...c, caseVersion: receipt.expected.caseVersion, status: 'EVIDENCE_PENDING',
     stopState: 'REQUESTED', integrityState: 'UNKNOWN', originalResultState: 'ABORTED', physicalState: 'UNCHECKED',

@@ -19,11 +19,13 @@ public class HandoverReadService {
     private final HandoverReadReceipt verifier;
     private final HandoverFaultView fault;
     private final HandoverAttachmentConsumer attachments;
+    private final HandoverFaultReplay faults;
 
     HandoverReadService(HandoverCommand.Identity identity, HandoverStore facts, HandoverReadStore store,
-            HandoverReadReceipt verifier, HandoverFaultView fault, HandoverAttachmentConsumer attachments) {
+            HandoverReadReceipt verifier, HandoverFaultView fault, HandoverAttachmentConsumer attachments, HandoverFaultReplay faults) {
         this.identity = identity; this.facts = facts; this.store = store; this.verifier = verifier; this.fault = fault;
         this.attachments = attachments;
+        this.faults = faults;
     }
 
     public JsonNode scope(UUID warehouse, UUID scope) {
@@ -60,7 +62,7 @@ public class HandoverReadService {
                 || !(row.get("case_id") instanceof byte[] kase) || !Arrays.equals(kase, Ids.bytes(query.caseId())))
             throw HandoverCommand.missing();
         var verified = verifier.verify(row); var recorded = verified.receipt().path("actor");
-        if (query.kind().equals("FAULT_FENCE")) attachments.verify(verified);
+        if (query.kind().equals("FAULT_FENCE")) faults.verify(verified);
         if (!query.key().toString().equals(verified.command().path("commandId").asText())
                 || !actor.id().toString().equals(recorded.path("principalId").asText())
                 || !query.warehouse().toString().equals(recorded.path("warehouseId").asText())) throw HandoverCommand.missing();

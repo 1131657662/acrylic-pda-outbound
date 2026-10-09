@@ -50,6 +50,10 @@ class HandoverContinuationRealHttpTest {
             assertEquals(connection.continuationReceipts.first(), connection.continuationReceipts.last())
             assertArrayEquals(stage.recoveryBytes, db.handoverStages().get(caseId)!!.recoveryBytes)
             val frozen = freezeWithNewDeviceInput()
+            if (JSONObject(File(checkNotNull(path)).readText()).optBoolean("deferFormalUpload")) {
+                saveResult(frozen, "DEFERRED")
+                return@runBlocking
+            }
             val response = connection.call(HandoverDownloadConnection.Call(
                 "pda/orders/${db.preparations().order(target)!!.orderId}/submissions", connection.current(), JSONObject(frozen.payload)))
             val status = ReceiptVerifier.verify(frozen, response, connection.current().getJSONObject("signingKey"))

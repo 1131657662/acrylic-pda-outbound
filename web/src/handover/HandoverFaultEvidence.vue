@@ -18,8 +18,14 @@ defineProps<{ receipt: FaultReceipt }>();
       <dt>原请求编号</dt><dd>{{ receipt.commandId }}</dd>
     </dl>
     <details><summary>可信归档截点</summary>
-      <p>归档集合 {{ receipt.businessDecision.archivedEvidence.sourceEvidenceSetId }}</p>
-      <p>验证记录 {{ receipt.businessDecision.archivedEvidence.verificationId }}</p>
+      <template v-if="receipt.businessDecision.archivedEvidence.sourceKind === 'FORMAL'">
+        <p>原召回 {{ receipt.businessDecision.archivedEvidence.changeRequestId }}</p>
+        <p>原恢复包 {{ receipt.businessDecision.archivedEvidence.recoveryPackageId }}</p>
+      </template>
+      <template v-else>
+        <p>归档集合 {{ receipt.businessDecision.archivedEvidence.sourceEvidenceSetId }}</p>
+        <p>验证记录 {{ receipt.businessDecision.archivedEvidence.verificationId }}</p>
+      </template>
       <p>采集截至 {{ receipt.businessDecision.archivedEvidence.captureHighWatermark }} · 审计截至 {{ receipt.businessDecision.archivedEvidence.auditThroughSeq }} · 扫描截至 {{ receipt.businessDecision.archivedEvidence.orderScanHighWatermark }}</p>
     </details>
     <div v-if="receipt.businessDecision.attachments?.length" aria-label="已核验原附件">

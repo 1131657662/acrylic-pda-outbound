@@ -8,8 +8,17 @@ const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const location = z.string().trim().min(1).max(200).refine(value => !/[\u0000-\u001f\u007f]/.test(value));
 export const faultExpectedSchema = z.object({ caseId: id, caseVersion: positive,
   status: z.string(), userAuthVersion: positive }).strict();
-export const faultArchiveSchema = z.object({ sourceEvidenceSetId: id, verificationId: id, setSha256: hash,
+const temporaryFaultArchiveSchema = z.object({ sourceEvidenceSetId: id, verificationId: id, setSha256: hash,
   captureHighWatermark: decimal, auditThroughSeq: positive, orderScanHighWatermark: decimal }).strict();
+const formalFaultArchiveSchema = z.object({ sourceKind: z.literal('FORMAL'), changeRequestId: id, recoveryPackageId: id,
+  payloadSha256: hash, captureHighWatermark: decimal, auditThroughSeq: positive, orderScanHighWatermark: decimal }).strict();
+export const faultArchiveSchema = z.union([temporaryFaultArchiveSchema, formalFaultArchiveSchema]);
+const archivedEvidenceSchema = z.discriminatedUnion('sourceKind', [
+  temporaryFaultArchiveSchema.extend({ sourceKind: z.literal('TEMP'), status: z.literal('VERIFIED_COMPLETE_AT_STOP'),
+    submissionId: id, authorizationId: id, workRound: positive, mayResumeScanning: z.literal(false), stockReleased: z.literal(false) }),
+  formalFaultArchiveSchema.extend({ status: z.literal('VERIFIED_COMPLETE_AT_STOP'), submissionId: id, assignmentId: id,
+    workRound: positive, mayResumeScanning: z.literal(false), stockReleased: z.literal(false) }),
+]);
 export const faultControlSchema = z.object({ deviceState: z.literal('POWERED_OFF_IN_CUSTODY'),
   controlledAt: z.iso.datetime({ offset: true }), deviceLocation: location, goodsLocation: location,
   unresolvedInputCount: z.literal('0') }).strict();
@@ -24,18 +33,19 @@ export const faultReceiptSchema = z.object({ receiptVersion: z.literal(1), comma
   actor: z.object({ principalId: id, deviceId: z.null(), sessionId: z.null(), warehouseId: id,
     permissionSnapshot: z.object({ effectivePermissions: z.array(z.string()).refine(p => p.includes('order:handover')) }) }),
   caseContext: z.object({ caseId: id, warehouseId: id, scopeId: id, submissionId: id, canonicalOrderId: id,
-    requestedBy: id, fromWorkRound: positive, toWorkRound: positive, sourceKind: z.literal('TEMP'), stopState: z.literal('REQUESTED') }),
+    requestedBy: id, fromWorkRound: positive, toWorkRound: positive, sourceKind: z.enum(['TEMP', 'FORMAL']), stopState: z.literal('REQUESTED') }),
   businessDecision: z.object({ caseId: id, status: z.literal('FAULT_FENCED'), stopKind: z.literal('FAULT_FENCE'),
     sourceDeviceId: id, disabledDeviceVersion: positive, oldDeviceAcknowledged: z.literal(false), payloadSha256: hash,
     attachments: attachmentRefsSchema.optional(),
     physicalControl: faultControlSchema, source: z.object({ operatorId: id, deviceId: id }),
-    archivedEvidence: faultArchiveSchema.extend({ sourceKind: z.literal('TEMP'), status: z.literal('VERIFIED_COMPLETE_AT_STOP'),
-      submissionId: id, authorizationId: id, workRound: positive, mayResumeScanning: z.literal(false), stockReleased: z.literal(false) }) }),
+    archivedEvidence: archivedEvidenceSchema }),
   capabilities: z.object({ writeConfirmationAvailable: z.literal(false), releaseAllowed: z.literal(false),
     mayResumeScanning: z.literal(false), stockReleased: z.literal(false), localDeletionAllowed: z.literal(false) }).strict(),
 }).refine(value => value.actor.principalId !== value.caseContext.requestedBy
   && value.actor.principalId !== value.businessDecision.source.operatorId
   && value.businessDecision.sourceDeviceId === value.businessDecision.source.deviceId
+  && value.caseContext.sourceKind === value.businessDecision.archivedEvidence.sourceKind
+  && value.caseContext.warehouseId === value.actor.warehouseId
   && Date.parse(value.businessDecision.physicalControl.controlledAt) <= Date.parse(value.recordedAt));
 export type FaultCommand = z.infer<typeof faultCommandSchema>;
 export type FaultReceipt = z.infer<typeof faultReceiptSchema>;

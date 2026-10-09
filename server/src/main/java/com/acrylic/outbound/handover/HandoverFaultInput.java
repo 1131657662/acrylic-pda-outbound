@@ -8,7 +8,10 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 
 /** Supervisor custody attestation plus an immutable archive reference; unknown/offline operation is refused. */
 record HandoverFaultInput(UUID device, Instant controlledAt, String deviceLocation, String goodsLocation,
-        HandoverTemporaryArchive archive) {
+        HandoverTemporaryArchive archive, HandoverFormalArchive formalArchive) {
+    HandoverFaultInput {
+        if ((archive == null) == (formalArchive == null)) throw failure("HANDOVER_FAULT_ARCHIVE_INVALID");
+    }
     static HandoverFaultInput read(JsonNode command, Instant now) {
         try {
             var allowed = new HashSet<>(Set.of("commandVersion", "commandType", "commandId", "warehouseId", "caseId",
@@ -22,18 +25,29 @@ record HandoverFaultInput(UUID device, Instant controlledAt, String deviceLocati
             var time = Instant.parse(text(control, "controlledAt"));
             require(!time.isAfter(now), "HANDOVER_FAULT_CUTOFF_INVALID");
             var reference = command.path("archivedEvidence");
-            fields(reference, Set.of("sourceEvidenceSetId", "verificationId", "setSha256", "captureHighWatermark",
-                "auditThroughSeq", "orderScanHighWatermark"));
-            var archive = HandoverTemporaryArchive.read(reference);
-            require(archive.payloadHash().matches("[a-f0-9]{64}") && archive.captureHigh() >= 0
-                && archive.auditHigh() > 0 && archive.inputHigh() >= 0, "HANDOVER_FAULT_ARCHIVE_INVALID");
+            var formal = reference.has("sourceKind") ? HandoverFormalArchive.read(reference) : null;
+            var archive = formal == null ? temporary(reference) : null;
             return new HandoverFaultInput(uuid(command, "sourceDeviceId"), time,
-                location(control, "deviceLocation"), location(control, "goodsLocation"), archive);
+                location(control, "deviceLocation"), location(control, "goodsLocation"), archive, formal);
         } catch (BusinessException refusal) {
             if (refusal.code().startsWith("HANDOVER_FAULT_") || "INVALID_HANDOVER_FAULT".equals(refusal.code())) throw refusal;
             throw failure("INVALID_HANDOVER_FAULT");
         }
         catch (RuntimeException invalid) { throw failure("INVALID_HANDOVER_FAULT"); }
+    }
+
+    long inputHigh() { return archive != null ? archive.inputHigh() : formalArchive.inputHigh(); }
+    JsonNode descriptor(HandoverStopStore.Origin origin) {
+        return archive != null ? archive.descriptor(origin) : formalArchive.descriptor(origin);
+    }
+
+    private static HandoverTemporaryArchive temporary(JsonNode reference) {
+        fields(reference, Set.of("sourceEvidenceSetId", "verificationId", "setSha256", "captureHighWatermark",
+            "auditThroughSeq", "orderScanHighWatermark"));
+        var archive = HandoverTemporaryArchive.read(reference);
+        require(archive.payloadHash().matches("[a-f0-9]{64}") && archive.captureHigh() >= 0
+            && archive.auditHigh() > 0 && archive.inputHigh() >= 0, "HANDOVER_FAULT_ARCHIVE_INVALID");
+        return archive;
     }
 
     private static String location(JsonNode control, String field) {

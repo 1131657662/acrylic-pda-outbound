@@ -55,7 +55,7 @@ public class HandoverPdaEvidenceService {
         checklist.compareStored(cases.checklist(caseId), lines, true);
         var ticket = ticket(facts, prepared, stop.body());
         boolean isTemporary = "TEMP".equals(facts.path("sourceKind").asText());
-        var recoveryHash = isTemporary ? SubmissionJson.sha(stop.body())
+        var recoveryHash = isTemporary || "FAULT_FENCED".equals(facts.path("stopState").asText()) ? SubmissionJson.sha(stop.body())
             : stop.receipt().path("originalCommand").path("command").path("payloadSha256").asText();
         corruptUnless(recoveryHash.matches("[a-f0-9]{64}"));
         var result = SubmissionJson.object().put("caseId", caseId.toString())

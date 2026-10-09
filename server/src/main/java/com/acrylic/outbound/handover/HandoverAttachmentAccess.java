@@ -29,7 +29,7 @@ final class HandoverAttachmentAccess {
 
     void upload(UUID kase, HandoverCommand.Actor actor) {
         var facts = caseFacts(kase, actor.warehouse());
-        if (!"TEMP".equals(text(facts, "sourceKind")) || !"REQUESTED".equals(text(facts, "stopState"))
+        if (!java.util.Set.of("TEMP", "FORMAL").contains(text(facts, "sourceKind")) || !"REQUESTED".equals(text(facts, "stopState"))
                 || !"EVIDENCE_PENDING".equals(text(facts, "status"))) throw HandoverCommand.stale();
         if (actor.id().toString().equals(text(facts, "requestedBy")) || actor.id().equals(origins.origin(kase).operator()))
             throw HandoverCommand.denied();

@@ -15,7 +15,9 @@ internal object HandoverTargetAssignmentVerifier {
             setOf("pda:handover-import"))
 
         val decision = manifest.getJSONObject("activationReceipt").getJSONObject("businessDecision")
-        val source = manifest.getJSONObject("stopReceipt").getJSONObject("source")
+        val source = if (manifest.has("faultReceipt"))
+            manifest.getJSONObject("faultReceipt").getJSONObject("businessDecision").getJSONObject("source")
+        else manifest.getJSONObject("stopReceipt").getJSONObject("source")
         val next = Math.addExact(stage.inputHighWatermark, 1).toString()
         check(assignment.getString("id") == decision.getString("assignmentId") &&
             assignment.getString("id") != stage.originalAssignmentId &&

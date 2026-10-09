@@ -38,7 +38,7 @@ final class HandoverFaultView {
     private boolean eligible(JsonNode context, HandoverCommand.Actor actor) {
         return enabled && actor.pda() == null && actor.permissions().contains("order:handover")
             && !actor.id().toString().equals(text(context, "requestedBy"))
-            && "TEMP".equals(text(context, "sourceKind")) && "REQUESTED".equals(text(context, "stopState"))
+            && java.util.Set.of("TEMP", "FORMAL").contains(text(context, "sourceKind")) && "REQUESTED".equals(text(context, "stopState"))
             && "EVIDENCE_PENDING".equals(text(context, "status"));
     }
 }

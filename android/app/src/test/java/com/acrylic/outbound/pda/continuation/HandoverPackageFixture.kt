@@ -117,7 +117,8 @@ internal class HandoverPackageFixture {
         .put("targetDeviceId", targetDevice).put("targetUserId", targetUser)
         .put("workRound", "2").put("startOrderScanSeq", "8")
 
-    private fun sign(receipt: JSONObject, issuer: String, audience: String): JSONObject {
+    fun sign(receipt: JSONObject, issuer: String, audience: String): JSONObject {
+        receipt.remove("signedReceipt")
         val flags = JSONObject().put("writeConfirmationAvailable", false).put("releaseAllowed", false)
             .put("mayResumeScanning", false).put("stockReleased", false).put("localDeletionAllowed", false)
         receipt.put("capabilities", flags)

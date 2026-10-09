@@ -12,8 +12,9 @@ object HandoverPackageVerifier {
         val caseId = manifest.getString("caseId")
         val status = manifest.getString("status")
         check(status == "TARGET_PREPARED" || status == "ACTIVATED") { "接收机准备状态已变化" }
-        val stop = HandoverReceiptVerifier.verify(manifest.getJSONObject("stopReceipt"), key,
-            "acrylic-pda-handover-stop", "acrylic-outbound")
+        val stop = if (manifest.has("faultReceipt")) HandoverFormalFault.verify(manifest, key)
+            else HandoverReceiptVerifier.verify(manifest.getJSONObject("stopReceipt"), key,
+                "acrylic-pda-handover-stop", "acrylic-outbound")
         val approval = HandoverReceiptVerifier.verify(manifest.getJSONObject("approvalReceipt"), key,
             "acrylic-outbound-handover-receipt", "acrylic-outbound-server")
         val preparation = HandoverReceiptVerifier.verify(manifest.getJSONObject("preparationReceipt"), key,
@@ -90,6 +91,7 @@ object HandoverPackageVerifier {
 
     private fun verifyOrigin(caseId: String, manifest: JSONObject, stop: JSONObject, body: JSONObject,
         hash: String): JSONObject {
+        if (manifest.has("faultReceipt")) return HandoverFormalFault.origin(manifest, stop, body, hash)
         val command = stop.getJSONObject("originalCommand").getJSONObject("command")
         val source = stop.getJSONObject("source")
         val context = stop.getJSONObject("caseContext")

@@ -6,17 +6,17 @@
 ```yaml
 date: 2026-10-09
 branch: codex/development
-head: a4ae9a5
-dirty_entries: 82
+head: c0c5a3b
+dirty_entries: 77
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
-server: { contract: 0.51.0, paths: 148, flyway: V76, migrations: 76 }
+server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 ```
 <!-- FACTS_END -->
-总目标D01–D18 active、未完成；只有原计划第8节全部满足才可complete。当前规则见AGENTS.md；版本只读生成事实块。旧看板已在.local/d01-d18-20261008/d07-attachment-start-12/board-before.md归档；详细结果见[执行记录](history/D01_D18_EXECUTION_2026-10-07.md)、[多跳记录](history/D06_MULTIHOP_EXECUTION_2026-10-08.md)、[混合记录](history/D06_MIXED_EXECUTION_2026-10-09.md)、[故障记录](history/D07_TEMP_FAULT_EXECUTION_2026-10-09.md)，暂停输入见[暂停记录](history/D01_D18_PAUSE_2026-10-08.md)。
+总目标D01–D18 active、未完成；只有原计划第8节全部满足才可complete。当前规则见AGENTS.md；版本只读生成事实块。旧看板已在.local/d01-d18-20261008/d07-attachment-close-18/board-before.md归档；详细结果见[执行记录](history/D01_D18_EXECUTION_2026-10-07.md)、[多跳记录](history/D06_MULTIHOP_EXECUTION_2026-10-08.md)、[混合记录](history/D06_MIXED_EXECUTION_2026-10-09.md)、[故障记录](history/D07_TEMP_FAULT_EXECUTION_2026-10-09.md)，暂停输入见[暂停记录](history/D01_D18_PAUSE_2026-10-08.md)。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，分支codex/development；D07 TEMP故障页面30条开发中范围已提交推送，HEAD/实际远端均a4ae9a5aef2167ed74acc6c5f468143577c5cdf3。暂存/提交/推送回执见d07-ui-close-11；前一围栏批回执d07-close-05。本聊天唯一写者，其他项目聊天notLoaded；19条继承路径逐hash保护，不混入本批。
+- 主树D:/acrylic-pda-outbound，分支codex/development；D07 TEMP故障附件62条范围已提交推送，HEAD/实际远端均c0c5a3b71dcb3f992d38fb08fd4deda6c7aa93ac。暂存/提交/推送回执见d07-attachment-close-18；前一页面批回执d07-ui-close-11。本聊天唯一写者，其他项目聊天notLoaded；19条继承路径逐hash保护，不混入本批。
 - D07页面收口50条dirty完整副本/hash/diff、Git/全部进程/监听/磁盘在d07-ui-close-11；19条继承及原d06-stop-close-20261008三项hash逐值一致，回执protection.json。快照保存最终页面源码和测试，不能覆盖其后断点文档。原891c1f0接续基线已沿授权开发提交推进，未重置或复用旧失败库。
 - 1119失败、1120成功及1121启动失败均完成dump独立重算、认证停机/原PID退出；19330/19434无监听。LOCAL定向unit-02为585/0/0/1、Android仅编译exit0；1121为1/1/0/0（final事务类代理失败）；1122为1/1/0/0（清单注册通过后结果名不符，未到E2A/STOP）。1121–1123失败、1124/1125成功均已保全停机。LOCAL三轮与无canonical实际专项通过，服务端普通回归3364/0/0/1；Android受影响回归514/0/0/10、exit0/sourceUnchanged，当次默认APK/lint通过（0 errors/221提示），产物hash见LOCAL记录；无重型任务。完整53条dirty副本/hash与环境在d06-local-matrix-03（继承19条hash一致），前次46条在d06-local-resume-02；无模拟器。3306/13316/ADB及19387 Harness属既有环境不操作。
 - C/D精确余量见d07-attachment-disk-14及附件运行器disk.json；RAM/TEMP可逆NTFS压缩前后hash一致，未删原件；新增日志、数据库/datadir/dump/binlog、HTTP/Room/XML及TEMP/Java临时/缓存均D盘任务范围，失败及不可替代原件不清理。归档取回位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
@@ -41,6 +41,8 @@ server: { contract: 0.51.0, paths: 148, flyway: V76, migrations: 76 }
 - D07页面子项1137真实表单/重核/丢响应/原键恢复/读面/接收最终链及布局已验；独立消费者、10项浏览器边界和普通服务端回归分列，早期失败/skip保持，详见[D07页面记录](history/D07_TEMP_FAULT_UI_2026-10-09.md)。30条范围已提交推送，不代表D07整体。下一子项见附件记录。
 - 生产默认开关/签名能力、七类生产决定handler/POST/放行/证据写入/关闭能力均false，localDeletionAllowed=false。不接原库/现网、不合main、不发布部署/正式签名/标签/Release，不绕设备或审批阻断。原身份/Keystore、真实双机、实体键/断电/长时/规模、正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 - D07故障附件子项已验：1144最终实际页面/MySQL/HTTP/Android组合1/0/0/0、exit0/sourceUnchanged且Web无漂移，8份Android XML各1/0/0/0；五份最大原件、缺件/损坏拒绝、原键恢复、接收最终记账/重启及关闭写门下载通过。dump独立hash/认证停机/PID退出，19330/19434/5173空监听，无重型任务；独立Node/只读Room/Web消费者通过。恢复06为19/0/0/0、类型构建exit0，390/720按钮完整可见；普通回归02为3405/0/0/1（Windows符号链接skip未执行），提交输入逐hash一致。失败1138–1141及恢复01/02/05保全。resume-17保存83条完整dirty副本/hash/diff及实际环境、19条继承/原STOP保护一致；close-18保存62条明确范围与Git回执。详见[附件记录](history/D07_FAULT_ATTACHMENTS_2026-10-09.md)；本机原件未异地备份。下一项FORMAL故障、无归档/跨截点R09；D06/D07整体、D08–D18/第8节未通过。
+- D07 FORMAL归档链阶段保存中：1148实际Web/HTTP/MySQL/Android最终记账/重启专项1/0/0/0，1149补坏原文/撤权/首次同键并发和不可变保护专项1/0/0/0，exit0/sourceUnchanged；各3份Android XML各1/0/0/0，SQL尾回滚/Room末写/原键与原前缀守恒，无原机新STOP/ACK。TEMP非空围栏/归档/回执迁移保全不含非空附件；独立Node/只读Room、18组全表快照消费通过。两库dump独立hash/认证停机/PID退出；1145/1147失败保全不复用。
+- FORMAL普通server回归3420/0/0/1（Windows符号链接skip），Android185/0/0/4（HTTP条件skip），exit0/sourceUnchanged；默认debug APK/lint任务完成，0 errors/221提示，lint报告沿Gradle输入复用，hash见FORMAL记录。实际页面1148及独立FORMAL4项/TEMP19项浏览器回归、类型构建/契约解析分列；本地原件未异地备份。close-23保存77条dirty全量副本/hash/diff及环境，19条继承/原STOP三项一致；本聊天唯一写者，无重型任务，19330/19434/5173无监听，既有环境不操作。下一步FORMAL实际PDA页面/非空附件/非法跨源INSERT，再无归档/R09；D06/D07整体及D08–D18/第8节未通过。详见[FORMAL记录](history/D07_FORMAL_FAULT_EXECUTION_2026-10-09.md)。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；详细阶段记录见 docs/history/AUTONOMOUS_PROGRESS_2026-10-06.md。

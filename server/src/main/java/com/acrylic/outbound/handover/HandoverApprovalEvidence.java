@@ -29,9 +29,9 @@ final class HandoverApprovalEvidence {
         var caseId = uuid(facts, "caseId");
         var origin = stops.origin(caseId);
         if ("FAULT_FENCED".equals(text(facts, "stopState"))) {
-            requireSame(origin.temporary() != null && faults != null && "COMPLETE".equals(text(facts, "integrityState")));
+            requireSame(faults != null && "COMPLETE".equals(text(facts, "integrityState")));
             var verified = faults.verify(facts, origin, requestedHigh);
-            temporary.require(origin, verified.body());
+            if (origin.temporary() != null) temporary.require(origin, verified.body());
             return verified;
         }
         var stop = stops.original(caseId); var packRow = stops.recovery(caseId);

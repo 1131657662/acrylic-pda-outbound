@@ -2,7 +2,7 @@
 import { computed, ref, onMounted } from 'vue';
 import { useSessionStore } from '../session';
 import type { CaseContext } from './contracts';
-import { faultArchiveSchema, faultControlSchema } from './fault-contracts';
+import { faultArchiveSchema, faultControlSchema, type FaultArchive } from './fault-contracts';
 import { faultBody } from './pending-fault';
 import { useFaultCommand } from './useFaultCommand';
 import HandoverFaultEvidence from './HandoverFaultEvidence.vue';
@@ -14,7 +14,9 @@ const session = useSessionStore(); const dialog = ref(false); const confirmed = 
 const deviceLocation = ref(''); const goodsLocation = ref(''); const controlledAt = ref('');
 const attachments = ref<AttachmentRef[]>([]); const attachmentsReady = ref(false); const attachmentsBusy = ref(false);
 const attachmentOwner = computed(() => ({ userId: session.identity?.id ?? '', warehouseId: session.warehouseId, caseId: props.detail.context.caseId }));
-const archive = ref({ sourceEvidenceSetId: '', verificationId: '', setSha256: '', captureHighWatermark: '', auditThroughSeq: '', orderScanHighWatermark: '' });
+const archive = ref<FaultArchive>(props.detail.context.sourceKind === 'FORMAL'
+  ? { sourceKind: 'FORMAL', changeRequestId: '', recoveryPackageId: '', payloadSha256: '', captureHighWatermark: '', auditThroughSeq: '', orderScanHighWatermark: '' }
+  : { sourceEvidenceSetId: '', verificationId: '', setSha256: '', captureHighWatermark: '', auditThroughSeq: '', orderScanHighWatermark: '' });
 const { original, busy, error, unreadable, restore, execute, recheck } = useFaultCommand(
   () => ({ userId: session.identity?.id ?? '', warehouseId: session.warehouseId, caseId: props.detail.context.caseId }), () => props.detail);
 const allowed = computed(() => session.identity?.permissions.includes('order:handover'));
@@ -65,9 +67,16 @@ onMounted(restore);
       <el-form-item label="断电收回保管时间"><el-input v-model="controlledAt" type="datetime-local" aria-label="断电收回保管时间" step="0.001" /></el-form-item>
       <el-form-item label="设备保管位置"><el-input v-model="deviceLocation" aria-label="设备保管位置" maxlength="200" /></el-form-item>
       <el-form-item label="货物位置"><el-input v-model="goodsLocation" aria-label="货物位置" maxlength="200" /></el-form-item>
-      <el-form-item label="归档集合编号"><el-input v-model="archive.sourceEvidenceSetId" aria-label="归档集合编号" /></el-form-item>
-      <el-form-item label="归档验证编号"><el-input v-model="archive.verificationId" aria-label="归档验证编号" /></el-form-item>
-      <el-form-item label="归档原文摘要"><el-input v-model="archive.setSha256" aria-label="归档原文摘要" /></el-form-item>
+      <template v-if="'sourceKind' in archive">
+        <el-form-item label="原召回编号"><el-input v-model="archive.changeRequestId" aria-label="原召回编号" /></el-form-item>
+        <el-form-item label="原恢复包编号"><el-input v-model="archive.recoveryPackageId" aria-label="原恢复包编号" /></el-form-item>
+        <el-form-item label="归档原文摘要"><el-input v-model="archive.payloadSha256" aria-label="归档原文摘要" /></el-form-item>
+      </template>
+      <template v-else>
+        <el-form-item label="归档集合编号"><el-input v-model="archive.sourceEvidenceSetId" aria-label="归档集合编号" /></el-form-item>
+        <el-form-item label="归档验证编号"><el-input v-model="archive.verificationId" aria-label="归档验证编号" /></el-form-item>
+        <el-form-item label="归档原文摘要"><el-input v-model="archive.setSha256" aria-label="归档原文摘要" /></el-form-item>
+      </template>
       <el-form-item label="采集截至"><el-input v-model="archive.captureHighWatermark" aria-label="采集截至" inputmode="numeric" /></el-form-item>
       <el-form-item label="审计截至"><el-input v-model="archive.auditThroughSeq" aria-label="审计截至" inputmode="numeric" /></el-form-item>
       <el-form-item label="扫描截至"><el-input v-model="archive.orderScanHighWatermark" aria-label="扫描截至" inputmode="numeric" /></el-form-item>

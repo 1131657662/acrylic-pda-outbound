@@ -30,21 +30,22 @@ final class HandoverFaultOperation implements HandoverCommand.Operation {
         var facts = write.caseFacts(); var origin = origins.origin(write.caseId());
         var input = HandoverFaultInput.read(write.command().body(), write.recordedAt());
         requireActor(write, origin);
-        if (!"TEMP".equals(text(facts, "sourceKind")) || !"REQUESTED".equals(text(facts, "stopState"))
+        if (!java.util.Set.of("TEMP", "FORMAL").contains(text(facts, "sourceKind")) || !"REQUESTED".equals(text(facts, "stopState"))
                 || !"EVIDENCE_PENDING".equals(text(facts, "status")) || !input.device().equals(origin.device()))
             throw HandoverCommand.stale();
-        var body = archives.read(input, origin); validation.require(origin, body);
+        var body = archives.read(input, origin);
+        if (origin.temporary() != null) validation.require(origin, body);
         var device = devices.find(origin.device(), false);
         if (!device.warehouseId().equals(origin.warehouse())) throw HandoverCommand.missing();
         devices.status(device, "DISABLED");
         long version = Math.addExact(Long.parseLong(device.rowVersion()), 1);
         fences.insert(write, origin, version);
-        cases.advanceCase(write.caseId(), write.caseVersion(), "EVIDENCE_PENDING", null, input.archive().inputHigh(),
+        cases.advanceCase(write.caseId(), write.caseVersion(), "EVIDENCE_PENDING", null, input.inputHigh(),
             "FAULT_FENCED", "COMPLETE", "ABORTED", null, null, null, null, null, uuid(write.actor(), "principalId"), write.recordedAt());
         var decision = object().put("caseId", write.caseId().toString()).put("status", "FAULT_FENCED").put("stopKind", "FAULT_FENCE")
             .put("sourceDeviceId", origin.device().toString()).put("disabledDeviceVersion", Long.toString(version))
             .put("oldDeviceAcknowledged", false).put("payloadSha256", sha(body));
-        decision.set("source", source(origin)); decision.set("archivedEvidence", input.archive().descriptor(origin));
+        decision.set("source", source(origin)); decision.set("archivedEvidence", input.descriptor(origin));
         decision.set("physicalControl", write.command().body().path("physicalControl"));
         attachments.consume(write, decision);
         notify(write, origin, decision);
@@ -62,6 +63,11 @@ final class HandoverFaultOperation implements HandoverCommand.Operation {
     }
 
     private JsonNode source(HandoverStopStore.Origin origin) {
+        if (origin.temporary() == null) return object().put("sourceKind", "FORMAL").put("assignmentId", origin.assignment().toString())
+            .put("warehouseId", origin.warehouse().toString()).put("scopeId", origin.scope().toString())
+            .put("submissionId", origin.submission().toString()).put("orderId", origin.order().toString())
+            .put("deviceId", origin.device().toString()).put("operatorId", origin.operator().toString())
+            .put("sourceRecoveryEpoch", origin.epoch()).put("workRound", Long.toString(origin.round()));
         return object().put("sourceKind", "TEMP").putNull("assignmentId").put("warehouseId", origin.warehouse().toString())
             .put("scopeId", origin.scope().toString()).put("submissionId", origin.submission().toString()).put("orderId", origin.order().toString())
             .put("deviceId", origin.device().toString()).put("operatorId", origin.operator().toString()).put("sourceRecoveryEpoch", origin.epoch())

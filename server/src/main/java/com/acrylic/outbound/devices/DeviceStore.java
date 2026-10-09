@@ -33,7 +33,9 @@ public class DeviceStore {
     public void status(Device device,String status) {
         new com.acrylic.outbound.pda.PdaSessionLocks(jdbc).device(device.id());
         if (!"DISABLED".equals(status) && jdbc.queryForObject(
-                "SELECT COUNT(*) FROM handover_fault_fence WHERE source_device_id=?", Long.class, Ids.bytes(device.id())) > 0)
+                "SELECT (SELECT COUNT(*) FROM handover_fault_fence WHERE source_device_id=?) + "
+                    + "(SELECT COUNT(*) FROM handover_formal_fault_fence WHERE source_device_id=?)",
+                Long.class, Ids.bytes(device.id()), Ids.bytes(device.id())) > 0)
             throw new com.acrylic.outbound.common.BusinessException(409, "DEVICE_FAULT_FENCED",
                 "设备仍受故障围栏保护，请保留原资料；普通启用不能解除围栏");
         jdbc.update("UPDATE device SET status=?,row_version=row_version+1 WHERE id=?",status,Ids.bytes(device.id()));

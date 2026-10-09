@@ -6,7 +6,7 @@ Path:
       原 REQUEST 的规范正文、原回执、摘要及签名重新核验。
       fault.receipt 仅在案件 FAULT_FENCED 时返回，经不可变设备围栏、原主管命令/签名及归档正文重新核验；坏原件返回409。
       含附件的故障凭据还重新核对原键预约、原命令有序引用、实际字节/摘要/大小；附件写开关关闭仍执行核验。
-      fault.entryAvailable 仅是页面入口提示：额外故障开关开启、支持的TEMP待证据案件、独立Web主管且持有order:handover。
+      fault.entryAvailable 仅是页面入口提示：额外故障开关开启、支持的FORMAL/TEMP待证据案件、独立Web主管且持有order:handover。
       所有写入前提仍由命令路由在锁内独立验证；该提示不代表扫码、释放或删除能力。
       默认故障开关关闭，capabilities仍全部false。查询不写入、不签发新回执或替原机确认。
     parameters:

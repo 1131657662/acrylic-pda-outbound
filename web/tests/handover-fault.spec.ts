@@ -22,9 +22,18 @@ async function fill(page: Page): Promise<void> {
   await page.getByLabel('断电收回保管时间', { exact: true }).fill(local);
   await page.getByLabel('设备保管位置', { exact: true }).fill(body.physicalControl.deviceLocation);
   await page.getByLabel('货物位置', { exact: true }).fill(body.physicalControl.goodsLocation);
-  for (const [label, field] of [['归档集合编号', 'sourceEvidenceSetId'], ['归档验证编号', 'verificationId'],
-    ['归档原文摘要', 'setSha256'], ['采集截至', 'captureHighWatermark'], ['审计截至', 'auditThroughSeq'], ['扫描截至', 'orderScanHighWatermark']] as const)
-    await page.getByLabel(label, { exact: true }).fill(body.archivedEvidence[field]);
+  const archive = body.archivedEvidence;
+  if ('sourceKind' in archive) {
+    await page.getByLabel('原召回编号', { exact: true }).fill(archive.changeRequestId);
+    await page.getByLabel('原恢复包编号', { exact: true }).fill(archive.recoveryPackageId);
+    await page.getByLabel('归档原文摘要', { exact: true }).fill(archive.payloadSha256);
+  } else {
+    await page.getByLabel('归档集合编号', { exact: true }).fill(archive.sourceEvidenceSetId);
+    await page.getByLabel('归档验证编号', { exact: true }).fill(archive.verificationId);
+    await page.getByLabel('归档原文摘要', { exact: true }).fill(archive.setSha256);
+  }
+  for (const [label, field] of [['采集截至', 'captureHighWatermark'], ['审计截至', 'auditThroughSeq'], ['扫描截至', 'orderScanHighWatermark']] as const)
+    await page.getByLabel(label, { exact: true }).fill(archive[field]);
   await page.getByRole('checkbox', { name: '确认原机已断电收回保管、货物位置已核对，且没有未核明的输入' }).check();
 }
 async function layouts(page: Page, name: string): Promise<void> {

@@ -32,7 +32,8 @@ public class HandoverPdaAssignmentService {
         var manifest = evidence.manifest(caseId);
         if (!"ACTIVATED".equals(manifest.path("status").asText())) throw HandoverCommand.missing();
         var decision = manifest.path("activationReceipt").path("businessDecision");
-        var source = manifest.path("stopReceipt").path("source");
+        var source = "FAULT_FENCE".equals(manifest.path("stopKind").asText())
+            ? manifest.path("faultReceipt").path("businessDecision").path("source") : manifest.path("stopReceipt").path("source");
         UUID assignmentId = SubmissionJson.uuid(decision, "assignmentId");
         AssignmentStore.View target;
         try { target = assignments.get(assignmentId); }

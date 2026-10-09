@@ -375,3 +375,4 @@
 - [新轮唯一注册前看板](ORCHESTRATION_STATE_before_round_registration_2026-10-07.md)：原断点字节快照；唯一注册、前驱原文绑定和迁移证据见当日自主进度第198条。
 - [累积证据验证前看板](ORCHESTRATION_STATE_before_round_evidence_2026-10-07.md)：当次纯验证器、受影响回归及边界见当日自主进度第199条。
 - [实际intake开发前看板](ORCHESTRATION_STATE_before_round_accept_2026-10-07.md)：已推送子项及未验证intake接续见当日自主进度第200条。
+- [D07 FORMAL故障换机开发记录](D07_FORMAL_FAULT_EXECUTION_2026-10-09.md)：接续全量快照、真实归档围栏/最终记账/重启、非空迁移、并发和独立工具消费；实际PDA页面/非空附件/跨源INSERT及R09未验分列，不计D07整体。

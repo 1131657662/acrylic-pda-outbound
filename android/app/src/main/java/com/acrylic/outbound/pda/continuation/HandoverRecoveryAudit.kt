@@ -8,7 +8,10 @@ import java.util.UUID
 internal object HandoverRecoveryAudit {
     fun verify(stage: LocalHandoverStage) {
         val body = JSONObject(stage.recoveryBytes.toString(Charsets.UTF_8))
-        val source = JSONObject(stage.manifestJson).getJSONObject("stopReceipt").getJSONObject("source")
+        val manifest = JSONObject(stage.manifestJson)
+        val source = if (manifest.has("faultReceipt"))
+            manifest.getJSONObject("faultReceipt").getJSONObject("businessDecision").getJSONObject("source")
+        else manifest.getJSONObject("stopReceipt").getJSONObject("source")
         val captures = captures(body.getJSONArray("captures"), stage, source)
         val events = events(body.getJSONArray("events"), captures, source)
         scans(body.getJSONArray("scans"), captures, events.first, events.second)

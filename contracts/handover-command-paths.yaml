@@ -6,7 +6,8 @@ Execute:
       命令面默认关闭（outbound.handover.commands.enabled=false 时路径不存在）；签名回执五项能力仍全为 false。
       FORMAL 激活在服务端代目标设备签发离线授权；批准或激活本身不放行库存、不恢复扫码、不允许本机删除。
       已有 canonical 目标的 TEMP 来源支持 REQUEST 及原机 stop-ack 后的主管 APPROVE；审批人与申请人须不同。
-      TEMP 故障分支额外要求 outbound.handover.fault.enabled=true，默认关闭；仅接受已有可信归档截点且原提交实际 ABORTED。
+      FORMAL/TEMP 故障分支额外要求 outbound.handover.fault.enabled=true，默认关闭；仅接受已有可信归档截点且原提交实际 ABORTED。
+      FORMAL 归档保留原召回 REQUESTED 及空 stop_receipt/resolution_receipt；同事务撤原assignment/offline资格，独立围栏绑定原召回恢复包，不制造原机STOP/ACK。
       FAULT_FENCE 由独立有 order:handover 的 Web 主管提交，严格匹配 FaultFence schema；原机须断电收回保管、实物位置明确且无未决输入。
       归档原 E2A STOP 是历史事实，故障分支不要求原机生成新的 handover STOP/ACK；失联可能仍作业、缺钥/原件/审计/截点一律拒绝。
       同事务写不可变故障围栏、原设备禁用/会话撤销/版本推进、案件 FAULT_FENCED、主管原请求/签名、审计与 outbox；不释放库存或记账。
