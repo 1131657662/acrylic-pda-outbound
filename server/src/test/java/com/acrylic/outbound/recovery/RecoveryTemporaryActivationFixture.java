@@ -12,12 +12,17 @@ import java.util.*;
 
 /** Native TEMP ACK declaration/response and issuer serialization, with in-memory development RSA. */
 final class RecoveryTemporaryActivationFixture {
-    final RecoveryTemporaryBaselineFixture baseline = new RecoveryTemporaryBaselineFixture();
+    final RecoveryTemporaryBaselineFixture baseline;
     final ObjectNode command;
     final ObjectNode proof;
     final ObjectNode receipt;
 
     RecoveryTemporaryActivationFixture() throws Exception {
+        this(new RecoveryTemporaryBaselineFixture());
+    }
+
+    RecoveryTemporaryActivationFixture(RecoveryTemporaryBaselineFixture original) throws Exception {
+        baseline = original;
         var prep = baseline.prep; var id = prep.state.authority.source.identity;
         command = SubmissionJson.object().put("bundleId", prep.receipt.path("bundleId").asText())
             .put("manifestSha256", prep.receipt.path("manifestSha256").asText()).put("authorizationEpoch", "1")

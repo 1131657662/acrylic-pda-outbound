@@ -16,7 +16,11 @@ final class RecoveryPreparationFixture {
     final boolean temporary;
 
     RecoveryPreparationFixture(String kind) throws Exception {
-        temporary = kind.equals("TEMP"); state = new RecoverySourceStateFixture(kind);
+        this(new RecoverySourceStateFixture(kind));
+    }
+
+    RecoveryPreparationFixture(RecoverySourceStateFixture original) throws Exception {
+        temporary = original.authority.source.identity.sourceKind().equals("TEMP"); state = original;
         var scan = (ObjectNode)state.payload.path("scans").get(0);
         scan.put("deliveryCode", "012").put("model", "MODEL").put("name", "Product").put("rawWeight", "1.234").put("weightGrams", "1234");
         state.payload.put("expectedWeightGrams", "1234").put("expectedCount", "1");

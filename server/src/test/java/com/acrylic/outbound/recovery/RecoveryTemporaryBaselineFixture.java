@@ -7,13 +7,18 @@ import java.util.*;
 
 /** Native nonempty TEMP material and local plan, with synthetic control and development signatures. */
 final class RecoveryTemporaryBaselineFixture {
-    final RecoveryPreparationFixture prep = new RecoveryPreparationFixture("TEMP");
+    final RecoveryPreparationFixture prep;
     final ObjectNode policy;
     final ObjectNode rules;
     final ObjectNode mapping;
     final ObjectNode plan;
 
     RecoveryTemporaryBaselineFixture() throws Exception {
+        this(new RecoveryPreparationFixture("TEMP"));
+    }
+
+    RecoveryTemporaryBaselineFixture(RecoveryPreparationFixture original) throws Exception {
+        prep = original;
         var id = prep.state.authority.source.identity;
         policy = policy(); rules = rules(); mapping = mapping();
         var mappings = SubmissionJson.object().putArray("rows").add(mapping);
