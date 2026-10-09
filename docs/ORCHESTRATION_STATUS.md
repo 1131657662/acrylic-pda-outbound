@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-09
 branch: codex/development
-head: 55316d0
+head: 2a99bff
 dirty_entries: 32
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
@@ -16,13 +16,14 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 用户已要求恢复D01–D18总目标，目标active、未完成；只有[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)第8节全部满足才可complete。规则见AGENTS.md，版本只读生成事实块。替换前原看板与结论见[归档](history/ORCHESTRATION_STATE_before_temp_activation_2026-10-09.md)及.local/d01-d18-20261009/temp-activation-resume-01/board.md；不恢复旧角色或指令。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，codex/development；TEMP ACK11条明确路径已提交推送55316d04eeb715e6857e311003a7947921eec28b、实际远端一致，回执在temp-activation-precommit-01，25dirty/22继承保护在postcommit-02。原准备包26a87b9和TEMP基线5f029bc已推回执保留，不重推；FORMAL原确认三条新增Java及受影响文档待明确提交，继承dirty不暂存。
+- 主树D:/acrylic-pda-outbound，codex/development；FORMAL原确认7条已提交推送2a99bff9e92d21c2a12c058d0960db81a316e7ca、实际远端一致，回执formal-activation-precommit-01，25dirty/22继承保护postcommit-02。TEMP ACK55316d0、原准备26a87b9/TEMP基线5f029bc已推回执保留；原续期三条新增Java及受影响文档待明确提交，继承dirty不暂存。
 - 本聊天01a11ea9-ce8d-70d1-8182-ccf4ca0a945a唯一活动写者，其他项目聊天notLoaded。temp-activation-resume-01保存全量31dirty副本/Git/进程/全部监听/磁盘，22继承逐hash一致；ControlPaths仅既有换行差异。此前FORMAL final和磁盘final按暂停记录复用，无恢复dirty。
 - ACK回归已结束，无模拟器/页面运行器/重型Gradle在途，5560/19330/19434/5173/19387无监听；C/D余量81304576000/98882486272字节，精确余量见快照。既有3306/13316/ADB不操作。新增证据/TEMP/Java临时/隔离产物继续D盘，无新DB/HTTP/客户端/APK/部署。
 - 1150/1151/UI-06沿原有效证据复用未重跑；1152–1155均dump独立重算、认证停机/原PID退出，1153/1154失败库及log/XML/datadir/binlog保留不复用，retention在closed-mysql-1152至1155。
 - 22份停止AVD RAM快照仅已授权可逆NTFS压缩，SHA256一致未删；D空间恢复记录见[磁盘历史](history/D_DISK_RECOVERY_2026-10-09.md)，原审批删除拒绝未重试。必要证据/失败库/原件/Room/APK保留，本机资料未异地备份，取回位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 已验子项与边界
+- [原FORMAL续期准备](history/D07_R09_FORMAL_RENEWALS_2026-10-09.md)：同一第一轮来源逐独立pin/jti完整代次/前驱/固定原窗口，首份manifest/分片/activation不改期，累计scan原基线及每条原保存重验。01重复代次拒绝码不稳定56/1原件保留，补显式重复拒绝后02为59全过；最终回归03为3034/0/0/1、123XML、exit0/sourceUnchanged。非IT/符号链接skip未执行；无原续期消费者/新DB/HTTP/客户端，不代ACK/撤销窗口/权限/占用/实际恢复。
 - [原FORMAL下载确认](history/D07_R09_FORMAL_ACTIVATION_2026-10-09.md)：原ACK无签名，必须库外pin/控制和原审计/assignment绑定，首轮原身份/修订/snapshot/授权ID代次窗口、命令/时间精度与逐保存核验；无补签。定向01为66全过，最终回归02为3012/0/0/1、122XML、exit0/sourceUnchanged，普通test非IT/符号链接skip未执行。1151缺原准备仍保留，无正向原FORMAL消费者/新DB/HTTP/客户端，非实际恢复。
 - [原TEMP激活ACK](history/D07_R09_TEMP_ACTIVATION_2026-10-09.md)：公钥用途/身份/manifest与原生Ack摘要/纳秒声明/毫秒回执、确认保存及300秒容差；延迟ACK不续期。定向01为72全过；回归02为2982/0/0/1、121XML、exit0/sourceUnchanged，Windows符号链接skip未执行，普通test非IT。新保留1151原ACK消费者compile/run exit0、三输入hash不变；提取明确读私有输入公开ACK字段、未加载/复制/用私钥，缺control/pin/scope/terminal/原身份/权限/占用，非实际恢复。
 - [TEMP原政策计划](history/D07_R09_TEMP_BASELINE_2026-10-09.md)：policy/rules/cursor/mapping/首轮计划/逐capture/scan/短装；定向02为27全过、回归03为2968/0/0/1、120XML、exit0/sourceUnchanged。新1151非空五分片消费者exit0/输入不变；ANSI提取首败原件保留，修UTF-8后成功，非实际恢复。
@@ -36,7 +37,7 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 
 ## 未完成与接续
 - D06/D07整体、FORMAL各阶段实际入口、无可信归档代传/R09跨截点业务重建、D08–D18及第8节仍未完成，D18无最终候选。原资料/旧BCD/526、历史失败/恢复限制保持，开发缺口不转现场。
-- 下一子项FORMAL原续期准备绑定：逐jti原凭据公钥/前驱/代次与同一原准备manifest和库存计划基线绑定，不能以续期token覆盖首轮期限；1151原准备缺失保留。随后高轮/跨凭据和新跨树隔离采集，实际截点前恢复→原ID/正文/序号/回执重建→D07围栏→接收激活/最终提交、尾SQL回滚/重启。NORMAL/未知来源拒绝，失败库不复用。
+- 下一子项第一轮完整可信消费和新隔离原资料采集：把原准备/ACK/资格/原终态/审计/权限/占用绑定为同一个只读来源，明确故障前采集点与独立pin；1151原准备缺失保留。再实际截点前恢复→原ID/正文/序号/回执重建→D07围栏→接收激活/最终提交、尾SQL回滚/重启；续期撤销窗口/高轮/跨来源仍必做。NORMAL/未知来源拒绝，失败库不复用。
 - 生产默认/签名、七类生产决定handler/POST/放行/证据写入/关闭能力均关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/正式签名/标签/Release、不绕设备/审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08单列。
 <!-- CURRENT_STATE_END -->
 
