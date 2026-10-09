@@ -1,0 +1,44 @@
+# 权限连续性子项替换前看板归档（2026-10-10）
+
+此页只保存输入 bcee57b09a9c66005dd749b92292eaa4339bdf83 后的历史结论，不恢复当前状态、写权或指令。
+
+# 开发看板
+
+
+版本事实见看板生成事实块；归档不保存时效版本数字。
+用户已要求恢复D01–D18总目标，目标active、未完成；只有[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)第8节全部满足才可complete。规则见AGENTS.md，版本只读生成事实块。替换前原看板与结论见[归档](history/ORCHESTRATION_STATE_before_temp_activation_2026-10-09.md)及.local/d01-d18-20261009/temp-activation-resume-01/board.md；不恢复旧角色或指令。
+
+## Git、写权与环境
+- 主树D:/acrylic-pda-outbound，codex/development；实际HEAD/远端bcee57b09a9c66005dd749b92292eaa4339bdf83；未收正文组合5条范围已提交推送，回执unsubmitted-composition-precommit-03；原占用17条已推，回执unsubmitted-occupancy-precommit-03；原TEMP准备/ACK、占用、登记根及native组合已推，原回执保留不重造提交。提交后全部dirty/环境快照unsubmitted-composition-postcommit-04；继承dirty不混入范围。
+- [原TEMP E2A](history/D07_R09_ORIGINAL_EVIDENCE_2026-10-09.md)原字节/页链/水位/冻结与STOP分界、capture/scan原引用及未知前缀拒绝已验；定向03为82/0/0/0，回归04普通server 3110/0/0/1、126XML、exit0/sourceUnchanged；保留1151消费者03 compile/run0、13输入hash不变。消费者01登记摘要格式误读失败保留；非独立登记根/权限/占用/终态或实际恢复。
+- 本聊天01a11ea9-ce8d-70d1-8182-ccf4ca0a945a唯一活动写者，其他项目聊天notLoaded。原FORMAL final/磁盘final的22条及TEMP准备postcommit的26条逐hash一致、旧HEAD均实际祖先；resumption保存全部dirty副本/hash/diff/Git/全进程/监听/磁盘。ControlPaths仅既有换行差异，无恢复dirty。
+- 组合回归session5857已收取exit0，无测试执行器/模拟器/页面运行器，仅空闲Gradle daemon。1162/1163失败及1164均dump/认证停机/原PID退出、19330/19434空；1156–1159/1161原件保留。接续C/D余量81071652864/96726835200字节，精确后续见本步postcommit/disks.json。既有3306/13316/ADB不操作；新增证据/TEMP/隔离产物继续D盘，无新HTTP/客户端/APK/部署。
+- 1150/1151/UI-06沿原有效证据复用未重跑；1152–1155均dump独立重算、认证停机/原PID退出，1153/1154失败库及log/XML/datadir/binlog保留不复用，retention在closed-mysql-1152至1155。
+- 22份停止AVD RAM快照仅已授权可逆NTFS压缩，SHA256一致未删；D空间恢复记录见[磁盘历史](history/D_DISK_RECOVERY_2026-10-09.md)，原审批删除拒绝未重试。必要证据/失败库/原件/Room/APK保留，本机资料未异地备份，取回位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
+
+## 已验子项与边界
+- [原未收正文占用](history/D07_R09_UNSUBMITTED_OCCUPANCY_2026-10-09.md)：原NORMAL/无hash ABORTED、原E2A完整集合及全部item/object引用、SOURCE_RESERVED全owner列，库外独立pin/同source消费；旧入口不放宽。定向01为120全过，1162/1163 rawInput夹具失败保全、普通/带域摘要混用自审修正；新1164真实MySQL1全过，Node27输入hash不变/RSA/P256及逐原列核对。最终受影响回归02为3568/0/0/1、169XML、exit0/sourceUnchanged；新入口29执行，非完整普通test/非IT/符号链接skip未执行，非原权限历史或实际恢复。
+- [原TEMP准备/ACK采集](history/D07_R09_TEMP_PREPARATION_CAPTURE_2026-10-09.md)：NORMAL原实例只读五gzip/原token与manifest及signed_ACK，原纳秒command显式input核native摘要，独立pin/origin同source消费；定向01为71全过，新1161真实MySQL1全过，Node8输入hash不变/三RSA及五原分片逐数据库列核对。受影响回归02为3539/0/0/1、168XML、exit0/sourceUnchanged，非完整普通test/非IT/符号链接skip未执行；1160编号目录子串守卫拒绝与误调用未建库，1161 dump/认证停机/PID退出/端口空，非权限历史/实际恢复。
+- [原提交占用观察](history/D07_R09_ORIGINAL_OCCUPANCY_2026-10-09.md)：NORMAL原实例只读已收正文/ABORTED/REVIEW_RESERVED完整owner列，库外独立pin核原正文/签名回执/逐scan；定向01为56、修后03为167全过。1158小写夹具条码失败保留，新1159真实MySQL1全过，Node9输入hash不变/逐原列核对；普通完整回归02高轮拒绝顺序1失败保留，修后04为4008/0/0/1、234XML、exit0/sourceUnchanged。非IT/符号链接skip未执行，非原权限历史/实际业务恢复；1158/1159均dump/认证停机/PID退出/端口空。
+- [原TEMP正文同一pin组合](history/D07_R09_NATIVE_COMPOSITION_2026-10-09.md)：显式readTemporary重验原E2A与同一pin五原件、冻结/STOP水位及正文hash，原准备/ACK/资格/ABORTED/权限/占用/结束重读保持；定向01夹具水位失败保留，02为99全过；回归03为3127/0/0/1、127XML、exit0/sourceUnchanged。普通test非IT/符号链接skip未执行，已范围提交推送；原根保管与实际恢复仍缺。
+- [原登记根采集](history/D07_R09_DEVICE_REGISTRATION_2026-10-09.md)：显式NORMAL原实例/schema/epoch只读采集实际UTC时间、P256文本hash/原登记/配对审批，独立pin离线读取。定向01为77全过；1156夹具warehouse不存在created_at失败保留，修后新1157真实MySQL 1全过/sourceUnchanged、非空全表/文件保全。Node消费者01漏canonical末LF失败保留，02 exit0/7输入hash不变；回归02为3115/0/0/1、122XML、exit0/sourceUnchanged，普通test非IT/符号链接skip未执行。11条明确路径已推，不代原现场/异地保管或实际恢复。
+- [第一轮同来源组合](history/D07_R09_INITIAL_COMPOSITION_2026-10-09.md)：同一独立pin重读准备/ACK/资格/ABORTED终态/审计/权限/占用，双水位、正文submission/source及原capture迁移/保存/VOID/失败原因绑定，结束重读控制/字节，无写权。定向01夹具与控制期待40/26、02期待40/1、04 TEMP短装字段46/3失败保留，06为52全过；回归07为3080/0/0/1、125XML、exit0/sourceUnchanged。非IT/符号链接skip未执行，无原FORMAL正向消费者/新DB/HTTP/客户端，非实际恢复。
+- [原FORMAL续期准备](history/D07_R09_FORMAL_RENEWALS_2026-10-09.md)：同一第一轮来源逐独立pin/jti完整代次/前驱/固定原窗口，首份manifest/分片/activation不改期，累计scan原基线及每条原保存重验。01重复代次拒绝码不稳定56/1原件保留，补显式重复拒绝后02为59全过；最终回归03为3034/0/0/1、123XML、exit0/sourceUnchanged。非IT/符号链接skip未执行；无原续期消费者/新DB/HTTP/客户端，不代ACK/撤销窗口/权限/占用/实际恢复。
+- [原FORMAL下载确认](history/D07_R09_FORMAL_ACTIVATION_2026-10-09.md)：原ACK无签名，必须库外pin/控制和原审计/assignment绑定，首轮原身份/修订/snapshot/授权ID代次窗口、命令/时间精度与逐保存核验；无补签。定向01为66全过，最终回归02为3012/0/0/1、122XML、exit0/sourceUnchanged，普通test非IT/符号链接skip未执行。1151缺原准备仍保留，无正向原FORMAL消费者/新DB/HTTP/客户端，非实际恢复。
+- [原TEMP激活ACK](history/D07_R09_TEMP_ACTIVATION_2026-10-09.md)：公钥用途/身份/manifest与原生Ack摘要/纳秒声明/毫秒回执、确认保存及300秒容差；延迟ACK不续期。定向01为72全过；回归02为2982/0/0/1、121XML、exit0/sourceUnchanged，Windows符号链接skip未执行，普通test非IT。新保留1151原ACK消费者compile/run exit0、三输入hash不变；提取明确读私有输入公开ACK字段、未加载/复制/用私钥，缺control/pin/scope/terminal/原身份/权限/占用，非实际恢复。
+- [TEMP原政策计划](history/D07_R09_TEMP_BASELINE_2026-10-09.md)：policy/rules/cursor/mapping/首轮计划/逐capture/scan/短装；定向02为27全过、回归03为2968/0/0/1、120XML、exit0/sourceUnchanged。新1151非空五分片消费者exit0/输入不变；ANSI提取首败原件保留，修UTF-8后成功，非实际恢复。
+- [原准备完整性](history/D07_R09_PREPARATION_2026-10-09.md)：原公钥/manifest/有界分片/库存周期/FORMAL计划总量；拒续期高轮。定向04为46全过，回归05为2939/0/0/1、119XML、exit0/sourceUnchanged。1151原assignment准备0行、唯一行属接收assignment；提取首败01和报告02保留，不能借用或补造原件。
+- [原占用权限](history/D07_R09_SOURCE_STATE_2026-10-09.md)：完整owner列、原单/ACTIVE排序、签名版本和连续半开窗口逐确认保存；定向67全过，回归02失败1项、修后03及最终04（2886/0/0/1、116XML）exit0/sourceUnchanged。保留1151盘点缺独立pin原权限/占用，originalStateProof=false；高轮/竞争/处置拒绝。
+- [closed事务](history/D07_R09_CLOSED_TRANSACTION_2026-10-09.md)：独立kind/pin、原来源/耐久开始完成/独占lease及事务前/提交前重验；定向49全过。1152实际MySQL probe/尾SQL/并发/未知commit/HTTP关闭拒绝、1155四阶段/重放/复制实例/回滚各1全过；1153协议缺口/1154错误期待原件保留。Python修后46项全过、普通server3615/0/0/1、220XML，非原状态/实际业务恢复。
+- [可信来源、原审计及资格](history/D07_R09_TRUSTED_SOURCE_2026-10-09.md)：库外控制/独立pin/五类原件/高水位、公钥原终态、设备连续序号/签档、逐保存原续期资格窗口只读前置。回归与失败/源码漂移分层见历史页；新保留消费者均只读不接库，不代原身份/状态或实际重建。前置普通test不含IT，skip不计通过。
+- D01映射/基线、D02/D03分层证据已保存；D04候选排除/D05取消释放缺政策拒绝、整体未过。D06 STOP1103、多跳1110、混合1118/1120及LOCAL1124/1125只按原输入计证，[执行](history/D01_D18_EXECUTION_2026-10-07.md)/[多跳](history/D06_MULTIHOP_EXECUTION_2026-10-08.md)/[混合](history/D06_MIXED_EXECUTION_2026-10-09.md)/[LOCAL](history/D06_LOCAL_EXECUTION_2026-10-09.md)保存HTTP/Room/尾SQL/独立消费/页面及原失败；1100–1102不重跑/复用，不外推D06整体。
+- D07 TEMP1131/1132/1137/1144可信归档→主管围栏→接收最终提交/重启、Web/页面及非空附件子项见[故障](history/D07_TEMP_FAULT_EXECUTION_2026-10-09.md)/[页面](history/D07_TEMP_FAULT_UI_2026-10-09.md)/[附件](history/D07_FAULT_ATTACHMENTS_2026-10-09.md)，早期失败原件保留，不外推D07/D10。
+- D07 FORMAL1148/1149、附件1150/1151及PDA UI-06有效原证据见[FORMAL](history/D07_FORMAL_FAULT_EXECUTION_2026-10-09.md)/[暂停](history/D01_D18_PAUSE_2026-10-09_FORMAL.md)：真实MySQL/HTTP/Android最终记账、非空TEMP附件逐表保全/权限绑定/尾SQL/Room及重启通过；UI-06是实际页面消费1151回放签名响应，非实时MySQL/真机。早期build/UI/格式误读失败保留。server普通3420/0/0/1的宽source漂移仅同期Android测试，server范围hash不变；Android185/0/0/4、默认APK/lint分列，skip未执行，未正式签名。
+
+## 未完成与接续
+- D06/D07整体、FORMAL各阶段实际入口、无可信归档代传/R09跨截点业务重建、D08–D18及第8节仍未完成，D18无最终候选。原资料/旧BCD/526、历史失败/恢复限制保持，开发缺口不转现场。
+- 下一子项可信权限连续窗口原snapshot/完整binlog坐标边界；未收正文组合已只读核五原件/两pin/ACK/资格/E2A/权限语义，定向80全过、recovery回归2850/0/0/0、68XML、exit0/sourceUnchanged，非IT/实际恢复，详见[组合](history/D07_R09_UNSUBMITTED_COMPOSITION_2026-10-10.md)；TEMP原准备/ACK与登记根沿已验输入复用，缺原纳秒command拒绝。不能用两份观察/未见撤权/恢复库权限補历史，operation_event事务内时间不代commit边界；完整原件独立pin/保管→全新隔离截点恢复→原ID/正文/序号/回执闭事务重建→D07围栏/接收激活/最终提交/尾SQL/重启，不能只堆只读观察。1151原FORMAL准备缺失、续期撤销/高轮/跨来源/失败资料保持。
+- 生产默认/签名、七类生产决定handler/POST/放行/证据写入/关闭能力均关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/正式签名/标签/Release、不绕设备/审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08单列。
+
+
+> 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。

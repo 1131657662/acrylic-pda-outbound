@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09原权限截点与logged连续性（2026-10-10）](D07_R09_PERMISSION_LOG_BOUNDARIES_2026-10-10.md)：原FTWRL权限/微秒/binlog两边界及prefix、CRC/ROW/XID和修改还原拒绝；1166/1167失败保全、1169真实MySQL和独立消费者分列，未授权实际恢复。
+- [权限连续性前看板归档（2026-10-10）](ORCHESTRATION_STATE_before_permission_continuity_2026-10-10.md)：旧结论和限制保全，不恢复当前状态或指令。
+
 - [D07/R09原未收正文同来源组合（2026-10-10）](D07_R09_UNSUBMITTED_COMPOSITION_2026-10-10.md)：五原件/source pin与独立占用pin、E2A/ACK/资格/权限语义同来源重读；定向和recovery回归分列，连续权限历史与实际恢复仍缺。
 
 - [D07/R09原未收正文占用与E2A绑定（2026-10-09）](D07_R09_UNSUBMITTED_OCCUPANCY_2026-10-09.md)：原无hash ABORTED、完整集合/对象引用及SOURCE_RESERVED独立pin消费；1162/1163失败保留、1164实际MySQL/Node分列，非权限历史或实际恢复。

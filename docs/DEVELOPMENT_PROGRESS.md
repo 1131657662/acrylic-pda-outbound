@@ -12,6 +12,7 @@
 
 ## 近期验收入口
 
+- [D07/R09原权限截点与logged连续性](history/D07_R09_PERMISSION_LOG_BOUNDARIES_2026-10-10.md)：原有效权限/微秒时间与完整binlog前缀绑定，九类权限变化还原反例、MySQL及独立工具消费分列；不计历史授权或实际恢复通过。
 - [D07/R09第一轮同一来源组合核验前置](history/D07_R09_INITIAL_COMPOSITION_2026-10-09.md)：同一pin逐门验证、双水位及原capture审计状态/保存引用；当次失败和普通回归分列，不计实际截点恢复通过。
 - [D07/R09原FORMAL续期准备绑定前置](history/D07_R09_FORMAL_RENEWALS_2026-10-09.md)：原逐jti链复用首份准备基线及各自保存窗口；失败与回归分列，不计整体恢复通过。
 - [D07/R09原FORMAL下载确认前置](history/D07_R09_FORMAL_ACTIVATION_2026-10-09.md)：无签名原ACK绑定独立固定原审计和assignment事实；当次验证与原准备缺失分列，不计整体恢复通过。
