@@ -30,6 +30,8 @@ UI-06 emulator-stop.txt已核实，模拟器/qemu/重型Gradle任务已退出，
 
 收口检查时C余量81911418880字节、D余量5881380864字节；提交后的精确余量见close-26/final/disks.json。新增日志/数据库/AVD/任务TEMP/Java临时/缓存继续D盘。D余量较低，接续前先核磁盘和实际消费者，再按规则安排新增隔离产物，不因空间不足删除失败或唯一证据。
 
+用户随后要求先处理D盘空间不足，已通过22份停止运行AVD RAM快照可逆NTFS压缩解决，前后SHA256一致、未删文件；D实测增至91.390 GiB、净增加85.915 GiB，证据和全部22条继承dirty保留。详细命令/逐hash/实测及最终Git/环境见[磁盘处理记录](D_DISK_RECOVERY_2026-10-09.md)与`.local/disk-recovery-20261009/final/`，本节低余量是FORMAL收口时点的历史事实。开发目标仍暂停；接续时同时核本次磁盘final与原FORMAL final，不用旧低余量或旧SHA覆盖实际状态。
+
 此前AVD删除被自动审批策略拒绝，删除未执行；后续只做已授权可逆NTFS压缩，pause-preflight-25/compact-result.json保存ui-02/03/04成功回执，无删除。保留失败库、原件、原日志/XML、Room/dump/binlog、页面AVD、APK和签名HTTP原响应；不得重试或换包装绕过拒绝。
 
 ## 未完成与下一动作

@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-09
 branch: codex/development
-head: c43101b
-dirty_entries: 25
+head: 6200170
+dirty_entries: 26
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
 server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
@@ -16,10 +16,10 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 用户要求本步后收口；D01–D18总目标暂停、未完成，只有原计划第8节全部满足才可complete。接续入口为[本次暂停与指令](history/D01_D18_PAUSE_2026-10-09_FORMAL.md)；规则见AGENTS.md，版本只读生成事实块。替换前看板已保存在.local/d01-d18-20261008/d07-formal-followup-close-26/board-before.md，历史不恢复旧角色或指令。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，分支codex/development；本批18条明确路径已提交推送c43101b245ade5b6d9de2dad62a17980a488d7ea，实际远端一致；原891c1f0136278b95400b934b19c2b9b1afd7bdcc为祖先，未重置。其后只补Git断点文档，最终文档提交的精确HEAD/实际远端以d07-formal-followup-close-26/final/head.txt、remote.txt及docs-commit/docs-push原回执为准，不强推；postcommit剩余22条继承/历史/本机dirty全部保留。
+- 主树D:/acrylic-pda-outbound，分支codex/development；18条FORMAL范围已推c43101b245ade5b6d9de2dad62a17980a488d7ea，断点文档已推62001703172d57999d6cc764256c4ace3e0258a1，实际远端一致；原891c1f0为祖先未重置。其后只处理D盘和文档，精确最终HEAD/远端及Git回执见.local/disk-recovery-20261009/final/及control/commit.log、push.log；剩余22条继承/历史/本机dirty逐hash保留，不强推。
 - 本聊天是本批唯一写者；旧接续聊天01a11a5e为idle/最近已收口，其余项目聊天notLoaded，没有其他在途写者，暂停后停止业务开发。19条继承及原d06-stop-close-20261008三项逐hash保护，未混入本批；全量dirty/未跟踪副本/hash/binary diff、全部进程/监听/磁盘在close-26/precommit、postcommit、final，写者清单writers.json、各阶段protection.json可核。旧agent ID不等于写者。
 - 1150/1151隔离库dump独立hash一致、认证停机/原PID退出；原日志/XML/HTTP/SQL/Room/datadir/binlog保留，retention.json见d07-fault-1150/1151。UI-06 passed/emulatorStopped/sourceUnchanged均true，模拟器/qemu已退出，5560/19330/19434/5173无监听；无重型Gradle或页面运行器。3306/13316/ADB与19387 Harness为既有环境不操作，其他监听见final/listeners.json。
-- 收口检查C余量81911418880字节、D余量5881380864字节；最终精确余量在final/disks.json。新增数据库/AVD/证据/TEMP/Java临时/缓存继续D盘。此前AVD删除被自动审批拒绝，未执行；仅可逆NTFS压缩，回执pause-preflight-25/compact-result.json。失败/唯一原件和页面AVD继续保留，不换包装绕过拒绝；本机证据未异地备份，位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
+- D盘不足已处理：22份停止运行页面AVD RAM快照可逆NTFS压缩exit0，逐文件SHA256一致、未删除文件；D实测5.475→91.390 GiB、净增加85.915 GiB。证据/原库/失败库/全部AVD路径/APK/原件保留，22条继承dirty无漂移；逐命令/hash/占用/进程与C-D余量在.local/disk-recovery-20261009/control/及final/，详见[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)。新增产物继续D盘，既有自动审批AVD删除拒绝未重试；本机证据未异地备份，归档位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 已验子项与证据边界
 - D01证据映射/基线已建立，D02/D03开发范围有分层证据；D04候选排除、D05取消释放缺政策保持拒绝、整体未通过。历史通过不拼成最终整合输入。
