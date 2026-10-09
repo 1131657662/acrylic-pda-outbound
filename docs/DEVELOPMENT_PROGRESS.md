@@ -272,6 +272,7 @@
 | D07/R09 原提交占用观察 | [占用记录](history/D07_R09_ORIGINAL_OCCUPANCY_2026-10-09.md)：原NORMAL实例/已收正文/ABORTED占用原列与独立pin只读消费；1158失败保留、1159及独立原字节/数据库列核对，非实际恢复或权限历史证明。 |
 | D07/R09 原TEMP准备与ACK采集 | [原准备记录](history/D07_R09_TEMP_PREPARATION_CAPTURE_2026-10-09.md)：原五gzip/三签名/纳秒command只读观察与独立pin消费；1161实际MySQL/Node原列与受影响回归分列，非权限历史或实际业务恢复。 |
 | D07/R09 原未收正文占用 | [未收正文记录](history/D07_R09_UNSUBMITTED_OCCUPANCY_2026-10-09.md)：原无hash ABORTED、E2A完整集合/对象引用与SOURCE_RESERVED独立pin消费；1162/1163失败保留、1164实际MySQL/Node及受影响回归分列，非权限历史或实际业务恢复。 |
+| D07/R09 原未收正文组合 | [组合记录](history/D07_R09_UNSUBMITTED_COMPOSITION_2026-10-10.md)：原五件/独立占用pin、原E2A/准备ACK/逐保存资格/权限窗口语义同来源重读；定向和recovery普通回归分列，非连续权限历史或实际业务恢复。 |
 | D04 跨来源审计、候选、旧 schema 首轮读取 | [当日执行记录](history/D01_D18_EXECUTION_2026-10-07.md)：1034、1037、1038及1042隔离证据；来源回归343/0/0/1。1043旧合成审计前缀失败保留并归因为输入不完整。D04仍因候选排除缺少授权而未通过；接续D05拒绝至实物处置组合。 |
 | D05 拒绝后实物处置与冲突分流 | [当日执行记录](history/D01_D18_EXECUTION_2026-10-07.md)：1048真实隔离 HTTP/MySQL与Android Room通过拒绝→实物核验→释放；1050完整确认回归及批准后库存锁拒绝，1052真实 HTTP 两类冲突/原件重放/业务表守恒通过。1044–1047、1049及1051失败证据保留，取消释放政策仍未定义，D05未整体通过。 |
 | D06 TEMP 交接与接收（开发中） | [当日执行记录](history/D01_D18_EXECUTION_2026-10-07.md)：原停止/独立审批/本人资格准备与下载已验；1076来源Android及接收Android实际准备/ACK/原件暂存/Room回滚和重开通过，非空迁移/受影响回归/默认APK与lint另列。全部早期失败保留；1078指定接收人服务端确认/并发/回滚/重启及默认关闭通过；1079 Android原键确认/实际HTTP/Room原子回滚已验，回归/APK/lint及UI01另列；UI02–04测试等待/ScrollToAction失败保留，UI05小屏大字/滑动/返回通过；[收口交接](history/D01_D18_HANDOFF_2026-10-07.md)。激活/最终提交、未冻结/无canonical等必做项未完成，D06未通过。 |

@@ -1,5 +1,7 @@
 # 历史归档
 
+- [D07/R09原未收正文同来源组合（2026-10-10）](D07_R09_UNSUBMITTED_COMPOSITION_2026-10-10.md)：五原件/source pin与独立占用pin、E2A/ACK/资格/权限语义同来源重读；定向和recovery回归分列，连续权限历史与实际恢复仍缺。
+
 - [D07/R09原未收正文占用与E2A绑定（2026-10-09）](D07_R09_UNSUBMITTED_OCCUPANCY_2026-10-09.md)：原无hash ABORTED、完整集合/对象引用及SOURCE_RESERVED独立pin消费；1162/1163失败保留、1164实际MySQL/Node分列，非权限历史或实际恢复。
 
 - [D07/R09原TEMP准备与ACK采集（2026-10-09）](D07_R09_TEMP_PREPARATION_CAPTURE_2026-10-09.md)：原五gzip/三签名及纳秒command只读采集/独立pin，1161真实MySQL和Node逐列消费、受影响回归分列，权限历史/实际恢复仍缺。
