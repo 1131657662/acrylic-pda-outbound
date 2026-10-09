@@ -10,7 +10,10 @@ final class RecoveryInitialRecords {
     private RecoveryInitialRecords() { }
 
     static void verify(RecoveryPinnedSource source, List<JsonNode> events) {
-        var body = SubmissionJson.parse(source.original("payload")); var identity = source.identity();
+        verify(SubmissionJson.parse(source.original("payload")), source.identity(), events);
+    }
+
+    static void verify(JsonNode body, RecoverySourceIdentity identity, List<JsonNode> events) {
         require(body.path("schemaVersion").isInt() && body.path("schemaVersion").intValue() == 2,
             "RECOVERY_INITIAL_SCHEMA");
         require(uuid(body, "submissionId").equals(identity.submissionId()), "RECOVERY_INITIAL_SUBMISSION");

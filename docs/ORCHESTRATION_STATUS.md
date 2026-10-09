@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-09
 branch: codex/development
-head: 976d06b
+head: f867a8b
 dirty_entries: 35
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
@@ -16,9 +16,10 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 用户已要求恢复D01–D18总目标，目标active、未完成；只有[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)第8节全部满足才可complete。规则见AGENTS.md，版本只读生成事实块。替换前原看板与结论见[归档](history/ORCHESTRATION_STATE_before_temp_activation_2026-10-09.md)及.local/d01-d18-20261009/temp-activation-resume-01/board.md；不恢复旧角色或指令。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，codex/development；实际HEAD/远端976d06b5f565a16e4351abddf9668af921abdd28，原FORMAL续期已明确提交推送，回执formal-renewal-precommit-01及postcommit-02。FORMAL确认2a99bff、TEMP ACK55316d0等已推回执保留，不重造提交；继承dirty不暂存。
+- 主树D:/acrylic-pda-outbound，codex/development；实际HEAD/远端f867a8b1b8c01a4ef36ed5c4ac8e3a56f334ce3b，第一轮组合10条明确路径已提交推送，回执initial-composition-precommit-08，提交后全量快照initial-composition-postcommit-09。FORMAL续期976d06b等原回执保留，不重造提交；继承dirty不暂存。
+- [原TEMP E2A](history/D07_R09_ORIGINAL_EVIDENCE_2026-10-09.md)已完成作者自审，6条源码/测试仍未提交；original-evidence-inprogress-10保存全部32dirty副本/hash/diff，22继承逐hash一致。定向03为82/0/0/0，受影响回归04为普通server 3110/0/0/1、126 XML、exit0/sourceUnchanged；保留1151消费者03 compile/run 0、13输入hash不变。仅证明原字节/签名绑定，不计独立登记根、权限/占用/终态或实际恢复。
 - 本聊天01a11ea9-ce8d-70d1-8182-ccf4ca0a945a唯一活动写者，其他项目聊天notLoaded。composition-resume-01保存刷新事实后的全量26dirty副本/Git/进程/全部监听/磁盘及旧结论，22继承逐hash一致；ControlPaths仅既有换行差异。此前FORMAL final和磁盘final按暂停记录复用，无恢复dirty。
-- 续期回归已结束，无模拟器/页面运行器/重型Gradle在途，5560/19330/19434/5173/19387无监听；C/D余量81113980928/98631118848字节，精确余量见快照。既有3306/13316/ADB不操作。新增证据/TEMP/Java临时/隔离产物继续D盘，无新DB/HTTP/客户端/APK/部署。
+- 普通回归已结束，无模拟器/页面运行器/重型Gradle在途，5560/19330/19434/5173/19387无监听；回归04后C/D余量见其disk.json，既有3306/13316/ADB不操作。新增证据/TEMP/Java临时/隔离产物继续D盘，无新DB/HTTP/客户端/APK/部署。
 - 1150/1151/UI-06沿原有效证据复用未重跑；1152–1155均dump独立重算、认证停机/原PID退出，1153/1154失败库及log/XML/datadir/binlog保留不复用，retention在closed-mysql-1152至1155。
 - 22份停止AVD RAM快照仅已授权可逆NTFS压缩，SHA256一致未删；D空间恢复记录见[磁盘历史](history/D_DISK_RECOVERY_2026-10-09.md)，原审批删除拒绝未重试。必要证据/失败库/原件/Room/APK保留，本机资料未异地备份，取回位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
@@ -38,7 +39,7 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 
 ## 未完成与接续
 - D06/D07整体、FORMAL各阶段实际入口、无可信归档代传/R09跨截点业务重建、D08–D18及第8节仍未完成，D18无最终候选。原资料/旧BCD/526、历史失败/恢复限制保持，开发缺口不转现场。
-- 下一子项故障前可信原资料采集：第一轮同来源只读组合已验，明确原设备证据/准备/ACK/权限区间/占用采集点与独立pin，1151原准备缺失保留。全新隔离实际截点恢复→原ID/正文/序号/回执重建→D07围栏→接收激活/最终提交、尾SQL回滚/重启；不能以组合证明替代原E2A/原recall包或补造STOP/ACK。续期撤销窗口/高轮/跨来源仍必做，NORMAL/未知来源拒绝，失败库不复用。
+- 下一子项把原TEMP E2A与同一独立pin正文/原准备/ACK/终态/权限/占用绑定，解决InitialSource要求auditCoverage/auditEvents而native正文没有这些字段的消费者差异，不修改原正文。随后故障前采集原登记根/权限区间/占用与独立pin→全新隔离实际截点恢复→原ID/正文/序号/回执闭事务重建→D07围栏/接收激活/最终提交/尾SQL/重启；1151原FORMAL准备缺失、续期撤销/高轮/跨来源保持，失败库不复用。
 - 生产默认/签名、七类生产决定handler/POST/放行/证据写入/关闭能力均关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/正式签名/标签/Release、不绕设备/审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08单列。
 <!-- CURRENT_STATE_END -->
 
