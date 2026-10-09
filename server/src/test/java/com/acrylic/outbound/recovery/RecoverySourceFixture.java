@@ -34,6 +34,10 @@ final class RecoverySourceFixture {
     static RecoverySourceFixture create() throws Exception { return new RecoverySourceFixture("FORMAL"); }
     static RecoverySourceFixture temporary() throws Exception { return new RecoverySourceFixture("TEMP"); }
     static RecoverySourceFixture initial(String kind) throws Exception { return new RecoverySourceFixture(kind, 1); }
+    static RecoverySourceFixture original(RecoverySourceIdentity identity) throws Exception {
+        var fixture = new RecoverySourceFixture(RecoveryControlFixture.create(), identity);
+        fixture.bindWarehouse(); fixture.advance(); return fixture;
+    }
     static RecoverySourceFixture forRestore(Path restored) throws Exception {
         return new RecoverySourceFixture("FORMAL", 1, RecoveryControlFixture.forRestore(restored), false);
     }

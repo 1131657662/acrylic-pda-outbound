@@ -15,7 +15,12 @@ final class RecoverySourceStateFixture {
     boolean local;
 
     RecoverySourceStateFixture(String kind) throws Exception {
-        authority = new RecoveryAuthorityFixture(kind);
+        this(RecoverySourceFixture.initial(kind));
+    }
+
+    RecoverySourceStateFixture(RecoverySourceFixture original) throws Exception {
+        String kind = original.identity.sourceKind();
+        authority = new RecoveryAuthorityFixture(original);
         var versions = kind.equals("TEMP") ? (ObjectNode)authority.claims.path("identity") : authority.claims;
         versions.put("userAuthVersion", "3").put("deviceVersion", "7"); authority.publish();
         payload = (ObjectNode)SubmissionJson.parse(authority.source.read().original("payload"));

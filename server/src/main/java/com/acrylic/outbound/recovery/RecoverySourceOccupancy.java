@@ -19,12 +19,21 @@ public final class RecoverySourceOccupancy {
     }
 
     public Proof verify(RecoveryPinnedSource source) {
+        return checked(source, () -> SubmissionJson.parse(source.original("occupancy")));
+    }
+
+    /** Explicit original observation; the same pinned payload and terminal remain mandatory. */
+    Proof verify(RecoveryPinnedSource source, JsonNode value) {
+        return checked(source, () -> value);
+    }
+
+    private Proof checked(RecoveryPinnedSource source, java.util.function.Supplier<JsonNode> material) {
         require(source != null, "RECOVERY_SOURCE_IDENTITY");
         try {
             require(source.identity().workRound() == 1, "RECOVERY_SOURCE_OCCUPANCY_ROUND_UNSUPPORTED");
             var payload = SubmissionJson.parse(source.original("payload"));
             requireInitial(source, payload);
-            JsonNode value = SubmissionJson.parse(source.original("occupancy"));
+            JsonNode value = material.get();
             fields(value, "formatVersion source payloadSha256 sourceEvidenceSetId rows"); version(value);
             require(source.identity().equals(RecoverySourceIdentity.read(value.path("source"))), "RECOVERY_SOURCE_OCCUPANCY_SOURCE");
             require(text(value, "payloadSha256").equals(SubmissionJson.sha(payload)), "RECOVERY_SOURCE_OCCUPANCY_PAYLOAD");
