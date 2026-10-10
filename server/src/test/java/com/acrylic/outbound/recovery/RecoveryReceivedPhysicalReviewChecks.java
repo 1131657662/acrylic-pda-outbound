@@ -9,7 +9,7 @@ import static com.acrylic.outbound.recovery.RecoveryControlFormat.*;
 
 /** Fresh target consumes retained original checkpoint material; no source seed is re-executed. */
 public final class RecoveryReceivedPhysicalReviewChecks {
-    public static void verify(WebApplicationContext app,Path attempt,Path original) throws Exception {
+    public static Result verify(WebApplicationContext app,Path attempt,Path original) throws Exception {
         var context=RecoveryReceivedArchiveSetup.createWithHistoryWindow(app.getBean(JdbcTemplate.class),attempt,original);
         var authority=RecoveryClosedTestSupply.of(context.source()).authority();
         var transfer=readCanonical(Files.readAllBytes(original.resolve("received-transfer.json")));
@@ -21,7 +21,11 @@ public final class RecoveryReceivedPhysicalReviewChecks {
             "3393867cb13b75b9228ff067a5482b60fac6d0ec1d7caa7f9516a70f1f18694c");
         var history=new RecoveryReleaseNumberHistory.Request(context.request(),keys,begin,end);
         RecoveryReceivedPhysicalRestart.save(attempt,context);
-        HandoverRecoveredPhysicalChecks.verify(app,attempt,binding,new RecoveryReleaseReconciliation.Request(authority,history,keys));
+        var reconciliation=new RecoveryReleaseReconciliation.Request(authority,history,keys);
+        var reviewed=HandoverRecoveredPhysicalChecks.verify(app,attempt,binding,reconciliation);
+        var request=new HandoverRecoveredPhysicalReview.Request(Files.readAllBytes(attempt.resolve("recovered-fault/fault-command.json")),binding,reconciliation);
+        return new Result(authority,reviewed,request);
     }
+    public record Result(RecoveryClosedAuthority authority,RecoveryOperationsApproval.Context reviewed,HandoverRecoveredPhysicalReview.Request request) { }
     private RecoveryReceivedPhysicalReviewChecks() { }
 }

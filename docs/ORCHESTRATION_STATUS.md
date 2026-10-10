@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-10
 branch: codex/development
-head: cc9947cc
-dirty_entries: 52
+head: 8ee3fe77
+dirty_entries: 46
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
 server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
@@ -16,13 +16,14 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 用户已恢复完整目标，本聊天接续执行、未完成；[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)D01–D18及第8节范围保持。[暂停文档与接续指令](history/D01_D18_PAUSE_2026-10-10_RECOVERED_FAULT.md)为新会话入口。替换前结论/失败保全于[主管围栏前看板](history/ORCHESTRATION_STATE_before_received_fault_2026-10-10.md)，旧指令不恢复。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，codex/development；原终点核对20路径已提交推送cc9947cc1f9a3f33f032f09f11f29c949557463e，实际开发远端一致，main未动。主管实物确认以该HEAD加本批明确差异验证，正在范围收口；Git/快照见received-physical-close-preflight-01。
-- 本聊天单助手唯一写者；前会话idle、其他项目聊天notLoaded。received-physical-close-preflight-01完整49条dirty、69历史比较/22STOP保护无漂移；前reconcile-postcommit的29继承dirty逐hash未变。全部副本/hash/diff/Git/进程/监听/C/D余量已保全；不restore/清空或混入提交。
+- 主树D:/acrylic-pda-outbound，codex/development；原终点核对20路径已提交推送cc9947cc1f9a3f33f032f09f11f29c949557463e，实际开发远端一致，main未动。主管实物确认23路径已提交推送8ee3fe77c4cf1cce69933c60fc43272d50fe1323，实际开发远端一致；Git/快照见received-physical-postcommit-01。
+- 本聊天单助手唯一写者，其他项目聊天notLoaded。received-operations-resume-01完整33条dirty，前physical-postcommit继承hash除看板合法刷新未变；运维本批17路径准备明确提交，received-operations-precommit-01保存全部46条dirty/副本/hash/diff/Git/进程/监听/C/D余量，69历史比较/22STOP保护须通过。不restore/清空或混入提交。
 - 新1281主管实物确认与跨JVM重放各1/0/0/0、exit0/sourceUnchanged，独立原事实/原清单22输入与编号8输入不变；普通recovery/handover3309全过/114XML/无skip。dump认证停机/PID退出/监听空，无重型Gradle/HTTP/页面/模拟器；既有3306/13316/ADB未动。1276断言败、1280运行器重启败保留不复用；1275/1278中间通过、1277未分配/1279分配拒绝均保全。
 - 新1242/1243/1246/1248失败库保留停机不复用；1247中间通过与1250最终通过分别保全。1244/1245/1249/1251随机目录子串守卫拒绝未建库。1250跨33树分配，dump重算一致/认证停机/原PID退出/监听空。
 - 新产物/TEMP/Java/cache在D盘，无清理，本机私有证据未异地备份；22份停止AVD仅可逆NTFS压缩/原hash一致未删，见[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)/[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 本批与既有有效范围
+- [独立运维批准核验](history/D07_R09_OPERATIONS_APPROVAL_2026-10-10.md)：独立pin/RS256、原来源/主管proof/控制/库实例/范围绑定，批准后固定inventory再签；closed事务原身份先锁、全库复核及beforeCommit身份/物料重验。1288专项1/0/0/0/sourceUnchanged，两尾写回滚；Node批准14/原事实22/编号8输入不变，普通recovery/handover3317全过/116XML/无skip/sourceUnchanged。1285摘要拒绝已修且失败保全，1282中间输入/分配拒绝另列；2664输入未变。无释放/新资格/正向HTTP/Android，能力false；dump/认证停机/PID退出/监听空，无重型任务，前看板见归档。
 - [恢复态主管实物确认](history/D07_R09_PHYSICAL_REVIEW_2026-10-10.md)：既有APPROVE在原closed事务中核实实物声明/清单/库存，130表只允许精确签名效果；原ABORT/占用/账务保留。1281两JVM、六拒绝/末SQL/未知范围/两尾回滚/八语义反例、原键重放与独立消费者通过。合成实物声明不代现场，所有能力false；无新增正向HTTP/Android。替换前结论见[归档](history/ORCHESTRATION_STATE_before_physical_review_2026-10-10.md)。
 - [原终点与主管围栏效果核对](history/D07_R09_RELEASE_RECONCILIATION_2026-10-10.md)：固定130表全库原行/其他仓库不变，只接受精确签名REQUEST/FAULT_FENCE效果；ABORT/占用/库存/账务/准备/子表保留。1274专项1/0/0/0、12语义反例/两项跨仓库尾写回滚、签名单元8过；独立原终点9输入/两反例、成员10输入/三反例、编号8输入不变。UNCHECKED及所有能力false；不是实物核对或释放。编译两败/1269事务journal拒绝已修且失败保留，详细输入与前看板见记录。
 - [固定仓库及子表覆盖](history/D07_R09_RELEASE_SCOPE_COVERAGE_2026-10-10.md)：准备/库存基线/PC/同步/来源证据及子表共130表，父键归属/空集合/全局摘要与nonce遮盖；1268专项1/0/0/0、库存子表尾写全回滚。Node完整成员10输入/三类反例与编号8输入不变；普通3301全过/113XML/sourceUnchanged。1267原行数量断言修正失败保留；不计业务语义闭合或释放，替换前看板见[归档](history/ORCHESTRATION_STATE_before_release_scope_2026-10-10.md)。
@@ -41,7 +42,7 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 ## 未完成与接续第一动作
 - D06/D07整体、FORMAL各阶段实际入口、其他无可信归档来源/R09跨截点业务重建、D08–D18与总闸门未完成；D18无最终候选。D04候选排除/D05取消释放缺政策保持拒绝；原资料/旧BCD/526、历史关键未验/失败与恢复限制单列，开发缺口不转现场。
 - 从主管围栏后范围核对/可信释放→本代次新资格→接收准备/激活→最终提交接续，沿库外PREPARE→DB排他锁提交revision/epoch/范围→库外COMMIT→实例核两侧证明；设备/来源/案件/调整链/库存/审计/截点外高水位闭包必须可信，未知范围隔离。RecoveryNormalRegistration/Intent登记不是业务释放证明。
-- 原正文代次与目标传输代次不同；旧资格不可激活，范围释放后另发本代次资格，保留原事实/映射。原终点/范围/历史/编号/主管APPROVE已分层验证，但运维批准及两阶段释放未实现。下一步按.local/d01-d18-20261010/received-trusted-release-design.md验证独立运维签名与范围，再PREPARE/DB排他提交/COMMIT双侧证明；随后新资格、接收准备/激活及最终提交，不简单开NORMAL。
+- 原正文代次与目标传输代次不同；旧资格不可激活，范围释放后另发本代次资格，保留原事实/映射。原终点/范围/历史/编号/主管APPROVE及独立运维批准已分层验证；两阶段释放未实现。下一步在运维批次回归/提交后接PREPARE/DB排他范围投影/COMMIT双侧证明，按.local/d01-d18-20261010/received-trusted-release-design.md及operations-self-review.md锁序接续；随后新资格、接收准备/激活及最终提交，不简单开NORMAL。
 - 生产默认/签名及七类生产决定handler/POST/放行/证据写入/关闭能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名、不绕设备审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 <!-- CURRENT_STATE_END -->
 

@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.*;
 
 /** Actual service/DB approval with a synthetic supervisor checklist; not field physical evidence. */
 public final class HandoverRecoveredPhysicalChecks {
-    public static void verify(WebApplicationContext app,Path attempt,HandoverRecoveredTemporaryBinding binding,
+    public static RecoveryOperationsApproval.Context verify(WebApplicationContext app,Path attempt,HandoverRecoveredTemporaryBinding binding,
             RecoveryReleaseReconciliation.Request input) throws Exception {
         var f=new HandoverRecoveredTemporaryFixture(app,attempt,binding);
         var request=f.request(); byte[] requested=f.execute(f.requester,request);
@@ -36,6 +36,11 @@ public final class HandoverRecoveredPhysicalChecks {
         HandoverRecoveredPhysicalConcurrency.verify(f,service,context,approval,result.receipt());
         evidence(app,f,context,approval,result,after);
         assertThat(f.jdbc.queryForObject("SELECT service_mode FROM server_state WHERE id=1",String.class)).isEqualTo("RECOVERY_PENDING");
+        HandoverRecoveredTemporaryFixture.authenticate(f.supervisor);
+        try {
+            return new RecoveryOperationsApproval.Context(result.proof(),
+                app.getBean(HandoverRecoveredTemporaryReview.class).inspect(context.originalFault(),binding));
+        } finally { SecurityContextHolder.clearContext(); }
     }
     private static void evidence(WebApplicationContext app,HandoverRecoveredTemporaryFixture f,
             HandoverRecoveredPhysicalReview.Request context,JsonNode approval,HandoverRecoveredPhysicalReview.Result result,

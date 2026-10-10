@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09独立运维批准核验（2026-10-10）](D07_R09_OPERATIONS_APPROVAL_2026-10-10.md)：批准后固定范围、实际闭事务和尾部物料回滚、独立消费；不代两阶段释放。
+- [运维批准前看板（2026-10-10）](ORCHESTRATION_STATE_before_operations_approval_2026-10-10.md)：旧结论/失败保全，不恢复旧指令。
+
 - [D07/R09恢复态主管实物确认（2026-10-10）](D07_R09_PHYSICAL_REVIEW_2026-10-10.md)：原事实/精确APPROVE效果、实际MySQL回滚、跨JVM重放和独立消费；运维与两阶段释放仍待接续。
 - [实物确认前看板（2026-10-10）](ORCHESTRATION_STATE_before_physical_review_2026-10-10.md)：旧结论/失败保全，不恢复旧指令。
 

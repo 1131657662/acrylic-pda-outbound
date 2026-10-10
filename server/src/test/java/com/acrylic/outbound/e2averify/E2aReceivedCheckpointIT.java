@@ -10,6 +10,19 @@ import org.springframework.web.context.WebApplicationContext;
 @EnabledIfEnvironmentVariable(named="E2A_CROSS_VERIFY",matches="true")
 class E2aReceivedCheckpointIT {
     @Test @EnabledIfEnvironmentVariable(named="E2A_RECEIVED_PHASE",matches="target")
+    void verifiesOperationsApprovalAcrossOriginalCheckpoint() throws Exception {
+        var profile=new E2aCrossSourceProfile(); var jdbc=profile.connect(); Files.createFile(profile.attempt.resolve("test-started.marker"));
+        Path original=Path.of(System.getenv("E2A_RECEIVED_SOURCE"));
+        RecoveryReceivedCheckpointTargetChecks.verify(jdbc,profile.attempt,original);
+        for(String file:new String[]{"server-private.der","server-public.der"})
+            Files.copy(original.resolve("private").resolve(file),profile.attempt.resolve("private").resolve(file));
+        try(var app=E2aCrossSourceHttpIT.start(profile,"--outbound.handover.commands.enabled=true",
+                "--outbound.handover.fault.enabled=true","--server.servlet.session.cookie.secure=false")) {
+            RecoveryReceivedOperationsChecks.verify((WebApplicationContext)app,profile.attempt,original);
+        }
+        Files.writeString(profile.attempt.resolve("test-completed.marker"),"Synthetic independent operations signature bound to actual recovered physical proof; no release or qualification");
+    }
+    @Test @EnabledIfEnvironmentVariable(named="E2A_RECEIVED_PHASE",matches="target")
     void replaysPhysicalApprovalInNewJvm() throws Exception {
         var profile=E2aCrossSourceProfile.completedPhysicalReview();
         try(var app=E2aCrossSourceHttpIT.start(profile,"--outbound.handover.commands.enabled=true",
