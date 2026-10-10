@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.*;
 /** Separate JVM reloads retained authority pins and original requests without enrolling a new identity. */
 public final class RecoveryReceivedPhysicalRestart {
     private static final ObjectMapper JSON=mapper();
-    private static ObjectMapper mapper() {
+    static ObjectMapper mapper() {
         var module=new com.fasterxml.jackson.databind.module.SimpleModule();
         module.addSerializer(java.security.PublicKey.class,new JsonSerializer<>() {
             @Override public void serialize(java.security.PublicKey key,com.fasterxml.jackson.core.JsonGenerator out,SerializerProvider provider) throws java.io.IOException {

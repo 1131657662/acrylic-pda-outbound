@@ -27,6 +27,7 @@ public final class RecoveryOperationsAuthority {
     PublicKey publicKey() { return key; }
     JsonNode identity() { return identity.deepCopy(); }
     RecoveryClosedAuthority closed() { return closed; }
+    Path identityFile() { return identityFile; }
 
     byte[] material(Path file) {
         try {

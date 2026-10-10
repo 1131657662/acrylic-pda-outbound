@@ -89,6 +89,14 @@ public final class RecoveryOperationsApproval {
         return RecoveryOperationsSignature.verify(bytes,request.authority());
     }
     public JsonNode facts() { return approval.deepCopy(); }
+    RecoveryClosedAuthority closed() { return request.authority().closed(); }
+    void requireMaterials() {
+        request.authority().requireUnchanged(); require(approval.equals(read(request)),"RECOVERY_OPERATIONS_APPROVAL_CHANGED");
+    }
+    void requireOutside(Path root) {
+        require(!RecoveryControlPaths.overlap(root,request.file())
+            && !RecoveryControlPaths.overlap(root,request.authority().identityFile()),"RECOVERY_RELEASE_STORE_MATERIAL_OVERLAP");
+    }
     public String sha256() { return sha256; }
     public boolean releaseAllowed() { return false; }
     public boolean ordinaryWritesAllowed() { return false; }

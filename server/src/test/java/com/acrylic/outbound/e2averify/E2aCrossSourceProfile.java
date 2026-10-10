@@ -17,16 +17,23 @@ final class E2aCrossSourceProfile {
     final Path attempt;
     final String database, user, url;
 
-    E2aCrossSourceProfile() throws Exception { this(false); }
+    E2aCrossSourceProfile() throws Exception { this(null); }
 
     static E2aCrossSourceProfile completedPhysicalReview() throws Exception {
-        var profile=new E2aCrossSourceProfile(true);
+        var profile=new E2aCrossSourceProfile("physical");
         var jdbc=profile.connectChecked();
         require("RECOVERY_PENDING".equals(jdbc.queryForObject("SELECT service_mode FROM server_state WHERE id=1",String.class)),"Restart requires closed state");
         return profile;
     }
 
-    private E2aCrossSourceProfile(boolean physicalRestart) throws Exception {
+    static E2aCrossSourceProfile completedScopeRelease() throws Exception {
+        var profile=new E2aCrossSourceProfile("scope"); var jdbc=profile.connectChecked();
+        require("RECOVERY_PENDING".equals(jdbc.queryForObject("SELECT service_mode FROM server_state WHERE id=1",String.class)),"Restart requires closed state");
+        require(jdbc.queryForObject("SELECT COUNT(*) FROM recovery_scope_release",Integer.class)==1,"Scope DB commit missing");
+        return profile;
+    }
+
+    private E2aCrossSourceProfile(String restart) throws Exception {
         String run = System.getenv("E2A_CROSS_RUN");
         if (run == null || !run.matches("[1-9][0-9]{0,3}")) throw new IllegalStateException("Invalid run allocation");
         attempt = ROOT.resolve(".local/e2a-cross-20260925-" + run);
@@ -37,7 +44,8 @@ final class E2aCrossSourceProfile {
         require(ROOT.resolve("server").toRealPath().equals(Path.of("").toRealPath()), "Workspace mismatch");
         require(attempt.toRealPath().startsWith(ROOT.toRealPath()), "Attempt escapes workspace");
         require(Files.isDirectory(attempt.resolve("data")), "Missing isolated datadir");
-        if(physicalRestart) requireCompletedPhysicalReview(run);
+        if("physical".equals(restart)) requireCompletedPhysicalReview(run);
+        else if("scope".equals(restart)) requireCompletedScopeRelease(run);
         else require(!Files.exists(attempt.resolve("test-started.marker")), "One-shot attempt already used");
         require(System.getenv("E2A_CROSS_PASSWORD") != null
             && System.getenv("E2A_CROSS_PASSWORD").matches("[0-9a-f]{64}"), "Missing private credential");
@@ -74,6 +82,20 @@ final class E2aCrossSourceProfile {
         require(report.path("exit").asInt(-1)==0 && report.path("tests").asInt()==1 && report.path("sourceUnchanged").asBoolean()
             && report.path("failures").asInt(-1)==0 && report.path("errors").asInt(-1)==0 && report.path("skipped").asInt(-1)==0,"Prior physical phase failed");
         require(report.path("command").toString().contains("approvesPhysicalScopeAcrossOriginalCheckpoint"),"Prior phase is not physical approval");
+    }
+
+    private void requireCompletedScopeRelease(String run) throws Exception {
+        for(String file:new String[]{"test-completed.marker","physical-restart-input.json","scope-restart-input.json","scope-release-db-committed.json"})
+            require(Files.isRegularFile(attempt.resolve(file)),"Scope preparation incomplete");
+        require(!Files.exists(attempt.resolve("scope-restart-completed.marker")),"Scope restart already used");
+        require(!Files.exists(ROOT.resolve(".local/d01-d18-20261010/temporary-evidence-restore-mysql-"+run+"/retention.json")),"Retained attempt cannot be reused");
+        var report=new com.fasterxml.jackson.databind.ObjectMapper().readTree(Files.readAllBytes(
+            ROOT.resolve(".local/d01-d18-20261008/r09-temporary-evidence-restore-mysql-"+run+"/result.json")));
+        require(report.path("exit").asInt(-1)==0 && report.path("tests").asInt()==1 && report.path("sourceUnchanged").asBoolean()
+            && report.path("failures").asInt(-1)==0 && report.path("errors").asInt(-1)==0 && report.path("skipped").asInt(-1)==0,"Prior scope phase failed");
+        boolean matched=false;
+        for(var argument:report.path("command")) matched|=argument.asText().equals("*E2aReceivedScopeReleaseIT.preparesScopeReleaseWithConfirmedDatabaseCommit");
+        require(matched,"Prior phase is not confirmed scope preparation");
     }
 
     void migrate(JdbcTemplate jdbc, String target) {

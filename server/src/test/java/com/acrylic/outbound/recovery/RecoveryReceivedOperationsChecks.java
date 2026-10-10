@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.*;
 
 /** Actual restored DB context with explicitly synthetic offline operations trust and signature. */
 public final class RecoveryReceivedOperationsChecks {
-    public static void verify(WebApplicationContext app,Path attempt,Path original) throws Exception {
+    public static Result verify(WebApplicationContext app,Path attempt,Path original) throws Exception {
         var initial=RecoveryReceivedPhysicalReviewChecks.verify(app,attempt,original);
         var reviewed=RecoveryReceivedOperationsTransactionChecks.inspect(app,attempt,initial);
         var result=new RecoveryReceivedPhysicalReviewChecks.Result(initial.authority(),reviewed,initial.request());
@@ -43,7 +43,9 @@ public final class RecoveryReceivedOperationsChecks {
             .put("warehouseRefused",true).put("fileTailRefused",true).put("identityTailRefused",true)
             .put("transactionPreflightRefused",true).put("databaseUnchanged",true).put("releaseAllowed",false);
         Files.write(attempt.resolve("operations-approval-checks.json"),RecoveryControlJson.encode(evidence));
+        return new Result(result,request,approval);
     }
+    public record Result(RecoveryReceivedPhysicalReviewChecks.Result physical,RecoveryOperationsApproval.Request request,RecoveryOperationsApproval approval) { }
     private static ObjectNode approval(RecoveryOperationsFixture f,RecoveryOperationsApproval.Context context) {
         var inventory=context.inventory().facts(); var fault=inventory.path("faultReceipt");
         String caseId=text(fault.path("businessDecision"),"caseId");

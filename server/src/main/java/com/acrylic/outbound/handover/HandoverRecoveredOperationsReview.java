@@ -19,13 +19,18 @@ public final class HandoverRecoveredOperationsReview {
     public RecoveryOperationsApproval verify(RecoveryOperationsApproval.Request approval,
             RecoveryOperationsApproval.Context reviewed,HandoverRecoveredPhysicalReview.Request request) {
         var checked=RecoveryOperationsApproval.verify(approval,reviewed);
-        inspect(request,checked); return checked;
+        inspect(request,checked,null); return checked;
     }
     /** Capture a new fixed review after APPROVE, including history hashes bound to that approved inventory. */
     public RecoveryOperationsApproval.Context inspect(HandoverRecoveredPhysicalReview.Request request) {
-        return inspect(request,null);
+        return inspect(request,null,null);
     }
-    private RecoveryOperationsApproval.Context inspect(HandoverRecoveredPhysicalReview.Request request,RecoveryOperationsApproval checked) {
+    /** Only explicit scope-release coordination calls this; it never changes ordinary admission or source facts. */
+    public void project(RecoveryScopeReleaseStore store,HandoverRecoveredPhysicalReview.Request request,boolean requireExisting) {
+        inspect(request,store.approval(),new RecoveryScopeReleaseProjection(jdbc.getDataSource(),store,requireExisting));
+    }
+    private RecoveryOperationsApproval.Context inspect(HandoverRecoveredPhysicalReview.Request request,RecoveryOperationsApproval checked,
+            RecoveryScopeReleaseProjection release) {
         var command=HandoverCommand.Input.parse(request.originalFault()); request.binding().require(command);
         HandoverCommand.corruptUnless("FAULT_FENCE".equals(command.kind())); var actor=access.current(command);
         var prepared=RecoveryReleaseReconciliation.prepare(review.inspect(request.originalFault(),request.binding()),request.reconciliation());
@@ -43,7 +48,8 @@ public final class HandoverRecoveredOperationsReview {
                     var inventory=new RecoveryReleaseInventoryCapture(jdbc.getDataSource()).capture(archive,receipt);
                     var physical=RecoveryReleasePhysicalReview.inspect(jdbc.getDataSource(),inventory,prepared);
                     var current=new RecoveryOperationsApproval.Context(physical,inventory);
-                    if(checked!=null) checked.revalidate(current,request.reconciliation().authority()); return current;
+                    if(checked!=null) checked.revalidate(current,request.reconciliation().authority());
+                    if(release!=null) release.apply(current,request.reconciliation().authority()); return current;
                 }
             });
     }
