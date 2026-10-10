@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09已收正文原verification恢复（2026-10-10）](D07_R09_RECEIVED_VERIFICATION_RESTORE_2026-10-10.md)：新实际来源原行pin与单表恢复，原失败/独立消费分列，不代时间截点或业务闭环。
+- [已收正文原行恢复前看板归档（2026-10-10）](ORCHESTRATION_STATE_before_received_verification_2026-10-10.md)：原结论/失败/限制保全，不恢复旧状态。
+
 - [D07/R09 native verification原行绑定（2026-10-10）](D07_R09_NATIVE_VERIFICATION_BINDING_2026-10-10.md)：原完整行摘要/事务锁/篡改回滚；合成MySQL与真实恢复拒绝分列，非原native正向或完整交接链。
 - [native绑定前看板归档（2026-10-10）](ORCHESTRATION_STATE_before_native_binding_2026-10-10.md)：原结论/失败/限制保全，不恢复旧指令或状态。
 

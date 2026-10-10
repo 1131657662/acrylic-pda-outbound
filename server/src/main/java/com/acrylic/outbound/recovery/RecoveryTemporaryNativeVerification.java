@@ -18,7 +18,7 @@ final class RecoveryTemporaryNativeVerification {
         require(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()
             && org.springframework.transaction.support.TransactionSynchronizationManager.hasResource(jdbc.getDataSource()),
             "RECOVERY_NATIVE_TRANSACTION_REQUIRED");
-        var row = read(facts); var source = archive.source();
+        var row = readLocked(facts.verificationId()); var source = archive.source();
         require(uuid(row, "set_id").equals(facts.evidenceSetId()) && uuid(row, "scope_id").equals(source.scopeId())
             && uuid(row, "submission_id").equals(source.submissionId()) && revision(row, "work_round") == source.workRound()
             && revision(row, "verification_version") == 1 && revision(row, "algorithm_version") == 1
@@ -30,15 +30,18 @@ final class RecoveryTemporaryNativeVerification {
         return row;
     }
 
-    private JsonNode read(RecoveryTemporaryNativeHandoverFacts.Facts facts) {
+    JsonNode readOriginal(java.util.UUID id) { return read(id, ""); }
+    JsonNode readLocked(java.util.UUID id) { return read(id, " FOR UPDATE"); }
+
+    private JsonNode read(java.util.UUID id, String lock) {
         var rows = jdbc.query("""
             SELECT BIN_TO_UUID(id) id,BIN_TO_UUID(set_id) set_id,BIN_TO_UUID(scope_id) scope_id,
                 BIN_TO_UUID(submission_id) submission_id,CAST(work_round AS CHAR) work_round,
                 CAST(verification_version AS CHAR) verification_version,CAST(algorithm_version AS CHAR) algorithm_version,
                 set_sha256,result,known_facts_sha256,findings_bytes,
                 DATE_FORMAT(verified_at,'%Y-%m-%dT%H:%i:%s.%f') verified_at
-            FROM source_evidence_verification WHERE id=? FOR UPDATE
-            """, (rs, index) -> {
+            FROM source_evidence_verification WHERE id=?
+            """ + lock, (rs, index) -> {
                 var row = SubmissionJson.object();
                 for (int column = 1; column <= rs.getMetaData().getColumnCount(); column++) {
                     String name = rs.getMetaData().getColumnLabel(column);
@@ -46,7 +49,7 @@ final class RecoveryTemporaryNativeVerification {
                     else row.put(name, rs.getString(column));
                 }
                 return row;
-            }, Ids.bytes(facts.verificationId()));
+            }, Ids.bytes(id));
         require(rows.size() == 1, "RECOVERY_NATIVE_VERIFICATION_MISSING");
         return rows.getFirst();
     }

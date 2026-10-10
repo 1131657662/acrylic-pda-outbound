@@ -1,0 +1,29 @@
+# 开发看板
+
+<!-- CURRENT_STATE_START -->
+版本事实见主树看板生成块；此页只保留替换前结论，原事实块字节保存在native-received-resume-01/board.md。
+用户已恢复D01–D18总目标，active、未完成；[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)第8节全满足才可complete。规则见AGENTS.md。替换前结论/失败/证据完整保全于[native绑定前归档](history/ORCHESTRATION_STATE_before_native_binding_2026-10-10.md)，旧角色/指令不恢复。
+
+## Git、写权与环境
+- 主树D:/acrylic-pda-outbound，codex/development，HEAD/实际开发远端2a498fe608dc577d14a0b751380092c283af5a30，14条范围已推，原回执/暂存/最终已验hash在native-binding-precommit-01；postcommit-01余27条继承dirty。提交后仅看板/本批历史两项Git断点补记，全部dirty见native-binding-final-01；69次/原22保护零漂移，继承改动未混入提交。
+- 本聊天单助手、唯一写者，其他项目聊天notLoaded；回归r09-native-facts-regression-02已结束，无重型Gradle在途，最终产品/测试输入不变。无HTTP/页面/模拟器在途；既有3306/13316/ADB不操作。
+- 新1208/1209/1210分别跨33树核分配，dump独立重算、认证停机、原PID退出、19330/19434空；1207目录子串守卫拒绝未建库。失败证据保留，不复用失败库。
+- C/D余量和所有监听/进程见native-binding-final-01（postcommit-01为78814273536/90281730048字节）；新增产物/TEMP/Java/cache在D盘，无清理。22份停止AVD只做已授权可逆NTFS压缩、原hash一致未删；[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)及[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)保存位置仍有效，本机私有证据未异地备份。
+
+## 本轮与既有有效范围
+- [native verification绑定](history/D07_R09_NATIVE_VERIFICATION_BINDING_2026-10-10.md)：显式TEMP/canonical、原生整数STOP/三水位/ABORTED身份与原完整verification行摘要，FOR UPDATE及回调前后/提交前重验；无Bean/HTTP/签发/准入。定向03为23全过、源码不变；02编译首败/早期自造3项不计最终证明。
+- 新1208真实MySQL1全过，明确合成身份/E2A/verification，缺失/异来源/状态/版本/hash拒绝、known-facts/findings/时间在进入前/回调后/beforeCommit篡改及尾SQL全表回滚、独立连接行锁与提交可见性/幂等；非原native恢复。1209新目标导入1189后完整native入口缺canonical拒绝，MySQL1全过、未调用消费者且全快照守恒；非正向闭环。两次exit0/sourceUnchanged。
+- 独立Node02为13输入hash不变/exit0，逐原列摘要、全业务表/文件/迁移与两dump/停机核对；01末LF格式误读失败保全。作者自审与独立工具消费分列；普通回归01及最大findings修复后最终02均3235全过/107XML/exit0/输入不变，不计完整server或IT。
+- [原四表恢复](history/D07_R09_TEMP_EVIDENCE_RESTORE_2026-10-10.md)、[归档读取](history/D07_R09_RECOVERED_ARCHIVE_READ_2026-10-10.md)、[同事务消费](history/D07_R09_ARCHIVE_TRANSACTION_CONSUMER_2026-10-10.md)沿未受影响原输入复用，完整原字节/原列/owner/幂等/提交前换件/尾SQL/并发与新JVM重开证据见各记录；RECOVERY_PENDING，不代native或最终业务恢复。
+- [原TEMP准备跨截点恢复](history/D07_R09_TEMP_PREPARATION_RESTORE_2026-10-10.md)为原dump→新空导入→五gzip/ACK闭事务恢复、冲突回滚及重开；[受约束权限](history/D07_R09_CONTROLLED_PERMISSION_2026-10-10.md)/[原日志边界](history/D07_R09_PERMISSION_LOG_BOUNDARIES_2026-10-10.md)为原账号/窗口/CRC/ROW/XID完整连续性，范围、首败与skip分列，不代所有历史权限或业务链。
+- 其他只读前置原根/资格/正文/E2A/准备/ACK/权限/占用/来源及closed事务有效输入、回归和失败均见[替换前归档](history/ORCHESTRATION_STATE_before_native_binding_2026-10-10.md)及[历史索引](history/README.md)，不重复跑一次性来源或重造原身份。
+- D06 STOP1103、多跳1110、混合1118/1120、LOCAL1124/1125只按[原执行](history/D01_D18_EXECUTION_2026-10-07.md)/[多跳](history/D06_MULTIHOP_EXECUTION_2026-10-08.md)/[混合](history/D06_MIXED_EXECUTION_2026-10-09.md)/[LOCAL](history/D06_LOCAL_EXECUTION_2026-10-09.md)分层证据计证；1100–1102不重跑/复用，不外推D06整体。
+- D07 TEMP1131/1132/1137/1144及FORMAL1148/1149/1150/1151已有主管围栏→接收最终提交/重启、附件/Web/PDA子项见[故障](history/D07_TEMP_FAULT_EXECUTION_2026-10-09.md)/[附件](history/D07_FAULT_ATTACHMENTS_2026-10-09.md)/[FORMAL](history/D07_FORMAL_FAULT_EXECUTION_2026-10-09.md)/[暂停](history/D01_D18_PAUSE_2026-10-09_FORMAL.md)。1150/1151/UI-06未重跑；UI-06是实际页面消费回放签名响应，非实时MySQL/真机。原首败、源码漂移说明与skip保持，不计整体。
+
+## 未完成与下一动作
+- D06/D07整体、FORMAL各阶段实际入口、无可信归档代传/R09跨截点业务重建、D08–D18及总闸门未完成；D18无最终候选。D04候选排除/D05取消释放缺政策保持拒绝；原资料/旧BCD/526、历史失败及恢复限制继续单列，开发缺口不转现场。
+- 本轮范围已提交推送；1131只读盘点22输入不变/20原件与4intake绑定，但原ABORTED已收正文，1132/1137/1144亦同类；先明确来源适用边界，再选有独立可信原行的新开发来源，保全native摘要与恢复输入。1189/1206无原canonical/native，不能补造INITIAL_ACCEPTANCE或verification。完整withVerifiedNativeArchive正向及原native跨截点恢复仍缺；HandoverCommandService要求外层事务，须明确命令内部复用/准入交叉点后接主管围栏→接收准备激活→最终提交。
+- 生产默认/签名与七类生产决定handler/POST/放行/证据写入/关闭能力均关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名、不绕设备或审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08单列。
+<!-- CURRENT_STATE_END -->
+
+> 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。
