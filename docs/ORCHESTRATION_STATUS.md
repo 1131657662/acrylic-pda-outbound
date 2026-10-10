@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-10
 branch: codex/development
-head: 0d75a89b
-dirty_entries: 37
+head: 2886dec7
+dirty_entries: 45
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
 server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
@@ -16,10 +16,10 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 用户已要求恢复D01–D18总目标，目标active、未完成；只有[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)第8节全部满足才可complete。规则见AGENTS.md，版本只读生成事实块。替换前结论见[归档](history/ORCHESTRATION_STATE_before_permission_continuity_2026-10-10.md)及permission-continuity-resume-01/board.md；不恢复旧角色或指令。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，codex/development；实际HEAD/远端0d75a89b01c107f769200d0fe8f56af5c1532143；权限边界13条已提交推送，回执permission-continuity-precommit-02；未收正文组合5条已推，回执unsubmitted-composition-precommit-03；原占用17条已推，回执unsubmitted-occupancy-precommit-03；原TEMP准备/ACK、占用、登记根及native组合已推，原回执保留不重造提交。提交后全部dirty/环境快照permission-continuity-postcommit-03；继承dirty不混入范围。
+- 主树D:/acrylic-pda-outbound，codex/development；实际HEAD/远端2886dec774080b8d8e483b6baf2a4640b00bd493。原准备/ACK、登记根、占用、native与未收正文组合、权限边界及受约束权限均已推，原范围回执沿对应历史保留，不重造提交；上一批提交后25条dirty/环境见controlled-permission-postcommit-07。准备恢复范围提交断点temp-restore-precommit-02/postcommit-03；继承dirty不混入。
 - [原TEMP E2A](history/D07_R09_ORIGINAL_EVIDENCE_2026-10-09.md)原字节/页链/水位/冻结与STOP分界、capture/scan原引用及未知前缀拒绝已验；定向03为82/0/0/0，回归04普通server 3110/0/0/1、126XML、exit0/sourceUnchanged；保留1151消费者03 compile/run0、13输入hash不变。消费者01登记摘要格式误读失败保留；非独立登记根/权限/占用/终态或实际恢复。
-- 本聊天唯一活动写者，其他项目聊天notLoaded。controlled-permission-resume-02保存33条dirty副本/hash/diff、进程/监听/磁盘；原FORMAL及磁盘final共44次hash比较/22保护项一致、旧HEAD为祖先；原ControlPaths换行差异保持。
-- 无测试执行器/模拟器/页面运行器在途；旧实例1166–1169及新增1170/1172–1174均已dump/认证停机，19330/19434空。既有3306/13316/ADB不操作；核验C/D余量79180267520/94401437696字节，精确快照见controlled-permission-precommit-05；新增产物/TEMP在D盘，无新HTTP/客户端/APK/部署。
+- 本聊天唯一活动写者，其他项目聊天notLoaded。temp-restore-resume-01保存45条dirty完整副本/hash/diff、进程/监听/磁盘；原FORMAL及磁盘final和上一提交后共69次hash比较，非本批继承项无漂移、旧HEAD均为祖先；最终2545个回归输入当次重算0漂移。原ControlPaths换行差异保持。
+- 无测试执行器/模拟器/页面运行器在途；旧实例及1175/1176/1178/1179/1180均已dump/认证停机，19330/19434空，1180成功目标重开后再次停机。既有3306/13316/ADB不操作；核验C/D余量79168147456/93577818112字节，精确快照见temp-restore-resume-01及提交断点；新增产物/TEMP在D盘，无新HTTP/客户端/APK/部署或清理。
 - 1150/1151/UI-06沿原有效证据复用未重跑；1152–1155均dump独立重算、认证停机/原PID退出，1153/1154失败库及log/XML/datadir/binlog保留不复用，retention在closed-mysql-1152至1155。
 - 22份停止AVD RAM快照仅已授权可逆NTFS压缩，SHA256一致未删；D空间恢复记录见[磁盘历史](history/D_DISK_RECOVERY_2026-10-09.md)，原审批删除拒绝未重试。必要证据/失败库/原件/Room/APK保留，本机资料未异地备份，取回位置见[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
@@ -45,7 +45,8 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 ## 未完成与接续
 - D06/D07整体、FORMAL各阶段实际入口、无可信归档代传/R09跨截点业务重建、D08–D18及第8节仍未完成，D18无最终候选。原资料/旧BCD/526、历史失败/恢复限制保持，开发缺口不转现场。
 - [受约束原权限](history/D07_R09_CONTROLLED_PERMISSION_2026-10-10.md)已验：精确GRANT/单活动DML账号、锁root旧会话与当前缓存特权拒绝、后台写者关闭、同源独立pin和原日志。1170/1172线程夹具与1173触发器definer失败保留，1171分配拒绝未建库；1174真实MySQL1全过，独立Node日志8/SQL4/profile4输入不变、官方两prefix全过；recovery回归03为2910全过/70XML、定向04为60全过，exit0/sourceUnchanged。普通test非IT，非业务恢复；1174及失败实例均dump/认证停机/PID退出/隔离端口空。
-- 下一步直接按temporary-preparation-restore-design.md执行原授权已在/五分片ACK未齐截点dump→另一个新空目标恢复→原bytes闭事务补齐、幂等/冲突/尾SQL/提交前换原件回滚/重开；原credential/epoch/基线不改，保持RECOVERY_PENDING。随后接可信权限/E2A/占用与终态→原正文重建→主管故障围栏/接收最终链。1151原FORMAL准备缺失/高轮/续期撤销/跨来源及失败限制保持，不能用fixture签名代原人或仅观察代实际恢复。
+- [原TEMP准备跨截点恢复](history/D07_R09_TEMP_PREPARATION_RESTORE_2026-10-10.md)：1179原授权截点dump→1180新空目标导入→五原gzip/ACK闭事务补齐，授权/库存/政策/映射/part/ACK冲突拒绝、末SQL与beforeCommit换原件全表回滚、幂等及成功目标重开已验；各MySQL1全过，Node10输入不变/三RSA/纳秒ACK/全表守恒通过，重开新JVM0插入/表文件不变。定向36全过，最终普通server4130/0/0/1、240XML、exit0/sourceUnchanged；普通test非IT/符号链接skip未执行。1176套接字耗尽失败及1177分配拒绝保留、不复用。无HTTP/bean/签发/普通写权，RECOVERY_PENDING；仅准备/ACK子项，非D07/R09整体。
+- 接续：同源原登记根/独立pin、受约束权限连续窗口、完整原E2A和SOURCE_RESERVED/无hash ABORTED终态→原正文及原ID/序号/回执closed重建→主管故障围栏/接收激活/最终链。1151原FORMAL准备缺失/高轮/续期撤销/跨来源及失败限制保持，不能用fixture签名代原人或仅观察代实际恢复。
 - 生产默认/签名、七类生产决定handler/POST/放行/证据写入/关闭能力均关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/正式签名/标签/Release、不绕设备/审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08单列。
 <!-- CURRENT_STATE_END -->
 

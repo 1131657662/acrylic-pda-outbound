@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09原TEMP准备跨截点恢复（2026-10-10）](D07_R09_TEMP_PREPARATION_RESTORE_2026-10-10.md)：实际dump/新空目标、五原分片/ACK闭事务、失败保全、幂等/冲突/回滚与成功目标重启，非D07整体。
+- [准备恢复前看板归档（2026-10-10）](ORCHESTRATION_STATE_before_temp_preparation_restore_2026-10-10.md)：原范围提交前结论保全，不恢复旧状态。
+
 - [D07/R09受约束原端权限窗口（2026-10-10）](D07_R09_CONTROLLED_PERMISSION_2026-10-10.md)：旧特权会话排空、精确GRANT/后台写者、原日志独立pin；1170/1172/1173失败保全及1174真实MySQL/独立消费者分列，非业务恢复。
 - [受约束原端前看板归档（2026-10-10）](ORCHESTRATION_STATE_before_controlled_permission_2026-10-10.md)：旧断点保全，不恢复旧状态。
 
