@@ -39,3 +39,7 @@
 原正文代次和恢复目标传输代次不同；HandoverTemporaryTarget要求接收资格与原正文代次一致，激活票据保存sourceRecoveryEpoch，HandoverTemporaryActivationIssuer用它签发。TemporaryRoundAccess要求新正文资格代次与目标传输代次一致。必须按D14“旧票据不激活，范围释放后另行新资格”补最小可信映射/新资格链；不能改原正文代次、简单开NORMAL或构造任意permit。接范围释放→新资格→接收准备/激活→最终提交并验证实际组合、回滚/幂等/冲突/重启，然后按原依赖继续D08–D18与第8节。
 
 用户要求本步后收口，接续以[暂停文档](D01_D18_PAUSE_2026-10-10_RECOVERED_FAULT.md)与主看板为准。生产默认、签名和七类生产决定能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名、不绕设备审批。原资料/旧BCD/526、D04/D05政策缺口、历史失败与C01–C08现场限制保持。
+
+## 明确路径开发保存
+
+17条范围已提交并正常推送3ab3d91ad9777140b66e4cbfda21c30f6647a465，实际开发远端一致，main未动。全部暂存路径/diff/作者自审、最终1250已验11条代码hash与原commit/push回执在received-fault-precommit-01；postcommit-01保全29条剩余dirty并逐hash核对前final不变、69历史比较/22原STOP无漂移。其后仅补Git断点文档，最终精确HEAD/远端/全部dirty/环境及C/D余量见received-fault-pause-final-01，不机械重跑已验业务。

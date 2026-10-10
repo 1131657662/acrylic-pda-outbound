@@ -6,6 +6,8 @@
 
 主树D:/acrylic-pda-outbound，codex/development；接手输入HEAD/实际开发远端均6eb00231192e1c773cc44be7bb5022cd2460881c。按已有授权仅明确路径提交推送本批已验产品/专项测试和受影响文档；不合main、不强推、不重置。已验业务提交回执见received-fault-precommit-01，文档收口回执见received-fault-doc-close-01；最终精确HEAD/远端以`.local/d01-d18-20261010/received-fault-pause-final-01/head.txt`与remote.txt为准，不将文档提交当业务复验。
 
+17条明确路径已提交并正常推送3ab3d91ad9777140b66e4cbfda21c30f6647a465，实际开发远端一致，main未动；剩余29条dirty在postcommit-01逐hash核对前final全部未变。本节之后只有三条Git断点文档补记，无产品或测试输入变更。最终生成事实块的Git刷新保留为看板dirty，随final完整保全，不循环提交自身SHA。
+
 接手时本聊天单助手唯一活动项目写者，其他项目聊天notLoaded；暂停后无业务开发写者。received-fault-resume-01完整保全39条dirty，前received-archive-final-01全部30路径hash未变，69历史比较与22原STOP保护无漂移。补专项测试后的close-preflight-01保全41条；precommit/postcommit/final继续保存全部dirty副本/hash/binary diff、准确分支/树/远端、全部进程/监听和C/D余量。继承规则、Android旧测试、历史补记及本机资料未混入本批，不能restore/清空dirty或全部暂存。
 
 最终快照目录为`D:/acrylic-pda-outbound/.local/d01-d18-20261010/received-fault-pause-final-01/`。其中status.txt和dirty-hashes.json是完整剩余清单，files为逐hash副本，working.diff/staged.diff为精确差异，protection.json/result.json为历史及原STOP保护校验。进程/监听/磁盘见processes.json、listeners.json、disks.json；本机快照可取回不等于异地备份。
