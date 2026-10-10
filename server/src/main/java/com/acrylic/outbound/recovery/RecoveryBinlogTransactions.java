@@ -10,7 +10,11 @@ final class RecoveryBinlogTransactions {
     private static final Set<String> BUSINESS = Set.of("temporary_preparation", "temporary_authorization", "temporary_capture",
         "temporary_scan", "temporary_submission", "temporary_order", "submission", "submission_scope", "submission_payload",
         "source_evidence_object", "source_evidence_set", "source_evidence_item", "bale_commitment", "operation_event",
-        "device_challenge", "device_scan_event", "device_audit_event");
+        "device_challenge", "device_scan_event", "device_audit_event",
+        "outbound_order", "order_line", "order_revision", "order_number_counter", "order_submission_slot", "order_sync_outbox",
+        "submitted_capture", "submitted_event", "temporary_decision_state", "temporary_source_mapping", "temporary_work_origin",
+        "source_evidence_intake_receipt", "source_evidence_page_item_stage", "source_evidence_verification",
+        "pda_audit_checkpoint", "pda_audit_event", "barcode_sync_pending");
     private final String schema;
     private final Instant from, through;
     private final Map<Long,String> tables = new HashMap<>();

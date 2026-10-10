@@ -21,6 +21,7 @@ class E2aRealHttpConnection(private val work: TemporaryWorkFixture, private val 
     var signatures = 0
     var unavailable = false
     val receiptBytes = linkedMapOf<String, ByteArray>()
+    val originalRequests = linkedMapOf<String, JSONObject>()
 
     init { check(input.getString("baseUrl") == "http://127.0.0.1:19434/api/v1/") }
 
@@ -32,6 +33,12 @@ class E2aRealHttpConnection(private val work: TemporaryWorkFixture, private val 
         val operation = receipt.getString("operationKind")
         receiptBytes[receipt.getString("originalKey")] = bytes.copyOf()
         if (request.body != null || request.raw != null) {
+            val retained = JSONObject().put("path", request.path).put("operation", operation)
+            request.body?.let { retained.put("body", Base64.getEncoder().encodeToString(it)) }
+            request.raw?.let { retained.put("raw", Base64.getEncoder().encodeToString(it)) }
+            val key = receipt.getString("originalKey")
+            originalRequests[key]?.let { check(it.toString() == retained.toString()) }
+            originalRequests[key] = retained
             posts += request.path
             if (drops.remove(if (operation == "ITEM") "RAW" else operation)) throw IOException("Injected lost $operation response after server commit")
         }
@@ -42,6 +49,9 @@ class E2aRealHttpConnection(private val work: TemporaryWorkFixture, private val 
         check(!work.db.inTransaction())
         val data = network.request(request.path, request.body, headers, request.raw).getJSONObject("data")
         if (request.path.contains("temporary-source-evidence/raw?")) {
+            val raw = checkNotNull(request.raw)
+            originalRequests[com.acrylic.outbound.pda.evidence.E2aWire.sha(raw)] = JSONObject()
+                .put("path", request.path).put("operation", "ITEM").put("raw", Base64.getEncoder().encodeToString(raw))
             posts += request.path
             if (drops.remove("RAW")) throw IOException("Injected lost RAW response after server commit")
         }

@@ -33,6 +33,7 @@ class E2aRealHttpRecoveryTest {
         val input = JSONObject(inputFile.readText())
         check(input.getString("fixturePurpose") == "SYNTHETIC_ANDROID_ROOM_REAL_HTTP")
         TemporaryWorkFixture(folder.root, contract = input).use { work ->
+            work.fixture.time = java.time.Instant.now()
             val connection = E2aRealHttpConnection(work, input)
             val store = { TemporaryWorkStore(work.db, connection, work.store.sample) }
             work.start(input.optString("plannedCount", "1")); work.scan()
@@ -94,6 +95,9 @@ class E2aRealHttpRecoveryTest {
             receipts.put(originalKey, Base64.getEncoder().encodeToString(bytes))
         }
         result.put("receipts", receipts)
+        val requests = JSONObject()
+        connection.originalRequests.forEach { (key, request) -> requests.put(key, request) }
+        result.put("originalRequests", requests)
         val output = File(attempt, "android-result.json")
         check(output.createNewFile()); output.writeText(result.toString())
     }
