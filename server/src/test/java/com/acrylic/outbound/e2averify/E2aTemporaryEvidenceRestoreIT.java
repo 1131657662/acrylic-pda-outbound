@@ -8,6 +8,17 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 /** Fresh actual source checkpoint and a distinct empty target; all originals retain their public pins. */
 @EnabledIfEnvironmentVariable(named="E2A_CROSS_VERIFY",matches="true")
 class E2aTemporaryEvidenceRestoreIT {
+    @Test @EnabledIfEnvironmentVariable(named="E2A_TEMP_EVIDENCE_PHASE",matches="target")
+    void consumesRestoredArchiveInSameClosedTransaction() throws Exception {
+        var profile=new E2aCrossSourceProfile(); var jdbc=profile.connect(); Files.createFile(profile.attempt.resolve("test-started.marker"));
+        try(var pool=new com.zaxxer.hikari.HikariDataSource()) {
+            pool.setDataSource(jdbc.getDataSource()); pool.setMaximumPoolSize(3); pool.setMinimumIdle(1);
+            RecoveryTemporaryEvidenceTargetChecks.consumeArchive(new org.springframework.jdbc.core.JdbcTemplate(pool),profile.attempt,
+                Path.of(System.getenv("E2A_TEMP_EVIDENCE_SOURCE")));
+        }
+        Files.writeString(profile.attempt.resolve("test-completed.marker"),"Actual dump import and closed archive consumer commit/rollback/refusal; no native verification, handover approval or normal admission\n");
+    }
+
     @Test @EnabledIfEnvironmentVariable(named="E2A_TEMP_EVIDENCE_PHASE",matches="source")
     void capturesOriginalRowsAfterActualCheckpointAndControlledWindow() throws Exception {
         var profile=new E2aCrossSourceProfile(); var jdbc=profile.connect(); Files.createFile(profile.attempt.resolve("test-started.marker"));

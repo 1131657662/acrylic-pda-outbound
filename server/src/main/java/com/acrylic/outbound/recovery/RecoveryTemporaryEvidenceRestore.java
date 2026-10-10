@@ -38,21 +38,39 @@ public final class RecoveryTemporaryEvidenceRestore {
 
     /** Reads only complete restored originals; it never repairs rows or grants handover admission. */
     public RecoveryRecoveredTemporaryArchive verifyArchive(Request request) {
-        Objects.requireNonNull(request); authority.read(); var original=read(request); var jdbc=new JdbcTemplate(database);
+        return withVerifiedArchive(request,java.util.function.Function.identity());
+    }
+
+    /**
+     * Internal consumer seam owned by this closed transaction. The callback is trusted application code,
+     * must use this database's transaction-bound connection, and must keep original rows/owners unchanged.
+     * It must not publish results or perform irreversible external effects. It runs once, without retries;
+     * its return value is exposed only after successful commit, never as normal or native admission.
+     */
+    public <T> T withVerifiedArchive(Request request,java.util.function.Function<RecoveryRecoveredTemporaryArchive,T> consumer) {
+        Objects.requireNonNull(request); Objects.requireNonNull(consumer);
+        authority.read(); var original=read(request); var jdbc=new JdbcTemplate(database);
         return new RecoveryClosedTransaction(database,authority).execute(original.source(),status -> {
             requireArchive(request,original,jdbc);
+            T result=consumer.apply(archive(request,original));
+            requireArchive(request,original,jdbc);
+            // Register after the consumer so its own beforeCommit work precedes this final validation.
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override public void beforeCommit(boolean readOnly) { requireArchive(request,original,jdbc); }
             });
-            var set=original.material().path("rows").path("source_evidence_set").get(0);
-            var proof=new RecoveryOriginalEvidence().read(request.evidence());
-            var provenance=new RecoveryRecoveredTemporaryArchive.Provenance(original.source().control().recordSha256(),
-                original.source().manifestSha256(),request.rows().independentSha256(),original.occupancy().originalSha256(),
-                request.registration().independentSha256(),proof.setHash(),proof.payloadSha256());
-            return new RecoveryRecoveredTemporaryArchive(request.evidence().expected(),rowId(set,"id"),rowId(set,"stop_object_id"),
-                provenance,original.source().original("payload"),original.source().original("result"),
-                RecoveryUnsubmittedEvidence.expected(request.evidence()).stopProofBytes());
+            return result;
         });
+    }
+
+    private RecoveryRecoveredTemporaryArchive archive(Request request,Original original) {
+        var set=original.material().path("rows").path("source_evidence_set").get(0);
+        var proof=new RecoveryOriginalEvidence().read(request.evidence());
+        var provenance=new RecoveryRecoveredTemporaryArchive.Provenance(original.source().control().recordSha256(),
+            original.source().manifestSha256(),request.rows().independentSha256(),original.occupancy().originalSha256(),
+            request.registration().independentSha256(),proof.setHash(),proof.payloadSha256());
+        return new RecoveryRecoveredTemporaryArchive(request.evidence().expected(),rowId(set,"id"),rowId(set,"stop_object_id"),
+            provenance,original.source().original("payload"),original.source().original("result"),
+            RecoveryUnsubmittedEvidence.expected(request.evidence()).stopProofBytes());
     }
 
     private void requireArchive(Request request,Original original,JdbcTemplate jdbc) {
