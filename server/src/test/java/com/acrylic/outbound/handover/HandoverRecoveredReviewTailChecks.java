@@ -13,10 +13,7 @@ final class HandoverRecoveredReviewTailChecks {
         var projection=app.getBean(HandoverRecoveredTemporaryProjection.class);
         var receipt=com.acrylic.outbound.submissions.SubmissionJson.parse(
             java.nio.file.Files.readAllBytes(f.directory.resolve("fault-receipt.json")));
-        var mutations=java.util.List.<Runnable>of(()->f.jdbc.update("UPDATE order_number_counter SET last_sequence=last_sequence+1"),
-            ()->f.jdbc.update("UPDATE outbound_order SET order_no=CONCAT(order_no,'-tampered') WHERE warehouse_id<>?",
-                com.acrylic.outbound.common.Ids.bytes(f.binding.request().evidence().expected().warehouseId())));
-        for(Runnable mutation:mutations) {
+        for(Runnable mutation:mutations(f)) {
         assertThatThrownBy(()->f.binding.consumer().consumeAfterIdentityLocks(f.binding.request(),f.binding.nativeFacts(),
             new RecoveryReceivedTemporaryArchiveConsumer.IdentityConsumer<RecoveryReleaseInventory>() {
                 @Override public void lockIdentity() { }
@@ -30,5 +27,13 @@ final class HandoverRecoveredReviewTailChecks {
             })).hasMessage("RECOVERY_RELEASE_INVENTORY_CHANGED");
         assertThat(f.snapshots.capture()).isEqualTo(before);
         }
+    }
+
+    private static java.util.List<Runnable> mutations(HandoverRecoveredTemporaryFixture f) {
+        var warehouse=com.acrylic.outbound.common.Ids.bytes(f.binding.request().evidence().expected().warehouseId());
+        return java.util.List.of(()->f.jdbc.update("UPDATE order_number_counter SET last_sequence=last_sequence+1"),
+            ()->f.jdbc.update("UPDATE outbound_order SET order_no=CONCAT(order_no,'-tampered') WHERE warehouse_id<>?",warehouse),
+            ()->f.jdbc.update("UPDATE inventory_import_row SET error_detail='late-tail' WHERE import_id IN "
+                +"(SELECT id FROM inventory_import WHERE warehouse_id=?)",warehouse));
     }
 }

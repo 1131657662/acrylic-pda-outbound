@@ -34,6 +34,9 @@ final class RecoveryReleaseInventoryRows {
     ObjectNode read() {
         var result=com.acrylic.outbound.submissions.SubmissionJson.object();
         for(String table:TABLES) result.set(table,table(table));
+        for(String table:RecoveryReleaseAdditionalQueries.tables()) {
+            require(!result.has(table),"RECOVERY_RELEASE_TABLE_DUPLICATE"); result.set(table,table(table));
+        }
         return result;
     }
 

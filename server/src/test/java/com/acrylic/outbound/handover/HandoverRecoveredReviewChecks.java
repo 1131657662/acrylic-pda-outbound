@@ -30,6 +30,7 @@ public final class HandoverRecoveredReviewChecks {
         assertThat(observed.gaps()).contains("GLOBAL_NUMBER_HISTORY_REQUIRED","DEVICE_SCOPE_CLOSURE_REQUIRED");
         assertThat(observed.facts().path("tables").path("order_number_counter").path("rows")).isNotEmpty();
         scopeAndCredentials(observed);
+        HandoverRecoveredReviewCoverageChecks.verify(observed);
         refusals(review,f,fault,bindings.foreign());
         changedInventory(review,f,fault,observed);
         HandoverRecoveredReviewFenceChecks.verify(review,f,fault);

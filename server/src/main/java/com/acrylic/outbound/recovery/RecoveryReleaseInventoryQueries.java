@@ -52,13 +52,16 @@ final class RecoveryReleaseInventoryQueries {
         if(GLOBAL.contains(table)) return "";
         if(WAREHOUSE.contains(table)) return " WHERE warehouse_id=?";
         String predicate=FILTERS.get(table);
-        RecoveryControlFormat.require(predicate!=null,"RECOVERY_RELEASE_TABLE_UNKNOWN"); return " WHERE "+predicate;
+        return predicate==null?RecoveryReleaseAdditionalQueries.filter(table):" WHERE "+predicate;
     }
 
-    static boolean digestOnly(String table) { return Set.of("background_job","recovery_package").contains(table); }
+    static boolean digestOnly(String table) {
+        return Set.of("background_job","recovery_package").contains(table) || RecoveryReleaseAdditionalQueries.digestOnly(table);
+    }
     static boolean confidential(String table,String column) {
         return table.equals("pda_session") && Set.of("access_hash","refresh_hash").contains(column)
-            || Set.of("temporary_authorization","offline_authorization").contains(table) && column.equals("signed_token");
+            || Set.of("temporary_authorization","offline_authorization").contains(table) && column.equals("signed_token")
+            || RecoveryReleaseAdditionalQueries.confidential(table,column);
     }
     private RecoveryReleaseInventoryQueries() { }
 }
