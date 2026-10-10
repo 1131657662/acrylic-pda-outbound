@@ -117,8 +117,10 @@ public final class RecoveryTemporaryNativeHandoverFacts {
             && terminal.path("stockReleased").isBoolean() && !terminal.path("stockReleased").asBoolean(),
             "RECOVERY_NATIVE_BYTES_MISMATCH");
         require(terminal.path("source").equals(SubmissionJson.parse(archive.payload()).path("source"))
-            && terminal.path("payloadSha256").isNull() && terminal.path("payloadPresent").isBoolean()
-            && !terminal.path("payloadPresent").asBoolean(), "RECOVERY_NATIVE_BYTES_MISMATCH");
+            && terminal.path("payloadPresent").isBoolean(), "RECOVERY_NATIVE_BYTES_MISMATCH");
+        require(terminal.path("payloadPresent").booleanValue()
+            ? terminal.path("payloadSha256").isTextual() && terminal.path("payloadSha256").textValue().equals(archive.provenance().payloadSha256())
+            : terminal.path("payloadSha256").isNull(), "RECOVERY_NATIVE_BYTES_MISMATCH");
         if (terminal.has("localFrozenPayloadSha256"))
             require(terminal.path("localFrozenPayloadSha256").asText().equals(archive.provenance().payloadSha256()),
                 "RECOVERY_NATIVE_BYTES_MISMATCH");

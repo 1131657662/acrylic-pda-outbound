@@ -12,6 +12,17 @@ public final class RecoveryReceivedTemporaryMaterial {
     private RecoveryReceivedTemporaryMaterial() { }
 
     static JsonNode read(Request request, RecoveryClosedAuthority authority, RecoveryPinnedSource source) {
+        return read(request,authority,source,source.identity());
+    }
+
+    /** The signed next STOP supplies the row boundary; the pinned/control source keeps its frozen identity. */
+    static JsonNode readAtStop(Request request, RecoveryClosedAuthority authority, RecoveryPinnedSource source,
+            RecoveryOriginalEvidence.Request evidence) {
+        RecoveryNativeTemporaryAudit.verify(source,evidence);
+        return read(request,authority,source,evidence.expected());
+    }
+
+    private static JsonNode read(Request request, RecoveryClosedAuthority authority, RecoveryPinnedSource source,RecoverySourceIdentity rowIdentity) {
         require(request.independentSha256()!=null && request.independentSha256().matches("[a-f0-9]{64}")
             && !ZERO_HASH.equals(request.independentSha256()),"RECOVERY_RECEIVED_PIN_REQUIRED");
         try {
@@ -25,24 +36,24 @@ public final class RecoveryReceivedTemporaryMaterial {
             }
             require(bytes.length>0 && bytes.length<=RecoveryTemporaryEvidenceMaterial.MAX_BYTES
                 && sha256(bytes).equals(request.independentSha256()),"RECOVERY_RECEIVED_PIN_MISMATCH");
-            var value=RecoveryTemporaryEvidenceMaterial.decode(bytes); binding(value,request,source); return value;
+            var value=RecoveryTemporaryEvidenceMaterial.decode(bytes); binding(value,request,source,rowIdentity); return value;
         } catch(java.io.IOException error) { throw new RecoveryControlException("RECOVERY_RECEIVED_PIN_UNAVAILABLE",error); }
     }
 
-    private static void binding(JsonNode value, Request request, RecoveryPinnedSource source) {
+    private static void binding(JsonNode value, Request request, RecoveryPinnedSource source,RecoverySourceIdentity rowIdentity) {
         fields(value,"formatVersion observationKind mysqlServerUuid databaseSchema sourceRecoveryEpoch observedAt source rows verification payloadSha256"); version(value);
         var database=request.database();
         require(text(value,"observationKind").equals("ORIGINAL_RECEIVED_TEMP_VERIFICATION")
             && uuid(value,"mysqlServerUuid").equals(database.mysqlServerUuid()) && text(value,"databaseSchema").equals(database.schema())
             && text(value,"sourceRecoveryEpoch").equals(database.sourceRecoveryEpoch())
             && database.sourceRecoveryEpoch().equals(source.identity().sourceRecoveryEpoch())
-            && RecoverySourceIdentity.read(value.path("source")).equals(source.identity())
+            && RecoverySourceIdentity.read(value.path("source")).equals(rowIdentity)
             && !instant(value,"observedAt").isAfter(request.notAfter()),"RECOVERY_RECEIVED_PIN_SOURCE");
         var rows=value.path("rows"); fields(rows,"head evidence owners history");
         require(text(value,"payloadSha256").equals(SubmissionJson.sha(SubmissionJson.parse(source.original("payload"))))
             && text(rows.path("head"),"receipt_text").equals(new String(source.original("result"),java.nio.charset.StandardCharsets.UTF_8)),
             "RECOVERY_RECEIVED_PIN_SOURCE");
-        verification(value.path("verification"),source.identity(),rows.path("evidence"));
+        verification(value.path("verification"),rowIdentity,rows.path("evidence"));
     }
 
     static void verification(JsonNode row, RecoverySourceIdentity id, JsonNode evidence) {

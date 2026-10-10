@@ -9,6 +9,23 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.Assertions.*;
 
 class RecoveryTemporaryNativeHandoverFactsTest {
+    @Test void bindsReceivedTerminalToTheExactFrozenPayloadHash() throws Exception {
+        var f=new RecoveryTemporaryNativeHandoverFixture(UUID.randomUUID());
+        var received=f.changed("terminal",terminal -> terminal.put("payloadPresent",true).put("payloadSha256",f.archive.provenance().payloadSha256()));
+        var facts=RecoveryTemporaryNativeHandoverFacts.read(received,f.input);
+        assertThat(facts.canonicalOrderId()).isEqualTo(f.archive.source().canonicalOrderId());
+        assertThat(facts.ordinaryWritesAllowed()).isFalse(); assertThat(facts.localDeletionAllowed()).isFalse();
+    }
+
+    @ParameterizedTest @ValueSource(strings={"null","wrong","unreceivedHash"})
+    void refusesInconsistentReceivedTerminalHash(String kind) throws Exception {
+        var f=new RecoveryTemporaryNativeHandoverFixture(UUID.randomUUID());
+        var received=f.changed("terminal",terminal -> {
+            terminal.put("payloadPresent",!kind.equals("unreceivedHash"));
+            if(kind.equals("null")) terminal.putNull("payloadSha256"); else terminal.put("payloadSha256","b".repeat(64));
+        });
+        assertThatThrownBy(() -> RecoveryTemporaryNativeHandoverFacts.read(received,f.input)).hasMessage("RECOVERY_NATIVE_BYTES_MISMATCH");
+    }
     @Test void requiresOriginalVerificationRowDigest() throws Exception {
         var f=new RecoveryTemporaryNativeHandoverFixture(UUID.randomUUID());
         ((ObjectNode)f.input.path("archive")).put("verificationSha256","invalid");

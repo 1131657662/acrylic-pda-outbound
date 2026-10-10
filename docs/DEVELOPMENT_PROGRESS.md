@@ -12,6 +12,8 @@
 
 ## 近期验收入口
 
+- [D07/R09已收正文原归档closed/native消费](history/D07_R09_RECEIVED_ARCHIVE_2026-10-10.md)：实际全量恢复目标的原verification/字节绑定、库存锁与消费者/提交前篡改回滚、独立工具消费及受影响普通回归；主管围栏和接收最终链另列。
+
 - [D07/R09已收正文原verification恢复](history/D07_R09_RECEIVED_VERIFICATION_RESTORE_2026-10-10.md)：实际Android/HTTP原来源采集、独立pin、单表缺失样本原行恢复/锁/回滚/守恒；完整时间截点恢复与接收最终链仍缺。
 
 - [D07/R09 native verification原行绑定](history/D07_R09_NATIVE_VERIFICATION_BINDING_2026-10-10.md)：显式原完整行摘要、事务锁/提交前重验与合成MySQL验证、真实恢复来源缺canonical拒绝分列；原native恢复及接收最终链仍缺。

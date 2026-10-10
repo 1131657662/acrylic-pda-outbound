@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09已收正文原归档closed/native消费（2026-10-10）](D07_R09_RECEIVED_ARCHIVE_2026-10-10.md)：实际新目标原字节/验证行/owner与回滚、独立消费和普通回归；不代业务准入或最终交接。
+- [已收正文归档消费前看板（2026-10-10）](ORCHESTRATION_STATE_before_received_archive_2026-10-10.md)：原结论/失败保全，不恢复旧指令。
+
 - [D07/R09已收正文实际时间截点（2026-10-10）](D07_R09_RECEIVED_CHECKPOINT_2026-10-10.md)：扫码前dump与原binlog全量重建，1233/1237及写前拒绝、独立原字节消费、普通回归和失败库分别保全；closed/native与最终交接仍缺。
 - [真实截点前看板归档（2026-10-10）](ORCHESTRATION_STATE_before_received_checkpoint_2026-10-10.md)：原结论保全，不恢复旧状态或指令。
 

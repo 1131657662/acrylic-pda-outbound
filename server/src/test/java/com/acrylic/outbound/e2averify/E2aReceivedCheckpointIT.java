@@ -9,6 +9,12 @@ import org.springframework.web.context.WebApplicationContext;
 
 @EnabledIfEnvironmentVariable(named="E2A_CROSS_VERIFY",matches="true")
 class E2aReceivedCheckpointIT {
+    @Test @EnabledIfEnvironmentVariable(named="E2A_RECEIVED_PHASE",matches="target")
+    void consumesActualReceivedArchiveWithinClosedTransaction() throws Exception {
+        var profile=new E2aCrossSourceProfile(); var jdbc=profile.connect(); Files.createFile(profile.attempt.resolve("test-started.marker"));
+        RecoveryReceivedArchiveChecks.verify(jdbc,profile.attempt,Path.of(System.getenv("E2A_RECEIVED_SOURCE")));
+        Files.writeString(profile.attempt.resolve("test-completed.marker"),"Actual received archive consumed with native original in closed transaction; no admission\n");
+    }
     @Test @EnabledIfEnvironmentVariable(named="E2A_RECEIVED_PHASE",matches="source")
     void retainsActualPermissionHistoryAcrossAndroidCheckpoint() throws Exception {
         var profile=new E2aCrossSourceProfile(); var jdbc=profile.connect(); Files.createFile(profile.attempt.resolve("test-started.marker"));
