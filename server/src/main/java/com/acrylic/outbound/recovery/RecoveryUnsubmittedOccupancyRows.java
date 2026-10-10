@@ -14,12 +14,22 @@ final class RecoveryUnsubmittedOccupancyRows {
     RecoveryUnsubmittedOccupancyRows(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
     ArrayNode read(RecoverySourceIdentity source, JsonNode payload, UUID set) {
+        return read(source,payload,set,"");
+    }
+
+    ArrayNode readLocked(RecoverySourceIdentity source, JsonNode payload, UUID set) {
+        require(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive(),
+            "RECOVERY_UNSUBMITTED_LOCK_TRANSACTION");
+        return read(source,payload,set," FOR UPDATE");
+    }
+
+    private ArrayNode read(RecoverySourceIdentity source, JsonNode payload, UUID set, String lock) {
         var rows = SubmissionJson.object().putArray("rows"); var seen = new HashSet<UUID>();
         for (var scan : SubmissionJson.array(payload, "scans")) {
             require(Set.of("ACTIVE", "VOID").contains(text(scan, "status")), "RECOVERY_UNSUBMITTED_SCAN");
             if ("VOID".equals(text(scan, "status"))) continue;
             require(seen.add(uuid(scan, "baleId")) && rows.size() < 128, "RECOVERY_UNSUBMITTED_BALES");
-            var row = row(scan, source, set); row.set("captureId", scan.path("captureId")); row.set("orderScanSeq", scan.path("orderScanSeq"));
+            var row = row(scan, source, set, lock); row.set("captureId", scan.path("captureId")); row.set("orderScanSeq", scan.path("orderScanSeq"));
             rows.add(row);
         }
         Long count = jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE source_scope_id=? OR source_evidence_set_id=? OR submission_id=?",
@@ -27,7 +37,7 @@ final class RecoveryUnsubmittedOccupancyRows {
         require(count != null && count == rows.size(), "RECOVERY_UNSUBMITTED_OWNER_SET"); return rows;
     }
 
-    private com.fasterxml.jackson.databind.node.ObjectNode row(JsonNode scan, RecoverySourceIdentity source, UUID set) {
+    private com.fasterxml.jackson.databind.node.ObjectNode row(JsonNode scan, RecoverySourceIdentity source, UUID set, String lock) {
         var rows = jdbc.query("""
             SELECT BIN_TO_UUID(b.id) baleId,b.barcode,BIN_TO_UUID(b.warehouse_id) warehouseId,CAST(b.dispatch_cycle AS CHAR) currentCycle,
              CAST(k.dispatch_cycle AS CHAR) dispatchCycle,k.state ownerState,BIN_TO_UUID(k.submission_id) ownerSubmissionId,
@@ -39,7 +49,7 @@ final class RecoveryUnsubmittedOccupancyRows {
              BIN_TO_UUID(k.temporary_continuation_id) temporaryContinuationId,BIN_TO_UUID(k.temporary_handover_activation_id) temporaryHandoverActivationId,
              p.upstream_present,p.book_status,p.blocked_reason
             FROM bale b LEFT JOIN bale_commitment k ON k.bale_id=b.id LEFT JOIN inventory_position p ON p.bale_id=b.id WHERE b.id=?
-            """, (rs, index) -> {
+            """+lock, (rs, index) -> {
                 var value = SubmissionJson.object();
                 for (String field : List.of("baleId", "barcode", "warehouseId", "currentCycle", "dispatchCycle", "ownerState", "ownerSubmissionId",
                         "ownerScopeId", "ownerWarehouseId", "ownerOrderId", "sourceEvidenceSetId", "continuationId", "recoveryPackageId", "dispositionId",

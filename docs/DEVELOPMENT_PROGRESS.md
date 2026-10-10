@@ -12,6 +12,8 @@
 
 ## 近期验收入口
 
+- [D07/R09原E2A与占用跨截点恢复](history/D07_R09_TEMP_EVIDENCE_RESTORE_2026-10-10.md)：新空目标导入、原四表闭事务补齐、并发库存当前读修复、独立消费及新JVM重开分列；主管围栏/接收最终链仍需组合。
+
 - [D07/R09原TEMP准备跨截点恢复](history/D07_R09_TEMP_PREPARATION_RESTORE_2026-10-10.md)：原截点dump→新空目标导入→五原分片/ACK闭事务恢复、冲突/回滚、独立消费与重启分列；正文/占用及接收最终链仍未完成。
 
 - [D07/R09原权限截点与logged连续性](history/D07_R09_PERMISSION_LOG_BOUNDARIES_2026-10-10.md)：原有效权限/微秒时间与完整binlog前缀绑定，九类权限变化还原反例、MySQL及独立工具消费分列；不计历史授权或实际恢复通过。
