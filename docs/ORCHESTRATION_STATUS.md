@@ -6,23 +6,24 @@
 ```yaml
 date: 2026-10-10
 branch: codex/development
-head: 3ab3d91a
-dirty_entries: 32
+head: aef39dc0
+dirty_entries: 47
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
 server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 ```
 <!-- FACTS_END -->
-用户要求完成在途动作后收口，总目标依本次要求暂停、未完成；[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)D01–D18及第8节范围保持。[暂停文档与接续指令](history/D01_D18_PAUSE_2026-10-10_RECOVERED_FAULT.md)为新会话入口。替换前结论/失败保全于[主管围栏前看板](history/ORCHESTRATION_STATE_before_received_fault_2026-10-10.md)，旧指令不恢复。
+用户已恢复完整目标，本聊天接续执行、未完成；[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)D01–D18及第8节范围保持。[暂停文档与接续指令](history/D01_D18_PAUSE_2026-10-10_RECOVERED_FAULT.md)为新会话入口。替换前结论/失败保全于[主管围栏前看板](history/ORCHESTRATION_STATE_before_received_fault_2026-10-10.md)，旧指令不恢复。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，codex/development；17条已验范围已提交推送3ab3d91ad9777140b66e4cbfda21c30f6647a465、实际开发远端一致，main未动。postcommit-01保全29条继承dirty、逐hash前final无漂移；随后仅三条Git断点文档补记，回执/路径/暂存diff见received-fault-precommit-01及received-fault-doc-close-01；精确最终HEAD/远端以received-fault-pause-final-01为准，不循环提交自身SHA。
-- 本聊天单助手为本批唯一写者，其他项目聊天notLoaded；暂停后无业务开发写者。resume-01保全39条dirty、前final30条hash不变；close-preflight-01补专项后保全41条，69历史比较/22原STOP无漂移。继承dirty不混入；全部dirty副本/hash/diff、进程/监听/C/D余量在本批precommit/postcommit/final。
-- 1250专项、received-fault-regression-01和Node02已结束，无HTTP/页面/模拟器/重型Gradle在途，19330/19434/5560/5173空；既有3306/13316/ADB未操作。
+- 主树D:/acrylic-pda-outbound，codex/development；17条已验范围已提交推送3ab3d91ad9777140b66e4cbfda21c30f6647a465、实际开发远端一致，main未动。postcommit-01保全29条继承dirty、逐hash前final无漂移；随后仅三条Git断点文档补记，回执/路径/暂存diff见received-fault-precommit-01及received-fault-doc-close-01；三条文档已推aef39dc0fdd9734ee7b57d556fe9f5f5e5bf7604、实际开发远端一致；精确最终Git/全部dirty/环境以received-fault-pause-final-01为准，不循环提交自身SHA。
+- 本聊天单助手为唯一写者；前会话idle、其他项目聊天notLoaded。received-release-resume-01保全30条继承dirty，与前final及其副本全部hash一致，69历史比较/22原STOP无漂移。resume-01保全39条dirty、前final30条hash不变；close-preflight-01补专项后保全41条，69历史比较/22原STOP无漂移。继承dirty不混入；全部dirty副本/hash/diff、进程/监听/C/D余量在本批precommit/postcommit/final。
+- 新1262专项、received-release-regression-01、limits-01与Node03已结束，无HTTP/页面/模拟器/重型Gradle在途，19330/19434/5560/5173空；既有3306/13316/ADB未操作。
 - 新1242/1243/1246/1248失败库保留停机不复用；1247中间通过与1250最终通过分别保全。1244/1245/1249/1251随机目录子串守卫拒绝未建库。1250跨33树分配，dump重算一致/认证停机/原PID退出/监听空。
 - 新产物/TEMP/Java/cache在D盘，无清理，本机私有证据未异地备份；22份停止AVD仅可逆NTFS压缩/原hash一致未删，见[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)/[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 本批与既有有效范围
+- [主管围栏后实际范围清单](history/D07_R09_RELEASE_INVENTORY_2026-10-10.md)：固定仓库设备/来源/案件/调整/库存/审计及全局编号/任务摘要，原归档/native/签名围栏/同DataSource绑定；凭据遮盖、空集合/确定性摘要、容量拒绝及提交前尾写回滚。1262最终专项1/0/0/0、Node03 exit0/9输入不变，dump/认证停机/监听空；普通3272全过/109XML/sourceUnchanged及limits5全过。1260夹具被既有设备触发器拒绝的失败原件保留，未移除触发器；1253/1261中间输入另列。没有释放许可或新HTTP/Android正向，详细失败/证据见记录。
 - [恢复态主管故障围栏](history/D07_R09_RECEIVED_FAULT_2026-10-10.md)：1233原dump/binlog重建→closed原归档/native→既有REQUEST/独立主管FAULT_FENCE，服务自持外层事务、身份先锁、相同DataSource/目标代次/RECOVERY_PENDING；普通入口仍关闭。只读投影精确核版本+1、原命令/签名围栏/唯一未发布outbox，其他原行不变；无新写handler/HTTP或释放permit。
 - 最终1250专项1/0/0/0、exit0/sourceUnchanged，原字节重放、异源/代次/权限/自批/verification/实物拒绝、末SQL/verification尾回滚、外层嵌套/异DataSource拒绝、版本回退/再推进及outbox篡改拒绝通过。普通真实Web登录+CSRF+目标代次HTTP503；仅原session合法时间推进，其余守恒。Node02 exit0、64输入hash不变，原RSA/ECDSA/verification/文件/全表及合法变化/新增反例证据通过；原正文/STOP/owner/库存/账务保持，设备禁用/session撤销/唯一围栏/outbox，不造原机STOP/ACK、不释放占用、ACTIVATE仍拒绝。
 - 普通recovery/handover3269全过/108XML/无skip/exit0/sourceUnchanged，收口934个产品/契约/构建输入hash不变；后补专项辅助类由1250实际编译执行，非完整server。1242版本尾验、1243时间类型、1246仅DDL计数器、1248仅session访问时间断言失败全部保留，不以中间通过代最终；operation_event计数器只按明确边界归一化，原DDL/快照保存。
@@ -35,7 +36,7 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 ## 未完成与接续第一动作
 - D06/D07整体、FORMAL各阶段实际入口、其他无可信归档来源/R09跨截点业务重建、D08–D18与总闸门未完成；D18无最终候选。D04候选排除/D05取消释放缺政策保持拒绝；原资料/旧BCD/526、历史关键未验/失败与恢复限制单列，开发缺口不转现场。
 - 从主管围栏后范围核对/可信释放→本代次新资格→接收准备/激活→最终提交接续，沿库外PREPARE→DB排他锁提交revision/epoch/范围→库外COMMIT→实例核两侧证明；设备/来源/案件/调整链/库存/审计/截点外高水位闭包必须可信，未知范围隔离。RecoveryNormalRegistration/Intent登记不是业务释放证明。
-- 原正文代次与目标传输代次不同；HandoverTemporaryTarget要求资格代次等于原正文，票据保存sourceRecoveryEpoch且Issuer据它签发，TemporaryRoundAccess要求新正文资格等于目标传输代次。按D14旧票据不激活、释放后另发新资格，保留原事实/映射；不改原正文、简单开NORMAL或任意permit。新会话按暂停文档核全量断点、分配新目标、明确退出标准后实施；范围释放/新资格协议未实现，无新任务在途。
+- 原正文代次与目标传输代次不同；HandoverTemporaryTarget要求资格代次等于原正文，票据保存sourceRecoveryEpoch且Issuer据它签发，TemporaryRoundAccess要求新正文资格等于目标传输代次。按D14旧票据不激活、释放后另发新资格，保留原事实/映射；不改原正文、简单开NORMAL或任意permit。新会话按暂停文档核全量断点、分配新目标、明确退出标准后实施；范围释放/新资格协议未完成；实际范围清单已验，设计在.local/d01-d18-20261010/received-release-design.md；继续可信历史闭包和两阶段释放。原权限日志时间窗与测试控制占位窗不同，释放必须覆盖核对，不以清单/占位时间代闭包。
 - 生产默认/签名及七类生产决定handler/POST/放行/证据写入/关闭能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名、不绕设备审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 <!-- CURRENT_STATE_END -->
 

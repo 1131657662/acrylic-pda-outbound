@@ -2,6 +2,8 @@
 
 # 开发验收索引
 
+- [D07/R09主管围栏后实际范围清单](history/D07_R09_RELEASE_INVENTORY_2026-10-10.md)：只读清单、仓库边界、尾写回滚和独立工具证据；不计可信释放、新资格或最终交接完成。
+
 <!-- CURRENT_ENTRY_START -->
 唯一当前状态、Git/写权、最新测试和下一断点见[看板当前区](ORCHESTRATION_STATUS.md)。本页只索引已有验收，不复制另一份“最新状态”；接续范围见[路线](DEVELOPMENT_ROADMAP.md)及[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)。
 <!-- CURRENT_ENTRY_END -->
