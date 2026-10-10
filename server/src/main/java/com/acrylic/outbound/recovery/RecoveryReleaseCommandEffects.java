@@ -21,14 +21,14 @@ final class RecoveryReleaseCommandEffects {
             else idempotency(rows.getFirst(),receipt);
         }
     }
-    private static void idempotency(Map<String,String> row,JsonNode receipt) {
+    static void idempotency(Map<String,String> row,JsonNode receipt) {
         uuid(row,"principal_id",text(receipt.path("actor"),"principalId"));
         eq(row,"route_scope",text(receipt,"routeScope")); eq(row,"idempotency_key",text(receipt,"commandId"));
         eq(row,"request_sha256",text(receipt,"commandSha256"));
         require(RecoveryReleaseRows.bytes(row.get("id")).length==16 && time(row,"created_at").equals(Instant.parse(text(receipt,"recordedAt"))),"RECOVERY_SCOPE_IDEMPOTENCY_TIME");
         require(row.keySet().equals(Set.of("id","principal_id","route_scope","idempotency_key","request_sha256","resource_id","created_at")),"RECOVERY_SCOPE_IDEMPOTENCY_COLUMNS");
     }
-    private static void audit(Map<String,String> row,JsonNode receipt,Map<String,String> commandRow,Instant observedAt) {
+    static void audit(Map<String,String> row,JsonNode receipt,Map<String,String> commandRow,Instant observedAt) {
         uuid(row,"actor_id",text(receipt.path("actor"),"principalId"));
         eq(row,"event_type","HANDOVER_"+text(receipt,"commandType")); eq(row,"entity_type","HANDOVER_COMMAND");
         var expected=SubmissionJson.object().put("commandSha256",text(receipt,"commandSha256"))

@@ -63,7 +63,7 @@ public final class HandoverRecoveredTemporaryReview {
             });
     }
 
-    private JsonNode receipt(HandoverCommand.Input command) {
+    JsonNode receipt(HandoverCommand.Input command) {
         var rows=jdbc.queryForList("SELECT * FROM handover_command_receipt WHERE original_key=? AND command_type='FAULT_FENCE' FOR UPDATE",
             com.acrylic.outbound.common.Ids.bytes(command.uuid("commandId")));
         HandoverCommand.corruptUnless(rows.size()==1

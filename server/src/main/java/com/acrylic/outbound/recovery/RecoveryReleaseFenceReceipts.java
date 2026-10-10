@@ -52,7 +52,7 @@ final class RecoveryReleaseFenceReceipts {
         var found=rows.stream().filter(r->text(r,"command_type").equals(kind)).toList();
         require(found.size()==1,"RECOVERY_SCOPE_COMMAND_KIND"); return found.getFirst();
     }
-    private JsonNode receipt(Map<String,String> row,RecoveryReceiptKeys keys) {
+    static JsonNode receipt(Map<String,String> row,RecoveryReceiptKeys keys) {
         var response=RecoveryReleaseRows.bytes(row.get("response_bytes")); var receipt=RecoveryReleaseFenceSignature.verify(response,keys);
         var original=RecoveryReleaseRows.bytes(row.get("canonical_command_bytes")); var command=SubmissionJson.parse(original);
         require(Arrays.equals(original,SubmissionJson.canonical(command).getBytes(java.nio.charset.StandardCharsets.UTF_8)),"RECOVERY_SCOPE_COMMAND_CANONICAL");

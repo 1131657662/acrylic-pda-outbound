@@ -56,12 +56,21 @@ public final class RecoveryReleaseReconciliation {
         private Prepared(RecoveryReleaseInventory inventory,RecoveryReleaseNumberHistory numbers,JsonNode original,Request request) {
             this.inventory=inventory; this.numbers=numbers; this.original=original.deepCopy(); this.request=request;
         }
-        private void requireOriginals() {
+        void requireOriginals() {
             var history=request.history().archive().permissions().getFirst();
             var proof=RecoveryPermissionContinuity.verifyControlled(history); var expected=numbers.facts().path("history");
             require(text(expected,"beginSha256").equals(proof.beginSha256()) && text(expected,"endSha256").equals(proof.endSha256())
                 && text(expected,"binlogSha256").equals(proof.binlogSha256()) && proof.historicalAuthorityEstablished(),"RECOVERY_SCOPE_HISTORY_CHANGED");
             RecoveryReleaseNumberSnapshot.read(request.authority(),request.history().begin(),history.expected().database().schema());
+        }
+        JsonNode original() { return original.deepCopy(); }
+        Request request() { return request; }
+        String numberHistorySha256() { return numbers.sha256(); }
+        void requireApprovalContext(RecoveryReleaseInventory current) {
+            var expected=inventory.facts(); var actual=current.facts();
+            for(String field:List.of("control","source","sourceManifestSha256","sourceRowsSha256","sourceSetSha256",
+                    "payloadSha256","warehouseId","scopeId","submissionId","deviceId","faultReceipt","globalOrderNumbers"))
+                require(expected.path(field).equals(actual.path(field)),"RECOVERY_SCOPE_APPROVAL_CONTEXT_CHANGED");
         }
     }
     public JsonNode facts() { return facts.deepCopy(); }

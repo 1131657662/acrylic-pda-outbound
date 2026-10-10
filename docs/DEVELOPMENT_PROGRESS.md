@@ -2,6 +2,7 @@
 
 # 开发验收索引
 
+- [D07/R09恢复态主管实物确认](history/D07_R09_PHYSICAL_REVIEW_2026-10-10.md)：原事实/精确APPROVE效果、MySQL回滚、跨JVM原键重放与独立消费；运维/两阶段释放和新资格链待接续。
 - [D07/R09原终点与主管围栏效果核对](history/D07_R09_RELEASE_RECONCILIATION_2026-10-10.md)：原行/精确命令效果守恒、实际MySQL反例及独立消费；实物、运维与两阶段释放仍待接续。
 - [D07/R09固定仓库及子表覆盖](history/D07_R09_RELEASE_SCOPE_COVERAGE_2026-10-10.md)：准备/库存基线/PC/同步/证据子表、完整成员独立消费和尾写回滚；不计语义闭合或范围释放。
 

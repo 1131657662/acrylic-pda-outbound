@@ -75,7 +75,7 @@ public class HandoverCommandService {
             });
     }
 
-    private void requireBoundary(String requestId) {
+    void requireBoundary(String requestId) {
         if (TransactionSynchronizationManager.isActualTransactionActive())
             throw new IllegalStateException("Handover command execution must own the outer transaction boundary");
         if (requestId==null || !requestId.matches("[A-Za-z0-9._:-]{1,64}"))
@@ -94,6 +94,15 @@ public class HandoverCommandService {
     private byte[] executeOnce(HandoverCommand.Input input,HandoverCommand.Actor before,HandoverCommand.Operation operation,String requestId) {
         var actor=access.lock(input,before);
         return executeLocked(new Execution(input,actor,operation,requestId),anchor -> { });
+    }
+
+    /** Package-private: the physical-review consumer owns and validates the enclosing closed transaction. */
+    byte[] approveRecoveredLocked(HandoverCommand.Input input,HandoverCommand.Actor actor,String requestId) {
+        if(!TransactionSynchronizationManager.isActualTransactionActive() || !input.kind().equals("APPROVE")) throw HandoverCommand.unsupported();
+        var operation=operations.stream().filter(o->o.commandType().equals("APPROVE")).findFirst().orElseThrow(HandoverCommand::unsupported);
+        byte[] result=executeLocked(new Execution(input,actor,operation,requestId),anchor -> { });
+        var current=store.caseFacts(input.uuid("caseId")); sources.require(input,current); approvals.require(input,current);
+        return result;
     }
 
     private byte[] executeLocked(Execution execution,java.util.function.Consumer<JsonNode> requireAnchor) {
