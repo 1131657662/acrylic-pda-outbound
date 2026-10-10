@@ -12,6 +12,9 @@
 
 ## 近期验收入口
 
+- [D07/R09恢复态主管故障围栏](history/D07_R09_RECEIVED_FAULT_2026-10-10.md)：实际原截点恢复→原归档/native→既有申请与独立主管围栏，真实HTTP普通写拒绝、投影反例/事务回滚及独立消费；范围释放、新资格和最终接收仍未完成。
+- [主管围栏后的暂停与接续](history/D01_D18_PAUSE_2026-10-10_RECOVERED_FAULT.md)：用户要求本步收口；完整断点、已验范围和沿原总计划的下一指令。
+
 - [D07/R09已收正文原归档closed/native消费](history/D07_R09_RECEIVED_ARCHIVE_2026-10-10.md)：实际全量恢复目标的原verification/字节绑定、库存锁与消费者/提交前篡改回滚、独立工具消费及受影响普通回归；主管围栏和接收最终链另列。
 
 - [D07/R09已收正文原verification恢复](history/D07_R09_RECEIVED_VERIFICATION_RESTORE_2026-10-10.md)：实际Android/HTTP原来源采集、独立pin、单表缺失样本原行恢复/锁/回滚/守恒；完整时间截点恢复与接收最终链仍缺。

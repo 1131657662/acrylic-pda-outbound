@@ -26,12 +26,23 @@ public final class RecoveryReceivedTemporaryArchiveConsumer {
 
     public <T> T consume(Request request,JsonNode nativeFacts,
             BiFunction<RecoveryRecoveredTemporaryArchive,RecoveryTemporaryNativeHandoverFacts.Facts,T> consumer) {
+        Objects.requireNonNull(consumer);
+        return consumeAfterIdentityLocks(request,nativeFacts,new IdentityConsumer<T>() {
+            @Override public void lockIdentity() { }
+            @Override public T apply(RecoveryRecoveredTemporaryArchive archive,RecoveryTemporaryNativeHandoverFacts.Facts facts) {
+                return consumer.apply(archive,facts);
+            }
+        });
+    }
+
+    /** Trusted identity locks precede original business rows; this callback may only lock/read, never emit effects. */
+    public <T> T consumeAfterIdentityLocks(Request request,JsonNode nativeFacts,IdentityConsumer<T> consumer) {
         Objects.requireNonNull(request); Objects.requireNonNull(nativeFacts); Objects.requireNonNull(consumer);
         authority.read(); var original=inputs.read(request); var facts=nativeFacts.deepCopy();
         return new RecoveryClosedTransaction(jdbc.getDataSource(),authority).execute(original.source(),status -> {
-            inputs.unchanged(original,request); target(request,original);
-            T result=new RecoveryTemporaryNativeArchiveConsumer(jdbc).consume(archive(request,original),facts,consumer);
-            Runnable recheck=() -> { inputs.unchanged(original,request); target(request,original); };
+            inputs.unchanged(original,request); consumer.lockIdentity(); target(request,original,consumer);
+            T result=new RecoveryTemporaryNativeArchiveConsumer(jdbc).consume(archive(request,original),facts,consumer::apply);
+            Runnable recheck=() -> { inputs.unchanged(original,request); target(request,original,consumer); };
             recheck.run();
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override public void beforeCommit(boolean readOnly) { recheck.run(); }
@@ -40,14 +51,25 @@ public final class RecoveryReceivedTemporaryArchiveConsumer {
         });
     }
 
-    private void target(Request request,RecoveryReceivedTemporaryArchiveInputs.Original original) {
+    public interface IdentityConsumer<T> {
+        void lockIdentity();
+        T apply(RecoveryRecoveredTemporaryArchive archive,RecoveryTemporaryNativeHandoverFacts.Facts facts);
+        /** A business consumer must independently prove its signed outbox effect before accepting a live order version change. */
+        default void requireOrderVersion(JsonNode originalHead,JsonNode currentHead) {
+            require(originalHead.path("orderVersion").equals(currentHead.path("orderVersion")),"RECOVERY_RECEIVED_PREREQUISITES_CHANGED");
+        }
+    }
+
+    private void target(Request request,RecoveryReceivedTemporaryArchiveInputs.Original original,IdentityConsumer<?> consumer) {
         try {
             Path storage=RecoveryControlPaths.checked(request.storage());
             require(authority.location().restoreRoots().stream().anyMatch(storage::startsWith),"RECOVERY_RECEIVED_TARGET_STORAGE");
         } catch(java.io.IOException error) { throw new RecoveryControlException("RECOVERY_RECEIVED_TARGET_STORAGE",error); }
         var source=original.source(); var rows=original.material().path("rows");
-        require(new RecoveryReceivedTemporaryRows(jdbc).locked(request.evidence().expected(),source.original("payload")).equals(rows),
-            "RECOVERY_RECEIVED_PREREQUISITES_CHANGED");
+        var current=new RecoveryReceivedTemporaryRows(jdbc).locked(request.evidence().expected(),source.original("payload"));
+        consumer.requireOrderVersion(rows.path("head").deepCopy(),current.path("head").deepCopy());
+        ((com.fasterxml.jackson.databind.node.ObjectNode)current.path("head")).set("orderVersion",rows.path("head").path("orderVersion"));
+        require(current.equals(rows),"RECOVERY_RECEIVED_PREREQUISITES_CHANGED");
         require(rows.path("owners").equals(SubmissionJson.parse(source.original("occupancy")).path("rows")),
             "RECOVERY_RECEIVED_ARCHIVE_OWNER");
         var evidence=RecoveryUnsubmittedEvidence.expected(request.evidence());

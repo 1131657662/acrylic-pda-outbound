@@ -24,25 +24,24 @@ public class HandoverCommandService {
     private final HandoverWriteAccess access;
     private final HandoverReadReceipt reader; private final HandoverAttachmentConsumer attachments;
     private final HandoverFaultReplay faults;
+    private final HandoverRecoveredTemporaryProjection recoveredProjection;
     private final TransactionTemplate read;private final TransactionTemplate write;
 
     public HandoverCommandService(HandoverCommand.Identity identities,HandoverCommand.Locks locks,HandoverStore store,
         HandoverReceiptCodec codec,AuditWriter audit,
         org.springframework.beans.factory.ObjectProvider<HandoverCommand.Operation> operations,
         PlatformTransactionManager manager,HandoverSourceGuard sources,HandoverApprovalReview approvals,HandoverWriteAccess access,
-        HandoverReadReceipt reader,HandoverAttachmentConsumer attachments,HandoverFaultReplay faults) {
+        HandoverReadReceipt reader,HandoverAttachmentConsumer attachments,HandoverFaultReplay faults,HandoverRecoveredTemporaryProjection recoveredProjection) {
         this.identities=identities;this.locks=locks;this.store=store;this.codec=codec;this.audit=audit;
         this.sources=sources;this.approvals=approvals;this.access=access;this.operations=operations.orderedStream().toList();
         this.reader=reader;this.attachments=attachments;
         this.faults=faults;
+        this.recoveredProjection=recoveredProjection;
         this.read=template(manager,true);this.write=template(manager,false);
     }
 
     public byte[] execute(byte[] utf8,String requestId) {
-        if (TransactionSynchronizationManager.isActualTransactionActive())
-            throw new IllegalStateException("Handover command execution must own the outer transaction boundary");
-        if (requestId==null || !requestId.matches("[A-Za-z0-9._:-]{1,64}"))
-            throw new BusinessException(400,"INVALID_REQUEST_ID","请求追踪标识无效");
+        requireBoundary(requestId);
         var input=HandoverCommand.Input.parse(utf8);
         var actor=identities.current(input.uuid("warehouseId"));
         byte[] committed=read.execute(s->replay(input));if (committed!=null) return committed;
@@ -56,6 +55,33 @@ public class HandoverCommandService {
         }
     }
 
+    /** Offline original-custody seam; ordinary HTTP execute() retains its NORMAL admission. */
+    public byte[] executeRecoveredTemporary(byte[] utf8,String requestId,HandoverRecoveredTemporaryBinding binding) {
+        requireBoundary(requestId); Objects.requireNonNull(binding);
+        var input=HandoverCommand.Input.parse(utf8); binding.require(input);
+        var before=identities.current(input.uuid("warehouseId"));
+        var operation=operations.stream().filter(o->o.commandType().equals(input.kind())).findFirst().orElseThrow(HandoverCommand::unsupported);
+        return binding.consumer().consumeAfterIdentityLocks(binding.request(),binding.nativeFacts(),
+            new com.acrylic.outbound.recovery.RecoveryReceivedTemporaryArchiveConsumer.IdentityConsumer<byte[]>() {
+                private HandoverCommand.Actor actor;
+                @Override public void lockIdentity() { actor=access.lockRecovered(input,before); }
+                @Override public void requireOrderVersion(JsonNode original,JsonNode current) { recoveredProjection.require(input,original,current); }
+                @Override public byte[] apply(com.acrylic.outbound.recovery.RecoveryRecoveredTemporaryArchive archive,
+                        com.acrylic.outbound.recovery.RecoveryTemporaryNativeHandoverFacts.Facts facts) {
+                    binding.requireArchive(input,facts);
+                    binding.requireAnchor(input,input.kind().equals("REQUEST")?store.scopeFacts(input.uuid("scopeId")):store.caseFacts(input.uuid("caseId")),archive);
+                    return executeLocked(new Execution(input,actor,operation,requestId),anchor->binding.requireAnchor(input,anchor,archive));
+                }
+            });
+    }
+
+    private void requireBoundary(String requestId) {
+        if (TransactionSynchronizationManager.isActualTransactionActive())
+            throw new IllegalStateException("Handover command execution must own the outer transaction boundary");
+        if (requestId==null || !requestId.matches("[A-Za-z0-9._:-]{1,64}"))
+            throw new BusinessException(400,"INVALID_REQUEST_ID","请求追踪标识无效");
+    }
+
     private byte[] replay(HandoverCommand.Input input) {
         var row=store.receipt(input.key());
         if (row==null) return null;
@@ -67,11 +93,18 @@ public class HandoverCommandService {
 
     private byte[] executeOnce(HandoverCommand.Input input,HandoverCommand.Actor before,HandoverCommand.Operation operation,String requestId) {
         var actor=access.lock(input,before);
+        return executeLocked(new Execution(input,actor,operation,requestId),anchor -> { });
+    }
+
+    private byte[] executeLocked(Execution execution,java.util.function.Consumer<JsonNode> requireAnchor) {
+        var input=execution.input(); var actor=execution.actor(); var operation=execution.operation();
+        byte[] prior=replay(input); if(prior!=null) return prior;
         boolean request=input.kind().equals("REQUEST");
         UUID caseId=request?Ids.next():input.uuid("caseId");
         if (request) locks.scope(input.uuid("scopeId"));else lockCaseSource(caseId);
         byte[] committed=replay(input);if (committed!=null) return committed;
         JsonNode anchor=request?store.scopeFacts(input.uuid("scopeId")):store.caseFacts(caseId);
+        requireAnchor.accept(anchor);
         if (!anchor.path("warehouseId").asText().equals(actor.warehouse().toString())) throw HandoverCommand.missing();
         var current=request?HandoverCommand.Expected.forRequest(anchor,Long.parseLong(actor.authVersion()))
             :HandoverCommand.Expected.forCase(anchor,Long.parseLong(actor.authVersion()));
@@ -83,8 +116,10 @@ public class HandoverCommandService {
         }
         var write=new HandoverCommand.Write(Ids.next(),Ids.next(),Ids.next(),caseId,
             Instant.now().truncatedTo(ChronoUnit.MILLIS),input,anchor,snapshot(actor));
-        return record(write,actor,operation,requestId);
+        return record(write,actor,operation,execution.requestId());
     }
+
+    private record Execution(HandoverCommand.Input input,HandoverCommand.Actor actor,HandoverCommand.Operation operation,String requestId) { }
 
     private void lockCaseSource(UUID caseId) {
         var hint=store.caseFacts(caseId);
