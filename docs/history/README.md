@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09受约束原端权限窗口（2026-10-10）](D07_R09_CONTROLLED_PERMISSION_2026-10-10.md)：旧特权会话排空、精确GRANT/后台写者、原日志独立pin；1170/1172/1173失败保全及1174真实MySQL/独立消费者分列，非业务恢复。
+- [受约束原端前看板归档（2026-10-10）](ORCHESTRATION_STATE_before_controlled_permission_2026-10-10.md)：旧断点保全，不恢复旧状态。
+
 - [D07/R09原权限截点与logged连续性（2026-10-10）](D07_R09_PERMISSION_LOG_BOUNDARIES_2026-10-10.md)：原FTWRL权限/微秒/binlog两边界及prefix、CRC/ROW/XID和修改还原拒绝；1166/1167失败保全、1169真实MySQL和独立消费者分列，未授权实际恢复。
 - [权限连续性前看板归档（2026-10-10）](ORCHESTRATION_STATE_before_permission_continuity_2026-10-10.md)：旧结论和限制保全，不恢复当前状态或指令。
 

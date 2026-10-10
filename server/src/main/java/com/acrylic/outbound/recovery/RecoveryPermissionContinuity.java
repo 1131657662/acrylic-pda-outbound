@@ -5,16 +5,26 @@ import java.time.Instant;
 import java.util.*;
 import static com.acrylic.outbound.recovery.RecoveryControlFormat.*;
 
-/** Logged no-change facts only. Independent custody and exclusion of unlogged privileged writes remain mandatory for authority. */
+/** Historical no-change windows require independent original pins and a constrained writer profile; ordinary admission stays closed. */
 public final class RecoveryPermissionContinuity {
     private static final String FIELDS = "formatVersion observationKind mysqlServerUuid databaseSchema sourceRecoveryEpoch observedAt "
         + "userId deviceId effective binlogFile binlogPosition binlogPrefixSha256";
     private RecoveryPermissionContinuity() { }
 
     public static Proof verify(Request request) {
+        return verify(request, false);
+    }
+
+    /** Establishes a historical window only from independently pinned original boundaries with constrained accounts. */
+    public static Proof verifyControlled(Request request) {
+        return verify(request, true);
+    }
+
+    private static Proof verify(Request request, boolean controlled) {
         require(request != null, "RECOVERY_PERMISSION_CONTINUITY_REQUEST");
-        var begin = boundary(request.begin(), request.beginSha256(), request.expected());
-        var end = boundary(request.end(), request.endSha256(), request.expected());
+        var begin = boundary(new Boundary(request.begin(), request.beginSha256(), request.expected()), controlled);
+        var end = boundary(new Boundary(request.end(), request.endSha256(), request.expected()), controlled);
+        if (controlled) require(begin.path("writerProfile").equals(end.path("writerProfile")), "RECOVERY_PERMISSION_WRITER_CHANGED");
         require(text(begin, "binlogFile").equals(text(end, "binlogFile")), "RECOVERY_PERMISSION_ROTATION_UNSUPPORTED");
         require(begin.path("effective").equals(end.path("effective")), "RECOVERY_PERMISSION_BOUNDARY_CHANGED");
         Instant from = instant(begin, "observedAt"), through = instant(end, "observedAt");
@@ -29,13 +39,14 @@ public final class RecoveryPermissionContinuity {
         var interval = new RecoveryBinlogTransactions.Interval(request.expected().database().schema(), Math.toIntExact(start),
             Math.toIntExact(finish), from, through);
         var summary = RecoveryBinlogTransactions.verify(events, interval);
-        return new Proof(request.expected(), from, through, begin.path("effective"), request.beginSha256(), request.endSha256(),
-            request.binlogSha256(), summary.commits(), summary.rowEvents());
+        return new Proof(request, begin.path("effective"), new Verification(from, through, summary, controlled));
     }
 
-    private static JsonNode boundary(byte[] bytes, String hash, RecoveryPermissionBoundary.Request expected) {
-        pin(bytes, hash, RecoveryControlJson.MAX_BYTES); var value = readCanonical(bytes); fields(value, FIELDS); version(value);
-        require(text(value, "observationKind").equals("ORIGINAL_PERMISSION_BOUNDARY"), "RECOVERY_PERMISSION_KIND");
+    private static JsonNode boundary(Boundary input, boolean controlled) {
+        pin(input.bytes(), input.sha256(), RecoveryControlJson.MAX_BYTES); var value = readCanonical(input.bytes());
+        fields(value, FIELDS + (controlled ? " writerProfile" : "")); version(value); var expected = input.expected();
+        String kind = controlled ? "ORIGINAL_CONTROLLED_PERMISSION_BOUNDARY" : "ORIGINAL_PERMISSION_BOUNDARY";
+        require(text(value, "observationKind").equals(kind), "RECOVERY_PERMISSION_KIND");
         require(uuid(value, "mysqlServerUuid").equals(expected.database().mysqlServerUuid())
             && text(value, "databaseSchema").equals(expected.database().schema())
             && text(value, "sourceRecoveryEpoch").equals(expected.database().sourceRecoveryEpoch()), "RECOVERY_PERMISSION_DATABASE");
@@ -44,6 +55,7 @@ public final class RecoveryPermissionContinuity {
         require(text(value, "binlogFile").matches("[A-Za-z0-9_-]{1,100}\\.[0-9]{6}") && revision(value, "binlogPosition") > 4,
             "RECOVERY_PERMISSION_POSITION");
         hashField(value, "binlogPrefixSha256");
+        if (controlled) RecoveryPermissionWriterProfile.verify(value.path("writerProfile"), expected.database().schema());
         effective(value.path("effective")); return value;
     }
 
@@ -84,12 +96,33 @@ public final class RecoveryPermissionContinuity {
         @Override public byte[] end() { return end.clone(); }
         @Override public byte[] binlog() { return binlog.clone(); }
     }
-    public record Proof(RecoveryPermissionBoundary.Request identity, Instant from, Instant through, JsonNode effective,
-            String beginSha256, String endSha256, String binlogSha256, long committedTransactions, long rowEvents) {
-        public Proof { effective = effective.deepCopy(); }
-        @Override public JsonNode effective() { return effective.deepCopy(); }
-        public boolean historicalAuthorityEstablished() { return false; }
+    public static final class Proof {
+        private final RecoveryPermissionBoundary.Request identity;
+        private final String beginSha256, endSha256, binlogSha256;
+        private final Instant from, through;
+        private final JsonNode effective;
+        private final long committedTransactions, rowEvents;
+        private final boolean historicalAuthorityEstablished;
+
+        private Proof(Request input, JsonNode effective, Verification verified) {
+            identity = input.expected(); beginSha256 = input.beginSha256(); endSha256 = input.endSha256(); binlogSha256 = input.binlogSha256();
+            from = verified.from(); through = verified.through(); this.effective = effective.deepCopy();
+            committedTransactions = verified.summary().commits(); rowEvents = verified.summary().rowEvents();
+            historicalAuthorityEstablished = verified.controlled();
+        }
+        public RecoveryPermissionBoundary.Request identity() { return identity; }
+        public Instant from() { return from; }
+        public Instant through() { return through; }
+        public JsonNode effective() { return effective.deepCopy(); }
+        public String beginSha256() { return beginSha256; }
+        public String endSha256() { return endSha256; }
+        public String binlogSha256() { return binlogSha256; }
+        public long committedTransactions() { return committedTransactions; }
+        public long rowEvents() { return rowEvents; }
+        public boolean historicalAuthorityEstablished() { return historicalAuthorityEstablished; }
         public boolean ordinaryWritesAllowed() { return false; }
         public boolean localDeletionAllowed() { return false; }
     }
+    private record Verification(Instant from, Instant through, RecoveryBinlogTransactions.Summary summary, boolean controlled) { }
+    private record Boundary(byte[] bytes, String sha256, RecoveryPermissionBoundary.Request expected) { }
 }

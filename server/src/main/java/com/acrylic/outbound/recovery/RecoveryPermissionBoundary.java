@@ -20,6 +20,15 @@ public final class RecoveryPermissionBoundary {
     }
 
     public Observation capture(Request request) {
+        return capture(request, false);
+    }
+
+    /** Original constrained writer profile, collected under the same lock as the permission boundary. */
+    public Observation captureControlled(Request request) {
+        return capture(request, true);
+    }
+
+    private Observation capture(Request request, boolean controlled) {
         require(request != null && !TransactionSynchronizationManager.isActualTransactionActive(), "RECOVERY_PERMISSION_TRANSACTION");
         try (Connection connection = source.getConnection()) {
             require(connection.getAutoCommit(), "RECOVERY_PERMISSION_TRANSACTION");
@@ -27,13 +36,17 @@ public final class RecoveryPermissionBoundary {
             jdbc.setQueryTimeout(5);
             jdbc.execute("SET SESSION lock_wait_timeout=5");
             jdbc.execute("FLUSH TABLES WITH READ LOCK");
-            try { return observe(jdbc, request); }
+            try { return observe(jdbc, request, controlled); }
             finally { jdbc.execute("UNLOCK TABLES"); }
         } catch (SQLException unavailable) { throw new RecoveryControlException("RECOVERY_PERMISSION_DATABASE_UNAVAILABLE", unavailable); }
     }
 
-    private Observation observe(JdbcTemplate jdbc, Request request) {
+    private Observation observe(JdbcTemplate jdbc, Request request, boolean controlled) {
         var state = state(jdbc, request.database());
+        if (controlled) {
+            state.put("observationKind", "ORIGINAL_CONTROLLED_PERMISSION_BOUNDARY");
+            state.set("writerProfile", RecoveryPermissionWriterProfile.capture(jdbc, request.database().schema()));
+        }
         state.put("userId", request.operatorId().toString()).put("deviceId", request.deviceId().toString());
         state.set("effective", effective(jdbc, request));
         var positions = jdbc.query("SHOW MASTER STATUS", (rs, n) -> new Position(rs.getString(1), rs.getLong(2)));
