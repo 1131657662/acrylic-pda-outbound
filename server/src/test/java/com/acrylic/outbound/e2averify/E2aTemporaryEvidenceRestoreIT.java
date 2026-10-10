@@ -31,4 +31,15 @@ class E2aTemporaryEvidenceRestoreIT {
         }
         Files.writeString(profile.attempt.resolve("test-completed.marker"),"Actual dump import and closed original four-table restore/rollback/conflict/idempotence; normal admission remains closed\n");
     }
+
+    @Test @EnabledIfEnvironmentVariable(named="E2A_TEMP_EVIDENCE_PHASE",matches="target")
+    void readsRestoredArchiveWithoutInventingNativeServerVerification() throws Exception {
+        var profile=new E2aCrossSourceProfile(); var jdbc=profile.connect(); Files.createFile(profile.attempt.resolve("test-started.marker"));
+        try(var pool=new com.zaxxer.hikari.HikariDataSource()) {
+            pool.setDataSource(jdbc.getDataSource()); pool.setMaximumPoolSize(3); pool.setMinimumIdle(1);
+            RecoveryTemporaryEvidenceTargetChecks.verifyArchive(new org.springframework.jdbc.core.JdbcTemplate(pool),profile.attempt,
+                Path.of(System.getenv("E2A_TEMP_EVIDENCE_SOURCE")));
+        }
+        Files.writeString(profile.attempt.resolve("test-completed.marker"),"Actual dump import, closed four-table restore and complete recovered archive read/refusals; no native verification or ordinary admission invented\n");
+    }
 }

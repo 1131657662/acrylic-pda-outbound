@@ -36,6 +36,37 @@ public final class RecoveryTemporaryEvidenceRestore {
         });
     }
 
+    /** Reads only complete restored originals; it never repairs rows or grants handover admission. */
+    public RecoveryRecoveredTemporaryArchive verifyArchive(Request request) {
+        Objects.requireNonNull(request); authority.read(); var original=read(request); var jdbc=new JdbcTemplate(database);
+        return new RecoveryClosedTransaction(database,authority).execute(original.source(),status -> {
+            requireArchive(request,original,jdbc);
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override public void beforeCommit(boolean readOnly) { requireArchive(request,original,jdbc); }
+            });
+            var set=original.material().path("rows").path("source_evidence_set").get(0);
+            var proof=new RecoveryOriginalEvidence().read(request.evidence());
+            var provenance=new RecoveryRecoveredTemporaryArchive.Provenance(original.source().control().recordSha256(),
+                original.source().manifestSha256(),request.rows().independentSha256(),original.occupancy().originalSha256(),
+                request.registration().independentSha256(),proof.setHash(),proof.payloadSha256());
+            return new RecoveryRecoveredTemporaryArchive(request.evidence().expected(),rowId(set,"id"),rowId(set,"stop_object_id"),
+                provenance,original.source().original("payload"),original.source().original("result"),
+                RecoveryUnsubmittedEvidence.expected(request.evidence()).stopProofBytes());
+        });
+    }
+
+    private void requireArchive(Request request,Original original,JdbcTemplate jdbc) {
+        unchanged(request,original); target(request,original,jdbc);
+        require(new RecoveryTemporaryEvidenceRows(jdbc).read(original.source().identity()).equals(original.material().path("rows")),
+            "RECOVERY_ARCHIVE_RESTORED_ROWS_REQUIRED");
+        requireOwners(jdbc,original,request);
+    }
+
+    private static UUID rowId(JsonNode row,String column) {
+        var bytes=java.nio.ByteBuffer.wrap(Base64.getDecoder().decode(text(row,column)));
+        return new UUID(bytes.getLong(),bytes.getLong());
+    }
+
     private Original read(Request request) {
         var source=new RecoverySourceReader(authority.location(),authority.checkpoint())
             .read(request.source().materialRoot(),request.source().sourcePinSha256(),authority.sourceIdentity());

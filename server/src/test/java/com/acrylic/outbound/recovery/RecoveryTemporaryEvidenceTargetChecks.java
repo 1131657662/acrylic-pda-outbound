@@ -11,6 +11,22 @@ import static org.assertj.core.api.Assertions.*;
 
 /** Actual new target dump import, exact original four-table restore and all-table/file conservation. */
 public final class RecoveryTemporaryEvidenceTargetChecks {
+    public static void verifyArchive(JdbcTemplate jdbc,Path attempt,Path original) throws Exception {
+        RecoveryTemporaryRestoreImport.restore(jdbc,attempt,original);
+        var transfer=readCanonical(Files.readAllBytes(original.resolve("evidence-transfer.json")));
+        var snapshots=new E2aMigrationSnapshot(jdbc,attempt,attempt.resolve("storage"));
+        Files.writeString(attempt.resolve("evidence-imported-snapshot.json"),snapshots.capture().toPrettyString());
+        var source=bind(jdbc,attempt,transfer); var supply=RecoveryClosedTestSupply.of(source);
+        var keys=new RecoveryReceiptKeys(List.of(Base64.getDecoder().decode(text(transfer,"publicKey"))));
+        var request=RecoveryTemporaryEvidenceTransfer.request(source,attempt,original,transfer);
+        var context=new Context(jdbc,attempt,source,supply,keys,request,snapshots,snapshots.capture());
+        assertThatThrownBy(() -> context.restorer().verifyArchive(request)).hasMessage("RECOVERY_ARCHIVE_RESTORED_ROWS_REQUIRED");
+        context.preserved(); context.restorer().restore(request); var complete=snapshots.capture();
+        RecoveryRecoveredArchiveChecks.verify(context,complete);
+        Files.writeString(attempt.resolve("evidence-target-before.json"),context.before().toPrettyString());
+        Files.writeString(attempt.resolve("evidence-target-after.json"),snapshots.capture().toPrettyString()); save(context,original,transfer);
+    }
+
     public static void verify(JdbcTemplate jdbc,Path attempt,Path original) throws Exception {
         RecoveryTemporaryRestoreImport.restore(jdbc,attempt,original);
         var transfer=readCanonical(Files.readAllBytes(original.resolve("evidence-transfer.json")));

@@ -1,5 +1,6 @@
 # 历史归档
 
+- [D07/R09恢复后原TEMP归档读取（2026-10-10）](D07_R09_RECOVERED_ARCHIVE_READ_2026-10-10.md)：closed重验完整恢复原列/文件并返回原字节及来源pin，不造native verification或准入。
 - [D07/R09原E2A与占用跨截点恢复（2026-10-10）](D07_R09_TEMP_EVIDENCE_RESTORE_2026-10-10.md)：原四表闭事务恢复、并发库存缺陷修复、独立消费和成功目标重开，不代最终接收链。
 - [四表恢复前看板归档（2026-10-10）](ORCHESTRATION_STATE_before_temp_evidence_restore_2026-10-10.md)：替换前结论保全，不恢复旧状态。
 
