@@ -12,6 +12,8 @@
 
 ## 近期验收入口
 
+- [D07/R09 native verification原行绑定](history/D07_R09_NATIVE_VERIFICATION_BINDING_2026-10-10.md)：显式原完整行摘要、事务锁/提交前重验与合成MySQL验证、真实恢复来源缺canonical拒绝分列；原native恢复及接收最终链仍缺。
+
 - [D07/R09恢复归档同事务消费](history/D07_R09_ARCHIVE_TRANSACTION_CONSUMER_2026-10-10.md)：closed归档核验与受信消费者同事务、提交前重验、实际新目标回滚/可见性与独立原件消费；仅事务接缝，不代主管围栏或接收最终链。
 
 - [D07/R09原E2A与占用跨截点恢复](history/D07_R09_TEMP_EVIDENCE_RESTORE_2026-10-10.md)：新空目标导入、原四表闭事务补齐、并发库存当前读修复、独立消费及新JVM重开分列；[恢复后归档读取](history/D07_R09_RECOVERED_ARCHIVE_READ_2026-10-10.md)另列，主管围栏/接收最终链仍需组合。

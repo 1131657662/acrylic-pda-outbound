@@ -11,6 +11,27 @@ import static org.assertj.core.api.Assertions.*;
 
 /** Actual new target dump import, exact original four-table restore and all-table/file conservation. */
 public final class RecoveryTemporaryEvidenceTargetChecks {
+    public static void verifyNativeRefusal(JdbcTemplate jdbc,Path attempt,Path original) throws Exception {
+        RecoveryTemporaryRestoreImport.restore(jdbc,attempt,original);
+        var transfer=readCanonical(Files.readAllBytes(original.resolve("evidence-transfer.json")));
+        var snapshots=new E2aMigrationSnapshot(jdbc,attempt,attempt.resolve("storage"));
+        var source=bind(jdbc,attempt,transfer); var supply=RecoveryClosedTestSupply.of(source);
+        var keys=new RecoveryReceiptKeys(List.of(Base64.getDecoder().decode(text(transfer,"publicKey"))));
+        var request=RecoveryTemporaryEvidenceTransfer.request(source,attempt,original,transfer);
+        var restorer=new RecoveryTemporaryEvidenceRestore(jdbc.getDataSource(),supply.authority(),keys);
+        restorer.restore(request); var before=snapshots.capture(); var archive=restorer.verifyArchive(request);
+        assertThat(archive.source().canonicalOrderId()).isNull();
+        var input=RecoveryTemporaryNativeHandoverFixture.input(archive); var calls=new java.util.concurrent.atomic.AtomicInteger();
+        assertThatThrownBy(() -> restorer.withVerifiedNativeArchive(request,input,(value,facts) -> calls.incrementAndGet()))
+            .hasMessage("RECOVERY_NATIVE_CANONICAL_REQUIRED");
+        assertThat(calls).hasValue(0); assertThat(snapshots.capture()).isEqualTo(before);
+        assertThat(jdbc.queryForObject("SELECT service_mode FROM server_state WHERE id=1",String.class)).isEqualTo("RECOVERY_PENDING");
+        Files.writeString(attempt.resolve("native-refusal-before.json"),before.toPrettyString());
+        Files.writeString(attempt.resolve("native-refusal-after.json"),snapshots.capture().toPrettyString());
+        Files.write(attempt.resolve("native-refusal-input.json"),RecoveryControlJson.encode(input));
+        save(new Context(jdbc,attempt,source,supply,keys,request,snapshots,before),original,transfer);
+    }
+
     public static void consumeArchive(JdbcTemplate jdbc,Path attempt,Path original) throws Exception {
         RecoveryTemporaryRestoreImport.restore(jdbc,attempt,original);
         var transfer=readCanonical(Files.readAllBytes(original.resolve("evidence-transfer.json")));

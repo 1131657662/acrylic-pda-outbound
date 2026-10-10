@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09 native verification原行绑定（2026-10-10）](D07_R09_NATIVE_VERIFICATION_BINDING_2026-10-10.md)：原完整行摘要/事务锁/篡改回滚；合成MySQL与真实恢复拒绝分列，非原native正向或完整交接链。
+- [native绑定前看板归档（2026-10-10）](ORCHESTRATION_STATE_before_native_binding_2026-10-10.md)：原结论/失败/限制保全，不恢复旧指令或状态。
+
 - [D07/R09恢复归档同事务消费（2026-10-10）](D07_R09_ARCHIVE_TRANSACTION_CONSUMER_2026-10-10.md)：消费者原子提交/回滚与原件前后核验，业务接入与native事实限制另列。
 - [D07/R09恢复后原TEMP归档读取（2026-10-10）](D07_R09_RECOVERED_ARCHIVE_READ_2026-10-10.md)：closed重验完整恢复原列/文件并返回原字节及来源pin，不造native verification或准入。
 - [D07/R09原E2A与占用跨截点恢复（2026-10-10）](D07_R09_TEMP_EVIDENCE_RESTORE_2026-10-10.md)：原四表闭事务恢复、并发库存缺陷修复、独立消费和成功目标重开，不代最终接收链。

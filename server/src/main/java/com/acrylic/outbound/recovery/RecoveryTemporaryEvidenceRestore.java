@@ -62,6 +62,18 @@ public final class RecoveryTemporaryEvidenceRestore {
         });
     }
 
+    /**
+     * Verifies explicit native TEMP facts before handing the archive to a same-transaction consumer.
+     * The caller must retain native facts and the complete original verification row digest independently.
+     * This binding check does not establish historical authority or infer canonical order identity.
+     */
+    public <T> T withVerifiedNativeArchive(Request request, com.fasterxml.jackson.databind.JsonNode nativeFacts,
+            java.util.function.BiFunction<RecoveryRecoveredTemporaryArchive,RecoveryTemporaryNativeHandoverFacts.Facts,T> consumer) {
+        Objects.requireNonNull(nativeFacts); Objects.requireNonNull(consumer);
+        var jdbc=new JdbcTemplate(database); JsonNode input=nativeFacts.deepCopy();
+        return withVerifiedArchive(request, archive -> new RecoveryTemporaryNativeArchiveConsumer(jdbc).consume(archive,input,consumer));
+    }
+
     private RecoveryRecoveredTemporaryArchive archive(Request request,Original original) {
         var set=original.material().path("rows").path("source_evidence_set").get(0);
         var proof=new RecoveryOriginalEvidence().read(request.evidence());

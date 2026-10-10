@@ -9,6 +9,29 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 @EnabledIfEnvironmentVariable(named="E2A_CROSS_VERIFY",matches="true")
 class E2aTemporaryEvidenceRestoreIT {
     @Test @EnabledIfEnvironmentVariable(named="E2A_TEMP_EVIDENCE_PHASE",matches="target")
+    void rejectsUnknownNativeSourceInClosedArchiveTransaction() throws Exception {
+        var profile=new E2aCrossSourceProfile(); var jdbc=profile.connect(); Files.createFile(profile.attempt.resolve("test-started.marker"));
+        try(var pool=new com.zaxxer.hikari.HikariDataSource()) {
+            pool.setDataSource(jdbc.getDataSource()); pool.setMaximumPoolSize(3); pool.setMinimumIdle(1);
+            RecoveryTemporaryEvidenceTargetChecks.verifyNativeRefusal(new org.springframework.jdbc.core.JdbcTemplate(pool),profile.attempt,
+                Path.of(System.getenv("E2A_TEMP_EVIDENCE_SOURCE")));
+        }
+        Files.writeString(profile.attempt.resolve("test-completed.marker"),"Actual fresh target import/restored archive rejects unknown canonical at native seam, no consumer or admission\n");
+    }
+
+    @Test @EnabledIfEnvironmentVariable(named="E2A_TEMP_EVIDENCE_PHASE",matches="source")
+    void verifiesSyntheticNativeVerificationTransactionBinding() throws Exception {
+        var profile=new E2aCrossSourceProfile(); var jdbc=profile.connect(); Files.createFile(profile.attempt.resolve("test-started.marker"));
+        var migration=administrator(profile);
+        profile.migrate(migration,"34"); var seed=E2aV34Seed.seed(jdbc,profile.attempt.resolve("storage")); profile.migrate(migration);
+        try(var pool=new com.zaxxer.hikari.HikariDataSource()) {
+            pool.setDataSource(jdbc.getDataSource()); pool.setMaximumPoolSize(3); pool.setMinimumIdle(1);
+            RecoveryTemporaryNativeVerificationChecks.verify(new org.springframework.jdbc.core.JdbcTemplate(pool),profile.attempt,seed);
+        }
+        Files.writeString(profile.attempt.resolve("test-completed.marker"),"Synthetic native identity/verification binding with real MySQL schema, locks and rollback; no original native restoration or handover chain\n");
+    }
+
+    @Test @EnabledIfEnvironmentVariable(named="E2A_TEMP_EVIDENCE_PHASE",matches="target")
     void consumesRestoredArchiveInSameClosedTransaction() throws Exception {
         var profile=new E2aCrossSourceProfile(); var jdbc=profile.connect(); Files.createFile(profile.attempt.resolve("test-started.marker"));
         try(var pool=new com.zaxxer.hikari.HikariDataSource()) {
