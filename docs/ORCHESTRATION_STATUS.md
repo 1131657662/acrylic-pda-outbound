@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-10
 branch: codex/development
-head: 219121f0
-dirty_entries: 42
+head: 62378f8e
+dirty_entries: 46
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
 server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
@@ -16,13 +16,14 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 用户已恢复完整目标，本聊天接续执行、未完成；[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)D01–D18及第8节范围保持。[暂停文档与接续指令](history/D01_D18_PAUSE_2026-10-10_RECOVERED_FAULT.md)为新会话入口。替换前结论/失败保全于[主管围栏前看板](history/ORCHESTRATION_STATE_before_received_fault_2026-10-10.md)，旧指令不恢复。
 
 ## Git、写权与环境
-- 主树D:/acrylic-pda-outbound，codex/development；已验清单18路径提交推送219121f0c3d46402086fb395bea3c923b482bc8f，实际开发远端一致，main未动。received-release-postcommit-01确认剩余29条继承dirty与precommit逐hash不变；本批历史覆盖输入同该HEAD及8条产品/测试差异，Git回执/全dirty见received-history-precommit-01、postcommit-01。
-- 本聊天单助手为唯一写者；前会话idle、其他项目聊天notLoaded。received-history-close-preflight-01完整保全37条dirty，69历史比较/22原STOP无漂移；全部dirty副本/hash/diff、精确Git/进程/监听/C/D余量已保留。继承29条不混入提交，不restore/清空。
-- 新1263专项、received-history-regression-01及两个Node消费者已结束，无HTTP/页面/模拟器/重型Gradle在途，19330/19434/5560/5173空；既有3306/13316/ADB未操作。1263 dump核验/认证停机/原PID退出；失败库保留不复用。
+- 主树D:/acrylic-pda-outbound，codex/development；历史覆盖13路径已提交推送62378f8e2ddba8fe08e1b48a04c6279134ea9869，实际开发远端一致，main未动。received-history-postcommit-01确认剩余29条继承dirty逐hash未变；本批编号输入同该HEAD及明确产品/测试差异，Git回执/全dirty见received-number-precommit-01、postcommit-01。
+- 本聊天单助手为唯一写者；前会话idle、其他项目聊天notLoaded。received-number-close-preflight-01完整保全41条dirty，69历史比较/22原STOP无漂移；全部dirty副本/hash/diff、精确Git/进程/监听/C/D余量已保留。继承29条不混入提交，不restore/清空。
+- 新1266专项、received-number-regression-01及两个Node消费者已结束，无HTTP/页面/模拟器/重型Gradle在途，19330/19434/5560/5173空；既有3306/13316/ADB未操作。1266 dump核验/认证停机/原PID退出；1264失败、1265中间通过分别保全，失败库不复用。
 - 新1242/1243/1246/1248失败库保留停机不复用；1247中间通过与1250最终通过分别保全。1244/1245/1249/1251随机目录子串守卫拒绝未建库。1250跨33树分配，dump重算一致/认证停机/原PID退出/监听空。
 - 新产物/TEMP/Java/cache在D盘，无清理，本机私有证据未异地备份；22份停止AVD仅可逆NTFS压缩/原hash一致未删，见[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)/[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 本批与既有有效范围
+- [原全局编号历史核对](history/D07_R09_RELEASE_NUMBER_HISTORY_2026-10-10.md)：原两端独立pin/受控ROW日志逐笔DATE/INT分配，保留无订单占号；目标全局counter及全仓库号码映射摘要相等。1266最终专项1/0/0/0，错pin/目标/其他仓库改号拒绝及counter/跨仓库号码尾写回滚；Node原生mysqlbinlog8输入/清单9输入不变。普通3301全过/113XML/sourceUnchanged，后补尾写辅助类由1266编译执行。unit首编译败、1264位图padding败、Node CRLF首败保全；不代业务语义闭合/释放。
 - [释放前原历史覆盖](history/D07_R09_RELEASE_HISTORY_2026-10-10.md)：原1233受约束权限/binlog覆盖真实损失窗，绑定清单/控制/原身份与原代次；前漏/后漏/占位窗/非受控历史拒绝。1263实际恢复后专项1/0/0/0，6项定向、普通3280/111XML全过及sourceUnchanged；Node历史6输入不变/清单另核。合成新目标控制明确绑定原窗口，未改旧控制或原端事实；覆盖不产生释放permit，不代语义闭合。详细输入、限制与原件见记录。
 - [主管围栏后实际范围清单](history/D07_R09_RELEASE_INVENTORY_2026-10-10.md)：固定仓库设备/来源/案件/调整/库存/审计及全局编号/任务摘要，原归档/native/签名围栏/同DataSource绑定；凭据遮盖、空集合/确定性摘要、容量拒绝及提交前尾写回滚。1262最终专项1/0/0/0、Node03 exit0/9输入不变，dump/认证停机/监听空；普通3272全过/109XML/sourceUnchanged及limits5全过。1260夹具被既有设备触发器拒绝的失败原件保留，未移除触发器；1253/1261中间输入另列。没有释放许可或新HTTP/Android正向，详细失败/证据见记录。
 - [恢复态主管故障围栏](history/D07_R09_RECEIVED_FAULT_2026-10-10.md)：1233原dump/binlog重建→closed原归档/native→既有REQUEST/独立主管FAULT_FENCE，服务自持外层事务、身份先锁、相同DataSource/目标代次/RECOVERY_PENDING；普通入口仍关闭。只读投影精确核版本+1、原命令/签名围栏/唯一未发布outbox，其他原行不变；无新写handler/HTTP或释放permit。
@@ -37,7 +38,7 @@ server: { contract: 0.51.0, paths: 148, flyway: V77, migrations: 77 }
 ## 未完成与接续第一动作
 - D06/D07整体、FORMAL各阶段实际入口、其他无可信归档来源/R09跨截点业务重建、D08–D18与总闸门未完成；D18无最终候选。D04候选排除/D05取消释放缺政策保持拒绝；原资料/旧BCD/526、历史关键未验/失败与恢复限制单列，开发缺口不转现场。
 - 从主管围栏后范围核对/可信释放→本代次新资格→接收准备/激活→最终提交接续，沿库外PREPARE→DB排他锁提交revision/epoch/范围→库外COMMIT→实例核两侧证明；设备/来源/案件/调整链/库存/审计/截点外高水位闭包必须可信，未知范围隔离。RecoveryNormalRegistration/Intent登记不是业务释放证明。
-- 原正文代次与目标传输代次不同；HandoverTemporaryTarget要求资格代次等于原正文，票据保存sourceRecoveryEpoch且Issuer据它签发，TemporaryRoundAccess要求新正文资格等于目标传输代次。按D14旧票据不激活、释放后另发新资格，保留原事实/映射；不改原正文、简单开NORMAL或任意permit。新会话按暂停文档核全量断点、分配新目标、明确退出标准后实施；范围释放/新资格协议未完成；实际范围清单已验，设计在.local/d01-d18-20261010/received-release-design.md；继续可信历史闭包和两阶段释放。原权限日志真实窗覆盖已验、旧占位窗拒绝；继续全库语义核对和两阶段释放，不以清单/历史覆盖代闭合。
+- 原正文代次与目标传输代次不同；HandoverTemporaryTarget要求资格代次等于原正文，票据保存sourceRecoveryEpoch且Issuer据它签发，TemporaryRoundAccess要求新正文资格等于目标传输代次。按D14旧票据不激活、释放后另发新资格，保留原事实/映射；不改原正文、简单开NORMAL或任意permit。新会话按暂停文档核全量断点、分配新目标、明确退出标准后实施；范围释放/新资格协议未完成；实际范围清单已验，设计在.local/d01-d18-20261010/received-release-design.md；继续可信历史闭包和两阶段释放。原权限日志真实窗覆盖已验、旧占位窗拒绝；全局编号历史及目标全仓库映射已验；继续设备/来源/案件/调整/库存/审计语义核对，补准备/同步/PC/库存基线/证据子表。再两阶段释放，不以清单/历史覆盖/编号代闭合。
 - 生产默认/签名及七类生产决定handler/POST/放行/证据写入/关闭能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名、不绕设备审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 <!-- CURRENT_STATE_END -->
 

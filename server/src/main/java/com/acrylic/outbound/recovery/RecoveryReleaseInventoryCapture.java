@@ -30,9 +30,11 @@ public final class RecoveryReleaseInventoryCapture {
             .put("submissionId",archive.source().submissionId().toString()).put("deviceId",archive.source().deviceId().toString());
         facts.set("faultReceipt",faultReceipt.deepCopy());
         var tables=new RecoveryReleaseInventoryRows(jdbc,archive.source().warehouseId()).read(); facts.set("tables",tables);
+        var numbers=RecoveryReleaseNumberInventory.capture(jdbc); facts.set("globalOrderNumbers",numbers);
         TransactionSynchronizationManager.registerSynchronization(new org.springframework.transaction.support.TransactionSynchronization() {
             @Override public void beforeCommit(boolean readOnly) {
-                require(control.equals(control()) && tables.equals(new RecoveryReleaseInventoryRows(jdbc,archive.source().warehouseId()).read()),
+                require(control.equals(control()) && tables.equals(new RecoveryReleaseInventoryRows(jdbc,archive.source().warehouseId()).read())
+                    && numbers.equals(RecoveryReleaseNumberInventory.capture(jdbc)),
                     "RECOVERY_RELEASE_INVENTORY_CHANGED");
             }
         });
