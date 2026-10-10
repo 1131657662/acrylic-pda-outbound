@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09原终点与主管围栏效果核对（2026-10-10）](D07_R09_RELEASE_RECONCILIATION_2026-10-10.md)：原事实严格保留、精确已签命令效果、实际MySQL尾写回滚及独立消费；实物/运维审批及释放仍缺。
+- [原终点核对前看板（2026-10-10）](ORCHESTRATION_STATE_before_release_reconciliation_2026-10-10.md)：旧结论/失败保全，不恢复旧指令。
+
 - [D07/R09固定仓库及子表覆盖（2026-10-10）](D07_R09_RELEASE_SCOPE_COVERAGE_2026-10-10.md)：准备/基线/PC/同步/证据子表完整成员与尾写回滚、独立消费者；业务语义和释放仍缺。
 - [子表覆盖前看板（2026-10-10）](ORCHESTRATION_STATE_before_release_scope_2026-10-10.md)：旧结论/失败保全，不恢复旧指令。
 

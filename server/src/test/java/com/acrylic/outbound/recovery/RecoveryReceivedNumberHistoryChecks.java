@@ -37,6 +37,8 @@ public final class RecoveryReceivedNumberHistoryChecks {
         assertThat(context.snapshots().capture()).isEqualTo(before);
         Files.write(attempt.resolve("release-number-history.json"),RecoveryTemporaryEvidenceMaterial.encode(proof.facts()));
         Files.writeString(attempt.resolve("release-number-history.sha256"),proof.sha256());
+        HandoverRecoveredReconciliationChecks.verify(app,attempt,binding,
+            new RecoveryReleaseReconciliation.Request(authority,request,keys));
     }
 
     private static void refusals(RecoveryClosedAuthority authority,RecoveryReleaseInventory inventory,RecoveryReleaseNumberHistory.Request request) {

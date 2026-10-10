@@ -44,6 +44,25 @@ public final class HandoverRecoveredTemporaryReview {
             throw new RecoveryControlException("RECOVERY_RELEASE_TRANSACTION_REQUIRED");
     }
 
+    public RecoveryReleaseReconciliation reconcile(byte[] originalFault,HandoverRecoveredTemporaryBinding binding,
+            RecoveryReleaseReconciliation.Request request) {
+        Objects.requireNonNull(binding); var command=HandoverCommand.Input.parse(originalFault); binding.require(command);
+        HandoverCommand.corruptUnless("FAULT_FENCE".equals(command.kind())); var before=access.current(command);
+        var prepared=RecoveryReleaseReconciliation.prepare(inspect(originalFault,binding),request);
+        return binding.consumer().consumeAfterIdentityLocks(binding.request(),binding.nativeFacts(),
+            new RecoveryReceivedTemporaryArchiveConsumer.IdentityConsumer<>() {
+                @Override public void lockIdentity() { requireDatabase(); access.lock(command,before); }
+                @Override public void requireOrderVersion(JsonNode original,JsonNode current) { projection.require(command,original,current); }
+                @Override public RecoveryReleaseReconciliation apply(RecoveryRecoveredTemporaryArchive archive,
+                        RecoveryTemporaryNativeHandoverFacts.Facts facts) {
+                    binding.requireArchive(command,facts); var receipt=receipt(command);
+                    binding.requireAnchor(command,receipt.path("caseContext"),archive);
+                    var inventory=new RecoveryReleaseInventoryCapture(jdbc.getDataSource()).capture(archive,receipt);
+                    return RecoveryReleaseReconciliation.inspect(jdbc.getDataSource(),inventory,prepared);
+                }
+            });
+    }
+
     private JsonNode receipt(HandoverCommand.Input command) {
         var rows=jdbc.queryForList("SELECT * FROM handover_command_receipt WHERE original_key=? AND command_type='FAULT_FENCE' FOR UPDATE",
             com.acrylic.outbound.common.Ids.bytes(command.uuid("commandId")));

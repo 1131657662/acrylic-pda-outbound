@@ -40,6 +40,10 @@ final class RecoveryReleaseInventoryRows {
         return result;
     }
 
+    static List<String> tableNames() {
+        return java.util.stream.Stream.concat(TABLES.stream(),RecoveryReleaseAdditionalQueries.tables().stream()).sorted().toList();
+    }
+
     private ObjectNode table(String table) {
         var result=com.acrylic.outbound.submissions.SubmissionJson.object();
         var columns=result.putArray("columns"); var rows=result.putArray("rows");
