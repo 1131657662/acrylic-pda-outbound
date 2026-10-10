@@ -14,9 +14,17 @@ import static org.assertj.core.api.Assertions.*;
 /** Rebinds the same actual source objects to explicit synthetic target control; no business evidence is generated. */
 final class RecoveryReceivedArchiveSetup {
     static Context create(JdbcTemplate jdbc,Path attempt,Path original) throws Exception {
+        return create(jdbc,attempt,original,false);
+    }
+
+    static Context createWithHistoryWindow(JdbcTemplate jdbc,Path attempt,Path original) throws Exception {
+        return create(jdbc,attempt,original,true);
+    }
+
+    private static Context create(JdbcTemplate jdbc,Path attempt,Path original,boolean historyWindow) throws Exception {
         var checkpoint=readCanonical(Files.readAllBytes(original.resolve("checkpoint-transfer.json")));
         var received=readCanonical(Files.readAllBytes(original.resolve("received-transfer.json")));
-        var source=bind(jdbc,attempt,checkpoint); var supply=RecoveryClosedTestSupply.of(source);
+        var source=bind(jdbc,attempt,checkpoint,original,historyWindow); var supply=RecoveryClosedTestSupply.of(source);
         var request=request(source,attempt,original,checkpoint,received);
         var keys=new RecoveryReceiptKeys(List.of(Base64.getDecoder().decode(text(received,"serverPublicKey"))));
         var material=RecoveryTemporaryEvidenceMaterial.decode(Files.readAllBytes(request.rows().materialRoot().resolve(request.rows().independentSha256()+".json")));
@@ -33,8 +41,12 @@ final class RecoveryReceivedArchiveSetup {
             new E2aMigrationSnapshot(jdbc,attempt,attempt.resolve("storage")));
     }
 
-    private static RecoverySourceFixture bind(JdbcTemplate jdbc,Path attempt,JsonNode transfer) throws Exception {
-        var source=RecoverySourceFixture.forRestore(attempt.resolve("storage"),RecoverySourceIdentity.read(transfer.path("source")));
+    private static RecoverySourceFixture bind(JdbcTemplate jdbc,Path attempt,JsonNode transfer,Path original,boolean historyWindow) throws Exception {
+        var id=RecoverySourceIdentity.read(transfer.path("source"));
+        var source=historyWindow?RecoverySourceFixture.forRestore(attempt.resolve("storage"),id,
+            instant(readCanonical(Files.readAllBytes(original.resolve("evidence-permission-begin.json"))),"observedAt"),
+            instant(readCanonical(Files.readAllBytes(original.resolve("evidence-permission-end.json"))),"observedAt"))
+            :RecoverySourceFixture.forRestore(attempt.resolve("storage"),id);
         Path root=Path.of(text(transfer,"sourceRoot")); byte[] bytes=Files.readAllBytes(root.resolve(text(transfer,"sourcePin")+".json"));
         assertThat(sha256(bytes)).isEqualTo(text(transfer,"sourcePin")); var manifest=readCanonical(bytes);
         for(String kind:RecoverySourceManifest.OBJECTS) {

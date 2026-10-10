@@ -46,6 +46,12 @@ final class RecoverySourceFixture {
         fixture.bindWarehouse(); return fixture;
     }
 
+    static RecoverySourceFixture forRestore(Path restored,RecoverySourceIdentity identity,
+            java.time.Instant from,java.time.Instant through) throws Exception {
+        var fixture=new RecoverySourceFixture(RecoveryControlFixture.forRestore(restored,from,through),identity);
+        fixture.bindWarehouse(); return fixture;
+    }
+
     void advance() throws Exception {
         control.append(control.next("RECOVERING")); manifest.put("epochId", control.read().epochId().toString()); publish();
     }

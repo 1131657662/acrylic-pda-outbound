@@ -19,9 +19,15 @@ final class RecoveryControlFixture {
     }
 
     private RecoveryControlFixture(Path base, Path restored) throws IOException {
+        this(base,restored,null,null);
+    }
+
+    private RecoveryControlFixture(Path base,Path restored,java.time.Instant from,java.time.Instant through) throws IOException {
         root = base.resolve("authority"); restoreRoot = restored; checkpoint = base.resolve("trusted.json");
         Files.createDirectories(root.resolve("history")); Files.createDirectories(restoreRoot);
         command = command();
+        if(from!=null) command.put("possibleLossFrom",from.toString()).put("possibleLossThrough",through.toString())
+            .put("requestedAt",through.plusSeconds(1).toString());
         var identity = JSON.createObjectNode().put("formatVersion", 1).put("installationId", installation.toString());
         identity.putArray("restoreRoots").add(restoreRoot.toRealPath().toString());
         identity.put("initialCommandSha256", RecoveryControlFormat.hash(command));
@@ -41,6 +47,11 @@ final class RecoveryControlFixture {
         Path retained = Path.of("../.local/control-java-cases").toAbsolutePath().normalize();
         Files.createDirectories(retained);
         return new RecoveryControlFixture(Files.createTempDirectory(retained, "closed-mysql-"), restored.toRealPath());
+    }
+
+    static RecoveryControlFixture forRestore(Path restored,java.time.Instant from,java.time.Instant through) throws IOException {
+        Path retained=Path.of("../.local/control-java-cases").toAbsolutePath().normalize(); Files.createDirectories(retained);
+        return new RecoveryControlFixture(Files.createTempDirectory(retained,"closed-mysql-"),restored.toRealPath(),from,through);
     }
 
     private ObjectNode command() {
@@ -67,7 +78,8 @@ final class RecoveryControlFixture {
         var row = JSON.createObjectNode().put("formatVersion", 1).put("installationId", installation.toString())
             .put("revision", Long.toString(number))
             .put("previousRecordSha256", latest == null ? RecoveryControlFormat.ZERO_HASH : latest.path("recordSha256").asText())
-            .put("commandSha256", RecoveryControlFormat.hash(value)).put("createdAt", "2026-09-22T00:00:01Z");
+            .put("commandSha256", RecoveryControlFormat.hash(value))
+            .put("createdAt",java.time.Instant.parse(value.path("requestedAt").asText()).plusSeconds(1).toString());
         row.set("command", value.deepCopy()); row.put("recordSha256", RecoveryControlFormat.hash(row));
         write(root.resolve("history").resolve(String.format(Locale.ROOT, "%018d.json", number)), row);
         write(root.resolve("current.json"), pointer(row)); latest = row;

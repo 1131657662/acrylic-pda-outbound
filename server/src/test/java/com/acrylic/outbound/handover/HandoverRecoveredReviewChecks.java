@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.*;
 
 /** Actual read-only range capture, with immutable original facts and no release effects. */
 public final class HandoverRecoveredReviewChecks {
-    public static void verify(WebApplicationContext app,Path attempt,HandoverRecoveredTemporaryChecks.Bindings bindings) throws Exception {
+    public static RecoveryReleaseInventory verify(WebApplicationContext app,Path attempt,HandoverRecoveredTemporaryChecks.Bindings bindings) throws Exception {
         var f=new HandoverRecoveredTemporaryFixture(app,attempt,bindings.original());
         var request=f.request(); byte[] requested=f.execute(f.requester,request);
         var fault=f.fault(uuid(parse(requested).path("businessDecision"),"caseId"));
@@ -39,6 +39,7 @@ public final class HandoverRecoveredReviewChecks {
         Files.writeString(f.directory.resolve("release-inventory-result.json"),object().put("sha256",observed.sha256())
             .put("readOnly",true).put("releaseAllowed",false).put("ordinaryWritesAllowed",false)
             .put("localDeletionAllowed",false).set("gaps",new com.fasterxml.jackson.databind.ObjectMapper().valueToTree(observed.gaps())).toPrettyString());
+        return observed;
     }
 
     private static void scopeAndCredentials(RecoveryReleaseInventory observed) {
