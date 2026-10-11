@@ -14,8 +14,14 @@ final class RecoveryPreparedTemporaryEffects {
     private final RecoveryReceiptKeys keys;
     private final Instant observedAt;
     private final org.springframework.jdbc.core.JdbcTemplate jdbc;
+    private final RecoveryRecipientSessionEffects session;
     RecoveryPreparedTemporaryEffects(RecoveryTemporaryQualification qualification,RecoveryReceiptKeys keys,javax.sql.DataSource database) {
+        this(qualification,keys,database,null);
+    }
+    RecoveryPreparedTemporaryEffects(RecoveryTemporaryQualification qualification,RecoveryReceiptKeys keys,javax.sql.DataSource database,
+            RecoveryRecipientSessionEffects session) {
         this.qualification=qualification; this.keys=keys;
+        this.session=session;
         jdbc=new org.springframework.jdbc.core.JdbcTemplate(database);
         observedAt=jdbc.queryForObject("SELECT UTC_TIMESTAMP(3)",java.sql.Timestamp.class).toInstant();
     }
@@ -84,7 +90,7 @@ final class RecoveryPreparedTemporaryEffects {
             && at.isBefore(instant(q,"expiresAt")),"RECOVERY_PREPARATION_DECISION"); return ticket;
     }
     private void commandRows(ObjectNode result,Map<String,String> commandRow,JsonNode receipt) {
-        var raw=result.path("operation_event").has("rows")?result:new RecoveryReleaseDatabaseRows(jdbc).read();
+        var raw=result.path("operation_event").has("rows")?result:rawBeforeSession();
         for(String table:List.of("handover_command_receipt","api_idempotency_request","operation_event")) {
             var snapshot=result.path(table); var source=snapshot.has("rows")?snapshot:raw.path(table);
             if(!snapshot.has("rows")) require(snapshot.path("columns").equals(source.path("columns"))
@@ -98,6 +104,9 @@ final class RecoveryPreparedTemporaryEffects {
             if(table.equals("api_idempotency_request")) RecoveryReleaseCommandEffects.idempotency(row,receipt);
             rows.remove(row); set(result,table,rows);
         }
+    }
+    private JsonNode rawBeforeSession() {
+        var raw=new RecoveryReleaseDatabaseRows(jdbc).read(); return session==null?raw:session.before(raw);
     }
     private static void set(ObjectNode tables,String name,List<Map<String,String>> rows) {
         var table=(ObjectNode)tables.path(name); var encoded=encode(table.path("columns"),rows);

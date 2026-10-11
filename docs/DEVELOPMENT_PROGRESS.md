@@ -2,6 +2,8 @@
 
 # 开发验收索引
 
+- [D07/R09恢复本人会话准入](history/D07_R09_RECIPIENT_SESSION_2026-10-11.md)：实际HTTP认证、精确登录效果、全原表守恒/尾回滚、新JVM原token与独立消费；下载确认和激活链继续。
+
 - [D07/R09恢复态指定接收者准入](history/D07_R09_RECIPIENT_ADMISSION_2026-10-11.md)：独立签名/持钥证明、精确新增效果/原表守恒、MySQL回滚/新JVM与独立消费；目标代次新资格及最终接收链继续。
 
 - [范围双侧提交后的收口与接续](history/D01_D18_PAUSE_2026-10-11_SCOPE_RELEASE.md)：最终证据、Git/dirty保全和新资格接缝约束；用户要求暂停，总目标未完成。

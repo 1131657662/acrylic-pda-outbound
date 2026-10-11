@@ -33,6 +33,21 @@ public final class HandoverRecoveredTemporaryReview {
     RecoveryReleaseInventory inspectPreparation(HandoverRecoveredPhysicalReview.Request request,RecoveryTemporaryQualification qualification) {
         return inspect(request.originalFault(),request.binding(),qualification.recipient(),qualification,request.reconciliation().targetKeys());
     }
+    RecoveryReleaseInventory inspectSession(HandoverRecoveredPhysicalReview.Request request,RecoveryRecipientSession session) {
+        var binding=request.binding(); var command=HandoverCommand.Input.parse(request.originalFault()); binding.require(command);
+        var qualification=session.qualification();
+        return binding.consumer().consumeAfterIdentityLocks(binding.request(),binding.nativeFacts(),
+            new RecoveryReceivedTemporaryArchiveConsumer.IdentityConsumer<>() {
+                @Override public void lockIdentity() { requireDatabase(); session.lockIdentity(jdbc.getDataSource()); }
+                @Override public void requireOrderVersion(JsonNode original,JsonNode current) { projection.require(command,original,current); }
+                @Override public RecoveryReleaseInventory apply(RecoveryRecoveredTemporaryArchive archive,RecoveryTemporaryNativeHandoverFacts.Facts facts) {
+                    binding.requireArchive(command,facts); var receipt=receipt(command);
+                    binding.requireAnchor(command,receipt.path("caseContext"),archive);
+                    var effects=qualification.sessionEffects(jdbc.getDataSource(),request.reconciliation().targetKeys(),session);
+                    return new RecoveryReleaseInventoryCapture(jdbc.getDataSource()).capture(archive,receipt,effects);
+                }
+            });
+    }
     private RecoveryReleaseInventory inspect(byte[] originalFault,HandoverRecoveredTemporaryBinding binding,
             RecoveryRecipientAdmission admission,RecoveryTemporaryQualification qualification,RecoveryReceiptKeys keys) {
         Objects.requireNonNull(binding); var command=HandoverCommand.Input.parse(originalFault); binding.require(command);

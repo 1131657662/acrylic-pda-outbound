@@ -36,13 +36,18 @@ public final class RecoveryRecipientAdmission {
         return lockIdentity(database,false);
     }
     IdentityLocks lockPreparationIdentity(DataSource database) {
-        return lockIdentity(database,true);
+        return lockIdentity(database,true,false);
     }
+    IdentityLocks lockReceivingIdentity(DataSource database) { return lockIdentity(database,false,true); }
     private IdentityLocks lockIdentity(DataSource database,boolean preparation) {
+        return lockIdentity(database,preparation,false);
+    }
+    private IdentityLocks lockIdentity(DataSource database,boolean preparation,boolean receiving) {
         transaction(database); materials();
         RecoveryClosedOperationContext.requireCurrent(database,request.authority().closed());
         new RecoveryClosedWriteProjection(new JdbcTemplate(database)).requireMatches(request.authority().closed().control());
-        var identity=new RecoveryRecipientIdentity(new JdbcTemplate(database),body,store,preparation); identity.lock();
+        var identity=new RecoveryRecipientIdentity(new JdbcTemplate(database),body,store,preparation);
+        if(receiving) identity.receiving(); identity.lock();
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override public void beforeCommit(boolean readOnly) { identity.requireCurrent(); materials(); }
         });
@@ -52,14 +57,21 @@ public final class RecoveryRecipientAdmission {
         return project(locks,context,null);
     }
     Effects project(IdentityLocks locks,ProjectionContext context,RecoveryPreparedTemporaryEffects preparation) {
+        return projectWith(locks,context,new EffectContext(preparation,null));
+    }
+    Effects projectReceiving(IdentityLocks locks,ProjectionContext context,RecoveryRecipientSession session) {
+        return projectWith(locks,context,new EffectContext(new RecoveryPreparedTemporaryEffects(session.qualification(),
+            context.prepared().request().targetKeys(),locks.database,session.effects(locks.database)),session.effects(locks.database)));
+    }
+    private Effects projectWith(IdentityLocks locks,ProjectionContext context,EffectContext effectContext) {
         require(locks!=null && locks.admission==this,"RECOVERY_RECIPIENT_IDENTITY_REQUIRED"); transaction(locks.database);
         require(locks.transaction==TransactionSynchronizationManager.getResource(locks.database),"RECOVERY_RECIPIENT_IDENTITY_TRANSACTION");
         locks.identity.requireCurrent(); materials();
         var projection=new RecoveryRecipientProjection(locks.database,this); projection.requireRelease();
-        if(requireRetained) require(projection.effects()!=null,"RECOVERY_RECIPIENT_RETAINED_REQUIRED");
+        if(requireRetained) require(projection.effects(effectContext.session())!=null,"RECOVERY_RECIPIENT_RETAINED_REQUIRED");
         else projection.insertIfAbsent();
-        var effects=projection.effects();
-        if(preparation!=null) effects=effects.withPreparation(preparation);
+        var effects=projection.effects(effectContext.session());
+        if(effectContext.preparation()!=null) effects=effects.withPreparation(effectContext.preparation());
         var inventory=new RecoveryReleaseInventoryCapture(locks.database).capture(context.archive(),context.faultReceipt(),effects);
         var physical=RecoveryReleasePhysicalReview.inspect(locks.database,inventory,context.prepared(),effects);
         new RecoveryScopeReleaseProjection(locks.database,store,true).apply(new RecoveryOperationsApproval.Context(physical,inventory),request.authority().closed());
@@ -70,6 +82,11 @@ public final class RecoveryRecipientAdmission {
         transaction(database); materials(); var projection=new RecoveryRecipientProjection(database,this);
         projection.requireRelease(); return projection.effects();
     }
+    Effects readSessionEffects(DataSource database,RecoveryRecipientSession session) {
+        transaction(database); materials(); var projection=new RecoveryRecipientProjection(database,this);
+        projection.requireRelease(); return projection.effects(session.effects(database));
+    }
+    private record EffectContext(RecoveryPreparedTemporaryEffects preparation,RecoveryRecipientSessionEffects session) { }
     void materials() {
         request.authority().requireUnchanged();
         require(java.util.Arrays.equals(signed,read(request)),"RECOVERY_RECIPIENT_MATERIAL_CHANGED");
@@ -117,13 +134,15 @@ public final class RecoveryRecipientAdmission {
     public static final class Effects {
         private final RecoveryRecipientProjection projection;
         private final RecoveryPreparedTemporaryEffects preparation;
-        Effects(RecoveryRecipientProjection projection) { this(projection,null); }
-        private Effects(RecoveryRecipientProjection projection,RecoveryPreparedTemporaryEffects preparation) {
-            this.projection=projection; this.preparation=preparation;
+        private final RecoveryRecipientSessionEffects session;
+        Effects(RecoveryRecipientProjection projection) { this(projection,null,null); }
+        Effects(RecoveryRecipientProjection projection,RecoveryRecipientSessionEffects session) { this(projection,null,session); }
+        private Effects(RecoveryRecipientProjection projection,RecoveryPreparedTemporaryEffects preparation,RecoveryRecipientSessionEffects session) {
+            this.projection=projection; this.preparation=preparation; this.session=session;
         }
-        Effects withPreparation(RecoveryPreparedTemporaryEffects preparation) { return new Effects(projection,preparation); }
+        Effects withPreparation(RecoveryPreparedTemporaryEffects preparation) { return new Effects(projection,preparation,session); }
         public JsonNode before(JsonNode tables) {
-            var before=projection.before(tables); return preparation==null?before:preparation.before(before);
+            var before=projection.before(session==null?tables:session.before(tables)); return preparation==null?before:preparation.before(before);
         }
     }
 }

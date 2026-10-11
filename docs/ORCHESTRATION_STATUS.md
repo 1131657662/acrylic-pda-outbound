@@ -6,11 +6,11 @@
 ```yaml
 date: 2026-10-11
 branch: codex/development
-head: 7e99b5fe
-dirty_entries: 51
+head: a45cddbe
+dirty_entries: 60
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
-server: { contract: 0.51.0, paths: 148, flyway: V80, migrations: 80 }
+server: { contract: 0.51.0, paths: 148, flyway: V81, migrations: 81 }
 ```
 <!-- FACTS_END -->
 本聊天按用户指令恢复完整目标；已核范围双侧协议复用、总目标进行中未完成，[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)D01–D18及第8节范围保持。[收口与新会话指令](history/D01_D18_PAUSE_2026-10-11_SCOPE_RELEASE.md)为接续入口；替换前结论/失败见[收口前看板](history/ORCHESTRATION_STATE_before_scope_release_pause_2026-10-11.md)，旧指令不恢复。
@@ -18,10 +18,11 @@ server: { contract: 0.51.0, paths: 148, flyway: V80, migrations: 80 }
 ## Git、写权与环境
 - 主树D:/acrylic-pda-outbound、codex/development。主管/运维/范围历史提交与保护证据见各验收记录及received-scope-release-pause-final-01；main未动，29继承dirty、69历史/22STOP保留。旧失败/中间库均停机保全不复用，原1233只读。
 - 指定接收者32路径已提交推送098dd7fa0a9f5806fbce7e7a730f5d86cbfdaf11，实际开发远端一致、main未动。resume-02/running-03/precommit-01及postcommit-01保存全部dirty/hash/副本/Git/环境；29继承非看板路径、69历史/22STOP无漂移，单助手唯一写者。1297专项/新JVM及普通回归结束，任务端口空，仅既有3306保持；C/D约76/75GiB，准确值见快照。1293 UNKNOWN及保全/失败库不复用。
-- 新资格18路径已提交推送7e99b5fe，实际开发远端一致、main未动。恢复PREPARE开发中未提交，完整dirty/副本/Git/进程/监听/磁盘/写者见received-prepare-resume-01；60项接续比较、69历史/22STOP无漂移，单助手唯一写者，无重型任务或任务监听。替换前看板见history/ORCHESTRATION_STATE_before_received_prepare_2026-10-11.md。
+- 新资格已推7e99b5fe；PREPARE已推a45cddbe348ca4ad3de172c357ccba69db696c32，开发远端一致、main未动。本人会话收口准备提交；session-precommit/postcommit-01保存Git/dirty/保护/写者/环境，29继承非看板路径、69历史/22STOP无漂移，单助手唯一写者。1314已dump/认证停机/PID退出、任务端口空，无重型任务，保全/失败库不复用；前看板见session-close归档。
 - 新产物/TEMP/Java/cache在D盘，无清理，本机私有证据未异地备份；22份停止AVD仅可逆NTFS压缩/原hash一致未删，见[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)/[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 本批与既有有效范围
+- [本人会话准入](history/D07_R09_RECIPIENT_SESSION_2026-10-11.md)：1314实际MySQL1/0/0/0/首次竞争/尾回滚/新JVM原token过，Node18输入/151表/8反例过；unit6及普通3323/117XML全过/无skip。2731输入核对，回归后仅专项辅助测试变化由1314执行；原1233/1293UNKNOWN不变。1308/1310/1311/1312失败及1313中间输入保全。通用解码/full raw守恒保持；下载确认/激活/最终提交未验，普通TEMP/NORMAL关闭。
 - [恢复PREPARE](history/D07_R09_RECOVERED_PREPARATION_2026-10-11.md)：1306实际MySQL1/0/0/0/输入不变、首次同键并发/异文/尾回滚、新JVM原pin/bytes/回执DB不变；Node15输入/150表/8反例过，普通3317全过/116XML/无skip/产品相同。各2714输入核对；dump/认证停机/PID退出/监听空。compile-01/02、1299/1301/1305失败保全，1300/1303分配拒绝未建库，1302/1304中间过。精确签名效果及原全表守恒保持，无旧票据；仅服务准备，不代HTTP/Android链。
 - [本代次恢复交接新资格](history/D07_R09_RECIPIENT_QUALIFICATION_2026-10-11.md)：1298专项1/0/0/0、新JVM原pin/bytes无新签名DB不变，Node18输入/150表/5反例通过。普通recovery/handover3317全过/116XML/无skip/sourceUnchanged；compile-01缺import首败与compile-02保留。仅精确资格审计新增，原正文/source代次/映射保持，普通TEMP/首轮/扫描/删除关闭；无准备/激活/最终提交及正向HTTP/Android。dump/认证停机/PID退出/监听空，运行接续断点见received-qualification-resume-running-01，29继承/69历史/22STOP无漂移。
 - [恢复态指定接收者准入](history/D07_R09_RECIPIENT_ADMISSION_2026-10-11.md)：独立pin/RS256及新机P-256持钥证明，同仓/实时身份权限、closed operation，同一原归档；精确新device/不可变审计与全原表raw尾验。1297专项1/0/0/0/sourceUnchanged、新JVM原pin/bytes无新签名DB不变；Node16输入/149表/4反例过；普通3317全过/116XML/无skip/2693输入不变。1295异常类型断言败、1296中间过、consumer-01换行败及1294分配拒绝均保留；dump/认证停机/PID退出/监听空。新机TEMP=false，无新资格/激活/正向HTTP/Android；能力false，作者自审见本机记录。
@@ -44,7 +45,7 @@ server: { contract: 0.51.0, paths: 148, flyway: V80, migrations: 80 }
 
 ## 未完成与接续第一动作
 - D06/D07整体、FORMAL各阶段实际入口、其他无可信归档来源/R09跨截点业务重建、D08–D18与总闸门未完成；D18无最终候选。D04候选排除/D05取消释放缺政策保持拒绝；原资料/旧BCD/526、历史关键未验/失败与恢复限制单列，开发缺口不转现场。
-- 指定接收者准入与本代次限定scope/接收者新资格已验，下一项为接收准备/下载确认→激活→最终提交。原机禁用、跨仓机不借用、新机普通TEMP=false；原正文/source代次/映射保留，旧票据不可激活。新增资格/激活继续精确签名效果及beforeCommit全表守恒，首轮隔离；不开NORMAL、不删比较、不把Result当公共写许可。
+- 指定接收者/本代次新资格/PREPARE/本人会话已验，下一项同身份下载原manifest/正文→Android耐久暂存/确认→激活→最终提交；丢token新本人登录/替换协议也须补。原机禁用、跨仓机不借用、新机普通TEMP=false；原正文/source代次/映射保留，旧票据不可激活。新增效果继续精确签名及beforeCommit全表守恒、首轮隔离，不开NORMAL、不删比较、不把Result当公共写许可。
 - 原正文source与target传输代次分开；旧票据不可激活，另发限定scope/接收者的新资格并保留原事实/映射、隔离首轮能力。跨树核对后新建隔离目标，只读复用原1233；不重跑原源/1150/1151/UI-06/1100–1102，不复用保全/失败库。接缝、源码入口和退出要求详见收口文档。
 - 生产默认/签名及七类生产决定handler/POST/放行/证据写入/关闭能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名、不绕设备审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 <!-- CURRENT_STATE_END -->

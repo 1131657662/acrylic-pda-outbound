@@ -14,6 +14,8 @@ final class RecoveryRecipientIdentity {
     private final JsonNode body;
     private final RecoveryScopeReleaseStore store;
     private final boolean preparation;
+    private boolean receiving;
+    RecoveryRecipientIdentity receiving() { receiving=true; return this; }
     RecoveryRecipientIdentity(JdbcTemplate jdbc,JsonNode body,RecoveryScopeReleaseStore store) {
         this(jdbc,body,store,false);
     }
@@ -48,7 +50,13 @@ final class RecoveryRecipientIdentity {
             .allMatch(row->row.get("revoked_at")!=null),"RECOVERY_RECIPIENT_SOURCE_SESSION");
     }
     private void actor(IdentityStore identities,Access access,UUID warehouse) {
-        if(preparation) {
+        if(receiving) {
+            var auth=org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            require(auth!=null && auth.getPrincipal() instanceof com.acrylic.outbound.pda.PdaSessions.Principal,"RECOVERY_SESSION_PDA_REQUIRED");
+            var principal=(com.acrylic.outbound.pda.PdaSessions.Principal)auth.getPrincipal();
+            require(principal.userId().equals(uuid(body.path("recipient"),"userId"))
+                && principal.deviceId().equals(uuid(body.path("recipient"),"deviceId")) && principal.warehouseId().equals(warehouse),"RECOVERY_SESSION_ACTOR");
+        } else if(preparation) {
             var actor=access.current();
             require(actor.id().equals(uuid(body,"supervisorId")) && actor.authVersion()==revision(body,"supervisorAuthVersion"),"RECOVERY_PREPARATION_ACTOR");
         } else {

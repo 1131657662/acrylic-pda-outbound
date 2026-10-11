@@ -41,17 +41,21 @@ final class RecoveryRecipientProjection {
             "RECOVERY_RECIPIENT_AUDIT_INSERT");
     }
     RecoveryRecipientAdmission.Effects effects() {
+        return effects(null);
+    }
+    RecoveryRecipientAdmission.Effects effects(RecoveryRecipientSessionEffects session) {
         var records=records();
         if(records.isEmpty()) { absent(); return null; }
         match(records); var devices=new RecoveryReleaseDatabaseRows(jdbc).read();
-        RecoveryRecipientDeviceEffect.before(devices,admission.body());
+        RecoveryRecipientDeviceEffect.before(session==null?devices:session.before(devices),admission.body());
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override public void beforeCommit(boolean readOnly) {
                 requireRelease(); require(records.equals(records()),"RECOVERY_RECIPIENT_AUDIT_CHANGED");
-                RecoveryRecipientDeviceEffect.before(new RecoveryReleaseDatabaseRows(jdbc).read(),admission.body());
+                var current=new RecoveryReleaseDatabaseRows(jdbc).read();
+                RecoveryRecipientDeviceEffect.before(session==null?current:session.before(current),admission.body());
             }
         });
-        return new RecoveryRecipientAdmission.Effects(this);
+        return new RecoveryRecipientAdmission.Effects(this,session);
     }
     JsonNode before(JsonNode tables) {
         requireRelease(); match(records()); return RecoveryRecipientDeviceEffect.before(tables,admission.body());

@@ -61,7 +61,7 @@ public final class RecoveryReceivedPreparationChecks {
             assertThatThrownBy(()->prepare(f,q,activation)).isInstanceOf(RecoveryControlException.class);
         } finally { SecurityContextHolder.clearContext(); }
     }
-    private static ObjectNode command(RecoveryQualificationFixture f) {
+    static ObjectNode command(RecoveryQualificationFixture f) {
         var q=f.body; var supervisor=f.enrollment.setup.supervisor();
         var command=SubmissionJson.object().put("commandVersion",1).put("commandType","PREPARE").put("commandId",Ids.next().toString())
             .put("caseId",text(q,"caseId")).put("warehouseId",text(q,"warehouseId"))
@@ -71,7 +71,7 @@ public final class RecoveryReceivedPreparationChecks {
         command.putObject("expected").put("caseId",text(q,"caseId")).put("caseVersion","3").put("status","APPROVED")
             .put("userAuthVersion",Long.toString(supervisor.authVersion())); return command;
     }
-    private static byte[] prepare(RecoveryQualificationFixture f,RecoveryTemporaryQualification q,ObjectNode command) {
+    static byte[] prepare(RecoveryQualificationFixture f,RecoveryTemporaryQualification q,ObjectNode command) {
         RecoveryRecipientFixture.authenticate(f.enrollment.setup.supervisor());
         try { return f.enrollment.app.getBean(HandoverRecoveredTemporaryPreparation.class).prepare(
             RecoveryControlJson.encode(command),"prepare-qualification",q,f.enrollment.setup.request()); }

@@ -54,6 +54,17 @@ public final class RecoveryTemporaryQualification {
         recipient.project(identity,context.projection(),new RecoveryPreparedTemporaryEffects(this,
             context.projection().prepared().request().targetKeys(),context.database()));
     }
+    public RecoveryRecipientAdmission.Effects sessionEffects(DataSource database,RecoveryReceiptKeys keys,RecoveryRecipientSession session) {
+        require(session.qualification()==this,"RECOVERY_SESSION_QUALIFICATION_REQUIRED");
+        var projection=new RecoveryTemporaryQualificationProjection(database,this); projection.requireBaseline(); projection.issue(true);
+        var effects=recipient.readSessionEffects(database,session); require(effects!=null,"RECOVERY_QUALIFICATION_ENROLLMENT_REQUIRED");
+        return effects.withPreparation(new RecoveryPreparedTemporaryEffects(this,keys,database,session.effects(database)));
+    }
+    public void admitSession(RecoveryRecipientAdmission.IdentityLocks identity,Context context,RecoveryRecipientSession session) {
+        require(session.qualification()==this,"RECOVERY_SESSION_QUALIFICATION_REQUIRED"); requirePreparationUse(context);
+        new RecoveryRecipientSessionProjection(context.database(),session).issue();
+        recipient.projectReceiving(identity,context.projection(),session);
+    }
     public JsonNode preparationDescriptor() {
         var result=com.acrylic.outbound.submissions.SubmissionJson.object().put("purpose","RECOVERED_TEMP_HANDOVER_QUALIFICATION")
             .put("qualificationSha256",sha256());
