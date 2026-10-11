@@ -13,7 +13,7 @@ class OrderCards(private val parent: LinearLayout, private val model: Preparatio
     private var lastContent = ""
     fun render(state: PreparationUi) {
         val localKey = state.local.joinToString { item ->
-            "${item.order.assignmentId}:${item.order.ackAt}:${item.readiness}:${item.recalled}:${item.workState}:${item.submissionState}:${item.originalOperator}"
+            "${item.order.assignmentId}:${item.order.ackAt}:${item.readiness}:${item.recalled}:${item.workState}:${item.submissionState}:${item.originalOperator}:${item.savedCount}"
         }
         val content = listOf(state.section, state.username, state.busy.toString(), localKey,
             state.pending.toString(), state.rejectedHistory.toString(), state.available.joinToString { it.toString() },
@@ -48,27 +48,27 @@ class OrderCards(private val parent: LinearLayout, private val model: Preparatio
                 else -> null
             }
             val title = "本机 · 车号 ${plan.getJSONObject("plan").getString("vehicleNo")}"
-            val detail = "订单号 ${plan.getJSONObject("order").getString("orderNo")}\n${localStatus(item)} · ${item.readiness}\n库存 ${item.order.rowCount} 包 · 计划 ${plan.getJSONObject("plan").getString("plannedTotal")} 包"
+            val detail = "订单号 ${plan.getJSONObject("order").getString("orderNo")}\n${localStatus(item)} · ${item.readiness}\n本机有效已保存 ${item.savedCount} / 本单计划 ${plan.getJSONObject("plan").getString("plannedTotal")} 包"
             add(title, detail, action, !state.busy && item.originalOperator) {
                 if (renewalNeeded) model.renew(item.order) else model.ack(item.order)
             }.work.apply {
                 visibility = View.VISIBLE; isEnabled = !state.busy && item.originalOperator
                 text = when {
-                    item.workState == "HANDOVER_FROZEN" -> "处理换机交接"
+                    item.workState == "HANDOVER_FROZEN" -> "核对旧冻结原件"
                     item.recalled -> "召回核对 / 停止证明"
                     !item.originalOperator -> "须原操作员登录"
                     item.submissionState != null || item.workState == "FROZEN" -> "查看提交/回执"
                     else -> "继续作业"
                 }
                 setOnClickListener { context.startActivity(android.content.Intent(context,
-                    if (item.workState == "HANDOVER_FROZEN") HandoverActivity::class.java else if (item.recalled) RecallActivity::class.java else if (item.submissionState != null || item.workState == "FROZEN") SubmissionActivity::class.java else WorkActivity::class.java)
+                    if (item.workState == "HANDOVER_FROZEN") WorkDetailsActivity::class.java else if (item.recalled) RecallActivity::class.java else if (item.submissionState != null || item.workState == "FROZEN") SubmissionActivity::class.java else WorkActivity::class.java)
                     .putExtra("assignmentId", item.order.assignmentId)) }
             }
         }
     }
 
     private fun localStatus(item: LocalCard): String = when {
-        item.workState == "HANDOVER_FROZEN" -> "换机交接冻结 · 须核验续作"
+        item.workState == "HANDOVER_FROZEN" -> "旧冻结原件 · 后台撤回重发"
         item.recalled -> "召回/恢复阻断 · 停止作业"
         item.submissionState == "SYNCED" -> "历史完成 · 已验签回执"
         item.submissionState == "REVIEW_REQUIRED" -> "待主管审核 · 不可放行"

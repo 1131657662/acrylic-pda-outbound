@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-11
 branch: codex/development
-head: 65c04e9b
+head: 9c7cb166
 dirty_entries: 74
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 37 }
@@ -16,10 +16,10 @@ server: { contract: 0.54.0, paths: 151, flyway: V84, migrations: 84 }
 用户范围：故障订单由有权后台撤回→重新发布→新设备独立登记并从头作业；自动换机交接、故障进度承接、多跳/接收者激活已取消，旧源码/证据保留。O01–O05/U01–U04属于必做开发；执行[总目标计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)E00–E09和第8节闸门，总目标active，局部通过不计完成。
 
 ## Git、写权及环境
-- 主树D:/acrylic-pda-outbound，codex/development；HEAD/实际开发远端均65c04e9b8ff0f8931cc9df4eb728aa48bef8a793，main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86。E01已提交推送；E02/O01定向验收完成，正明确路径暂存自审并准备开发提交。继承取消换机代码/工具/历史保持；唯一活动写者本聊天01a12a96-895f-7d32-875a-e8a785419cb9，已复核其他项目聊天notLoaded；无子代理/新树。
-- [E00基线](history/GOAL_E00_BASELINE_2026-10-11.md)保全42份继承原件；全量原字节/哈希/diff、Git/远端/进程/监听/磁盘最新快照.local/goal-20261011/e02-checkpoint-03/，74份全部脏路径，前件看板已归档。工作树33份，无旧树写入；旧换机Android/UI测试、恢复工具、历史及本机请求文件不代提交/恢复功能。
+- 主树D:/acrylic-pda-outbound，codex/development；HEAD/实际开发远端均9c7cb166e8f3b9b41a4adaaef4ac7b8af45a12ff，main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86。E01已提交推送；E02/O01已明确32路径提交推送，回执与最终暂存保全；首页子范围将明确路径保存；U01/U02首屏与草稿失败暂缓。继承取消换机代码/工具/历史保持；唯一活动写者本聊天01a12a96-895f-7d32-875a-e8a785419cb9，已复核其他项目聊天notLoaded；无子代理/新树。
+- [E00基线](history/GOAL_E00_BASELINE_2026-10-11.md)保全42份继承原件；全量原字节/哈希/diff、Git/远端/进程/监听/磁盘最新快照.local/goal-20261011/e02-high-frequency-checkpoint-01/，71份全部脏路径，前件看板已归档。工作树33份，无旧树写入；旧换机Android/UI测试、恢复工具、历史及本机请求文件不代提交/恢复功能。
 - 本批新增/修改路径详见上述status/哈希：recall故障撤回/占用核验释放/空作业修订、submission旧资格/轮次/序号审计、PDA签名轮次及Android冻结/恢复消费、契约、Web撤回/持久请求、定向IT及E00/E01文档。原业务数据、配置/私钥、产物均排除Git。
-- E01库及E02种子1363/1366与消费者均dump/哈希、认证shutdown退出0，隔离19330/19434监听空。1364/1365恢复失败库/原dump/日志保留并停机；不计D15。重型Gradle空；模拟器5562/5564在D盘运行，5560已正常退出且userdata/Keystore保留，实体22D2910042未操作。共享3306/ADB及原1233/1293围栏保持；产物均D盘.local，未清理，C/D余量约68.7/10.6GiB，精确字节见e02-checkpoint-03/disks.json。
+- E01库及E02种子1363/1366与消费者均dump/哈希、认证shutdown退出0，隔离19330/19434监听空。1364/1365恢复失败库/原dump/日志保留并停机；不计D15。重型Gradle空；模拟器5562/5564在D盘运行，5560已正常退出且userdata/Keystore保留，实体22D2910042未操作。共享3306/ADB及原1233/1293围栏保持；产物均D盘.local，未清理，C/D余量约60.1/10.3GiB，精确字节见e02-high-frequency-checkpoint-01/disks.json。
 
 ## 本批证据与未通过项
 - [E01设计/验收](history/GOAL_E01_RECALL_REPUBLISH_2026-10-11.md)：采用既有change-requests命令，默认关闭。无STOP/ACK撤回；已存未完成占用须另有order:dispose与明确卸货/实物核验凭据，保留逐包释放历史。生成新计划修订和新资格，不迁移旧扫描；轮次绑定签名，原序号按作业修订分隔，全设备输入仍防重。
@@ -32,6 +32,7 @@ server: { contract: 0.54.0, paths: 151, flyway: V84, migrations: 84 }
 
 ## 下一动作与边界
 - [E02/O01旧包调整](history/GOAL_E02_SCAN_ADJUSTMENT_2026-10-11.md)定向验收：04布局30项；05/06/07各35项零失败错误跳过，覆盖主管保留/处置/身份/到期、队列/尾回滚及连续六包守恒。APK/lint通过，device-03正式真实HTTP采集/VOID/重扫/验签，device-06 TEMP真实准备/页面/冻结；ui-final-03三项新进程只读及停服正向通过。源码一致，实际320dp截图核对；失败运行器/夹具原件保留。debug APK在e02-delivery-01，SHA256 9A4AD971653D1CF70E801205ADFAD6BC335E37B82DC861252F0B2374C69F4420。接着U01/U02高频首页/扫码首屏/结单状态，再E03应急导出及电脑工具；E02整体和总目标均未完成。
+- [E02高频页面](history/GOAL_E02_HIGH_FREQUENCY_2026-10-11.md)：05定向47项零失败错误跳过、APK07/lint退出0且源码一致；各device主页导航通过，卡片使用已保存/计划及旧冻结只读入口。首屏正常候选519dp超509dp（01/02/03）与草稿添加无产品行（device04/05/06）各连续三次，原日志/XML/截图/草稿保留，分别暂缓；无新依据不重跑，不计U01/U02整体通过。下一项E03加密应急包、电脑核验转换、一致快照/离线身份/文件入口。前件看板归档before_goal_e03。
 - 后续按E02→E03→E04 TEMP/更正对账→E05净结果中转→E06独立sku→E07恢复/副本→E08留存遗漏→E09候选整合。P01–P08自主默认直接实施，系统人工关联/主管签字/实物核验不得代签。仍有可执行工作继续，总目标不complete。
 - 生产默认、七类决定handler/POST/放行/证据写入/关闭能力及localDeletionAllowed=false保持；不接原库/现网、不合main、不部署/发布/标签/Release、不正式签名、不绕工具审批、不删既有证据。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/RPO-RTO/Linux及现场只按C01–C08保留；开发缺口不移入C档。被忽略数据库/密钥/APK/证据没有因源码备份而异地备份。
 <!-- CURRENT_STATE_END -->

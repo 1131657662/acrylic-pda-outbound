@@ -1,49 +1,50 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="match_parent" android:fillViewport="true" android:background="@color/pda_canvas">
     <LinearLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:orientation="vertical" android:padding="16dp">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
-            <TextView android:id="@+id/title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="装车订单"
-                android:textSize="20sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
-            <ImageButton android:id="@+id/deviceSettings" android:layout_width="48dp" android:layout_height="48dp"
-                android:src="@android:drawable/ic_menu_preferences" android:contentDescription="设备信息与设置" />
+        android:orientation="vertical" android:padding="12dp">
+        <TextView android:id="@+id/title" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="作业" android:textSize="20sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
+        <LinearLayout android:id="@+id/navigation" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <Button android:id="@+id/workPage" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="作业" />
+            <Button android:id="@+id/dataPage" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="数据" />
+            <Button android:id="@+id/myPage" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="我的" />
         </LinearLayout>
         <TextView android:id="@+id/environment" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" />
-        <Button android:id="@+id/appUpdate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="检查应用更新" />
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:paddingTop="12dp" android:paddingBottom="12dp" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+            android:textSize="16sp" android:accessibilityLiveRegion="polite" />
         <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent"
             android:layout_height="4dp" android:indeterminate="true" android:visibility="gone" />
         <LinearLayout android:id="@+id/setup" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
             <Button android:id="@+id/pairing" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:text="短码配对登记" />
         </LinearLayout>
         <LinearLayout android:id="@+id/loginPanel" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="人员登录" android:textSize="20sp" android:paddingTop="16dp" />
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="账号" android:textSize="16sp" android:labelFor="@id/username" />
-            <EditText android:id="@+id/username" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
-                android:inputType="textVisiblePassword" android:singleLine="true" android:autofillHints="username" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="密码" android:textSize="16sp" android:paddingTop="8dp" android:labelFor="@id/password" />
-            <EditText android:id="@+id/password" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
-                android:inputType="textPassword" android:singleLine="true" android:saveEnabled="false" android:autofillHints="password" />
+            <EditText android:id="@+id/username" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:inputType="textVisiblePassword" android:singleLine="true" android:autofillHints="username" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="密码" android:textSize="16sp" android:labelFor="@id/password" />
+            <EditText android:id="@+id/password" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:inputType="textPassword" android:singleLine="true" android:saveEnabled="false" android:autofillHints="password" />
             <CheckBox android:id="@+id/showPassword" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="48dp" android:text="显示密码" />
             <Button android:id="@+id/login" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="登录并恢复本机订单" />
         </LinearLayout>
-        <LinearLayout android:id="@+id/actions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-            <Button android:id="@+id/handover" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:minHeight="52dp" android:text="接收换机交接" />
-            <Button android:id="@+id/temporaryPreparation" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:minHeight="56dp" android:text="临时作业资料" android:visibility="gone" />
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-                <Button android:id="@+id/localSection" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="本机任务" />
-                <Button android:id="@+id/historySection" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="历史完成" />
-                <Button android:id="@+id/availableSection" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="待领取" />
-                <ImageButton android:id="@+id/refresh" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_popup_sync" android:contentDescription="联网刷新" />
-            </LinearLayout>
-            <Button android:id="@+id/abnormalSection" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:minHeight="48dp" android:text="领取异常与拒绝记录" />
-        </LinearLayout>
-        <TextView android:id="@+id/identity" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:paddingTop="8dp" />
         <LinearLayout android:id="@+id/cards" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+        <LinearLayout android:id="@+id/temporaryCards" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
         <Button android:id="@+id/loadMore" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="加载下一页" />
+        <LinearLayout android:id="@+id/actions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <Button android:id="@+id/temporaryOrders" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="全部临时作业 / 新建" />
+            <Button android:id="@+id/localSection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回本机作业" />
+            <Button android:id="@+id/availableSection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="待领取订单" />
+            <Button android:id="@+id/refresh" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="联网刷新订单与资格" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/dataActions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="本机原记录持续保留；历史完成以已验签回执为准" android:textSize="16sp" />
+            <Button android:id="@+id/historySection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="已验签完成历史" />
+            <Button android:id="@+id/abnormalSection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="领取异常与原请求" />
+            <Button android:id="@+id/temporaryPreparation" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="临时作业预备资料" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/myActions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:id="@+id/identity" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" />
+            <Button android:id="@+id/deviceSettings" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="人员、声音与连接设置" />
+            <Button android:id="@+id/appUpdate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="检查应用更新" />
+        </LinearLayout>
+        <TextView android:id="@+id/diagnostics" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" />
     </LinearLayout>
 </ScrollView>

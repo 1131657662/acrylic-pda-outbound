@@ -1,5 +1,6 @@
 # 历史归档
 
+- [E02高频首页与失败队列](GOAL_E02_HIGH_FREQUENCY_2026-10-11.md)：已验首页切片、首屏/草稿暂缓原因及原件位置，总目标继续。
 - [总目标E00证据映射](GOAL_E00_BASELINE_2026-10-11.md)与[E01故障撤回/独立重发验收](GOAL_E01_RECALL_REPUBLISH_2026-10-11.md)：单写者保全、真实HTTP/并发/尾写回滚、Web持久原键、Android采集验签/重启及非空升级；总目标仍active。
 - E01看板前件：[启动前](ORCHESTRATION_STATE_before_goal_e01_2026-10-11.md)、[重启补证前](ORCHESTRATION_STATE_before_goal_e01_restart_2026-10-11.md)。历史不能恢复已取消换机承接。
 - [E02已扫码包调整](GOAL_E02_SCAN_ADJUSTMENT_2026-10-11.md)与[E02交付前看板](ORCHESTRATION_STATE_before_goal_e02_delivery_2026-10-11.md)：正式/TEMP原行事务、主管/身份/冻结保护、定位页面、真实HTTP/模拟器及停服正向；高频优化和其余总目标继续。

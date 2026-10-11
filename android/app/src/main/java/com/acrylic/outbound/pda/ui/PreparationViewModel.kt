@@ -153,25 +153,13 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
         val local = if (section == "ABNORMAL") emptyList() else localCards(section == "HISTORY", 0, limit)
         val history = if (saved == null) emptyList() else app.database.preparations().historyPage(saved.getString("userId"), saved.getString("deviceId"), 20, 0)
         mutable.update { it.copy(bound = app.session.settings.device.isNotBlank(), username = saved?.optString("username") ?: "",
-            local = local, localHasMore = section != "ABNORMAL" && local.size == limit,
+            local = local, localHasMore = section != "ABNORMAL" && local.size == limit, temporaryLocal = PreparationCards(app).temporary(),
             rejectedHistory = history, abnormalHasMore = history.size == 20,
             pending = if (saved == null) emptyList() else repository.pending(), deviceLabel = identityLabel(),
             loginRequired = saved == null || saved.has("blockedReason"), formalOrders = formal,
             temporaryVisible = saved != null && (PdaCapabilities.temporary(saved) || app.temporary.local() != null)) }
     }
-    private fun localCards(history: Boolean, offset: Int, limit: Int = 20): List<LocalCard> {
-        val saved = app.session.saved()
-        return repository.localPage(history, offset, limit).map {
-            val recalled = app.database.recalls().header(it.assignmentId) != null
-            val continuation = app.database.continuations().current(it.assignmentId)
-            val current = if (continuation == null) it else it.copy(assignmentJson = continuation.authorizationJson,
-                authorizationHistoryJson = continuation.authorizationHistoryJson)
-            val readiness = if (app.database.work().state(it.assignmentId) == "HANDOVER_FROZEN") "原资料保留，核验续作前禁止扫码" else repository.readiness(current)
-            LocalCard(current, if (recalled) "收到召回 · 停止作业，须核对恢复证据" else readiness, recalled,
-                app.database.work().state(it.assignmentId), app.database.submissions().currentState(it.assignmentId),
-                saved?.optString("userId") == it.operatorId && saved.optString("deviceId") == it.deviceId)
-        }
-    }
+    private fun localCards(history: Boolean, offset: Int, limit: Int = 20) = PreparationCards(app).formal(history, offset, limit)
     private fun identityLabel(): String {
         if (app.session.settings.device.isBlank()) return ""
         val result = app.pairing.saved()?.optJSONObject("result")

@@ -2,6 +2,7 @@ package com.acrylic.outbound.pda.ui
 
 import android.app.Activity
 import android.content.res.Configuration
+import android.os.Looper
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -12,7 +13,7 @@ import com.acrylic.outbound.pda.data.PreparedOrder
 import com.acrylic.outbound.pda.data.ClaimIntent
 import com.acrylic.outbound.pda.data.ClaimIntentHistory
 import com.acrylic.outbound.pda.databinding.OrderCardBinding
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.Job
 import org.json.JSONObject
 import org.junit.*
 import org.junit.Assert.*
@@ -28,7 +29,17 @@ class OrderCardsTest {
     class TestApp : PdaApplication() { override fun onCreate() {} }
     private lateinit var model: PreparationViewModel
     @Before fun setup() { model = PreparationViewModel(ApplicationProvider.getApplicationContext<TestApp>()) }
-    @After fun close() { model.viewModelScope.cancel() }
+    @After fun close() {
+        val job = checkNotNull(model.viewModelScope.coroutineContext[Job])
+        job.cancel()
+        val deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(5)
+        while (!job.isCompleted && System.nanoTime() < deadline) {
+            org.robolectric.Shadows.shadowOf(Looper.getMainLooper()).idle()
+            Thread.sleep(10)
+        }
+        check(job.isCompleted) { "ViewModel still owns database work; cannot close its connection" }
+        ApplicationProvider.getApplicationContext<TestApp>().database.close()
+    }
 
     @Test fun availableCardSeparatesVehicleFromFullNewAndLegacyOrderNumbers() {
         for (number in listOf("FH202609200001", "OB01a0bcbae6c37d5788c45bdbfb646e62")) {
