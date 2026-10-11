@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E03应急包格式与电脑核验](GOAL_E03_EMERGENCY_EXPORT_2026-10-11.md)：合成跨运行库验证、原件/处置守恒、失败partial保留及Excel独立消费；产品接线继续。前件看板见[格式自审前](ORCHESTRATION_STATE_before_e03_format_review_2026-10-11.md)。
+
 - [E02高频首页与失败队列](GOAL_E02_HIGH_FREQUENCY_2026-10-11.md)：已验首页切片、首屏/草稿暂缓原因及原件位置，总目标继续。
 - [总目标E00证据映射](GOAL_E00_BASELINE_2026-10-11.md)与[E01故障撤回/独立重发验收](GOAL_E01_RECALL_REPUBLISH_2026-10-11.md)：单写者保全、真实HTTP/并发/尾写回滚、Web持久原键、Android采集验签/重启及非空升级；总目标仍active。
 - E01看板前件：[启动前](ORCHESTRATION_STATE_before_goal_e01_2026-10-11.md)、[重启补证前](ORCHESTRATION_STATE_before_goal_e01_restart_2026-10-11.md)。历史不能恢复已取消换机承接。
