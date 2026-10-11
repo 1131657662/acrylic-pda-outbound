@@ -6,21 +6,22 @@
 ```yaml
 date: 2026-10-11
 branch: codex/development
-head: af78c094
-dirty_entries: 53
+head: a4a37f77
+dirty_entries: 35
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
 server: { contract: 0.51.0, paths: 148, flyway: V78, migrations: 78 }
 ```
 <!-- FACTS_END -->
-用户已恢复完整目标，本聊天接续执行、未完成；[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)D01–D18及第8节范围保持。[暂停文档与接续指令](history/D01_D18_PAUSE_2026-10-10_RECOVERED_FAULT.md)为新会话入口。替换前结论/失败保全于[主管围栏前看板](history/ORCHESTRATION_STATE_before_received_fault_2026-10-10.md)，旧指令不恢复。
+用户要求完成本批必要事项后收口换会话；本批已核范围双侧协议完成，总目标暂停、未完成，[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)D01–D18及第8节范围保持。[收口与新会话指令](history/D01_D18_PAUSE_2026-10-11_SCOPE_RELEASE.md)为接续入口；替换前结论/失败见[收口前看板](history/ORCHESTRATION_STATE_before_scope_release_pause_2026-10-11.md)，旧指令不恢复。
 
 ## Git、写权与环境
 - 主树D:/acrylic-pda-outbound，codex/development；原终点核对20路径已提交推送cc9947cc1f9a3f33f032f09f11f29c949557463e，实际开发远端一致，main未动。主管实物确认23路径已提交推送8ee3fe77c4cf1cce69933c60fc43272d50fe1323，实际开发远端一致；Git/快照见received-physical-postcommit-01。
 - 本聊天单助手唯一写者，其他项目聊天notLoaded。运维本批17路径已提交推送af78c0943f2677cb158d4989be30bdfddc907c2e，实际开发远端一致，main未动；received-operations-precommit-01保全46条、postcommit-01剩余29继承dirty逐hash与physical-postcommit相同，69历史/22STOP通过。全部副本/hash/diff/Git/进程/监听/C/D余量已保全，不restore/清空或混入提交。
 - 新1281主管实物确认与跨JVM重放各1/0/0/0、exit0/sourceUnchanged，独立原事实/原清单22输入与编号8输入不变；普通recovery/handover3309全过/114XML/无skip。dump认证停机/PID退出/监听空，无重型Gradle/HTTP/页面/模拟器；既有3306/13316/ADB未动。1276断言败、1280运行器重启败保留不复用；1275/1278中间通过、1277未分配/1279分配拒绝均保全。
 - 新1242/1243/1246/1248失败库保留停机不复用；1247中间通过与1250最终通过分别保全。1244/1245/1249/1251随机目录子串守卫拒绝未建库。1250跨33树分配，dump重算一致/认证停机/原PID退出/监听空。
-- 接续快照received-scope-release-resume-01保全41条dirty；29继承路径除看板均同operations-postcommit，69历史/22STOP通过；完整进程/监听/C/D盘余量保全。新范围及测试变更另属本批，单助手唯一写者。
+- 范围本批24路径已提交推送a4a37f772826fdf1f23325fb1278ae581dc6b833，实际开发远端一致，main未动。precommit保全53条、postcommit剩余29继承dirty与前快照逐hash一致，69历史/22STOP通过；两阶段/回归各2677输入及四组消费原件hash收口无漂移。文档回执见received-scope-release-doc-close-01，最终Git/dirty副本/hash/diff/写者/进程/监听/C/D余量见received-scope-release-pause-final-01；事实块提交后刷新保留为看板dirty，不循环提交自身SHA。
+- 本批已无重型Gradle、任务DB/HTTP/页面/模拟器，19330/19434/5560/5173空，既有3306/13316/ADB保持。收口后无业务开发写者；29继承路径受保护，新资格仅调查未实现。1293最终持久UNKNOWN围栏保留，所有保全/失败库不可复用。
 - 新产物/TEMP/Java/cache在D盘，无清理，本机私有证据未异地备份；22份停止AVD仅可逆NTFS压缩/原hash一致未删，见[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)/[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 本批与既有有效范围
@@ -43,8 +44,8 @@ server: { contract: 0.51.0, paths: 148, flyway: V78, migrations: 78 }
 
 ## 未完成与接续第一动作
 - D06/D07整体、FORMAL各阶段实际入口、其他无可信归档来源/R09跨截点业务重建、D08–D18与总闸门未完成；D18无最终候选。D04候选排除/D05取消释放缺政策保持拒绝；原资料/旧BCD/526、历史关键未验/失败与恢复限制单列，开发缺口不转现场。
-- 从主管围栏后范围核对/可信释放→本代次新资格→接收准备/激活→最终提交接续，沿库外PREPARE→DB排他锁提交revision/epoch/范围→库外COMMIT→实例核两侧证明；设备/来源/案件/调整链/库存/审计/截点外高水位闭包必须可信，未知范围隔离。RecoveryNormalRegistration/Intent登记不是业务释放证明。
-- 原正文代次与目标传输代次不同；旧资格不可激活，范围释放后另发本代次资格，保留原事实/映射。范围双侧协议已验待明确路径提交；随后实现指定接收人新资格及准备/激活/最终提交，不开NORMAL、不移除原清单守恒检查。接缝设计见.local/d01-d18-20261010/received-trusted-release-design.md。
+- 已验范围两侧证明之后，先补可信/可审计的指定接收者准入，再接本代次新资格→接收准备/激活→最终提交。原同仓设备禁用，另一ACTIVE设备跨仓且TEMP关闭，案件尚无target；不得重启原设备/借跨仓设备或插入后跳过核对。新设备/资格/激活改变原表，须精确签名效果投影及beforeCommit守恒；不开NORMAL、不删比较、不把Result当公共写许可。
+- 原正文source与target传输代次分开；旧票据不可激活，另发限定scope/接收者的新资格并保留原事实/映射、隔离首轮能力。跨树核对后新建隔离目标，只读复用原1233；不重跑原源/1150/1151/UI-06/1100–1102，不复用保全/失败库。接缝、源码入口和退出要求详见收口文档。
 - 生产默认/签名及七类生产决定handler/POST/放行/证据写入/关闭能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名、不绕设备审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 <!-- CURRENT_STATE_END -->
 

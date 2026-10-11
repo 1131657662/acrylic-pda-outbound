@@ -32,6 +32,8 @@
 
 ## 保全、Git及下一步
 
+24条明确路径已提交推送a4a37f772826fdf1f23325fb1278ae581dc6b833，实际开发远端一致，main未动。received-scope-release-precommit-01保全53条dirty，postcommit-01剩余29继承路径与precommit/operations-postcommit逐hash一致，69历史/22STOP通过。用户随后要求完成必要核验后收口；文档提交/最终快照与新会话指令见[收口记录](D01_D18_PAUSE_2026-10-11_SCOPE_RELEASE.md)。各2677报告输入及四组原件收口无漂移，仅补文档未重跑业务；新资格只调查未实现，不能将本批当D07全链完成。
+
 1291/1292/1293各自dump成功、认证shutdown=0、原PID退出、19330/19434空；最终retention见.local/d01-d18-20261010/temporary-evidence-restore-mysql-1293/。既有3306/13316/ADB不操作。任务临时/Java/cache和证据在D盘，C/D余量见完整快照；.local私有物料并未因源码推送而异地备份。
 
 received-scope-release-resume-01保存全部41条输入dirty、69历史比较/22STOP校验及进程/监听/盘余量，29继承路径除看板均与operations-postcommit-01逐hash一致。提交前后精确清单、副本、diff、SHA、远端回执在本批precommit/postcommit快照；只暂存明确范围，不混入29继承路径，不合main。
