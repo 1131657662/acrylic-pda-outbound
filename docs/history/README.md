@@ -1,5 +1,7 @@
 # 历史归档
 
+- [D07/R09限定恢复接收确认服务（2026-10-11）](D07_R09_RECOVERED_CONFIRMATION_2026-10-11.md)：专用RS256/原键、新JVM原回执、实际MySQL与原表守恒/独立消费；HTTP/Android和激活链继续。
+
 - [D07/R09限定恢复Android原件暂存（2026-10-11）](D07_R09_RECOVERED_ANDROID_STAGE_2026-10-11.md)：同一LOGIN/HTTP/native Room/新JVM、原表守恒与独立消费；确认/激活/最终提交继续。
 
 - [D07/R09恢复本人产品HTTP下载（2026-10-11）](D07_R09_RECOVERED_DOWNLOAD_HTTP_2026-10-11.md)：固定服务端信任、原Bearer/字节、HTTP并发/权限反例及新JVM；Android/确认/激活/最终提交继续。
