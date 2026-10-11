@@ -36,6 +36,14 @@ public final class RecoveryScopeReleaseProjection {
             }
         });
     }
+    void requireCommitted() {
+        require(TransactionSynchronizationManager.isActualTransactionActive() && TransactionSynchronizationManager.hasResource(database),
+            "RECOVERY_RELEASE_TRANSACTION_REQUIRED");
+        new RecoveryClosedWriteProjection(jdbc).requireMatches(store.approval().closed().control());
+        require(store.inspect(),"RECOVERY_RELEASE_COMMIT_REQUIRED");
+        match(store.intent().commit(),read(store.intent().commit()));
+        require(all().size()==1,"RECOVERY_RELEASE_UNVERIFIED_PROJECTIONS");
+    }
     private List<Map<String,Object>> read(JsonNode expected) {
         return jdbc.queryForList("SELECT * FROM recovery_scope_release WHERE command_id=? OR (installation_id=? AND epoch_id=? AND scope_id=?) FOR UPDATE",
             Ids.bytes(uuid(expected,"commandId")),Ids.bytes(uuid(expected.path("control"),"installationId")),

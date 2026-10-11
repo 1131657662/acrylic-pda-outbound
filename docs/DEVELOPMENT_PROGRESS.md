@@ -2,6 +2,8 @@
 
 # 开发验收索引
 
+- [D07/R09恢复态指定接收者准入](history/D07_R09_RECIPIENT_ADMISSION_2026-10-11.md)：独立签名/持钥证明、精确新增效果/原表守恒、MySQL回滚/新JVM与独立消费；目标代次新资格及最终接收链继续。
+
 - [范围双侧提交后的收口与接续](history/D01_D18_PAUSE_2026-10-11_SCOPE_RELEASE.md)：最终证据、Git/dirty保全和新资格接缝约束；用户要求暂停，总目标未完成。
 - [D07/R09已核范围双侧提交](history/D07_R09_SCOPE_RELEASE_2026-10-11.md)：库外PREPARE/DB闭事务/COMMIT、真实崩溃与原pin重载、丢确认持久围栏、独立消费；新资格与最终交接继续。
 

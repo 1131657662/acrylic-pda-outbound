@@ -54,6 +54,7 @@ public final class RecoveryLeasedTransaction {
             // TransactionTemplate returns only after commit/rollback callbacks and resource cleanup.
             return transaction.execute(status -> {
                 lease.started();
+                if (closedAuthority != null) RecoveryClosedOperationContext.bind(dataSource,closedAuthority,acquired.operation());
                 if (closedAuthority != null) TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                     @Override public void beforeCommit(boolean readOnly) { closedAuthority.requireDuring(acquired.operation()); }
                 });

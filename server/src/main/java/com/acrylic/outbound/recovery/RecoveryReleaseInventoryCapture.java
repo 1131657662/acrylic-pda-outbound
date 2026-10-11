@@ -18,6 +18,11 @@ public final class RecoveryReleaseInventoryCapture {
     }
 
     public RecoveryReleaseInventory capture(RecoveryRecoveredTemporaryArchive archive,JsonNode faultReceipt) {
+        return capture(archive,faultReceipt,null);
+    }
+
+    public RecoveryReleaseInventory capture(RecoveryRecoveredTemporaryArchive archive,JsonNode faultReceipt,
+            RecoveryRecipientAdmission.Effects recipient) {
         require(TransactionSynchronizationManager.isActualTransactionActive()
             && TransactionSynchronizationManager.hasResource(database),"RECOVERY_RELEASE_TRANSACTION_REQUIRED");
         var control=control(); var facts=SubmissionJson.object().put("formatVersion",1);
@@ -29,7 +34,8 @@ public final class RecoveryReleaseInventoryCapture {
             .put("warehouseId",archive.source().warehouseId().toString()).put("scopeId",archive.source().scopeId().toString())
             .put("submissionId",archive.source().submissionId().toString()).put("deviceId",archive.source().deviceId().toString());
         facts.set("faultReceipt",faultReceipt.deepCopy());
-        var tables=new RecoveryReleaseInventoryRows(jdbc,archive.source().warehouseId()).read(); facts.set("tables",tables);
+        var tables=new RecoveryReleaseInventoryRows(jdbc,archive.source().warehouseId()).read();
+        facts.set("tables",recipient==null?tables:recipient.before(tables));
         var numbers=RecoveryReleaseNumberInventory.capture(jdbc); facts.set("globalOrderNumbers",numbers);
         TransactionSynchronizationManager.registerSynchronization(new org.springframework.transaction.support.TransactionSynchronization() {
             @Override public void beforeCommit(boolean readOnly) {

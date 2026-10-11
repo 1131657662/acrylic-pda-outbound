@@ -46,7 +46,7 @@ public final class RecoveryReceivedOperationsChecks {
         return new Result(result,request,approval);
     }
     public record Result(RecoveryReceivedPhysicalReviewChecks.Result physical,RecoveryOperationsApproval.Request request,RecoveryOperationsApproval approval) { }
-    private static ObjectNode approval(RecoveryOperationsFixture f,RecoveryOperationsApproval.Context context) {
+    static ObjectNode approval(RecoveryOperationsFixture f,RecoveryOperationsApproval.Context context) {
         var inventory=context.inventory().facts(); var fault=inventory.path("faultReceipt");
         String caseId=text(fault.path("businessDecision"),"caseId");
         var row=RecoveryReleaseRows.decode(inventory.path("tables").path("handover_command_receipt")).stream()

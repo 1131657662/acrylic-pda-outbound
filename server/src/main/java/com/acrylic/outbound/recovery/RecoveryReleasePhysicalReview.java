@@ -17,11 +17,16 @@ public final class RecoveryReleasePhysicalReview {
     }
     public static RecoveryReleasePhysicalReview inspect(DataSource database,RecoveryReleaseInventory inventory,
             RecoveryReleaseReconciliation.Prepared prepared) {
+        return inspect(database,inventory,prepared,null);
+    }
+    public static RecoveryReleasePhysicalReview inspect(DataSource database,RecoveryReleaseInventory inventory,
+            RecoveryReleaseReconciliation.Prepared prepared,RecoveryRecipientAdmission.Effects recipient) {
         require(database!=null && inventory!=null && prepared!=null && TransactionSynchronizationManager.isActualTransactionActive()
             && TransactionSynchronizationManager.hasResource(database),"RECOVERY_SCOPE_TRANSACTION_REQUIRED");
         prepared.requireApprovalContext(inventory); prepared.requireOriginals();
         var request=prepared.request(); var jdbc=new JdbcTemplate(database);
-        var actual=new RecoveryReleaseDatabaseRows(jdbc).read();
+        var raw=new RecoveryReleaseDatabaseRows(jdbc).read();
+        var actual=recipient==null?raw:recipient.before(raw);
         var observedAt=jdbc.queryForObject("SELECT UTC_TIMESTAMP(3)",java.sql.Timestamp.class).toInstant();
         var approval=new RecoveryReleaseApprovalEffects(actual,request.targetKeys(),inventory.facts());
         var before=RecoveryReleaseApprovedRows.before(actual,approval,new RecoveryReleaseApprovedRows.Context(inventory.facts(),observedAt));
@@ -31,7 +36,7 @@ public final class RecoveryReleasePhysicalReview {
         original(prepared);
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override public void beforeCommit(boolean readOnly) {
-                require(actual.equals(new RecoveryReleaseDatabaseRows(jdbc).read()),"RECOVERY_SCOPE_CHANGED");
+                require(raw.equals(new RecoveryReleaseDatabaseRows(jdbc).read()),"RECOVERY_SCOPE_CHANGED");
                 prepared.requireOriginals(); original(prepared);
             }
         });

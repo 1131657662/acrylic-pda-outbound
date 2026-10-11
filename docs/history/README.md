@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09恢复态指定接收者准入（2026-10-11）](D07_R09_RECIPIENT_ADMISSION_2026-10-11.md)：可信登记、全原表/精确签名效果、实际MySQL反例/新JVM/独立消费；新资格及最终链未完成。
+- [指定接收者准入前看板（2026-10-11）](ORCHESTRATION_STATE_before_recipient_resume_2026-10-11.md)与[准入收口前看板](ORCHESTRATION_STATE_before_recipient_close_2026-10-11.md)：原结论/在途断点保全，旧指令不恢复。
+
 - [范围双侧提交后的收口与新会话指令（2026-10-11）](D01_D18_PAUSE_2026-10-11_SCOPE_RELEASE.md)：提交/最终快照、无在途任务、保全及接收者/目标代次约束；总目标暂停未完成。
 - [范围双侧协议收口前看板（2026-10-11）](ORCHESTRATION_STATE_before_scope_release_pause_2026-10-11.md)：替换前结论/失败保全，不恢复旧指令。
 - [D07/R09已核范围双侧提交（2026-10-11）](D07_R09_SCOPE_RELEASE_2026-10-11.md)：非空迁移守恒、两侧确认、真实halt/新JVM和丢确认围栏、独立消费；不代新资格/最终交接。

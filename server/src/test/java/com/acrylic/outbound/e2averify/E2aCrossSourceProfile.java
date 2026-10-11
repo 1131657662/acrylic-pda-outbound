@@ -32,6 +32,12 @@ final class E2aCrossSourceProfile {
         require(jdbc.queryForObject("SELECT COUNT(*) FROM recovery_scope_release",Integer.class)==1,"Scope DB commit missing");
         return profile;
     }
+    static E2aCrossSourceProfile completedRecipient() throws Exception {
+        var profile=new E2aCrossSourceProfile("recipient"); var jdbc=profile.connectChecked();
+        require("RECOVERY_PENDING".equals(jdbc.queryForObject("SELECT service_mode FROM server_state WHERE id=1",String.class)),"Restart requires closed state");
+        require(jdbc.queryForObject("SELECT COUNT(*) FROM recovery_recipient_admission",Integer.class)==1,"Recipient DB commit missing");
+        return profile;
+    }
 
     private E2aCrossSourceProfile(String restart) throws Exception {
         String run = System.getenv("E2A_CROSS_RUN");
@@ -46,6 +52,7 @@ final class E2aCrossSourceProfile {
         require(Files.isDirectory(attempt.resolve("data")), "Missing isolated datadir");
         if("physical".equals(restart)) requireCompletedPhysicalReview(run);
         else if("scope".equals(restart)) requireCompletedScopeRelease(run);
+        else if("recipient".equals(restart)) requireCompletedRecipient(run);
         else require(!Files.exists(attempt.resolve("test-started.marker")), "One-shot attempt already used");
         require(System.getenv("E2A_CROSS_PASSWORD") != null
             && System.getenv("E2A_CROSS_PASSWORD").matches("[0-9a-f]{64}"), "Missing private credential");
@@ -96,6 +103,12 @@ final class E2aCrossSourceProfile {
         boolean matched=false;
         for(var argument:report.path("command")) matched|=argument.asText().equals("*E2aReceivedScopeReleaseIT.preparesScopeReleaseWithConfirmedDatabaseCommit");
         require(matched,"Prior phase is not confirmed scope preparation");
+    }
+    private void requireCompletedRecipient(String run) throws Exception {
+        for(String file:new String[]{"test-started.marker","recipient-checks.json","recipient-after.json","physical-restart-input.json","scope-restart-input.json"})
+            require(Files.isRegularFile(attempt.resolve(file)),"Recipient preparation incomplete");
+        require(!Files.exists(attempt.resolve("recipient-restart-result.json")),"Recipient restart already consumed");
+        require(!Files.exists(ROOT.resolve(".local/d01-d18-20261010/temporary-evidence-restore-mysql-"+run+"/retention.json")),"Retained attempt cannot be reused");
     }
 
     void migrate(JdbcTemplate jdbc, String target) {

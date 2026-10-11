@@ -69,7 +69,7 @@ public final class HandoverRecoveredPhysicalChecks {
         try { return service.approve(HandoverReceiptCodec.bytes(command),"received-physical",context); }
         finally { SecurityContextHolder.clearContext(); }
     }
-    private static ObjectNode approval(HandoverRecoveredTemporaryFixture f,JsonNode fault,WebApplicationContext app) {
+    static ObjectNode approval(HandoverRecoveredTemporaryFixture f,JsonNode fault,WebApplicationContext app) {
         var command=object().put("commandVersion",1).put("commandType","APPROVE").put("commandId",UUID.randomUUID().toString())
             .put("warehouseId",text(fault,"warehouseId")).put("transportRecoveryEpoch",text(fault,"transportRecoveryEpoch"))
             .put("caseId",text(fault,"caseId")).put("stopState","FAULT_FENCED").put("integrityState","COMPLETE")

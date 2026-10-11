@@ -21,6 +21,25 @@ public final class RecoveryOperationsApproval {
         request.authority().closed().read(); request.authority().requireUnchanged();
         var value=new RecoveryOperationsApproval(request,read(request)); value.requireCurrent(context); return value;
     }
+    /** Bootstrap only for retained recipient replay. The caller exposes no release creator; DB context is revalidated before commit. */
+    static RecoveryOperationsApproval retainedEvidence(Request request) {
+        require(!TransactionSynchronizationManager.isActualTransactionActive(),"RECOVERY_OPERATIONS_PREFLIGHT_OUTSIDE_TRANSACTION");
+        request.authority().closed().read(); request.authority().requireUnchanged();
+        var value=new RecoveryOperationsApproval(request,read(request)); var facts=value.approval;
+        fields(facts,"formatVersion purpose commandId authoritySha256 operatorId requestedAt recoverySessionId control caseId supervisorId physicalReview");
+        version(facts); uuid(facts,"commandId"); uuid(facts,"caseId"); uuid(facts,"supervisorId");
+        require(text(facts,"purpose").equals("RECOVERED_TEMP_NEW_QUALIFICATION")
+            && text(facts,"authoritySha256").equals(request.authority().sha256())
+            && uuid(facts,"operatorId").equals(uuid(request.authority().identity(),"operatorId")),"RECOVERY_OPERATIONS_AUTHORITY_BINDING");
+        var closed=request.authority().closed(); var control=facts.path("control");
+        require(uuid(facts,"recoverySessionId").equals(closed.control().recoverySessionId())
+            && uuid(control,"installationId").equals(closed.control().installationId())
+            && uuid(control,"epochId").equals(closed.control().epochId())
+            && text(control,"controlRevision").equals(closed.control().revision())
+            && text(control,"controlRecordSha256").equals(closed.control().recordSha256())
+            && !instant(facts,"requestedAt").isAfter(Instant.now()),"RECOVERY_OPERATIONS_CONTROL_BINDING");
+        return value;
+    }
     /** Rebind to freshly inspected DB facts, and retain file checks until the owning transaction commits. */
     public void revalidate(Context current,RecoveryClosedAuthority closed) {
         require(TransactionSynchronizationManager.isActualTransactionActive()

@@ -38,7 +38,7 @@ public final class RecoveryReceivedScopeReleaseReload {
         Path root=Path.of(text(value,"storeRoot")); String lock=text(value,"storeLockIdentity");
         return new Session(new RecoveryScopeReleaseStore(approved,root,lock),request,root,lock,value);
     }
-    private static HandoverRecoveredPhysicalReview.Request request(JdbcTemplate jdbc,Path attempt,Path original) throws Exception {
+    static HandoverRecoveredPhysicalReview.Request request(JdbcTemplate jdbc,Path attempt,Path original) throws Exception {
         byte[] bytes=Files.readAllBytes(attempt.resolve("physical-restart-input.json"));
         assertThat(sha256(bytes)).isEqualTo(Files.readString(attempt.resolve("physical-restart-input.sha256")));
         var reload=RecoveryReceivedPhysicalRestart.mapper().readValue(bytes,RecoveryReceivedPhysicalRestart.Reload.class);

@@ -23,18 +23,27 @@ public final class HandoverRecoveredTemporaryReview {
     }
 
     public RecoveryReleaseInventory inspect(byte[] originalFault,HandoverRecoveredTemporaryBinding binding) {
+        return inspectRecipient(originalFault,binding,null);
+    }
+
+    public RecoveryReleaseInventory inspectRecipient(byte[] originalFault,HandoverRecoveredTemporaryBinding binding,
+            RecoveryRecipientAdmission admission) {
         Objects.requireNonNull(binding); var command=HandoverCommand.Input.parse(originalFault); binding.require(command);
         HandoverCommand.corruptUnless("FAULT_FENCE".equals(command.kind()));
-        var before=access.current(command);
+        var before=admission==null?access.current(command):null;
         return binding.consumer().consumeAfterIdentityLocks(binding.request(),binding.nativeFacts(),
             new RecoveryReceivedTemporaryArchiveConsumer.IdentityConsumer<>() {
-                @Override public void lockIdentity() { requireDatabase(); access.lock(command,before); }
+                @Override public void lockIdentity() {
+                    requireDatabase();
+                    if(admission==null) access.lock(command,before); else admission.lockIdentity(jdbc.getDataSource());
+                }
                 @Override public void requireOrderVersion(JsonNode original,JsonNode current) { projection.require(command,original,current); }
                 @Override public RecoveryReleaseInventory apply(RecoveryRecoveredTemporaryArchive archive,
                         RecoveryTemporaryNativeHandoverFacts.Facts facts) {
                     binding.requireArchive(command,facts); var receipt=receipt(command);
                     binding.requireAnchor(command,receipt.path("caseContext"),archive);
-                    return new RecoveryReleaseInventoryCapture(jdbc.getDataSource()).capture(archive,receipt);
+                    var effects=admission==null?null:admission.readEffects(jdbc.getDataSource());
+                    return new RecoveryReleaseInventoryCapture(jdbc.getDataSource()).capture(archive,receipt,effects);
                 }
             });
     }
