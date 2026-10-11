@@ -94,6 +94,10 @@ public class AssignmentStore {
     public long nextEpoch(UUID order) {
         return Math.addExact(jdbc.queryForObject("SELECT assignment_epoch FROM outbound_order WHERE id=?",Long.class,Ids.bytes(order)),1);
     }
+    public String workRound(UUID order) {
+        var rounds=jdbc.queryForList("SELECT work_round FROM submission_scope WHERE source_order_id=?",String.class,Ids.bytes(order));
+        return rounds.isEmpty()?"1":rounds.getFirst();
+    }
     public void insert(Work work,Publication publication,OfflineSigner.Signed signed) {
         jdbc.update("""
             INSERT INTO order_assignment(id,warehouse_id,order_id,revision,publication_id,device_id,operator_id,epoch,recovery_epoch,
@@ -130,6 +134,11 @@ public class AssignmentStore {
         String startOrderScanSeq,String allocationVersion,String status,String areaNote,String issuedAt,String expiresAt,
         String downloadAckAt,String offlineToken,String offlineAuthorizationId,String authorizationSequence,
         String orderNo,String vehicleNo,String plannedTotal) {
+        @com.fasterxml.jackson.annotation.JsonProperty("workRound")
+        public String workRound() {
+            if(offlineToken==null)return null;
+            return com.acrylic.outbound.submissions.SubmissionJson.parse(Base64.getUrlDecoder().decode(offlineToken.split("\\.")[1])).path("workRound").asText("1");
+        }
         public View forOperator(UUID user) {
             if(operatorId.equals(user.toString())) return this;
             // The device still needs to show the held order, but another person cannot recover its credential.

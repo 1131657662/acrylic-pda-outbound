@@ -41,6 +41,8 @@ public class SubmissionStore {
         if(scopes.isEmpty()) { scope=Ids.next();jdbc.update("INSERT INTO submission_scope(id,warehouse_id,source_order_id) VALUES(?,?,?)",Ids.bytes(scope),Ids.bytes(actor.warehouse()),Ids.bytes(c.order())); }
         else scope=scopes.getFirst();
         var order=orders.lock(actor.warehouse(),c.order());
+        requireNotWithdrawn(c.assignment());
+        if(c.continuation()==null)equal(Long.toString(c.round()),new com.acrylic.outbound.pda.AssignmentStore(jdbc).get(c.assignment()).workRound(),"作业轮次须绑定原签名领取资格");
         jdbc.queryForList("SELECT id FROM submission WHERE id=? FOR UPDATE",Ids.bytes(c.id()));
         var head=find(c.id());
         if(head!=null) { equal(head.control(),c,"同一提交ID的来源不可改变");equal(head.actor(),actor.user(),"原提交人员不匹配");return head; }
@@ -62,7 +64,9 @@ public class SubmissionStore {
             """,Ids.bytes(c.id()),Ids.bytes(scope),Ids.bytes(c.assignment()),Ids.bytes(c.device()),Ids.bytes(actor.user()),c.round(),Long.parseLong(c.epoch()));
         if(c.continuation()==null) {
             jdbc.update("UPDATE submission_scope SET current_submission_id=? WHERE id=?",Ids.bytes(c.id()),Ids.bytes(scope));
-            jdbc.update("INSERT INTO order_submission_slot(order_id,scope_id,work_round,current_submission_id,phase) VALUES(?,?,?,?,'FROZEN')",Ids.bytes(c.order()),Ids.bytes(scope),c.round(),Ids.bytes(c.id()));
+            int restarted=jdbc.update("UPDATE order_submission_slot SET current_submission_id=?,phase='FROZEN',slot_version=slot_version+1 WHERE order_id=? AND scope_id=? AND work_round=? AND phase='CLOSED' AND current_submission_id IS NULL",
+                Ids.bytes(c.id()),Ids.bytes(c.order()),Ids.bytes(scope),c.round());
+            if(restarted==0)jdbc.update("INSERT INTO order_submission_slot(order_id,scope_id,work_round,current_submission_id,phase) VALUES(?,?,?,?,'FROZEN')",Ids.bytes(c.order()),Ids.bytes(scope),c.round(),Ids.bytes(c.id()));
         }
         else {
             jdbc.update("UPDATE submission SET continuation_id=? WHERE id=?",Ids.bytes(c.continuation()),Ids.bytes(c.id()));
@@ -74,6 +78,10 @@ public class SubmissionStore {
         head=required(c.id());
         if(head.order()!=null)orders.lock(head.warehouse(),head.order());jdbc.queryForList("SELECT id FROM submission WHERE id=? FOR UPDATE",Ids.bytes(c.id()));
         return required(c.id());
+    }
+    private void requireNotWithdrawn(UUID assignment) {
+        int withdrawn=jdbc.queryForObject("SELECT COUNT(*) FROM order_change_request WHERE assignment_id=? AND status='WITHDRAWN'",Integer.class,Ids.bytes(assignment));
+        if(withdrawn!=0)throw new BusinessException(409,"ASSIGNMENT_WITHDRAWN","原领取已被后台撤回，保留本机原记录并核对，不可再上传作业");
     }
     public void current(Head head) {
         if(head.control().temporary()!=null && head.order()==null) {

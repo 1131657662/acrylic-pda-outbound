@@ -10,9 +10,12 @@ import static com.acrylic.outbound.submissions.SubmissionJson.parse;
 public class RecallController {
     private final com.acrylic.outbound.continuation.ContinuationRequests continuations;
     private final com.acrylic.outbound.continuation.ContinuationApproval approval;
+    private final RecallFaultWithdrawals faultWithdrawals;
     private final RecallRequests recalls;private final RecallResolution resolution;private final RecoveryPackages packages;private final ApiResponses responses;
     public RecallController(RecallRequests recalls,RecallResolution resolution,RecoveryPackages packages,ApiResponses responses,
-        com.acrylic.outbound.continuation.ContinuationRequests continuations,com.acrylic.outbound.continuation.ContinuationApproval approval) {
+        com.acrylic.outbound.continuation.ContinuationRequests continuations,com.acrylic.outbound.continuation.ContinuationApproval approval,
+        RecallFaultWithdrawals faultWithdrawals) {
+        this.faultWithdrawals=faultWithdrawals;
         this.continuations=continuations;this.approval=approval;
         this.recalls=recalls;this.resolution=resolution;this.packages=packages;this.responses=responses;
     }
@@ -22,6 +25,7 @@ public class RecallController {
     @PostMapping("/orders/{order}/change-requests") public ApiEnvelope<?> create(@PathVariable UUID order,@RequestParam UUID warehouseId,
         @RequestHeader("X-Server-Recovery-Epoch") String epoch,@RequestHeader("Idempotency-Key") String key,@RequestBody byte[] body,HttpServletRequest request) {
         var command=parse(body);var context=new RecallRequests.Context(warehouseId,epoch,key);
+        if(command.path("type").asText().equals("FAULT_WITHDRAWAL"))return responses.ok(faultWithdrawals.withdraw(context,order,command),request);
         return responses.ok(command.path("type").asText().equals("REOPEN_WORK")?continuations.create(context,order,command):recalls.create(context,order,command),request);
     }
     @PostMapping("/change-requests/{id}/resolve") public ApiEnvelope<?> resolve(@PathVariable UUID id,@RequestParam UUID warehouseId,

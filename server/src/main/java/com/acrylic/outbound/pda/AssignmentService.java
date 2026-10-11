@@ -36,7 +36,7 @@ public class AssignmentService {
         var signed=signer.sign(new Claims("acrylic-outbound","acrylic-pda-offline",work.authId().toString(),principal.userId().toString(),
             principal.deviceId().toString(),principal.warehouseId().toString(),work.id().toString(),order.toString(),head.revision(),
             Long.toString(work.epoch()),context.recoveryEpoch(),publication.snapshotId(),publication.policyVersion(),publication.autoDeduct(),
-            work.planSha(),publication.inventorySha(),"1","0",principal.userAuthVersion(),principal.deviceVersion(),"pda:scan",
+            work.planSha(),publication.inventorySha(),"1","0",store.workRound(order),principal.userAuthVersion(),principal.deviceVersion(),"pda:scan",
             issued.getEpochSecond(),work.expires().getEpochSecond()));
         store.insert(work,publication,signed);events.save(ticket,work,context.requestId());return store.get(work.id());
     }
@@ -44,6 +44,6 @@ public class AssignmentService {
     public record Command(@NotNull @Pattern(regexp="[1-9][0-9]{0,17}") String expectedVersion,@NotNull @Size(max=500) String areaNote) { }
     private record Claims(String iss,String aud,String jti,String sub,String deviceId,String warehouseId,String assignmentId,String orderId,
         int revision,String assignmentEpoch,String serverRecoveryEpoch,String inventorySnapshotId,String policyVersion,boolean autoDeductInventory,
-        String planSha256,String inventorySha256,String startOrderScanSeq,String allocationVersion,String userAuthVersion,String deviceVersion,
+        String planSha256,String inventorySha256,String startOrderScanSeq,String allocationVersion,String workRound,String userAuthVersion,String deviceVersion,
         String scope,long iat,long exp) { }
 }

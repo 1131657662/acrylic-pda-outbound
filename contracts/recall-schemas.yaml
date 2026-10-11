@@ -7,12 +7,12 @@ Request:
     assignmentId: {type: string, format: uuid}
     revision: {type: integer, minimum: 1}
     serverRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
-    status: {enum: [REQUESTED, STOPPED, CANCELLED]}
+    status: {enum: [REQUESTED, STOPPED, CANCELLED, WITHDRAWN]}
     reason: {type: string, maxLength: 500}
     rowVersion: {$ref: './submission-schemas.yaml#/Positive'}
     recovery: {oneOf: [{$ref: '#/Package'}, {type: 'null'}]}
     stopProof: {$ref: '#/Proof'}
-    resolutionProof: {$ref: '#/Proof'}
+    resolutionProof: {oneOf: [{$ref: '#/Proof'}, {$ref: '#/FaultWithdrawalProof'}]}
     deviceId: {type: string, format: uuid}
     continuation: {$ref: './continuation-schemas.yaml#/Request'}
     previousSubmission:
@@ -59,6 +59,45 @@ Create:
     type: {const: RECALL}
     expectedVersion: {$ref: './submission-schemas.yaml#/Positive'}
     reason: {type: string, minLength: 1, maxLength: 500}
+FaultWithdrawal:
+  type: object
+  required: [type, expectedVersion, reason]
+  properties:
+    type: {const: FAULT_WITHDRAWAL}
+    expectedVersion: {$ref: './submission-schemas.yaml#/Positive'}
+    reason: {type: string, minLength: 1, maxLength: 500}
+    physicalChecked: {type: boolean, description: 有已存未完成包占用时，必须明确核验卸货/实物；不能代签或假定已完成}
+    physicalEvidence: {type: string, maxLength: 1000, description: 释放已存占用时须有order:dispose权限并填写实物核验凭据}
+  description: 默认关闭；显式隔离启用且有order:recall权限时，撤回已领取未完成的故障订单，不要求原机STOP/ACK。有已存占用须另验实物处置权限及凭据；原记录和逐包释放历史保留，生成新草稿修订供重新发布，新设备从头作业。
+FaultWithdrawalProof:
+  type: object
+  required: [changeRequestId, orderId, assignmentId, revision, restartRevision, issuedRecoveryEpoch, status, orderStatus, reason, resolvedBy, originalDeviceStopReceived, mayResumeScanning, stockReleased, physicalEvidence, releasedBales, confirmedAt, signedReceipt]
+  properties:
+    changeRequestId: {type: string, format: uuid}
+    orderId: {type: string, format: uuid}
+    assignmentId: {type: string, format: uuid}
+    revision: {type: integer, minimum: 1}
+    restartRevision: {type: integer, minimum: 2}
+    issuedRecoveryEpoch: {$ref: './submission-schemas.yaml#/Positive'}
+    status: {const: WITHDRAWN}
+    orderStatus: {const: DRAFT}
+    reason: {type: string, minLength: 1, maxLength: 500}
+    resolvedBy: {type: string, format: uuid}
+    originalDeviceStopReceived: {const: false}
+    mayResumeScanning: {const: false}
+    stockReleased: {type: boolean}
+    physicalEvidence: {type: string, maxLength: 1000}
+    releasedBales:
+      type: array
+      items:
+        type: object
+        required: [baleId, submissionId, dispatchCycle]
+        properties:
+          baleId: {type: string, format: uuid}
+          submissionId: {type: string, format: uuid}
+          dispatchCycle: {$ref: './submission-schemas.yaml#/Positive'}
+    confirmedAt: {type: string, format: date-time}
+    signedReceipt: {type: string, description: 'RS256; aud=acrylic-pda-fault-withdrawal；完整receipt绑定。证明后台撤回，不冒充原机停止或实物核验。'}
 StopAck:
   type: object
   required: [recoveryPackageId, payloadSha256, captureHighWatermark, auditThroughSeq]

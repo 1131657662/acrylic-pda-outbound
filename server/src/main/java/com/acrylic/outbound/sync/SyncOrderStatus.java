@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SyncOrderStatus {
     private final ObjectMapper mapper;
-    private static final Set<String> STATUSES = Set.of("READY", "ASSIGNED", "REVIEW_REQUIRED",
+    private static final Set<String> STATUSES = Set.of("DRAFT", "READY", "ASSIGNED", "REVIEW_REQUIRED",
         "COMPLETED", "CANCELLED", "RECALL_PENDING", "CONTINUING", "LINKED");
     public SyncOrderStatus(ObjectMapper mapper) { this.mapper = mapper; }
 

@@ -29,6 +29,18 @@ class SyncStateTest {
         .put("entityVersion", version).put("sequence", sequence).put("createdAt", "2026-09-18T00:00:00Z")
     private fun state(f: WorkFixture) = f.db.sync().state("1", "warehouse")
 
+    @Test fun withdrawalDraftConsumesDeltaAndRejectsDelayedAssignmentProjection() = runBlocking<Unit>(Dispatchers.IO) {
+        WorkFixture(folder.root).use { f ->
+            val initial = response("b1"); initial.getJSONArray("baseline").put(row("2"))
+            SyncApply(f.db).apply(null, namespace, initial)
+            val withdrawn = response(high = "3", cursor = "c3"); withdrawn.getJSONArray("events").put(event("3", "4", "DRAFT"))
+            SyncApply(f.db).apply(state(f), namespace, withdrawn); f.reload()
+            val delayed = response(high = "4", cursor = "c4"); delayed.getJSONArray("events").put(event("4", "3", "ASSIGNED"))
+            SyncApply(f.db).apply(state(f), namespace, delayed)
+            assertEquals("DRAFT", f.db.sync().order("1", "warehouse", "b1", order)!!.status)
+        }
+    }
+
     @Test fun interruptedBaselineResumesWithoutActivatingPartialRowsOrCursor() = runBlocking<Unit>(Dispatchers.IO) {
         WorkFixture(folder.root).use { f ->
             f.scan(); val facts = f.db.scans().page(f.assignment, 0, 10)

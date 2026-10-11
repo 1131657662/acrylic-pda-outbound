@@ -48,11 +48,12 @@ class RecallActivity : ComponentActivity() {
         binding.pending.text = if (rows.isEmpty()) "未保存及失败输入：0" else rows.joinToString("\n") {
             "${it.context.orderScanSeq}. 原输入：${it.context.rawInput}\n${it.error.ifBlank { "尚未保存，请核对实物" }}"
         }
-        binding.freeze.isEnabled = local != null && local.packageId == null
-        binding.upload.isEnabled = local?.packageId != null && local.state != "RECALLED"
+        binding.freeze.isEnabled = local != null && local.packageId == null && local.state != "WITHDRAWN"
+        binding.upload.isEnabled = local?.packageId != null && local.state !in setOf("RECALLED", "WITHDRAWN")
         binding.refresh.isEnabled = true; binding.back.isEnabled = true
         binding.continueWork.isEnabled = local?.state == "RECALLED"
         binding.status.text = when (local?.state) {
+            "WITHDRAWN" -> "后台已撤回原领取 · 原记录保留，不能继续扫码或上传；请核对实物，新设备重新领取并从头作业"
             "RECALLED" -> "停止证明已验签 · 订单占用仍保留，等待主管处理"
             "RECOVERY_FROZEN" -> "恢复包已固定，请上传或重试原包；当前不能放行"
             "RECALL_PENDING" -> "已收到召回并持久停扫，请核对全部未保存及失败输入"

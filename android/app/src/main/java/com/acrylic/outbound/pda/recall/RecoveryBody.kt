@@ -16,7 +16,7 @@ class RecoveryBody(private val store: WorkStore) {
             .put("policyVersion", plan.getJSONObject("policy").getString("version"))
             .put("autoDeductInventory", plan.getJSONObject("policy").getBoolean("autoDeductInventory"))
             .put("startedAt", order.startedAt ?: JSONObject.NULL).put("closedAt", closed).put("continuationId", store.db.continuations().current(local.assignmentId)?.id ?: JSONObject.NULL)
-            .put("workRound", (store.db.continuations().current(local.assignmentId)?.workRound ?: 1).toString())
+            .put("workRound", (store.db.continuations().current(local.assignmentId)?.workRound ?: a.optString("workRound", "1").toLong()).toString())
             .put("shortShipmentReason", JSONObject.NULL)
             .put("sourceRecoveryEpoch", a.getString("serverRecoveryEpoch")).put("freezeDeviceId", prepared.deviceId)
             .put("expectedCount", order.actualCount.toString()).put("expectedWeightGrams", order.weightGrams.toString())

@@ -56,7 +56,7 @@ class SyncApply(private val db: PdaDatabase) {
     private fun row(state: LocalSyncState, baseline: String, data: JSONObject, versionField: String, timeField: String): LocalCloudOrder {
         val version = number(data, versionField); check(version > 0)
         val status = data.getString("status")
-        check(status in setOf("READY", "ASSIGNED", "RECALL_PENDING", "REVIEW_REQUIRED", "COMPLETED", "CANCELLED", "CONTINUING", "LINKED"))
+        check(status in setOf("DRAFT", "READY", "ASSIGNED", "RECALL_PENDING", "REVIEW_REQUIRED", "COMPLETED", "CANCELLED", "CONTINUING", "LINKED"))
         val id = java.util.UUID.fromString(data.getString("orderId")).toString()
         val time = Instant.parse(data.getString(timeField)).toString()
         return LocalCloudOrder(state.serverRecoveryEpoch, state.warehouseId, baseline, id, status, version, time)

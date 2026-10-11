@@ -68,7 +68,7 @@ final class E2aUnsubmittedChecks {
     private void rejectsForeignOwnedCapture() throws Exception {
         var f = setup.fixture; var capture = setup.extraRecords.getFirst();
         byte[] id = Ids.bytes(SubmissionJson.uuid(capture, "id"));
-        f.jdbc.update("INSERT INTO submitted_capture VALUES(?,?,?,?,?,?,?)", id, Ids.bytes(f.priorSubmission),
+        f.jdbc.update("INSERT INTO submitted_capture(id,submission_id,order_id,origin_device_id,device_capture_seq,order_scan_seq,record_sha256) VALUES(?,?,?,?,?,?,?)", id, Ids.bytes(f.priorSubmission),
             f.id("orderId"), f.id("deviceId"), 3, 3, "f".repeat(64));
         try {
             http.reject("verify", verifyKey, http.wire.verify(1), "E2A_OTHER_CAPTURE_NOT_STORED");

@@ -6,10 +6,12 @@ import org.json.JSONObject
 class SyncWorkGuard(private val db: PdaDatabase) {
     fun requireAllowed(order: PreparedOrder) {
         RecoveryProtection(db).requireNormal()
+        check(db.recalls().header(order.assignmentId)?.state != "WITHDRAWN") { "原领取已被后台撤回，保留记录；重新发布后须独立领取并从头作业" }
         val assignment = JSONObject(order.assignmentJson)
         val epoch = assignment.getString("serverRecoveryEpoch")
         val status = db.sync().activeOrder(epoch, order.orderId)?.status ?: return
         val reason = when (status) {
+            "DRAFT" -> "云端订单已退回草稿，原作业须联网核对；不能沿旧领取继续扫码"
             "RECALL_PENDING" -> "云端已要求停止，请联网核对召回"
             "CANCELLED" -> "云端订单已作废，请联系主管核对"
             "COMPLETED" -> "云端订单已完成，请核对原上传回执"

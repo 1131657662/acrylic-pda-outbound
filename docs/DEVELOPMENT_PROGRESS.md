@@ -2,6 +2,9 @@
 
 # 开发验收索引
 
+- [总目标E00写权与逐项证据映射](history/GOAL_E00_BASELINE_2026-10-11.md)：继承改动原件/哈希、D02–D18与O/U缺口/依赖、旧失败适用性；盘点不计新增功能通过。
+- [E01故障撤回与独立重发](history/GOAL_E01_RECALL_REPUBLISH_2026-10-11.md)：无STOP及既存REQUESTED申请撤回、实物占用核验释放、新修订与旧资格围栏；真实HTTP/MySQL并发/末SQL、Web原键重载、Android采集验签/进程恢复与非空升级证据；默认关闭、原件保留。最终组合和其余D/O/U继续，总目标未完成。
+
 - [十步完成度统计与无人值守计划修订依据](history/TEN_STEP_COMPLETION_AUDIT_2026-10-11.md)：修订范围下的工作包计分、来源证据及自主决策/失败暂缓规则；只计统计和文档核对，不计新增功能通过。执行入口为[总目标计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)。
 
 - [PDA断网补救与UI/UX分析纳入计划](history/PDA_OFFLINE_UI_PLAN_2026-10-11.md)：两份报告映射十步/D项，新增O01–O05/U01–U04完成标准与政策依赖；只计文档核对，不计新增功能、真机或组合验收。

@@ -10,6 +10,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class SyncOrderStatusTest {
     private final SyncOrderStatus statuses = new SyncOrderStatus(new ObjectMapper());
 
+    @Test void faultWithdrawalProjectsDraftWithoutRestoringAssignment() {
+        assertThat(statuses.from("ORDER_FAULT_WITHDRAWN", "{\"status\":\"DRAFT\"}")).isEqualTo("DRAFT");
+    }
+
     @Test void handoverPayloadWithStatusProjectsAssigned() {
         assertThat(statuses.from("HANDOVER_ACTIVATED", "{\"status\":\"ASSIGNED\"}"))
             .isEqualTo("ASSIGNED");

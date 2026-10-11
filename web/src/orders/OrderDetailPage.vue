@@ -17,6 +17,8 @@ import OrderPublishDialog from './OrderPublishDialog.vue';
 import OrderPublications from './OrderPublications.vue';
 import OrderSubmission from './OrderSubmission.vue';
 import OrderRecall from './OrderRecall.vue';
+import OrderFaultWithdrawal from './OrderFaultWithdrawal.vue';
+import { loadPublication } from './publication-pending';
 import OrderStatus from './OrderStatus.vue';
 import OrderPlan from './OrderPlan.vue';
 import PcOrderLink from '../pc/PcOrderLink.vue';
@@ -50,6 +52,8 @@ async function load(): Promise<void> {
     const loaded = await request(`/orders/${id}?${params}`, detailSchema);
     if (current !== generation) return;
     detail.value = loaded; receivedAt.value = new Date().toISOString();
+    const pending = loadPublication({ userId: session.identity!.id, warehouseId: session.warehouseId, orderId: id });
+    if (pending && !pending.receipt) publishDialog.value = true;
     if (loaded.order.status === 'DRAFT') await check(id, params, current);
   } catch (cause) {
     if (current === generation) {
@@ -85,7 +89,7 @@ function back(): void {
       cursor: route.query.reminderWarehouse === session.warehouseId && typeof route.query.reminderCursor === 'string' ? route.query.reminderCursor : undefined } });
   } else void router.push({ path: '/orders', query: orderRouteQuery(parseOrderQuery(route.query), session.warehouseId) });
 }
-watch(() => [session.warehouseId, route.params.id], () => { detail.value = null; preflight.value = null; void load(); }, { immediate: true });
+watch(() => [session.identity?.id, session.warehouseId, route.params.id], () => { detail.value = null; preflight.value = null; publishDialog.value = false; void load(); }, { immediate: true });
 onBeforeUnmount(() => { generation++; });
 </script>
 <template>
@@ -113,7 +117,7 @@ onBeforeUnmount(() => { generation++; });
         </el-tab-pane>
         <el-tab-pane label="产品计划" name="plan"><OrderPlan :detail="detail" :preflight="preflight" :check-error="checkError" @retry="load" /></el-tab-pane>
         <el-tab-pane label="装车记录" name="records"><p v-if="pcChannel">本单采用PC手工录入，请通过上方“查看PC记录与结果”或“继续PC录入”核对全部记录与结果。</p><OrderSubmission v-else :key="`submission-${detail.order.id}`" :version="detail.order.rowVersion" :warehouse-id="session.warehouseId" :order-id="detail.order.id" @updated="load" @busy="submissionBusy = $event" /></el-tab-pane>
-        <el-tab-pane label="异常处理" name="exceptions"><template v-if="pcChannel"><p>需要换人、卸货释放或实物隔离时，请核对逐包处置方案、主管审批和本人交接记录。</p><el-button :disabled="busy || locked || !!error" @click="router.push({ path: `/orders/${detail.order.id}/pc-outbound/exception`, query: route.query })">查看PC异常处置与交接</el-button></template><OrderRecall v-else :key="`${session.warehouseId}-${detail.order.id}`" :warehouse-id="session.warehouseId" :order-id="detail.order.id" :row-version="detail.order.rowVersion" :status="detail.order.status" @updated="load" @busy="recallBusy = $event" /></el-tab-pane>
+        <el-tab-pane label="异常处理" name="exceptions"><template v-if="pcChannel"><p>需要换人、卸货释放或实物隔离时，请核对逐包处置方案、主管审批和本人交接记录。</p><el-button :disabled="busy || locked || !!error" @click="router.push({ path: `/orders/${detail.order.id}/pc-outbound/exception`, query: route.query })">查看PC异常处置与交接</el-button></template><template v-else><OrderFaultWithdrawal :warehouse-id="session.warehouseId" :order-id="detail.order.id" :row-version="detail.order.rowVersion" :status="detail.order.status" @updated="load" @busy="recallBusy = $event" /><OrderRecall :key="`${session.warehouseId}-${detail.order.id}`" :warehouse-id="session.warehouseId" :order-id="detail.order.id" :row-version="detail.order.rowVersion" :status="detail.order.status" @updated="load" @busy="recallBusy = $event" /></template></el-tab-pane>
         <el-tab-pane label="操作记录" name="history">
           <OrderHistory :key="`${detail.order.id}-${detail.order.rowVersion}`" :warehouse-id="session.warehouseId" :order-id="detail.order.id" />
           <OrderPublications :key="`pub-${detail.order.id}-${detail.order.rowVersion}`" :warehouse-id="session.warehouseId" :order-id="detail.order.id" />

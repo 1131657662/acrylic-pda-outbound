@@ -43,7 +43,7 @@ class SubmissionFreeze(private val store: WorkStore, private val now: () -> Inst
             .put("captureHighWatermark", (order.nextOrderScanSeq - 1).toString()).put("captureSummary", summary(captures, scans).put("saved", order.actualCount.toString()))
             .put("dispositions", store.db.dispositions().proofs(order.assignmentId))
             .put("source", JSONObject().put("kind", "FORMAL").put("sourceOrderId", prepared.orderId))
-            .put("freezeDeviceId", prepared.deviceId).put("workRound", (continuation?.workRound ?: 1).toString()).put("continuationId", continuation?.id ?: JSONObject.NULL)
+            .put("freezeDeviceId", prepared.deviceId).put("workRound", (continuation?.workRound ?: a.optString("workRound", "1").toLong()).toString()).put("continuationId", continuation?.id ?: JSONObject.NULL)
             .put("sourceRecoveryEpoch", a.getString("serverRecoveryEpoch"))
             .put("captures", JSONArray(captures.map(SubmissionRecords::capture))).put("scans", JSONArray(scans.map(SubmissionRecords::scan)))
             .put("events", JSONArray(store.db.work().events(order.assignmentId).map(SubmissionRecords::event)))

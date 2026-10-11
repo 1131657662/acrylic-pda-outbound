@@ -16,7 +16,7 @@ public class SubmissionEvents {
         audit.append(new AuditWriter.Event(head.actor(),"SUBMISSION_ABORTED","SUBMISSION",head.control().id(),canonical(receipt)),head.control().id().toString());
     }
     public void transition(SubmissionStore.Head head,String status,UUID actor) {
-        if(status.equals("REVIEW_REQUIRED") && jdbc.queryForObject("SELECT COUNT(*) FROM order_change_request WHERE order_id=? AND status!='CANCELLED' AND NOT EXISTS (SELECT 1 FROM order_continuation t WHERE t.request_id=order_change_request.id AND t.status!='REQUESTED')",Integer.class,Ids.bytes(head.order()))>0)
+        if(status.equals("REVIEW_REQUIRED") && jdbc.queryForObject("SELECT COUNT(*) FROM order_change_request WHERE order_id=? AND status NOT IN ('CANCELLED','WITHDRAWN') AND NOT EXISTS (SELECT 1 FROM order_continuation t WHERE t.request_id=order_change_request.id AND t.status!='REQUESTED')",Integer.class,Ids.bytes(head.order()))>0)
             status="RECALL_PENDING";
         var c=head.control();jdbc.update("UPDATE outbound_order SET status=?,row_version=row_version+1,updated_at=UTC_TIMESTAMP(3) WHERE id=?",status,Ids.bytes(head.order()));
         var detail=object().put("submissionId",c.id().toString()).put("status",status);
@@ -38,9 +38,10 @@ public class SubmissionEvents {
             if(original.stream().anyMatch(hash->!hash.equals(sha(row))))throw new com.acrylic.outbound.common.BusinessException(409,"CAPTURE_CONTENT_CONFLICT","原设备采集序号已用于不同事实，请保留原记录核对");
             if(fresh("submitted_capture",row))captures.add(row);
         });
-        jdbc.batchUpdate("INSERT INTO submitted_capture VALUES(?,?,?,?,?,?,?)",captures,200,(ps,row)->{
+        jdbc.batchUpdate("INSERT INTO submitted_capture(id,submission_id,order_id,origin_device_id,device_capture_seq,order_scan_seq,record_sha256,operation_revision) VALUES(?,?,?,?,?,?,?,?)",captures,200,(ps,row)->{
             ps.setBytes(1,Ids.bytes(uuid(row,"id")));ps.setBytes(2,Ids.bytes(c.id()));ps.setBytes(3,Ids.bytes(head.order()));
             ps.setBytes(4,Ids.bytes(uuid(row,"originDeviceId")));ps.setLong(5,number(row,"deviceCaptureSeq"));ps.setLong(6,number(row,"orderScanSeq"));ps.setString(7,sha(row));
+            ps.setInt(8,row.path("orderRevision").asInt(1));
         });
         var auditEvents=new java.util.ArrayList<JsonNode>();array(body,"events").forEach(row->{
             com.acrylic.outbound.audit.PdaAuditFacts.verify(jdbc,row);

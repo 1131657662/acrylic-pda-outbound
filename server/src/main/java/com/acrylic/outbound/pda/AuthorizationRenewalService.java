@@ -119,7 +119,7 @@ public class AuthorizationRenewalService {
             .put("inventorySnapshotId", current.inventorySnapshotId()).put("policyVersion", publication.policyVersion())
             .put("autoDeductInventory", publication.autoDeduct()).put("planSha256", current.planSha256())
             .put("inventorySha256", current.inventorySha256()).put("startOrderScanSeq", current.startOrderScanSeq())
-            .put("allocationVersion", current.allocationVersion()).put("userAuthVersion", principal.userAuthVersion())
+            .put("allocationVersion", current.allocationVersion()).put("workRound",current.workRound()).put("userAuthVersion", principal.userAuthVersion())
             .put("deviceVersion", principal.deviceVersion())
             .put("authorizationSequence", Long.toString(sequence)).put("renewedFromAuthorizationId", previousId.toString())
             .put("iat", issued.getEpochSecond()).put("exp", expires.getEpochSecond());

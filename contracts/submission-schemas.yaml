@@ -15,7 +15,7 @@ FormalControl:
     assignmentId: {type: string, format: uuid}
     freezeDeviceId: {type: string, format: uuid}
     workRound: {$ref: '#/Positive'}
-    continuationId: {type: [string, 'null'], format: uuid, description: 第2轮及以后必填对应票据，首轮为空}
+    continuationId: {type: [string, 'null'], format: uuid, description: 累积原前缀续作须票据；故障撤回重发的新修订从头作业为空，轮次绑定新签名领取资格}
     sourceRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
 Body:
   allOf:
@@ -33,7 +33,7 @@ Body:
         startedAt: {type: string, format: date-time}
         closedAt: {type: string, format: date-time}
         shortShipmentReason: {type: [string, 'null'], maxLength: 500}
-        continuationId: {type: [string, 'null'], format: uuid, description: 新轮次须对应已激活票据，完整继承恢复包原事实}
+        continuationId: {type: [string, 'null'], format: uuid, description: 累积原前缀的新轮须已激活票据；故障撤回重发为空且只包含新修订的新机事实}
         expectedCount: {$ref: '#/Positive'}
         expectedWeightGrams: {$ref: '#/Positive'}
         captureHighWatermark: {$ref: '#/Positive'}

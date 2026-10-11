@@ -103,7 +103,7 @@ final class E2aCrossSourceFixture {
     }
 
     private void storeCapture(UUID target, ObjectNode capture) {
-        jdbc.update("INSERT INTO submitted_capture VALUES(?,?,?,?,?,?,?)", Ids.bytes(SubmissionJson.uuid(capture, "id")),
+        jdbc.update("INSERT INTO submitted_capture(id,submission_id,order_id,origin_device_id,device_capture_seq,order_scan_seq,record_sha256) VALUES(?,?,?,?,?,?,?)", Ids.bytes(SubmissionJson.uuid(capture, "id")),
             Ids.bytes(target), target.equals(submission) ? Ids.bytes(ownOrder) : id("orderId"),
             id("deviceId"), SubmissionJson.number(capture, "deviceCaptureSeq"),
             SubmissionJson.number(capture, "orderScanSeq"), SubmissionJson.sha(capture));

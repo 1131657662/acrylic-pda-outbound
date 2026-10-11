@@ -14,17 +14,28 @@ class RecallRepository(private val db: PdaDatabase, private val session: PdaSess
         if (response.isNull("request")) return db.recalls().header(assignment)
         val request = response.getJSONObject("request")
         check(request.getString("assignmentId") == authorityId && request.getString("orderId") == prepared.orderId)
+        val withdrawn = if (request.getString("status") == "WITHDRAWN") FaultWithdrawalReceipt.verify(request, prepared, authorityId) else null
         pause(assignment)
+        apply(assignment, request, withdrawn)
+        return db.recalls().header(assignment)
+    }
+    private fun apply(assignment: String, request: JSONObject, withdrawn: JSONObject?) {
         db.runInTransaction {
             if (db.recalls().header(assignment) == null) db.recalls().insert(LocalRecall(request.getString("changeRequestId"), assignment, request.toString()))
             db.recalls().request(request.getString("changeRequestId"), request.toString())
-            db.work().recall(assignment)
-            db.submissions().forOrder(assignment)?.let { db.submissions().progress(it.id, it.state, it.receipt, "已收到召回，请办理停止恢复", false) }
+            if (withdrawn == null) db.work().recall(assignment) else {
+                val local = checkNotNull(db.recalls().get(assignment))
+                db.recalls().update(local.copy(state = "WITHDRAWN", proof = withdrawn.toString()))
+                db.work().recall(assignment)
+                db.work().recalled(assignment)
+            }
+            db.submissions().forOrder(assignment)?.let { db.submissions().progress(it.id, it.state, it.receipt,
+                if (withdrawn == null) "已收到召回，请办理停止恢复" else "原领取已被后台撤回，原正文保留，不能继续作业或补传", false) }
         }
-        return db.recalls().header(assignment)
     }
     @Synchronized fun upload(assignment: String): LocalRecall {
         val local = checkNotNull(db.recalls().get(assignment)); if (local.state == "RECALLED") return local
+        check(local.state != "WITHDRAWN") { "原领取已被后台撤回，无需原机STOP，保留原记录核对" }
         val prepared = checkNotNull(db.preparations().order(assignment)); identity(prepared.operatorId, prepared.deviceId)
         val payload = checkNotNull(local.payload) { "须先核对未保存记录并停止" }; val bytes = payload.toByteArray(Charsets.UTF_8)
         check(JwtVerifier.sha(bytes) == local.sha256) { "恢复正文损坏，请保留数据" }

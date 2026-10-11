@@ -14,7 +14,7 @@ final class TemporaryRoundIntakeArchive {
         if(local) { local(bytes,hash);return; }
         f.jdbc.update("INSERT INTO submission_payload VALUES(UUID_TO_BIN(?),2,?,?,?,?,?,?,UTC_TIMESTAMP(3))",
             f.seed.get("mappedSubmissionId"),hash,"submissions/"+hash+".json",bytes.length,3,3000,4);
-        for(var c:array(body,"captures"))f.jdbc.update("INSERT INTO submitted_capture VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),?,?,?)",
+        for(var c:array(body,"captures"))f.jdbc.update("INSERT INTO submitted_capture(id,submission_id,order_id,origin_device_id,device_capture_seq,order_scan_seq,record_sha256) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),?,?,?)",
             text(c,"id"),f.seed.get("mappedSubmissionId"),f.seed.get("orderId"),f.seed.get("deviceId"),number(c,"deviceCaptureSeq"),number(c,"orderScanSeq"),sha(c));
         for(var e:array(body,"events"))f.jdbc.update("INSERT INTO submitted_event VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),?,?)",
             text(e,"id"),f.seed.get("mappedSubmissionId"),f.seed.get("deviceId"),number(e,"localSeq"),sha(e));

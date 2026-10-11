@@ -26,7 +26,7 @@ async function read(path: string, options: RequestInit): Promise<z.infer<typeof 
   return parsed;
 }
 
-export async function request<T>(path: string, schema: z.ZodType<T>, options: RequestInit = {}): Promise<T> {
+export async function request<T>(path: string, schema: z.ZodType<T>, options: RequestInit = {}, assertCurrent?: () => void): Promise<T> {
   const headers = new Headers(options.headers);
   if (options.method && options.method !== 'GET') {
     if (connection.state === 'expired' && !path.startsWith('/auth/')) throw new ApiError(401, 'UNAUTHENTICATED', '请重新登录后核对原操作结果。');
@@ -35,6 +35,7 @@ export async function request<T>(path: string, schema: z.ZodType<T>, options: Re
     headers.set(csrf.headerName, csrf.token);
     headers.set('X-Server-Recovery-Epoch', expectedEpoch || recoveryEpoch);
   }
+  assertCurrent?.();
   return schema.parse((await read(path, { ...options, headers })).data);
 }
 

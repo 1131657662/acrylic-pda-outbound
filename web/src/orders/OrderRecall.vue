@@ -70,6 +70,7 @@ watch(() => [props.warehouseId, props.orderId], () => { recall.value = null; det
       <el-tag :type="recall.status === 'CANCELLED' ? 'info' : 'warning'">{{ recallLabel[recall.status] }}</el-tag>
       <p>停止原因：{{ recall.reason }}</p>
       <p v-if="recall.recovery">停止记录：有效装载 {{ recall.recovery.actualCount }} 包</p><details v-if="recall.recovery" class="file-proof"><summary>技术详情</summary>输入高水位 {{ recall.recovery.captureHighWatermark }} · 审计覆盖至 {{ recall.recovery.auditThroughSeq }}</details>
+      <p v-else-if="recall.status === 'WITHDRAWN'" class="muted">原故障领取已失效，原记录保留。后台核对新草稿后重新发布，新设备从头作业。</p>
       <p v-else class="muted">尚无完整恢复包，不能作废或重新分配；原 PDA 须完成未保存输入核对并上传。</p>
       <el-alert v-if="recall.recovery && recall.recovery.actualCount !== '0'" title="已有装车记录，保留实物与占用，等待后续受控处理。" type="warning" :closable="false" />
       <el-alert v-for="issue in recall.recovery?.issues" :key="`${issue.barcode}-${issue.code}`" :title="`${issue.barcode}：${issue.code}`" type="warning" :closable="false" />
@@ -77,7 +78,7 @@ watch(() => [props.warehouseId, props.orderId], () => { recall.value = null; det
       <el-button v-if="canCancel" type="danger" plain :disabled="loading || childBusy" @click="open('CANCEL_EMPTY')">主管核验零包作废</el-button>
       <OrderContinuation v-if="detail" :warehouse-id="warehouseId" :recall="recall" :scans="effectiveScans" @busy="childBusy = $event; emit('busy', $event)" @updated="load(); emit('updated')" />
     </template>
-    <el-button v-if="canRecall && ['ASSIGNED', 'REVIEW_REQUIRED', 'CONTINUING'].includes(status) && (!recall || recall.continuation?.status === 'ACTIVATED')" type="warning" :disabled="loading || childBusy" @click="open('RECALL')">申请停止装车</el-button>
+    <el-button v-if="canRecall && ['ASSIGNED', 'REVIEW_REQUIRED', 'CONTINUING'].includes(status) && (!recall || recall.status === 'WITHDRAWN' || recall.continuation?.status === 'ACTIVATED')" type="warning" :disabled="loading || childBusy" @click="open('RECALL')">申请停止装车</el-button>
     <p v-else-if="!recall" class="muted">当前没有停止装车申请。</p>
     <el-dialog :model-value="!!dialog" :title="dialog === 'RECALL' ? '申请停止装车' : '主管核验零包作废'" width="520" :close-on-click-modal="false" :show-close="false" :close-on-press-escape="false">
       <el-alert v-if="error" :title="error" type="error" :closable="false" />

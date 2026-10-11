@@ -65,7 +65,7 @@ public final class E2aAbortedEvidenceChecks {
         reject("E2A_LOCAL_CAPTURE_ALREADY_SUBMITTED", () -> {
             var original = items.stream().filter(item -> "CAPTURE".equals(item.itemKind())).findFirst().orElseThrow();
             var order = jdbc.queryForObject("SELECT id FROM outbound_order LIMIT 1", byte[].class);
-            jdbc.update("INSERT INTO submitted_capture VALUES(?,?,?,?,?,?,?)", Ids.bytes(original.originalRecordId()),
+            jdbc.update("INSERT INTO submitted_capture(id,submission_id,order_id,origin_device_id,device_capture_seq,order_scan_seq,record_sha256) VALUES(?,?,?,?,?,?,?)", Ids.bytes(original.originalRecordId()),
                 Ids.bytes(binding.submissionId()), order, Ids.bytes(binding.creatorDeviceId()),
                 original.originalDeviceSeq(), 1, original.recordSha256()); check(items);
         });

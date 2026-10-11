@@ -39,6 +39,8 @@ object JwtVerifier {
             "planSha256" to "planSha256", "inventorySha256" to "inventorySha256",
             "startOrderScanSeq" to "startOrderScanSeq", "allocationVersion" to "allocationVersion")
         fields.forEach { (claim, field) -> check(claims.get(claim).toString() == assignment.get(field).toString()) { "授权上下文不匹配：$claim" } }
+        check(claims.optString("workRound", "1") == assignment.optString("workRound", "1") &&
+            assignment.optString("workRound", "1").toLong() > 0) { "作业轮次与签名资格不匹配" }
         check(claims.getString("sub") == session.getString("userId") && claims.getString("deviceId") == session.getString("deviceId") &&
             claims.getString("warehouseId") == session.getString("warehouseId")) { "授权不属于当前人员或设备" }
         check(claims.getString("scope") in acceptedScopes && assignment.getString("status") == "ACTIVE") { "授权用途不匹配或已停止" }

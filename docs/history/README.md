@@ -1,5 +1,8 @@
 # 历史归档
 
+- [总目标E00证据映射](GOAL_E00_BASELINE_2026-10-11.md)与[E01故障撤回/独立重发验收](GOAL_E01_RECALL_REPUBLISH_2026-10-11.md)：单写者保全、真实HTTP/并发/尾写回滚、Web持久原键、Android采集验签/重启及非空升级；总目标仍active。
+- E01看板前件：[启动前](ORCHESTRATION_STATE_before_goal_e01_2026-10-11.md)、[重启补证前](ORCHESTRATION_STATE_before_goal_e01_restart_2026-10-11.md)。历史不能恢复已取消换机承接。
+
 - [十步完成度统计与无人值守计划修订依据（2026-10-11）](TEN_STEP_COMPLETION_AUDIT_2026-10-11.md)：逐包计分/证据、授权下的默认设计、同根因失败暂缓及批次安排；仅计划制定，没有启动业务开发。
 - [制定无人值守计划前的看板原件](ORCHESTRATION_STATE_before_unattended_plan_2026-10-11.md)：原Git/写权/失败/未验保全，旧方案等待不恢复。
 

@@ -1,6 +1,6 @@
 OrderChanges:
   post:
-    summary: 申请原机召回或REOPEN_WORK受控续作；续作另需order:resume，减少行引用独立实物批准凭据
+    summary: 原机召回、故障领取撤回或REOPEN_WORK受控续作；FAULT_WITHDRAWAL默认关闭、隔离显式启用且需仓库order:recall
     parameters:
       - {$ref: '#/Order'}
       - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
@@ -11,17 +11,17 @@ OrderChanges:
       required: true
       content:
         application/json:
-          schema: {oneOf: [{$ref: './recall-schemas.yaml#/Create'}, {$ref: './continuation-schemas.yaml#/Create'}]}
+          schema: {oneOf: [{$ref: './recall-schemas.yaml#/Create'}, {$ref: './recall-schemas.yaml#/FaultWithdrawal'}, {$ref: './continuation-schemas.yaml#/Create'}]}
     responses:
       '200':
-        description: 操作完成；停止与作废证明重试返回原签名，均不开放扫码或释放货物
+        description: 操作完成并返回原签名；停止与作废不释放货物。故障撤回仅按有权实物凭据释放对应未完成占用，不开放原资格扫码
         content:
           application/json:
             schema:
               allOf:
                 - {$ref: './schemas.yaml#/Envelope'}
                 - properties:
-                    data: {oneOf: [{$ref: './recall-schemas.yaml#/Request'}, {$ref: './continuation-schemas.yaml#/Request'}]}
+                    data: {oneOf: [{$ref: './recall-schemas.yaml#/Request'}, {$ref: './recall-schemas.yaml#/FaultWithdrawalProof'}, {$ref: './continuation-schemas.yaml#/Request'}]}
       '400': {$ref: './openapi.yaml#/components/responses/Error'}
       '403': {$ref: './openapi.yaml#/components/responses/Error'}
       '409': {$ref: './openapi.yaml#/components/responses/Error'}
