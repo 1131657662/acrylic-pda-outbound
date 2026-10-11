@@ -316,3 +316,4 @@
 | D06 接收机来源与专用STOP | [执行记录](history/D01_D18_EXECUTION_2026-10-07.md)及[暂停收口](history/D01_D18_PAUSE_2026-10-08.md)：1103实际HTTP/MySQL/Android单跳、独立消费者、UI-08及受影响回归/APK/lint分列；1100–1102失败继续保全，不重跑，不外推D06整体。 |
 | D06 多跳、混合及反向四轮（范围交付） | [多跳记录](history/D06_MULTIHOP_EXECUTION_2026-10-08.md)：1110实际A→B→C及TEMP_START产品页UI-04；[混合记录](history/D06_MIXED_EXECUTION_2026-10-09.md)：1118 A→TEMP B→R06 B、1120 A→TEMP B→R06 B→TEMP C，实际HTTP/MySQL/Android原件、SQL/Room尾故障、独立消费者与两端回归。失败、skip、历史APK输入分别登记；LOCAL后续证据见下行，非D06整体通过。 |
 | D06 LOCAL独立冻结与前置拒绝 | [LOCAL记录](history/D06_LOCAL_EXECUTION_2026-10-09.md)：1124三轮实际HTTP/MySQL/Android清单-only→LOCAL E2A/STOP→最终成功，1125首轮LOCAL无canonical拒绝；未冻结/清单-only REQUEST、APPROVE/PREPARE原件/减包/撤权拒绝及精确SQL/Room尾回滚，独立Node/只读Room消费者通过。失败、回归和当批APK/lint分列；非D06整体通过。 |
+| D07/R09 恢复交接target代次新资格 | [验收记录](history/D07_R09_RECIPIENT_QUALIFICATION_2026-10-11.md)：原来源/source代次保持、限定接收者与scope签名资格、真实MySQL/新JVM/独立消费及受影响回归；不代准备/激活/最终提交。 |

@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09本代次恢复交接新资格（2026-10-11）](D07_R09_RECIPIENT_QUALIFICATION_2026-10-11.md)：独立签名限定资格、全原表守恒、实际MySQL/新JVM/独立消费与受影响回归；准备/激活/最终提交仍需继续。
+- [新资格收口前看板](ORCHESTRATION_STATE_before_qualification_close_2026-10-11.md)：原结论/失败与在途接续保留。
+
 - [D07/R09恢复态指定接收者准入（2026-10-11）](D07_R09_RECIPIENT_ADMISSION_2026-10-11.md)：可信登记、全原表/精确签名效果、实际MySQL反例/新JVM/独立消费；新资格及最终链未完成。
 - [指定接收者准入前看板（2026-10-11）](ORCHESTRATION_STATE_before_recipient_resume_2026-10-11.md)与[准入收口前看板](ORCHESTRATION_STATE_before_recipient_close_2026-10-11.md)：原结论/在途断点保全，旧指令不恢复。
 

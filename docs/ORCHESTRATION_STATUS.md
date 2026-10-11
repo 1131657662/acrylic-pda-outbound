@@ -6,11 +6,11 @@
 ```yaml
 date: 2026-10-11
 branch: codex/development
-head: 3156b13d
-dirty_entries: 61
+head: 098dd7fa
+dirty_entries: 47
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
-server: { contract: 0.51.0, paths: 148, flyway: V79, migrations: 79 }
+server: { contract: 0.51.0, paths: 148, flyway: V80, migrations: 80 }
 ```
 <!-- FACTS_END -->
 本聊天按用户指令恢复完整目标；已核范围双侧协议复用、总目标进行中未完成，[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)D01–D18及第8节范围保持。[收口与新会话指令](history/D01_D18_PAUSE_2026-10-11_SCOPE_RELEASE.md)为接续入口；替换前结论/失败见[收口前看板](history/ORCHESTRATION_STATE_before_scope_release_pause_2026-10-11.md)，旧指令不恢复。
@@ -21,10 +21,11 @@ server: { contract: 0.51.0, paths: 148, flyway: V79, migrations: 79 }
 - 新1281主管实物确认与跨JVM重放各1/0/0/0、exit0/sourceUnchanged，独立原事实/原清单22输入与编号8输入不变；普通recovery/handover3309全过/114XML/无skip。dump认证停机/PID退出/监听空，无重型Gradle/HTTP/页面/模拟器；既有3306/13316/ADB未动。1276断言败、1280运行器重启败保留不复用；1275/1278中间通过、1277未分配/1279分配拒绝均保全。
 - 新1242/1243/1246/1248失败库保留停机不复用；1247中间通过与1250最终通过分别保全。1244/1245/1249/1251随机目录子串守卫拒绝未建库。1250跨33树分配，dump重算一致/认证停机/原PID退出/监听空。
 - 范围本批24路径已提交推送a4a37f772826fdf1f23325fb1278ae581dc6b833，实际开发远端一致，main未动。precommit保全53条、postcommit剩余29继承dirty与前快照逐hash一致，69历史/22STOP通过；两阶段/回归各2677输入及四组消费原件hash收口无漂移。文档回执见received-scope-release-doc-close-01，最终Git/dirty副本/hash/diff/写者/进程/监听/C/D余量见received-scope-release-pause-final-01；事实块提交后刷新保留为看板dirty，不循环提交自身SHA。
-- 恢复核对received-recipient-resume-02/running-03及precommit-01：HEAD/开发远端3156b13d8fdb5547c3cc42cb866be7bd92606cd1及main与final一致，30继承dirty除看板外、69历史/22STOP无漂移，单助手唯一写者。1297准入专项与新JVM重放通过、普通回归已结束；任务端口空，仅既有3306保持，13316/ADB不监听；C/D约76/75GiB，准确值见快照。1293 UNKNOWN及保全/失败库不复用。
+- 指定接收者32路径已提交推送098dd7fa0a9f5806fbce7e7a730f5d86cbfdaf11，实际开发远端一致、main未动。resume-02/running-03/precommit-01及postcommit-01保存全部dirty/hash/副本/Git/环境；29继承非看板路径、69历史/22STOP无漂移，单助手唯一写者。1297专项/新JVM及普通回归结束，任务端口空，仅既有3306保持；C/D约76/75GiB，准确值见快照。1293 UNKNOWN及保全/失败库不复用。
 - 新产物/TEMP/Java/cache在D盘，无清理，本机私有证据未异地备份；22份停止AVD仅可逆NTFS压缩/原hash一致未删，见[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)/[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 本批与既有有效范围
+- [本代次恢复交接新资格](history/D07_R09_RECIPIENT_QUALIFICATION_2026-10-11.md)：1298专项1/0/0/0、新JVM原pin/bytes无新签名DB不变，Node18输入/150表/5反例通过。普通recovery/handover3317全过/116XML/无skip/sourceUnchanged；compile-01缺import首败与compile-02保留。仅精确资格审计新增，原正文/source代次/映射保持，普通TEMP/首轮/扫描/删除关闭；无准备/激活/最终提交及正向HTTP/Android。dump/认证停机/PID退出/监听空，运行接续断点见received-qualification-resume-running-01，29继承/69历史/22STOP无漂移。
 - [恢复态指定接收者准入](history/D07_R09_RECIPIENT_ADMISSION_2026-10-11.md)：独立pin/RS256及新机P-256持钥证明，同仓/实时身份权限、closed operation，同一原归档；精确新device/不可变审计与全原表raw尾验。1297专项1/0/0/0/sourceUnchanged、新JVM原pin/bytes无新签名DB不变；Node16输入/149表/4反例过；普通3317全过/116XML/无skip/2693输入不变。1295异常类型断言败、1296中间过、consumer-01换行败及1294分配拒绝均保留；dump/认证停机/PID退出/监听空。新机TEMP=false，无新资格/激活/正向HTTP/Android；能力false，作者自审见本机记录。
 - [已核范围双侧提交](history/D07_R09_SCOPE_RELEASE_2026-10-11.md)：1293准备/跨JVM各1/0/0/0/sourceUnchanged，实际子进程DB确认后halt(73)、原pin新JVM补COMMIT；缺侧/坏pending/换根锁/异有效签名/异scope拒绝、尾写回滚、同键并发通过。真实丢commit确认后verify/release/新authority持久UNKNOWN，围栏保留；Node范围20/批准14/原表22/编号8输入不变。普通3317全过/116XML/无skip/sourceUnchanged；1291/1292中间通过、1289失败/1290分配拒绝保全。dump/认证停机/PID退出/监听空，无重型任务；无新资格/正向HTTP/Android，能力false。前看板见scope-release归档。
 - [独立运维批准核验](history/D07_R09_OPERATIONS_APPROVAL_2026-10-10.md)：独立pin/RS256、原来源/主管proof/控制/库实例/范围绑定，批准后固定inventory再签；closed事务原身份先锁、全库复核及beforeCommit身份/物料重验。1288专项1/0/0/0/sourceUnchanged，两尾写回滚；Node批准14/原事实22/编号8输入不变，普通recovery/handover3317全过/116XML/无skip/sourceUnchanged。1285摘要拒绝已修且失败保全，1282中间输入/分配拒绝另列；2664输入未变。无释放/新资格/正向HTTP/Android，能力false；dump/认证停机/PID退出/监听空，无重型任务，前看板见归档。
@@ -45,7 +46,7 @@ server: { contract: 0.51.0, paths: 148, flyway: V79, migrations: 79 }
 
 ## 未完成与接续第一动作
 - D06/D07整体、FORMAL各阶段实际入口、其他无可信归档来源/R09跨截点业务重建、D08–D18与总闸门未完成；D18无最终候选。D04候选排除/D05取消释放缺政策保持拒绝；原资料/旧BCD/526、历史关键未验/失败与恢复限制单列，开发缺口不转现场。
-- 指定接收者准入已验，下一项为本代次限定scope/接收者新资格→接收准备/激活→最终提交。原机禁用、跨仓机不借用、新机普通TEMP=false；原正文/source代次/映射保留，旧票据不可激活。新增资格/激活继续精确签名效果及beforeCommit全表守恒，首轮隔离；不开NORMAL、不删比较、不把Result当公共写许可。
+- 指定接收者准入与本代次限定scope/接收者新资格已验，下一项为接收准备/下载确认→激活→最终提交。原机禁用、跨仓机不借用、新机普通TEMP=false；原正文/source代次/映射保留，旧票据不可激活。新增资格/激活继续精确签名效果及beforeCommit全表守恒，首轮隔离；不开NORMAL、不删比较、不把Result当公共写许可。
 - 原正文source与target传输代次分开；旧票据不可激活，另发限定scope/接收者的新资格并保留原事实/映射、隔离首轮能力。跨树核对后新建隔离目标，只读复用原1233；不重跑原源/1150/1151/UI-06/1100–1102，不复用保全/失败库。接缝、源码入口和退出要求详见收口文档。
 - 生产默认/签名及七类生产决定handler/POST/放行/证据写入/关闭能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名、不绕设备审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 <!-- CURRENT_STATE_END -->

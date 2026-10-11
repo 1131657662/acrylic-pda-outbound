@@ -38,6 +38,12 @@ final class E2aCrossSourceProfile {
         require(jdbc.queryForObject("SELECT COUNT(*) FROM recovery_recipient_admission",Integer.class)==1,"Recipient DB commit missing");
         return profile;
     }
+    static E2aCrossSourceProfile completedQualification() throws Exception {
+        var profile=new E2aCrossSourceProfile("qualification"); var jdbc=profile.connectChecked();
+        require("RECOVERY_PENDING".equals(jdbc.queryForObject("SELECT service_mode FROM server_state WHERE id=1",String.class)),"Restart requires closed state");
+        require(jdbc.queryForObject("SELECT COUNT(*) FROM recovery_recipient_qualification",Integer.class)==1,"Qualification DB commit missing");
+        return profile;
+    }
 
     private E2aCrossSourceProfile(String restart) throws Exception {
         String run = System.getenv("E2A_CROSS_RUN");
@@ -53,6 +59,7 @@ final class E2aCrossSourceProfile {
         if("physical".equals(restart)) requireCompletedPhysicalReview(run);
         else if("scope".equals(restart)) requireCompletedScopeRelease(run);
         else if("recipient".equals(restart)) requireCompletedRecipient(run);
+        else if("qualification".equals(restart)) requireCompletedQualification(run);
         else require(!Files.exists(attempt.resolve("test-started.marker")), "One-shot attempt already used");
         require(System.getenv("E2A_CROSS_PASSWORD") != null
             && System.getenv("E2A_CROSS_PASSWORD").matches("[0-9a-f]{64}"), "Missing private credential");
@@ -108,6 +115,12 @@ final class E2aCrossSourceProfile {
         for(String file:new String[]{"test-started.marker","recipient-checks.json","recipient-after.json","physical-restart-input.json","scope-restart-input.json"})
             require(Files.isRegularFile(attempt.resolve(file)),"Recipient preparation incomplete");
         require(!Files.exists(attempt.resolve("recipient-restart-result.json")),"Recipient restart already consumed");
+        require(!Files.exists(ROOT.resolve(".local/d01-d18-20261010/temporary-evidence-restore-mysql-"+run+"/retention.json")),"Retained attempt cannot be reused");
+    }
+    private void requireCompletedQualification(String run) throws Exception {
+        for(String file:new String[]{"test-started.marker","qualification-restart-input.json","qualification-after.json","physical-restart-input.json","scope-restart-input.json"})
+            require(Files.isRegularFile(attempt.resolve(file)),"Qualification preparation incomplete");
+        require(!Files.exists(attempt.resolve("qualification-restart-result.json")),"Qualification restart already consumed");
         require(!Files.exists(ROOT.resolve(".local/d01-d18-20261010/temporary-evidence-restore-mysql-"+run+"/retention.json")),"Retained attempt cannot be reused");
     }
 
