@@ -17,6 +17,7 @@
             <TextView android:id="@+id/products" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="8dp" android:textSize="15sp" />
             <TextView android:id="@+id/recent" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="8dp" android:textSize="14sp" />
             <Button android:id="@+id/voidLast" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="@string/work_void" />
+            <Button android:id="@+id/adjustPackages" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="调整已扫码包" />
             <Button android:id="@+id/details" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="订单明细" />
             <Button android:id="@+id/closeOrder" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="结单核对 / 上传回执" />
             <Button android:id="@+id/recall" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="召回核对 / 查询停止证明" />

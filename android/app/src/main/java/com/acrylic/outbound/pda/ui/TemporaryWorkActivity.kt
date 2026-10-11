@@ -50,6 +50,7 @@ class TemporaryWorkActivity : ComponentActivity() {
         }
         binding.validate.setOnClickListener { manual() }; binding.confirm.setOnClickListener { confirm() }
         binding.discard.setOnClickListener { discard() }; binding.voidLast.setOnClickListener { voidLast() }
+        binding.adjustPackages.setOnClickListener { startActivity(Intent(this, ScanAdjustmentActivity::class.java).putExtra("clientOrderId", id)) }
         binding.details.setOnClickListener { startActivity(Intent(this, TemporaryDetailsActivity::class.java).putExtra("clientOrderId", id)) }
         binding.sound.text = if (app.workSound.enabled) "声音开" else "声音关"
         binding.sound.setOnClickListener { app.workSound.enabled = !app.workSound.enabled; binding.sound.text = if (app.workSound.enabled) "声音开" else "声音关" }

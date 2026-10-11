@@ -18,6 +18,7 @@
         <activity android:name=".ui.WorkActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.SubmissionActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.WorkDetailsActivity" android:exported="false" android:screenOrientation="portrait" />
+        <activity android:name=".ui.ScanAdjustmentActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.RecallActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.HandoverActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.PairingActivity" android:exported="false" android:screenOrientation="portrait" />

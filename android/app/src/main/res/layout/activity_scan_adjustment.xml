@@ -1,0 +1,19 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:fillViewport="true" android:background="@color/pda_canvas" android:paddingHorizontal="12dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+    <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回原订单" />
+    <TextView android:id="@+id/title" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="20sp" android:textStyle="bold" />
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp"
+        android:text="调整已扫码包 · 扫码只定位原记录，不新增。冻结或已停止的原记录不可调整。" />
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:labelFor="@id/barcode" android:text="定位条码" android:textSize="16sp" />
+    <EditText android:id="@+id/barcode" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+        android:inputType="textVisiblePassword" android:singleLine="true" android:saveEnabled="false" android:autofillHints="" />
+    <Button android:id="@+id/locate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="定位原包" />
+    <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+    <LinearLayout android:id="@+id/rows" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+        <Button android:id="@+id/previous" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="上一页" />
+        <Button android:id="@+id/next" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="下一页" />
+    </LinearLayout>
+    </LinearLayout>
+</ScrollView>

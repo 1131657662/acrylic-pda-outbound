@@ -16,6 +16,7 @@ class TemporaryDetailsActivity : ComponentActivity() {
     private var next: Long? = null
     private var busy = false
     private var id = ""
+    private var adjustmentBlock = "正在核对原单资格"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState); id = intent.getStringExtra("clientOrderId").orEmpty()
         if (id.isEmpty()) { finish(); return }
@@ -25,7 +26,8 @@ class TemporaryDetailsActivity : ComponentActivity() {
             val bars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets
         }
-        binding.create.visibility = android.view.View.GONE
+        binding.create.text = "调整已扫码包"
+        binding.create.setOnClickListener { startActivity(android.content.Intent(this, ScanAdjustmentActivity::class.java).putExtra("clientOrderId", id)) }
         binding.back.setOnClickListener { finish() }; binding.retry.setOnClickListener { load() }
         binding.previous.setOnClickListener { history.removeAt(history.lastIndex); load() }
         binding.next.setOnClickListener { next?.let { history.add(it); load() } }
@@ -47,6 +49,7 @@ class TemporaryDetailsActivity : ComponentActivity() {
     }
     private fun details(): String {
         val store = (application as PdaApplication).temporaryStore(); val row = store.load(id)
+        adjustmentBlock = AdjustmentRecords(application as PdaApplication, "", id).blockReason()
         val lines = store.db.temporaryDrafts().lines(id); val scans = store.db.temporaryScans()
         val counts = store.products(id).associateBy { it.deliveryCode }; val page = store.page(id, history.last())
         next = page.lastOrNull()?.orderScanSeq?.takeIf { store.page(id, it).isNotEmpty() }
@@ -55,6 +58,8 @@ class TemporaryDetailsActivity : ComponentActivity() {
             "\n\n原扫码明细\n" + page.joinToString("\n") { "${it.orderScanSeq}. ${it.barcode} · ${WorkRenderer.kg(it.weightGrams)} kg${if (it.status == "VOID") " · 已撤销" else ""}" }
     }
     private fun controls(enabled: Boolean) {
+        binding.create.isEnabled = enabled && adjustmentBlock.isBlank()
+        binding.create.text = if (adjustmentBlock.isBlank()) "调整已扫码包" else "调整不可用 · $adjustmentBlock"
         binding.retry.isEnabled = enabled; binding.previous.isEnabled = enabled && history.size > 1
         binding.next.isEnabled = enabled && next != null
     }

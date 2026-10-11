@@ -35,6 +35,7 @@ class TemporaryWorkRenderer(private val binding: ActivityWorkBinding) {
         binding.closeOrder.isEnabled = state.draft?.state == "SCANNING" && state.queued == 0 && state.candidate == null && state.total.count > 0
         binding.validate.isEnabled = state.ready
         binding.voidLast.isEnabled = state.ready && state.queued == 0 && state.candidate == null && state.recent.any { it.status == "ACTIVE" }
+        binding.adjustPackages.isEnabled = state.ready && state.queued == 0 && state.candidate == null
         binding.confirm.text = when {
             state.candidate?.state in setOf("INVALID", "BUSINESS_REJECTED") -> "确认处理结果（本包未保存）"
             state.blocked.isNotBlank() -> "恢复核对原临时单"

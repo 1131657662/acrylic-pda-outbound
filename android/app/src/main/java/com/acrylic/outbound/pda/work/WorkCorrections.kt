@@ -25,14 +25,24 @@ class WorkCorrections(private val store: WorkStore) {
     }
 
     fun voidLast(assignment: String, capture: String, reason: String) {
+        store.db.runInTransaction {
+            check(store.db.scans().lastActive(assignment)?.captureId == capture) { "末包已变化，请重新核对" }
+            voidSelected(assignment, capture, reason)
+        }
+    }
+
+    fun voidSelected(assignment: String, capture: String, reason: String) {
         require(reason.isNotBlank() && reason.length <= 500) { "请填写实物核对及撤销原因" }
         store.db.runInTransaction {
             store.access.authorize(store.prepared(assignment))
             val order = checkNotNull(store.db.work().order(assignment))
             check(order.state == "SCANNING" && store.db.captures().pendingCount(assignment) == 0 && store.db.captures().failure(assignment) == null) { "请先处理未决输入" }
-            val scan = checkNotNull(store.db.scans().lastActive(assignment)) { "没有可撤销明细" }
+            check(store.db.captures().unresolvedOther(assignment) == null && store.db.temporaryScans().unresolved() == 0) { "另一订单仍有未处理输入，请先恢复原订单" }
+            store.verifyTotals(assignment)
+            val scan = checkNotNull(store.db.scans().get(capture)) { "没有可撤销明细" }
+            check(scan.assignmentId == assignment && scan.status == "ACTIVE") { "本包不属于原订单或已撤销，请重新核对" }
+            check(store.db.dispositions().all(assignment).none { it.captureId == capture }) { "本包已有主管处置，请核对原证明" }
             check(store.db.continuations().current(assignment)?.let { scan.orderScanSeq >= it.nextOrderScanSeq } != false) { "本包属于主管核验保留明细，卸货须另行批准" }
-            check(scan.captureId == capture) { "末包已变化，请重新核对" }
             val line = checkNotNull(store.db.work().line(assignment, scan.deliveryCode))
             check(store.db.scans().markVoid(capture) == 1 && store.db.scans().release(capture) == 1)
             check(store.db.work().totals(assignment, order.actualCount - 1, Math.subtractExact(order.weightGrams, scan.weightGrams), null) == 1)

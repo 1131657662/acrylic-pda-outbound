@@ -23,6 +23,8 @@ interface TemporaryScanDao {
     fun unresolved(exceptId: String = ""): Int
     @Insert fun insertScan(row: TemporaryScan)
     @Query("SELECT * FROM temporary_scan WHERE captureId=:id") fun scan(id: String): TemporaryScan?
+    @Query("SELECT * FROM temporary_scan WHERE clientOrderId=:id AND barcode=:barcode ORDER BY orderScanSeq DESC LIMIT 1")
+    fun locate(id: String, barcode: String): TemporaryScan?
     @Query("SELECT * FROM temporary_scan WHERE clientOrderId=:id ORDER BY orderScanSeq DESC LIMIT 5") fun recent(id: String): List<TemporaryScan>
     @Query("SELECT * FROM temporary_scan WHERE clientOrderId=:id AND orderScanSeq>:after ORDER BY orderScanSeq LIMIT 50")
     fun page(id: String, after: Long): List<TemporaryScan>

@@ -49,6 +49,7 @@ class WorkRenderer(private val binding: ActivityWorkBinding) {
         binding.confirm.isEnabled = c?.state in setOf("INVALID", "BUSINESS_REJECTED") || state.blocked.isNotEmpty() || (state.ready && c?.state == "WAITING_CONFIRM")
         binding.validate.isEnabled = state.ready
         binding.voidLast.isEnabled = state.ready && state.pending == 0 && state.queued == 0 && c == null && state.recent.any { it.status == "ACTIVE" && it.captureId !in state.dispositions }
+        binding.adjustPackages.isEnabled = state.ready && state.pending == 0 && state.queued == 0 && c == null
     }
     companion object { fun kg(grams: Long): String = BigDecimal.valueOf(grams, 3).stripTrailingZeros().toPlainString() }
 }

@@ -68,6 +68,9 @@ class WorkActivity : ComponentActivity() {
         binding.validate.setOnClickListener { manualInput() }
         binding.discard.setOnClickListener { discard() }
         binding.voidLast.setOnClickListener { voidLast() }
+        binding.adjustPackages.setOnClickListener {
+            startActivity(android.content.Intent(this, ScanAdjustmentActivity::class.java).putExtra("assignmentId", assignment))
+        }
         binding.sound.setOnClickListener {
             app.workSound.enabled = !app.workSound.enabled
             binding.sound.text = if (app.workSound.enabled) "声音开" else "声音关"

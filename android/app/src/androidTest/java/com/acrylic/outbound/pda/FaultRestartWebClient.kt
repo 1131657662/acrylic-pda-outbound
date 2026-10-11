@@ -23,6 +23,20 @@ internal class FaultRestartWebClient(private val base: String, private val input
             .post(form).build()).execute().use { check(it.code == 200) { "Isolated Web login failed: ${it.code}" } }
     }
     fun detail(): JSONObject = network.request("orders/${input.getString("orderId")}?warehouseId=${input.getString("warehouseId")}").getJSONObject("data")
+    fun get(path: String): JSONObject = network.request("$path?warehouseId=${input.getString("warehouseId")}").getJSONObject("data")
+    fun uploadStock(bytes: ByteArray): String {
+        val envelope = network.request("auth/csrf"); val csrf = envelope.getJSONObject("data")
+        val body = MultipartBody.Builder().setType(MultipartBody.FORM)
+            .addFormDataPart("file", "sku.txt", RequestBody.create(null, bytes)).build()
+        val request = Request.Builder().url(base + "inventory/imports?warehouseId=" + input.getString("warehouseId"))
+            .header(csrf.getString("headerName"), csrf.getString("token"))
+            .header("X-Server-Recovery-Epoch", envelope.getString("serverRecoveryEpoch"))
+            .header("Idempotency-Key", UUID.randomUUID().toString()).post(body).build()
+        return client.newCall(request).execute().use { response ->
+            check(response.code == 200) { "Isolated stock import failed: ${response.code}" }
+            JSONObject(checkNotNull(response.body).string()).getJSONObject("data").getString("id")
+        }
+    }
     fun post(path: String, body: JSONObject): JSONObject {
         val envelope = network.request("auth/csrf"); val csrf = envelope.getJSONObject("data")
         val headers = mapOf(csrf.getString("headerName") to csrf.getString("token"),

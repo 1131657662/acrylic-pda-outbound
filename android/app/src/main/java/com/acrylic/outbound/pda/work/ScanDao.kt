@@ -13,6 +13,8 @@ interface ScanDao {
     @Insert fun insertGuard(row: WorkGuard)
     @Query("SELECT * FROM work_guard WHERE barcode=:barcode") fun guard(barcode: String): WorkGuard?
     @Query("SELECT * FROM work_scan WHERE captureId=:id") fun get(id: String): WorkScan?
+    @Query("SELECT * FROM work_scan WHERE assignmentId=:id AND barcode=:barcode ORDER BY orderScanSeq DESC LIMIT 1")
+    fun locate(id: String, barcode: String): WorkScan?
     @Query("SELECT * FROM work_scan WHERE assignmentId=:id ORDER BY orderScanSeq DESC LIMIT 5") fun recent(id: String): List<WorkScan>
     @Query("SELECT * FROM work_scan s WHERE assignmentId=:id AND status='ACTIVE' AND NOT EXISTS (SELECT 1 FROM local_disposition d WHERE d.captureId=s.captureId) ORDER BY orderScanSeq DESC LIMIT 1") fun lastActive(id: String): WorkScan?
     @Query("SELECT * FROM work_scan WHERE assignmentId=:id AND orderScanSeq>:after ORDER BY orderScanSeq LIMIT :limit")

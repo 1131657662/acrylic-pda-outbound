@@ -60,3 +60,5 @@ e01-web-final-1362采用新一次性输入：种子1项实际执行，最终服�
 最终E01 debug APK保留在`.local/goal-20261011/e01-delivery-01/acrylic-fault-restart-debug.apk`，SHA256登记于同目录apk-sha256.json；未发布、无正式签名。作者自审范围为锁序/成功终态/旧资格、原申请和原正文守恒、重发轮次、占用释放、默认关闭及页面原请求恢复；工具消费者是隔离HTTP/Web/Android，不称独立人员审查。
 
 本范围拟明确路径提交推送开发分支；继承的取消换机代码/测试/工具与历史改动继续保留，不混入提交。D01盘点可用，D06/D07已补本次后台故障撤回/独立重发产品链的隔离证据，D10仅关联消费者范围；D04/P04、D05/P05、D08/P06、D09及D11–D18和O/U仍有开发缺口，需最终组合继续。总目标active，下一动作为E02旧包调整Room/回滚/页面验证及高频页面，随后E03文件导出和电脑核验，不转现场清单。
+
+实际交付提交65c04e9b8ff0f8931cc9df4eb728aa48bef8a793，标题“feat(撤回重发): 保全坏机原领取并让新设备从头作业”，63明确路径；已push origin HEAD:refs/heads/codex/development且ls-remote核一致。暂存diff、路径与提交正文保存于`.local/goal-20261011/e01-final-staged.diff`、e01-stage-paths.txt及e01-commit-message.txt。未合main/标签/Release/部署，继承改动和E02未混入。APK SHA256为AB25F46DF16C8E215394B4C15EC6C41BFF97E9F67DC548E8E99AC32378D34BFA；仅本机D盘debug产物，未异地备份。

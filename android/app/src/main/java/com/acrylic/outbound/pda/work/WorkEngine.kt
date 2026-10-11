@@ -84,6 +84,14 @@ class WorkEngine(private val store: WorkStore, private val sound: (String) -> Un
         if (fault.isEmpty()) processor.drain(assignment) { active(assignment) }
     }
     fun voidLast(id: String, reason: String) = enqueue { processor.corrections.voidLast(assignment, id, reason) }
+    fun adjust(order: String, capture: String, reason: String): Deferred<Unit> {
+        val result = CompletableDeferred<Unit>()
+        if (!enqueue {
+            try { check(!foreground) { "请先暂停扫码再调整" }; processor.corrections.voidSelected(order, capture, reason); result.complete(Unit) }
+            catch (error: Exception) { result.completeExceptionally(error) }
+        }) result.completeExceptionally(IllegalStateException("调整未接收，请保留原记录并重试"))
+        return result
+    }
     fun recover() = enqueue {
         store.open(requested); assignment = requested
         store.verifyTotals(assignment); store.access.authorize(store.prepared(assignment)); fault = ""

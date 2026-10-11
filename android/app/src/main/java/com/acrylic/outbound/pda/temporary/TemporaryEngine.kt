@@ -85,6 +85,14 @@ class TemporaryEngine(private val store: TemporaryWorkStore, private val sound: 
     fun acknowledge(id: String) = enqueue { processor.corrections.acknowledge(id); processor.drain(current) { active(current) } }
     fun discard(id: String, reason: String) = enqueue { processor.corrections.discard(id, reason); processor.drain(current) { active(current) } }
     fun voidLast(id: String, reason: String) = enqueue { processor.corrections.voidLast(current, id, reason) }
+    fun adjust(order: String, capture: String, reason: String): Deferred<Unit> {
+        val result = CompletableDeferred<Unit>()
+        if (!enqueue {
+            try { check(!foreground) { "请先暂停扫码再调整" }; store.load(order); processor.corrections.voidSelected(order, capture, reason); result.complete(Unit) }
+            catch (error: Exception) { result.completeExceptionally(error) }
+        }) result.completeExceptionally(IllegalStateException("调整未接收，请保留原记录并重试"))
+        return result
+    }
     fun recover() = resume(requested)
     fun stop(message: String) { fault = message.ifBlank { "存储或输入异常，请停扫核对，原记录保留" }; mutable.update { it.copy(ready = false, blocked = fault) }; sound("ERROR") }
     fun close() { pause(); scope.cancel(); dispatcher.close() }

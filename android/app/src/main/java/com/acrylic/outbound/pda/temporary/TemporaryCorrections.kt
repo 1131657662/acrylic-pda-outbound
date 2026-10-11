@@ -18,11 +18,15 @@ class TemporaryCorrections(private val store: TemporaryWorkStore) {
         store.event(draft, id, "DISCARDED", reason)
     }
     fun voidLast(order: String, capture: String, reason: String) = store.db.runInTransaction {
+        check(store.db.temporaryScans().last(order)?.captureId == capture) { "末包已变化，请重新核对" }
+        voidSelected(order, capture, reason)
+    }
+    fun voidSelected(order: String, capture: String, reason: String) = store.db.runInTransaction {
         require(reason.isNotBlank() && reason.length <= 500) { "请填写实物核对及撤销原因" }
         val draft = store.check(order); store.requireNoOtherInput(order)
         check(store.canScan(draft) && store.db.temporaryScans().pending(order) == null && store.db.temporaryScans().failure(order) == null) { "请先处理未决输入" }
-        val scan = checkNotNull(store.db.temporaryScans().last(order)) { "没有可撤销明细" }
-        check(scan.captureId == capture) { "末包已变化，请重新核对" }
+        val scan = checkNotNull(store.db.temporaryScans().scan(capture)) { "没有可撤销明细" }
+        check(scan.clientOrderId == order && scan.status == "ACTIVE") { "本包不属于原临时单或已撤销，请重新核对" }
         check(store.db.temporaryScans().markVoid(capture) == 1 && store.db.temporaryScans().release(capture) == 1)
         store.event(draft, capture, "VOID", reason); store.check(order)
     }

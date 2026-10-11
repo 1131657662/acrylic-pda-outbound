@@ -27,6 +27,10 @@ class WorkDetailsActivity : ComponentActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding = ActivityWorkDetailsBinding.inflate(layoutInflater); setContentView(binding.root)
         binding.back.setOnClickListener { finish() }
+        binding.adjustPackages.setOnClickListener {
+            startActivity(android.content.Intent(this, ScanAdjustmentActivity::class.java).putExtra("assignmentId", assignment))
+        }
+        binding.adjustPackages.isEnabled = false
         binding.loadMore.setOnClickListener { loadPage() }
         loadPage()
     }
@@ -42,6 +46,9 @@ class WorkDetailsActivity : ComponentActivity() {
             }
             val order = result.first
             if (order == null) { finish(); return@launch }
+            val block = withContext(Dispatchers.IO) { AdjustmentRecords(app, assignment, "").blockReason() }
+            binding.adjustPackages.isEnabled = block.isBlank()
+            binding.adjustPackages.text = if (block.isBlank()) "调整已扫码包" else "调整不可用 · $block"
             packageRows = packageRows + result.third.second
             pendingRows = pendingRows + result.third.first
             packageCursor = packageRows.maxOfOrNull { it.orderScanSeq } ?: packageCursor
