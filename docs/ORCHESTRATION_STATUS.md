@@ -6,44 +6,32 @@
 ```yaml
 date: 2026-10-11
 branch: codex/development
-head: 342fb7ff
-dirty_entries: 50
+head: 775f9e8a
+dirty_entries: 56
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 37 }
 server: { contract: 0.53.0, paths: 151, flyway: V82, migrations: 82 }
 ```
 <!-- FACTS_END -->
-本聊天按用户指令恢复完整目标；已核范围双侧协议复用、总目标进行中未完成，[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)D01–D18及第8节范围保持。[收口与新会话指令](history/D01_D18_PAUSE_2026-10-11_SCOPE_RELEASE.md)为接续入口；替换前结论/失败见[收口前看板](history/ORCHESTRATION_STATE_before_scope_release_pause_2026-10-11.md)，旧指令不恢复。
+用户明确取消自动换机交接/故障换机进度承接，改为后台有权撤回坏机领取的未完成订单→重新发布→新设备独立登记并从头作业；见[范围决定](history/R07_RECALL_REPUBLISH_SCOPE_2026-10-11.md)与[R07政策](BUSINESS_POLICY_R07.md)。[总目标计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)D06/D07及关联退出标准已替换，其余范围保持；旧换机接续指令不恢复，取消不计实现或验收通过。
 
 ## Git、写权与环境
-- HTTP确认20路径已推342fb7ffda5fbe13ae687c8f5db7a8dae0fc5316，开发远端一致、main未动。[Android确认](history/D07_R09_RECOVERED_ANDROID_CONFIRMATION_2026-10-11.md)1334服务/两Android JVM各1/0/0/0，原LOGIN实际POST/Room末写回滚/新JVM回放、Node基础16/9拒绝、SQLite两db/13输入/12拒绝过；全量711/173XML、698过/13live skip、APK/lint过、2806输入无漂移。1333桥守卫拒绝/Android未启动、skip解析首败保留；1333/1334均dump/认证停机/PID退出/监听空，不复用。全部dirty/Git/69历史/22STOP/C-D余量见resume-03及precommit/postcommit，唯一写者；无重型任务，页面/激活继续。
-- 主树D:/acrylic-pda-outbound、codex/development。准入/新资格/PREPARE/本人会话/产品下载/Android暂存的提交与保护证据见各验收记录及对应precommit/postcommit快照；29继承非看板dirty、69历史/22STOP保持。原pause-final及原1233只读，1293 UNKNOWN保留；所有已保全/失败/中间库不复用。
-- 新产物/TEMP/Java/cache在D盘，无清理，本机证据未异地备份；AVD压缩/原hash保留见[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)/[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
+- 树D:/acrylic-pda-outbound、codex/development；本次文档输入/开发远端775f9e8a34dbe44ea7e57522e122965b62c5b6ec，main只读核对c6e9e0c238c657baecbf699ba6fdbada5d979b86。本批提交/推送与收口实际HEAD、全部dirty见.local/r07-recall-republish-20261011/回执和快照；源码/APK版本只见生成事实块。
+- 原开发聊天已按用户明确授权保全停机、goal为paused并交出全部项目写权；本聊天为文档唯一写者，无业务开发或重型任务。交接原件为.local/d01-d18-20261010/received-scope-change-safe-stop-01/HANDOFF.md和received-scope-change-pause-final-01/。不自动唤醒旧goal。
+- 交接的46条dirty及全部继承/未跟踪路径已保存；29原继承非看板路径、69历史和22STOP保护继续保留。本批只修改[范围决定](history/R07_RECALL_REPUBLISH_SCOPE_2026-10-11.md)列明的16个文档/归档路径；其余文件按本机hash核对，旧未提交代码不代提交/删除。
+- 1343两dump及认证停机0、运行器/服务/MySQL/模拟器退出，19330/19434/5560/5561/5173任务监听空；共有3306/ADB保留，13316未监听。原1233只读、1293 UNKNOWN围栏保留，保全/失败库不复用。
+- 新快照/文档预览/回执在D盘.local，本次无清理；C/D可用约75.74/32.23 GiB，原始字节与实际进程/监听见本机收口快照。本机数据库、私钥、APK与证据未因源码备份而异地备份；AVD及原产物按[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)保留。
 
-## 本批与既有有效范围
-- [限定恢复确认HTTP](history/D07_R09_RECOVERED_CONFIRMATION_HTTP_2026-10-11.md)：1332实际MySQL/首次并发POST1/0/0/0、Socket重放200后断开零正文/原键与新JVM原Bearer回执过；152表仅确认加一行、原表/files守恒。Node基础16/9反例、HTTP122/15拒绝/7schema反例过；普通3345/121XML全过/无skip，各2793输入无漂移。1330中间输入保全，材料尾改为服务注入、未称首次创建丢确认；[服务确认](history/D07_R09_RECOVERED_CONFIRMATION_2026-10-11.md)证据保留。Android/激活/最终提交继续，69历史/22STOP与1293UNKNOWN保持；前看板已归档。
-- [限定恢复Android暂存](history/D07_R09_RECOVERED_ANDROID_STAGE_2026-10-11.md)：1325前置/两Android JVM各1/0/0/0，实际产品HTTP/同LOGIN/native Room/原byte/丢响应及重开通过；151表/files不变。独立SQLite两db/7输入/10拒绝过；全量703/169XML、691通过/12live条件skip、零失败/错误，APK/lint过，各2768输入无漂移。页面操作/真机/确认/激活/最终提交未完成；1325dump/认证停机/PID退出/监听空，1324分配拒绝未建库，保全不复用。resume/pre-http/close快照保护全部dirty/69历史/22STOP，前看板已归档；本聊天唯一写者，无重型任务。下一步精确签名确认及原全表效果核对。
-- [本人产品HTTP下载](history/D07_R09_RECOVERED_DOWNLOAD_HTTP_2026-10-11.md)：1323实际GET/原Bearer/byte、并发/权限/提交前输入尾改拒绝和新JVM过，151表/files不变；Node44输入/5语义反例/7HTTP检查、schema75输入/4反例及unit12过，普通3333/119XML全过/无skip/输入不变。仅HTTP读取，Android耐久暂存/确认/激活/最终提交继续，普通TEMP/NORMAL关闭。
-- [本人原正文读取](history/D07_R09_RECOVERED_DOWNLOAD_2026-10-11.md)：1318实际MySQL1/0/0/0/输入不变、并发/尾改拒绝及新JVM原token/字节过；Node15输入/151表/5反例过，普通3323/117XML全过/无skip。1316为补并发前输入，consumer01篡改下标首败/02修复保全；产品HTTP/Android确认/激活/最终提交继续，普通TEMP/NORMAL与能力关闭。
-- [本人会话准入](history/D07_R09_RECIPIENT_SESSION_2026-10-11.md)：1314 MySQL/首次竞争/尾回滚/新JVM原token、Node18输入/151表/8反例、unit6及普通3323全过/无skip。失败/中间输入、源码关系和2731输入核对见记录；原1233/1293UNKNOWN及full raw守恒保持，普通TEMP/NORMAL关闭。
-- [恢复PREPARE](history/D07_R09_RECOVERED_PREPARATION_2026-10-11.md)：1306实际MySQL1/0/0/0/输入不变、首次同键并发/异文/尾回滚、新JVM原pin/bytes/回执DB不变；Node15输入/150表/8反例过，普通3317全过/116XML/无skip/产品相同。各2714输入核对；dump/认证停机/PID退出/监听空。compile-01/02、1299/1301/1305失败保全，1300/1303分配拒绝未建库，1302/1304中间过。精确签名效果及原全表守恒保持，无旧票据；仅服务准备，不代HTTP/Android链。
-- [本代次恢复交接新资格](history/D07_R09_RECIPIENT_QUALIFICATION_2026-10-11.md)：1298专项/新JVM原pin字节/Node18输入与5反例、普通3317全过/无skip。失败/输入/停机保全见记录；仅精确资格审计新增，原正文/source代次/映射保持，普通TEMP/首轮/扫描/删除关闭，未外推激活或最终提交。
-- [恢复态指定接收者准入](history/D07_R09_RECIPIENT_ADMISSION_2026-10-11.md)：独立pin/RS256及新机P-256持钥证明，同仓/实时身份权限、closed operation，同一原归档；精确新device/不可变审计与全原表raw尾验。1297专项1/0/0/0/sourceUnchanged、新JVM原pin/bytes无新签名DB不变；Node16输入/149表/4反例过；普通3317全过/116XML/无skip/2693输入不变。1295异常类型断言败、1296中间过、consumer-01换行败及1294分配拒绝均保留；dump/认证停机/PID退出/监听空。新机TEMP=false，无新资格/激活/正向HTTP/Android；能力false，作者自审见本机记录。
-- [已核范围双侧提交](history/D07_R09_SCOPE_RELEASE_2026-10-11.md)：1293准备/跨JVM各1/0/0/0/sourceUnchanged，实际子进程DB确认后halt(73)、原pin新JVM补COMMIT；缺侧/坏pending/换根锁/异有效签名/异scope拒绝、尾写回滚、同键并发通过。真实丢commit确认后verify/release/新authority持久UNKNOWN，围栏保留；Node范围20/批准14/原表22/编号8输入不变。普通3317全过/116XML/无skip/sourceUnchanged；1291/1292中间通过、1289失败/1290分配拒绝保全。dump/认证停机/PID退出/监听空，无重型任务；无新资格/正向HTTP/Android，能力false。前看板见scope-release归档。
-- [独立运维批准核验](history/D07_R09_OPERATIONS_APPROVAL_2026-10-10.md)：独立pin/RS256、原来源/主管proof/控制/库实例/范围绑定，批准后固定inventory再签；closed事务原身份先锁、全库复核及beforeCommit身份/物料重验。1288专项1/0/0/0/sourceUnchanged，两尾写回滚；Node批准14/原事实22/编号8输入不变，普通recovery/handover3317全过/116XML/无skip/sourceUnchanged。1285摘要拒绝已修且失败保全，1282中间输入/分配拒绝另列；2664输入未变。无释放/新资格/正向HTTP/Android，能力false；dump/认证停机/PID退出/监听空，无重型任务，前看板见归档。
-- [恢复态主管实物确认](history/D07_R09_PHYSICAL_REVIEW_2026-10-10.md)：既有APPROVE在原closed事务中核实实物声明/清单/库存，130表只允许精确签名效果；原ABORT/占用/账务保留。1281两JVM、六拒绝/末SQL/未知范围/两尾回滚/八语义反例、原键重放与独立消费者通过。合成实物声明不代现场，所有能力false；无新增正向HTTP/Android。替换前结论见[归档](history/ORCHESTRATION_STATE_before_physical_review_2026-10-10.md)。
-- [原终点与主管围栏效果核对](history/D07_R09_RELEASE_RECONCILIATION_2026-10-10.md)：固定130表全库原行/其他仓库不变，只接受精确签名REQUEST/FAULT_FENCE效果；ABORT/占用/库存/账务/准备/子表保留。1274专项1/0/0/0、12语义反例/两项跨仓库尾写回滚、签名单元8过；独立原终点9输入/两反例、成员10输入/三反例、编号8输入不变。UNCHECKED及所有能力false；不是实物核对或释放。编译两败/1269事务journal拒绝已修且失败保留，详细输入与前看板见记录。
-- [固定仓库及子表覆盖](history/D07_R09_RELEASE_SCOPE_COVERAGE_2026-10-10.md)：准备/库存基线/PC/同步/来源证据及子表共130表，父键归属/空集合/全局摘要与nonce遮盖；1268专项1/0/0/0、库存子表尾写全回滚。Node完整成员10输入/三类反例与编号8输入不变；普通3301全过/113XML/sourceUnchanged。1267原行数量断言修正失败保留；不计业务语义闭合或释放，替换前看板见[归档](history/ORCHESTRATION_STATE_before_release_scope_2026-10-10.md)。
-- 既有[编号历史](history/D07_R09_RELEASE_NUMBER_HISTORY_2026-10-10.md)、[历史覆盖](history/D07_R09_RELEASE_HISTORY_2026-10-10.md)、[原范围清单](history/D07_R09_RELEASE_INVENTORY_2026-10-10.md)均有分层MySQL/原件/Node及普通回归；原编号/全表/raw/文件守恒保持，失败/中间输入保全。不外推释放/HTTP/Android；详细结论见download_http前看板。
-- [恢复主管故障围栏](history/D07_R09_RECEIVED_FAULT_2026-10-10.md)：1250实际MySQL+服务接缝与普通HTTP拒绝另列，原FAULT_FENCE/ABORT/占用/账务/正文保持，不造STOP/ACK；原键/权限/末SQL/尾回滚/Node/普通回归及各首败保留。合成主管声明不代现场。
-- [原closed/native消费](history/D07_R09_RECEIVED_ARCHIVE_2026-10-10.md)、[原1233截点](history/D07_R09_RECEIVED_CHECKPOINT_2026-10-10.md)、[原verification恢复](history/D07_R09_RECEIVED_VERIFICATION_RESTORE_2026-10-10.md)保留原Android/HTTP/E2A/ABORT/dump/binlog及分层守恒/拒绝证据；首败/中间通过见各记录，不复用库，不以原Android外推新接收链。
-- D06 STOP1103/多跳1110/混合1118/1120/LOCAL1124/1125，D07 TEMP1131/1132/1137/1144、FORMAL1148–1151已有分层证据见历史索引/[FORMAL暂停](history/D01_D18_PAUSE_2026-10-09_FORMAL.md)，不外推整体。1150/1151/UI-06未重跑；1100–1102不重跑/复用。UI-06为页面消费回放签名响应，非实时MySQL/真机。
+## 本批与历史证据
+- 本次只修改范围、政策和接续文档；十步路线、R07政策/业务问题、剩余计划、D01–D18相关门槛、README/设备说明、长期规则及索引同步。原看板/政策/总目标已归档，链接见[范围决定](history/R07_RECALL_REPUBLISH_SCOPE_2026-10-11.md)。文档检查不代新方案功能测试、APK、模拟器、真机、HTTP或部署。
+- 原换机链的准入/新资格/PREPARE/本人会话/下载/Android耐久暂存与确认、主管围栏/原表核对/范围双侧协议已有历史证据；详见[验收索引](DEVELOPMENT_PROGRESS.md)及[修订前看板](history/ORCHESTRATION_STATE_before_recall_republish_2026-10-11.md)。只保留原范围结论，不继续接收者确认/激活/最终承接，也不把旧链通过作为撤回重发通过。
+- 页面/worker旧未提交成果与unit/full-03/04/05、APK/lint及live skip原件保持；full-01/02 native finalizer崩溃根因未证，1335–1341失败/中间输入与分配拒绝保留。1342页面单阶段过但运行器收集失败、缺第二页面/新JVM；1343服务前置过、页面因用户取消而中断、无完整组合完成marker，均不计组合通过。详情见停机HANDOFF和原日志/tar/dump/binlog/datadir/AVD。
 
-## 未完成与接续第一动作
-- D06/D07整体、FORMAL各阶段实际入口、其他无可信归档来源/R09跨截点业务重建、D08–D18与总闸门未完成；D18无最终候选。D04候选排除/D05取消释放缺政策保持拒绝；原资料/旧BCD/526、历史关键未验/失败与恢复限制单列，开发缺口不转现场。
-- 指定接收者/新资格/PREPARE/本人会话/产品HTTP读取/Android耐久暂存与确认已验，下一项恢复确认产品页面/worker→本人丢token新LOGIN替换→限定激活→最终提交。原普通TEMP FK/代次相等约束不伪造，原机禁用、跨仓机不借用、新机普通TEMP=false；原正文/source代次/映射保留、旧票据不激活。新增效果继续精确签名与beforeCommit全表守恒，不开NORMAL/首轮、不删比较。
-- 原正文source与target传输代次分开；旧票据不可激活，另发限定scope/接收者的新资格并保留原事实/映射、隔离首轮能力。跨树核对后新建隔离目标，只读复用原1233；不重跑原源/1150/1151/UI-06/1100–1102，不复用保全/失败库。接缝、源码入口和退出要求详见收口文档。
-- 生产默认/签名及七类生产决定handler/POST/放行/证据写入/关闭能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名、不绕设备审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
+## 未完成与下一动作
+- 新方案D06后台有权撤回→D07重新发布及新设备从头作业未实现/未验，不能因旧换机范围取消而记完成。先按D01重核现有后台撤回/召回、发布、领取、设备停用、终态与权限，列最小复用/改造清单，再定向实现验证；坏机故障且无STOP/ACK须有合法正向路径。
+- 撤回与旧提交竞争须终态互斥，成功出库走更正；旧领取/旧上传失效、占用及审计原子且可恢复，重发新资格不继承坏机扫描进度，不重复记账。仅停用设备不等于订单撤回；无后台发布记录的TEMP本机草稿仍按R06，未知数据库事实保持R09围栏。
+- R06余项、D08–D18及总闸门未完成，D18无最终候选；D04候选排除/D05普通TEMP取消释放原政策缺口不由本次后台订单撤回授权覆盖。原资料/旧BCD/526、历史关键未验与失败、恢复限制继续单列，开发缺口不转现场。R07更正/库存对账、R08净结果/导出、R09灾后恢复保留。
+- 生产默认/签名及七类决定handler/POST/放行/证据写入/关闭能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名、不绕设备审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。

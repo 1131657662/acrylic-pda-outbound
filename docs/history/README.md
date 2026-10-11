@@ -1,5 +1,8 @@
 # 历史归档
 
+- [R07取消换机接续，改为故障订单撤回重发（2026-10-11）](R07_RECALL_REPUBLISH_SCOPE_2026-10-11.md)：用户范围替换、旧测试安全停机与写权交接、文档更新及新方案验收边界；旧换机继续指令不恢复。
+- 修订前原件：[看板](ORCHESTRATION_STATE_before_recall_republish_2026-10-11.md)、[R07政策](R07_POLICY_before_recall_republish_2026-10-11.md)、[总目标计划](AUTONOMOUS_PLAN_before_recall_republish_2026-10-11.md)。仅作历史，取消不计实现通过。
+
 - [D07/R09限定恢复Android耐久接收确认（2026-10-11）](D07_R09_RECOVERED_ANDROID_CONFIRMATION_2026-10-11.md)：实际POST/native Room/原键、两Android JVM与独立消费；页面/激活/最终提交继续。
 - [Android确认开发前看板](ORCHESTRATION_STATE_before_confirmation_android_2026-10-11.md)与[收口前看板](ORCHESTRATION_STATE_before_confirmation_android_close_2026-10-11.md)：原结论和失败保全，旧指令不恢复。
 

@@ -2,6 +2,8 @@
 
 # 开发验收索引
 
+- [R07取消换机接续，改为故障订单撤回重发](history/R07_RECALL_REPUBLISH_SCOPE_2026-10-11.md)：用户范围决定、旧测试保全停机及文档交接；只计范围/文档更新，不计新方案业务验收。下文旧换机链条目保留历史范围，其旧“继续确认/激活/最终承接”提示不再作为必做指令；其余验收结论按各自输入保持。
+
 - [D07/R09限定恢复Android耐久接收确认](history/D07_R09_RECOVERED_ANDROID_CONFIRMATION_2026-10-11.md)：明确原意图、实际POST/Room尾回滚/两Android JVM、独立SQLite/签名及APK/lint；页面调度、激活/最终提交继续。
 
 - [D07/R09限定恢复接收确认产品HTTP](history/D07_R09_RECOVERED_CONFIRMATION_HTTP_2026-10-11.md)：默认关闭固定信任、真实POST/首次并发/丢正文/新JVM原回执与独立消费；Android确认及激活、最终提交继续。
