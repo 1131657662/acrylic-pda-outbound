@@ -27,9 +27,14 @@ public final class E2aConfirmationReplayMain {
     }
     public static void main(String[] args) throws Exception {
         var profile=E2aCrossSourceProfile.completedSession();
-        try(var app=E2aCrossSourceHttpIT.start(profile,"--outbound.handover.commands.enabled=true",
-                "--outbound.handover.fault.enabled=true","--server.servlet.session.cookie.secure=false")) {
+        var options=java.util.stream.Stream.concat(java.util.stream.Stream.of("--outbound.handover.commands.enabled=true",
+            "--outbound.handover.fault.enabled=true","--server.servlet.session.cookie.secure=false"),
+            Files.exists(profile.attempt.resolve("download-http-input.json"))
+                ?Arrays.stream(com.acrylic.outbound.recovery.RecoveryReceivedConfirmationHttpSetup.options(profile.attempt)):java.util.stream.Stream.empty()).toArray(String[]::new);
+        try(var app=E2aCrossSourceHttpIT.start(profile,options)) {
             RecoveryReceivedConfirmationRestart.verify((WebApplicationContext)app,profile.attempt,Path.of(System.getenv("E2A_RECEIVED_SOURCE")));
+            if(Files.exists(profile.attempt.resolve("download-http-input.json")))
+                com.acrylic.outbound.recovery.RecoveryReceivedConfirmationHttpChecks.verify((WebApplicationContext)app,profile.attempt,true);
         }
     }
     private E2aConfirmationReplayMain() { }

@@ -1,0 +1,78 @@
+Path:
+  post:
+    summary: 指定接收本人确认限定恢复原件及实物
+    description: >-
+      沿 handover.commands.enabled 和 recovered-confirmation.enabled 两个默认关闭开关；
+      信任仅由服务端配置独立固定的 input/input-sha256 重载已保存准入、限定资格、PREPARE 和本人真实会话。
+      调用者提供 URL 案件、Bearer、目标代次与完整原意图；请求 path/pin/key/permit 不构成信任。
+      实时身份/仓库/权限/期限、原正文与两侧代次、全原表/files 和 beforeCommit 材料核验均必需。
+      仅新增独立不可变恢复确认，原键重试原回执；不推进案件/轮次或改占用/账务，不创建普通授权、激活或扫描许可。
+      专用签名用途不能供普通确认或旧激活票据消费。最大请求65536字节，未知/重复字段及尾随JSON拒绝。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {name: caseId, in: path, required: true, schema: {type: string, format: uuid}}
+      - {name: X-Server-Recovery-Epoch, in: header, required: true, schema: {$ref: './handover-temporary-confirmation.yaml#/PositiveText'}}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: '#/Command'}
+    responses:
+      '200':
+        description: 专用RS256不可变确认原JSON字节，不经Envelope
+        headers:
+          Cache-Control: {schema: {type: string, const: no-store}}
+          X-Content-Type-Options: {schema: {type: string, const: nosniff}}
+          Content-Length: {schema: {type: integer, minimum: 1}}
+        content:
+          application/json:
+            schema: {$ref: '#/Receipt'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '503': {$ref: './openapi.yaml#/components/responses/Error'}
+Command:
+  type: object
+  additionalProperties: false
+  required: [commandVersion, commandType, commandId, caseId, qualificationId, transportRecoveryEpoch, sourceRecoveryEpoch, expectedCaseVersion, qualificationSha256, recipientSessionSha256, manifestSha256, preparedTicketSha256, payloadSha256, checklistSha256, physicalConfirmed]
+  properties:
+    commandVersion: {type: integer, const: 1}
+    commandType: {type: string, const: RECOVERED_TEMP_HANDOVER_CONFIRM}
+    commandId: {type: string, format: uuid}
+    caseId: {type: string, format: uuid}
+    qualificationId: {type: string, format: uuid}
+    transportRecoveryEpoch: {$ref: './handover-temporary-confirmation.yaml#/PositiveText'}
+    sourceRecoveryEpoch: {$ref: './handover-temporary-confirmation.yaml#/PositiveText'}
+    expectedCaseVersion: {type: string, const: '4'}
+    qualificationSha256: {$ref: './handover-temporary-confirmation.yaml#/Hash'}
+    recipientSessionSha256: {$ref: './handover-temporary-confirmation.yaml#/Hash'}
+    manifestSha256: {$ref: './handover-temporary-confirmation.yaml#/Hash'}
+    preparedTicketSha256: {$ref: './handover-temporary-confirmation.yaml#/Hash'}
+    payloadSha256: {$ref: './handover-temporary-confirmation.yaml#/Hash'}
+    checklistSha256: {$ref: './handover-temporary-confirmation.yaml#/Hash'}
+    physicalConfirmed: {type: boolean, const: true}
+Receipt:
+  type: object
+  additionalProperties: false
+  required: [formatVersion, purpose, receiptId, recordedAt, requestId, status, commandSha256, recipientSessionSha256, originalCommand, qualification, preparedTicket, checklist, capabilities, actor, signedReceipt]
+  properties:
+    formatVersion: {type: integer, const: 1}
+    purpose: {type: string, const: RECOVERED_TEMP_HANDOVER_CONFIRMATION}
+    receiptId: {type: string, format: uuid}
+    recordedAt: {type: string, format: date-time}
+    requestId: {type: string, pattern: '^[A-Za-z0-9._:-]{1,64}$'}
+    status: {type: string, const: RECOVERED_TARGET_CONFIRMED}
+    commandSha256: {$ref: './handover-temporary-confirmation.yaml#/Hash'}
+    recipientSessionSha256: {$ref: './handover-temporary-confirmation.yaml#/Hash'}
+    originalCommand: {$ref: '#/Command'}
+    qualification: {$ref: './handover-recovered-download-schema.yaml#/Qualification'}
+    preparedTicket: {$ref: './handover-recovered-download-schema.yaml#/PreparedTicket'}
+    checklist: {$ref: './handover-recovered-download-schema.yaml#/RecoveredManifest/properties/checklist'}
+    capabilities: {$ref: './handover-temporary-confirmation.yaml#/Receipt/properties/capabilities'}
+    actor:
+      allOf:
+        - {$ref: './handover-temporary-confirmation.yaml#/Receipt/properties/actor'}
+        - {required: [sessionId]}
+    signedReceipt: {type: string, description: 'RS256 JWT，iss=acrylic-outbound、aud=acrylic-pda-recovered-temporary-handover-confirmation；receipt绑定除signedReceipt外全部字段'}

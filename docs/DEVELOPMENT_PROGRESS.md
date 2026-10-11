@@ -2,6 +2,8 @@
 
 # 开发验收索引
 
+- [D07/R09限定恢复接收确认产品HTTP](history/D07_R09_RECOVERED_CONFIRMATION_HTTP_2026-10-11.md)：默认关闭固定信任、真实POST/首次并发/丢正文/新JVM原回执与独立消费；Android确认及激活、最终提交继续。
+
 - [D07/R09限定恢复接收确认服务](history/D07_R09_RECOVERED_CONFIRMATION_2026-10-11.md)：精确专用签名、实际MySQL/并发/尾回滚/新JVM原回执、原表守恒与独立消费；产品HTTP/Android、激活和最终提交继续。
 
 - [D07/R09限定恢复Android原件暂存](history/D07_R09_RECOVERED_ANDROID_STAGE_2026-10-11.md)：实际HTTP/native Room/新JVM原件、事务与迁移拒绝及独立SQLite消费；确认/激活/最终提交和页面操作继续。

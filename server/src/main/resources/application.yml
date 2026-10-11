@@ -38,6 +38,8 @@ outbound:
   handover:
     recovered-download:
       enabled: false
+    recovered-confirmation:
+      enabled: false
   signing:
     private-key: ${OUTBOUND_AUTH_SIGNING_PRIVATE_KEY:}
     public-key: ${OUTBOUND_AUTH_SIGNING_PUBLIC_KEY:}

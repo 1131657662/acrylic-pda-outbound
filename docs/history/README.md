@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09限定恢复接收确认产品HTTP（2026-10-11）](D07_R09_RECOVERED_CONFIRMATION_HTTP_2026-10-11.md)：真实POST/首次竞争/Socket丢正文、专用签名与两JVM原回执、守恒/独立消费；Android及激活链继续。
+- [产品HTTP确认前看板](ORCHESTRATION_STATE_before_confirmation_http_2026-10-11.md)：原结论/失败保全，旧指令不恢复。
+
 - [D07/R09限定恢复接收确认服务（2026-10-11）](D07_R09_RECOVERED_CONFIRMATION_2026-10-11.md)：专用RS256/原键、新JVM原回执、实际MySQL与原表守恒/独立消费；HTTP/Android和激活链继续。
 
 - [D07/R09限定恢复Android原件暂存（2026-10-11）](D07_R09_RECOVERED_ANDROID_STAGE_2026-10-11.md)：同一LOGIN/HTTP/native Room/新JVM、原表守恒与独立消费；确认/激活/最终提交继续。
