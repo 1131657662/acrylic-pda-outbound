@@ -30,6 +30,8 @@ public final class E2aSessionReplayMain {
         try(var app=E2aCrossSourceHttpIT.start(profile,"--outbound.handover.commands.enabled=true",
                 "--outbound.handover.fault.enabled=true","--server.servlet.session.cookie.secure=false")) {
             RecoveryReceivedSessionRestart.verify((WebApplicationContext)app,profile.attempt,Path.of(System.getenv("E2A_RECEIVED_SOURCE")));
+            if(Files.exists(profile.attempt.resolve("download-restart-request.marker")))
+                com.acrylic.outbound.recovery.RecoveryReceivedDownloadChecks.verifyRestart((WebApplicationContext)app,profile.attempt,Path.of(System.getenv("E2A_RECEIVED_SOURCE")));
         }
     }
     private E2aSessionReplayMain() { }

@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09恢复本人原正文读取（2026-10-11）](D07_R09_RECOVERED_DOWNLOAD_2026-10-11.md)：原manifest/正文、签名清单、全原表/并发/尾回滚/新JVM及独立消费；产品HTTP/Android链继续。
+- [原正文读取收口前看板](ORCHESTRATION_STATE_before_download_close_2026-10-11.md)：原结论和失败保留，旧指令不恢复。
+
 - [D07/R09恢复指定接收者本人会话准入（2026-10-11）](D07_R09_RECIPIENT_SESSION_2026-10-11.md)：真实HTTP认证、精确签名登录效果/全原表守恒、尾回滚、新JVM原token及独立消费；下载确认/激活/最终提交继续。
 - [本人会话开发前看板](ORCHESTRATION_STATE_before_receiving_session_2026-10-11.md)及[收口前看板](ORCHESTRATION_STATE_before_session_close_2026-10-11.md)：原结论和失败保留，旧指令不恢复。
 

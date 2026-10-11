@@ -36,6 +36,12 @@ final class RecoveryRecipientSessionProjection {
             }
         });
     }
+    void requireRecorded() {
+        session.materials(); match(records());
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void beforeCommit(boolean readOnly) { session.materials(); match(records()); }
+        });
+    }
     private List<Map<String,String>> records() {
         var table=com.acrylic.outbound.submissions.SubmissionJson.object(); var columns=table.putArray("columns"); var rows=table.putArray("rows");
         jdbc.query("SELECT * FROM recovery_recipient_session ORDER BY command_id LIMIT 2 FOR UPDATE",rs->{

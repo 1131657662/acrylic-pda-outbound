@@ -18,6 +18,10 @@ public final class RecoveryReceivedSessionChecks {
         var grant=RecoveryRecipientSession.verify(signed,f.qualification);
         var snapshots=new E2aMigrationSnapshot(f.fixture.enrollment.jdbc,attempt,attempt.resolve("storage")); var before=snapshots.capture();
         RecoverySessionRejectionChecks.verify(f,signed,grant); RecoverySessionTailChecks.verify(f,signed,grant);
+        f.authenticate();
+        try { assertThatThrownBy(()->app.getBean(com.acrylic.outbound.handover.HandoverRecoveredTemporaryDownload.class)
+            .read(grant,f.fixture.enrollment.setup.request(),"missing-session-admission")).hasMessage("RECOVERY_SESSION_UNVERIFIED_ADDITIONS"); }
+        finally { org.springframework.security.core.context.SecurityContextHolder.clearContext(); }
         assertThat(snapshots.capture()).isEqualTo(before);
         concurrent(f,grant,attempt); var result=f.admit(grant);
         assertThat(result.signedSha256()).isEqualTo(signed.independentSha256()); assertThat(result.ordinaryWritesAllowed()).isFalse();

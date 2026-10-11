@@ -31,7 +31,7 @@ public final class RecoveryReceivedSessionRestart {
             .put("newLoginIssued",false).put("newSignatureIssued",false).put("databaseUnchanged",true).put("ordinaryWritesAllowed",false)
             .put("localDeletionAllowed",false).put("mayResumeScanning",false)));
     }
-    private static Reloaded reload(JdbcTemplate jdbc,Path attempt,Path original) throws Exception {
+    static Reloaded reload(JdbcTemplate jdbc,Path attempt,Path original) throws Exception {
         var facts=pinned(attempt,"session"); var q=pinned(attempt,"qualification"); var scope=pinned(attempt,"scope");
         var request=RecoveryReceivedScopeReleaseReload.request(jdbc,attempt,original);
         var authority=new RecoveryOperationsAuthority(request.reconciliation().authority(),Path.of(text(q,"identityFile")),text(q,"identitySha256"));
@@ -47,6 +47,6 @@ public final class RecoveryReceivedSessionRestart {
         byte[] bytes=Files.readAllBytes(attempt.resolve(name+"-restart-input.json"));
         assertThat(sha256(bytes)).isEqualTo(Files.readString(attempt.resolve(name+"-restart-input.sha256"))); return readCanonical(bytes);
     }
-    private record Reloaded(JsonNode facts,HandoverRecoveredPhysicalReview.Request request,RecoveryRecipientSession session) { }
+    record Reloaded(JsonNode facts,HandoverRecoveredPhysicalReview.Request request,RecoveryRecipientSession session) { }
     private RecoveryReceivedSessionRestart() { }
 }
