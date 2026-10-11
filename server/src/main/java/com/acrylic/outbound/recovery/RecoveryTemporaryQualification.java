@@ -34,6 +34,33 @@ public final class RecoveryTemporaryQualification {
     public JsonNode facts() { return facts.deepCopy(); }
     public String sha256() { return request.independentSha256(); }
     public byte[] signedBytes() { return signed.clone(); }
+    public RecoveryRecipientAdmission.IdentityLocks lockPreparationIdentity(DataSource database) {
+        return recipient.lockPreparationIdentity(database);
+    }
+    public void requirePreparationUse(Context context) {
+        RecoveryTemporaryQualificationFormat.bindArchive(facts,context.projection().archive());
+        var projection=new RecoveryTemporaryQualificationProjection(context.database(),this);
+        projection.requireBaseline(); projection.issue(true); projection.requireUnexpired();
+    }
+    public RecoveryRecipientAdmission.Effects preparationEffects(DataSource database,RecoveryReceiptKeys keys) {
+        var projection=new RecoveryTemporaryQualificationProjection(database,this);
+        projection.requireBaseline(); projection.issue(true);
+        var effects=recipient.readEffects(database);
+        require(effects!=null,"RECOVERY_QUALIFICATION_ENROLLMENT_REQUIRED");
+        return effects.withPreparation(new RecoveryPreparedTemporaryEffects(this,keys,database));
+    }
+    public void verifyPreparation(RecoveryRecipientAdmission.IdentityLocks identity,Context context) {
+        requirePreparationUse(context);
+        recipient.project(identity,context.projection(),new RecoveryPreparedTemporaryEffects(this,
+            context.projection().prepared().request().targetKeys(),context.database()));
+    }
+    public JsonNode preparationDescriptor() {
+        var result=com.acrylic.outbound.submissions.SubmissionJson.object().put("purpose","RECOVERED_TEMP_HANDOVER_QUALIFICATION")
+            .put("qualificationSha256",sha256());
+        for(String field:java.util.List.of("qualificationId","caseId","scopeId","warehouseId","recipient","source","control","baseline","expiresAt","capabilities"))
+            result.set(field,facts.path(field));
+        return result;
+    }
     public Result issue(RecoveryRecipientAdmission.IdentityLocks identity,Context context) {
         require(recipient.readEffects(context.database())!=null,"RECOVERY_QUALIFICATION_ENROLLMENT_REQUIRED");
         recipient.project(identity,context.projection()); materials();

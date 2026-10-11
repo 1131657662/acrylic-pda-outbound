@@ -104,6 +104,13 @@ public class HandoverCommandService {
         var current=store.caseFacts(input.uuid("caseId")); sources.require(input,current); approvals.require(input,current);
         return result;
     }
+    byte[] prepareRecoveredLocked(HandoverCommand.Input input,HandoverCommand.Actor actor,String requestId,
+            com.acrylic.outbound.recovery.RecoveryTemporaryQualification qualification) {
+        if(!TransactionSynchronizationManager.isActualTransactionActive() || !input.kind().equals("PREPARE")) throw HandoverCommand.unsupported();
+        var operation=operations.stream().filter(o->o instanceof HandoverPreparation).map(o->(HandoverPreparation)o)
+            .findFirst().orElseThrow(HandoverCommand::unsupported).recovered(qualification);
+        return executeLocked(new Execution(input,actor,operation,requestId),anchor -> { });
+    }
 
     private byte[] executeLocked(Execution execution,java.util.function.Consumer<JsonNode> requireAnchor) {
         var input=execution.input(); var actor=execution.actor(); var operation=execution.operation();

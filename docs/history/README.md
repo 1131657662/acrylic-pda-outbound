@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09恢复交接PREPARE（2026-10-11）](D07_R09_RECOVERED_PREPARATION_2026-10-11.md)：限定资格准备、精确签名效果与原全表守恒，实际MySQL/新JVM/独立消费者；下载确认/激活/最终提交仍待接续。
+- [恢复准备前看板](ORCHESTRATION_STATE_before_received_prepare_2026-10-11.md)：替换前结论及失败保留，旧指令不恢复。
+
 - [D07/R09本代次恢复交接新资格（2026-10-11）](D07_R09_RECIPIENT_QUALIFICATION_2026-10-11.md)：独立签名限定资格、全原表守恒、实际MySQL/新JVM/独立消费与受影响回归；准备/激活/最终提交仍需继续。
 - [新资格收口前看板](ORCHESTRATION_STATE_before_qualification_close_2026-10-11.md)：原结论/失败与在途接续保留。
 

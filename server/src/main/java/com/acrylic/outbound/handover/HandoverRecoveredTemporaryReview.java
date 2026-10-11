@@ -28,6 +28,13 @@ public final class HandoverRecoveredTemporaryReview {
 
     public RecoveryReleaseInventory inspectRecipient(byte[] originalFault,HandoverRecoveredTemporaryBinding binding,
             RecoveryRecipientAdmission admission) {
+        return inspect(originalFault,binding,admission,null,null);
+    }
+    RecoveryReleaseInventory inspectPreparation(HandoverRecoveredPhysicalReview.Request request,RecoveryTemporaryQualification qualification) {
+        return inspect(request.originalFault(),request.binding(),qualification.recipient(),qualification,request.reconciliation().targetKeys());
+    }
+    private RecoveryReleaseInventory inspect(byte[] originalFault,HandoverRecoveredTemporaryBinding binding,
+            RecoveryRecipientAdmission admission,RecoveryTemporaryQualification qualification,RecoveryReceiptKeys keys) {
         Objects.requireNonNull(binding); var command=HandoverCommand.Input.parse(originalFault); binding.require(command);
         HandoverCommand.corruptUnless("FAULT_FENCE".equals(command.kind()));
         var before=admission==null?access.current(command):null;
@@ -35,14 +42,16 @@ public final class HandoverRecoveredTemporaryReview {
             new RecoveryReceivedTemporaryArchiveConsumer.IdentityConsumer<>() {
                 @Override public void lockIdentity() {
                     requireDatabase();
-                    if(admission==null) access.lock(command,before); else admission.lockIdentity(jdbc.getDataSource());
+                    if(qualification!=null) qualification.lockPreparationIdentity(jdbc.getDataSource());
+                    else if(admission==null) access.lock(command,before); else admission.lockIdentity(jdbc.getDataSource());
                 }
                 @Override public void requireOrderVersion(JsonNode original,JsonNode current) { projection.require(command,original,current); }
                 @Override public RecoveryReleaseInventory apply(RecoveryRecoveredTemporaryArchive archive,
                         RecoveryTemporaryNativeHandoverFacts.Facts facts) {
                     binding.requireArchive(command,facts); var receipt=receipt(command);
                     binding.requireAnchor(command,receipt.path("caseContext"),archive);
-                    var effects=admission==null?null:admission.readEffects(jdbc.getDataSource());
+                    var effects=qualification!=null?qualification.preparationEffects(jdbc.getDataSource(),keys)
+                        :admission==null?null:admission.readEffects(jdbc.getDataSource());
                     return new RecoveryReleaseInventoryCapture(jdbc.getDataSource()).capture(archive,receipt,effects);
                 }
             });

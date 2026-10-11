@@ -13,8 +13,12 @@ final class RecoveryRecipientIdentity {
     private final JdbcTemplate jdbc;
     private final JsonNode body;
     private final RecoveryScopeReleaseStore store;
+    private final boolean preparation;
     RecoveryRecipientIdentity(JdbcTemplate jdbc,JsonNode body,RecoveryScopeReleaseStore store) {
-        this.jdbc=jdbc; this.body=body.deepCopy(); this.store=store;
+        this(jdbc,body,store,false);
+    }
+    RecoveryRecipientIdentity(JdbcTemplate jdbc,JsonNode body,RecoveryScopeReleaseStore store,boolean preparation) {
+        this.jdbc=jdbc; this.body=body.deepCopy(); this.store=store; this.preparation=preparation;
     }
     void lock() {
         var guard=new IdentityWriteGuard(null,jdbc); guard.authentication();
@@ -28,8 +32,7 @@ final class RecoveryRecipientIdentity {
     }
     void requireCurrent() {
         var identities=new IdentityStore(jdbc); var access=new Access(identities); var warehouse=uuid(body,"warehouseId");
-        var registrar=access.require("device:manage",warehouse); access.require("temporary_order:manage",warehouse);
-        require(registrar.id().equals(uuid(body,"registrarId")) && registrar.authVersion()==revision(body,"registrarAuthVersion"),"RECOVERY_RECIPIENT_ACTOR");
+        actor(identities,access,warehouse);
         var supervisor=uuid(body,"supervisorId"); user(supervisor,revision(body,"supervisorAuthVersion"));
         require(identities.warehouses(supervisor).stream().anyMatch(w->w.id().equals(warehouse)),"RECOVERY_RECIPIENT_SUPERVISOR_WAREHOUSE");
         var permissions=identities.permissions(supervisor);
@@ -43,6 +46,18 @@ final class RecoveryRecipientIdentity {
         require(devices.size()==1 && "DISABLED".equals(devices.getFirst().get("status")),"RECOVERY_RECIPIENT_SOURCE_FENCE");
         require(jdbc.queryForList("SELECT revoked_at FROM pda_session WHERE device_id=?",source).stream()
             .allMatch(row->row.get("revoked_at")!=null),"RECOVERY_RECIPIENT_SOURCE_SESSION");
+    }
+    private void actor(IdentityStore identities,Access access,UUID warehouse) {
+        if(preparation) {
+            var actor=access.current();
+            require(actor.id().equals(uuid(body,"supervisorId")) && actor.authVersion()==revision(body,"supervisorAuthVersion"),"RECOVERY_PREPARATION_ACTOR");
+        } else {
+            var registrar=access.require("device:manage",warehouse); access.require("temporary_order:manage",warehouse);
+            require(registrar.id().equals(uuid(body,"registrarId")) && registrar.authVersion()==revision(body,"registrarAuthVersion"),"RECOVERY_RECIPIENT_ACTOR");
+        }
+        var registrarId=uuid(body,"registrarId"); user(registrarId,revision(body,"registrarAuthVersion"));
+        require(identities.permissions(registrarId).containsAll(List.of("device:manage","temporary_order:manage"))
+            && identities.warehouses(registrarId).stream().anyMatch(w->w.id().equals(warehouse)),"RECOVERY_RECIPIENT_REGISTRAR_CHANGED");
     }
     private void user(UUID id,long version) {
         var users=jdbc.queryForList("SELECT status,auth_version FROM app_user WHERE id=?",Ids.bytes(id));

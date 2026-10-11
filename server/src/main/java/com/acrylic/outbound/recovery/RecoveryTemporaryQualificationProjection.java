@@ -41,6 +41,15 @@ final class RecoveryTemporaryQualificationProjection {
             }
         });
     }
+    void requireUnexpired() {
+        var facts=qualification.facts(); Instant now=now();
+        require(!instant(facts,"requestedAt").isAfter(now) && instant(facts,"expiresAt").isAfter(now),"RECOVERY_QUALIFICATION_EXPIRED");
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void beforeCommit(boolean readOnly) {
+                require(instant(facts,"expiresAt").isAfter(now()),"RECOVERY_QUALIFICATION_EXPIRED");
+            }
+        });
+    }
     private void insert() {
         var facts=qualification.facts(); Instant now=now(),issued=instant(facts,"requestedAt");
         require(!issued.isAfter(now) && !issued.isBefore(now.minusSeconds(300)) && instant(facts,"expiresAt").isAfter(now),

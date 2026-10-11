@@ -33,16 +33,25 @@ public final class RecoveryRecipientAdmission {
     }
     private boolean requireRetained;
     public IdentityLocks lockIdentity(DataSource database) {
+        return lockIdentity(database,false);
+    }
+    IdentityLocks lockPreparationIdentity(DataSource database) {
+        return lockIdentity(database,true);
+    }
+    private IdentityLocks lockIdentity(DataSource database,boolean preparation) {
         transaction(database); materials();
         RecoveryClosedOperationContext.requireCurrent(database,request.authority().closed());
         new RecoveryClosedWriteProjection(new JdbcTemplate(database)).requireMatches(request.authority().closed().control());
-        var identity=new RecoveryRecipientIdentity(new JdbcTemplate(database),body,store); identity.lock();
+        var identity=new RecoveryRecipientIdentity(new JdbcTemplate(database),body,store,preparation); identity.lock();
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override public void beforeCommit(boolean readOnly) { identity.requireCurrent(); materials(); }
         });
         return new IdentityLocks(database,identity,this,TransactionSynchronizationManager.getResource(database));
     }
     public Effects project(IdentityLocks locks,ProjectionContext context) {
+        return project(locks,context,null);
+    }
+    Effects project(IdentityLocks locks,ProjectionContext context,RecoveryPreparedTemporaryEffects preparation) {
         require(locks!=null && locks.admission==this,"RECOVERY_RECIPIENT_IDENTITY_REQUIRED"); transaction(locks.database);
         require(locks.transaction==TransactionSynchronizationManager.getResource(locks.database),"RECOVERY_RECIPIENT_IDENTITY_TRANSACTION");
         locks.identity.requireCurrent(); materials();
@@ -50,6 +59,7 @@ public final class RecoveryRecipientAdmission {
         if(requireRetained) require(projection.effects()!=null,"RECOVERY_RECIPIENT_RETAINED_REQUIRED");
         else projection.insertIfAbsent();
         var effects=projection.effects();
+        if(preparation!=null) effects=effects.withPreparation(preparation);
         var inventory=new RecoveryReleaseInventoryCapture(locks.database).capture(context.archive(),context.faultReceipt(),effects);
         var physical=RecoveryReleasePhysicalReview.inspect(locks.database,inventory,context.prepared(),effects);
         new RecoveryScopeReleaseProjection(locks.database,store,true).apply(new RecoveryOperationsApproval.Context(physical,inventory),request.authority().closed());
@@ -106,7 +116,14 @@ public final class RecoveryRecipientAdmission {
     /** Only a verified projection can create this; it removes one fully checked device row from a copy. */
     public static final class Effects {
         private final RecoveryRecipientProjection projection;
-        Effects(RecoveryRecipientProjection projection) { this.projection=projection; }
-        public JsonNode before(JsonNode tables) { return projection.before(tables); }
+        private final RecoveryPreparedTemporaryEffects preparation;
+        Effects(RecoveryRecipientProjection projection) { this(projection,null); }
+        private Effects(RecoveryRecipientProjection projection,RecoveryPreparedTemporaryEffects preparation) {
+            this.projection=projection; this.preparation=preparation;
+        }
+        Effects withPreparation(RecoveryPreparedTemporaryEffects preparation) { return new Effects(projection,preparation); }
+        public JsonNode before(JsonNode tables) {
+            var before=projection.before(tables); return preparation==null?before:preparation.before(before);
+        }
     }
 }
