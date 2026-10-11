@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-11
 branch: codex/development
-head: 49eacb5f
-dirty_entries: 51
+head: 52e6f4a8
+dirty_entries: 52
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 37 }
 server: { contract: 0.53.0, paths: 151, flyway: V82, migrations: 82 }
@@ -15,26 +15,28 @@ server: { contract: 0.53.0, paths: 151, flyway: V82, migrations: 82 }
 <!-- FACTS_END -->
 用户明确取消自动换机交接/故障换机进度承接，改为后台有权撤回坏机领取的未完成订单→重新发布→新设备独立登记并从头作业；见[范围决定](history/R07_RECALL_REPUBLISH_SCOPE_2026-10-11.md)与[R07政策](BUSINESS_POLICY_R07.md)。[总目标计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)D06/D07及关联退出标准已替换，其余范围保持；旧换机接续指令不恢复，取消不计实现或验收通过。
 用户要求将[断网补救分析](PDA_OFFLINE_CONTINUITY_ANALYSIS_2026-09-29.md)和[UI/UX分析](PDA_UI_UX_REVIEW_2026-09-29.md)纳入十步及总目标；[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)O01–O05/U01–U04和P01–P03、总目标闸门/接续入口已补，来源映射见[纳入记录](history/PDA_OFFLINE_UI_PLAN_2026-10-11.md)。仅计划更新，不计新增功能通过。
+用户要求统计十步并制定无人值守计划：逐项工作包计分见[统计依据](history/TEN_STEP_COMPLETION_AUDIT_2026-10-11.md)；[总目标计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)第3节授权自主最佳默认、第5.1节E00–E09批次已补。需确认的开发/未定业务选择不等二次确认；同根因连续3次或主动诊断60分钟未收敛即保全暂缓并继续独立项，不计通过。
 
 ## Git、写权与环境
 - 树D:/acrylic-pda-outbound、codex/development；前批R07范围文档已提交推送49eacb5f4446b4f5ab712c3baf8f1ce14e517b40，作为本批输入且与开发远端一致；main只读核对c6e9e0c238c657baecbf699ba6fdbada5d979b86。前批输入775f9e8a34dbe44ea7e57522e122965b62c5b6ec及回执/保全快照见.local/r07-recall-republish-20261011/。
-- 本次两报告纳入计划的输入为49eacb5f4446b4f5ab712c3baf8f1ce14e517b40，文档唯一写者仍为本聊天，报告作者聊天idle；八份输入原件/全部dirty哈希/diff/进程/监听/磁盘与验证、Git回执保存于.local/pda-offline-ui-plan-20261011/。本批不唤醒旧goal、不启动代码/数据库/构建/设备任务。
+- 两报告纳入计划批次已提交推送52e6f4a80713b4a3b56c1d22c3986d1081be67ec，为本次统计/无人值守计划输入；原件/回执见.local/pda-offline-ui-plan-20261011/。本批文档唯一写者为本聊天，旧开发/报告作者聊天idle；全部dirty哈希/diff/原件及Git/环境/验证回执在.local/unattended-plan-20261011/，接续核对在resume-01/。本批只制定计划，无业务开发/数据库/构建/设备任务。
 - 原开发聊天已按用户明确授权保全停机、goal为paused并交出全部项目写权；本聊天为文档唯一写者，无业务开发或重型任务。交接原件为.local/d01-d18-20261010/received-scope-change-safe-stop-01/HANDOFF.md和received-scope-change-pause-final-01/。不自动唤醒旧goal。
-- 交接的46条dirty及全部继承/未跟踪路径已保存；29原继承非看板路径、69历史和22STOP保护继续保留。前批修改[范围决定](history/R07_RECALL_REPUBLISH_SCOPE_2026-10-11.md)列明的16个文档/归档路径；本批路径见[纳入记录](history/PDA_OFFLINE_UI_PLAN_2026-10-11.md)和本机快照。其余文件按hash核对，旧未提交代码不代提交/删除。
+- 交接的全部继承/未跟踪路径、69历史和22STOP保护继续保留。前批修改清单见[范围决定](history/R07_RECALL_REPUBLISH_SCOPE_2026-10-11.md)与[两报告纳入记录](history/PDA_OFFLINE_UI_PLAN_2026-10-11.md)；本批14个文档/归档路径见统计依据及本机快照。AGENTS/Git工作流/README原继承改动仅保全，暂存只含本次规则/入口；旧未提交代码不代提交/删除。
 - 1343两dump及认证停机0、运行器/服务/MySQL/模拟器退出，19330/19434/5560/5561/5173任务监听空；共有3306/ADB保留，13316未监听。原1233只读、1293 UNKNOWN围栏保留，保全/失败库不复用。
-- 新快照/文档预览/回执在D盘.local，本次无清理；C/D可用约75.74/32.23 GiB，原始字节与实际进程/监听见本机收口快照。本机数据库、私钥、APK与证据未因源码备份而异地备份；AVD及原产物按[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)保留。
+- 新快照/回执在D盘.local，本次无清理；接续核对C/D可用约75.72/32.23 GiB，实际余量/进程/监听见本机收口快照。本机数据库、私钥、APK与证据未因源码备份而异地备份；AVD及原产物按[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)保留。
 
 ## 本批与历史证据
 - 前批只修改R07范围、政策和接续文档；十步路线、R07政策/业务问题、剩余计划、D01–D18相关门槛、README/设备说明、长期规则及索引同步，原件归档见[范围决定](history/R07_RECALL_REPUBLISH_SCOPE_2026-10-11.md)。两批文档检查不代新方案功能测试、APK、模拟器、真机、HTTP或部署。
 - 两报告本批只增计划入口/后续范围说明，原主体和历史验证等级保持；路线/剩余计划/总目标/索引/看板及归档同步。修订前看板见[原件](history/ORCHESTRATION_STATE_before_offline_ui_plan_2026-10-11.md)。源码、测试及其他继承未提交路径保留，报告作为用户指定输入明确备份；新增O/U均未实现/未验。
+- 本批十步统计依据修订范围、源码取样和历史验收；自主默认P01–P08/失败暂缓/批次/完成闸门/接续提示同步长期规则、Git流程、路线、剩余计划、政策入口和索引。[修订前看板](history/ORCHESTRATION_STATE_before_unattended_plan_2026-10-11.md)保全；只计文档与引用核对，不计新功能测试/构建/APK/模拟器/真机/HTTP/部署通过。
 - 原换机链的准入/新资格/PREPARE/本人会话/下载/Android耐久暂存与确认、主管围栏/原表核对/范围双侧协议已有历史证据；详见[验收索引](DEVELOPMENT_PROGRESS.md)及[修订前看板](history/ORCHESTRATION_STATE_before_recall_republish_2026-10-11.md)。只保留原范围结论，不继续接收者确认/激活/最终承接，也不把旧链通过作为撤回重发通过。
 - 页面/worker旧未提交成果与unit/full-03/04/05、APK/lint及live skip原件保持；full-01/02 native finalizer崩溃根因未证，1335–1341失败/中间输入与分配拒绝保留。1342页面单阶段过但运行器收集失败、缺第二页面/新JVM；1343服务前置过、页面因用户取消而中断、无完整组合完成marker，均不计组合通过。详情见停机HANDOFF和原日志/tar/dump/binlog/datadir/AVD。
 
 ## 未完成与下一动作
 - 新方案D06后台有权撤回→D07重新发布及新设备从头作业未实现/未验，不能因旧换机范围取消而记完成。先按D01重核现有后台撤回/召回、发布、领取、设备停用、终态与权限，列最小复用/改造清单，再定向实现验证；坏机故障且无STOP/ACK须有合法正向路径。
-- O/U顺序：先高频页面/状态及未冻结已扫包调整、应急导出＋电脑核验转换，再受控原批次中转、独立sku采集、外置副本演练；不等待全R09，不依赖坏机取数才撤回。P01救援核验、P02中转权限/可信公钥、P03独立身份/离线期限/对账先具体提案；未定只阻断对应路径，已定R06/R07不重问。导出不确认出库/不删数据，中转拒绝已撤回旧资格且不迁移进度，独立文件不证明库存或跨机独占。
+- 执行计划E00断点→E01撤回重发→E02高频页面/已扫包调整→E03应急导出/电脑工具→E04 TEMP及更正/对账余项→E05净结果/受控中转→E06独立sku采集→E07恢复/外置副本→E08留存/遗漏→E09实际候选整合；受阻可转独立范围，不等待全R09，不依赖坏机取数才撤回。P01–P08按授权默认直接开发，缺真实材料/环境只挂起相关输入；旧“提案待批”不恢复。导出不确认出库/不删数据，中转拒绝已撤回旧资格且不迁移进度，独立文件不证明库存或跨机独占。
 - 撤回与旧提交竞争须终态互斥，成功出库走更正；旧领取/旧上传失效、占用及审计原子且可恢复，重发新资格不继承坏机扫描进度，不重复记账。仅停用设备不等于订单撤回；无后台发布记录的TEMP本机草稿仍按R06，未知数据库事实保持R09围栏。
-- R06余项、D08–D18及总闸门未完成，D18无最终候选；D04候选排除/D05普通TEMP取消释放原政策缺口不由本次后台订单撤回授权覆盖。原资料/旧BCD/526、历史关键未验与失败、恢复限制继续单列，开发缺口不转现场。R07更正/库存对账、R08净结果/导出、R09灾后恢复保留。
+- R06余项、D08–D18及总闸门未完成，D18无最终候选；D04候选排除/D05普通TEMP取消释放按无人值守P04/P05自主默认补实现，方案决定不计通过。原资料/旧BCD/526、历史关键未验与失败、恢复限制继续单列，开发缺口不转现场。R07更正/库存对账、R08净结果/导出、R09灾后恢复保留。
 - 生产默认/签名及七类决定handler/POST/放行/证据写入/关闭能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名、不绕设备审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 <!-- CURRENT_STATE_END -->
 

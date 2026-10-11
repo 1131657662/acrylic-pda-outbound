@@ -1,5 +1,7 @@
 # R07 已确认业务政策
 
+后续未定开发选择按用户2026-10-11无人值守授权及[总目标计划第3.1节](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md#31-自主决策与最佳默认)P06/P08直接裁定并实施，不等待方案确认；本页已定撤回重发、更正审批、实物/权限和生产边界保持，开发默认不代表功能已验。
+
 本页保存故障订单撤回重发、出库更正与库存对账的业务政策。用户于2026-10-11明确取消自动换机交接并指定替代方案；该决定优先于早期换机设计及接续指令，依据见[范围决定](history/R07_RECALL_REPUBLISH_SCOPE_2026-10-11.md)。前期政策原文见[修订前归档](history/R07_POLICY_before_recall_republish_2026-10-11.md)，旧实现摘要只作历史参考。
 
 范围以[十步路线](DEVELOPMENT_ROADMAP.md)为准，退出标准见[总目标计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)及[剩余计划](REMAINING_DEVELOPMENT_PLAN.md)。源码、实际实现与验证只按[看板](ORCHESTRATION_STATUS.md)和[验收索引](DEVELOPMENT_PROGRESS.md)核对；政策确认、旧功能编码、旧链测试均不代表替代方案已经实现或验收。

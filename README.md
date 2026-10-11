@@ -20,6 +20,7 @@ Web“PDA 设备管理”已支持8位短码登记：PDA自动提交本机公钥
 
 - [仓库、分支与提交约定](docs/GIT_WORKFLOW.md)：开发分支、稳定分支、每次提交说明及测试版本发布规则。
 - [后续开发路线与跨会话衔接](docs/DEVELOPMENT_ROADMAP.md)：已确认的十步顺序、当前接续位置及发送“继续”时的执行规则；实际证据见[开发进度](docs/DEVELOPMENT_PROGRESS.md)。
+- [十步完成度统计](docs/history/TEN_STEP_COMPLETION_AUDIT_2026-10-11.md)与[无人值守开发计划](docs/AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)：按修订范围统计，方案自主决策，同根因重复失败保全暂缓，按依赖继续独立工作。
 - [PDA应用检查更新与安全升级](docs/PDA_APP_UPDATE_DESIGN.md)：更新流程、渠道签名边界和作业保护；App内更新已有[专项交付](docs/PDA_APP_UPDATE_GUIDE.md)，第9节“下载 PDA 应用”固定入口、短地址和二维码已完成[测试Web部署、隔离模拟器浏览器/系统安装验证](docs/PDA_DOWNLOAD_GUIDE.md)，code16首次安装已开放，真机和异地后补。
 - [安装与构建](docs/DEMO_INSTALL.md)：APK、设备连接、保留数据升级。
 - [真机操作与测试](docs/DEMO_TEST_GUIDE.md)：扫码、实体按键、10 分钟压测、断电、内存、导出。
