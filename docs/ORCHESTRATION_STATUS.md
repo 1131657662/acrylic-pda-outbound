@@ -6,10 +6,10 @@
 ```yaml
 date: 2026-10-11
 branch: codex/development
-head: 872c6ee5
-dirty_entries: 55
+head: f5fa28d6
+dirty_entries: 58
 worktrees: 33
-android: { name: 0.16.0-r06-release, code: 21, room: 35 }
+android: { name: 0.16.0-r06-release, code: 21, room: 36 }
 server: { contract: 0.52.0, paths: 150, flyway: V81, migrations: 81 }
 ```
 <!-- FACTS_END -->
@@ -19,10 +19,11 @@ server: { contract: 0.52.0, paths: 150, flyway: V81, migrations: 81 }
 - 主树D:/acrylic-pda-outbound、codex/development。主管/运维/范围历史提交与保护证据见各验收记录及received-scope-release-pause-final-01；main未动，29继承dirty、69历史/22STOP保留。旧失败/中间库均停机保全不复用，原1233只读。
 - 指定接收者已推098dd7fa；保护与验证见验收记录及postcommit-01。1293 UNKNOWN及保全/失败库不复用。
 - 新资格/PREPARE/本人会话分别已推7e99b5fe/a45cddbe/55471995cd7c406368ff085ff6129bf80d663e41，开发远端一致、main未动。下载resume/precommit/postcommit-01保存全部dirty/Git/保护/写者/环境，29继承/69历史/22STOP无漂移，单助手唯一写者；1316/1318已dump/认证停机/PID退出、任务端口空，无重型任务。保全/失败库不复用；前看板见download-close归档，C/D准确余量见快照。
-- HTTP接缝准备范围提交：resume-01保存45 dirty，precommit保存全部变更/Git/环境；暂停final/下载postcommit继承逐hash无漂移，69历史/22STOP保持，远端872c6ee52f0a591e8ea663d20eb2ba80f092df97/main未动。本聊天唯一写者、查看聊天idle；无重型任务，任务端口空，C/D准确余量见快照。1319首败保全、1322中间过、1323最终过，各dump/认证停机/PID退出；1320/1321守卫拒绝未建库。前看板见download_http归档。
+- HTTP26路径已提交推送f5fa28d6ffe500cb937aaed2f1a80d03ffea0371；resume/precommit/postcommit保存全部变更/Git/环境，暂停final/下载postcommit继承逐hash无漂移，69历史/22STOP保持，main未动。本聊天唯一写者、查看聊天idle；无重型任务、任务端口空，C/D准确余量见快照。1319首败保全、1322中间过、1323最终过，各dump/认证停机/PID退出；1320/1321守卫拒绝未建库。前看板见download_http归档。
 - 新产物/TEMP/Java/cache在D盘，无清理，本机证据未异地备份；AVD压缩/原hash保留见[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)/[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 本批与既有有效范围
+- [限定恢复Android暂存](history/D07_R09_RECOVERED_ANDROID_STAGE_2026-10-11.md)：1325前置/两Android JVM各1/0/0/0，实际产品HTTP/同LOGIN/native Room/原byte/丢响应及重开通过；151表/files不变。独立SQLite两db/7输入/10拒绝过；全量703/169XML、691通过/12live条件skip、零失败/错误，APK/lint过，各2768输入无漂移。页面操作/真机/确认/激活/最终提交未完成；1325dump/认证停机/PID退出/监听空，1324分配拒绝未建库，保全不复用。resume/pre-http/close快照保护全部dirty/69历史/22STOP，前看板已归档；本聊天唯一写者，无重型任务。下一步精确签名确认及原全表效果核对。
 - [本人产品HTTP下载](history/D07_R09_RECOVERED_DOWNLOAD_HTTP_2026-10-11.md)：1323实际GET/原Bearer/byte、并发/权限/提交前输入尾改拒绝和新JVM过，151表/files不变；Node44输入/5语义反例/7HTTP检查、schema75输入/4反例及unit12过，普通3333/119XML全过/无skip/输入不变。仅HTTP读取，Android耐久暂存/确认/激活/最终提交继续，普通TEMP/NORMAL关闭。
 - [本人原正文读取](history/D07_R09_RECOVERED_DOWNLOAD_2026-10-11.md)：1318实际MySQL1/0/0/0/输入不变、并发/尾改拒绝及新JVM原token/字节过；Node15输入/151表/5反例过，普通3323/117XML全过/无skip。1316为补并发前输入，consumer01篡改下标首败/02修复保全；产品HTTP/Android确认/激活/最终提交继续，普通TEMP/NORMAL与能力关闭。
 - [本人会话准入](history/D07_R09_RECIPIENT_SESSION_2026-10-11.md)：1314 MySQL/首次竞争/尾回滚/新JVM原token、Node18输入/151表/8反例、unit6及普通3323全过/无skip。失败/中间输入、源码关系和2731输入核对见记录；原1233/1293UNKNOWN及full raw守恒保持，普通TEMP/NORMAL关闭。

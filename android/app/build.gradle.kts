@@ -26,6 +26,7 @@ android {
         buildConfigField("String", "PDA_UPDATE_PUBLIC_KEY", "\"$updatePublicKey\"")
         buildConfigField("boolean", "TEMPORARY_CONTINUATION_DEVELOPMENT", "false")
         buildConfigField("boolean", "TEMPORARY_HANDOVER_DEVELOPMENT", "false")
+        buildConfigField("boolean", "RECOVERED_HANDOVER_DEVELOPMENT", "false")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { viewBinding = true; buildConfig = true }
@@ -63,6 +64,9 @@ android {
             val isolatedHandover = providers.gradleProperty("pdaIsolatedTemporaryHandover").orElse("false").get()
             require(isolatedHandover in setOf("true", "false"))
             buildConfigField("boolean", "TEMPORARY_HANDOVER_DEVELOPMENT", isolatedHandover)
+            val isolatedRecoveredHandover = providers.gradleProperty("pdaIsolatedRecoveredHandover").orElse("false").get()
+            require(isolatedRecoveredHandover in setOf("true", "false"))
+            buildConfigField("boolean", "RECOVERED_HANDOVER_DEVELOPMENT", isolatedRecoveredHandover)
         }
         release {
             isMinifyEnabled = false
@@ -77,6 +81,7 @@ android {
             buildConfigField("String", "PDA_UPDATE_CHANNEL", "\"staging\"")
             buildConfigField("boolean", "TEMPORARY_CONTINUATION_DEVELOPMENT", "false")
             buildConfigField("boolean", "TEMPORARY_HANDOVER_DEVELOPMENT", "false")
+            buildConfigField("boolean", "RECOVERED_HANDOVER_DEVELOPMENT", "false")
         }
     }
     testOptions {
@@ -87,6 +92,8 @@ android {
             it.inputs.property("temporaryContinuationHttpPrivate", System.getenv("TEMP_CONTINUATION_HTTP_PRIVATE").orEmpty())
             it.inputs.property("temporaryArchiveHttpPrivate", System.getenv("TEMP_ARCHIVE_HTTP_PRIVATE").orEmpty())
             it.inputs.property("draftEvidenceHttpPrivate", System.getenv("DRAFT_EVIDENCE_HTTP_PRIVATE").orEmpty())
+            it.inputs.property("recoveredHandoverHttpPrivate", System.getenv("RECOVERED_HANDOVER_ANDROID_HTTP_PRIVATE").orEmpty())
+            it.inputs.property("recoveredHandoverHttpPhase", System.getenv("RECOVERED_HANDOVER_ANDROID_PHASE").orEmpty())
             val archiveFixture = rootProject.file("../server/build/pda-temporary-archive-fixture.json")
             if (archiveFixture.exists()) it.inputs.file(archiveFixture)
             it.systemProperty("pda.temporaryArchiveFixture", archiveFixture.absolutePath)

@@ -10,6 +10,23 @@ import static org.assertj.core.api.Assertions.*;
 @EnabledIfEnvironmentVariable(named="E2A_CROSS_VERIFY",matches="true")
 class E2aReceivedDownloadHttpIT {
     @Test @EnabledIfEnvironmentVariable(named="E2A_RECEIVED_PHASE",matches="target")
+    void preparesOriginalForAndroidProductRepository() throws Exception {
+        var profile=new E2aCrossSourceProfile(); var jdbc=profile.connect(); Files.createFile(profile.attempt.resolve("test-started.marker"));
+        Path original=Path.of(System.getenv("E2A_RECEIVED_SOURCE")); RecoveryReceivedCheckpointTargetChecks.verify(jdbc,profile.attempt,original);
+        var snapshots=new E2aMigrationSnapshot(jdbc,profile.attempt,profile.attempt.resolve("storage")); var before=snapshots.capture();
+        profile.migrate(jdbc); var after=snapshots.capture();
+        before.path("tables").fields().forEachRemaining(e->assertThat(after.path("tables").path(e.getKey())).as(e.getKey()).isEqualTo(e.getValue()));
+        assertThat(after.path("files")).isEqualTo(before.path("files"));
+        for(String file:new String[]{"server-private.der","server-public.der"})
+            Files.copy(original.resolve("private").resolve(file),profile.attempt.resolve("private").resolve(file));
+        try(var app=E2aCrossSourceHttpIT.start(profile,"--outbound.handover.commands.enabled=true",
+                "--outbound.handover.fault.enabled=true","--server.servlet.session.cookie.secure=false")) {
+            RecoveryReceivedDownloadChecks.verify((WebApplicationContext)app,profile.attempt,original);
+            RecoveryReceivedDownloadHttpInput.save(profile.attempt,original);
+        }
+        Files.writeString(profile.attempt.resolve("test-completed.marker"),"Fresh isolated prerequisites for actual Android HTTP download only");
+    }
+    @Test @EnabledIfEnvironmentVariable(named="E2A_RECEIVED_PHASE",matches="target")
     void downloadsOriginalThroughConfiguredProductRoutes() throws Exception {
         var profile=new E2aCrossSourceProfile(); var jdbc=profile.connect(); Files.createFile(profile.attempt.resolve("test-started.marker"));
         Path original=Path.of(System.getenv("E2A_RECEIVED_SOURCE")); RecoveryReceivedCheckpointTargetChecks.verify(jdbc,profile.attempt,original);

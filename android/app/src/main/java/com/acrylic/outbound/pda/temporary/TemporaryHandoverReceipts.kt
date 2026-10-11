@@ -28,7 +28,9 @@ internal object TemporaryHandoverReceipts {
         val qualification = manifest.getJSONObject("preparedTicket").getJSONObject("temporaryQualification")
         check(SubmissionJson.canonical(qualification) == SubmissionJson.canonical(
             preparation.getJSONObject("businessDecision").getJSONObject("temporaryQualification")))
-        for (field in listOf("sourceKind", "scopeId", "fromWorkRound", "toWorkRound"))
+        if (qualification.optString("purpose") == TemporaryRecoveredHandoverQualification.PURPOSE)
+            TemporaryRecoveredHandoverQualification.bind(qualification, stop.getJSONObject("caseContext"))
+        else for (field in listOf("sourceKind", "scopeId", "fromWorkRound", "toWorkRound"))
             check(qualification.getString(field) == stop.getJSONObject("caseContext").getString(field))
         val context = preparation.getJSONObject("caseContext")
         check(context.getString("originalResultState") == "ABORTED" && context.getString("stopState") ==

@@ -11,7 +11,7 @@ import org.json.JSONObject
 import java.io.File
 
 data class HandoverCard(val caseId: String, val assignment: String, val title: String,
-    val status: String, val action: String, val label: String, val confirmation: String = "")
+    val status: String, val action: String, val label: String, val confirmation: String = "", val actionAvailable: Boolean = true)
 data class HandoverUi(val busy: Boolean = false, val message: String = "输入主管提供的交接编号，或恢复本机交接。",
     val cards: List<HandoverCard> = emptyList(), val hasMore: Boolean = false)
 
@@ -23,9 +23,14 @@ class HandoverViewModel(application: Application) : AndroidViewModel(application
 
     fun reload() = run("正在读取本机交接资料") { load() }
     fun more() = run("正在读取更多交接") { limit += 20; load() }
-    fun stage(caseId: String) = run("正在核验原交接资料") { app.handovers.receive(caseId.trim()); load() }
+    fun stage(caseId: String) = run("正在核验原交接资料") {
+        if (app.database.sync().recovery()?.mode == "RECONCILING") recovered().stage(caseId.trim())
+        else app.handovers.receive(caseId.trim())
+        load()
+    }
     fun perform(card: HandoverCard) = run("正在处理交接；完成前保持冻结") {
         when (card.action) {
+            "RECOVERED_READ" -> recovered().read(card.caseId)
             "REFRESH" -> app.handovers.receive(card.caseId)
             "IMPORT" -> app.handovers.downloadAndImport(card.caseId, File(app.cacheDir, "handovers")) { text ->
                 mutable.update { it.copy(message = text) }
@@ -54,13 +59,21 @@ class HandoverViewModel(application: Application) : AndroidViewModel(application
             auth.getString("warehouseId"), limit + 1)
         val temporary = app.database.temporaryHandoverStages().cases(auth.getString("userId"), auth.getString("deviceId"),
             auth.getString("warehouseId"), limit + 1)
-        val all = (ids + temporary).distinct().sortedDescending()
-        val cards = all.take(limit).map { if (it in temporary) temporaryCard(it) else card(it) }
+        val restored = app.database.temporaryRecoveredHandoverStages().cases(auth.getString("userId"), auth.getString("deviceId"),
+            auth.getString("warehouseId"), limit + 1)
+        val all = (ids + temporary + restored).distinct().sortedDescending()
+        val cards = all.take(limit).map { when (it) {
+            in restored -> RecoveredHandoverCardReader(app).read(it)
+            in temporary -> temporaryCard(it)
+            else -> card(it)
+        } }
         SessionIdentity.requireSame(auth, app.session.saved())
         mutable.update { it.copy(cards = cards, hasMore = all.size > limit) }
     }
 
     private fun temporaryCard(id: String) = TemporaryHandoverCardReader(app).read(id)
+    private fun recovered() = com.acrylic.outbound.pda.temporary.TemporaryRecoveredHandoverRepository(app.database,
+        com.acrylic.outbound.pda.temporary.TemporarySession(app.session))
 
     private fun card(id: String): HandoverCard {
         val stage = checkNotNull(app.database.handoverStages().header(id))

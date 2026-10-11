@@ -20,7 +20,7 @@ internal object TemporaryHandoverPayload {
         return body
     }
 
-    private fun source(body: JSONObject, proof: JSONObject, receipts: TemporaryHandoverReceipts.Verified) {
+    internal fun source(body: JSONObject, proof: JSONObject, receipts: TemporaryHandoverReceipts.Verified) {
         val source = proof.getJSONObject("source"); val context = receipts.stop.getJSONObject("caseContext")
         check(source.getString("sourceKind") == "TEMP" && source.has("assignmentId") && source.isNull("assignmentId"))
         for (field in listOf("scopeId", "submissionId", "warehouseId")) check(source.getString(field) == context.getString(field))
@@ -37,7 +37,7 @@ internal object TemporaryHandoverPayload {
             check(source.getString(field) == origin.getString(field) && origin.getString(field) == body.getJSONObject("temporaryOrder").getString(field))
     }
 
-    private fun fault(manifest: JSONObject, body: JSONObject, decision: JSONObject) {
+    internal fun fault(manifest: JSONObject, body: JSONObject, decision: JSONObject) {
         check(decision.getString("payloadSha256") == manifest.getString("recoveryPackageSha256"))
         val archive = decision.getJSONObject("archivedEvidence")
         check(archive.getString("sourceKind") == "TEMP" && archive.getString("status") == "VERIFIED_COMPLETE_AT_STOP" &&

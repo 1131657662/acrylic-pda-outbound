@@ -2,6 +2,8 @@
 
 # 开发验收索引
 
+- [D07/R09限定恢复Android原件暂存](history/D07_R09_RECOVERED_ANDROID_STAGE_2026-10-11.md)：实际HTTP/native Room/新JVM原件、事务与迁移拒绝及独立SQLite消费；确认/激活/最终提交和页面操作继续。
+
 - [D07/R09恢复本人产品HTTP下载](history/D07_R09_RECOVERED_DOWNLOAD_HTTP_2026-10-11.md)：固定服务端信任、原Bearer/字节、并发/权限/尾改拒绝及新JVM；Android确认链继续。
 - [D07/R09恢复本人原正文服务读取](history/D07_R09_RECOVERED_DOWNLOAD_2026-10-11.md)：已审计session、原字节/签名清单、全原表守恒、服务并发/尾回滚/新JVM及独立消费。
 

@@ -48,7 +48,7 @@ class HandoverActivity : ComponentActivity() {
             val row = OrderCardBinding.inflate(LayoutInflater.from(this), binding.cards, false)
             row.title.text = card.title
             row.details.text = "${card.status}\n交接编号 ${card.caseId}"
-            row.action.text = card.label; row.action.isEnabled = !state.busy
+            row.action.text = card.label; row.action.isEnabled = !state.busy && card.actionAvailable
             row.action.setOnClickListener { act(card) }
             binding.cards.addView(row.root)
         }
