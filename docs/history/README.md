@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D07/R09限定恢复Android耐久接收确认（2026-10-11）](D07_R09_RECOVERED_ANDROID_CONFIRMATION_2026-10-11.md)：实际POST/native Room/原键、两Android JVM与独立消费；页面/激活/最终提交继续。
+- [Android确认开发前看板](ORCHESTRATION_STATE_before_confirmation_android_2026-10-11.md)与[收口前看板](ORCHESTRATION_STATE_before_confirmation_android_close_2026-10-11.md)：原结论和失败保全，旧指令不恢复。
+
 - [D07/R09限定恢复接收确认产品HTTP（2026-10-11）](D07_R09_RECOVERED_CONFIRMATION_HTTP_2026-10-11.md)：真实POST/首次竞争/Socket丢正文、专用签名与两JVM原回执、守恒/独立消费；Android及激活链继续。
 - [产品HTTP确认前看板](ORCHESTRATION_STATE_before_confirmation_http_2026-10-11.md)：原结论/失败保全，旧指令不恢复。
 

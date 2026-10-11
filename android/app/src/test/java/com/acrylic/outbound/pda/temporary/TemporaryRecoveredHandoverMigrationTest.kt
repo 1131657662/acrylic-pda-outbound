@@ -22,9 +22,11 @@ class TemporaryRecoveredHandoverMigrationTest {
             val original = f.db.temporary().byAuthorization(f.base.prepared.authorizationId)
             val recovery = f.db.sync().recovery()
             f.db.close()
-            val previous = PDA_DATABASE_VERSION - 1
+            val previous = TemporaryRecoveredHandoverMigration.startVersion
             val schema = JSONObject(File(System.getProperty("pda.schemas"), "$previous.json").readText()).getJSONObject("database")
             f.local.context.openOrCreateDatabase("outbound-pda.db", 0, null).use { old ->
+                old.execSQL("DROP TABLE temporary_recovered_confirmation_receipt")
+                old.execSQL("DROP TABLE temporary_recovered_confirmation")
                 old.execSQL("DROP TABLE temporary_recovered_handover_chunk")
                 old.execSQL("DROP TABLE temporary_recovered_handover_stage")
                 old.execSQL("UPDATE room_master_table SET identity_hash=? WHERE id=42", arrayOf(schema.getString("identityHash")))

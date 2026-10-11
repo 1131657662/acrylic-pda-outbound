@@ -2,6 +2,8 @@
 
 # 开发验收索引
 
+- [D07/R09限定恢复Android耐久接收确认](history/D07_R09_RECOVERED_ANDROID_CONFIRMATION_2026-10-11.md)：明确原意图、实际POST/Room尾回滚/两Android JVM、独立SQLite/签名及APK/lint；页面调度、激活/最终提交继续。
+
 - [D07/R09限定恢复接收确认产品HTTP](history/D07_R09_RECOVERED_CONFIRMATION_HTTP_2026-10-11.md)：默认关闭固定信任、真实POST/首次并发/丢正文/新JVM原回执与独立消费；Android确认及激活、最终提交继续。
 
 - [D07/R09限定恢复接收确认服务](history/D07_R09_RECOVERED_CONFIRMATION_2026-10-11.md)：精确专用签名、实际MySQL/并发/尾回滚/新JVM原回执、原表守恒与独立消费；产品HTTP/Android、激活和最终提交继续。
