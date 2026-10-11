@@ -19,6 +19,12 @@ public final class HandoverRecoveredTemporaryDownload {
         this.commands=commands; this.review=review; this.projection=projection; this.documents=documents; this.jdbc=jdbc;
     }
     public Result read(RecoveryRecipientSession session,HandoverRecoveredPhysicalReview.Request request,String requestId) {
+        return read(session,request,requestId,()->{});
+    }
+    public Result read(RecoveryRecipientDownloadInput.Context input,String requestId) {
+        input.requireUnchanged().run(); return read(input.session(),input.request(),requestId,input.requireUnchanged());
+    }
+    private Result read(RecoveryRecipientSession session,HandoverRecoveredPhysicalReview.Request request,String requestId,Runnable inputGuard) {
         commands.requireBoundary(requestId); Objects.requireNonNull(session); Objects.requireNonNull(request);
         var fault=HandoverCommand.Input.parse(request.originalFault()); request.binding().require(fault);
         var prepared=RecoveryReleaseReconciliation.prepare(review.inspectSession(request,session),request.reconciliation());
@@ -28,6 +34,11 @@ public final class HandoverRecoveredTemporaryDownload {
                 @Override public void lockIdentity() { identity=session.lockIdentity(jdbc.getDataSource()); }
                 @Override public void requireOrderVersion(JsonNode original,JsonNode current) { projection.require(fault,original,current); }
                 @Override public Result apply(RecoveryRecoveredTemporaryArchive archive,RecoveryTemporaryNativeHandoverFacts.Facts facts) {
+                    inputGuard.run();
+                    org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                        new org.springframework.transaction.support.TransactionSynchronization() {
+                            @Override public void beforeCommit(boolean readOnly) { inputGuard.run(); }
+                        });
                     request.binding().requireArchive(fault,facts); var receipt=review.receipt(fault);
                     request.binding().requireAnchor(fault,receipt.path("caseContext"),archive);
                     session.qualification().requireSessionRead(identity,new RecoveryTemporaryQualification.Context(jdbc.getDataSource(),

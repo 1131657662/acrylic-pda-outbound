@@ -35,6 +35,9 @@ spring:
     deserialization:
       accept-float-as-int: false
 outbound:
+  handover:
+    recovered-download:
+      enabled: false
   signing:
     private-key: ${OUTBOUND_AUTH_SIGNING_PRIVATE_KEY:}
     public-key: ${OUTBOUND_AUTH_SIGNING_PUBLIC_KEY:}

@@ -1,0 +1,113 @@
+Hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+Positive: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+Uuid: {type: string, format: uuid}
+Qualification:
+  type: object
+  additionalProperties: false
+  required: [purpose, qualificationSha256, qualificationId, caseId, scopeId, warehouseId, recipient, source, control, baseline, expiresAt, capabilities]
+  properties:
+    purpose: {type: string, const: RECOVERED_TEMP_HANDOVER_QUALIFICATION}
+    qualificationSha256: {$ref: '#/Hash'}
+    qualificationId: {$ref: '#/Uuid'}
+    caseId: {$ref: '#/Uuid'}
+    scopeId: {$ref: '#/Uuid'}
+    warehouseId: {$ref: '#/Uuid'}
+    recipient:
+      type: object
+      additionalProperties: false
+      required: [deviceId, userId, keySha256, deviceVersion, userAuthVersion]
+      properties:
+        deviceId: {$ref: '#/Uuid'}
+        userId: {$ref: '#/Uuid'}
+        keySha256: {$ref: '#/Hash'}
+        deviceVersion: {$ref: '#/Positive'}
+        userAuthVersion: {$ref: '#/Positive'}
+    source:
+      type: object
+      additionalProperties: false
+      required: [authorizationId, clientOrderId, submissionId, workRound, sourceRecoveryEpoch, inputHighWatermark, payloadSha256]
+      properties:
+        authorizationId: {$ref: '#/Uuid'}
+        clientOrderId: {$ref: '#/Uuid'}
+        submissionId: {$ref: '#/Uuid'}
+        workRound: {$ref: '#/Positive'}
+        sourceRecoveryEpoch: {$ref: '#/Positive'}
+        inputHighWatermark: {$ref: '#/Positive'}
+        payloadSha256: {$ref: '#/Hash'}
+    control:
+      type: object
+      additionalProperties: false
+      required: [installationId, epochId, controlRevision, controlRecordSha256, transportRecoveryEpoch, databaseSchema, mysqlServerUuid]
+      properties:
+        installationId: {$ref: '#/Uuid'}
+        epochId: {$ref: '#/Uuid'}
+        controlRevision: {$ref: '#/Positive'}
+        controlRecordSha256: {$ref: '#/Hash'}
+        transportRecoveryEpoch: {$ref: '#/Positive'}
+        databaseSchema: {type: string, minLength: 1}
+        mysqlServerUuid: {$ref: '#/Uuid'}
+    baseline:
+      type: object
+      additionalProperties: false
+      required: [inventorySnapshotId, inventoryVersion, inventorySha256, mappingRevision, policyId, policyVersion]
+      properties:
+        inventorySnapshotId: {$ref: '#/Uuid'}
+        inventoryVersion: {$ref: '#/Positive'}
+        inventorySha256: {$ref: '#/Hash'}
+        mappingRevision: {$ref: '#/Positive'}
+        policyId: {$ref: '#/Uuid'}
+        policyVersion: {$ref: '#/Positive'}
+    expiresAt: {type: string, format: date-time}
+    capabilities: {type: array, minItems: 3, maxItems: 3, prefixItems: [{const: PREPARE}, {const: DOWNLOAD}, {const: CONFIRM}]}
+PreparedTicket:
+  type: object
+  additionalProperties: false
+  required: [caseId, targetDeviceId, targetUserId, inputHighWatermark, canonicalOrderId, issuedAt, temporaryQualification]
+  properties:
+    caseId: {$ref: '#/Uuid'}
+    targetDeviceId: {$ref: '#/Uuid'}
+    targetUserId: {$ref: '#/Uuid'}
+    inputHighWatermark: {$ref: '#/Positive'}
+    canonicalOrderId: {$ref: '#/Uuid'}
+    issuedAt: {type: string, format: date-time}
+    temporaryQualification: {$ref: '#/Qualification'}
+RecoveredManifest:
+  type: object
+  additionalProperties: false
+  required: [caseId, status, sourceKind, packageKind, recoveryPackageSha256, inputHighWatermark, preparedTicketSha256, stopKind, recipientSessionSha256, preparedTicket, checklist, faultReceipt, approvalReceipt, preparationReceipt, capabilities]
+  properties:
+    caseId: {$ref: '#/Uuid'}
+    status: {const: TARGET_PREPARED}
+    sourceKind: {const: TEMP}
+    packageKind: {const: TEMP_FROZEN_PAYLOAD}
+    recoveryPackageSha256: {$ref: '#/Hash'}
+    inputHighWatermark: {$ref: '#/Positive'}
+    preparedTicketSha256: {$ref: '#/Hash'}
+    stopKind: {const: FAULT_FENCE}
+    recipientSessionSha256: {$ref: '#/Hash'}
+    preparedTicket: {$ref: '#/PreparedTicket'}
+    checklist:
+      type: array
+      items:
+        type: object
+        additionalProperties: false
+        required: [baleId, deliveryCode, dispatchCycle, state]
+        properties:
+          baleId: {$ref: '#/Uuid'}
+          deliveryCode: {type: string, minLength: 1}
+          dispatchCycle: {$ref: '#/Positive'}
+          state: {enum: [RETAINED, REMOVED]}
+    faultReceipt: {$ref: '#/SignedReceipt'}
+    approvalReceipt: {$ref: '#/SignedReceipt'}
+    preparationReceipt: {$ref: '#/SignedReceipt'}
+    capabilities: {$ref: './handover-temporary-confirmation.yaml#/Receipt/properties/capabilities'}
+SignedReceipt:
+  type: object
+  required: [signedReceipt, commandSha256, commandType, caseContext, actor, capabilities]
+  properties:
+    signedReceipt: {type: string, minLength: 1}
+    commandSha256: {$ref: '#/Hash'}
+    commandType: {enum: [FAULT_FENCE, APPROVE, PREPARE]}
+    caseContext: {type: object}
+    actor: {type: object}
+    capabilities: {$ref: './handover-temporary-confirmation.yaml#/Receipt/properties/capabilities'}

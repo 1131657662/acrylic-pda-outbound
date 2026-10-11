@@ -13,7 +13,9 @@ class HandoverPdaEvidenceConfigurationTest {
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
         .withUserConfiguration(HandoverPdaEvidenceService.class, HandoverPdaPackageService.class,
             HandoverPdaAssignmentService.class,
-            HandoverPdaEvidenceController.class)
+            HandoverPdaEvidenceController.class,HandoverRecoveredDownloadEndpoint.class)
+        .withBean(HandoverRecoveredTemporaryDownload.class,()->mock(HandoverRecoveredTemporaryDownload.class))
+        .withBean(org.springframework.jdbc.core.JdbcTemplate.class,()->mock(org.springframework.jdbc.core.JdbcTemplate.class))
         .withBean(PdaAccess.class, () -> mock(PdaAccess.class))
         .withBean(HandoverStore.class, () -> mock(HandoverStore.class))
         .withBean(HandoverPdaEvidenceStore.class, () -> mock(HandoverPdaEvidenceStore.class))
@@ -31,6 +33,7 @@ class HandoverPdaEvidenceConfigurationTest {
             assertThat(context.getBeansOfType(HandoverPdaPackageService.class)).isEmpty();
             assertThat(context.getBeansOfType(HandoverPdaAssignmentService.class)).isEmpty();
             assertThat(context.getBeansOfType(HandoverPdaEvidenceController.class)).isEmpty();
+            assertThat(context.getBeansOfType(HandoverRecoveredDownloadEndpoint.class)).isEmpty();
         });
     }
 
@@ -41,5 +44,9 @@ class HandoverPdaEvidenceConfigurationTest {
             assertThat(context.getBeansOfType(HandoverPdaAssignmentService.class)).hasSize(1);
             assertThat(context.getBeansOfType(HandoverPdaEvidenceController.class)).hasSize(1);
         });
+    }
+    @Test void recoveredReadsWithoutIndependentInputFailStartup() {
+        runner.withPropertyValues("outbound.handover.commands.enabled=true","outbound.handover.recovered-download.enabled=true")
+            .run(context->assertThat(context).hasFailed());
     }
 }

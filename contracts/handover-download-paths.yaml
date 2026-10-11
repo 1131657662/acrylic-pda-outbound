@@ -1,0 +1,58 @@
+Manifest:
+  get:
+    summary: 指定接收本人读取交接清单及原签名里程碑
+    description: >-
+      沿 outbound.handover.commands.enabled 默认关闭开关。
+      普通交接沿原在线资格和证据核验；恢复接缝须另显式启用 recovered-download.enabled，
+      由服务端配置独立固定的 input 与 input-sha256 重载已保存准入、限定资格、PREPARE 和本人真实会话。
+      调用者只提供案件 ID 与 Bearer；请求中的 path、pin、key、permit 或控制头不构成信任。
+      恢复适配存在时案件或身份不匹配直接拒绝，不降级普通路径。
+      每次读取实时核身份/权限/仓库、原签名、全原表及文件，提交前重验固定输入。
+      恢复清单单独保存原 sourceRecoveryEpoch 与目标 transportRecoveryEpoch，旧正文/票据不可激活。
+      所有作业/释放/删除能力保持 false，不新增审计、资格、设备或登录。
+    security: [{pdaBearer: []}]
+    parameters: [{$ref: '#/CaseId'}]
+    responses:
+      '200':
+        description: 清单原 JSON 字节，恢复响应符合 RecoveredManifest；不经 Envelope
+        headers:
+          Cache-Control: {schema: {type: string, const: no-store}}
+          X-Content-Type-Options: {schema: {type: string, const: nosniff}}
+          Content-Length: {schema: {type: integer, minimum: 1}}
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - {type: object, not: {required: [recipientSessionSha256]}}
+                - {$ref: './handover-recovered-download-schema.yaml#/RecoveredManifest'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '503': {$ref: './openapi.yaml#/components/responses/Error'}
+Package:
+  get:
+    summary: 指定接收本人读取原交接正文
+    description: >-
+      与 manifest 相同的默认开关、独立服务端信任输入、在线身份和 closed 事务核验。
+      恢复 TEMP 返回逐 byte 不变的原冻结正文，原 ID、来源代次、映射和采集顺序不重编码。
+      摘要由 manifest 的 recoveryPackageSha256 固定；重复、丢响应重读和新 JVM 重载不产生业务写。
+      缺失/损坏的固定配置或审计、撤权/撤销会话、并发租约冲突均拒绝；下载不授予确认、激活或扫码权限。
+    security: [{pdaBearer: []}]
+    parameters: [{$ref: '#/CaseId'}]
+    responses:
+      '200':
+        description: 原恢复包 JSON 字节，不经 Envelope
+        headers:
+          Cache-Control: {schema: {type: string, const: no-store}}
+          X-Content-Type-Options: {schema: {type: string, const: nosniff}}
+          Content-Length: {schema: {type: integer, minimum: 1}}
+        content:
+          application/json:
+            schema: {type: string, format: binary}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '503': {$ref: './openapi.yaml#/components/responses/Error'}
+CaseId: {name: caseId, in: path, required: true, schema: {type: string, format: uuid}}

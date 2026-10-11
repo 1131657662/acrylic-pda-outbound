@@ -1,5 +1,7 @@
 # 历史归档
 
+- [D07/R09恢复本人产品HTTP下载（2026-10-11）](D07_R09_RECOVERED_DOWNLOAD_HTTP_2026-10-11.md)：固定服务端信任、原Bearer/字节、HTTP并发/权限反例及新JVM；Android/确认/激活/最终提交继续。
+
 - [D07/R09恢复本人原正文读取（2026-10-11）](D07_R09_RECOVERED_DOWNLOAD_2026-10-11.md)：原manifest/正文、签名清单、全原表/并发/尾回滚/新JVM及独立消费；产品HTTP/Android链继续。
 - [原正文读取收口前看板](ORCHESTRATION_STATE_before_download_close_2026-10-11.md)：原结论和失败保留，旧指令不恢复。
 

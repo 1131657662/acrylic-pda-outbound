@@ -6,22 +6,24 @@
 ```yaml
 date: 2026-10-11
 branch: codex/development
-head: 55471995
-dirty_entries: 46
+head: 872c6ee5
+dirty_entries: 55
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 35 }
-server: { contract: 0.51.0, paths: 148, flyway: V81, migrations: 81 }
+server: { contract: 0.52.0, paths: 150, flyway: V81, migrations: 81 }
 ```
 <!-- FACTS_END -->
 本聊天按用户指令恢复完整目标；已核范围双侧协议复用、总目标进行中未完成，[原计划](AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)D01–D18及第8节范围保持。[收口与新会话指令](history/D01_D18_PAUSE_2026-10-11_SCOPE_RELEASE.md)为接续入口；替换前结论/失败见[收口前看板](history/ORCHESTRATION_STATE_before_scope_release_pause_2026-10-11.md)，旧指令不恢复。
 
 ## Git、写权与环境
 - 主树D:/acrylic-pda-outbound、codex/development。主管/运维/范围历史提交与保护证据见各验收记录及received-scope-release-pause-final-01；main未动，29继承dirty、69历史/22STOP保留。旧失败/中间库均停机保全不复用，原1233只读。
-- 指定接收者32路径已提交推送098dd7fa0a9f5806fbce7e7a730f5d86cbfdaf11，实际开发远端一致、main未动。resume-02/running-03/precommit-01及postcommit-01保存全部dirty/hash/副本/Git/环境；29继承非看板路径、69历史/22STOP无漂移，单助手唯一写者。1297专项/新JVM及普通回归结束，任务端口空，仅既有3306保持；C/D约76/75GiB，准确值见快照。1293 UNKNOWN及保全/失败库不复用。
+- 指定接收者已推098dd7fa；保护与验证见验收记录及postcommit-01。1293 UNKNOWN及保全/失败库不复用。
 - 新资格/PREPARE/本人会话分别已推7e99b5fe/a45cddbe/55471995cd7c406368ff085ff6129bf80d663e41，开发远端一致、main未动。下载resume/precommit/postcommit-01保存全部dirty/Git/保护/写者/环境，29继承/69历史/22STOP无漂移，单助手唯一写者；1316/1318已dump/认证停机/PID退出、任务端口空，无重型任务。保全/失败库不复用；前看板见download-close归档，C/D准确余量见快照。
-- 新产物/TEMP/Java/cache在D盘，无清理，本机私有证据未异地备份；22份停止AVD仅可逆NTFS压缩/原hash一致未删，见[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)/[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
+- HTTP接缝准备范围提交：resume-01保存45 dirty，precommit保存全部变更/Git/环境；暂停final/下载postcommit继承逐hash无漂移，69历史/22STOP保持，远端872c6ee52f0a591e8ea663d20eb2ba80f092df97/main未动。本聊天唯一写者、查看聊天idle；无重型任务，任务端口空，C/D准确余量见快照。1319首败保全、1322中间过、1323最终过，各dump/认证停机/PID退出；1320/1321守卫拒绝未建库。前看板见download_http归档。
+- 新产物/TEMP/Java/cache在D盘，无清理，本机证据未异地备份；AVD压缩/原hash保留见[磁盘记录](history/D_DISK_RECOVERY_2026-10-09.md)/[本机归档](LOCAL_ARCHIVE_LOCATIONS.md)。
 
 ## 本批与既有有效范围
+- [本人产品HTTP下载](history/D07_R09_RECOVERED_DOWNLOAD_HTTP_2026-10-11.md)：1323实际GET/原Bearer/byte、并发/权限/提交前输入尾改拒绝和新JVM过，151表/files不变；Node44输入/5语义反例/7HTTP检查、schema75输入/4反例及unit12过，普通3333/119XML全过/无skip/输入不变。仅HTTP读取，Android耐久暂存/确认/激活/最终提交继续，普通TEMP/NORMAL关闭。
 - [本人原正文读取](history/D07_R09_RECOVERED_DOWNLOAD_2026-10-11.md)：1318实际MySQL1/0/0/0/输入不变、并发/尾改拒绝及新JVM原token/字节过；Node15输入/151表/5反例过，普通3323/117XML全过/无skip。1316为补并发前输入，consumer01篡改下标首败/02修复保全；产品HTTP/Android确认/激活/最终提交继续，普通TEMP/NORMAL与能力关闭。
 - [本人会话准入](history/D07_R09_RECIPIENT_SESSION_2026-10-11.md)：1314 MySQL/首次竞争/尾回滚/新JVM原token、Node18输入/151表/8反例、unit6及普通3323全过/无skip。失败/中间输入、源码关系和2731输入核对见记录；原1233/1293UNKNOWN及full raw守恒保持，普通TEMP/NORMAL关闭。
 - [恢复PREPARE](history/D07_R09_RECOVERED_PREPARATION_2026-10-11.md)：1306实际MySQL1/0/0/0/输入不变、首次同键并发/异文/尾回滚、新JVM原pin/bytes/回执DB不变；Node15输入/150表/8反例过，普通3317全过/116XML/无skip/产品相同。各2714输入核对；dump/认证停机/PID退出/监听空。compile-01/02、1299/1301/1305失败保全，1300/1303分配拒绝未建库，1302/1304中间过。精确签名效果及原全表守恒保持，无旧票据；仅服务准备，不代HTTP/Android链。
@@ -32,21 +34,14 @@ server: { contract: 0.51.0, paths: 148, flyway: V81, migrations: 81 }
 - [恢复态主管实物确认](history/D07_R09_PHYSICAL_REVIEW_2026-10-10.md)：既有APPROVE在原closed事务中核实实物声明/清单/库存，130表只允许精确签名效果；原ABORT/占用/账务保留。1281两JVM、六拒绝/末SQL/未知范围/两尾回滚/八语义反例、原键重放与独立消费者通过。合成实物声明不代现场，所有能力false；无新增正向HTTP/Android。替换前结论见[归档](history/ORCHESTRATION_STATE_before_physical_review_2026-10-10.md)。
 - [原终点与主管围栏效果核对](history/D07_R09_RELEASE_RECONCILIATION_2026-10-10.md)：固定130表全库原行/其他仓库不变，只接受精确签名REQUEST/FAULT_FENCE效果；ABORT/占用/库存/账务/准备/子表保留。1274专项1/0/0/0、12语义反例/两项跨仓库尾写回滚、签名单元8过；独立原终点9输入/两反例、成员10输入/三反例、编号8输入不变。UNCHECKED及所有能力false；不是实物核对或释放。编译两败/1269事务journal拒绝已修且失败保留，详细输入与前看板见记录。
 - [固定仓库及子表覆盖](history/D07_R09_RELEASE_SCOPE_COVERAGE_2026-10-10.md)：准备/库存基线/PC/同步/来源证据及子表共130表，父键归属/空集合/全局摘要与nonce遮盖；1268专项1/0/0/0、库存子表尾写全回滚。Node完整成员10输入/三类反例与编号8输入不变；普通3301全过/113XML/sourceUnchanged。1267原行数量断言修正失败保留；不计业务语义闭合或释放，替换前看板见[归档](history/ORCHESTRATION_STATE_before_release_scope_2026-10-10.md)。
-- [原全局编号历史核对](history/D07_R09_RELEASE_NUMBER_HISTORY_2026-10-10.md)：原两端独立pin/受控ROW日志逐笔DATE/INT分配，保留无订单占号；目标全局counter及全仓库号码映射摘要相等。1266最终专项1/0/0/0，错pin/目标/其他仓库改号拒绝及counter/跨仓库号码尾写回滚；Node原生mysqlbinlog8输入/清单9输入不变。普通3301全过/113XML/sourceUnchanged，后补尾写辅助类由1266编译执行。unit首编译败、1264位图padding败、Node CRLF首败保全；不代业务语义闭合/释放。
-- [释放前原历史覆盖](history/D07_R09_RELEASE_HISTORY_2026-10-10.md)：原1233受约束权限/binlog覆盖真实损失窗，绑定清单/控制/原身份与原代次；前漏/后漏/占位窗/非受控历史拒绝。1263实际恢复后专项1/0/0/0，6项定向、普通3280/111XML全过及sourceUnchanged；Node历史6输入不变/清单另核。合成新目标控制明确绑定原窗口，未改旧控制或原端事实；覆盖不产生释放permit，不代语义闭合。详细输入、限制与原件见记录。
-- [主管围栏后实际范围清单](history/D07_R09_RELEASE_INVENTORY_2026-10-10.md)：固定仓库设备/来源/案件/调整/库存/审计及全局编号/任务摘要，原归档/native/签名围栏/同DataSource绑定；凭据遮盖、空集合/确定性摘要、容量拒绝及提交前尾写回滚。1262最终专项1/0/0/0、Node03 exit0/9输入不变，dump/认证停机/监听空；普通3272全过/109XML/sourceUnchanged及limits5全过。1260夹具被既有设备触发器拒绝的失败原件保留，未移除触发器；1253/1261中间输入另列。没有释放许可或新HTTP/Android正向，详细失败/证据见记录。
-- [恢复态主管故障围栏](history/D07_R09_RECEIVED_FAULT_2026-10-10.md)：1233原dump/binlog重建→closed原归档/native→既有REQUEST/独立主管FAULT_FENCE，服务自持外层事务、身份先锁、相同DataSource/目标代次/RECOVERY_PENDING；普通入口仍关闭。只读投影精确核版本+1、原命令/签名围栏/唯一未发布outbox，其他原行不变；无新写handler/HTTP或释放permit。
-- 最终1250专项1/0/0/0、exit0/sourceUnchanged，原字节重放、异源/代次/权限/自批/verification/实物拒绝、末SQL/verification尾回滚、外层嵌套/异DataSource拒绝、版本回退/再推进及outbox篡改拒绝通过。普通真实Web登录+CSRF+目标代次HTTP503；仅原session合法时间推进，其余守恒。Node02 exit0、64输入hash不变，原RSA/ECDSA/verification/文件/全表及合法变化/新增反例证据通过；原正文/STOP/owner/库存/账务保持，设备禁用/session撤销/唯一围栏/outbox，不造原机STOP/ACK、不释放占用、ACTIVATE仍拒绝。
-- 普通recovery/handover3269全过/108XML/无skip/exit0/sourceUnchanged，收口934个产品/契约/构建输入hash不变；后补专项辅助类由1250实际编译执行，非完整server。1242版本尾验、1243时间类型、1246仅DDL计数器、1248仅session访问时间断言失败全部保留，不以中间通过代最终；operation_event计数器只按明确边界归一化，原DDL/快照保存。
-- 新成功业务为合成SessionUser的实际MySQL+应用服务接缝；普通HTTP拒绝另列。1233原Android/HTTP证据不能外推新业务最终HTTP/Android链；独立工具不代独立人员/现场。无新增APK/模拟器/真机/正式签名或部署。
-- [原归档closed/native消费](history/D07_R09_RECEIVED_ARCHIVE_2026-10-10.md)：1241新目标原verification/字节/owner/库存锁、消费前后/提交前重验、Node65输入及普通回归保留；13条范围已推6eb00231。1238编译首败与1239/1240中间范围另列；默认消费者仍要求订单原版本不变。
-- [原已收正文真实截点](history/D07_R09_RECEIVED_CHECKPOINT_2026-10-10.md)：1233准备/ACK/注册根、扫码前dump、Android/HTTP/E2A/ABORT原件只读复用；1237原binlog全量重建/表/file/schema/触发器/迁移守恒及写前反例、Node02/普通回归有效范围保留，失败编号见记录。14条范围已推75f4d083。
-- [原verification恢复](history/D07_R09_RECEIVED_VERIFICATION_RESTORE_2026-10-10.md)：1220实际来源只读采集/1222单表缺失原行恢复/锁与尾回滚、Node03/普通回归分层保留；单表样本不代时间截点。原采集、native绑定、原E2A/owner/准备/权限历史与全部首败/中间通过见[历史索引](history/README.md)及主管围栏前看板，未受影响证据不重做。
+- 既有[编号历史](history/D07_R09_RELEASE_NUMBER_HISTORY_2026-10-10.md)、[历史覆盖](history/D07_R09_RELEASE_HISTORY_2026-10-10.md)、[原范围清单](history/D07_R09_RELEASE_INVENTORY_2026-10-10.md)均有分层MySQL/原件/Node及普通回归；原编号/全表/raw/文件守恒保持，失败/中间输入保全。不外推释放/HTTP/Android；详细结论见download_http前看板。
+- [恢复主管故障围栏](history/D07_R09_RECEIVED_FAULT_2026-10-10.md)：1250实际MySQL+服务接缝与普通HTTP拒绝另列，原FAULT_FENCE/ABORT/占用/账务/正文保持，不造STOP/ACK；原键/权限/末SQL/尾回滚/Node/普通回归及各首败保留。合成主管声明不代现场。
+- [原closed/native消费](history/D07_R09_RECEIVED_ARCHIVE_2026-10-10.md)、[原1233截点](history/D07_R09_RECEIVED_CHECKPOINT_2026-10-10.md)、[原verification恢复](history/D07_R09_RECEIVED_VERIFICATION_RESTORE_2026-10-10.md)保留原Android/HTTP/E2A/ABORT/dump/binlog及分层守恒/拒绝证据；首败/中间通过见各记录，不复用库，不以原Android外推新接收链。
 - D06 STOP1103/多跳1110/混合1118/1120/LOCAL1124/1125，D07 TEMP1131/1132/1137/1144、FORMAL1148–1151已有分层证据见历史索引/[FORMAL暂停](history/D01_D18_PAUSE_2026-10-09_FORMAL.md)，不外推整体。1150/1151/UI-06未重跑；1100–1102不重跑/复用。UI-06为页面消费回放签名响应，非实时MySQL/真机。
 
 ## 未完成与接续第一动作
 - D06/D07整体、FORMAL各阶段实际入口、其他无可信归档来源/R09跨截点业务重建、D08–D18与总闸门未完成；D18无最终候选。D04候选排除/D05取消释放缺政策保持拒绝；原资料/旧BCD/526、历史关键未验/失败与恢复限制单列，开发缺口不转现场。
-- 指定接收者/新资格/PREPARE/本人会话/原正文服务读取已验，下一项实际产品HTTP下载→Android耐久暂存/确认→激活→最终提交；丢token新本人登录/替换也须补。原机禁用、跨仓机不借用、新机普通TEMP=false；原正文/source代次/映射保留，旧票据不可激活。新增效果继续精确签名及beforeCommit全表守恒、首轮隔离，不开NORMAL、不删比较、不把Result当公共写许可。
+- 指定接收者/新资格/PREPARE/本人会话/服务及产品HTTP原正文读取已验，下一项Android受限恢复耐久暂存/确认→激活→最终提交；丢token新本人登录/替换也须补。原普通stage的通用TEMP FK/代次相等约束不能复用或伪造准备行。原机禁用、跨仓机不借用、新机普通TEMP=false；原正文/source代次/映射保留、旧票据不激活。新增效果继续精确签名及beforeCommit全表守恒，不开NORMAL/首轮、不删比较。
 - 原正文source与target传输代次分开；旧票据不可激活，另发限定scope/接收者的新资格并保留原事实/映射、隔离首轮能力。跨树核对后新建隔离目标，只读复用原1233；不重跑原源/1150/1151/UI-06/1100–1102，不复用保全/失败库。接缝、源码入口和退出要求详见收口文档。
 - 生产默认/签名及七类生产决定handler/POST/放行/证据写入/关闭能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名、不绕设备审批。原身份/Keystore、双真机/实体键/断电/长时规模/正式HTTPS/异地介质/生产RPO-RTO/Linux现场按C01–C08保留。
 <!-- CURRENT_STATE_END -->

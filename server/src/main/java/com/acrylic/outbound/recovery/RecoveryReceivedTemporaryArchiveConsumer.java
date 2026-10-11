@@ -13,7 +13,8 @@ import static com.acrylic.outbound.recovery.RecoveryControlFormat.*;
 /**
  * Explicit closed consumer of fully pre-restored received ABORTED TEMP originals. Trusted callbacks
  * use this database's bound connection, preserve all source rows/files and have no external effects.
- * No repair, signing, ordinary/handover admission or production Bean/HTTP is provided.
+ * No repair, signing or ordinary admission is provided. An explicitly pinned receiving read adapter
+ * may call this seam, preserving its closed authority and complete original comparisons.
  */
 public final class RecoveryReceivedTemporaryArchiveConsumer {
     private final JdbcTemplate jdbc;

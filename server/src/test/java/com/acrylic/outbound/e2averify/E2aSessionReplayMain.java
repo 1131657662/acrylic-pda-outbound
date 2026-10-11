@@ -27,11 +27,15 @@ public final class E2aSessionReplayMain {
     }
     public static void main(String[] args) throws Exception {
         var profile=E2aCrossSourceProfile.completedSession();
-        try(var app=E2aCrossSourceHttpIT.start(profile,"--outbound.handover.commands.enabled=true",
-                "--outbound.handover.fault.enabled=true","--server.servlet.session.cookie.secure=false")) {
+        var options=java.util.stream.Stream.concat(java.util.stream.Stream.of("--outbound.handover.commands.enabled=true",
+            "--outbound.handover.fault.enabled=true","--server.servlet.session.cookie.secure=false"),
+            Arrays.stream(com.acrylic.outbound.recovery.RecoveryReceivedDownloadHttpInput.options(profile.attempt))).toArray(String[]::new);
+        try(var app=E2aCrossSourceHttpIT.start(profile,options)) {
             RecoveryReceivedSessionRestart.verify((WebApplicationContext)app,profile.attempt,Path.of(System.getenv("E2A_RECEIVED_SOURCE")));
             if(Files.exists(profile.attempt.resolve("download-restart-request.marker")))
                 com.acrylic.outbound.recovery.RecoveryReceivedDownloadChecks.verifyRestart((WebApplicationContext)app,profile.attempt,Path.of(System.getenv("E2A_RECEIVED_SOURCE")));
+            if(Files.exists(profile.attempt.resolve("download-http-input.json")))
+                com.acrylic.outbound.recovery.RecoveryReceivedDownloadHttpChecks.verify((WebApplicationContext)app,profile.attempt,true);
         }
     }
     private E2aSessionReplayMain() { }

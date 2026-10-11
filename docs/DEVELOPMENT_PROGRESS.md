@@ -2,7 +2,8 @@
 
 # 开发验收索引
 
-- [D07/R09恢复本人原正文读取](history/D07_R09_RECOVERED_DOWNLOAD_2026-10-11.md)：已审计session、原字节/签名清单、全原表守恒、并发/尾回滚/新JVM及独立消费；产品HTTP与Android确认链继续。
+- [D07/R09恢复本人产品HTTP下载](history/D07_R09_RECOVERED_DOWNLOAD_HTTP_2026-10-11.md)：固定服务端信任、原Bearer/字节、并发/权限/尾改拒绝及新JVM；Android确认链继续。
+- [D07/R09恢复本人原正文服务读取](history/D07_R09_RECOVERED_DOWNLOAD_2026-10-11.md)：已审计session、原字节/签名清单、全原表守恒、服务并发/尾回滚/新JVM及独立消费。
 
 - [D07/R09恢复本人会话准入](history/D07_R09_RECIPIENT_SESSION_2026-10-11.md)：实际HTTP认证、精确登录效果、全原表守恒/尾回滚、新JVM原token与独立消费；下载确认和激活链继续。
 

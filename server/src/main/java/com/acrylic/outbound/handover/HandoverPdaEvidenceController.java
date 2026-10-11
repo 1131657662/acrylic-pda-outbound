@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,22 +26,28 @@ public class HandoverPdaEvidenceController {
     private final HandoverPdaPackageService packages;
     private final HandoverPdaAssignmentService assignments;
     private final ApiResponses responses;
+    private final ObjectProvider<HandoverRecoveredDownloadEndpoint> recovered;
 
     HandoverPdaEvidenceController(HandoverPdaEvidenceService evidence, HandoverPdaPackageService packages,
-            HandoverPdaAssignmentService assignments, ApiResponses responses) {
+            HandoverPdaAssignmentService assignments, ApiResponses responses,ObjectProvider<HandoverRecoveredDownloadEndpoint> recovered) {
         this.evidence = evidence;
         this.packages = packages;
         this.assignments = assignments;
         this.responses = responses;
+        this.recovered = recovered;
     }
 
     @GetMapping("/{caseId}/manifest")
-    public ResponseEntity<byte[]> manifest(@PathVariable UUID caseId) {
+    public ResponseEntity<byte[]> manifest(@PathVariable UUID caseId,HttpServletRequest request) {
+        var endpoint=recovered.getIfAvailable();
+        if(endpoint!=null) return response(endpoint.read(caseId,(String)request.getAttribute("requestId")).manifest());
         return response(SubmissionJson.canonical(evidence.manifest(caseId)).getBytes(StandardCharsets.UTF_8));
     }
 
     @GetMapping("/{caseId}/recovery-package")
-    public ResponseEntity<byte[]> recoveryPackage(@PathVariable UUID caseId) {
+    public ResponseEntity<byte[]> recoveryPackage(@PathVariable UUID caseId,HttpServletRequest request) {
+        var endpoint=recovered.getIfAvailable();
+        if(endpoint!=null) return response(endpoint.read(caseId,(String)request.getAttribute("requestId")).recoveryPackage());
         return response(packages.download(caseId));
     }
 
