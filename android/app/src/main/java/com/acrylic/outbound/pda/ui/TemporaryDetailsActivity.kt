@@ -27,6 +27,10 @@ class TemporaryDetailsActivity : ComponentActivity() {
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets
         }
         binding.create.text = "调整已扫码包"
+        binding.rescueExport.visibility = android.view.View.VISIBLE
+        binding.rescueExport.setOnClickListener {
+            startActivity(android.content.Intent(this, RescueExportActivity::class.java).putExtra("source", "TEMP").putExtra("localOrderId", id))
+        }
         binding.create.setOnClickListener { startActivity(android.content.Intent(this, ScanAdjustmentActivity::class.java).putExtra("clientOrderId", id)) }
         binding.back.setOnClickListener { finish() }; binding.retry.setOnClickListener { load() }
         binding.previous.setOnClickListener { history.removeAt(history.lastIndex); load() }

@@ -27,6 +27,9 @@ class WorkDetailsActivity : ComponentActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding = ActivityWorkDetailsBinding.inflate(layoutInflater); setContentView(binding.root)
         binding.back.setOnClickListener { finish() }
+        binding.rescueExport.setOnClickListener {
+            startActivity(android.content.Intent(this, RescueExportActivity::class.java).putExtra("source", "FORMAL").putExtra("localOrderId", assignment))
+        }
         binding.adjustPackages.setOnClickListener {
             startActivity(android.content.Intent(this, ScanAdjustmentActivity::class.java).putExtra("assignmentId", assignment))
         }

@@ -35,12 +35,14 @@
             <Button android:id="@+id/refresh" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="联网刷新订单与资格" />
         </LinearLayout>
         <LinearLayout android:id="@+id/dataActions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <Button android:id="@+id/rescueData" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="只读应急导出" />
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="本机原记录持续保留；历史完成以已验签回执为准" android:textSize="16sp" />
             <Button android:id="@+id/historySection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="已验签完成历史" />
             <Button android:id="@+id/abnormalSection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="领取异常与原请求" />
             <Button android:id="@+id/temporaryPreparation" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="临时作业预备资料" />
         </LinearLayout>
         <LinearLayout android:id="@+id/myActions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <Button android:id="@+id/rescueExport" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="只读应急导出（预置救援凭据）" />
             <TextView android:id="@+id/identity" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" />
             <Button android:id="@+id/deviceSettings" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="人员、声音与连接设置" />
             <Button android:id="@+id/appUpdate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="检查应用更新" />

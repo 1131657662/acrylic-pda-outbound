@@ -10,5 +10,6 @@
         <Button android:id="@+id/previous" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="上一页" />
         <Button android:id="@+id/next" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="下一页" />
         <Button android:id="@+id/retry" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="重新读取" />
+        <Button android:id="@+id/rescueExport" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="只读应急导出" android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

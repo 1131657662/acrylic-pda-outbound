@@ -43,10 +43,12 @@ class MainActivity : ComponentActivity() {
         binding.pairing.setOnClickListener { startActivity(Intent(this, PairingActivity::class.java)) }
         binding.deviceSettings.setOnClickListener { startActivity(Intent(this, DeviceSettingsActivity::class.java)) }
         binding.appUpdate.setOnClickListener { startActivity(Intent(this, PdaUpdateActivity::class.java)) }
+        binding.rescueExport.setOnClickListener { startActivity(Intent(this, RescueExportActivity::class.java)) }
     }
     private fun navigationActions() {
         binding.workPage.setOnClickListener { select("WORK", "LOCAL") }
         binding.dataPage.setOnClickListener { select("DATA", "HISTORY") }
+        binding.rescueData.setOnClickListener { startActivity(Intent(this, RescueExportActivity::class.java)) }
         binding.myPage.setOnClickListener { select("MY") }
         binding.refresh.setOnClickListener { model.refresh() }
         binding.localSection.setOnClickListener { model.selectSection("LOCAL") }

@@ -1,0 +1,43 @@
+package com.acrylic.outbound.pda.ui
+
+import android.os.Bundle
+import android.view.WindowManager
+import androidx.activity.ComponentActivity
+import androidx.lifecycle.lifecycleScope
+import com.acrylic.outbound.pda.PdaApplication
+import com.acrylic.outbound.pda.databinding.ActivityRescueCredentialBinding
+import com.acrylic.outbound.pda.rescue.RescueCredentials
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+class RescueCredentialActivity : ComponentActivity() {
+    private lateinit var binding: ActivityRescueCredentialBinding
+    private val app get() = application as PdaApplication
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        binding = ActivityRescueCredentialBinding.inflate(layoutInflater); setContentView(binding.root)
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val bars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            view.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets
+        }
+        binding.identity.text = runCatching { app.session.requireSession().getString("username") }.getOrDefault("请先联网登录原人员")
+        binding.provision.setOnClickListener {
+            val password = binding.password.text.toString().toCharArray(); binding.password.text.clear()
+            run("正在在线核验，凭据不上传服务器", "本人只读凭据已预置；请单独保管。") { credentials().provisionOwn(password) }
+        }
+        binding.revoke.setOnClickListener { run("正在撤销本机本人救援资格", "本机本人救援资格已撤销；原作业资料保留。") { credentials().revokeOwn() } }
+        binding.back.setOnClickListener { finish() }
+    }
+    private fun credentials() = RescueCredentials.shared(app, app.session)
+    private fun run(message: String, success: String, action: () -> Unit) {
+        binding.status.text = message; binding.provision.isEnabled = false; binding.revoke.isEnabled = false
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) { runCatching(action) }
+            binding.status.text = result.fold({ success },
+                { it.message ?: "救援凭据未保存，请保留原资料" })
+            binding.provision.isEnabled = true; binding.revoke.isEnabled = true
+        }
+    }
+}

@@ -1,0 +1,33 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:background="@color/pda_canvas">
+<ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="12dp">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="只读应急导出" android:textSize="20sp" android:textStyle="bold" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="取回本机原记录，不等于出库确认或放行。救援凭据须事先预置；无网时无法得知服务端新撤权。" android:textSize="16sp" />
+        <LinearLayout android:id="@+id/credentialsPanel" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+        <Button android:id="@+id/credentialSetup" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="联网预置或撤销本人救援凭据" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="预置的原人员" android:labelFor="@id/identity" />
+        <Spinner android:id="@+id/identity" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="本地救援凭据" android:labelFor="@id/credential" />
+        <EditText android:id="@+id/credential" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:inputType="textPassword" android:singleLine="true" android:saveEnabled="false" android:importantForAutofill="no" />
+        <Button android:id="@+id/unlock" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="核验只读范围" />
+        </LinearLayout>
+        <Button android:id="@+id/lockScope" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="锁定并切换救援身份" android:visibility="gone" />
+        <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="原订单" android:labelFor="@id/order" />
+        <Spinner android:id="@+id/order" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" />
+        <Button android:id="@+id/nextPage" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="下一页原订单" />
+        <Button android:id="@+id/readSnapshot" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="读取一致原件快照" />
+        <TextView android:id="@+id/summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="已生成的原私有包（本人范围内最近50份）" android:labelFor="@id/privatePackage" />
+        <Spinner android:id="@+id/privatePackage" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" />
+        <Button android:id="@+id/recoverPackage" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="回读并恢复选中的原包" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="外置包解密口令（16–128位无空格ASCII，与救援凭据分开）" android:labelFor="@id/packagePassword" />
+        <EditText android:id="@+id/packagePassword" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:inputType="textPassword" android:singleLine="true" android:saveEnabled="false" android:importantForAutofill="no" />
+        <Button android:id="@+id/generate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="生成并核验加密应急包" />
+        <Button android:id="@+id/copy" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="选取目标并写入回读" />
+        <TextView android:id="@+id/copyState" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="电脑副本尚未核验；文件生成不代表已外置备份。" android:textSize="16sp" />
+        <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回" />
+    </LinearLayout>
+</ScrollView>
+</FrameLayout>

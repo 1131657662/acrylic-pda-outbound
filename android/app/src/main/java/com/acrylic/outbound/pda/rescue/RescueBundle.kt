@@ -3,7 +3,6 @@ package com.acrylic.outbound.pda.rescue
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
-import java.util.Base64
 import java.util.UUID
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -32,7 +31,7 @@ object RescueBundle {
             } })
         val text = manifest.toString()
         files["manifest.json"] = text.toByteArray(Charsets.UTF_8)
-        files["manifest.sig"] = Base64.getDecoder().decode(signer.sign("$PURPOSE\n$text"))
+        files["manifest.sig"] = RescueSeal.sign("$PURPOSE\n$text", signer)
         files["device-public-key.der"] = signer.publicKey.copyOf()
         return zip(files)
     }
