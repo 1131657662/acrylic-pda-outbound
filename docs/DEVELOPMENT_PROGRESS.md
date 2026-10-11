@@ -2,6 +2,8 @@
 
 # 开发验收索引
 
+- [PDA断网补救与UI/UX分析纳入计划](history/PDA_OFFLINE_UI_PLAN_2026-10-11.md)：两份报告映射十步/D项，新增O01–O05/U01–U04完成标准与政策依赖；只计文档核对，不计新增功能、真机或组合验收。
+
 - [R07取消换机接续，改为故障订单撤回重发](history/R07_RECALL_REPUBLISH_SCOPE_2026-10-11.md)：用户范围决定、旧测试保全停机及文档交接；只计范围/文档更新，不计新方案业务验收。下文旧换机链条目保留历史范围，其旧“继续确认/激活/最终承接”提示不再作为必做指令；其余验收结论按各自输入保持。
 
 - [D07/R09限定恢复Android耐久接收确认](history/D07_R09_RECOVERED_ANDROID_CONFIRMATION_2026-10-11.md)：明确原意图、实际POST/Room尾回滚/两Android JVM、独立SQLite/签名及APK/lint；页面调度、激活/最终提交继续。

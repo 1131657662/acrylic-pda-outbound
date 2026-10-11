@@ -1,5 +1,8 @@
 # 历史归档
 
+- [PDA断网补救与UI/UX分析纳入计划（2026-10-11）](PDA_OFFLINE_UI_PLAN_2026-10-11.md)：两份报告逐节对应、O/U完成标准、待定政策与撤回重发边界；仅文档更新。
+- [纳入两份报告前的看板原件](ORCHESTRATION_STATE_before_offline_ui_plan_2026-10-11.md)：原输入/写权/失败/未验保全，不恢复旧接续指令。
+
 - [R07取消换机接续，改为故障订单撤回重发（2026-10-11）](R07_RECALL_REPUBLISH_SCOPE_2026-10-11.md)：用户范围替换、旧测试安全停机与写权交接、文档更新及新方案验收边界；旧换机继续指令不恢复。
 - 修订前原件：[看板](ORCHESTRATION_STATE_before_recall_republish_2026-10-11.md)、[R07政策](R07_POLICY_before_recall_republish_2026-10-11.md)、[总目标计划](AUTONOMOUS_PLAN_before_recall_republish_2026-10-11.md)。仅作历史，取消不计实现通过。
 
