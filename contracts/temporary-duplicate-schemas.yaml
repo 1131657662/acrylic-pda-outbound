@@ -23,6 +23,9 @@ Response:
     nextCursor: {type: [string, 'null'], maxLength: 400}
     hasMore: {type: boolean}
     writeAvailable: {type: boolean, const: false}
+    exclusionAvailable:
+      type: boolean
+      description: 生产默认false；仅显式启用隔离命令入口且本批次仍为NORMAL待审时可为true。仍须逐单主管权限、非自批、完整集合摘要和依据校验；不是扫码、放行或删除能力。
     releaseAllowed: {type: boolean, const: false}
 Hash:
   type: string

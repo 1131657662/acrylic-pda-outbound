@@ -41,7 +41,7 @@ public final class CommandExpected {
     }
 
     private static void applicability(CommandInput input,boolean candidateContext) {
-        if (!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind()))
+        if (!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","DUPLICATE_EXCLUDE","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind()))
             throw CommandErrors.unsupported();
         boolean physical = Set.of("PHYSICAL_DISPOSITION","CLOSE_DISPOSITION").contains(input.kind());
         boolean continuation = Set.of("REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind());

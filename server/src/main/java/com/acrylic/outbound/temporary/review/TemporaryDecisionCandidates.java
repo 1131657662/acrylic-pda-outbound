@@ -42,6 +42,18 @@ public class TemporaryDecisionCandidates {
         var unsigned=(ObjectNode)candidates.deepCopy();unsigned.remove("contextSha256");
         return digest(warehouse,context(submission,body),unsigned).equals(candidates.path("contextSha256").asText());
     }
+    public record CandidateFacts(Head order,List<Product> products) { }
+    /** The snapshot remains complete; only the bounded selection heads omit explicitly verified IDs. */
+    public Reviewed remaining(UUID warehouse,UUID submission,JsonNode body,Set<UUID> excluded) {
+        return new Reviewed(snapshot(warehouse,submission,body),
+            List.copyOf(queries.remaining(queries.parameters(warehouse,range(submission),context(submission,body)),excluded)));
+    }
+    public CandidateFacts candidate(UUID warehouse,UUID submission,JsonNode body,UUID id) {
+        var head=queries.candidate(queries.parameters(warehouse,range(submission),context(submission,body)),id);
+        if(head==null)return null;
+        var products=queries.products(List.of(head)).getOrDefault(head.revisionId(),List.of());
+        return new CandidateFacts(head,List.copyOf(products));
+    }
     private Range range(UUID submission) {
         var received=jdbc.queryForObject("SELECT received_at FROM submission_payload WHERE submission_id=UUID_TO_BIN(?)",
             java.sql.Timestamp.class,submission.toString()).toInstant();

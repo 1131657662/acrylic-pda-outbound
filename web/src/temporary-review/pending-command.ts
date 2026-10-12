@@ -1,16 +1,21 @@
 import { z } from 'zod';
 import { commandFactsSchema, commandReceiptSchema, type CommandKind } from './command-contracts';
+import { exclusionInputSchema } from './exclusion-contracts';
 
 const ownerSchema = z.object({ userId: z.uuid(), warehouseId: z.uuid(), submissionId: z.uuid() });
 export type TemporaryCommandOwner = z.infer<typeof ownerSchema>;
 const bodySchema = commandFactsSchema.strict().extend({
-  commandVersion: z.literal(1), commandType: z.enum(['LINK', 'NORMAL_CONFIRM']), commandId: z.uuid(),
+  commandVersion: z.literal(1), commandType: z.enum(['LINK', 'NORMAL_CONFIRM', 'DUPLICATE_EXCLUDE']), commandId: z.uuid(),
   transportRecoveryEpoch: z.string().regex(/^[0-9]+$/), reason: z.string().max(500),
   source: commandFactsSchema.shape.source.strict(),
   expected: commandFactsSchema.shape.expected.strict().extend({ candidateContextSha256: z.string().regex(/^[a-f0-9]{64}$/) }),
+  exclusion: exclusionInputSchema.optional(),
+}).superRefine((body, ctx) => {
+  if ((body.commandType === 'DUPLICATE_EXCLUDE') !== (body.exclusion !== undefined))
+    ctx.addIssue({ code: 'custom', message: '排除依据与命令类型不匹配' });
 });
 const savedSchema = ownerSchema.extend({
-  version: z.literal(1), kind: z.enum(['LINK', 'NORMAL_CONFIRM']), json: z.string().max(32000),
+  version: z.literal(1), kind: z.enum(['LINK', 'NORMAL_CONFIRM', 'DUPLICATE_EXCLUDE']), json: z.string().max(32000),
   receipt: commandReceiptSchema.nullable(),
 }).strict();
 export type SavedTemporaryCommand = z.infer<typeof savedSchema>;

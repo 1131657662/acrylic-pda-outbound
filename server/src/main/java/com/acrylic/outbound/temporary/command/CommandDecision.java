@@ -17,7 +17,7 @@ final class CommandDecision {
         if(decision.isNull()) { require(receipt.path("status").asText().equals("INTERNAL_TEST_ONLY")); return; }
         require(receipt.path("status").asText().equals("RECORDED") && decision.isObject());
         String kind=receipt.path("commandType").asText();
-        require(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(kind) && decision.path("kind").asText().equals(kind));
+        require(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","DUPLICATE_EXCLUDE","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(kind) && decision.path("kind").asText().equals(kind));
         if (kind.equals("REOPEN_WORK")) {
             fields(decision,"kind status ticketId fromWorkRound toWorkRound evidenceSetId verificationId retainedManifestSha256 retainedManifestVersion nextOrderScanSeq products");
             require(decision.path("status").asText().equals("TICKET_ISSUED") && decision.path("products").isArray()
@@ -72,7 +72,8 @@ final class CommandDecision {
             hash(decision.path("manifestSha256")); require(decision.path("manifestVersion").asText().matches("[1-9][0-9]*"));
             return;
         }
-        fields(decision,"kind candidates products shortShipmentReason shortApprovalReceiptId shortApprovalSha256 submissionReceipt");
+        fields(decision,"kind candidates products shortShipmentReason shortApprovalReceiptId shortApprovalSha256 submissionReceipt"
+            +(kind.equals("DUPLICATE_EXCLUDE")?" exclusion":"")+(decision.has("selection")?" selection":""));
         var candidates=decision.path("candidates");
         fields(candidates,"policyVersion fromDate throughDate total fingerprint contextSha256");
         require(candidates.path("policyVersion").asText().equals("REVIEW_DEFAULT_V1"));
@@ -81,12 +82,14 @@ final class CommandDecision {
         for(String key:List.of("fingerprint","contextSha256"))hash(candidates.path(key));
         require(candidates.path("contextSha256").equals(receipt.path("expected").path("candidateContextSha256")));
         require(decision.path("products").isArray() && !decision.path("products").isEmpty() && decision.path("shortShipmentReason").isTextual());
+        if(kind.equals("DUPLICATE_EXCLUDE")) { CommandExclusionDecision.validate(receipt);return; }
+        long effectiveTotal=CommandSelectionDecision.total(receipt);
         if(kind.equals("LINK")) {
             // A link is only ever a human decision over a complete, uniquely resolvable candidate set.
             var link=decision.path("submissionReceipt");
             boolean relink=link.path("applyState").asText().equals("APPLIED") && link.path("sourceMappingVersion").asLong()>1;
             String expectedTotal=relink?"2":"1";
-            require(decision.path("submissionReceipt").isObject() && candidates.path("total").asText().equals(expectedTotal)
+            require(decision.path("submissionReceipt").isObject() && Long.toString(effectiveTotal).equals(expectedTotal)
                 && decision.path("shortApprovalReceiptId").isNull() && decision.path("shortApprovalSha256").isNull()
                 && decision.path("shortShipmentReason").asText().isEmpty());
             link(decision.path("submissionReceipt"),candidates.path("contextSha256"));
@@ -106,7 +109,7 @@ final class CommandDecision {
             // enforced at execution time by the candidate-context comparison, and at verification by
             // CommandBusinessIntegrity.success (the receipt orderId must equal the recorded canonical order and
             // the result row must hang off that same order). Any other total stays rejected.
-            long total=candidates.path("total").asLong(-1);
+            long total=effectiveTotal;
             require(decision.path("submissionReceipt").isObject()
                 && (total==0 || (total==1 && decision.path("submissionReceipt").path("orderId").isTextual())));
             if(decision.path("shortApprovalReceiptId").isNull())require(decision.path("shortApprovalSha256").isNull());

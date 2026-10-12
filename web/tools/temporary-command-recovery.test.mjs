@@ -10,6 +10,28 @@ function check(name, action, options = {}) {
   });
 }
 
+const exclusion = { orderId: randomUUID(), revision: '1', rowVersion: '3', basis: 'CANCELLED',
+  evidence: '主管逐单核验作废及无有效作业', withdrawalRequestId: null };
+check('DUPLICATE_EXCLUDE: response loss keeps original candidate and evidence across remount', async f => {
+  await f.mount().state.execute('DUPLICATE_EXCLUDE', { ...initial, exclusion });
+  await f.mount().state.execute('DUPLICATE_EXCLUDE', { ...initial, exclusion: { ...exclusion, orderId: randomUUID(), evidence: '另一候选' } });
+  sameOriginal(f.calls); assert.equal(JSON.parse(f.calls[0].body).exclusion.orderId, exclusion.orderId);
+});
+check('DUPLICATE_EXCLUDE: matched receipt requires explicit reset before next candidate', async f => {
+  const { state } = f.mount(); await state.execute('DUPLICATE_EXCLUDE', { ...initial, exclusion });
+  await state.execute('DUPLICATE_EXCLUDE', { ...initial, exclusion: { ...exclusion, orderId: randomUUID() } });
+  assert.equal(f.calls.length, 1); await state.startOver('DUPLICATE_EXCLUDE');
+  const next = randomUUID(); await state.execute('DUPLICATE_EXCLUDE', { ...initial, exclusion: { ...exclusion, orderId: next } });
+  assert.equal(f.calls.length, 2); assert.equal(JSON.parse(f.calls[1].body).exclusion.orderId, next);
+}, { success: true });
+check('DUPLICATE_EXCLUDE: incomplete withdrawal cannot persist or send a command', async f => {
+  await f.mount().state.execute('DUPLICATE_EXCLUDE', { ...initial, exclusion: { ...exclusion, basis: 'WITHDRAWN' } });
+  assert.equal(f.calls.length, 0); assert.equal(f.entries.size, 0);
+});
+check('DUPLICATE_EXCLUDE: browser storage failure prevents sending', async f => {
+  await f.mount().state.execute('DUPLICATE_EXCLUDE', { ...initial, exclusion }); assert.equal(f.calls.length, 0);
+}, { blockedStorage: true });
+
 for (const kind of ['LINK', 'NORMAL_CONFIRM']) {
   check(`${kind}: unchanged same-page unknown retry preserves bytes (control)`, async f => {
     const { state } = f.mount(); await state.execute(kind, initial); await state.execute(kind, initial); sameOriginal(f.calls);

@@ -17,6 +17,11 @@ public final class TemporaryProtocol {
         return ProtocolJson.canonical(value);
     }
     public static String commandSha256(byte[] utf8) { return domain("COMMAND",command(utf8)); }
+    /** Stored pre-exclusion synthetic commands remain exact historical evidence, never new write permission. */
+    public static byte[] storedCommand(byte[] utf8) {
+        var value=ProtocolJson.parse(utf8);TemporaryCommandShape.validate(value,true);return ProtocolJson.canonical(value);
+    }
+    public static String storedCommandSha256(byte[] utf8) { return domain("COMMAND",storedCommand(utf8)); }
     public static String unsignedReceiptSha256(byte[] utf8) { return domain("RECEIPT",object(utf8)); }
     public static String derivedControlSha256(byte[] utf8) { return domain("DERIVED-CONTROL",object(utf8)); }
     public static String originalResponseSha256(byte[] utf8) {

@@ -30,5 +30,5 @@ public final class TemporaryDuplicateModels {
     public record Snapshot(long total,String fingerprint) { }
     public record Response(JsonNode context,Range range,Instant checkedAt,String contextSha256,String candidateSetSha256,
         String commandContextSha256,long total,List<Candidate> items,String nextCursor,boolean hasMore,boolean writeAvailable,
-        boolean releaseAllowed) { }
+        boolean releaseAllowed,boolean exclusionAvailable) { }
 }

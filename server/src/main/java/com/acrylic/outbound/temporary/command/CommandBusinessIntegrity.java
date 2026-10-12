@@ -27,7 +27,7 @@ public class CommandBusinessIntegrity {
         }
         if (Set.of("REOPEN_WORK","ACTIVATE_CONTINUATION").contains(receipt.path("commandType").asText())) { continuation.verify(receipt); return; }
         var context=receipt.path("originalContext");var decision=receipt.path("businessDecision");
-        if(context.path("workRound").asLong()>1)CommandErrors.integrity(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK").contains(receipt.path("commandType").asText()));
+        if(context.path("workRound").asLong()>1)CommandErrors.integrity(Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","DUPLICATE_EXCLUDE").contains(receipt.path("commandType").asText()));
         String hash=context.path("receivedPayloadSha256").asText();var body=parse(files.read(hash));
         CommandErrors.integrity(sha(body).equals(hash) && context.path("status").asText().equals("REVIEW_REQUIRED")
             && context.path("planSha256").equals(body.path("planSha256"))
@@ -37,6 +37,7 @@ public class CommandBusinessIntegrity {
             && decision.path("shortShipmentReason").asText().equals(body.path("shortShipmentReason").asText(""))
             && candidates.authentic(uuid(context,"warehouseId"),uuid(context,"submissionId"),body,decision.path("candidates")));
         boolean shortShipment=false;for(var product:decision.path("products"))shortShipment|=product.path("shortCount").asLong()>0;
+        if(CommandDecision.kind(receipt).equals("DUPLICATE_EXCLUDE")) { exclusion(receipt,body);return; }
         if(CommandDecision.kind(receipt).equals("LINK")) { link(context,decision);return; }
         if(CommandDecision.kind(receipt).equals("REJECT")) { rejected(context,body);return; }
         if(CommandDecision.kind(receipt).equals("SHORT_APPROVE")) {
@@ -49,6 +50,13 @@ public class CommandBusinessIntegrity {
             if(body.has("temporaryHandover"))TemporaryHandoverReceiptIntegrity.completed(jdbc,receipt,body);
             else TemporaryRoundReceiptIntegrity.completed(jdbc,receipt);
         }
+    }
+    private void exclusion(JsonNode receipt,JsonNode body) {
+        CommandErrors.integrity(!receipt.path("actor").path("principalId").equals(receipt.path("originalContext").path("originalOperatorId")));
+        var exclusion=receipt.at("/businessDecision/exclusion");
+        TemporaryExclusionPolicy.validate(body,exclusion);
+        if(exclusion.path("basis").asText().equals("WITHDRAWN"))
+            proofs.verify(exclusion.path("withdrawalReceipt"),"signedReceipt","acrylic-pda-fault-withdrawal","receipt");
     }
     private void verifyDisposition(JsonNode receipt) {
         var context = receipt.path("originalContext");

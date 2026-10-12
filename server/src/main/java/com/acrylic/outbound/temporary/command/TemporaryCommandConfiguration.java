@@ -26,26 +26,32 @@ import org.springframework.context.annotation.Configuration;
 public class TemporaryCommandConfiguration {
 
     @Bean
+    CommandOperation temporaryCandidateExclusion(TemporaryConfirmationSource source,
+            TemporaryDecisionCandidates candidates,TemporaryExclusionFacts exclusions) {
+        return new TemporaryExclusionOperation(source,candidates,exclusions);
+    }
+
+    @Bean
     CommandOperation temporaryNormalConfirmation(TemporaryConfirmationSource source,
             TemporaryDecisionCandidates candidates, TemporaryShortApprovals approvals, SubmissionStock stock,
-            SubmissionAccounting accounting, TemporaryRoundCompletion rounds) {
+            SubmissionAccounting accounting, TemporaryRoundCompletion rounds,TemporaryCandidateSelection selections) {
         return new TemporaryConfirmationOperation("NORMAL_CONFIRM",
-            new TemporaryConfirmationOperation.Dependencies(source, candidates, approvals, stock, accounting, rounds));
+            new TemporaryConfirmationOperation.Dependencies(source, candidates, approvals, stock, accounting, rounds),selections);
     }
 
     @Bean
     CommandOperation temporaryShortApproval(TemporaryConfirmationSource source,
             TemporaryDecisionCandidates candidates, TemporaryShortApprovals approvals, SubmissionStock stock,
-            SubmissionAccounting accounting, TemporaryRoundCompletion rounds) {
+            SubmissionAccounting accounting, TemporaryRoundCompletion rounds,TemporaryCandidateSelection selections) {
         return new TemporaryConfirmationOperation("SHORT_APPROVE",
-            new TemporaryConfirmationOperation.Dependencies(source, candidates, approvals, stock, accounting, rounds));
+            new TemporaryConfirmationOperation.Dependencies(source, candidates, approvals, stock, accounting, rounds),selections);
     }
 
     @Bean
     CommandOperation temporaryControlledLink(TemporaryConfirmationSource source,
-            TemporaryDecisionCandidates candidates, TemporaryLinkTarget targets, TemporaryLinkMapping mappings) {
+            TemporaryDecisionCandidates candidates, TemporaryLinkTarget targets, TemporaryLinkMapping mappings,TemporaryCandidateSelection selections) {
         return new TemporaryLinkOperation(
-            new TemporaryLinkOperation.Dependencies(source, candidates, targets, mappings));
+            new TemporaryLinkOperation.Dependencies(source, candidates, targets, mappings),selections);
     }
 
     @Bean

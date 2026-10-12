@@ -22,7 +22,7 @@ public class CommandReceiptIntegrity {
     }
     private JsonNode checked(CommandRecord r) {
         CommandErrors.integrity(r.id("id")!=null && r.id("id").equals(r.id("resource_id")) && r.id("api_request_id").equals(r.id("request_id")));
-        var command=CommandInput.parse(r.bytes("canonical_command_bytes"));
+        var command=CommandInput.stored(r.bytes("canonical_command_bytes"));
         CommandErrors.integrity(Arrays.equals(command.bytes(),r.bytes("canonical_command_bytes")) && command.digest().equals(r.text("request_sha256"))
             && command.digest().equals(r.text("command_sha256")) && command.key().equals(r.text("original_key"))
             && command.kind().equals(r.text("command_type")) && TemporaryProtocol.ROUTE_SCOPE.equals(r.text("route_scope"))
@@ -35,7 +35,7 @@ public class CommandReceiptIntegrity {
         CommandErrors.integrity(TemporaryProtocol.unsignedReceiptSha256(CommandReceiptCodec.bytes(unsigned)).equals(r.text("unsigned_receipt_sha256")));
         signatures.verify(r.text("signed_receipt"),r.text("signature_key_id"),unsigned);
         header(r,command,unsigned);context(r,command,unsigned);history.verify(unsigned);closure(r,unsigned);business.verify(unsigned);
-        approval(unsigned);return unsigned;
+        approval(unsigned);CommandSelectionDecision.references(unsigned,store,this::verify);return unsigned;
     }
     private void header(CommandRecord r,CommandInput command,JsonNode receipt) {
         CommandErrors.integrity(receipt.path("receiptId").asText().equals(r.id("id").toString())
@@ -50,6 +50,8 @@ public class CommandReceiptIntegrity {
             && permissions.path("requiredPermissions").get(0).asText().equals(required));
         CommandErrors.integrity(contains(permissions.path("effectivePermissions"),required)
             && contains(permissions.path("warehouseIds"),r.id("warehouse_id").toString()));
+        if(command.kind().equals("DUPLICATE_EXCLUDE") && !receipt.path("businessDecision").isNull())
+            CommandExclusionDecision.bind(command.body(),receipt.path("businessDecision"));
     }
     private boolean contains(JsonNode list,String value) {
         if(!list.isArray())return false;for(var item:list)if(item.isTextual() && item.asText().equals(value))return true;return false;

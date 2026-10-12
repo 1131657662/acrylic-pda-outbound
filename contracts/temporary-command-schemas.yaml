@@ -41,3 +41,36 @@ Capabilities:
     mayResumeScanning: {type: boolean, const: false}
     stockReleased: {type: boolean, const: false}
     localDeletionAllowed: {type: boolean, const: false}
+ExclusionInput:
+  type: object
+  additionalProperties: false
+  required: [orderId, revision, rowVersion, basis, evidence, withdrawalRequestId]
+  description: 显式隔离命令DUPLICATE_EXCLUDE的必需附加字段。新请求不能省略；旧合成命令仅按原字节作历史只读核验。全局reason另必填，主管不得是原操作员。
+  properties:
+    orderId: {type: string, format: uuid}
+    revision: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    rowVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}
+    basis: {type: string, enum: [CANCELLED, WITHDRAWN, UNRELATED]}
+    evidence: {type: string, minLength: 1, maxLength: 1000, description: 非空且无控制字符的逐单核对依据}
+    withdrawalRequestId: {type: [string, 'null'], format: uuid, description: WITHDRAWN必须原故障撤回请求UUID；其余必须null}
+CandidateSelection:
+  type: object
+  additionalProperties: false
+  required: [effectiveTotal, exclusions]
+  description: 关联/确认决定中可选签名证明。完整candidates及total保持原查询；effectiveTotal等于total减唯一排除数。同原来源/轮次/正文/完整集合且早于本决定的完整性核验原回执才可引用，集合变化失效。
+  properties:
+    effectiveTotal: {type: string, pattern: '^(0|[1-9][0-9]{0,17})$'}
+    exclusions:
+      type: array
+      minItems: 1
+      maxItems: 1000
+      description: 按orderId严格升序，无重复，不能包含本次关联/确认目标。
+      items:
+        type: object
+        additionalProperties: false
+        required: [orderId, receiptId, originalResponseSha256, resultingDecisionVersion]
+        properties:
+          orderId: {type: string, format: uuid}
+          receiptId: {type: string, format: uuid}
+          originalResponseSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+          resultingDecisionVersion: {type: string, pattern: '^[1-9][0-9]{0,17}$'}

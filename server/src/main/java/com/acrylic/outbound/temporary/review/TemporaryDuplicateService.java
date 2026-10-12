@@ -35,8 +35,10 @@ public class TemporaryDuplicateService {
         // A write is offered only when the command surface is on and at least one candidate can actually be
         // linked. Release stays closed: it is a separate production capability and never follows from this flag.
         boolean writeAvailable=commandsEnabled && items.stream().anyMatch(Candidate::linkAvailable);
+        boolean exclusionAvailable=commandsEnabled && context.path("status").asText().equals("REVIEW_REQUIRED")
+            && context.path("current").asBoolean() && context.path("serviceMode").asText().equals("NORMAL");
         return new Response(context,range,Instant.now(),hash,snapshot.fingerprint(),commandContext(submission),
-            snapshot.total(),items,next,more,writeAvailable,false);
+            snapshot.total(),items,next,more,writeAvailable,false,exclusionAvailable);
     }
     /**
      * 命令口径的候选上下文摘要：与 {@code /temporary-commands} 命令体 {@code expected.candidateContextSha256}

@@ -31,7 +31,7 @@ export const commandReceiptSchema = z.object({
 
 export type CommandFacts = z.infer<typeof commandFactsSchema>;
 export type CommandReceipt = z.infer<typeof commandReceiptSchema>;
-export type CommandKind = 'LINK' | 'NORMAL_CONFIRM';
+export type CommandKind = 'LINK' | 'NORMAL_CONFIRM' | 'DUPLICATE_EXCLUDE';
 
 export function commandStatusLabel(status: string): string {
   const labels: Record<string, string> = {
@@ -42,6 +42,6 @@ export function commandStatusLabel(status: string): string {
 }
 
 export function commandKindLabel(kind: string): string {
-  const labels: Record<string, string> = { LINK: '人工关联正式单', NORMAL_CONFIRM: '正常确认出库', SHORT_APPROVE: '短装批准' };
+  const labels: Record<string, string> = { LINK: '人工关联正式单', NORMAL_CONFIRM: '正常确认出库', SHORT_APPROVE: '短装批准', DUPLICATE_EXCLUDE: '逐项排除候选' };
   return labels[kind] ?? kind;
 }

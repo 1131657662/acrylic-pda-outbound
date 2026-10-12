@@ -24,7 +24,8 @@ const { data, from, through, busy, error, index, changed, search, next, previous
       <p>读取于 {{ localTime(data.checkedAt) }}。翻页时若候选或原批次变化，须重新查询；未看完全部页不等于完成重复核对。</p>
       <p v-if="!data.items.length">本次范围未找到符合信号的候选，不代表不存在重复，也不授予确认或放行权限。</p>
       <TemporaryDuplicateCandidate v-for="candidate in data.items" :key="candidate.order.id" :candidate="candidate"
-        :submission-id="submissionId" :warehouse-id="warehouseId" :command-context-sha256="data.commandContextSha256" />
+        :submission-id="submissionId" :warehouse-id="warehouseId" :command-context-sha256="data.commandContextSha256"
+        :exclusion-available="data.exclusionAvailable" />
       <nav class="order-pagination" aria-label="重复候选分页">
         <el-button :disabled="busy || changed || index === 0" @click="previous">上一页</el-button>
         <el-button :disabled="busy || changed || !data.hasMore" @click="next">下一页</el-button>

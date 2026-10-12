@@ -22,7 +22,7 @@ public class CommandCurrentEffect {
             .put("serverRecoveryEpoch",server.epoch()).put("serviceMode",server.mode());
         var reasons=new ArrayList<String>();
         if(!server.mode().equals("NORMAL"))reasons.add("SERVER_NOT_NORMAL");
-        var command=CommandInput.parse(row.bytes("canonical_command_bytes"));
+        var command=CommandInput.stored(row.bytes("canonical_command_bytes"));
         if(!server.epoch().equals(command.text("transportRecoveryEpoch")))reasons.add("RECOVERY_EPOCH_CHANGED");
         if(!actor.authVersion().equals(original.path("actor").path("userAuthVersion").asText()))reasons.add("ACTOR_AUTH_VERSION_CHANGED");
         var currentActor=identities.snapshot(actor,command.kind());

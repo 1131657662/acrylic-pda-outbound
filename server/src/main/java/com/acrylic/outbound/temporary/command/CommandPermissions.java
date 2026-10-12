@@ -6,6 +6,7 @@ final class CommandPermissions {
     private static final Map<String,String> KNOWN=Map.of("NORMAL_CONFIRM","temporary_order:confirm",
         "SHORT_APPROVE","submission:review","LINK","temporary_order:link",
         "REJECT","submission:review",
+        "DUPLICATE_EXCLUDE","temporary_order:link",
         "PHYSICAL_DISPOSITION","order:dispose","CLOSE_DISPOSITION","order:dispose","REOPEN_WORK","order:resume",
         "ACTIVATE_CONTINUATION","order:resume");
     private CommandPermissions() { }

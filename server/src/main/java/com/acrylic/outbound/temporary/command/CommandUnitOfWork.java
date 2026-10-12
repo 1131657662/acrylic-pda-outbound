@@ -44,7 +44,7 @@ public class CommandUnitOfWork {
     }
     private void requireRound(CommandInput input, CommandContext context) {
         if (context.version("workRound") <= 1
-            || Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind())) return;
+            || Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","DUPLICATE_EXCLUDE","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(input.kind())) return;
         if ("PHYSICAL_DISPOSITION".equals(input.kind()) && "ABORTED".equals(context.text("status"))) {
             var items = input.body().path("dispositionManifest").path("items");
             if (items.isArray() && !items.isEmpty()
@@ -54,7 +54,7 @@ public class CommandUnitOfWork {
         throw CommandErrors.unsupported();
     }
     private CommandOperation operation(String kind) {
-        if (!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(kind)) throw CommandErrors.unsupported();
+        if (!Set.of("NORMAL_CONFIRM","SHORT_APPROVE","LINK","REJECT","DUPLICATE_EXCLUDE","PHYSICAL_DISPOSITION","CLOSE_DISPOSITION","REOPEN_WORK","ACTIVATE_CONTINUATION").contains(kind)) throw CommandErrors.unsupported();
         var found = operations.stream().filter(operation -> operation.commandType().equals(kind)).toList();
         if (found.isEmpty()) throw CommandErrors.unsupported();
         if (found.size() != 1) throw new IllegalStateException("Ambiguous command operation"); return found.getFirst();

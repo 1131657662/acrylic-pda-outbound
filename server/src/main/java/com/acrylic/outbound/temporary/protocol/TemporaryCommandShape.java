@@ -16,10 +16,15 @@ final class TemporaryCommandShape {
     private TemporaryCommandShape() { }
 
     static void validate(JsonNode body) {
+        validate(body,false);
+    }
+    static void validate(JsonNode body,boolean historical) {
         require(body.get("commandVersion").isIntegralNumber() && body.get("commandVersion").longValue() == 1,"VERSION_INVALID");
         String kind = text(body,"commandType");
         require(KINDS.contains(kind),"COMMAND_KIND_INVALID");
-        bodyFields(body,kind);
+        boolean legacy=historical && kind.equals("DUPLICATE_EXCLUDE") && !body.has("exclusion");
+        bodyFields(body,kind,legacy);
+        if(kind.equals("DUPLICATE_EXCLUDE") && !legacy)TemporaryExclusionShape.validate(body.path("exclusion"));
         for (String key : List.of("commandId","warehouseId","submissionId","authorizationId","freezeDeviceId")) uuid(body,key);
         for (String key : List.of("workRound","sourceRecoveryEpoch","transportRecoveryEpoch")) positive(body,key);
         String reason = text(body,"reason");
@@ -40,12 +45,13 @@ final class TemporaryCommandShape {
         else require(manifest == null || manifest.isNull(),"DISPOSITION_MANIFEST_NOT_APPLICABLE");
     }
 
-    private static void bodyFields(JsonNode body,String kind) {
+    private static void bodyFields(JsonNode body,String kind,boolean legacy) {
         var expected = new HashSet<>(BODY);
         boolean physical = kind.equals("PHYSICAL_DISPOSITION") || kind.equals("CLOSE_DISPOSITION");
         if (physical || body.has("dispositionManifest")) expected.add("dispositionManifest");
         if (Set.of("REOPEN_WORK","ACTIVATE_CONTINUATION").contains(kind)) { expected.add("retainedManifest"); expected.add("nextOrderScanSeq"); }
         if (kind.equals("ACTIVATE_CONTINUATION")) expected.add("continuationTicketId");
+        if (kind.equals("DUPLICATE_EXCLUDE") && !legacy) expected.add("exclusion");
         fields(body,expected);
     }
 

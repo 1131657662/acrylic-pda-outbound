@@ -50,6 +50,18 @@ public class TemporaryDuplicateQueries {
         params.addValue("limit",limit+1);
         return jdbc.query(SELECT+after+" ORDER BY o.created_at DESC,o.id DESC LIMIT :limit",params,(rs,n)->head(rs));
     }
+    Head candidate(MapSqlParameterSource params,UUID id) {
+        params.addValue("selectedId",Ids.bytes(id));
+        var rows=jdbc.query(SELECT+" AND o.id=:selectedId",params,(rs,n)->head(rs));
+        return rows.isEmpty()?null:rows.getFirst();
+    }
+    List<Head> remaining(MapSqlParameterSource params,Set<UUID> excluded) {
+        String predicate="";
+        if(!excluded.isEmpty()) {
+            params.addValue("excluded",excluded.stream().map(Ids::bytes).toList());predicate=" AND o.id NOT IN (:excluded)";
+        }
+        return jdbc.query(SELECT+predicate+" ORDER BY o.created_at DESC,o.id DESC LIMIT 3",params,(rs,n)->head(rs));
+    }
     Map<String,List<Product>> products(List<Head> heads) {
         var result=new HashMap<String,List<Product>>();if(heads.isEmpty())return result;
         var ids=heads.stream().map(h->Ids.bytes(UUID.fromString(h.revisionId()))).toList();

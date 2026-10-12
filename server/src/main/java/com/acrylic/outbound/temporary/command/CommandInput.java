@@ -11,12 +11,13 @@ public final class CommandInput {
     private final JsonNode body;
     private final String digest;
     private CommandInput(byte[] bytes) {
-        this.bytes=bytes.clone();body=SubmissionJson.parse(bytes);digest=TemporaryProtocol.commandSha256(bytes);
+        this.bytes=bytes.clone();body=SubmissionJson.parse(bytes);digest=TemporaryProtocol.storedCommandSha256(bytes);
     }
     public static CommandInput parse(byte[] bytes) {
         try { return new CommandInput(TemporaryProtocol.command(bytes)); }
         catch(RuntimeException malformed) { throw new BusinessException(400,"INVALID_TEMPORARY_COMMAND","命令格式或资源大小无效"); }
     }
+    static CommandInput stored(byte[] bytes) { return new CommandInput(TemporaryProtocol.storedCommand(bytes)); }
     public byte[] bytes() { return bytes.clone(); }
     public JsonNode body() { return body.deepCopy(); }
     public JsonNode expected() { return body.get("expected").deepCopy(); }

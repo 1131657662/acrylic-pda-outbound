@@ -78,6 +78,13 @@ final class TemporaryLinkedFixture {
             .POST(HttpRequest.BodyPublishers.ofByteArray(TemporaryConfirmationFixture.bytes(command))).build();
         return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
     }
+    HttpResponse<byte[]> claimTarget(String order) throws Exception {
+        String version=source.jdbc.queryForObject("SELECT row_version FROM outbound_order WHERE id=UUID_TO_BIN(?)",String.class,order);
+        var body=SubmissionJson.object().put("expectedVersion",version).put("areaNote","隔离候选核验责任区");
+        return client.send(request("/pda/orders/"+order+"/assignments").header("Content-Type","application/json")
+            .header("Idempotency-Key",UUID.randomUUID().toString()).header("X-Server-Recovery-Epoch","1")
+            .POST(HttpRequest.BodyPublishers.ofString(SubmissionJson.canonical(body))).build(),HttpResponse.BodyHandlers.ofByteArray());
+    }
 
     com.fasterxml.jackson.databind.JsonNode detail(String commandId) throws Exception {
         var path = "/pda/temporary-command-receipts/" + commandId + "?warehouseId=" + source.source.f.web.identity().warehouse();

@@ -34,6 +34,8 @@ class TemporaryCommandConfigurationTest {
         .withBean(TemporaryContinuationTicketStore.class, () -> mock(TemporaryContinuationTicketStore.class))
         .withBean(TemporaryContinuationAuthorizationIssuer.class, () -> mock(TemporaryContinuationAuthorizationIssuer.class))
         .withBean(TemporaryRoundCompletion.class, () -> mock(TemporaryRoundCompletion.class))
+        .withBean(TemporaryCandidateSelection.class, () -> mock(TemporaryCandidateSelection.class))
+        .withBean(TemporaryExclusionFacts.class, () -> mock(TemporaryExclusionFacts.class))
         .withBean(JdbcTemplate.class, () -> mock(JdbcTemplate.class))
         .withBean(TemporaryCommandService.class, () -> mock(TemporaryCommandService.class));
 
@@ -58,11 +60,11 @@ class TemporaryCommandConfigurationTest {
         runner.withPropertyValues("outbound.temporary.commands.enabled=true").run(context -> {
             assertThat(context).hasNotFailed();
             List<CommandOperation> operations = List.copyOf(context.getBeansOfType(CommandOperation.class).values());
-            assertThat(operations).hasSize(8);
+            assertThat(operations).hasSize(9);
             assertThat(operations.stream().map(CommandOperation::commandType))
-                .containsExactlyInAnyOrder("NORMAL_CONFIRM", "SHORT_APPROVE", "LINK", "REJECT", "PHYSICAL_DISPOSITION", "CLOSE_DISPOSITION", "REOPEN_WORK", "ACTIVATE_CONTINUATION");
+                .containsExactlyInAnyOrder("NORMAL_CONFIRM", "SHORT_APPROVE", "LINK", "REJECT", "DUPLICATE_EXCLUDE", "PHYSICAL_DISPOSITION", "CLOSE_DISPOSITION", "REOPEN_WORK", "ACTIVATE_CONTINUATION");
             // Ambiguity is rejected by CommandUnitOfWork, so one operation per kind is the contract.
-            assertThat(operations.stream().map(CommandOperation::commandType).distinct().count()).isEqualTo(8);
+            assertThat(operations.stream().map(CommandOperation::commandType).distinct().count()).isEqualTo(9);
             assertThat(context.getBeanNamesForType(TemporaryCommandController.class)).hasSize(1);
             assertThat(context.getBeanNamesForType(TemporaryCloseDispositionController.class)).hasSize(1);
         });

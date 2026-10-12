@@ -1,7 +1,7 @@
 WebDetail:
   get:
     summary: 读取本人原命令回执与独立的当前评估
-    description: 当前原仓范围及已存命令族权限或temporary_order:confirm。按当前actor/r06.command.v1/原键精确读取，先核不可变台账闭环。旧expected、会话、权限快照及恢复代次不替换。当前仅可验证INTERNAL_TEST_ONLY回执，businessDecision为null，不能确认、续扫、记账或放行。Cache-Control为no-store。
+    description: 当前原仓范围及已存命令族权限或temporary_order:confirm。按当前actor/r06.command.v1/原键精确读取，先核不可变台账闭环。旧expected、会话、权限快照及恢复代次不替换。兼容历史INTERNAL_TEST_ONLY以及显式隔离签发的业务决定；逐项排除与selection引用按原件核验。读取不授予确认、续扫、记账或放行，生产命令POST保持默认关闭。Cache-Control为no-store。
     security: [{webSession: []}]
     parameters: [{$ref: '#/Key'}, {$ref: '#/Warehouse'}]
     responses: {$ref: '#/DetailResponses'}
@@ -120,7 +120,7 @@ BindingResponses:
 
 OriginalResponses:
   '200':
-    description: 原JSON业务回执bytes，仅INTERNAL_TEST_ONLY，不是成功出库凭证
+    description: 原JSON业务回执bytes；历史合成与显式隔离业务决定均保留原字节，排除回执不是成功出库或放行凭证
     headers:
       Cache-Control: {schema: {type: string, const: no-store}}
     content:

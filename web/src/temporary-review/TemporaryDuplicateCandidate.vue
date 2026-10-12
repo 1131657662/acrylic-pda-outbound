@@ -2,7 +2,8 @@
 import { localTime } from '../orders/contracts';
 import { duplicateReason, type DuplicateCandidate } from './duplicate-contracts';
 import TemporaryCommandAction from './TemporaryCommandAction.vue';
-const props = defineProps<{ candidate: DuplicateCandidate; submissionId: string; warehouseId: string; commandContextSha256: string | null }>();
+import TemporaryCandidateExclusion from './TemporaryCandidateExclusion.vue';
+const props = defineProps<{ candidate: DuplicateCandidate; submissionId: string; warehouseId: string; commandContextSha256: string | null; exclusionAvailable?: boolean }>();
 function unavailableReason(): string {
   if (props.candidate.blockers.length) {
     return `当前候选存在不可关联条件（${props.candidate.blockers.map(duplicateReason).join('、')}），不能发起人工关联。`;
@@ -30,5 +31,7 @@ function unavailableReason(): string {
       :candidate-context-sha256="commandContextSha256" :available="candidate.linkAvailable" :unavailable-reason="unavailableReason()"
       label="人工关联到该正式单" reason-required
       hint="关联会在同一事务内把本临时批次的规范单改指该正式单、写入映射版本+1，并迁移仍处于预留状态的占用行。请先核对车号、产品与计划包数完全一致。" />
+    <TemporaryCandidateExclusion :candidate="candidate" :submission-id="submissionId" :warehouse-id="warehouseId"
+      :command-context-sha256="commandContextSha256" :available="exclusionAvailable === true" />
   </article>
 </template>

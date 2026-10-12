@@ -2,6 +2,7 @@ package com.acrylic.outbound.e2averify;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -18,6 +19,10 @@ final class E2aCrossSourceProfile {
     final String database, user, url;
 
     E2aCrossSourceProfile() throws Exception { this(null); }
+
+    static E2aCrossSourceProfile completedExclusion() throws Exception {
+        var profile=new E2aCrossSourceProfile("exclusion");profile.connectChecked();return profile;
+    }
 
     static E2aCrossSourceProfile completedPhysicalReview() throws Exception {
         var profile=new E2aCrossSourceProfile("physical");
@@ -73,6 +78,11 @@ final class E2aCrossSourceProfile {
         else if("qualification".equals(restart)) requireCompletedQualification(run);
         else if("preparation".equals(restart)) requireCompletedPreparation(run);
         else if("session".equals(restart)) requireCompletedSession(run);
+        else if("exclusion".equals(restart)) {
+            for(String file:List.of("test-completed.marker","exclusion-restart-input.json","selection-restart-input.json","exclusion-original.json"))
+                require(Files.isRegularFile(attempt.resolve(file)),"Exclusion phase incomplete");
+            require(!Files.exists(attempt.resolve("exclusion-restart-completed.marker")),"Exclusion restart already used");
+        }
         else require(!Files.exists(attempt.resolve("test-started.marker")), "One-shot attempt already used");
         require(System.getenv("E2A_CROSS_PASSWORD") != null
             && System.getenv("E2A_CROSS_PASSWORD").matches("[0-9a-f]{64}"), "Missing private credential");

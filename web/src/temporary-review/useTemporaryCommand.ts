@@ -2,10 +2,11 @@ import { ref, type Ref } from 'vue';
 import { ApiError, currentRecoveryEpoch, errorText, postRaw, request } from '../api';
 import { commandFactsSchema, commandReceiptSchema, type CommandFacts, type CommandKind, type CommandReceipt } from './command-contracts';
 import { duplicatePageSchema } from './duplicate-contracts';
+import { exclusionInputSchema, type ExclusionInput } from './exclusion-contracts';
 import { clearTemporaryCommand, commandOwner, loadTemporaryCommand, lockTemporaryCommand, savedCommandBody,
   saveTemporaryCommand, TemporaryPersistenceError, type SavedTemporaryCommand, type TemporaryCommandOwner } from './pending-command';
 
-interface ExecuteOptions { reason?: string; candidateContextSha256?: string | null }
+interface ExecuteOptions { reason?: string; candidateContextSha256?: string | null; exclusion?: ExclusionInput }
 interface TemporaryCommandHook {
   facts: Ref<CommandFacts | null>; busy: Ref<boolean>; error: Ref<string>; receipt: Ref<CommandReceipt | null>;
   closed: Ref<boolean>; original: Ref<SavedTemporaryCommand | null>;
@@ -74,7 +75,8 @@ class TemporaryCommandLifecycle {
     const context = await this.candidateContext(owner, options.candidateContextSha256);
     const body = { commandVersion: 1, commandType: kind, commandId: crypto.randomUUID(),
       transportRecoveryEpoch: currentRecoveryEpoch(), reason: options.reason ?? '', ...current,
-      expected: { ...current.expected, candidateContextSha256: context } };
+      expected: { ...current.expected, candidateContextSha256: context },
+      ...(kind === 'DUPLICATE_EXCLUDE' ? { exclusion: exclusionInputSchema.parse(options.exclusion) } : {}) };
     return { ...owner, version: 1, kind, json: JSON.stringify(body), receipt: null };
   }
   private async send(owner: TemporaryCommandOwner, kind: CommandKind, options: ExecuteOptions): Promise<void> {

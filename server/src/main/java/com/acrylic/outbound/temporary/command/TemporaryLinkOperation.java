@@ -18,7 +18,11 @@ import java.util.*;
  */
 public final class TemporaryLinkOperation implements CommandOperation {
     private final Dependencies dependencies;
-    public TemporaryLinkOperation(Dependencies dependencies) { this.dependencies=dependencies; }
+    private final TemporaryCandidateSelection selections;
+    public TemporaryLinkOperation(Dependencies dependencies) { this(dependencies,null); }
+    public TemporaryLinkOperation(Dependencies dependencies,TemporaryCandidateSelection selections) {
+        this.dependencies=dependencies;this.selections=selections;
+    }
     public String commandType() { return "LINK"; }
     public boolean recordsDecision() { return true; }
     public boolean requiresCandidateContext() { return true; }
@@ -33,20 +37,24 @@ public final class TemporaryLinkOperation implements CommandOperation {
         var head=target(facts,reviewed);
         return decision(facts,source.body(),reviewed,head);
     }
-    private TemporaryDecisionCandidates.Reviewed lockedCandidates(CommandWrite write,JsonNode body) {
+    private TemporaryCandidateSelection.Selection lockedCandidates(CommandWrite write,JsonNode body) {
         var facts=write.context();var warehouse=facts.id("warehouseId");var submission=facts.id("submissionId");
-        var reviewed=dependencies.candidates().reviewed(warehouse,submission,body);
+        var reviewed=selection(facts,body);
         var head=target(facts,reviewed);
         if(facts.version("mappingVersion")>1)
             dependencies.targets().lockAndVerifyHistory(warehouse,facts.id("scopeId"),head.id());
         dependencies.targets().lockAndVerify(warehouse,linkContext(body),head);
-        var locked=dependencies.candidates().reviewed(warehouse,submission,body);
-        if(!locked.snapshot().path("contextSha256").equals(write.command().expected().path("candidateContextSha256"))
-            || !head.equals(target(facts,locked)))throw CommandErrors.stale();
+        var locked=selection(facts,body);
+        if(!locked.reviewed().snapshot().path("contextSha256").equals(write.command().expected().path("candidateContextSha256"))
+            || !head.equals(target(facts,locked)) || !Objects.equals(reviewed.proof(),locked.proof()))throw CommandErrors.stale();
         return locked;
     }
-    private Head target(CommandContext facts,TemporaryDecisionCandidates.Reviewed reviewed) {
-        long total=reviewed.snapshot().path("total").asLong();
+    private TemporaryCandidateSelection.Selection selection(CommandContext facts,JsonNode body) {
+        if(selections!=null)return selections.read(facts,body);
+        return new TemporaryCandidateSelection.Selection(dependencies.candidates().reviewed(facts.id("warehouseId"),facts.id("submissionId"),body),null);
+    }
+    private Head target(CommandContext facts,TemporaryCandidateSelection.Selection selection) {
+        var reviewed=selection.reviewed();long total=selection.total();
         if(total==0)throw reject("TEMPORARY_LINK_TARGET_NOT_FOUND","没有可供人工核对的正式候选，不能关联");
         boolean first=facts.version("mappingVersion")==1;
         int required=first?1:2;
@@ -58,7 +66,8 @@ public final class TemporaryLinkOperation implements CommandOperation {
             throw reject("TEMPORARY_LINK_DUPLICATES_UNRESOLVED","现关联正式单不在完整候选集合中，不能重关联");
         return reviewed.heads().stream().filter(head->!head.id().equals(current)).findFirst().orElseThrow(CommandErrors::stale);
     }
-    private JsonNode decision(CommandContext facts,JsonNode body,TemporaryDecisionCandidates.Reviewed reviewed,Head head) {
+    private JsonNode decision(CommandContext facts,JsonNode body,TemporaryCandidateSelection.Selection selection,Head head) {
+        var reviewed=selection.reviewed();
         var installed=dependencies.mappings().install(facts,head.id());
         var link=SubmissionJson.object().put("applyState","APPLIED").put("targetOrderId",head.id())
             .put("targetOrderNo",head.orderNo()).put("targetRevision",Integer.toString(head.revision()))
@@ -70,7 +79,7 @@ public final class TemporaryLinkOperation implements CommandOperation {
         var decision=SubmissionJson.object().put("kind","LINK").put("shortShipmentReason","")
             .putNull("shortApprovalReceiptId").putNull("shortApprovalSha256");
         decision.set("products",TemporaryDecisionCandidates.products(body));
-        decision.set("candidates",reviewed.snapshot());decision.set("submissionReceipt",link);return decision;
+        decision.set("candidates",reviewed.snapshot());decision.set("submissionReceipt",link);selection.capture(decision);return decision;
     }
     private JsonNode linkContext(JsonNode body) {
         var context=SubmissionJson.object().put("vehicleNo",body.at("/temporaryOrder/vehicleNo").asText())
