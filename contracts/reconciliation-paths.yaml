@@ -1,0 +1,78 @@
+List:
+  get:
+    summary: 分页读取缺账候选和差异案件（原JSON）
+    description: >-
+      需显式启用既有更正命令开关，生产默认关闭。review=false需outbound:correct和inventory:reconcile，
+      仅列本人发现的案件；review=true需correction:approve，列仓库案件。
+      候选仅供核对，执行时仍须原成功、当前有效贡献、占用/周期和缺账事实完整一致。
+      before及beforeCase分别使用nextCursor及nextCaseCursor，各50项，原JSON且no-store。
+    parameters:
+      - {$ref: './correction-header-paths.yaml#/Warehouse'}
+      - {in: query, name: review, schema: {type: boolean, default: false}}
+      - {in: query, name: before, schema: {type: string, format: uuid}}
+      - {in: query, name: beforeCase, schema: {type: string, format: uuid}}
+    responses:
+      '200': {description: 候选与案件分页, content: {application/json: {schema: {$ref: './reconciliation-schemas.yaml#/List'}}}}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+Context:
+  get:
+    summary: 固定差异四类事实、原请求和预期摘要（原JSON）
+    description: >-
+      发现需dispatchId且禁止caseId，其余需caseId且禁止dispatchId。
+      RECONCILE_SUBMIT仅原发现人可读提交上下文，批准需主管权限。
+      批准只补实际缺失流水及账务投影，不改变出库结果/周期、占用和隔离，也不授放行或删除资格。
+      提交的实物核验时刻须非未来且在提交前3天内，1至5份实际受控附件由主管读取核对。
+    parameters:
+      - {$ref: './correction-header-paths.yaml#/Warehouse'}
+      - {in: query, name: commandType, required: true, schema: {type: string, enum: [RECONCILE_DISCOVER, RECONCILE_SUBMIT, RECONCILE_APPROVE]}}
+      - {in: query, name: dispatchId, schema: {type: string, format: uuid}}
+      - {in: query, name: caseId, schema: {type: string, format: uuid}}
+    responses:
+      '200': {description: 完整上下文与expected, content: {application/json: {schema: {$ref: './reconciliation-schemas.yaml#/Preparation'}}}}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Attachment:
+  parameters:
+    - {in: path, name: key, required: true, schema: {type: string, format: uuid}}
+    - {$ref: './correction-header-paths.yaml#/Warehouse'}
+  put:
+    summary: 用原上传键保存实际更正/差异凭据
+    description: >-
+      同时显式启用更正命令与附件开关，生产默认关闭。key为上传原键；同人/仓库/键/相同字节重试返回原元数据。
+      实际字节与X-Content-SHA256必须一致，1字节至10MiB。Web需真实Session/CSRF，PDA需绑定原身份。
+    parameters:
+      - {in: header, name: X-Content-SHA256, required: true, schema: {type: string, pattern: '^[a-f0-9]{64}$'}}
+      - {in: header, name: X-Server-Recovery-Epoch, required: true, schema: {type: string, pattern: '^[1-9][0-9]*$'}}
+    requestBody:
+      required: true
+      content: {application/octet-stream: {schema: {type: string, format: binary}}}
+    responses:
+      '200':
+        description: Envelope中的不可变附件元数据
+        content:
+          application/json:
+            schema: {type: object, required: [code, data], properties: {code: {const: OK}, data: {$ref: './reconciliation-schemas.yaml#/Attachment'}}}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '429': {$ref: './openapi.yaml#/components/responses/Error'}
+  get:
+    summary: 本人读取原始凭据字节
+    description: GET的key为attachmentId，返回实际application/octet-stream，no-store及attachment下载头。
+    responses:
+      '200': {description: 原始字节, content: {application/octet-stream: {schema: {type: string, format: binary}}}}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+ReviewAttachment:
+  get:
+    summary: 主管读取同仓库已提交案件绑定的原凭据
+    description: 需correction:approve，不开放未提交附件；验证原所有者与案件关联，返回实际字节及no-store下载头。
+    parameters:
+      - {in: path, name: attachmentId, required: true, schema: {type: string, format: uuid}}
+      - {$ref: './correction-header-paths.yaml#/Warehouse'}
+    responses:
+      '200': {description: 原始字节, content: {application/octet-stream: {schema: {type: string, format: binary}}}}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}

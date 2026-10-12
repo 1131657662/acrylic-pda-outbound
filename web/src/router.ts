@@ -6,6 +6,7 @@ import { firstWorkspacePath } from './navigation';
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
+    { path: '/inventory-reconciliation', component: () => import('./reconciliation/ReconciliationPage.vue'), meta: { anyPermission: ['inventory:reconcile', 'correction:approve'] } },
     { path: '/header-corrections/:order?', component: () => import('./corrections/HeaderCorrectionsPage.vue'), meta: { anyPermission: ['outbound:correct', 'correction:approve'] } },
     { path: '/login', component: () => import('./auth/LoginPage.vue') },
     { path: '/pda-download', component: () => import('./pda-download/DownloadPage.vue') },
@@ -47,6 +48,8 @@ router.beforeEach(async (to) => {
 });
 
 export function loginDestination(value: unknown, permissions: string[]): string {
+  if (typeof value === 'string' && /^\/inventory-reconciliation(?:\?|$)/.test(value)
+      && permissions.some(permission => ['inventory:reconcile', 'correction:approve'].includes(permission))) return value;
   if (typeof value === 'string' && /^\/header-corrections(?:\/[0-9a-f-]+)?(?:\?|$)/.test(value)
       && permissions.some(permission => ['outbound:correct', 'correction:approve'].includes(permission))) return value;
   if (typeof value === 'string' && /^\/rescue(?:\?|$)/.test(value) && permissions.includes('rescue:authorize')) return value;

@@ -1,0 +1,101 @@
+Command:
+  type: object
+  additionalProperties: false
+  required: [commandVersion, commandId, commandType, warehouseId, transportRecoveryEpoch, reason, expected]
+  properties:
+    commandVersion: {type: integer, const: 1}
+    commandId: {type: string, format: uuid}
+    commandType: {type: string, enum: [RECONCILE_DISCOVER, RECONCILE_SUBMIT, RECONCILE_APPROVE]}
+    warehouseId: {type: string, format: uuid}
+    transportRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]{0,18}$'}
+    reason: {type: string, minLength: 1, maxLength: 500}
+    expected: {type: object, additionalProperties: {type: string}}
+    dispatchId: {type: string, format: uuid}
+    caseId: {type: string, format: uuid}
+    evidence: {$ref: '#/Evidence'}
+  oneOf:
+    - required: [dispatchId]
+      properties: {commandType: {const: RECONCILE_DISCOVER}}
+      not: {anyOf: [{required: [caseId]}, {required: [evidence]}]}
+    - required: [caseId, evidence]
+      properties: {commandType: {const: RECONCILE_SUBMIT}}
+      not: {required: [dispatchId]}
+    - required: [caseId]
+      properties: {commandType: {const: RECONCILE_APPROVE}}
+      not: {anyOf: [{required: [dispatchId]}, {required: [evidence]}]}
+Evidence:
+  type: object
+  additionalProperties: false
+  required: [observedAt, place, observation, reference, attachments]
+  properties:
+    observedAt: {type: string, format: date-time}
+    place: {type: string, minLength: 1, maxLength: 200}
+    observation: {type: string, const: DISPATCHED_CONFIRMED}
+    reference: {type: string, minLength: 1, maxLength: 500}
+    attachments: {type: array, minItems: 1, maxItems: 5, items: {$ref: '#/Attachment'}}
+Attachment:
+  type: object
+  additionalProperties: false
+  required: [attachmentId, evidenceSha256, sizeBytes]
+  properties:
+    attachmentId: {type: string, format: uuid}
+    evidenceSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    sizeBytes: {type: string, pattern: '^[1-9][0-9]*$'}
+Receipt:
+  type: object
+  required: [commandId, commandType, commandSha256, orderId, documentId, actor, expected, capabilities, businessDecision, signedReceipt]
+  properties:
+    commandId: {type: string, format: uuid}
+    commandType: {type: string, enum: [RECONCILE_DISCOVER, RECONCILE_SUBMIT, RECONCILE_APPROVE]}
+    commandSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    orderId: {type: string, format: uuid}
+    documentId: {type: 'null'}
+    actor: {type: object, additionalProperties: true}
+    expected: {type: object, additionalProperties: {type: string}}
+    capabilities: {$ref: './correction-header-paths.yaml#/Capabilities'}
+    signedReceipt: {type: string}
+    businessDecision:
+      type: object
+      required: [caseId, status, factsSha256, availability]
+      properties:
+        caseId: {type: string, format: uuid}
+        status: {type: string, enum: [OPEN, REVIEW_READY, RESOLVED]}
+        factsSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+        availability: {type: string, const: UNCHANGED}
+        ledgerId: {type: string, format: uuid}
+        quantityDelta: {type: string, const: '-1'}
+        weightDeltaG: {type: string, pattern: '^-[1-9][0-9]*$'}
+Preparation:
+  type: object
+  required: [context, expected, capabilities]
+  properties:
+    context:
+      type: object
+      required: [orderId, dispatchId, warehouseId, factsSha256, facts]
+      properties:
+        orderId: {type: string, format: uuid}
+        dispatchId: {type: string, format: uuid}
+        warehouseId: {type: string, format: uuid}
+        factsSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+        facts: {type: object, required: [result, dispatch, originalHeader, stock, owners, ledger]}
+        case: {type: object}
+        discoveredReceipt: {$ref: '#/Receipt'}
+        submittedReceipt: {$ref: '#/Receipt'}
+        submittedCommand: {$ref: '#/Command'}
+    expected: {type: object, additionalProperties: {type: string}}
+    capabilities: {$ref: './correction-header-paths.yaml#/Capabilities'}
+List:
+  type: object
+  required: [candidates, cases, nextCursor, nextCaseCursor, capabilities]
+  properties:
+    candidates:
+      type: array
+      maxItems: 50
+      items: {type: object, required: [dispatchId, orderId, barcode], properties: {dispatchId: {type: string, format: uuid}, orderId: {type: string, format: uuid}, barcode: {type: string}}}
+    cases:
+      type: array
+      maxItems: 50
+      items: {type: object, required: [caseId, dispatchId, status], properties: {caseId: {type: string, format: uuid}, dispatchId: {type: string, format: uuid}, status: {type: string}}}
+    nextCursor: {type: [string, 'null'], format: uuid}
+    nextCaseCursor: {type: [string, 'null'], format: uuid}
+    capabilities: {$ref: './correction-header-paths.yaml#/Capabilities'}

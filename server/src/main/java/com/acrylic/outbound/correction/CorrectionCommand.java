@@ -28,7 +28,8 @@ final class CorrectionCommand {
     private CorrectionCommand() { }
 
     static final String ROUTE_SCOPE = "r07.correction.v1";
-    static final List<String> KINDS = List.of("CREATE", "APPROVE", "WITHDRAW", "WITHDRAW_CONFIRM", "RECONCILE_OPEN", "RECONCILE_ADVANCE");
+    static final List<String> KINDS = List.of("CREATE", "APPROVE", "WITHDRAW", "WITHDRAW_CONFIRM", "RECONCILE_OPEN", "RECONCILE_ADVANCE",
+        "RECONCILE_DISCOVER", "RECONCILE_SUBMIT", "RECONCILE_APPROVE");
     static final Set<String> KINDS_SET = Set.copyOf(KINDS);
     /**
      * The two kinds whose decision is a <b>supervisor</b> decision (P-R07-03). One definition only: the kind-aware
@@ -36,7 +37,7 @@ final class CorrectionCommand {
      * {@link Operation#requiresApproval()}. Confirming a withdrawal is the requester's act (P-R07-08) and
      * reconciliation cases have no gate at all (design 搂5), so neither is an approval here.
      */
-    static boolean requiresApproval(String kind) { return kind.equals("APPROVE") || kind.equals("WITHDRAW"); }
+    static boolean requiresApproval(String kind) { return kind.equals("APPROVE") || kind.equals("WITHDRAW") || kind.equals("RECONCILE_APPROVE"); }
     /** Both codes are registered by V45 - the R07-1 lesson was an approval gate whose code was never registered. */
     static final String CORRECT_PERMISSION = "outbound:correct";
     static final String APPROVE_PERMISSION = "correction:approve";
@@ -171,6 +172,8 @@ final class CorrectionCommand {
     interface Operation {
         String commandType();
         JsonNode execute(Write write);
+        default void beforeLocks(Input input) { }
+        default JsonNode lockContext(Input input, JsonNode anchor) { return anchor; }
         default void afterReceipt(Write write, JsonNode decision) { }
         /**
          * Only the two supervisor decisions carry the approval gate. Confirming a withdrawal is the requester's act

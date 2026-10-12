@@ -4,6 +4,7 @@ Execute:
     description: >-
       命令面由 outbound.corrections.commands.enabled 显式启用，生产默认关闭。
       HEADER_CORRECTION 使用 CREATE、APPROVE、WITHDRAW、WITHDRAW_CONFIRM；申请人与审批人分离，
+      缺账差异使用RECONCILE_DISCOVER、RECONCILE_SUBMIT、RECONCILE_APPROVE，字段与证据见reconciliation-schemas.yaml。
       仅原审批人可发起撤销、原申请人可确认。验证原命令/回执签名与完整结果版本链，
       仅恢复实际改变字段；后继其他字段和重量保持，同字段后继包括ABA拒绝。
       commandId为原键，同键同规范正文返回同一原回执字节；同键异文409。
@@ -14,9 +15,12 @@ Execute:
       required: true
       content:
         application/json:
-          schema: {$ref: '#/HeaderCommand'}
+          schema:
+            oneOf:
+              - {$ref: '#/HeaderCommand'}
+              - {$ref: './reconciliation-schemas.yaml#/Command'}
     responses:
-      '200': {description: 原签名回执JSON字节, content: {application/json: {schema: {$ref: '#/Receipt'}}}}
+      '200': {description: 原签名回执JSON字节, content: {application/json: {schema: {oneOf: [{$ref: '#/Receipt'}, {$ref: './reconciliation-schemas.yaml#/Receipt'}]}}}}
       '400': {$ref: './openapi.yaml#/components/responses/Error'}
       '401': {$ref: './openapi.yaml#/components/responses/Error'}
       '403': {$ref: './openapi.yaml#/components/responses/Error'}
@@ -84,7 +88,7 @@ OriginalReceipt:
       - {$ref: '#/Warehouse'}
       - {in: query, name: commandType, required: true, schema: {type: string}}
     responses:
-      '200': {description: 原签名JSON字节, content: {application/json: {schema: {$ref: '#/Receipt'}}}}
+      '200': {description: 原签名JSON字节, content: {application/json: {schema: {oneOf: [{$ref: '#/Receipt'}, {$ref: './reconciliation-schemas.yaml#/Receipt'}]}}}}
       '403': {$ref: './openapi.yaml#/components/responses/Error'}
       '404': {$ref: './openapi.yaml#/components/responses/Error'}
       '409': {$ref: './openapi.yaml#/components/responses/Error'}

@@ -54,6 +54,8 @@ final class CorrectionAttachmentHttp {
             .POST(HttpRequest.BodyPublishers.ofString(SubmissionJson.canonical(body))), status).body();
     }
 
+    byte[] get(String path, int status) throws Exception { return send(request(path).GET(), status).body(); }
+
     private JsonNode csrf() throws Exception { return SubmissionJson.parse(send(request("/auth/csrf").GET(), 200).body()).path("data"); }
 
     private HttpResponse<byte[]> send(HttpRequest.Builder builder, int expected) throws Exception {

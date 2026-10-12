@@ -41,6 +41,7 @@ public class CorrectionCommandService {
         if (requestId==null || !requestId.matches("[A-Za-z0-9._:-]{1,64}"))
             throw new BusinessException(400,"INVALID_REQUEST_ID","请求追踪标识无效");
         var input=CorrectionCommand.Input.parse(utf8);
+        if (ReconciliationContext.isBusiness(input.kind())) ReconciliationInput.validate(input.body());
         var actor=identities.current(input.uuid("warehouseId"),CorrectionCommand.requiresApproval(input.kind()));
         byte[] committed=read.execute(s->replay(input,actor));
         if (committed!=null) return committed;
@@ -68,20 +69,26 @@ public class CorrectionCommandService {
     private byte[] executeOnce(CorrectionCommand.Input input,CorrectionCommand.Actor actor,
         CorrectionCommand.Operation operation,String requestId) {
         state.requireWritable(input.text("transportRecoveryEpoch"));
+        operation.beforeLocks(input);
+        if (ReconciliationContext.isBusiness(input.kind()))
+            actor = identities.current(input.uuid("warehouseId"), CorrectionCommand.requiresApproval(input.kind()));
         JsonNode anchor; UUID documentId=null; UUID orderId=null; UUID caseId=null;
         if (input.kind().equals("CREATE")) {
             orderId=input.uuid("orderId"); locks.order(orderId); anchor=store.orderFacts(orderId);
         } else if (input.kind().startsWith("RECONCILE_")) {
-            if (input.kind().equals("RECONCILE_OPEN")) anchor=SubmissionJson.object().put("warehouseId",input.text("warehouseId"));
+            if (Set.of("RECONCILE_OPEN", "RECONCILE_DISCOVER").contains(input.kind())) anchor=SubmissionJson.object().put("warehouseId",input.text("warehouseId"));
             else { caseId=input.uuid("caseId"); locks.caseRow(caseId); anchor=store.reconciliationFacts(caseId); }
         } else {
             documentId=input.uuid("documentId"); locks.document(documentId); anchor=store.documentFacts(documentId);
             orderId=UUID.fromString(anchor.path("orderId").asText()); locks.order(orderId);
         }
+        anchor = operation.lockContext(input, anchor);
+        if (ReconciliationContext.isBusiness(input.kind())) orderId = UUID.fromString(anchor.path("orderId").asText());
         byte[] committed = replay(input, actor);
         if (committed != null) return committed;
         if (!anchor.path("warehouseId").asText().equals(actor.warehouse().toString())) throw CorrectionCommand.missing();
-        var current=input.kind().equals("CREATE")?CorrectionCommand.Expected.forCreate(anchor,Long.parseLong(actor.authVersion()))
+        var current=ReconciliationContext.isBusiness(input.kind())?ReconciliationContext.expected(anchor,actor.authVersion())
+            :input.kind().equals("CREATE")?CorrectionCommand.Expected.forCreate(anchor,Long.parseLong(actor.authVersion()))
             :input.kind().equals("RECONCILE_OPEN")?CorrectionCommand.Expected.forCaseOpen(anchor,Long.parseLong(actor.authVersion()))
             :input.kind().equals("RECONCILE_ADVANCE")?CorrectionCommand.Expected.forCase(anchor,Long.parseLong(actor.authVersion()))
             :CorrectionCommand.Expected.forDocument(anchor,Long.parseLong(actor.authVersion()));

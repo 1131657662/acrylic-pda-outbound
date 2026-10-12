@@ -32,7 +32,11 @@ class CorrectionAttachmentStore {
             SELECT a.* FROM correction_attachment a WHERE a.id=? AND a.warehouse_id=? AND EXISTS (
               SELECT 1 FROM correction_attachment_use u JOIN correction_document d ON d.id=u.document_id
               WHERE u.attachment_id=a.id AND d.warehouse_id=a.warehouse_id AND d.requested_by=a.uploaded_by)
-            """, this::row, Ids.bytes(id), Ids.bytes(warehouse));
+              OR a.id=? AND a.warehouse_id=? AND EXISTS(SELECT 1 FROM reconciliation_attachment_use u
+                JOIN inventory_reconciliation r ON r.id=u.case_id JOIN reconciliation_evidence e ON e.case_id=r.id
+                JOIN correction_command_receipt c ON c.id=e.submitted_receipt_id
+                WHERE u.attachment_id=a.id AND r.warehouse_id=a.warehouse_id AND c.actor_id=a.uploaded_by)
+            """, this::row, Ids.bytes(id), Ids.bytes(warehouse), Ids.bytes(id), Ids.bytes(warehouse));
         if (rows.size() != 1) throw CorrectionAttachmentBytes.missing();
         return rows.getFirst();
     }
