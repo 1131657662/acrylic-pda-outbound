@@ -45,7 +45,8 @@ final class QuarantineOrigin {
               JOIN submission_scope s ON s.id=d.scope_id
             WHERE q.case_id=? AND q.bale_id=?
             """, caseId==null ? new Object[]{Ids.bytes(bale)} : new Object[]{Ids.bytes(caseId),Ids.bytes(bale)});
-        if (rows.size()!=1) throw CorrectionCommand.missing();
+        if (rows.isEmpty()) return null;
+        if (rows.size()!=1) throw CorrectionCommand.corrupt();
         var origin=(ObjectNode)SubmissionJson.parse(rows.getFirst().get("data").toString());
         attachReceipt(origin,caseId); return origin;
     }

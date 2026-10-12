@@ -55,6 +55,12 @@ final class CorrectionAttachmentHttp {
     }
 
     byte[] get(String path, int status) throws Exception { return send(request(path).GET(), status).body(); }
+    JsonNode post(String path,String key,JsonNode body,int status) throws Exception {
+        var token=csrf();
+        return SubmissionJson.parse(send(request(path).header(token.path("headerName").asText(),token.path("token").asText())
+            .header("Idempotency-Key",key).header("X-Server-Recovery-Epoch","1").header("Content-Type","application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(SubmissionJson.canonical(body))),status).body()).path("data");
+    }
 
     private JsonNode csrf() throws Exception { return SubmissionJson.parse(send(request("/auth/csrf").GET(), 200).body()).path("data"); }
 

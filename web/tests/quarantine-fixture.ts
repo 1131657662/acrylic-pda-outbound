@@ -2,6 +2,7 @@ import { expect, type Page, type Locator } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { z } from 'zod';
 import { receiptSchema } from '../src/reconciliation/contracts';
+import { preparationSchema } from '../src/reconciliation/quarantine-contracts';
 const schema=z.object({ warehouseId:z.uuid(),baleId:z.uuid(),makerUsername:z.string(),checkerUsername:z.string(),password:z.string() });
 export function quarantineInput(): z.infer<typeof schema> {
   if(!process.env.QUARANTINE_WEB_INPUT) throw new Error('Preserved isolated browser input required');
@@ -29,10 +30,8 @@ export async function quarantineSubmit(page:Page,label:string):Promise<z.infer<t
   quarantineEvidence(`${receipt.commandId}.command.json`,result.request().postData()??''); quarantineEvidence(`${receipt.commandId}.receipt.json`,bytes);
   await expect(page.getByRole('dialog')).toHaveCount(0); return receipt;
 }
-export function quarantineSourceHash(receipt:z.infer<typeof receiptSchema>):string {
-  const source=receipt.context?.facts;
-  if (!source || typeof source !== 'object' || !('origin' in source)) throw new Error('Original source missing');
-  const origin=source.origin;
-  if (!origin || typeof origin !== 'object' || !('originalReceiptSha256' in origin) || typeof origin.originalReceiptSha256 !== 'string') throw new Error('Original digest missing');
-  return origin.originalReceiptSha256;
+export function quarantineSource(receipt:z.infer<typeof receiptSchema>):{hash:string;kind:'TEMP'|'PC'} {
+  const preparation=preparationSchema.parse({context:receipt.context,expected:receipt.expected,capabilities:receipt.capabilities});
+  const origin=preparation.context.facts.origin;
+  return {hash:origin.originalReceiptSha256,kind:origin.sourceKind};
 }

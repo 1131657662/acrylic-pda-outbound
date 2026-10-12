@@ -1,6 +1,6 @@
 List:
   get:
-    summary: 分页读取已关闭TEMP隔离候选与解隔离案件
+    summary: 分页读取TEMP或PC隔离候选与解隔离案件
     description: >-
       显式启用更正命令，生产默认关闭。review=false需outbound:correct及inventory:reconcile，只列本人案件；review=true需correction:approve，列同仓库案件。
       候选与案件分别每页最多50条，before/nextCursor和beforeCase/nextCaseCursor独立分页。原JSON且no-store，候选不是可用性或放行证明。
@@ -15,11 +15,12 @@ List:
       '404': {$ref: './openapi.yaml#/components/responses/Error'}
 Context:
   get:
-    summary: 核原已关闭TEMP签名并固定解隔离四类事实
+    summary: 核原隔离来源并固定解隔离四类事实
     description: >-
       DISCOVER需baleId且禁caseId，其余需caseId且禁baleId。SUBMIT仅原发现人可读，APPROVE需独立主管。
       原CLOSE_DISPOSITION签名、原字节、事件和业务引用核验，固定原处置/owner、有效上游快照、库存版本及出库账务。
-      只接受无历史dispatch/ledger的已关闭TEMP来源，提交三天内QUARANTINE_CLEARED_IN_WAREHOUSE实际核验及1至5附件。
+      接受无历史dispatch/ledger的已关闭TEMP或原处置已应用PC来源；PC逐包原停止快照、计划、审批/应用及原幂等审计全部一致，数据库原件不冒充TEMP签名。
+      提交三天内QUARANTINE_CLEARED_IN_WAREHOUSE实际核验及1至5附件。
       独立主管批准仅删除精确原QUARANTINED owner并追加不可变解除关联及条码同步；原处置/结果/账务/库存账/周期保持。
       TEMP无正式订单时orderId保持null。四类事实漂移、缺上游、其他owner、历史贡献及旧案件推进均拒绝；能力全部false。
     parameters:
@@ -34,15 +35,15 @@ Context:
       '409': {$ref: './openapi.yaml#/components/responses/Error'}
 Original:
   get:
-    summary: 按适用案件权限下载原隔离签名回执的精确字节
-    description: 与context相同的命令类型/身份/仓库/目标规则，完整核验后返回原CLOSE_DISPOSITION实际JSON字节，no-store、attachment下载头。没有新签名或新增业务能力。
+    summary: 按适用案件权限下载原隔离依据
+    description: 与context相同的命令类型/身份/仓库/目标规则。TEMP返回原CLOSE_DISPOSITION实际JSON字节；PC返回摘要固定的原停止快照、完整方案、主管审批和原应用/幂等/审计依据，proofType为PC_DATABASE_ORIGINALS。no-store、attachment下载头，不补造签名。
     parameters:
       - {$ref: './correction-header-paths.yaml#/Warehouse'}
       - {in: query, name: commandType, required: true, schema: {type: string, enum: [RECONCILE_QUARANTINE_DISCOVER, RECONCILE_QUARANTINE_SUBMIT, RECONCILE_QUARANTINE_APPROVE]}}
       - {in: query, name: baleId, schema: {type: string, format: uuid}}
       - {in: query, name: caseId, schema: {type: string, format: uuid}}
     responses:
-      '200': {description: 原签名回执JSON字节, content: {application/json: {schema: {type: object}}}}
+      '200': {description: TEMP原签名回执或PC原数据库审批依据JSON字节, content: {application/json: {schema: {type: object}}}}
       '403': {$ref: './openapi.yaml#/components/responses/Error'}
       '404': {$ref: './openapi.yaml#/components/responses/Error'}
       '409': {$ref: './openapi.yaml#/components/responses/Error'}

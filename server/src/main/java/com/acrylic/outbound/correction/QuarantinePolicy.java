@@ -8,6 +8,7 @@ import java.util.Set;
 final class QuarantinePolicy {
     private QuarantinePolicy() { }
     static void eligible(JsonNode facts) {
+        if("PC".equals(facts.at("/origin/sourceKind").asText())) { PcQuarantinePolicy.eligible(facts); return; }
         var stock=facts.path("stock"); var origin=facts.path("origin"); var owners=facts.path("owners");
         if(!origin.path("closeMode").asBoolean() || !origin.path("sourceClosed").asBoolean()
             || !"QUARANTINE".equals(origin.path("action").asText()) || !origin.path("cycle").equals(stock.path("dispatchCycle"))

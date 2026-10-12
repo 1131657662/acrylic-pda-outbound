@@ -17,7 +17,12 @@ final class QuarantineFacts {
     void lock(UUID warehouse,UUID bale,JsonNode origin) {
         jdbc.queryForList("SELECT id FROM warehouse WHERE id=? FOR UPDATE",Ids.bytes(warehouse));
         if(origin.hasNonNull("orderId")) jdbc.queryForList("SELECT id FROM outbound_order WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("orderId").asText());
-        jdbc.queryForList("SELECT id FROM submission_scope WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("scopeId").asText());
+        if("PC".equals(origin.path("sourceKind").asText())) {
+            jdbc.queryForList("SELECT id FROM pc_work WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("workId").asText());
+            jdbc.queryForList("SELECT id FROM pc_exception_case WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("caseId").asText());
+            jdbc.queryForList("SELECT id FROM pc_exception_plan WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("planId").asText());
+            jdbc.queryForList("SELECT id FROM pc_disposition WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("dispositionId").asText());
+        } else jdbc.queryForList("SELECT id FROM submission_scope WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("scopeId").asText());
         jdbc.queryForList("SELECT id FROM bale WHERE id=? FOR UPDATE",Ids.bytes(bale));
         jdbc.queryForList("SELECT bale_id FROM inventory_position WHERE bale_id=? FOR UPDATE",Ids.bytes(bale));
         jdbc.queryForList("SELECT bale_id FROM bale_commitment WHERE bale_id=? FOR UPDATE",Ids.bytes(bale));

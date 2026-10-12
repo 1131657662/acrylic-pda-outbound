@@ -47,7 +47,8 @@ public final class QuarantinePagingChecks {
         var projection=columns.stream().map(column->Set.of("id","original_key","event_id").contains(column)?"UUID_TO_BIN('"+receipt+"')":"`"+column+"`").toList();
         jdbc.update("INSERT INTO correction_command_receipt SELECT "+String.join(",",projection)+" FROM correction_command_receipt WHERE command_type='RECONCILE_QUARANTINE_DISCOVER' LIMIT 1");
         jdbc.update("INSERT INTO reconciliation_request VALUES(?,NULL,?)",Ids.bytes(id),Ids.bytes(receipt));
-        jdbc.update("INSERT INTO quarantine_origin VALUES(?,?,?,?)",Ids.bytes(id),origin.get("id"),Ids.bytes(bale),origin.get("original_receipt_id"));
+        jdbc.update("INSERT INTO quarantine_origin(case_id,disposition_id,bale_id,original_receipt_id) VALUES(?,?,?,?)",
+            Ids.bytes(id),origin.get("id"),Ids.bytes(bale),origin.get("original_receipt_id"));
     }
     private static void check(QuarantineReadService reader,String warehouse) {
         UUID wh=UUID.fromString(warehouse); var first=reader.list(wh,false,new QuarantineReadService.Cursors(null,null));

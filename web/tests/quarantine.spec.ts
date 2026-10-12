@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { quarantineInput,quarantineOpen,quarantineCase,quarantineDialog,quarantineSubmit,quarantineEvidence,quarantineSourceHash } from './quarantine-fixture';
+import { quarantineInput,quarantineOpen,quarantineCase,quarantineDialog,quarantineSubmit,quarantineEvidence,quarantineSource } from './quarantine-fixture';
 import { quarantineReview,quarantineLostApproval } from './quarantine-approval';
-test.skip(!process.env.QUARANTINE_WEB_INPUT,'Requires preserved original Android quarantine source in new isolated copy');
+test.skip(!process.env.QUARANTINE_WEB_INPUT,'Requires preserved original quarantine source in isolated database');
 test('durable storage failure prevents quarantine discovery transmission',async({page})=>{
   await quarantineOpen(page,'maker'); let posts=0;
   page.on('request',r=>{if(r.method()==='POST'&&r.url().endsWith('/api/v1/corrections'))posts++;});
@@ -23,7 +23,7 @@ test('actual physical attachment and independent clearance recover lost response
   const checkerContext=await browser.newContext({baseURL:process.env.OUTBOUND_WEB_URL??'http://127.0.0.1:5174',viewport:{width:390,height:844}});
   const checker=await checkerContext.newPage(); await quarantineOpen(checker,'checker');
   await quarantineDialog(checker,quarantineCase(checker,id).getByRole('button',{name:'主管批准解隔离',exact:true}),'isolated independent approval');
-  await quarantineReview(checker,bytes,quarantineSourceHash(discovered));await quarantineLostApproval(checker);await expect(quarantineCase(checker,id)).toContainText('原隔离已解除');
+  await quarantineReview(checker,bytes,quarantineSource(discovered));await quarantineLostApproval(checker);await expect(quarantineCase(checker,id)).toContainText('原隔离已解除');
   await expect(checker.getByRole('button',{name:'核对或重试原差异请求',exact:true})).toHaveCount(0);
   quarantineEvidence('physical-original.bin',bytes);await checker.screenshot({path:`${process.env.QUARANTINE_WEB_EVIDENCE}/resolved-page.png`});await checkerContext.close();
 });

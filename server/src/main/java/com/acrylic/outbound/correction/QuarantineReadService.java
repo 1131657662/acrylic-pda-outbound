@@ -40,10 +40,15 @@ class QuarantineReadService {
         if(!review && !actor.permissions().contains("inventory:reconcile")) throw CorrectionCommand.denied();
         var result=SubmissionJson.object(); var candidates=result.putArray("candidates"); var cases=result.putArray("cases");
         var rows=jdbc.queryForList("""
-            SELECT BIN_TO_UUID(b.id) baleId,b.barcode,BIN_TO_UUID(d.id) dispositionId
-            FROM bale_commitment k JOIN bale b ON b.id=k.bale_id JOIN temporary_physical_disposition d ON d.id=k.disposition_id
-            WHERE b.warehouse_id=? AND k.state='QUARANTINED' AND d.close_mode=true AND d.warehouse_id=b.warehouse_id
-              AND (? IS NULL OR b.id<UUID_TO_BIN(?)) AND NOT EXISTS(SELECT 1 FROM quarantine_origin q WHERE q.disposition_id=d.id AND q.bale_id=b.id)
+            SELECT BIN_TO_UUID(b.id) baleId,b.barcode,BIN_TO_UUID(COALESCE(d.id,pd.id)) dispositionId
+            FROM bale_commitment k JOIN bale b ON b.id=k.bale_id
+              LEFT JOIN temporary_physical_disposition d ON d.id=k.disposition_id
+              LEFT JOIN pc_disposition pd ON pd.id=k.pc_disposition_id
+            WHERE b.warehouse_id=? AND k.state='QUARANTINED'
+              AND ((d.close_mode=true AND d.warehouse_id=b.warehouse_id) OR pd.id IS NOT NULL)
+              AND (? IS NULL OR b.id<UUID_TO_BIN(?))
+              AND NOT EXISTS(SELECT 1 FROM quarantine_origin q WHERE q.bale_id=b.id
+                AND (q.disposition_id=d.id OR q.pc_disposition_id=pd.id))
             ORDER BY b.id DESC LIMIT 51
             """,Ids.bytes(warehouse),text(cursors.candidate()),text(cursors.candidate()));
         rows.stream().limit(50).forEach(row->{ var item=candidates.addObject(); row.forEach((key,value)->item.put(key,value.toString())); });

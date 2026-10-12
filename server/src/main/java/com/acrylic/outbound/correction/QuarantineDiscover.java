@@ -23,8 +23,8 @@ final class QuarantineDiscover implements CorrectionCommand.Operation {
     @Override public JsonNode execute(CorrectionCommand.Write write) {
         ReconciliationPolicy.permission(write.actor()); var facts=write.anchor().path("facts"); QuarantinePolicy.eligible(facts);
         String bale=write.anchor().path("baleId").asText(); String disposition=write.anchor().path("dispositionId").asText();
-        if(jdbc.queryForObject("SELECT COUNT(*) FROM quarantine_origin WHERE disposition_id=UUID_TO_BIN(?) AND bale_id=UUID_TO_BIN(?)",
-            Integer.class,disposition,bale)!=0) throw CorrectionCommand.stale();
+        if(jdbc.queryForObject("SELECT COUNT(*) FROM quarantine_origin WHERE (disposition_id=UUID_TO_BIN(?) OR pc_disposition_id=UUID_TO_BIN(?)) AND bale_id=UUID_TO_BIN(?)",
+            Integer.class,disposition,disposition,bale)!=0) throw CorrectionCommand.stale();
         UUID id=Ids.next(); store.insertReconciliation(id,write.command().uuid("warehouseId"),"QUARANTINE_RELEASE",
             UUID.fromString(bale),null,facts.at("/stock/dispatchCycle").asInt(),null,null,facts.at("/stock/stockVersion").asLong(),write.recordedAt());
         return SubmissionJson.object().put("caseId",id.toString()).put("status","OPEN").put("kind","QUARANTINE_RELEASE")
@@ -32,7 +32,11 @@ final class QuarantineDiscover implements CorrectionCommand.Operation {
     }
     @Override public void afterReceipt(CorrectionCommand.Write write,JsonNode decision) {
         requests.discovered(write,decision);
-        jdbc.update("INSERT INTO quarantine_origin(case_id,disposition_id,bale_id,original_receipt_id) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?))",
+        if("PC".equals(write.anchor().at("/facts/origin/sourceKind").asText()))
+            jdbc.update("INSERT INTO quarantine_origin(case_id,pc_disposition_id,bale_id,pc_evidence_sha256) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),?)",
+                decision.path("caseId").asText(),decision.path("dispositionId").asText(),decision.path("baleId").asText(),
+                write.anchor().at("/facts/origin/originalReceiptSha256").asText());
+        else jdbc.update("INSERT INTO quarantine_origin(case_id,disposition_id,bale_id,original_receipt_id) VALUES(UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?),UUID_TO_BIN(?))",
             decision.path("caseId").asText(),decision.path("dispositionId").asText(),decision.path("baleId").asText(),
             write.anchor().at("/facts/origin/originalReceipt/receiptId").asText());
     }

@@ -11,11 +11,12 @@ import org.springframework.stereotype.Component;
 @Component
 final class QuarantineContext {
     private final QuarantineOrigin origins;
+    private final PcQuarantineOrigin pcOrigins;
     private final QuarantineFacts facts;
     private final CorrectionStore cases;
     private final ReconciliationRequestStore requests;
-    QuarantineContext(QuarantineOrigin origins,QuarantineFacts facts,CorrectionStore cases,ReconciliationRequestStore requests) {
-        this.origins=origins; this.facts=facts; this.cases=cases; this.requests=requests;
+    QuarantineContext(QuarantineOrigin origins,PcQuarantineOrigin pcOrigins,QuarantineFacts facts,CorrectionStore cases,ReconciliationRequestStore requests) {
+        this.origins=origins; this.pcOrigins=pcOrigins; this.facts=facts; this.cases=cases; this.requests=requests;
     }
 
     ObjectNode read(UUID warehouse,UUID bale,UUID caseId,boolean lock) {
@@ -26,9 +27,9 @@ final class QuarantineContext {
             bale=UUID.fromString(caseFacts.path("baleId").asText());
         }
         if(bale==null) throw CorrectionCommand.missing();
-        var origin=origins.read(bale,caseId);
+        var origin=origin(bale,caseId);
         if(!warehouse.toString().equals(origin.path("warehouseId").asText())) throw CorrectionCommand.missing();
-        if(lock) { facts.lock(warehouse,bale,origin); origin=origins.read(bale,caseId); }
+        if(lock) { facts.lock(warehouse,bale,origin); origin=origin(bale,caseId); }
         var current=facts.read(bale,origin); var result=SubmissionJson.object();
         result.put("warehouseId",warehouse.toString()).put("baleId",bale.toString()).put("dispositionId",origin.path("dispositionId").asText());
         result.set("orderId",origin.get("orderId")); result.set("facts",current); result.put("factsSha256",ReconciliationFacts.hash(current));
@@ -47,5 +48,15 @@ final class QuarantineContext {
             result.set("submittedReceipt",submitted); result.set("submittedCommand",requests.submittedCommand(id));
         }
     }
-    byte[] original(JsonNode context) { return origins.original(context.at("/facts/origin")); }
+    private ObjectNode origin(UUID bale,UUID caseId) {
+        var origin=origins.read(bale,caseId);
+        if(origin==null) origin=pcOrigins.read(bale,caseId);
+        if(origin==null) throw CorrectionCommand.missing(); return origin;
+    }
+    byte[] original(JsonNode context) {
+        var origin=context.at("/facts/origin");
+        return "PC".equals(origin.path("sourceKind").asText())
+            ? SubmissionJson.canonical(origin.path("originalReceipt")).getBytes(java.nio.charset.StandardCharsets.UTF_8)
+            : origins.original(origin);
+    }
 }
