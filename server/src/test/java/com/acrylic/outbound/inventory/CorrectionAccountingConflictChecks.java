@@ -14,7 +14,7 @@ final class CorrectionAccountingConflictChecks {
     private final Path attempt;
     CorrectionAccountingConflictChecks(WebApplicationContext context, Path attempt) { this.context = context; this.attempt = attempt; }
 
-    void verify() throws Exception { mismatch(); exhausted(); aba(); disjoint(); manual(); headerWithdrawBlocked(); occupancyRollbackConflict(); }
+    void verify() throws Exception { mismatch(); exhausted(); aba(); disjoint(); manual(); headerWithdrawRestored(); occupancyRollbackConflict(); }
 
     private void mismatch() throws Exception {
         var f = new CorrectionAccountingHttpFixture(context, attempt, true, "mismatch");
@@ -63,15 +63,14 @@ final class CorrectionAccountingConflictChecks {
         Files.writeString(f.evidence.resolve("completed.json"), f.result().toPrettyString());
     }
 
-    private void headerWithdrawBlocked() throws Exception {
+    private void headerWithdrawRestored() throws Exception {
         var f = new CorrectionAccountingHttpFixture(context, attempt, false, "header-withdraw");
         String document = f.signed(f.maker, f.headerCreate()).path("documentId").asText();
         f.signed(f.checker, f.command(document, "APPROVE"));
-        var before = state(f, document); var withdraw = f.command(document, "WITHDRAW");
-        byte[] denied = f.checker.command(withdraw, 409);
-        Files.write(f.evidence.resolve(withdraw.path("commandId").asText() + "-denied.json"), denied);
-        assertThat(SubmissionJson.parse(denied).path("code").asText()).isEqualTo("CORRECTION_LEDGER_CONFLICT");
-        assertThat(state(f, document)).isEqualTo(before);
+        var before = f.original(); f.withdraw(document);
+        assertThat(HeaderCompensationHttpChecks.header(f).path("orderNo")).isEqualTo(before.path("header").path("orderNo"));
+        assertThat(f.original()).isEqualTo(before); assertThat(f.correctionWeight()).isZero();
+        assertThat(f.result().path("version").asLong()).isEqualTo(3);
     }
 
     private void occupancyRollbackConflict() throws Exception {

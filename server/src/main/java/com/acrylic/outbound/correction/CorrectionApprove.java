@@ -10,8 +10,9 @@ final class CorrectionApprove implements CorrectionCommand.Operation {
     private final CorrectionStore store;
     private final CorrectionResultSnapshots snapshots;
     private final CorrectionApprovalEffects effects;
-    CorrectionApprove(CorrectionStore store, CorrectionAccounting accounting) {
-        this.store = store; snapshots = new CorrectionResultSnapshots(store); effects = new CorrectionApprovalEffects(store, accounting);
+    private final CorrectionHeaderEvidence headers;
+    CorrectionApprove(CorrectionStore store, CorrectionAccounting accounting, CorrectionHeaderEvidence headers) {
+        this.store = store; this.headers = headers; snapshots = new CorrectionResultSnapshots(store); effects = new CorrectionApprovalEffects(store, accounting);
     }
     @Override public String commandType() { return "APPROVE"; }
 
@@ -46,13 +47,17 @@ final class CorrectionApprove implements CorrectionCommand.Operation {
     private ObjectNode result(CorrectionCommand.Write write, Map<String, Object> current, List<Map<String, Object>> lines, long version) {
         long[] totals = snapshots.totals(current, lines, false);
         String header = current.get("header_snapshot").toString();
-        if ("HEADER_CORRECTION".equals(write.anchor().path("type").asText()))
-            header = CorrectionHeader.merge(header, SubmissionJson.parse(store.createCommandBytes(write.documentId())).path("headerPatch"));
-        return SubmissionJson.object().put("documentId", write.documentId().toString()).put("status", "EFFECTIVE")
+        boolean headerCorrection = "HEADER_CORRECTION".equals(write.anchor().path("type").asText());
+        var before = headerCorrection ? headers.normalize(write.orderId(), SubmissionJson.parse(header)) : SubmissionJson.parse(header);
+        if (headerCorrection) header = CorrectionHeader.merge(SubmissionJson.canonical(before), headers.createPatch(write));
+        var result = SubmissionJson.object().put("documentId", write.documentId().toString()).put("status", "EFFECTIVE")
             .put("approvedBy", write.actor().path("principalId").asText()).put("approvedAt", write.recordedAt().toString())
             .put("documentSha256", write.anchor().path("documentSha256").asText()).put("orderId", write.orderId().toString())
             .put("previousResultVersion", write.anchor().path("expectedResultVersion").asText()).put("resultVersion", Long.toString(version))
             .put("type", write.anchor().path("type").asText()).put("effectiveCount", Long.toString(totals[0]))
             .put("effectiveWeightG", Long.toString(totals[1])).put("headerSnapshot", header);
+        if (headerCorrection) result.set("headerProof", CorrectionHeaderEvidence.approvalHashes(
+            before, SubmissionJson.parse(header)));
+        return result;
     }
 }

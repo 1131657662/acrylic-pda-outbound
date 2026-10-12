@@ -1,0 +1,162 @@
+Execute:
+  post:
+    summary: 执行已启用的更正命令并返回原签名回执
+    description: >-
+      命令面由 outbound.corrections.commands.enabled 显式启用，生产默认关闭。
+      HEADER_CORRECTION 使用 CREATE、APPROVE、WITHDRAW、WITHDRAW_CONFIRM；申请人与审批人分离，
+      仅原审批人可发起撤销、原申请人可确认。验证原命令/回执签名与完整结果版本链，
+      仅恢复实际改变字段；后继其他字段和重量保持，同字段后继包括ABA拒绝。
+      commandId为原键，同键同规范正文返回同一原回执字节；同键异文409。
+      返回原JSON，不使用Envelope。五项能力恒false，抬头补偿不释放实物、库存或删除资格。
+    parameters:
+      - {in: header, name: X-Server-Recovery-Epoch, required: true, schema: {type: string, pattern: '^[1-9][0-9]*$'}}
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: '#/HeaderCommand'}
+    responses:
+      '200': {description: 原签名回执JSON字节, content: {application/json: {schema: {$ref: '#/Receipt'}}}}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+OrderContext:
+  get:
+    summary: 读取原订单更正预期版本（原JSON）
+    parameters:
+      - {in: path, name: orderId, required: true, schema: {type: string, format: uuid}}
+      - {$ref: '#/Warehouse'}
+    responses:
+      '200': {description: 可信上下文及expected, content: {application/json: {schema: {$ref: '#/Context'}}}}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+Headers:
+  get:
+    summary: 分页读取已验签原抬头更正文档及本版本抬头
+    description: >-
+      单次最多100项，before为上页nextCursor。review=false要求outbound:correct，review=true要求correction:approve。
+      原抬头缺字段时从可信冻结正文/计划投影视图，不修改原结果或回执；本接口只读。
+    parameters:
+      - {in: path, name: orderId, required: true, schema: {type: string, format: uuid}}
+      - {$ref: '#/Warehouse'}
+      - {in: query, name: review, schema: {type: boolean, default: false}}
+      - {in: query, name: before, schema: {type: string, format: uuid}}
+    responses:
+      '200':
+        description: 原JSON抬头与文档页；Cache-Control=no-store
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [context, header, items, nextCursor, capabilities]
+              properties:
+                context: {type: object, additionalProperties: true}
+                header: {type: object, additionalProperties: true}
+                items:
+                  type: array
+                  maxItems: 100
+                  items: {type: object, required: [context, headerPatch, reason], properties: {context: {type: object}, headerPatch: {$ref: '#/Patch'}, reason: {type: string}}}
+                nextCursor: {type: [string, 'null'], format: uuid}
+                capabilities: {$ref: '#/Capabilities'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+DocumentContext:
+  get:
+    summary: 读取原更正文档上下文和已验签CREATE正文
+    parameters:
+      - {in: path, name: documentId, required: true, schema: {type: string, format: uuid}}
+      - {$ref: '#/Warehouse'}
+      - {in: query, name: commandType, required: true, schema: {type: string, enum: [APPROVE, WITHDRAW, WITHDRAW_CONFIRM]}}
+    responses:
+      '200': {description: 原JSON上下文及expected, content: {application/json: {schema: {$ref: '#/Context'}}}}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+OriginalReceipt:
+  get:
+    summary: 本人原键查询已验签更正原回执
+    description: 只返回同人员、仓库、命令类型及适用原设备的原字节，生产默认命令开关关闭时无此路径。
+    parameters:
+      - {in: path, name: commandId, required: true, schema: {type: string, format: uuid}}
+      - {$ref: '#/Warehouse'}
+      - {in: query, name: commandType, required: true, schema: {type: string}}
+    responses:
+      '200': {description: 原签名JSON字节, content: {application/json: {schema: {$ref: '#/Receipt'}}}}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+Warehouse:
+  in: query
+  name: warehouseId
+  required: true
+  schema: {type: string, format: uuid}
+Context:
+  type: object
+  required: [context, expected, capabilities]
+  properties:
+    context: {type: object, additionalProperties: true}
+    expected: {type: object, additionalProperties: {type: string}}
+    originalCommand: {type: object, additionalProperties: true}
+    capabilities: {$ref: '#/Capabilities'}
+Capabilities:
+  type: object
+  additionalProperties: false
+  required: [writeConfirmationAvailable, releaseAllowed, mayResumeScanning, stockReleased, localDeletionAllowed]
+  properties:
+    writeConfirmationAvailable: {type: boolean, const: false}
+    releaseAllowed: {type: boolean, const: false}
+    mayResumeScanning: {type: boolean, const: false}
+    stockReleased: {type: boolean, const: false}
+    localDeletionAllowed: {type: boolean, const: false}
+Patch:
+  type: object
+  additionalProperties: false
+  minProperties: 1
+  properties:
+    orderNo: {type: string, maxLength: 100}
+    vehicle: {type: string, maxLength: 200}
+    container: {type: string, maxLength: 200}
+    remark: {type: string, maxLength: 1000}
+HeaderCommand:
+  type: object
+  additionalProperties: false
+  required: [commandVersion, commandId, commandType, warehouseId, transportRecoveryEpoch, reason, expected]
+  properties:
+    commandVersion: {type: integer, const: 1}
+    commandId: {type: string, format: uuid}
+    commandType: {type: string, enum: [CREATE, APPROVE, WITHDRAW, WITHDRAW_CONFIRM]}
+    warehouseId: {type: string, format: uuid}
+    transportRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
+    reason: {type: string, minLength: 1, maxLength: 500}
+    expected: {type: object, additionalProperties: {type: string}}
+    orderId: {type: string, format: uuid}
+    documentId: {type: string, format: uuid}
+    type: {type: string, const: HEADER_CORRECTION}
+    headerPatch: {$ref: '#/Patch'}
+Receipt:
+  type: object
+  required: [commandId, commandType, commandSha256, orderId, documentId, actor, expected, capabilities, businessDecision, signedReceipt]
+  properties:
+    commandId: {type: string, format: uuid}
+    commandType: {type: string}
+    commandSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    orderId: {type: string, format: uuid}
+    documentId: {type: string, format: uuid}
+    actor: {type: object, additionalProperties: true}
+    expected: {type: object, additionalProperties: true}
+    capabilities: {$ref: '#/Capabilities'}
+    signedReceipt: {type: string}
+    businessDecision:
+      type: object
+      additionalProperties: true
+      properties:
+        headerProof: {type: object, required: [beforeHeaderSha256, afterHeaderSha256], properties: {beforeHeaderSha256: {type: string}, afterHeaderSha256: {type: string}}}
+        headerRestoration:
+          type: object
+          required: [createReceiptId, approveReceiptId, originalResultVersion, effectiveResultVersion, previousResultVersion, restoredFields, originalHeaderSha256, effectiveHeaderSha256, previousHeaderSha256, compensatedHeaderSha256]
+          additionalProperties: true
+          properties:
+            restoredFields: {type: array, minItems: 1, items: {type: string}}

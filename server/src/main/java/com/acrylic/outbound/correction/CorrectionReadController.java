@@ -14,7 +14,14 @@ import org.springframework.web.bind.annotation.*;
 @ConditionalOnProperty(prefix="outbound.corrections.commands", name="enabled", havingValue="true")
 public class CorrectionReadController {
     private final CorrectionReadService service;
-    CorrectionReadController(CorrectionReadService service) { this.service = service; }
+    private final CorrectionHeaderReadService headers;
+    CorrectionReadController(CorrectionReadService service, CorrectionHeaderReadService headers) { this.service = service; this.headers = headers; }
+
+    @GetMapping("/orders/{orderId}/headers")
+    public ResponseEntity<byte[]> headers(@PathVariable UUID orderId, @RequestParam UUID warehouseId,
+        @RequestParam(defaultValue="false") boolean review, @RequestParam(required=false) UUID before) {
+        return response(json(headers.read(new CorrectionHeaderReadService.Query(warehouseId, orderId, review, before))));
+    }
 
     @GetMapping("/orders/{orderId}/context")
     public ResponseEntity<byte[]> order(@PathVariable UUID orderId, @RequestParam UUID warehouseId) {

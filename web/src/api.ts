@@ -44,6 +44,22 @@ export function currentRecoveryEpoch(): string {
   return recoveryEpoch;
 }
 
+/** Correction readers return original JSON directly; error envelopes still carry connection state. */
+export async function getRaw<T>(path: string, schema: z.ZodType<T>): Promise<T> {
+  let response: Response;
+  try { response = await fetch(`/api/v1${path}`, { credentials: 'same-origin', cache: 'no-store' }); }
+  catch (cause) { connection.state = 'unreachable'; throw cause; }
+  const payload: unknown = await response.json();
+  if (!response.ok) {
+    const parsed = envelope.safeParse(payload);
+    if (!parsed.success) throw new ApiError(response.status, 'COMMAND_SURFACE_CLOSED', '该功能尚未开放。');
+    connectionResponse(response.status, parsed.data.serviceMode);
+    throw new ApiError(response.status, parsed.data.code, `${parsed.data.message}（请求 ${parsed.data.requestId}）`);
+  }
+  connectionResponse(response.status, '');
+  return schema.parse(payload);
+}
+
 export interface RawJsonCommand { json: string; recoveryEpoch: string; assertCurrent: () => void }
 
 /** Send saved JSON verbatim, preserving the epoch and rechecking ownership after the asynchronous CSRF read. */

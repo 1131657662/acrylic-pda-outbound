@@ -8,6 +8,26 @@ servers:
 security:
   - webSession: []
 paths:
+  /corrections:
+    $ref: './correction-header-paths.yaml#/Execute'
+  /corrections/orders/{orderId}/context:
+    $ref: './correction-header-paths.yaml#/OrderContext'
+  /corrections/orders/{orderId}/headers:
+    $ref: './correction-header-paths.yaml#/Headers'
+  /corrections/{documentId}/context:
+    $ref: './correction-header-paths.yaml#/DocumentContext'
+  /corrections/commands/{commandId}:
+    $ref: './correction-header-paths.yaml#/OriginalReceipt'
+  /pda/corrections:
+    $ref: './correction-header-paths.yaml#/Execute'
+  /pda/corrections/orders/{orderId}/context:
+    $ref: './correction-header-paths.yaml#/OrderContext'
+  /pda/corrections/orders/{orderId}/headers:
+    $ref: './correction-header-paths.yaml#/Headers'
+  /pda/corrections/{documentId}/context:
+    $ref: './correction-header-paths.yaml#/DocumentContext'
+  /pda/corrections/commands/{commandId}:
+    $ref: './correction-header-paths.yaml#/OriginalReceipt'
   /pda/rescue-requests:
     $ref: './rescue-paths.yaml#/PdaRequests'
   /pda/rescue-requests/{id}:

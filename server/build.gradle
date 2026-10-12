@@ -35,6 +35,8 @@ tasks.withType(Test).configureEach {
 tasks.named('test') { exclude '**/*IT.class' }
 tasks.register('integrationTest', Test) {
     description = 'Real MySQL integration tests; OUTBOUND_DB_* must point to an isolated test database.'
+    // Each invocation consumes an external, disposable database, even when the compiled tests are unchanged.
+    outputs.upToDateWhen { false }
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
     include '**/*IT.class'

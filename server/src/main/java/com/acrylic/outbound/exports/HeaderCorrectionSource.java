@@ -14,7 +14,13 @@ import org.springframework.stereotype.Component;
 @Component
 public final class HeaderCorrectionSource {
     private final JdbcTemplate jdbc;
-    public HeaderCorrectionSource(JdbcTemplate jdbc) { this.jdbc=jdbc; }
+    private final HeaderWithdrawalSource withdrawals;
+    private final com.acrylic.outbound.correction.CorrectionHeaderEvidence evidence;
+    private final com.acrylic.outbound.correction.CorrectionHeaderOrigin origin;
+    public HeaderCorrectionSource(JdbcTemplate jdbc, HeaderWithdrawalSource withdrawals,
+        com.acrylic.outbound.correction.CorrectionHeaderEvidence evidence, com.acrylic.outbound.correction.CorrectionHeaderOrigin origin) {
+        this.jdbc=jdbc; this.withdrawals=withdrawals; this.evidence=evidence; this.origin=origin;
+    }
 
     List<Adjustment> read(UUID order,long targetVersion) {
         var versions=jdbc.query("""
@@ -33,15 +39,18 @@ public final class HeaderCorrectionSource {
                     rs.getInt(10),rs.getBoolean(11)),Ids.bytes(order),targetVersion);
         var result=new ArrayList<Adjustment>();
         for(var version:versions)result.addAll(adjustments(order,version));
+        result.addAll(withdrawals.read(order, targetVersion));
         return result;
     }
 
     private List<Adjustment> adjustments(UUID order,Version version) {
+        evidence.verifyApproval(order, UUID.fromString(version.id()), version.number());
         ExportFacts.check(version.lines()==0 && version.unchangedTotals(),"抬头更正不应含数值明细或改变数重");
         ExportFacts.check(version.before()!=null && version.after()!=null && version.approver()!=null && version.at()!=null,
                 "抬头更正缺少版本或审批事实");
         var receipt=receipt(order,version);var command=SubmissionJson.parse(receipt.command());
-        var patch=command.path("headerPatch");var before=SubmissionJson.parse(version.before());var after=SubmissionJson.parse(version.after());
+        var patch=command.path("headerPatch");var before=origin.normalize(order, SubmissionJson.parse(version.before()));
+        var after=origin.normalize(order, SubmissionJson.parse(version.after()));
         ExportFacts.check(patch.isObject() && !patch.isEmpty() && before.isObject() && after.isObject(),"抬头补丁或前后快照缺失");
         ObjectNode expected=before.deepCopy();expected.setAll((ObjectNode)patch);
         ExportFacts.check(expected.equals(after),"抬头补丁与不可变结果版本不一致");

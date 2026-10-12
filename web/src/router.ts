@@ -6,6 +6,7 @@ import { firstWorkspacePath } from './navigation';
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
+    { path: '/header-corrections/:order?', component: () => import('./corrections/HeaderCorrectionsPage.vue'), meta: { anyPermission: ['outbound:correct', 'correction:approve'] } },
     { path: '/login', component: () => import('./auth/LoginPage.vue') },
     { path: '/pda-download', component: () => import('./pda-download/DownloadPage.vue') },
     { path: '/inventory/imports', component: () => import('./inventory/ImportsPage.vue') },
@@ -46,6 +47,8 @@ router.beforeEach(async (to) => {
 });
 
 export function loginDestination(value: unknown, permissions: string[]): string {
+  if (typeof value === 'string' && /^\/header-corrections(?:\/[0-9a-f-]+)?(?:\?|$)/.test(value)
+      && permissions.some(permission => ['outbound:correct', 'correction:approve'].includes(permission))) return value;
   if (typeof value === 'string' && /^\/rescue(?:\?|$)/.test(value) && permissions.includes('rescue:authorize')) return value;
   if (typeof value === 'string' && /^\/review-reminders(?:\?|$)/.test(value) && permissions.some(p => ['submission:review', 'temporary_order:confirm'].includes(p))) return value;
   if (typeof value === 'string' && /^\/temporary-reviews(?:\/[0-9a-f-]+)?(?:\?|$)/.test(value) && permissions.includes('temporary_order:confirm')) return value;

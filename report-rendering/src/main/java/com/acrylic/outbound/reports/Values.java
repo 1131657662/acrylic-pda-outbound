@@ -32,7 +32,7 @@ final class Values {
     static String displayNumber(OrderSnapshot order) {
         String number=order.number();
         for(var adjustment:order.adjustments())
-            if(adjustment.kind()==Adjustment.Kind.HEADER_CORRECTION && adjustment.headerField().equals("orderNo"))
+            if(adjustment.headerChange() && adjustment.headerField().equals("orderNo"))
                 number=adjustment.afterText();
         return number;
     }

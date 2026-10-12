@@ -8,4 +8,7 @@ public record Adjustment(String correctionId, String lineId, long resultVersion,
         String afterWeightGrams, String headerField, String beforeText, String afterText,
         Instant occurredAt, String reason, String approver, String evidenceReference) {
     public enum Kind { WEIGHT_CORRECTION, PHYSICAL_RETURN, DISPATCH_CANCELLATION, HEADER_CORRECTION, CORRECTION_WITHDRAWAL }
+    public boolean headerChange() {
+        return kind == Kind.HEADER_CORRECTION || (kind == Kind.CORRECTION_WITHDRAWAL && headerField != null && !headerField.isEmpty());
+    }
 }

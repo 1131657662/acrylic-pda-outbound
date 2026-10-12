@@ -11,6 +11,7 @@ class CorrectionCommandConfigurationTest {
         .withUserConfiguration(CorrectionCommandConfiguration.class)
         .withBean(CorrectionStore.class, () -> new CorrectionStore(null))
         .withBean(CorrectionAccounting.class, () -> new CorrectionAccounting(null))
+        .withBean(CorrectionHeaderEvidence.class, () -> mock(CorrectionHeaderEvidence.class))
         .withBean(JdbcTemplate.class, () -> mock(JdbcTemplate.class));
     @Test void defaultConfigurationRegistersNoOperation() {
         runner.run(context -> assertThat(context.getBeanNamesForType(CorrectionCommand.Operation.class)).isEmpty());

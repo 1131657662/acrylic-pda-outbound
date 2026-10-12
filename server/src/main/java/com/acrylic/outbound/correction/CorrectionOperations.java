@@ -12,7 +12,8 @@ public final class CorrectionOperations {
 
     public static final class Create implements CorrectionCommand.Operation {
         private final CorrectionStore store;
-        public Create(CorrectionStore store) { this.store = store; }
+        private final CorrectionHeaderEvidence headers;
+        public Create(CorrectionStore store, CorrectionHeaderEvidence headers) { this.store = store; this.headers = headers; }
         @Override public String commandType() { return "CREATE"; }
 
         @Override public JsonNode execute(CorrectionCommand.Write write) {
@@ -39,7 +40,8 @@ public final class CorrectionOperations {
                 var patch = body.path("headerPatch");
                 if (!patch.isObject() || patch.isEmpty()) throw invalid("表头更正必须给出非空 headerPatch");
                 if (lines.isArray() && !lines.isEmpty()) throw invalid("表头更正不接受明细行");
-                CorrectionHeader.merge(store.currentHeaderSnapshot(write.orderId()), patch);
+                CorrectionHeader.merge(SubmissionJson.canonical(headers.normalize(write.orderId(),
+                    SubmissionJson.parse(store.currentHeaderSnapshot(write.orderId())))), patch);
             } else if (!lines.isArray() || lines.isEmpty() || lines.size() > 200) throw invalid("更正行必须为 1..200 条");
         }
         private static BusinessException invalid(String message) { return new BusinessException(400, "INVALID_CORRECTION_COMMAND", message); }
@@ -47,15 +49,16 @@ public final class CorrectionOperations {
 
     public static final class Withdraw implements CorrectionCommand.Operation {
         private final CorrectionStore store;
-        public Withdraw(CorrectionStore store) { this.store = store; }
+        private final CorrectionHeaderEvidence headers;
+        public Withdraw(CorrectionStore store, CorrectionHeaderEvidence headers) { this.store = store; this.headers = headers; }
         @Override public String commandType() { return "WITHDRAW"; }
         @Override public JsonNode execute(CorrectionCommand.Write write) {
             if (write.documentId() == null) throw new BusinessException(400, "INVALID_CORRECTION_COMMAND", "撤销必须指定更正单");
             var facts = write.anchor(); String actor = write.actor().path("principalId").asText();
             if (!"EFFECTIVE".equals(facts.path("status").asText())) throw CorrectionCommand.stale();
             if (!actor.equals(facts.path("approvedBy").asText())) throw CorrectionCommand.denied();
-            // Header restoration has no frozen line/ledger proof; reject before creating an impossible pending state.
-            if ("HEADER_CORRECTION".equals(facts.path("type").asText())) throw CorrectionCommand.ledgerConflict();
+            if ("HEADER_CORRECTION".equals(facts.path("type").asText()))
+                headers.compensate(write.orderId(), write.documentId(), store.orderFacts(write.orderId()).path("currentResultVersion").asLong());
             if (store.requestWithdrawal(write.documentId(), UUID.fromString(actor), write.recordedAt()) != 1) throw CorrectionCommand.stale();
             return SubmissionJson.object().put("documentId", write.documentId().toString()).put("status", "WITHDRAW_PENDING")
                 .put("requestedBy", actor).put("awaitingConfirmationBy", facts.path("requestedBy").asText()).put("rolledBack", false);

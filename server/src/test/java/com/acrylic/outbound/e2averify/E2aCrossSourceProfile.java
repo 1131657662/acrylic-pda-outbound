@@ -24,6 +24,11 @@ final class E2aCrossSourceProfile {
         var profile=new E2aCrossSourceProfile("exclusion");profile.connectChecked();return profile;
     }
 
+    static E2aCrossSourceProfile completedHeaderCompensation() throws Exception {
+        var profile = new E2aCrossSourceProfile("header-compensation");
+        profile.connectChecked(); return profile;
+    }
+
     static E2aCrossSourceProfile completedPhysicalReview() throws Exception {
         var profile=new E2aCrossSourceProfile("physical");
         var jdbc=profile.connectChecked();
@@ -72,7 +77,13 @@ final class E2aCrossSourceProfile {
         require(ROOT.resolve("server").toRealPath().equals(Path.of("").toRealPath()), "Workspace mismatch");
         require(attempt.toRealPath().startsWith(ROOT.toRealPath()), "Attempt escapes workspace");
         require(Files.isDirectory(attempt.resolve("data")), "Missing isolated datadir");
-        if("physical".equals(restart)) requireCompletedPhysicalReview(run);
+        if ("header-compensation".equals(restart)) {
+            require(Files.isRegularFile(attempt.resolve("test-completed.marker")), "Header phase incomplete");
+            for (String name : List.of("header-positive-true", "header-positive-false"))
+                require(Files.isRegularFile(attempt.resolve("accounting/" + name + "/restart-input.json")), "Header original missing");
+            require(!Files.exists(attempt.resolve("header-restart-completed.marker")), "Header restart already used");
+        }
+        else if("physical".equals(restart)) requireCompletedPhysicalReview(run);
         else if("scope".equals(restart)) requireCompletedScopeRelease(run);
         else if("recipient".equals(restart)) requireCompletedRecipient(run);
         else if("qualification".equals(restart)) requireCompletedQualification(run);
@@ -94,6 +105,14 @@ final class E2aCrossSourceProfile {
         var jdbc=connectChecked();
         require(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE()",
             Integer.class) == 0, "Nonempty schema cannot be reseeded");
+        return jdbc;
+    }
+
+    JdbcTemplate connectHistoricalHeader() {
+        var jdbc = connectChecked();
+        require(Files.isRegularFile(attempt.resolve("historical-originals/header-withdraw/6bae4351-1b52-4a99-925d-db6a1b0c1960.json")), "Historical original missing");
+        require(jdbc.queryForObject("SELECT COUNT(*) FROM correction_document WHERE id=UUID_TO_BIN(?) AND status='EFFECTIVE'",
+            Integer.class, "01a0fa75-54e6-75ce-8383-b9dec2852704") == 1, "Historical approved document missing");
         return jdbc;
     }
 

@@ -80,7 +80,7 @@ public class CorrectionExportSource {
                 "dispatch_record.order_scan_seq / correction:" + document),
             source.products(), source.dispatches().stream().map(ConfirmedV1Input.Dispatch::line).toList(),
             effectiveLines, evidence, source.exceptions());
-        var day = cutoff.atZone(ZoneId.of("Asia/Shanghai")).toLocalDate();
+        var day = origin.confirmedAt().atZone(ZoneId.of("Asia/Shanghai")).toLocalDate();
         var metadata = new ReportSnapshot.Metadata(UUID.randomUUID().toString(),
             "result:" + resultVersion + "/revision:" + revision, cutoff, cutoff, day, day,
             ReportSnapshot.Basis.CORRECTED, ReportSnapshot.Provenance.SOURCE_SNAPSHOT,
@@ -93,7 +93,7 @@ public class CorrectionExportSource {
     private static OrderSnapshot.Header effectiveHeader(OrderSnapshot.Header original,List<Adjustment> evidence) {
         String vehicle=original.vehicle(),container=original.container(),remark=original.remark();
         for(var adjustment:evidence) {
-            if(adjustment.kind()!=Adjustment.Kind.HEADER_CORRECTION)continue;
+            if(!adjustment.headerChange())continue;
             switch(adjustment.headerField()) {
                 case "vehicle" -> vehicle=adjustment.afterText();
                 case "container" -> container=adjustment.afterText();

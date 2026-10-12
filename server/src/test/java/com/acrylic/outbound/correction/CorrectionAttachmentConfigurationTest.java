@@ -11,6 +11,7 @@ class CorrectionAttachmentConfigurationTest {
         .withUserConfiguration(CorrectionCommandConfiguration.class, CorrectionAttachmentConsumer.class)
         .withBean(CorrectionStore.class, () -> new CorrectionStore(null))
         .withBean(CorrectionAccounting.class, () -> new CorrectionAccounting(null))
+        .withBean(CorrectionHeaderEvidence.class, () -> mock(CorrectionHeaderEvidence.class))
         .withBean(CorrectionAttachmentStore.class, () -> new CorrectionAttachmentStore(null))
         .withBean(JdbcTemplate.class, () -> mock(JdbcTemplate.class));
     @Test void defaultHasNoConsumerOrOperation() {

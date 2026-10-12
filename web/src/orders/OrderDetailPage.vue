@@ -24,6 +24,7 @@ import OrderPlan from './OrderPlan.vue';
 import PcOrderLink from '../pc/PcOrderLink.vue';
 import OrderExports from '../exports/OrderExports.vue';
 import OrderTemporaryCandidates from './OrderTemporaryCandidates.vue';
+import OrderHeaderCorrections from '../corrections/OrderHeaderCorrections.vue';
 const route = useRoute(); const router = useRouter(); const session = useSessionStore();
 const detail = ref<Detail | null>(null); const preflight = ref<Preflight | null>(null); const busy = ref(false);
 const error = ref(''); const checkError = ref(''); const receivedAt = ref('');
@@ -31,7 +32,7 @@ const editor = ref(false); const cancelReason = ref(''); const cancelDialog = re
 const publishDialog = ref(false); const recallBusy = ref(false); const submissionBusy = ref(false);
 const pcChannel = ref(false);
 const locked = computed(() => editor.value || cancelDialog.value || publishDialog.value || recallBusy.value || submissionBusy.value);
-const tab = computed({ get: () => ['plan', 'records', 'exceptions', 'history', 'exports'].includes(String(route.query.tab)) ? String(route.query.tab) : 'plan',
+const tab = computed({ get: () => ['plan', 'records', 'exceptions', 'history', 'exports', 'corrections'].includes(String(route.query.tab)) ? String(route.query.tab) : 'plan',
   set: (value: string) => { void router.replace({ query: { ...route.query, ...orderRouteQuery(parseOrderQuery(route.query), session.warehouseId), tab: value } }); } });
 let cancelBody = ''; let cancelKey = ''; let generation = 0;
 const canWrite = computed(() => session.identity?.permissions.includes('order:write'));
@@ -112,6 +113,9 @@ onBeforeUnmount(() => { generation++; });
       <div class="result-summary"><span>{{ detail.order.createdBy }} · 创建于 {{ localTime(detail.order.createdAt) }}</span><span>数据读取于 {{ localTime(receivedAt) }}</span></div>
       <OrderTemporaryCandidates v-if="detail.order.source === 'WEB'" :key="`${session.warehouseId}-${detail.order.id}-${detail.order.rowVersion}-${receivedAt}`" :warehouse="session.warehouseId" :order="detail.order.id" :revision="detail.order.revision" :version="detail.order.rowVersion" />
       <el-tabs v-model="tab" class="detail-tabs">
+        <el-tab-pane v-if="detail.order.status === 'COMPLETED' && session.identity?.permissions.some(p => p === 'outbound:correct' || p === 'correction:approve')" label="抬头更正" name="corrections">
+          <OrderHeaderCorrections v-if="tab === 'corrections' && session.identity" :key="`${session.identity.id}-${session.warehouseId}-${detail.order.id}`" :actor="session.identity.id" :warehouse="session.warehouseId" :order="detail.order.id" />
+        </el-tab-pane>
         <el-tab-pane v-if="detail.order.status === 'COMPLETED' && ['WEB', 'PDA_TEMP'].includes(detail.order.source)" label="原确认文件" name="exports">
           <OrderExports v-if="tab === 'exports' && session.identity" :key="`${session.identity.id}-${session.warehouseId}-${detail.order.id}`" :actor="session.identity.id" :warehouse="session.warehouseId" :order="detail.order.id" />
         </el-tab-pane>

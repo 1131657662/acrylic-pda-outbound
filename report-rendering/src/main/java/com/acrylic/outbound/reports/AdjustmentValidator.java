@@ -18,12 +18,12 @@ final class AdjustmentValidator {
             require(a.resultVersion() >= 2 && a.resultVersion() <= o.resultVersion(), "调整版本越界");
             require(a.resultVersion() >= lastVersion && a.resultVersion() <= lastVersion + 1, "调整版本链不完整或乱序");
             lastVersion = a.resultVersion(); fields(a, cutoff, o.confirmedAt());
-            String field=a.kind()==Adjustment.Kind.HEADER_CORRECTION?a.headerField():"";
+            String field=a.headerChange()?a.headerField():"";
             require(keys.add(List.of(a.resultVersion(), a.correctionId(), a.lineId(),field)), "调整凭据行重复");
             var key = List.of(a.correctionId(), a.lineId(),field);
             if (a.kind() == Adjustment.Kind.CORRECTION_WITHDRAWAL) withdrawal(a, approved.get(key), withdrawn.add(key));
             else require(approved.putIfAbsent(key, a) == null, "原调整凭据跨版本重复");
-            if (a.kind() == Adjustment.Kind.HEADER_CORRECTION) header(a, headers);
+            if (a.headerChange()) header(a, headers);
             else {
                 require(effects.add(List.of(a.resultVersion(), a.dispatchId())), "一个结果版本重复调整同一出库行");
                 effect(a, expected);
@@ -37,7 +37,7 @@ final class AdjustmentValidator {
     }
     private static void fields(Adjustment a, Instant cutoff, Instant confirmed) {
         required(a.correctionId()); Objects.requireNonNull(a.kind());
-        if(a.kind()==Adjustment.Kind.HEADER_CORRECTION)text(a.lineId());else required(a.lineId());
+        if(a.headerChange())text(a.lineId());else required(a.lineId());
         required(a.reason()); required(a.approver()); required(a.evidenceReference());
         require(!a.occurredAt().isAfter(cutoff) && !a.occurredAt().isBefore(confirmed), "调整时间不在确认至截点之间");
         text(a.dispatchId()); text(a.headerField()); text(a.beforeText()); text(a.afterText());
@@ -61,8 +61,12 @@ final class AdjustmentValidator {
     }
     private static void withdrawal(Adjustment a, Adjustment original, boolean first) {
         require(first && original != null && original.resultVersion() < a.resultVersion(), "撤销缺少原调整或重复撤销");
-        require(original.kind() != Adjustment.Kind.HEADER_CORRECTION && a.dispatchId().equals(original.dispatchId()),
-                "撤销未关联原实物调整");
+        if (a.headerChange()) {
+            require(original.kind() == Adjustment.Kind.HEADER_CORRECTION && a.headerField().equals(original.headerField())
+                && a.beforeText().equals(original.afterText()) && a.afterText().equals(original.beforeText()), "抬头撤销未反向原字段贡献");
+            return;
+        }
+        require(!original.headerChange() && a.dispatchId().equals(original.dispatchId()), "撤销未关联原实物调整");
         require(a.beforeCount() == original.afterCount() && a.afterCount() == original.beforeCount()
                 && a.beforeWeightGrams().equals(original.afterWeightGrams())
                 && a.afterWeightGrams().equals(original.beforeWeightGrams()), "撤销前后值未完整反向原调整");

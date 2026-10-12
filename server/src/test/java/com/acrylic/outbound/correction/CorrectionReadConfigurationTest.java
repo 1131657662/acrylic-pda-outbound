@@ -3,10 +3,12 @@ package com.acrylic.outbound.correction;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 class CorrectionReadConfigurationTest {
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
         .withUserConfiguration(CorrectionReadService.class, CorrectionReadController.class)
+        .withBean(CorrectionHeaderReadService.class, () -> mock(CorrectionHeaderReadService.class))
         .withBean(CorrectionCommand.Identity.class, () -> new CorrectionCommand.Identity(null, null, null))
         .withBean(CorrectionStore.class, () -> new CorrectionStore(null))
         .withBean(CorrectionReadStore.class, () -> new CorrectionReadStore(null))

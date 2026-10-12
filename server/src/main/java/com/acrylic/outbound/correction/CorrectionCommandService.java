@@ -78,6 +78,8 @@ public class CorrectionCommandService {
             documentId=input.uuid("documentId"); locks.document(documentId); anchor=store.documentFacts(documentId);
             orderId=UUID.fromString(anchor.path("orderId").asText()); locks.order(orderId);
         }
+        byte[] committed = replay(input, actor);
+        if (committed != null) return committed;
         if (!anchor.path("warehouseId").asText().equals(actor.warehouse().toString())) throw CorrectionCommand.missing();
         var current=input.kind().equals("CREATE")?CorrectionCommand.Expected.forCreate(anchor,Long.parseLong(actor.authVersion()))
             :input.kind().equals("RECONCILE_OPEN")?CorrectionCommand.Expected.forCaseOpen(anchor,Long.parseLong(actor.authVersion()))

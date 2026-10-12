@@ -35,7 +35,7 @@ final class PdfDetails {
             h.append("<p>包数 ").append(a.beforeCount()).append(" → ").append(a.afterCount())
                     .append("；重量 ").append(Values.kg(Values.grams(a.beforeWeightGrams()))).append(" → ")
                     .append(Values.kg(Values.grams(a.afterWeightGrams()))).append(" kg。</p>");
-            if (a.kind() == Adjustment.Kind.HEADER_CORRECTION) h.append("<p>").append(escape(a.headerField()))
+            if (a.headerChange()) h.append("<p>").append(escape(a.headerField()))
                     .append("：").append(escape(a.beforeText())).append(" → ").append(escape(a.afterText())).append("</p>");
             h.append("<p>原因：").append(escape(a.reason())).append("；审批人：").append(escape(a.approver()))
                     .append("；凭据依据：").append(escape(a.evidenceReference())).append("</p></article>");
