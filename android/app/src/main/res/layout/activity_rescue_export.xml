@@ -6,12 +6,13 @@
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="取回本机原记录，不等于出库确认或放行。救援凭据须事先预置；无网时无法得知服务端新撤权。" android:textSize="16sp" />
         <LinearLayout android:id="@+id/credentialsPanel" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
         <Button android:id="@+id/credentialSetup" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="联网预置或撤销本人救援凭据" />
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="预置的原人员" android:labelFor="@id/identity" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="已预置的只读身份与范围" android:labelFor="@id/identity" />
         <Spinner android:id="@+id/identity" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="本地救援凭据" android:labelFor="@id/credential" />
         <EditText android:id="@+id/credential" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:inputType="textPassword" android:singleLine="true" android:saveEnabled="false" android:importantForAutofill="no" />
         <Button android:id="@+id/unlock" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="核验只读范围" />
         </LinearLayout>
+        <Button android:id="@+id/supervisorImport" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="导入主管授权或撤销原件" />
         <Button android:id="@+id/lockScope" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="锁定并切换救援身份" android:visibility="gone" />
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="原订单" android:labelFor="@id/order" />

@@ -36,6 +36,7 @@ class RescueExportActivity : ComponentActivity() {
     }
     private fun actions() {
         binding.credentialSetup.setOnClickListener { startActivity(Intent(this, RescueCredentialActivity::class.java)) }
+        binding.supervisorImport.setOnClickListener { RescueSupervisorImportDialog.show(this, model::importSupervisor) }
         binding.unlock.setOnClickListener {
             val password = binding.credential.text.toString().toCharArray(); binding.credential.text.clear()
             model.unlock(binding.identity.selectedItemPosition, password)
@@ -59,7 +60,7 @@ class RescueExportActivity : ComponentActivity() {
         }
     }
     private fun render(state: RescueExportUi) {
-        val identities = state.identities.map { it.operatorId }
+        val identities = state.identities.map { it.label }
         if (identities != identityLabels) {
             identityLabels = identities
             binding.identity.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, identities)
@@ -78,6 +79,7 @@ class RescueExportActivity : ComponentActivity() {
         binding.lockScope.visibility = if (state.unlocked) View.VISIBLE else View.GONE
         binding.lockScope.isEnabled = !state.busy
         binding.unlock.isEnabled = !state.busy; binding.credentialSetup.isEnabled = !state.busy
+        binding.supervisorImport.isEnabled = !state.busy
         binding.identity.isEnabled = !state.busy; binding.order.isEnabled = !state.busy
         binding.readSnapshot.isEnabled = !state.busy && state.unlocked && state.orders.isNotEmpty()
         binding.generate.isEnabled = !state.busy && state.canGenerate; binding.copy.isEnabled = !state.busy && state.canCopy

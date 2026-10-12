@@ -19,5 +19,7 @@ class RescueDelegationDefaultIT {
         f.pda.send(f.request(f.signed(f.document),f.key),f.tokens).andExpect(status().isConflict())
             .andExpect(jsonPath("$.code").value("RESCUE_DELEGATION_DISABLED"));
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM rescue_request",Integer.class)).isEqualTo(before);
+        f.pda.send(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/pda/rescue-grants/"+java.util.UUID.randomUUID()),f.tokens)
+            .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("RESCUE_DELEGATION_DISABLED"));
     }
 }

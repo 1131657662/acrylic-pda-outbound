@@ -39,6 +39,23 @@ PdaMaterial:
       '403': {description: 未获专用权限}
       '404': {description: 申请不存在或不是原人原机同仓}
       '409': {description: 默认关闭}
+DelegatedMaterial:
+  get:
+    summary: 指定救援人在原登记设备读取已核准原授权和撤销
+    description: 默认关闭。须具有PDA登录及同仓rescue:read，且当前人/原设备/仓库/登记钥与指定授权一致；返回原签名用于在线预置本地只读凭据。权限撤销、设备变化及跨范围均拒绝；过期或撤销材料保留且状态明确，客户端不得据此重新启用已撤销授权。
+    security: [{pdaBearer: []}]
+    parameters:
+      - $ref: './rescue-schemas.yaml#/Id'
+    responses:
+      '200':
+        description: no-store原材料，localDeletionAllowed恒false
+        content:
+          application/json:
+            schema: {$ref: './rescue-schemas.yaml#/MaterialEnvelope'}
+      '401': {description: PDA会话或设备失效}
+      '403': {description: 专用救援权限已撤销或未授予}
+      '404': {description: 授权不存在或人/机/仓库不匹配}
+      '409': {description: 默认关闭或登记钥变化}
 SupervisorMaterial:
   get:
     summary: 有权主管读取指定申请及审批/撤销原件

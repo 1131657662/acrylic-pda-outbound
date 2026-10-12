@@ -14,6 +14,12 @@ class RescueCredentials(context: Context, private val session: PdaSession) {
         val public = keys.publicKey(false).also(session.settings::verifyKey)
         session.settings.device to RescueBundle.sha(Base64.getDecoder().decode(public))
     }
+    private val supervisor = RescueSupervisorStore(RescueCredentialVault(context, supervisor = true),
+        { TrustedTime.sample(context) }) { binding() }
+    private fun binding(): Pair<String, String> {
+        val public = keys.publicKey(false).also(session.settings::verifyKey)
+        return session.settings.device to RescueBundle.sha(Base64.getDecoder().decode(public))
+    }
     fun provisionOwn(password: CharArray) {
         try { provision(password) } finally { password.fill('\u0000') }
     }
@@ -30,6 +36,41 @@ class RescueCredentials(context: Context, private val session: PdaSession) {
         try { store.unlock(operatorId, password) } finally { password.fill('\u0000') }
     fun revokeOwn() { store.revoke(session.requireSession().getString("userId")) }
     fun identities(): List<RescueReadIdentity> = store.identities()
+    fun choices(): List<RescueCredentialChoice> = identities().map {
+        RescueCredentialChoice("own:${it.operatorId}", it, "本人只读 · ${it.operatorId}")
+    } + supervisor.choices()
+    fun unlockChoice(id: String, password: CharArray): RescueReadGrant = try {
+        when {
+            id.startsWith("own:") -> store.unlock(id.removePrefix("own:"), password)
+            id.startsWith("supervisor:") -> supervisor.unlock(id.removePrefix("supervisor:"), password)
+            else -> error("请选择已预置的只读凭据")
+        }
+    } finally { password.fill('\u0000') }
+    fun importSupervisor(text: String, password: CharArray): String = try {
+        val material = RescueSupervisorMaterial.read(text)
+        // Revocations never need a live login and can only reduce access.
+        if (material.revocation != null) {
+            supervisor.importRevocation(material.revocation)
+            "主管撤销签名已核验并保存；原资料保留"
+        } else provisionSupervisor(checkNotNull(material.authorization), password)
+    } finally { password.fill('\u0000') }
+    private fun provisionSupervisor(token: String, password: CharArray): String {
+        val original = session.requireSession()
+        val verified = RescueDelegation.verify(token, original.getJSONObject("signingKey"), binding())
+        val material = session.call("pda/rescue-grants/${verified.grantId}", expected = original)
+        SessionIdentity.requireSame(original, session.saved())
+        check(material.getJSONObject("authorization").getString("signedAuthorization") == token) { "服务端原授权与导入原件不一致" }
+        if (!material.isNull("revocation")) {
+            supervisor.importRevocation(material.getJSONObject("revocation").getString("signedRevocation"))
+            error("主管授权已撤销；撤销原件已保存，原资料保留")
+        }
+        check(material.getString("status") == "AUTHORIZED" && material.isNull("revocation")) { "主管授权已撤销或到期，请保留原资料" }
+        val trusted = session.requireSession()
+        val id = supervisor.provision(RescueSupervisorStore.Provision(token, trusted.getJSONObject("signingKey"), trusted), password)
+        try { SessionIdentity.requireSame(original, session.saved()) }
+        catch (error: Exception) { supervisor.revokeLocal(id); throw error }
+        return "主管签名只读范围已预置；退出登录后可凭本地口令取回原件"
+    }
     companion object {
         private val instances = java.util.WeakHashMap<Context, RescueCredentials>()
         @Synchronized fun shared(context: Context, session: PdaSession): RescueCredentials =

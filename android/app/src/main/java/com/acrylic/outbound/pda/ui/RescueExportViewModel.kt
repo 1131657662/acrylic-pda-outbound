@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.*
 import java.util.Base64
 
 data class RescueExportUi(val busy: Boolean = false, val message: String = "请核验已预置的本地救援凭据",
-    val identities: List<RescueReadIdentity> = emptyList(), val orders: List<RescueOrderChoice> = emptyList(),
+    val identities: List<RescueCredentialChoice> = emptyList(), val orders: List<RescueOrderChoice> = emptyList(),
     val hasMore: Boolean = false, val selected: Int = 0, val summary: String = "", val unlocked: Boolean = false,
     val privatePackages: List<RescuePrivatePackage> = emptyList(),
     val canGenerate: Boolean = false, val canCopy: Boolean = false,
@@ -34,7 +34,17 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
             saved["preferredSource"] = source; saved["preferredId"] = id
         }
     }
-    fun loadIdentities() = run(state.value.message) { mutable.update { it.copy(identities = credentials.identities()) } }
+    fun loadIdentities() = run(state.value.message) { mutable.update { it.copy(identities = credentials.choices()) } }
+    fun importSupervisor(text: String, password: CharArray) {
+        if (state.value.busy) { password.fill('\u0000'); return }
+        lock()
+        run("正在核验主管签名原件") {
+            try {
+                val message = credentials.importSupervisor(text, password)
+                mutable.update { it.copy(identities = credentials.choices(), message = message) }
+            } finally { password.fill('\u0000') }
+        }
+    }
     fun lock() {
         if (state.value.busy) return
         grant = null; snapshot = null; generated = null
@@ -47,7 +57,7 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
         run("正在核验本地只读范围") {
             try {
                 val identity = state.value.identities.getOrNull(index) ?: error("本机没有可用预置凭据，请在联网时预置")
-                grant = credentials.unlock(identity.operatorId, password)
+                grant = credentials.unlockChoice(identity.id, password)
                 page("")
                 val packages = files.available(checkNotNull(grant))
                 mutable.update { it.copy(unlocked = true, privatePackages = packages, summary = "",

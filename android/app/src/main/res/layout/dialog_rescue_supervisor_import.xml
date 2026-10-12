@@ -1,0 +1,9 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="粘贴主管签名授权、撤销凭据或服务端完整材料。授权须由指定救援人在原设备联网预置；已预置授权的签名撤销可离线导入。材料里的公钥不作为信任根。" android:textSize="16sp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="主管签名原件" android:labelFor="@id/material" />
+        <EditText android:id="@+id/material" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="96dp" android:maxLines="6" android:maxLength="131072" android:inputType="textMultiLine|textNoSuggestions" android:saveEnabled="false" android:importantForAutofill="no" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="预置本地救援口令（16–128位无空格ASCII）；仅导入撤销时留空" android:labelFor="@id/password" />
+        <EditText android:id="@+id/password" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:maxLength="128" android:inputType="textPassword" android:singleLine="true" android:saveEnabled="false" android:importantForAutofill="no" />
+    </LinearLayout>
+</ScrollView>

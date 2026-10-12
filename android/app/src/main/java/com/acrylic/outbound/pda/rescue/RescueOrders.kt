@@ -37,7 +37,7 @@ class RescueOrders(private val db: PdaDatabase) {
         if (target.source == "FORMAL") return RescueFormalSnapshot(db, RescueRows(db.openHelper.readableDatabase))
             .identity(checkNotNull(db.preparations().order(target.localOrderId)))
         val draft = checkNotNull(db.temporaryDrafts().get(target.localOrderId))
-        return JSONObject().put("deviceId", draft.creatorDeviceId).put("operatorId", draft.operatorId)
+        return JSONObject().put("source", "TEMP").put("deviceId", draft.creatorDeviceId).put("operatorId", draft.operatorId)
             .put("warehouseId", draft.warehouseId).put("localOrderId", draft.clientOrderId)
     }
 }

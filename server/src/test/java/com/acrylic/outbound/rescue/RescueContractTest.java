@@ -14,7 +14,7 @@ class RescueContractTest {
     }
     @Test void publicRescuePathsHaveResolvableSchemasAndEstablishedSecuritySchemes() throws Exception {
         var spec=load(root.resolve("openapi.yaml"));var paths=(Map<?,?>)spec.get("paths");
-        for(String route:List.of("/pda/rescue-requests","/pda/rescue-requests/{id}","/rescue-requests/{id}",
+        for(String route:List.of("/pda/rescue-requests","/pda/rescue-requests/{id}","/pda/rescue-grants/{id}","/rescue-requests/{id}",
             "/rescue-requests/{id}/approve","/rescue-grants/{id}/revoke")) {
             var reference=((Map<?,?>)paths.get(route)).get("$ref").toString();
             assertThat(resolve(root.resolve("openapi.yaml"),reference)).isInstanceOf(Map.class);

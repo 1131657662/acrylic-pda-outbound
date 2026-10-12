@@ -13,9 +13,10 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 /** Separate from the login vault: logout preserves only the scoped, read-only rescue verifier. */
-internal class RescueCredentialVault(context: Context) : RescueCredentialStorage {
-    private val file = AtomicFile(File(context.noBackupFilesDir, "rescue-credentials.enc"))
-    private val alias = "outbound-readonly-rescue-v1"
+internal class RescueCredentialVault(context: Context, supervisor: Boolean = false) : RescueCredentialStorage {
+    private val file = AtomicFile(File(context.noBackupFilesDir,
+        if (supervisor) "rescue-supervisor-credentials.enc" else "rescue-credentials.enc"))
+    private val alias = if (supervisor) "outbound-supervisor-rescue-v1" else "outbound-readonly-rescue-v1"
     override fun read(): JSONObject? {
         if (!file.baseFile.exists() && !File(file.baseFile.path + ".bak").exists()) return null
         val bytes = file.readFully(); check(bytes.size in 29..128 * 1024)

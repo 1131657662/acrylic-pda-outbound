@@ -19,6 +19,10 @@ public class RescueMaterials {
     public RescueCommands.Material own(UUID id) {
         enabled.require();var request=store.request(id,false);access.own(request);return material(request);
     }
+    public RescueCommands.Material delegated(UUID id) {
+        enabled.require();var request=store.request(store.requestForGrant(id),false);
+        access.rescuer(request);return material(request);
+    }
     private RescueCommands.Material material(RescueStore.Request request) {
         UUID id=store.grantForRequest(request.id());
         var grant=id==null?null:store.grantDetails(id);var revoked=id==null?null:store.revocation(id);

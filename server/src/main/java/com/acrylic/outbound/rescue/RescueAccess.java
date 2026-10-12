@@ -38,6 +38,12 @@ public class RescueAccess {
         if(!actor.userId().equals(request.operatorId()) || !actor.deviceId().equals(request.deviceId()) ||
             !actor.warehouseId().equals(request.warehouseId())) throw missing();
     }
+    public void rescuer(RescueStore.Request request) {
+        var actor=pda.require("rescue:read");
+        if(!actor.userId().equals(request.rescuerId()) || !actor.deviceId().equals(request.deviceId()) ||
+            !actor.warehouseId().equals(request.warehouseId())) throw missing();
+        requireRegisteredKey(request);
+    }
     public void requireRegisteredKey(RescueStore.Request request) {
         var device=devices.find(request.deviceId(),false);
         if(!RescueRequests.keyDigest(device).equals(request.deviceKeySha256()))
