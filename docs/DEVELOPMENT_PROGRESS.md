@@ -2,6 +2,10 @@
 
 # 开发验收索引
 
+- [D01–D18阶段收口及新会话断点](history/D01_D18_HANDOFF_2026-10-12_P04.md)：P04阶段备份、已验与未验边界、全部改动快照、活动预览及磁盘管理；总目标未完成，不计新增开发验收。
+
+- [E04候选逐项排除（开发中）](history/GOAL_E04_CANDIDATE_EXCLUSION_2026-10-12.md)：服务端完整回归、Chrome/HTTP及Android原件native消费已有本轮证据；实际Android产品取得映射/结果、页面闭环、适用历史非空兼容及最终组合未验，不计P04或D04整体通过。
+
 - [E04普通本机零作业取消](history/GOAL_E04_ZERO_DRAFT_CANCEL_2026-10-12.md)：原身份/队列/占用与未决保护、Room原子取消审计/回滚/原键、新进程历史和旧冻结拒绝、129项受影响回归及APK/lint；非零主管取消、P04/P06和总目标继续，原UI失败保留。
 
 - [E03 FORMAL原件、规模与进程中断](history/GOAL_E03_FORMAL_SCALE_2026-10-12.md)：停服/关闭网络的真实FORMAL导出与SAF回读、包外登记及固定钥原回执/Excel、生成/复制中断新进程保全、106项受影响回归；继承失败保留，独立来源/O02全范围与E04–E09继续。
@@ -152,7 +156,7 @@
 
 | R09 C2 **B1-3 S34：A0 收尾批次（A0.1 剩余门控 IT ＋ A0.3 恢复链批次 ＋ 659 根因定位）**（**同一会话实施＋自审＋运行**；659 仪表化**运行后已撤回**） | [S34 记录](history/R09_C2_B1_3_S34_A0_CLOSURE_2026-09-30.md)：**A0.1** 新增 `tools/r09-a01-remaining-it-run.ps1`（驱动自己管 MySQL 生命周期；每类一次性 attempt），剩余门控 IT **19 类尝试／15 类通过／4 类失败／0 跳过**（run 712–730；补漏 `E2aWithdrawnCorrectionExportIT`）、`E2aServeBindingForAndroidIT` 连 Android 半场一并跑通 ⇒ **L4** ⇒ E2a 主树已验 **24→39**；4 个失败（`E2aFormalRegisteredSourceIT` 旧 `submission_scope` 列集、`E2aHandoverFormalIT` 名义/实现不符＋夹具漂移、`E2aTemporaryArchiveRecoveryIT` 归档子进程、`E2aTemporaryCommandBrowserIT` 见下）**均非产品缺陷**。**A0.3** 恢复链 pinned 批次 **25 类/696 项/0 失败/0 错误/0 跳过**、`portReleased=True`（首轮因保留实例崩溃恢复需约 41 秒预热超时，失败轮保留）。**659** 按裁定⑤仪表化＋**事后全部 `git checkout --` 撤回**：唯一抛出点 `TemporaryLinkOperation.java:43`，`want` ≠ `got`（`total=1`）⇒ 产品守卫按设计拒绝**过期候选摘要**，**不是产品缺陷**，改判"**harness 侧协议未闭合、单列**"，无需再对产品侧仪表化。**A0.2 未执行**（两个 V36 IT 自生成密钥对；真正阻塞＝一次性 attempt 已被消费，待用户选择改 attempt 常量或改为可配置）。另交付四份提案：K1 通过判据、B2 单批范围＋最小验收、B4 锚点保管/轮换、B7 两树整合顺序＋回归清单。开关仍全默认 false；K1 仍未通过 |
 
-| R09 C2 **B1-3 S33：可执行清单固化与用户裁定/授权登记**（**纯文档轮，未开工**） | [S33 记录](history/R09_C2_B1_3_S33_EXECUTION_CHECKLIST_2026-09-29.md)：把十步完成度盘点固化为[可执行清单](../REMAINING_DEVELOPMENT_PLAN.md)（A0 主线收尾／A1 R06／A2 R07／A3 R08／A4 R09／A5 两树整合／C 现场条件项），并登记用户 2026-09-29 裁定/授权七项：①先出 K1 通过判据提案再决定补做到通过或接受为已知边界（提案前 K1 仍未通过）；②先出 B2 单批范围＋最小验收提案，获批后接线；③**允许** harness 用 JDK 生成**仅隔离用**等价私钥跑 V36 stopwriter/auditarchive（只落 `.local`，不入库/不入 APK）；④先出锚点保管/轮换提案再实施 B9；⑤**授权**对 659 的产品侧命令上下文守卫做一次带日志仪表化运行（仅本机隔离、事后撤回；仍无法定位则改判"当前 harness 不可验"并单列）；⑥生产边界保持全关；⑦先出两树整合顺序＋回归清单提案。**本轮未跑测试、未改业务/测试代码、未开开关**；已验基线（E2a 主树 24 个门控 IT、库存家族 10 个 IT＋11 夹具、Android 套件 0 失败、恢复链 25 类/696 项/0/0）作为交接输入复用。开关仍全默认 false；K1 仍未通过 |
+| R09 C2 **B1-3 S33：可执行清单固化与用户裁定/授权登记**（**纯文档轮，未开工**） | [S33 记录](history/R09_C2_B1_3_S33_EXECUTION_CHECKLIST_2026-09-29.md)：把十步完成度盘点固化为[可执行清单](REMAINING_DEVELOPMENT_PLAN.md)（A0 主线收尾／A1 R06／A2 R07／A3 R08／A4 R09／A5 两树整合／C 现场条件项），并登记用户 2026-09-29 裁定/授权七项：①先出 K1 通过判据提案再决定补做到通过或接受为已知边界（提案前 K1 仍未通过）；②先出 B2 单批范围＋最小验收提案，获批后接线；③**允许** harness 用 JDK 生成**仅隔离用**等价私钥跑 V36 stopwriter/auditarchive（只落 `.local`，不入库/不入 APK）；④先出锚点保管/轮换提案再实施 B9；⑤**授权**对 659 的产品侧命令上下文守卫做一次带日志仪表化运行（仅本机隔离、事后撤回；仍无法定位则改判"当前 harness 不可验"并单列）；⑥生产边界保持全关；⑦先出两树整合顺序＋回归清单提案。**本轮未跑测试、未改业务/测试代码、未开开关**；已验基线（E2a 主树 24 个门控 IT、库存家族 10 个 IT＋11 夹具、Android 套件 0 失败、恢复链 25 类/696 项/0/0）作为交接输入复用。开关仍全默认 false；K1 仍未通过 |
 
 | R09 C2 **B1-2 跨进程围栏切片** | [规则↔实现↔真实多 JVM 用例、失败矩阵与证据](history/R09_C2_B1_2_FENCE_2026-09-29.md)；默认关闭、未接线/部署；K1 仍未通过，未进入 B1-3 |
 
@@ -190,7 +194,7 @@
 | R09 初次 NORMAL 登记 | [验收](history/R09_NORMAL_ADMISSION_ACCEPTANCE_2026-09-26.md)：V40 `recovery_normal_admission` + 不可改删触发器（迁移不插行）；`RecoveryNormalIntent`/`RecoveryNormalRegistration`/`RecoveryNormalRows`，唯一可置回 NORMAL 的组件，要求 RELEASE_READY 终态 + 双侧一致 + 外部写者租约，幂等且 `ordinaryWritesAllowed=false`。定向 75/75、全量 700 tests=699 pass/1 skip、0failure；**隔离 attempt90 通过**（V34→V40、IT 1/1 无 skip、连接/事务排空 0、认证 shutdown；四类拒绝无半条记录且保持 RECOVERY_PENDING）。未接 API/Session/Worker/文件入口 |
 | R09 连接适配器并发 seam/可信反证 | [验收](history/R09_ADMISSION_PROBE_ACCEPTANCE_2026-09-26.md)：新增包内 `RecoveryAdmissionProbe`（默认 `NOOP`）与 `admit(probe)`，probe 点位于 `synchronized invoke` 监视器内；新增 `probeForcedOverlapKeepsAConcurrentCloseOutOfTheInFlightDelegateCall`（14→15）。**反证成立**：仅去掉 `invoke` 的 `synchronized` 后 `gradle exit=1`、failures=1 且失败用例即该断言，备份按字节还原；全量 `test bootJar --rerun-tasks` 691 tests=690 pass/1 既有符号链接条件 skip、0failure/0error。未跑 MySQL/HTTP/APK |
 | R09 连接适配器并发补强 | [验收](history/R09_ADAPTER_CONCURRENCY_ACCEPTANCE_2026-09-26.md)：补 Statement 代理路径的并发执行/关闭与 08006 反例，`RecoveryAdmittedDataSourceTest` 12→14；`test bootJar --rerun-tasks` 全量 690 tests=689 pass/1 既有符号链接条件 skip、0failure/0error；去同步反证当时未成立（监视器无法外部抢占），只声明当前实现下断言确定性通过；主代码零改动、未跑 MySQL/HTTP/APK |
-| R09 连接生命周期 adapter（attempt89） | [当批证据](../outputs/r06-product-20260925-01a0d8fa/admission-attempt89/manifest.sha256)：服务端 `RecoveryAdmittedDataSource`/JDBC 代理/租约毒化修复；全量 688 tests=687 pass/1 既有符号链接条件 skip，bootJar 成功；独立非空 MySQL V34→V39、真实 HTTP、JVM 退出后连接/INNODB_TRX=0/0；未注册 Spring/NORMAL，全入口和生产写权限仍未开放 |
+| R09 连接生命周期 adapter（attempt89） | [本机资料位置说明](LOCAL_ARCHIVE_LOCATIONS.md)（原清单outputs/r06-product-20260925-01a0d8fa/admission-attempt89/manifest.sha256在主树未找到；需按归档说明定向核查，以下仅保留历史结论）：服务端 `RecoveryAdmittedDataSource`/JDBC 代理/租约毒化修复；全量 688 tests=687 pass/1 既有符号链接条件 skip，bootJar 成功；独立非空 MySQL V34→V39、真实 HTTP、JVM 退出后连接/INNODB_TRX=0/0；未注册 Spring/NORMAL，全入口和生产写权限仍未开放 |
 
 | R07-1 交接命令层（REQUEST/APPROVE/PREPARE/ACTIVATE + R07 专用激活路径） | [状态归档](history/R07_1_COMMAND_LAYER_STATUS_2026-09-27.md)：**核心逻辑**已实现，**仅完成编译 + 全量单测（718 项 0 失败 / 1 既有 skip）**；**端到端未验**——14 条断言（8 反例 + 3 幂等 + 3 并发 + 原子性两模式）**全部未跑**，outbox 接线未落代码。控制器 + 契约 0.35.0（paths 130）属**辅助逻辑**，已达"编译 + 全量单测"粒度。提交 `ec58801`、`49e3b0f`。**不得视为 R07-1 完成** |
 | R07 FORMAL 来源夹具（**验证基础设施**类目，未启动） | [阻塞记录](history/R07_FORMAL_FIXTURE_BLOCKER_2026-09-27.md)：累计 **5 轮未成**（attempt 138/139 编译与运行期、140/141/142 三轮推进、143/144 方向 2 自建设备资格）。根因：复用 TEMP 夹具的设备侧采集序号与审计批次（`CAPTURE_CONTENT_CONFLICT`、`冻结审计批次错误`）；方向 2（自建 device/app_user/session/assignment）亦未成立（401→404）。**不是"多修几处"能解决**，需**独立时间盒（长于普通子项）+ 独立验收标准**；现在不启动，待 R07 其他部分或 R06 完成后再专门排期 |

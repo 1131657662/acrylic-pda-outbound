@@ -6,21 +6,24 @@
 ```yaml
 date: 2026-10-12
 branch: codex/development
-head: 31cf0449
-dirty_entries: 76
+head: 4c59de79
+dirty_entries: 67
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 37 }
 server: { contract: 0.56.0, paths: 157, flyway: V85, migrations: 85 }
 ```
 <!-- FACTS_END -->
-用户范围：故障订单由有权后台撤回→重新发布→新设备独立登记并从头作业；自动换机交接、故障进度承接、多跳/接收者激活已取消，旧源码/证据保留。O01–O05/U01–U04必做，按总目标E00–E09及第8节闸门执行；总目标active，局部通过不计完成。
+用户范围：故障订单由有权后台撤回→重新发布→新设备独立登记并从头作业；自动换机交接、故障进度承接、多跳/接收者激活已取消，旧源码/证据保留。O01–O05/U01–U04与UI重设计必做，按总目标E00–E09及第8节闸门执行。用户要求本轮阶段收口；总目标未完成，本聊天工具未发现goal对象，不创建或唤醒旧goal。
 
 ## Git、写权及环境
-- 主树D:/acrylic-pda-outbound、codex/development；HEAD/实际开发远端31cf04491ce712a0c7d463c54c0c9d4a65956fb3，main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86。E01、E02/O01及首页、E03格式/本人/服务端、Android主管消费与原人申请产品已按范围推送；Web审批与FORMAL/规模/中断产品消费者已验已推。唯一写者本聊天01a12a96-895f-7d32-875a-e8a785419cb9，清理聊天idle、其他notLoaded，无子代理/新树/旧树写入。
+- [阶段断点与新会话指令](history/D01_D18_HANDOFF_2026-10-12_P04.md)：主树D:/acrylic-pda-outbound、codex/development；P04源码阶段提交4c59de79ca1faa66f5d4d4fa216620967df36e1a已推送，56个明确源码/测试文件，不计P04完成。main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86。本次文档交付HEAD见生成事实块与.local/session-handoff-20261012-155634/git-delivery.json；该事实块提交后再刷新，工作区看板优先。
+- 全部输入122路径原字节/哈希/diff及随后新增的交接文件、明确提交路径、最终剩余清单/哈希保存在.local/session-handoff-20261012-155634/。61项继承改动SHA-256重核不变；本机请求server/physical-disposition-last-request.json也保留不提交。旧UI/取消换机链/历史/工具不混作本批成果；旧看板先存dashboard-before-closeout.md。Git源码备份不包含.local证据、APK、库或密钥。
+- 本轮唯一交付/文档写者01a12efb-36fe-7801-a0f9-b2b4d04264cb；原开发及其他收口聊天idle，清理notLoaded；无子代理/新树、无重型构建。网页预览聊天01a12f12-aaa1-7ac3-95b1-2132d76de7ef采样idle，但用户预览服务仍在使用，不能据idle判为可停止/清理。交接后下一写者先重新核实写权与进程。
+- 实际预览监听127.0.0.1:5173/PID37328、19434/PID37156、19330/PID35380（1392隔离库）；保持服务运行，不重启/迁移/重置。只读SQL核验后的独立一致性dump与哈希保存在收口目录，不替代原测试输入；原datadir/binlog保留。后文“监听空”仅为对应历史批次，不覆盖本次实况。
 - [E00基线](history/GOAL_E00_BASELINE_2026-10-11.md)及.local/goal-20261011/e03-server-baseline-01/保全全部继承原字节/哈希/diff、远端/33树、进程监听及磁盘。旧换机/UI测试、恢复工具、历史、本机请求与其他继承改动不代提交/恢复功能。本批所有路径及交付快照另落e03-server-review-checkpoint-01。
-- E04/P05普通本机零作业取消已定向验，待按范围提交推送；[验收](history/GOAL_E04_ZERO_DRAFT_CANCEL_2026-10-12.md)及e04-cancel-delivery-01保全全部74路径/原字节/哈希/diff/环境/APK，61项继承原件见e04-cancel-baseline-01，旧UI/换机改动不代提交。129项受影响回归零失败/错误/skip、APK05/lint源码一致；原人停服取消→重读→新进程历史及旧冻结拒绝通过，原冻结正文与计划保持。取消只写本机审计、不删/释放/生成提交；D05整体未完。
+- E04/P05普通本机零作业取消已定向验并提交推送5d36d99d；[验收](history/GOAL_E04_ZERO_DRAFT_CANCEL_2026-10-12.md)及e04-cancel-delivery-01保全全部74路径/原字节/哈希/diff/环境/APK，61项继承原件见e04-cancel-baseline-01，旧UI/换机改动不代提交。129项受影响回归零失败/错误/skip、APK05/lint源码一致；原人停服取消→重读→新进程历史及旧冻结拒绝通过，原冻结正文与计划保持。取消只写本机审计、不删/释放/生成提交；D05整体未完。
 - 隔离1367–1381已使用库均dump/哈希及认证shutdown退出0，失败/漂移库及datadir/binlog保留，task19330/19434/5173监听为空，无重型Gradle。1374DEFINER权限、1375自动input变量、1376 adb成功stderr及1379仓库夹具列各不同指纹1次；1377主管5阶段/1378原人页面/1381 Web组合通过且原业务checksum不变。普通服务e03-supervisor-server-unit-01含bootJar4315项，零失败错误及1个既有Windows符号链接skip，源码一致。
-- 共享3306/ADB、原1233/1293围栏保留；模拟器5562/5564仍在D盘，5560退出且userdata/Keystore保留，实体22D2910042未操作。所有新增产物在D盘.local，未清理。[独立清理记录](history/D_DISK_CLEANUP_2026-10-12.md)保全8份RAM原哈希后压缩及删除34份可重建DLL；清理聊天idle，无源码/库/活动AVD写入。C/D余量约60.0/37.7GiB，精确字节见后续快照disks.json；被忽略证据没有随源码异地备份。
+- 共享3306/ADB、原1233/1293围栏保留；D盘5562/5564及退出5560的userdata/Keystore、实体设备均保全。C/D空闲复测约59.95/35.50GiB，精确字节见收口目录disks-final.json。本轮新增快照/dump在D盘.local，未清理；[独立清理记录](history/D_DISK_CLEANUP_2026-10-12.md)仅是此前历史。大构建/建库/恢复/dump/APK/AVD前复测余量与预计增长，临时/缓存仅对子进程指D盘；只清用途结束、无消费者且可实际重建的产物，先保全输入/命令/依赖/结果/哈希并记录释放空间。失败库/日志/原回执、原资料、唯一证据、活动AVD身份及最终APK不清；不改localDeletionAllowed=false或D16标准。
 
 ## 已验范围及原失败
 - [E01撤回重发](history/GOAL_E01_RECALL_REPUBLISH_2026-10-11.md)：无STOP/ACK及已有REQUESTED撤回、非零占用有权卸货核验释放、新计划修订/旧资格失效和新机从头作业；真实HTTP并发/尾SQL、Web原键重载、Android实际Keystore登记/领取/扫描/冻结/上传验签、Java/MySQL/Android新进程恢复及非空迁移定向通过。普通服务历史回归1个Windows符号链接skip单列；失败库/运行器原件保留，最终候选组合未做。
@@ -37,8 +40,10 @@ server: { contract: 0.56.0, paths: 157, flyway: V85, migrations: 85 }
 - 1370非空升级1项通过，原成功出库/账务及全原业务表checksum、原权限/岗位关系守恒，专用权限只授主管且Flyway validate通过；源码一致。1371旧迁移业务1项通过但期间新增契约测试导致sourceUnchanged=false，原件保留不计交付；1372固定输入复验1项通过且源码一致，普通服务4315项仅1个既有Windows符号链接skip；契约解析通过。Python未装YAML模块的工具失败原件保留，复用服务端已有SnakeYAML，不安装新依赖。
 - [原人耐久申请产品](history/GOAL_E03_RESCUE_REQUEST_PRODUCT_2026-10-12.md)：先存原键/正文/native签名、独立加密日志及回执/撤销终态保护；定向57项、受影响最终回归101项、APK03/lint通过且源码一致。1378实际导航/保存未发送→新进程HTTP提交/原键重试→签名审批查询、换人拒绝及停服保全通过，服务申请始终一份。phase01仅可选目录收集失败1次保留，修复后02通过。P01/O02/U03、D11/D12/D17仍未完成；正式来源/规模/文件故障。
 - [FORMAL/规模/中断](history/GOAL_E03_FORMAL_SCALE_2026-10-12.md)：106项受影响回归零失败/skip，APK03/lint、在线产品预置/注销、停服并关闭Wi-Fi/data的FORMAL真实SAF回读及独立登记/固定钥回执/全Excel通过。实际force-stop生成/目标回读后两新进程保全通过，原10业务表及服务出库checksum不变；1383 dump/hash/认证停机退出0、任务监听空。1382 SOURCE解析累计2次、provider缺Kotlin/签名封装/规模seed各1次保留，修正后通过；pc02正确规模/预览，pc01保留不作最终输入。O02独立来源随E06，U03全范围仍未完；APK与完整日志在e03-o02-delivery-01及本批历史目录，网络原设置/映射已恢复。
+- [E04/P04阶段备份](history/GOAL_E04_CANDIDATE_EXCLUSION_2026-10-12.md)：既有签名命令/回执审计、锁内主管原版本/依据与作业库存阻断、排除→关联→集合变化后重核→确认及原键耐久恢复已有切片证据；1390实际HTTP/新JVM2项、固定包外公钥独立核4原件通过。服务regression02完整4345项零失败/错误及1个既有Windows符号链接skip；1392 Chrome/HTTP三项零失败/skip/flaky，Web type/build/contract退出0；Android03一项原HTTP回执/native Room通过。收口只收集/复核2156/316/760个相应输入文件哈希无漂移，未重跑全量测试。
 - E04原失败：unit01队列夹具1次；cancel01/02按钮各阶段原件保留，按实际系统栏滚动新证据修复；restart02历史行滚动1次，经历史列表外侧margin后restart03通过。首个CANCELLED与独立复验原单均保留。后续E04 TEMP候选排除/主管非零取消与更正对账→E05净结果/受控中转→E06独立sku采集→E07历史钥/恢复/外置副本→E08留存/遗漏/U04→E09最终候选组合。D04/D05/D08/D09/D11–D18、O03–O05及暂缓U项仍有开发缺口，不移入C档。仍有可执行工作，总目标不complete。
 - P01–P08按授权默认直接开发；人工关联/主管签字/实物核验不能代签。生产默认和七类决定handler/POST/放行/证据写入/关闭能力、localDeletionAllowed=false保持；不接原库/现网、不合main、不部署/发布/标签/Release、不正式签名、不绕审批、不删既有证据。原身份/Keystore、双真机/实体键/断电/长时规模、业务USB/MTP/OTG、正式HTTPS/异地介质/RPO-RTO/Linux及现场仅按C01–C08保留。
+- P04原失败/regression01/1391/Android向量与首轮消费/SQL消费者原日志保留。收口SQL在新p04-sql-utf8仅SELECT、显式utf8mb4/UTF-8复核三条原命令/回执及唯一事件/审计/键、原候选/来源映射/占用与能力false通过；旧列名/漏计原成功命令/解码失败不删。Android真实产品取得可信映射/结果与页面闭环、适用非空历史兼容和最终候选组合仍未验；先补这些，再E04其余P05/P06→E05–E09。P04/D04和总目标未完，O/U及UI重设计未取消；不以native单项/SQL/阶段备份代替产品完成。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。

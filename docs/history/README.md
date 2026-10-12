@@ -1,5 +1,9 @@
 # 历史归档
 
+- [D01–D18阶段收口与新会话断点](D01_D18_HANDOFF_2026-10-12_P04.md)：P04开发阶段备份、验证边界、写权/预览环境和磁盘管理；总目标仍未完成。
+
+- [E04候选逐项排除（阶段备份）](GOAL_E04_CANDIDATE_EXCLUSION_2026-10-12.md)：主管签名排除与selection消费、服务完整回归、Chrome/HTTP及Android原件消费证据；实际客户端闭环、适用历史非空兼容与最终组合继续，失败原件保全。
+
 - [E04普通本机零作业取消](GOAL_E04_ZERO_DRAFT_CANCEL_2026-10-12.md)：保留原事实的取消、队列/Room/新进程产品及受影响回归；[前看板](ORCHESTRATION_STATE_before_e04_cancel_2026-10-12.md)和失败原件保留，非零取消/P04/P06继续。
 
 - [E03 FORMAL、规模与中断](GOAL_E03_FORMAL_SCALE_2026-10-12.md)：原Keystore停服/断网产品、电脑原件/签名/表格和新进程未完成保全；[前看板](ORCHESTRATION_STATE_before_e03_formal_2026-10-12.md)及原失败保留，后续E04–E09继续。
