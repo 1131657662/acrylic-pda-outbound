@@ -12,11 +12,12 @@ import org.springframework.stereotype.Component;
 final class QuarantineContext {
     private final QuarantineOrigin origins;
     private final PcQuarantineOrigin pcOrigins;
+    private final FormalQuarantineOrigin formalOrigins;
     private final QuarantineFacts facts;
     private final CorrectionStore cases;
     private final ReconciliationRequestStore requests;
-    QuarantineContext(QuarantineOrigin origins,PcQuarantineOrigin pcOrigins,QuarantineFacts facts,CorrectionStore cases,ReconciliationRequestStore requests) {
-        this.origins=origins; this.pcOrigins=pcOrigins; this.facts=facts; this.cases=cases; this.requests=requests;
+    QuarantineContext(QuarantineOrigin origins,PcQuarantineOrigin pcOrigins,FormalQuarantineOrigin formalOrigins,QuarantineFacts facts,CorrectionStore cases,ReconciliationRequestStore requests) {
+        this.origins=origins; this.pcOrigins=pcOrigins; this.formalOrigins=formalOrigins; this.facts=facts; this.cases=cases; this.requests=requests;
     }
 
     ObjectNode read(UUID warehouse,UUID bale,UUID caseId,boolean lock) {
@@ -51,11 +52,12 @@ final class QuarantineContext {
     private ObjectNode origin(UUID bale,UUID caseId) {
         var origin=origins.read(bale,caseId);
         if(origin==null) origin=pcOrigins.read(bale,caseId);
+        if(origin==null) origin=formalOrigins.read(bale,caseId);
         if(origin==null) throw CorrectionCommand.missing(); return origin;
     }
     byte[] original(JsonNode context) {
         var origin=context.at("/facts/origin");
-        return "PC".equals(origin.path("sourceKind").asText())
+        return Set.of("PC","FORMAL").contains(origin.path("sourceKind").asText())
             ? SubmissionJson.canonical(origin.path("originalReceipt")).getBytes(java.nio.charset.StandardCharsets.UTF_8)
             : origins.original(origin);
     }

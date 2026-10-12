@@ -2,6 +2,8 @@
 
 # 开发验收索引
 
+- [E04/P06 FORMAL原实物处置解隔离](history/GOAL_E04_P06_FORMAL_QUARANTINE_2026-10-13.md)：原恢复/STOP、不可变实物批准、同原机续作与应用签名交叉核验；168项定向/bootJar、真实HTTP自批/篡改/回滚/并发、TEMP/PC原副本非空及原字节、新JVM、Web/Chrome/固定钥/SQL和受影响账务组合通过。未关闭TEMP及历史贡献继续，D09/D10及总目标未整体完成。
+
 - [E04/P06 PC原处置解隔离](history/GOAL_E04_P06_PC_QUARANTINE_2026-10-13.md)：原STOP/方案/审批/应用与逐包摘要交叉核验，实物附件及独立批准仅删除精确owner；153项定向、真实HTTP自批/篡改/回滚/并发、原非空与TEMP组合、Web/Chrome/新JVM、固定钥/SQL及账务组合通过。FORMAL、未关闭TEMP和历史贡献继续，D09/D10及总目标未整体完成。
 
 - [E04/P06已关闭TEMP实物解隔离](history/GOAL_E04_P06_QUARANTINE_2026-10-13.md)：原签名、上游与精确隔离owner固定，实物附件和独立审批仅解除原隔离；原非空HTTP、最终Web/Chrome、固定钥/SQL、新JVM与受影响账务组合通过。FORMAL/PC、未关闭来源及历史贡献仍必做，D09/D10和总目标未整体完成。

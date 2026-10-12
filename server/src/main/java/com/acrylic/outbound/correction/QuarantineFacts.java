@@ -22,12 +22,22 @@ final class QuarantineFacts {
             jdbc.queryForList("SELECT id FROM pc_exception_case WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("caseId").asText());
             jdbc.queryForList("SELECT id FROM pc_exception_plan WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("planId").asText());
             jdbc.queryForList("SELECT id FROM pc_disposition WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("dispositionId").asText());
-        } else jdbc.queryForList("SELECT id FROM submission_scope WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("scopeId").asText());
+        } else if("FORMAL".equals(origin.path("sourceKind").asText())) lockFormal(origin);
+        else jdbc.queryForList("SELECT id FROM submission_scope WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("scopeId").asText());
         jdbc.queryForList("SELECT id FROM bale WHERE id=? FOR UPDATE",Ids.bytes(bale));
         jdbc.queryForList("SELECT bale_id FROM inventory_position WHERE bale_id=? FOR UPDATE",Ids.bytes(bale));
         jdbc.queryForList("SELECT bale_id FROM bale_commitment WHERE bale_id=? FOR UPDATE",Ids.bytes(bale));
         for(String table:java.util.List.of("dispatch_record","inventory_ledger","correction_ledger"))
             jdbc.queryForList("SELECT id FROM "+table+" WHERE bale_id=? ORDER BY id FOR UPDATE",Ids.bytes(bale));
+    }
+
+    private void lockFormal(JsonNode origin) {
+        jdbc.queryForList("SELECT id FROM submission_scope WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("scopeId").asText());
+        jdbc.queryForList("SELECT id FROM order_change_request WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("requestId").asText());
+        jdbc.queryForList("SELECT id FROM recovery_package WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("recoveryPackageId").asText());
+        jdbc.queryForList("SELECT id FROM order_continuation WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("continuationId").asText());
+        jdbc.queryForList("SELECT id FROM physical_disposition_evidence WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("dispositionId").asText());
+        jdbc.queryForList("SELECT id FROM submission WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("submissionId").asText());
     }
 
     ObjectNode read(UUID bale,ObjectNode origin) {

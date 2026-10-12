@@ -70,16 +70,20 @@ async function confirm(): Promise<void> {
             <el-descriptions-item label="原来源/提交">{{ selected.context.facts.origin.scopeId }} / {{ selected.context.facts.origin.submissionId }}</el-descriptions-item>
             <el-descriptions-item label="原证据集/核验">{{ selected.context.facts.origin.evidenceSetId }} / {{ selected.context.facts.origin.verificationId }}</el-descriptions-item>
           </template>
-          <template v-else>
+          <template v-else-if="selected.context.facts.origin.sourceKind === 'PC'">
             <el-descriptions-item label="原PC作业/方案">{{ selected.context.facts.origin.workId }} / {{ selected.context.facts.origin.planId }}</el-descriptions-item>
             <el-descriptions-item label="依据类型">原数据库审批、停止快照和应用记录</el-descriptions-item>
           </template>
-          <el-descriptions-item :label="selected.context.facts.origin.sourceKind === 'PC' ? '原应用回执' : '原签名回执'">{{ selected.context.facts.origin.originalReceipt.receiptId }}</el-descriptions-item>
+          <template v-else>
+            <el-descriptions-item label="原恢复包/应用提交">{{ selected.context.facts.origin.recoveryPackageId }} / {{ selected.context.facts.origin.submissionId }}</el-descriptions-item>
+            <el-descriptions-item label="依据类型">原实物批准、原机停止签名和应用提交</el-descriptions-item>
+          </template>
+          <el-descriptions-item :label="selected.context.facts.origin.sourceKind === 'TEMP' ? '原签名回执' : selected.context.facts.origin.sourceKind === 'PC' ? '原应用回执' : '原实物批准'">{{ selected.context.facts.origin.originalReceipt.receiptId }}</el-descriptions-item>
           <el-descriptions-item label="原关闭人/时刻">{{ selected.context.facts.origin.originalReceipt.actor.principalId }} / {{ selected.context.facts.origin.originalReceipt.recordedAt }}</el-descriptions-item>
           <el-descriptions-item label="原关闭原因">{{ selected.context.facts.origin.closeReason }}</el-descriptions-item>
           <el-descriptions-item label="原回执摘要">{{ selected.context.facts.origin.originalReceiptSha256 }}</el-descriptions-item>
         </el-descriptions>
-        <el-button :disabled="busy || uploading || !kind" @click="kind && source(kind)">{{ selected.context.facts.origin.sourceKind === 'PC' ? '下载原PC审批依据' : '下载原隔离签名回执' }}</el-button>
+        <el-button :disabled="busy || uploading || !kind" @click="kind && source(kind)">{{ selected.context.facts.origin.sourceKind === 'TEMP' ? '下载原隔离签名回执' : selected.context.facts.origin.sourceKind === 'PC' ? '下载原PC审批依据' : '下载原FORMAL处置依据' }}</el-button>
         <p v-if="selected.context.submittedCommand">原实物核验：{{ selected.context.submittedCommand.evidence.place }} · {{ selected.context.submittedCommand.evidence.observedAt }} · {{ selected.context.submittedCommand.evidence.reference }}</p>
         <el-button v-for="(attachment, index) in selected.context.submittedCommand?.evidence.attachments" :key="attachment.attachmentId" :disabled="busy || uploading" @click="download(attachment)">读取原始凭据 {{ index + 1 }}</el-button>
         <p>须核验实物在库且隔离条件已解除。批准保留原处置、结果、库存账和周期，上游缺码、其他占用及账务冲突继续阻止出库。</p>

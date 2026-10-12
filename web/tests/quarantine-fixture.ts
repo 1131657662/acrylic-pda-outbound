@@ -30,7 +30,7 @@ export async function quarantineSubmit(page:Page,label:string):Promise<z.infer<t
   quarantineEvidence(`${receipt.commandId}.command.json`,result.request().postData()??''); quarantineEvidence(`${receipt.commandId}.receipt.json`,bytes);
   await expect(page.getByRole('dialog')).toHaveCount(0); return receipt;
 }
-export function quarantineSource(receipt:z.infer<typeof receiptSchema>):{hash:string;kind:'TEMP'|'PC'} {
+export function quarantineSource(receipt:z.infer<typeof receiptSchema>):{hash:string;kind:'TEMP'|'PC'|'FORMAL'} {
   const preparation=preparationSchema.parse({context:receipt.context,expected:receipt.expected,capabilities:receipt.capabilities});
   const origin=preparation.context.facts.origin;
   return {hash:origin.originalReceiptSha256,kind:origin.sourceKind};

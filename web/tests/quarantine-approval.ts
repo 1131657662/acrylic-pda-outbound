@@ -1,10 +1,10 @@
 import { expect, type Page } from '@playwright/test';
 import { quarantineEvidence } from './quarantine-fixture';
 import { createHash } from 'node:crypto';
-export async function quarantineReview(page:Page,bytes:Buffer,origin:{hash:string;kind:'TEMP'|'PC'}):Promise<void> {
+export async function quarantineReview(page:Page,bytes:Buffer,origin:{hash:string;kind:'TEMP'|'PC'|'FORMAL'}):Promise<void> {
   await expect(page.getByText('原隔离与关闭依据',{exact:true})).toBeVisible();
   const source=page.waitForResponse(r=>r.url().includes('/quarantine/original-receipt?'));
-  await page.getByRole('button',{name:origin.kind==='PC'?'下载原PC审批依据':'下载原隔离签名回执',exact:true}).click(); const sourceResponse=await source;
+  await page.getByRole('button',{name:origin.kind==='PC'?'下载原PC审批依据':origin.kind==='FORMAL'?'下载原FORMAL处置依据':'下载原隔离签名回执',exact:true}).click(); const sourceResponse=await source;
   expect(sourceResponse.status()).toBe(200); const sourceBytes=await sourceResponse.body();
   expect(createHash('sha256').update(sourceBytes).digest('hex')).toBe(origin.hash);
   if(origin.kind==='PC') {
@@ -12,7 +12,12 @@ export async function quarantineReview(page:Page,bytes:Buffer,origin:{hash:strin
     expect(JSON.parse(sourceBytes.toString()).proofType).toBe('PC_DATABASE_ORIGINALS');
     expect(JSON.parse(sourceBytes.toString()).signedReceipt).toBeUndefined();
   }
-  quarantineEvidence(origin.kind==='PC'?'original-pc-proof.json':'original-quarantine-receipt.json',sourceBytes);
+  if(origin.kind==='FORMAL') {
+    await expect(page.getByText('原实物批准、原机停止签名和应用提交',{exact:true})).toBeVisible();
+    const proof=JSON.parse(sourceBytes.toString());expect(proof.proofType).toBe('FORMAL_RECOVERY_APPLICATION_ORIGINALS');
+    expect(proof.signedReceipt).toBeUndefined();expect(proof.recovery.stop.signedReceipt).toBeTruthy();expect(proof.application.receipt.signedReceipt).toBeTruthy();
+  }
+  quarantineEvidence(origin.kind==='PC'?'original-pc-proof.json':origin.kind==='FORMAL'?'original-formal-proof.json':'original-quarantine-receipt.json',sourceBytes);
   await page.screenshot({path:`${process.env.QUARANTINE_WEB_EVIDENCE}/mobile-source.png`});
   const original=page.waitForResponse(r=>r.url().includes('/attachments/')&&r.url().includes('/review?'));
   await page.getByRole('button',{name:'读取原始凭据 1',exact:true}).click(); expect(await(await original).body()).toEqual(bytes);

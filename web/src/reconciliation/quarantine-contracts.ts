@@ -16,9 +16,24 @@ const pcProof = z.object({ proofType: z.literal('PC_DATABASE_ORIGINALS'), receip
     review: z.record(z.string(), z.unknown()), apply: z.record(z.string(), z.unknown()) }), handoverEvidence: z.string() });
 const pcOrigin = z.object({ sourceKind: z.literal('PC'), dispositionId: uuid, workId: uuid, planId: uuid, caseId: uuid,
   entryId: uuid, cycle: positive, closeReason: z.string(), originalReceipt: pcProof, originalReceiptSha256: hash }).catchall(z.unknown());
+const formalProof = z.object({ proofType: z.literal('FORMAL_RECOVERY_APPLICATION_ORIGINALS'), receiptId: uuid,
+  actor: z.object({ principalId: uuid }), recordedAt: z.iso.datetime({ offset: true }),
+  physicalApproval: z.object({ batchId: uuid, requestId: uuid, requestSha256: hash,
+    command: z.record(z.string(), z.unknown()), response: z.record(z.string(), z.unknown()),
+    evidence: z.array(z.record(z.string(), z.unknown())).min(1) }),
+  recovery: z.object({ payloadSha256: hash, body: z.record(z.string(), z.unknown()),
+    stop: z.object({ signedReceipt: z.string().min(30), status: z.literal('STOPPED') }).catchall(z.unknown()) }),
+  application: z.object({ payloadSha256: hash, requestedBy: uuid, approvedBy: uuid,
+    command: z.record(z.string(), z.unknown()), body: z.record(z.string(), z.unknown()),
+    approval: z.object({ signedReceipt: z.string().min(30), status: z.literal('APPROVED') }).catchall(z.unknown()),
+    activation: z.object({ signedReceipt: z.string().min(30), status: z.literal('ACTIVATED') }).catchall(z.unknown()),
+    receipt: z.object({ signedReceipt: z.string().min(30), status: z.enum(['SUCCEEDED', 'ABORTED']) }).catchall(z.unknown()) }) });
+const formalOrigin = z.object({ sourceKind: z.literal('FORMAL'), dispositionId: uuid, scopeId: uuid, submissionId: uuid,
+  recoveryPackageId: uuid, continuationId: uuid, captureId: uuid, cycle: positive, closeReason: z.string(),
+  originalReceipt: formalProof, originalReceiptSha256: hash }).catchall(z.unknown());
 export const preparationSchema = z.object({ context: z.object({ orderId: uuid.nullable(), baleId: uuid, dispositionId: uuid,
   warehouseId: uuid, factsSha256: hash, facts: z.object({
-    origin: z.union([tempOrigin, pcOrigin]),
+    origin: z.union([tempOrigin, pcOrigin, formalOrigin]),
     stock: z.object({ barcode: z.string(), dispatchCycle: positive, bookStatus: z.string(), stockVersion: positive,
       snapshotId: uuid, activeSnapshotId: uuid.nullable(), upstreamPresent: z.union([z.number(), z.boolean()]),
       blockedReason: z.string().nullable() }).catchall(z.unknown()),

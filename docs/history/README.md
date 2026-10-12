@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E04/P06 FORMAL原实物处置解隔离](GOAL_E04_P06_FORMAL_QUARANTINE_2026-10-13.md)：原批准字节与恢复/STOP/续作/应用签名、实物附件及独立批准，真实HTTP/原副本非空/Web/Chrome/新JVM/固定钥和组合通过；失败保留，未关闭来源与历史贡献继续。
+
 - [E04/P06 PC原处置解隔离](GOAL_E04_P06_PC_QUARANTINE_2026-10-13.md)：原数据库审批/应用与逐包摘要，真实实物附件、独立批准、HTTP/非空兼容/Web/Chrome/新JVM/固定钥和受影响组合通过；失败保留，其余来源及总目标继续。
 
 - [E04/P06已关闭TEMP实物解隔离](GOAL_E04_P06_QUARANTINE_2026-10-13.md)：原签名/上游/owner与实物附件固定、独立批准及原键恢复，原非空HTTP、最终Web/Chrome、固定钥/SQL、新JVM和受影响组合通过；其余来源与总目标继续。

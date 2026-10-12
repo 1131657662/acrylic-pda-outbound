@@ -16,8 +16,9 @@ import static com.acrylic.outbound.continuation.ContinuationChecks.conflict;
 public class DispositionApprovals {
     private final RecallAccess access;private final Access permissions;private final RecallStore recalls;private final JdbcTemplate jdbc;
     private final IdempotencyRequests requests;private final SubmissionFiles files;private final DispositionEvidence evidence;
-    public DispositionApprovals(RecallAccess access,Access permissions,RecallStore recalls,JdbcTemplate jdbc,IdempotencyRequests requests,SubmissionFiles files,DispositionEvidence evidence) {
-        this.access=access;this.permissions=permissions;this.recalls=recalls;this.jdbc=jdbc;this.requests=requests;this.files=files;this.evidence=evidence;
+    private final DispositionReceipts receipts;
+    public DispositionApprovals(RecallAccess access,Access permissions,RecallStore recalls,JdbcTemplate jdbc,IdempotencyRequests requests,SubmissionFiles files,DispositionEvidence evidence,DispositionReceipts receipts) {
+        this.access=access;this.permissions=permissions;this.recalls=recalls;this.jdbc=jdbc;this.requests=requests;this.files=files;this.evidence=evidence;this.receipts=receipts;
     }
     public JsonNode read(UUID warehouse,UUID packageId) {
         access.web(warehouse,null,false);owned(warehouse,packageId);return evidence.list(packageId,false);
@@ -36,7 +37,8 @@ public class DispositionApprovals {
         var rows=array(command,"dispositions");require(!rows.isEmpty() && rows.size()<=scans.size(),"请选择需要卸货释放或隔离的包");
         UUID batch=Ids.next();var seen=new HashSet<String>();
         for(var row:rows) { require(seen.add(text(row,"captureId")),"实物处置行重复");save(new Approval(batch,actor,r,p),row,scans.get(text(row,"captureId"))); }
-        requests.record(key,hash,batch);return evidence.list(batch,true);
+        requests.record(key,hash,batch);var response=evidence.list(batch,true);
+        receipts.record(batch,packageId,actor,hash,command,response);return response;
     }
     private void save(Approval a,JsonNode row,JsonNode scan) {
         require(scan!=null,"处置行不在当前恢复包有效集合中");String action=text(row,"action"),physical=text(row,"physicalEvidence").strip();
