@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E03 FORMAL、规模与中断](GOAL_E03_FORMAL_SCALE_2026-10-12.md)：原Keystore停服/断网产品、电脑原件/签名/表格和新进程未完成保全；[前看板](ORCHESTRATION_STATE_before_e03_formal_2026-10-12.md)及原失败保留，后续E04–E09继续。
+
 - [E03 Web主管只读救援产品](GOAL_E03_RESCUE_WEB_2026-10-12.md)：实际Chrome/HTTP审批撤销与原键恢复、独立签名及数据库守恒；完整O02仍未完成。[前看板](ORCHESTRATION_STATE_before_e03_web_2026-10-12.md)保留原断点。
 
 - [E03原人耐久救援申请产品](GOAL_E03_RESCUE_REQUEST_PRODUCT_2026-10-12.md)：先落盘、原键新进程实际HTTP与签名消费、身份/停服拒绝保全；[前看板](ORCHESTRATION_STATE_before_e03_request_2026-10-12.md)保留原断点。

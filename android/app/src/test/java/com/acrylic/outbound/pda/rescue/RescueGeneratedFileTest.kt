@@ -17,6 +17,7 @@ import java.security.Signature
 import java.security.spec.ECGenParameterSpec
 import java.util.Base64
 import java.util.zip.ZipInputStream
+import org.json.JSONObject
 
 @RunWith(RobolectricTestRunner::class) @Config(sdk = [28], application = android.app.Application::class)
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
@@ -75,5 +76,20 @@ class RescueGeneratedFileTest {
         assertThrows(IllegalStateException::class.java) {
             RescueBundle.build(snapshot, RescueSigner(first.publicKey, second.sign))
         }
+    }
+    @Test fun failedGenerationJournalNeverBecomesRecoverableOrChangesOriginalFacts() = scenario { f ->
+        f.scan(); val access = grant(f)
+        val snapshot = RescueRoomSnapshot(f.db).read(RescueTarget("FORMAL", f.assignment), access)
+        val key = signer().publicKey
+        val failing = RescueSigner(key) { throw java.io.IOException("synthetic interrupted generation") }
+        val secret = password
+        assertThrows(java.io.IOException::class.java) { RescueExportFiles(f.context).generate(snapshot, access to failing, secret) }
+        assertTrue(secret.all { it == '\u0000' })
+        assertTrue(RescueExportFiles(f.context).available(access).isEmpty())
+        val journal = File(f.context.noBackupFilesDir, "rescue-exports").listFiles { file -> file.extension == "json" }!!.single()
+        val state = JSONObject(journal.readText())
+        assertEquals("GENERATION_INCOMPLETE", state.getString("state")); assertFalse(state.has("sha256"))
+        assertNull(f.db.submissions().forOrder(f.assignment)); assertEquals("SCANNING", f.db.work().state(f.assignment))
+        assertEquals(1L, f.db.scans().total(f.assignment).count)
     }
 }
