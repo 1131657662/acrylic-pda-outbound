@@ -6,6 +6,7 @@
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="取回本机原记录，不等于出库确认或放行。救援凭据须事先预置；无网时无法得知服务端新撤权。" android:textSize="16sp" />
         <LinearLayout android:id="@+id/credentialsPanel" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
         <Button android:id="@+id/credentialSetup" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="联网预置或撤销本人救援凭据" />
+        <Button android:id="@+id/supervisorRequest" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="原操作员申请主管只读救援" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="已预置的只读身份与范围" android:labelFor="@id/identity" />
         <Spinner android:id="@+id/identity" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="本地救援凭据" android:labelFor="@id/credential" />

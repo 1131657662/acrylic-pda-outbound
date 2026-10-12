@@ -36,6 +36,7 @@ class RescueExportActivity : ComponentActivity() {
     }
     private fun actions() {
         binding.credentialSetup.setOnClickListener { startActivity(Intent(this, RescueCredentialActivity::class.java)) }
+        binding.supervisorRequest.setOnClickListener { startActivity(Intent(this, RescueRequestActivity::class.java)) }
         binding.supervisorImport.setOnClickListener { RescueSupervisorImportDialog.show(this, model::importSupervisor) }
         binding.unlock.setOnClickListener {
             val password = binding.credential.text.toString().toCharArray(); binding.credential.text.clear()
@@ -79,6 +80,7 @@ class RescueExportActivity : ComponentActivity() {
         binding.lockScope.visibility = if (state.unlocked) View.VISIBLE else View.GONE
         binding.lockScope.isEnabled = !state.busy
         binding.unlock.isEnabled = !state.busy; binding.credentialSetup.isEnabled = !state.busy
+        binding.supervisorRequest.isEnabled = !state.busy
         binding.supervisorImport.isEnabled = !state.busy
         binding.identity.isEnabled = !state.busy; binding.order.isEnabled = !state.busy
         binding.readSnapshot.isEnabled = !state.busy && state.unlocked && state.orders.isNotEmpty()

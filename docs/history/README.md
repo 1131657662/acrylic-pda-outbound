@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E03原人耐久救援申请产品](GOAL_E03_RESCUE_REQUEST_PRODUCT_2026-10-12.md)：先落盘、原键新进程实际HTTP与签名消费、身份/停服拒绝保全；[前看板](ORCHESTRATION_STATE_before_e03_request_2026-10-12.md)保留原断点。
+
 - [E03 Android主管只读救援消费](GOAL_E03_SUPERVISOR_ANDROID_2026-10-12.md)：预置/注销/停服原单导出及耐久撤销、真实HTTP与独立电脑消费；原人申请/Web及完整O02继续。前看板见[主管Android前件](ORCHESTRATION_STATE_before_e03_supervisor_android_2026-10-12.md)。
 
 - [E03主管预授权救援](GOAL_E03_DELEGATED_RESCUE_2026-10-12.md)：来源协议、实际服务链/HTTP/事务及非空升级定向证据，失败/漂移原件保留；Android主管预置与跨人产品继续。

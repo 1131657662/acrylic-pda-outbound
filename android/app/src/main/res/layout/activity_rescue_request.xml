@@ -1,0 +1,24 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/pda_canvas">
+    <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="12dp">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="申请主管只读救援" android:textSize="20sp" android:textStyle="bold" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="由原操作员选择本人本机原单，联网提交后仍须主管核准。救援人须已获仓库专用权限；此申请不授扫码、提交或放行权。" android:textSize="16sp" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="本人原订单" android:labelFor="@id/order" />
+            <Spinner android:id="@+id/order" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" />
+            <Button android:id="@+id/nextPage" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="下一页本人原单" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="指定救援人编号（由仓库提供的UUID）" android:labelFor="@id/rescuer" />
+            <EditText android:id="@+id/rescuer" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:inputType="textNoSuggestions" android:singleLine="true" android:maxLength="36" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="申请原因" android:labelFor="@id/reason" />
+            <EditText android:id="@+id/reason" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:inputType="textMultiLine" android:maxLength="1000" android:maxLines="4" />
+            <Button android:id="@+id/prepare" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="保存原申请（尚未发送）" />
+            <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="已保存的本人申请" android:labelFor="@id/request" />
+            <Spinner android:id="@+id/request" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" />
+            <Button android:id="@+id/send" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="按原键提交或重试" />
+            <Button android:id="@+id/refresh" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="查询原申请审批状态" />
+            <Button android:id="@+id/showMaterial" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="查看已取得的签名原件" />
+            <TextView android:id="@+id/detail" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textIsSelectable="true" />
+            <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回" />
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>
