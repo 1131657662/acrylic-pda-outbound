@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E03主管预授权救援](GOAL_E03_DELEGATED_RESCUE_2026-10-12.md)：来源协议、实际服务链/HTTP/事务及非空升级定向证据，失败/漂移原件保留；Android主管预置与跨人产品继续。
+
 - [E03本人只读救援产品切片](GOAL_E03_PRODUCT_READ_2026-10-12.md)：真实预置/停服TEMP原件/SAF、电脑登记核验与新进程取消；主管/规模继续，未计完整O02。前看板见[产品前](ORCHESTRATION_STATE_before_e03_product_2026-10-12.md)、[前驱前](ORCHESTRATION_STATE_before_e03_prefix_2026-10-12.md)、[本人交付前](ORCHESTRATION_STATE_before_e03_own_delivery_2026-10-12.md)。
 
 - [E03应急包格式与电脑核验](GOAL_E03_EMERGENCY_EXPORT_2026-10-11.md)：合成跨运行库验证、原件/处置守恒、失败partial保留及Excel独立消费；产品接线继续。前件看板见[格式自审前](ORCHESTRATION_STATE_before_e03_format_review_2026-10-11.md)。

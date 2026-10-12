@@ -45,13 +45,14 @@ class FaultWithdrawalMigrationIT {
         var f=new SubmissionFixture(new PublicationDriver(mvc,json,IdentityFixture.create(jdbc,passwords,"WAREHOUSE_ADMIN")),jdbc,true,false);
         seedCaptures(f);
         var original=captures();var before=checksums();
-        var migrated=Flyway.configure().dataSource(source).load().migrate();
+        // This test owns the fault-withdrawal upgrade, not subsequent independent rescue migrations.
+        var migrated=Flyway.configure().dataSource(source).target("84").load().migrate();
         assertThat(migrated.migrationsExecuted).isEqualTo(2);
         assertThat(captures()).isEqualTo(original);assertThat(checksums()).containsAllEntriesOf(before);
         assertThat(jdbc.queryForList("SELECT operation_revision FROM submitted_capture ORDER BY id",Integer.class)).containsExactly(1,1);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM fault_withdrawal_stock",Integer.class)).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM order_change_request",Integer.class)).isZero();
-        Flyway.configure().dataSource(source).load().validate();
+        Flyway.configure().dataSource(source).target("84").load().validate();
     }
     private void seedCaptures(SubmissionFixture f) {
         UUID scope=Ids.next();var id=UUID.fromString(f.id());

@@ -1,0 +1,108 @@
+PdaRequests:
+  post:
+    summary: 原人原机提交指定原件只读救援申请
+    description: 默认关闭。须有pda:recover；签名原文绑定人/机/仓库/非空来源及本地订单范围，原键重放须保留完全相同的原文和签名。TEMP范围来自原设备签名声明，不代表服务器已取得本地原件。只读资格不开放扫码、上传、放行、库存释放或删除。
+    security: [{pdaBearer: []}]
+    parameters:
+      - $ref: './rescue-schemas.yaml#/Epoch'
+      - $ref: './rescue-schemas.yaml#/Key'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './rescue-schemas.yaml#/Request'}
+    responses:
+      '200':
+        description: no-store申请原ID与设备原文摘要
+        content:
+          application/json:
+            schema: {$ref: './rescue-schemas.yaml#/RequestEnvelope'}
+      '400': {description: 原文格式、签名范围或原键无效}
+      '401': {description: 身份或设备签名失效}
+      '403': {description: 未获权限或救援人资格}
+      '404': {description: 原正式领取所属不匹配}
+      '409': {description: 默认关闭、恢复代次冲突或原键异文}
+PdaMaterial:
+  get:
+    summary: 原操作员从原PDA读取申请及主管签名授权/撤权原件
+    description: 在线预置入口，不要求客户端保持新扫码资格。只限原人原机同仓且有pda:recover；离线读取由预置本地凭据核验。保留过期/撤销原授权并明确状态，不能宣称离线知道服务器新增撤权。
+    security: [{pdaBearer: []}]
+    parameters:
+      - $ref: './rescue-schemas.yaml#/Id'
+    responses:
+      '200':
+        description: no-store只读材料，localDeletionAllowed恒false
+        content:
+          application/json:
+            schema: {$ref: './rescue-schemas.yaml#/MaterialEnvelope'}
+      '401': {description: 原PDA会话无效}
+      '403': {description: 未获专用权限}
+      '404': {description: 申请不存在或不是原人原机同仓}
+      '409': {description: 默认关闭}
+SupervisorMaterial:
+  get:
+    summary: 有权主管读取指定申请及审批/撤销原件
+    security: [{webSession: []}]
+    parameters:
+      - $ref: './rescue-schemas.yaml#/Id'
+      - $ref: './rescue-schemas.yaml#/Warehouse'
+    responses:
+      '200':
+        description: no-store只读材料
+        content:
+          application/json:
+            schema: {$ref: './rescue-schemas.yaml#/MaterialEnvelope'}
+      '403': {description: 缺rescue:authorize}
+      '404': {description: 无申请或跨仓}
+      '409': {description: 默认关闭}
+Approve:
+  post:
+    summary: 有权主管明确核准指定范围只读救援
+    description: Web Session及CSRF、有rescue:authorize且不能是原操作员。救援人须有同仓rescue:read，原设备须有效且登记钥未变。expiresAt必须显式给出，null仅代表该非空指定原件范围的无期限只读保全，不能覆盖未来订单。同原键返回原授权，新键重复审批拒绝；变更须撤销并另建申请。
+    security: [{webSession: []}]
+    parameters:
+      - $ref: './rescue-schemas.yaml#/Id'
+      - $ref: './rescue-schemas.yaml#/Warehouse'
+      - $ref: './rescue-schemas.yaml#/Epoch'
+      - $ref: './rescue-schemas.yaml#/Key'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './rescue-schemas.yaml#/Approval'}
+    responses:
+      '200':
+        description: no-store原授权ID与RS256签名只读凭据
+        content:
+          application/json:
+            schema: {$ref: './rescue-schemas.yaml#/GrantEnvelope'}
+      '400': {description: 缺明确期限策略、理由或期限无效}
+      '401': {description: 账号/设备状态变化}
+      '403': {description: 权限不足、原操作员自批或救援人无资格}
+      '404': {description: 无申请或跨仓}
+      '409': {description: 默认关闭、登记钥变化、重复审批、原键异文或恢复代次冲突}
+Revoke:
+  post:
+    summary: 有权主管追加指定授权的签名撤权材料
+    description: 要求rescue:authorize、Web Session及CSRF，允许原设备停用后的撤销；原授权/申请不覆盖。同原键返回原撤销签名，新键重复撤销拒绝。原PDA取得材料后本地失效；未取得时不能假称离线知道新撤权。
+    security: [{webSession: []}]
+    parameters:
+      - $ref: './rescue-schemas.yaml#/Id'
+      - $ref: './rescue-schemas.yaml#/Warehouse'
+      - $ref: './rescue-schemas.yaml#/Epoch'
+      - $ref: './rescue-schemas.yaml#/Key'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './rescue-schemas.yaml#/Revocation'}
+    responses:
+      '200':
+        description: no-store原授权ID与RS256撤权凭据（含原授权摘要）
+        content:
+          application/json:
+            schema: {$ref: './rescue-schemas.yaml#/RevocationEnvelope'}
+      '400': {description: 缺理由}
+      '403': {description: 缺权限或原操作员代批}
+      '404': {description: 无授权或跨仓}
+      '409': {description: 默认关闭、已撤销、原键异文或恢复代次冲突}

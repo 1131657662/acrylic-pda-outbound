@@ -1,0 +1,110 @@
+Id:
+  in: path
+  name: id
+  required: true
+  schema: {type: string, format: uuid}
+Warehouse:
+  in: query
+  name: warehouseId
+  required: true
+  schema: {type: string, format: uuid}
+Epoch:
+  in: header
+  name: X-Server-Recovery-Epoch
+  required: true
+  schema: {type: string, pattern: '^[1-9][0-9]*$'}
+Key:
+  in: header
+  name: Idempotency-Key
+  required: true
+  schema: {type: string, pattern: '^[A-Za-z0-9._:-]{16,80}$'}
+Request:
+  type: object
+  required: [originalText, signature]
+  properties:
+    originalText:
+      type: string
+      maxLength: 32768
+      description: UTF-8字节上限32768；JSON严格拒绝重复字段、尾文档及多余字段。精确字段purpose=PDA_RESCUE_REQUEST_V1/requestKey/deviceId/operatorId/warehouseId/rescuerId/orderScope/reason；UUID须小写规范格式，救援人不同于原操作员。
+    signature:
+      type: string
+      maxLength: 256
+      description: 原登记P-256钥对PDA_RESCUE_REQUEST_V1加换行加originalText的ECDSA标准Base64签名。
+Target:
+  type: object
+  required: [source, localOrderId]
+  additionalProperties: false
+  properties:
+    source: {type: string, enum: [FORMAL, TEMP]}
+    localOrderId: {type: string, format: uuid}
+Approval:
+  type: object
+  required: [expiresAt, reason]
+  properties:
+    expiresAt: {type: [string, 'null'], format: date-time}
+    reason: {type: string, minLength: 1, maxLength: 1000}
+Revocation:
+  type: object
+  required: [reason]
+  properties:
+    reason: {type: string, minLength: 1, maxLength: 1000}
+RequestReceipt:
+  type: object
+  required: [requestId, requestSha256]
+  properties:
+    requestId: {type: string, format: uuid}
+    requestSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+GrantReceipt:
+  type: object
+  required: [grantId, signedAuthorization]
+  properties:
+    grantId: {type: string, format: uuid}
+    signedAuthorization: {type: string, description: 固定信任根RS256凭据，不从文件自带公钥建立信任；能力只含readOriginalAllowed=true，其余作业/释放/删除能力false。}
+RevocationReceipt:
+  type: object
+  required: [grantId, signedRevocation]
+  properties:
+    grantId: {type: string, format: uuid}
+    signedRevocation: {type: string}
+Material:
+  type: object
+  required: [request, originalText, deviceSignature, orderScope, status, authorization, revocation, localDeletionAllowed]
+  properties:
+    request: {$ref: '#/RequestReceipt'}
+    originalText: {type: string}
+    deviceSignature: {type: string}
+    orderScope:
+      type: array
+      minItems: 1
+      maxItems: 100
+      items: {$ref: '#/Target'}
+    status: {type: string, enum: [REQUESTED, AUTHORIZED, EXPIRED, REVOKED]}
+    authorization:
+      anyOf: [{$ref: '#/GrantReceipt'}, {type: 'null'}]
+    revocation:
+      anyOf: [{$ref: '#/RevocationReceipt'}, {type: 'null'}]
+    localDeletionAllowed: {type: boolean, const: false}
+RequestEnvelope:
+  allOf:
+    - $ref: './schemas.yaml#/Envelope'
+    - type: object
+      properties:
+        data: {$ref: '#/RequestReceipt'}
+GrantEnvelope:
+  allOf:
+    - $ref: './schemas.yaml#/Envelope'
+    - type: object
+      properties:
+        data: {$ref: '#/GrantReceipt'}
+RevocationEnvelope:
+  allOf:
+    - $ref: './schemas.yaml#/Envelope'
+    - type: object
+      properties:
+        data: {$ref: '#/RevocationReceipt'}
+MaterialEnvelope:
+  allOf:
+    - $ref: './schemas.yaml#/Envelope'
+    - type: object
+      properties:
+        data: {$ref: '#/Material'}

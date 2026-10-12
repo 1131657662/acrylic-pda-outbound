@@ -43,6 +43,7 @@ final class RecoveryRecipientFixture {
         store=release(attempt);
         var generator=KeyPairGenerator.getInstance("EC"); generator.initialize(new java.security.spec.ECGenParameterSpec("secp256r1"));
         receivingKey=generator.generateKeyPair();
+        Files.write(attempt.resolve("private/recipient-device-private.der"),receivingKey.getPrivate().getEncoded(),StandardOpenOption.CREATE_NEW);
         String username=jdbc.queryForObject("SELECT username FROM app_user WHERE id=?",String.class,Ids.bytes(context.source().identity.operatorId()));
         recipient=app.getBean(IdentityStore.class).loadUserByUsername(username); body=statement();
     }
