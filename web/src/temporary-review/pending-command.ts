@@ -1,21 +1,33 @@
 import { z } from 'zod';
 import { commandFactsSchema, commandReceiptSchema, type CommandKind } from './command-contracts';
 import { exclusionInputSchema } from './exclusion-contracts';
+import { closeReceiptSchema, dispositionCommandFactsSchema, dispositionManifestSchema } from './disposition-contracts';
 
 const ownerSchema = z.object({ userId: z.uuid(), warehouseId: z.uuid(), submissionId: z.uuid() });
 export type TemporaryCommandOwner = z.infer<typeof ownerSchema>;
-const bodySchema = commandFactsSchema.strict().extend({
+const candidateBodySchema = commandFactsSchema.strict().extend({
   commandVersion: z.literal(1), commandType: z.enum(['LINK', 'NORMAL_CONFIRM', 'DUPLICATE_EXCLUDE']), commandId: z.uuid(),
   transportRecoveryEpoch: z.string().regex(/^[0-9]+$/), reason: z.string().max(500),
   source: commandFactsSchema.shape.source.strict(),
   expected: commandFactsSchema.shape.expected.strict().extend({ candidateContextSha256: z.string().regex(/^[a-f0-9]{64}$/) }),
   exclusion: exclusionInputSchema.optional(),
+  dispositionManifest: z.never().optional(),
 }).superRefine((body, ctx) => {
   if ((body.commandType === 'DUPLICATE_EXCLUDE') !== (body.exclusion !== undefined))
     ctx.addIssue({ code: 'custom', message: '排除依据与命令类型不匹配' });
 });
+const closeBodySchema = dispositionCommandFactsSchema.strict().extend({
+  commandVersion: z.literal(1), commandType: z.literal('CLOSE_DISPOSITION'), commandId: z.uuid(),
+  transportRecoveryEpoch: z.string().regex(/^[0-9]+$/), reason: z.string().trim().min(1).max(500),
+  source: commandFactsSchema.shape.source.strict(),
+  expected: dispositionCommandFactsSchema.shape.expected.strict().extend({
+    dispositionManifestSha256: z.string().regex(/^[a-f0-9]{64}$/), dispositionManifestVersion: z.literal('1'),
+  }),
+  dispositionManifest: dispositionManifestSchema, exclusion: z.never().optional(),
+});
+const bodySchema = z.union([candidateBodySchema, closeBodySchema]);
 const savedSchema = ownerSchema.extend({
-  version: z.literal(1), kind: z.enum(['LINK', 'NORMAL_CONFIRM', 'DUPLICATE_EXCLUDE']), json: z.string().max(32000),
+  version: z.literal(1), kind: z.enum(['LINK', 'NORMAL_CONFIRM', 'DUPLICATE_EXCLUDE', 'CLOSE_DISPOSITION']), json: z.string().max(262144),
   receipt: commandReceiptSchema.nullable(),
 }).strict();
 export type SavedTemporaryCommand = z.infer<typeof savedSchema>;
@@ -43,6 +55,14 @@ function validated(saved: unknown, owner: TemporaryCommandOwner, kind: CommandKi
     throw new Error('Original request scope mismatch');
   if (value.receipt && (value.receipt.commandId !== body.commandId || value.receipt.commandType !== kind))
     throw new Error('Original receipt mismatch');
+  if (value.receipt && body.commandType === 'CLOSE_DISPOSITION') {
+    const receipt = closeReceiptSchema.parse(value.receipt);
+    if (receipt.actor.principalId !== owner.userId || receipt.originalContext.submissionId !== owner.submissionId
+      || Object.entries(body.expected).some(([key, expected]) => receipt.expected[key] !== expected)
+      || receipt.businessDecision.manifestSha256 !== body.expected.dispositionManifestSha256
+      || JSON.stringify(receipt.businessDecision.products) !== JSON.stringify(body.dispositionManifest.items))
+      throw new Error('Original close facts mismatch');
+  }
   return value;
 }
 

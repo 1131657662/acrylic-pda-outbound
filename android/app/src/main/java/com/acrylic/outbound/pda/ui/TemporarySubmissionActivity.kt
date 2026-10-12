@@ -143,7 +143,7 @@ class TemporarySubmissionActivity : ComponentActivity() {
             if (handover) com.acrylic.outbound.pda.BuildConfig.TEMPORARY_HANDOVER_DEVELOPMENT
             else com.acrylic.outbound.pda.BuildConfig.TEMPORARY_CONTINUATION_DEVELOPMENT)) View.VISIBLE else View.GONE
         evidence.text = if (handover) "补传接收机本轮证据 · 保留待核对" else "补传原机证据 · 保留待核对"
-        evidence.visibility = if (item != null && !terminal) View.VISIBLE else View.GONE
+        evidence.visibility = if (item != null && item.state != "SYNCED") View.VISIBLE else View.GONE
     }
     private fun renderNotice(item: TemporarySubmission?) {
         binding.notice.text = item?.let { "批次：${it.id}\n${it.error}\n" +

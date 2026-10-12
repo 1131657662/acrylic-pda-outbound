@@ -1,0 +1,56 @@
+Facts:
+  type: object
+  additionalProperties: false
+  required: [status, checkedAt, facts, items]
+  properties:
+    status: {type: string, enum: [ABORTED, REJECTED]}
+    checkedAt: {type: string, format: date-time}
+    facts:
+      type: object
+      additionalProperties: false
+      required: [expected, warehouseId, submissionId, workRound, authorizationId, freezeDeviceId, sourceRecoveryEpoch, source]
+      properties:
+        warehouseId: {type: string, format: uuid}
+        submissionId: {type: string, format: uuid}
+        workRound: {type: string, const: '1'}
+        authorizationId: {type: string, format: uuid}
+        freezeDeviceId: {type: string, format: uuid}
+        sourceRecoveryEpoch: {type: string, pattern: '^[0-9]+$'}
+        source: {$ref: './temporary-command-facts-schemas.yaml#/Facts/properties/source'}
+        expected:
+          type: object
+          additionalProperties: false
+          required: [canonicalOrderId, mappingVersion, currentSubmissionId, scopeRound, slotVersion, decisionVersion, receivedPayloadSha256, declaredUploadSha256, planSha256, targetRevision, userAuthVersion, candidateContextSha256, evidenceSetId, evidenceSetSha256, verificationId, verificationVersion, verificationAlgorithmVersion, dispositionManifestSha256, dispositionManifestVersion, retainedManifestSha256, retainedManifestVersion]
+          properties:
+            canonicalOrderId: {type: [string, 'null'], format: uuid}
+            mappingVersion: {type: [string, 'null'], pattern: '^[0-9]+$'}
+            currentSubmissionId: {type: string, format: uuid}
+            scopeRound: {type: string, const: '1'}
+            slotVersion: {type: [string, 'null'], pattern: '^[1-9][0-9]*$'}
+            decisionVersion: {type: [string, 'null'], pattern: '^[0-9]+$'}
+            receivedPayloadSha256: {type: [string, 'null'], pattern: '^[a-f0-9]{64}$'}
+            declaredUploadSha256: {type: [string, 'null'], pattern: '^[a-f0-9]{64}$'}
+            planSha256: {type: [string, 'null'], pattern: '^[a-f0-9]{64}$'}
+            targetRevision: {type: [string, 'null'], pattern: '^[1-9][0-9]*$'}
+            userAuthVersion: {type: string, pattern: '^[1-9][0-9]*$'}
+            candidateContextSha256: {type: 'null'}
+            evidenceSetId: {type: string, format: uuid}
+            evidenceSetSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+            verificationId: {type: string, format: uuid}
+            verificationVersion: {type: string, pattern: '^[1-9][0-9]*$'}
+            verificationAlgorithmVersion: {type: string, pattern: '^[1-9][0-9]*$'}
+            dispositionManifestSha256: {type: 'null'}
+            dispositionManifestVersion: {type: 'null'}
+            retainedManifestSha256: {type: 'null'}
+            retainedManifestVersion: {type: 'null'}
+    items:
+      type: array
+      minItems: 1
+      items:
+        type: object
+        additionalProperties: false
+        required: [baleId, barcode, dispatchCycle]
+        properties:
+          baleId: {type: string, format: uuid}
+          barcode: {type: string, pattern: '^[A-Z0-9]{11}$'}
+          dispatchCycle: {type: string, pattern: '^[0-9]+$'}

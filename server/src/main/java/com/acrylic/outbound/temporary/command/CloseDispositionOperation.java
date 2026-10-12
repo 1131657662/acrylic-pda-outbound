@@ -21,6 +21,8 @@ public final class CloseDispositionOperation implements CommandOperation {
     @Override public void apply(CommandContext context) { throw new IllegalStateException("Full command required"); }
 
     @Override public JsonNode execute(CommandWrite write) {
+        TemporaryDispositionFacts.requireIndependent(UUID.fromString(write.actor().path("principalId").asText()),
+            write.context().id("originalOperatorId"));
         var expected = write.command().expected();
         var verified = verification.readForClose(write.context().id("warehouseId"), write.context().id("scopeId"),
             write.context().id("submissionId"), write.context().version("workRound"), UUID.fromString(expected.path("evidenceSetId").asText()),

@@ -6,16 +6,17 @@
 ```yaml
 date: 2026-10-12
 branch: codex/development
-head: fbebc830
-dirty_entries: 71
+head: 13d9db03
+dirty_entries: 85
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 37 }
-server: { contract: 0.56.0, paths: 157, flyway: V85, migrations: 85 }
+server: { contract: 0.57.0, paths: 158, flyway: V85, migrations: 85 }
 ```
 <!-- FACTS_END -->
 用户范围：故障订单由有权后台撤回→重新发布→新设备独立登记并从头作业；自动换机交接、故障进度承接、多跳/接收者激活已取消，旧源码/证据保留。O01–O05/U01–U04与UI重设计必做。用户已要求恢复完整开发；本聊天goal active，总目标未完成。
 
 ## Git、写权及环境
+- [P05非零取消切片](history/GOAL_E04_P05_NONZERO_CANCEL_2026-10-12.md)通过：输入HEAD/远端13d9db03fb3abc8e26640832aa19fc410ddb6ff9；唯一写者本聊天，无其他活动写者。82路径原件/哈希/diff在p05-resume-baseline-02，61继承仅页面明确单行P05增量。已上传/未上传原Keystore取消→完整STOP→停服新进程→主管实物关闭；Chrome原键刷新/并发/异文/重复关闭、固定公钥及SQL原件/14表守恒通过，分别2包释放及1释放1隔离。176服务/43Android回归、Web类型/构建/契约/7单测通过且源码一致；运行器与未上传UI断言竞态原件保留，按同源恢复补证。1400/1401 dump/hash/认证停机exit0，任务端口空，旧预览不重启。交付快照p05-delivery-01；下一步P06抬头更正撤销补偿/库存差异。C/D采样69033119744/34009284608字节，无清理，产物/临时目录均D盘；总目标active。
 - [P04原机产品接续](history/GOAL_E04_P04_NATIVE_PRODUCT_2026-10-12.md)：唯一写者01a12ff9-1a15-7401-ab7a-1216c9caf68f；输入HEAD/开发远端fbebc8308a4cd2471144240cee36d99e262abd89。68项接续原字节/哈希/diff在.local/goal-20261012/p04-resume-baseline-02/，61项继承原件不变；当次原机自行取得映射/结果、页面闭环、非空历史兼容与受影响组合通过。交付快照p04-delivery-01；下一步P05非零/冻结/已上传主管取消。D04旧前缀暂缓，总目标active。
 - [阶段断点与新会话指令](history/D01_D18_HANDOFF_2026-10-12_P04.md)：主树D:/acrylic-pda-outbound、codex/development；P04源码阶段提交4c59de79ca1faa66f5d4d4fa216620967df36e1a已推送，56个明确源码/测试文件，不计P04完成。main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86。本次文档交付HEAD见生成事实块与.local/session-handoff-20261012-155634/git-delivery.json；该事实块提交后再刷新，工作区看板优先。
 - 全部输入122路径原字节/哈希/diff及随后新增的交接文件、明确提交路径、最终剩余清单/哈希保存在.local/session-handoff-20261012-155634/。61项继承改动SHA-256重核不变；本机请求server/physical-disposition-last-request.json也保留不提交。旧UI/取消换机链/历史/工具不混作本批成果；旧看板先存dashboard-before-closeout.md。Git源码备份不包含.local证据、APK、库或密钥。

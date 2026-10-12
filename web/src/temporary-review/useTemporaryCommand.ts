@@ -3,10 +3,11 @@ import { ApiError, currentRecoveryEpoch, errorText, postRaw, request } from '../
 import { commandFactsSchema, commandReceiptSchema, type CommandFacts, type CommandKind, type CommandReceipt } from './command-contracts';
 import { duplicatePageSchema } from './duplicate-contracts';
 import { exclusionInputSchema, type ExclusionInput } from './exclusion-contracts';
+import { dispositionFactsSchema, dispositionHash, dispositionManifestSchema, type DispositionSelection } from './disposition-contracts';
 import { clearTemporaryCommand, commandOwner, loadTemporaryCommand, lockTemporaryCommand, savedCommandBody,
   saveTemporaryCommand, TemporaryPersistenceError, type SavedTemporaryCommand, type TemporaryCommandOwner } from './pending-command';
 
-interface ExecuteOptions { reason?: string; candidateContextSha256?: string | null; exclusion?: ExclusionInput }
+interface ExecuteOptions { reason?: string; candidateContextSha256?: string | null; exclusion?: ExclusionInput; disposition?: DispositionSelection }
 interface TemporaryCommandHook {
   facts: Ref<CommandFacts | null>; busy: Ref<boolean>; error: Ref<string>; receipt: Ref<CommandReceipt | null>;
   closed: Ref<boolean>; original: Ref<SavedTemporaryCommand | null>;
@@ -71,6 +72,7 @@ class TemporaryCommandLifecycle {
     return page.commandContextSha256;
   }
   private async prepare(owner: TemporaryCommandOwner, kind: CommandKind, options: ExecuteOptions): Promise<SavedTemporaryCommand> {
+    if (kind === 'CLOSE_DISPOSITION') return this.prepareDisposition(owner, options);
     const current = await this.fetchFacts(owner);
     const context = await this.candidateContext(owner, options.candidateContextSha256);
     const body = { commandVersion: 1, commandType: kind, commandId: crypto.randomUUID(),
@@ -78,6 +80,28 @@ class TemporaryCommandLifecycle {
       expected: { ...current.expected, candidateContextSha256: context },
       ...(kind === 'DUPLICATE_EXCLUDE' ? { exclusion: exclusionInputSchema.parse(options.exclusion) } : {}) };
     return { ...owner, version: 1, kind, json: JSON.stringify(body), receipt: null };
+  }
+  private async prepareDisposition(owner: TemporaryCommandOwner, options: ExecuteOptions): Promise<SavedTemporaryCommand> {
+    const selected = options.disposition;
+    if (!selected || !options.reason?.trim()) throw new TemporaryPersistenceError('请核对全部实物并填写主管理由。');
+    const params = new URLSearchParams({ warehouseId: owner.warehouseId, submissionId: owner.submissionId });
+    const current = await request(`/temporary-commands/disposition-facts?${params}`, dispositionFactsSchema);
+    this.assertOwner(owner);
+    if (current.facts.warehouseId !== owner.warehouseId || current.facts.submissionId !== owner.submissionId
+      || JSON.stringify(current.facts) !== JSON.stringify(selected.observed.facts)
+      || JSON.stringify(current.items) !== JSON.stringify(selected.observed.items) || current.status !== selected.observed.status)
+      throw new TemporaryPersistenceError('原停止证据或实物集合已变化，请重新核对全部实物。');
+    const manifest = dispositionManifestSchema.parse(selected.manifest);
+    if (JSON.stringify(manifest.items.map(item => item.baleId)) !== JSON.stringify(current.items.map(item => item.baleId)))
+      throw new TemporaryPersistenceError('实物处置须逐包核对完整原集合。');
+    const body = { commandVersion: 1, commandType: 'CLOSE_DISPOSITION', commandId: crypto.randomUUID(),
+      transportRecoveryEpoch: currentRecoveryEpoch(), reason: options.reason.trim(), ...current.facts,
+      expected: { ...current.facts.expected, dispositionManifestSha256: await dispositionHash(manifest), dispositionManifestVersion: '1' },
+      dispositionManifest: manifest };
+    this.assertOwner(owner);
+    const json = JSON.stringify(body);
+    if (new TextEncoder().encode(json).length > 262144) throw new TemporaryPersistenceError('完整处置原件超过命令限额，请保留原集合交主管核对。');
+    return { ...owner, version: 1, kind: 'CLOSE_DISPOSITION', json, receipt: null };
   }
   private async send(owner: TemporaryCommandOwner, kind: CommandKind, options: ExecuteOptions): Promise<void> {
     this.assertOwner(owner);
@@ -90,9 +114,8 @@ class TemporaryCommandLifecycle {
     this.assertOwner(owner);
     if (result.commandId !== body.commandId || result.commandType !== kind)
       throw new TemporaryPersistenceError('回执与原键或命令类型不匹配，原请求已保留，请核对后重试。');
-    this.receipt.value = result;
     const completed = { ...saved, receipt: result };
-    saveTemporaryCommand(completed); this.original.value = completed; this.facts.value = null;
+    saveTemporaryCommand(completed); this.receipt.value = result; this.original.value = completed; this.facts.value = null;
   }
   async execute(kind: CommandKind, options: ExecuteOptions = {}): Promise<void> {
     if (this.busy.value) return;

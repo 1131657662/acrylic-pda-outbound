@@ -76,6 +76,10 @@ onBeforeUnmount(() => { generation++; });
           label="确认临时出库" hint="确认会在最终规范单上记账、完成槽位并派发；普通确认理由可留空。" />
       </section>
       <TemporaryReviewScans :submission-id="detail.submissionId" :warehouse-id="session.warehouseId" />
+      <section v-if="['ABORTED', 'REJECTED'].includes(detail.status) && session.identity?.permissions.includes('order:dispose')" class="panel">
+        <h2>停止后的实物处置</h2><p>须先从原机补传完整停止证据，再逐包核实卸货或隔离；原批次不会自动释放占用。</p>
+        <el-button @click="router.push({ path: `/temporary-dispositions/${detail.submissionId}`, query: { warehouse: session.warehouseId } })">核对实物处置</el-button>
+      </section>
       <section class="panel"><details class="file-proof"><summary>原来源与批次凭据</summary>
         <p>原临时单：{{ detail.source.clientOrderId }} · 原设备：{{ detail.source.creatorDeviceId }}</p>
         <p>原资格：{{ detail.authorization.authorizationId }} · 原人员版本 {{ detail.authorization.userVersion }} · 原设备版本 {{ detail.authorization.deviceVersion }}</p>

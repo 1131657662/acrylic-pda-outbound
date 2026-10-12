@@ -1,0 +1,26 @@
+Facts:
+  get:
+    summary: 主管核对可关闭TEMP原批次的完整停止证据及逐包实物集合
+    description: 与TEMP命令共用缺省关闭开关。仅本仓order:dispose持有人且须另一主管；原来源当前首轮已取消或主管拒绝、完整STOP核验及精确占用/周期必须一致。沿命令锁顺序读取，不写入决定或占用，不授放行/扫码/本机删除。关闭命令仍逐项重核全部事实，读取不能替代实物卸货核实。未上传原批次允许空canonicalOrderId；缺原机证据拒绝，不生成替代证据。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './temporary-command-paths.yaml#/Warehouse'}
+      - {$ref: './temporary-command-paths.yaml#/SubmissionId'}
+    responses:
+      '200':
+        description: 精确命令前置事实和按UUID协议顺序排列的完整实物集合
+        headers:
+          Cache-Control: {schema: {type: string, const: no-store}}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - type: object
+                  properties:
+                    data: {$ref: './temporary-disposition-schemas.yaml#/Facts'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}

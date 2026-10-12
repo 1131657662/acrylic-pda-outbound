@@ -7,6 +7,7 @@ import com.acrylic.outbound.submissions.SubmissionStore;
 import com.acrylic.outbound.temporary.review.TemporaryDecisionCandidates;
 import com.acrylic.outbound.temporary.review.TemporaryLinkTarget;
 import com.acrylic.outbound.temporary.continuation.TemporaryRoundCompletion;
+import com.acrylic.outbound.common.ApiResponses;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,9 @@ import static org.mockito.Mockito.mock;
 class TemporaryCommandConfigurationTest {
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
         .withUserConfiguration(TemporaryCommandConfiguration.class, TemporaryCommandController.class,
-            TemporaryCloseDispositionController.class)
+            TemporaryCloseDispositionController.class, TemporaryDispositionFactsController.class)
+        .withBean(TemporaryDispositionFacts.class, () -> mock(TemporaryDispositionFacts.class))
+        .withBean(ApiResponses.class, () -> mock(ApiResponses.class))
         .withBean(TemporaryConfirmationSource.class, () -> mock(TemporaryConfirmationSource.class))
         .withBean(TemporaryDecisionCandidates.class, () -> mock(TemporaryDecisionCandidates.class))
         .withBean(TemporaryShortApprovals.class, () -> mock(TemporaryShortApprovals.class))
@@ -45,6 +48,7 @@ class TemporaryCommandConfigurationTest {
             assertThat(context.getBeansOfType(CommandOperation.class)).isEmpty();
             assertThat(context.getBeanNamesForType(TemporaryCommandController.class)).isEmpty();
             assertThat(context.getBeanNamesForType(TemporaryCloseDispositionController.class)).isEmpty();
+            assertThat(context.getBeanNamesForType(TemporaryDispositionFactsController.class)).isEmpty();
         });
     }
 
@@ -53,6 +57,7 @@ class TemporaryCommandConfigurationTest {
             assertThat(context.getBeansOfType(CommandOperation.class)).isEmpty();
             assertThat(context.getBeanNamesForType(TemporaryCommandController.class)).isEmpty();
             assertThat(context.getBeanNamesForType(TemporaryCloseDispositionController.class)).isEmpty();
+            assertThat(context.getBeanNamesForType(TemporaryDispositionFactsController.class)).isEmpty();
         });
     }
 
@@ -67,6 +72,7 @@ class TemporaryCommandConfigurationTest {
             assertThat(operations.stream().map(CommandOperation::commandType).distinct().count()).isEqualTo(9);
             assertThat(context.getBeanNamesForType(TemporaryCommandController.class)).hasSize(1);
             assertThat(context.getBeanNamesForType(TemporaryCloseDispositionController.class)).hasSize(1);
+            assertThat(context.getBeanNamesForType(TemporaryDispositionFactsController.class)).hasSize(1);
         });
     }
 

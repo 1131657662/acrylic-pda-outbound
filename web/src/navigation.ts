@@ -6,6 +6,7 @@ export const navigation = [
   { group: '装车作业', items: [
     { path: '/orders', label: '装车订单', permission: 'order:read', icon: Document },
     { path: '/temporary-reviews', label: '临时待确认', permission: 'temporary_order:confirm', icon: Files },
+    { path: '/temporary-dispositions', label: '临时实物处置', permission: 'order:dispose', icon: Files },
     { path: '/exports', label: '导出中心', permission: 'order:read', icon: Files },
     { path: '/rescue', label: '主管只读救援', permission: 'rescue:authorize', icon: Files },
     { path: '/review-reminders', label: '超时待审', permission: 'submission:review', icon: Bell },
