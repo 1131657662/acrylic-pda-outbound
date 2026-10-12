@@ -2,9 +2,11 @@
 
 # 开发验收索引
 
+- [E04/P04原机产品与历史兼容](history/GOAL_E04_P04_NATIVE_PRODUCT_2026-10-12.md)：实际Keystore原冻结批次页面上传、主管HTTP排除/关联/重核/确认、Android自行取得映射/验签与停服新进程；52项受影响组合、16份真实旧LINK非空恢复读者及原机数据库事实通过。P04子项收口，D04旧前缀暂缓、P05/P06与E05–E09继续，总目标未完成。
+
 - [D01–D18阶段收口及新会话断点](history/D01_D18_HANDOFF_2026-10-12_P04.md)：P04阶段备份、已验与未验边界、全部改动快照、活动预览及磁盘管理；总目标未完成，不计新增开发验收。
 
-- [E04候选逐项排除（开发中）](history/GOAL_E04_CANDIDATE_EXCLUSION_2026-10-12.md)：服务端完整回归、Chrome/HTTP及Android原件native消费已有本轮证据；实际Android产品取得映射/结果、页面闭环、适用历史非空兼容及最终组合未验，不计P04或D04整体通过。
+- [E04候选逐项排除阶段证据](history/GOAL_E04_CANDIDATE_EXCLUSION_2026-10-12.md)：服务完整回归、Chrome/HTTP及Android原件native消费；后续产品/非空兼容补证见上项，D04整体与D18仍未通过。
 
 - [E04普通本机零作业取消](history/GOAL_E04_ZERO_DRAFT_CANCEL_2026-10-12.md)：原身份/队列/占用与未决保护、Room原子取消审计/回滚/原键、新进程历史和旧冻结拒绝、129项受影响回归及APK/lint；非零主管取消、P04/P06和总目标继续，原UI失败保留。
 

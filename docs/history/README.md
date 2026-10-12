@@ -1,8 +1,10 @@
 # 历史归档
 
+- [E04/P04原机产品闭环与历史兼容](GOAL_E04_P04_NATIVE_PRODUCT_2026-10-12.md)：原Keystore页面上传、自行取得可信映射/验签、新进程及52项组合；原历史LINK恢复消费与原机SQL守恒，P04子项收口，失败保全和其余总目标继续。
+
 - [D01–D18阶段收口与新会话断点](D01_D18_HANDOFF_2026-10-12_P04.md)：P04开发阶段备份、验证边界、写权/预览环境和磁盘管理；总目标仍未完成。
 
-- [E04候选逐项排除（阶段备份）](GOAL_E04_CANDIDATE_EXCLUSION_2026-10-12.md)：主管签名排除与selection消费、服务完整回归、Chrome/HTTP及Android原件消费证据；实际客户端闭环、适用历史非空兼容与最终组合继续，失败原件保全。
+- [E04候选逐项排除（阶段备份）](GOAL_E04_CANDIDATE_EXCLUSION_2026-10-12.md)：主管签名排除与selection消费、服务完整回归、Chrome/HTTP及Android原件消费证据；后续客户端闭环和非空兼容补证见上项，最终候选组合未验，失败原件保全。
 
 - [E04普通本机零作业取消](GOAL_E04_ZERO_DRAFT_CANCEL_2026-10-12.md)：保留原事实的取消、队列/Room/新进程产品及受影响回归；[前看板](ORCHESTRATION_STATE_before_e04_cancel_2026-10-12.md)和失败原件保留，非零取消/P04/P06继续。
 
