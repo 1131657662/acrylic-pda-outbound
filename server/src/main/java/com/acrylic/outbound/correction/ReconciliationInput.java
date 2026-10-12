@@ -12,9 +12,9 @@ final class ReconciliationInput {
     static void validate(JsonNode body) {
         var allowed = new HashSet<>(Set.of("commandVersion", "commandId", "commandType", "warehouseId",
             "transportRecoveryEpoch", "reason", "expected"));
-        String id = "RECONCILE_DISCOVER".equals(body.path("commandType").asText()) ? "dispatchId" : "caseId";
+        String id = body.path("commandType").asText().endsWith("_DISCOVER") ? "dispatchId" : "caseId";
         allowed.add(id);
-        if ("RECONCILE_SUBMIT".equals(body.path("commandType").asText())) allowed.add("evidence");
+        if (body.path("commandType").asText().endsWith("_SUBMIT")) allowed.add("evidence");
         var actual = new HashSet<String>(); body.fieldNames().forEachRemaining(actual::add);
         if (!actual.equals(allowed) || !body.path("commandVersion").isIntegralNumber() || body.path("commandVersion").asInt()!=1)
             throw invalid();

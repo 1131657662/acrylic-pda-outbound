@@ -5,6 +5,7 @@ import java.util.*;
 /** Fixed preparation, baseline, projection and work-child coverage for the same warehouse inventory. */
 final class RecoveryReleaseAdditionalQueries {
     private static final String ORDERS="SELECT id FROM outbound_order WHERE warehouse_id=?";
+    private static final String RECONCILIATIONS="SELECT id FROM inventory_reconciliation WHERE warehouse_id=?";
     private static final String SCOPES="SELECT id FROM submission_scope WHERE warehouse_id=?";
     private static final String SUBMISSIONS="SELECT id FROM submission WHERE scope_id IN ("+SCOPES+")";
     private static final String CASES="SELECT id FROM handover_case WHERE warehouse_id=?";
@@ -51,6 +52,11 @@ final class RecoveryReleaseAdditionalQueries {
         Map.entry("pc_submission_entry","submission_id IN ("+PC_SUBMISSIONS+")"),
         Map.entry("pc_review","submission_id IN ("+PC_SUBMISSIONS+")"),
         Map.entry("physical_disposition_evidence","order_id IN ("+ORDERS+")"),
+        Map.entry("reconciliation_request","case_id IN ("+RECONCILIATIONS+")"),
+        Map.entry("reconciliation_evidence","case_id IN ("+RECONCILIATIONS+")"),
+        Map.entry("reconciliation_attachment_use","case_id IN ("+RECONCILIATIONS+")"),
+        Map.entry("reconciliation_posting","case_id IN ("+RECONCILIATIONS+")"),
+        Map.entry("returned_stock_release","case_id IN ("+RECONCILIATIONS+")"),
         Map.entry("submission_chunk","submission_id IN ("+SUBMISSIONS+")"),
         Map.entry("submission_review","submission_id IN ("+SUBMISSIONS+")"),
         Map.entry("submission_upload","submission_id IN ("+SUBMISSIONS+")"),

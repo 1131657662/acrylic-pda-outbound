@@ -19,4 +19,15 @@ class ReconciliationConfiguration {
         ReconciliationRequestStore requests, ReconciliationAttachments attachments, ReconciliationPosting posting) {
         return new ReconciliationApprove(contexts, store, requests, attachments, posting);
     }
+    @Bean CorrectionCommand.Operation returnedStockDiscover(ReconciliationContext contexts, CorrectionStore store, ReconciliationRequestStore requests) {
+        return new ReturnedStockDiscover(contexts, store, requests);
+    }
+    @Bean CorrectionCommand.Operation returnedStockSubmit(ReconciliationContext contexts, CorrectionStore store,
+        ReconciliationRequestStore requests, ReconciliationAttachments attachments) {
+        return new ReturnedStockSubmit(contexts, store, requests, attachments);
+    }
+    @Bean CorrectionCommand.Operation returnedStockApprove(ReconciliationContext contexts, CorrectionStore store,
+        ReconciliationAttachments attachments, ReturnedStockPosting posting) {
+        return new ReturnedStockApprove(contexts, store, attachments, posting);
+    }
 }

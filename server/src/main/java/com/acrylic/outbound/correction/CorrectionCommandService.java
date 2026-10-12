@@ -76,7 +76,7 @@ public class CorrectionCommandService {
         if (input.kind().equals("CREATE")) {
             orderId=input.uuid("orderId"); locks.order(orderId); anchor=store.orderFacts(orderId);
         } else if (input.kind().startsWith("RECONCILE_")) {
-            if (Set.of("RECONCILE_OPEN", "RECONCILE_DISCOVER").contains(input.kind())) anchor=SubmissionJson.object().put("warehouseId",input.text("warehouseId"));
+            if (input.kind().equals("RECONCILE_OPEN") || input.kind().endsWith("_DISCOVER")) anchor=SubmissionJson.object().put("warehouseId",input.text("warehouseId"));
             else { caseId=input.uuid("caseId"); locks.caseRow(caseId); anchor=store.reconciliationFacts(caseId); }
         } else {
             documentId=input.uuid("documentId"); locks.document(documentId); anchor=store.documentFacts(documentId);

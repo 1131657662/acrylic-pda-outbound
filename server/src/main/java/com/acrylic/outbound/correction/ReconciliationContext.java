@@ -17,9 +17,11 @@ final class ReconciliationContext {
     private final CorrectionStore store;
     private final JdbcTemplate jdbc;
     private final com.acrylic.outbound.common.IdentityWriteGuard guard;
+    private final ReturnedStockFacts returned;
     ReconciliationContext(ReconciliationFacts facts, ReconciliationRequestStore requests, CorrectionStore store, JdbcTemplate jdbc,
-        com.acrylic.outbound.common.IdentityWriteGuard guard) {
+        com.acrylic.outbound.common.IdentityWriteGuard guard, ReturnedStockFacts returned) {
         this.facts = facts; this.requests = requests; this.store = store; this.jdbc = jdbc; this.guard = guard;
+        this.returned = returned;
     }
 
     void beforeLocks(CorrectionCommand.Input input) {
@@ -47,7 +49,7 @@ final class ReconciliationContext {
     }
 
     private void attachCase(ObjectNode result, JsonNode caseFacts, UUID id) {
-        if (!"MISSING_POSTING".equals(caseFacts.path("kind").asText())) throw CorrectionCommand.missing();
+        if (!Set.of("MISSING_POSTING", "RETURNED_STOCK").contains(caseFacts.path("kind").asText())) throw CorrectionCommand.missing();
         result.set("case", caseFacts);
         var opened = requests.original(id, false); result.set("discoveredReceipt", opened);
         if (!result.path("orderId").equals(opened.path("orderId"))
@@ -57,7 +59,16 @@ final class ReconciliationContext {
         }
     }
 
-    static boolean isBusiness(String kind) { return Set.of("RECONCILE_DISCOVER", "RECONCILE_SUBMIT", "RECONCILE_APPROVE").contains(kind); }
+    ObjectNode returned(UUID warehouse, UUID dispatch, UUID caseId, boolean lock) {
+        var result = read(warehouse, dispatch, caseId, lock);
+        if (caseId!=null && !"RETURNED_STOCK".equals(result.at("/case/kind").asText())) throw CorrectionCommand.missing();
+        var allFacts = (ObjectNode) result.path("facts");
+        allFacts.set("reopening", returned.read(UUID.fromString(result.path("dispatchId").asText())));
+        result.put("factsSha256", ReconciliationFacts.hash(allFacts)); return result;
+    }
+
+    static boolean isBusiness(String kind) { return Set.of("RECONCILE_DISCOVER", "RECONCILE_SUBMIT", "RECONCILE_APPROVE",
+        "RECONCILE_RETURN_DISCOVER", "RECONCILE_RETURN_SUBMIT", "RECONCILE_RETURN_APPROVE").contains(kind); }
 
     static ObjectNode expected(JsonNode context, String auth) {
         var result = SubmissionJson.object().put("userAuthVersion", auth);

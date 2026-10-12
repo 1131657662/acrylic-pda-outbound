@@ -14,15 +14,17 @@ export function useReconciliation(owner: ReconciliationOwner) {
     if (!alive || session.identity?.id !== owner.actor || session.warehouseId !== owner.warehouse) throw new Error('人员或仓库已变化，原请求未继续。');
   }
   function failed(cause: unknown): void { if (alive) error.value = cause instanceof ApiError ? errorText(cause) : '操作未确认，请保留原请求并核对。'; }
-  async function load(older: false | 'candidates' | 'cases' = false): Promise<void> {
+  async function load(older: false | 'candidates' | 'cases' | 'returned' = false): Promise<void> {
     try {
       assertCurrent(); const saved = loadPending(owner); if (saved?.receipt) await verifyResponse(saved, saved.receipt); pending.value = saved;
       const review = session.identity?.permissions.includes('correction:approve');
       const cursor = older === 'candidates' && list.value?.nextCursor ? `&before=${list.value.nextCursor}`
-        : older === 'cases' && list.value?.nextCaseCursor ? `&beforeCase=${list.value.nextCaseCursor}` : '';
+        : older === 'cases' && list.value?.nextCaseCursor ? `&beforeCase=${list.value.nextCaseCursor}`
+        : older === 'returned' && list.value?.nextReturnedCursor ? `&beforeReturned=${list.value.nextReturnedCursor}` : '';
       const data = await getRaw(`/corrections/reconciliation?warehouseId=${owner.warehouse}&review=${review}${cursor}`, listSchema);
       assertCurrent(); list.value = older && list.value ? { ...list.value,
         ...(older === 'candidates' ? { candidates: [...list.value.candidates, ...data.candidates], nextCursor: data.nextCursor }
+          : older === 'returned' ? { returnedCandidates: [...list.value.returnedCandidates, ...data.returnedCandidates], nextReturnedCursor: data.nextReturnedCursor }
           : { cases: [...list.value.cases, ...data.cases], nextCaseCursor: data.nextCaseCursor }) } : data;
       error.value = ''; blocked.value = false;
     } catch (cause) { failed(cause); blocked.value = true; }
@@ -31,13 +33,13 @@ export function useReconciliation(owner: ReconciliationOwner) {
     if (busy.value) return; busy.value = true;
     selected.value = null;
     try {
-      const target = kind === 'RECONCILE_DISCOVER' ? `dispatchId=${id}` : `caseId=${id}`;
+      const target = kind.endsWith('_DISCOVER') ? `dispatchId=${id}` : `caseId=${id}`;
       const data = await getRaw(`/corrections/reconciliation/context?warehouseId=${owner.warehouse}&commandType=${kind}&${target}`, preparationSchema);
       assertCurrent();
       if (data.context.warehouseId !== owner.warehouse || data.expected.orderId !== data.context.orderId
           || data.expected.dispatchId !== data.context.dispatchId || data.expected.factsSha256 !== data.context.factsSha256
-          || kind === 'RECONCILE_DISCOVER' && data.context.dispatchId !== id
-          || kind !== 'RECONCILE_DISCOVER' && (data.context.case?.caseId !== id || data.expected.caseId !== id))
+          || kind.endsWith('_DISCOVER') && data.context.dispatchId !== id
+          || !kind.endsWith('_DISCOVER') && (data.context.case?.caseId !== id || data.expected.caseId !== id))
         throw new Error('差异上下文不匹配');
       selected.value = data; error.value = '';
     } catch (cause) { failed(cause); } finally { if (alive) busy.value = false; }
@@ -73,8 +75,8 @@ export function useReconciliation(owner: ReconciliationOwner) {
         const context = selected.value; if (!context) throw new Error('差异上下文缺失');
         const command = commandSchema.parse({ commandVersion: 1, commandId: crypto.randomUUID(), commandType: kind, warehouseId: owner.warehouse,
           transportRecoveryEpoch: currentRecoveryEpoch(), reason, expected: context.expected,
-          ...(kind === 'RECONCILE_DISCOVER' ? { dispatchId: context.context.dispatchId } : { caseId: context.context.case?.caseId }),
-          ...(kind === 'RECONCILE_SUBMIT' ? { evidence } : {}) });
+          ...(kind.endsWith('_DISCOVER') ? { dispatchId: context.context.dispatchId } : { caseId: context.context.case?.caseId }),
+          ...(kind.endsWith('_SUBMIT') ? { evidence } : {}) });
         const saved = { ...owner, body: canonical(command), receipt: null, rejection: null }; savePending(saved); await transmit(saved);
       });
     } catch (cause) { failed(cause); } finally { if (alive) busy.value = false; }

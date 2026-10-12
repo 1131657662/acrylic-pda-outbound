@@ -33,7 +33,8 @@ final class RecoveryReleaseScopeSemantics {
         for(String table:List.of("device","submission_scope","submission","temporary_work_origin","outbound_order","handover_case"))
             require(tables.path(table).path("rows").size()==1,"RECOVERY_SCOPE_UNRECONCILED_"+table);
         for(String name:RecoveryReleaseInventoryRows.tableNames()) {
-            if(name.startsWith("pc_") || name.startsWith("correction_") || Set.of("cycle_reopening","inventory_discrepancy",
+            if(name.startsWith("pc_") || name.startsWith("correction_") || name.startsWith("reconciliation_")
+                || Set.of("returned_stock_release","cycle_reopening","inventory_discrepancy",
                     "inventory_reconciliation","dispatch_record","inventory_ledger","order_result_version","order_current_result",
                     "order_assignment","order_continuation","temporary_source_continuation","temporary_handover_activation_ticket").contains(name))
                 require(tables.path(name).path("rowCount").asText().equals("0"),"RECOVERY_SCOPE_UNRECONCILED_"+name);

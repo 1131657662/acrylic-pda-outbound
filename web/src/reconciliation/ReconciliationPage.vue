@@ -7,7 +7,7 @@ const session = useSessionStore();
 </script>
 <template>
   <WorkspaceLayout title="库存差异">
-    <PageHeading title="库存差异" subtitle="以原出库和实际凭据逐笔核对缺账，由另一位主管批准补扣。上游、实物、占用及结果保持可追溯。" />
+    <PageHeading title="库存差异" subtitle="逐笔核对缺账或返库库存账，由独立主管按原事实和实物凭据批准处理。上游、实物、占用及结果保持可追溯。" />
     <ReconciliationWorkspace v-if="session.identity" :key="`${session.identity.id}-${session.warehouseId}`" :actor="session.identity.id" :warehouse="session.warehouseId" />
   </WorkspaceLayout>
 </template>

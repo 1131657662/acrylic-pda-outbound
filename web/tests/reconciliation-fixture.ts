@@ -18,7 +18,7 @@ export async function reconciliationOpen(page:Page,role:'maker'|'checker'):Promi
   await page.getByLabel('密码',{exact:true}).fill(actor.password);await page.getByRole('button',{name:'登录',exact:true}).click();
   await expect(page.getByRole('button',{name:'登录',exact:true})).toHaveCount(0);
   await page.goto(`/inventory-reconciliation?warehouse=${input.warehouse}`);
-  await expect(page.getByRole('region',{name:'库存缺账差异处理'})).toBeVisible();
+  await expect(page.getByRole('region',{name:'库存账务差异处理'})).toBeVisible();
   await expect(page.getByRole('button',{name:'刷新差异与原事实',exact:true})).toBeEnabled();
 }
 export function reconciliationCase(page:Page,id:string):Locator {return page.locator(`[data-case="${id}"]`);}

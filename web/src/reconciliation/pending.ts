@@ -36,6 +36,6 @@ export async function verifyResponse(original: ReconciliationPending, receipt: R
   if (receipt.commandId !== command.commandId || receipt.commandType !== command.commandType || receipt.commandSha256 !== digest
       || receipt.actor.principalId !== original.actor || receipt.actor.warehouseId !== original.warehouse
       || receipt.orderId !== command.expected.orderId
-      || command.commandType !== 'RECONCILE_DISCOVER' && receipt.businessDecision.caseId !== command.caseId
+      || 'caseId' in command && receipt.businessDecision.caseId !== command.caseId
       || JSON.stringify(sorted(receipt.expected)) !== JSON.stringify(sorted(command.expected))) throw new Error('返回结果与差异原请求不匹配。');
 }

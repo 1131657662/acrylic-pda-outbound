@@ -20,6 +20,7 @@ final class CorrectionAccountingHttpFixture {
     final String order, warehouse, dispatch;
     final long originalWeight, originalDispatchWeight;
     final IdentityFixture makerIdentity;
+    final SubmissionFixture formal;
     final SupervisorCorrectionHttp maker, checker;
     final Path evidence, publicKey;
     private final CorrectionStore store;
@@ -28,6 +29,7 @@ final class CorrectionAccountingHttpFixture {
         this.context = context; jdbc = context.getBean(JdbcTemplate.class); store = context.getBean(CorrectionStore.class);
         var confirmation = new TemporaryConfirmationFixture(context, new TemporaryConfirmationFixture.Setup(false, deduct, source -> {}));
         var source = confirmation.source;
+        formal = source.f;
         makerIdentity = source.f.web.identity(); warehouse = makerIdentity.warehouse().toString();
         publicKey = attempt.resolve("private/server-public.der"); evidence = attempt.resolve("accounting/" + name);
         Files.createDirectories(evidence); confirm(confirmation, deduct);
@@ -76,18 +78,27 @@ final class CorrectionAccountingHttpFixture {
         return body;
     }
 
-    ObjectNode cancellation(long targetWeight) {
+    ObjectNode cancellation(long targetWeight) throws Exception {
         return physicalCorrection("DISPATCH_CANCELLATION", targetWeight);
     }
 
-    ObjectNode physicalReturn(long targetWeight) {
+    ObjectNode physicalReturn(long targetWeight) throws Exception {
         return physicalCorrection("PHYSICAL_RETURN", targetWeight);
     }
 
-    private ObjectNode physicalCorrection(String type, long targetWeight) {
+    private ObjectNode physicalCorrection(String type, long targetWeight) throws Exception {
         var body = create(dispatch, 0, targetWeight).put("type", type);
         var line = (ObjectNode) body.path("lines").get(0);
         line.put("evidenceId", UUID.randomUUID().toString()).put("evidenceSha256", "c".repeat(64));
+        if (context.getEnvironment().getProperty("outbound.corrections.attachments.enabled",Boolean.class,false)) {
+            var wire = new CorrectionAttachmentHttp(makerIdentity.user().username(),evidence.resolve("physical-attachment-http.log"));
+            String key = UUID.randomUUID().toString();
+            byte[] bytes = ("ISOLATED physical correction "+dispatch+" "+key).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            Files.write(evidence.resolve(key+"-physical-original.bin"),bytes);
+            var attachment = wire.upload(warehouse,key,bytes,CorrectionAttachmentHttp.sha(bytes),200,false).path("data");
+            line.put("evidenceId",attachment.path("attachmentId").asText()).put("evidenceSha256",attachment.path("evidenceSha256").asText());
+            line.putArray("attachments").add(attachment);
+        }
         return body;
     }
 

@@ -30,9 +30,17 @@ final class ReconciliationPolicy {
     }
 
     static void evidence(JsonNode evidence, Instant now) {
+        physicalEvidence(evidence, now, "DISPATCHED_CONFIRMED");
+    }
+
+    static void returnedEvidence(JsonNode evidence, Instant now) {
+        physicalEvidence(evidence, now, "RETURNED_IN_WAREHOUSE");
+    }
+
+    private static void physicalEvidence(JsonNode evidence, Instant now, String observation) {
         var names = new java.util.HashSet<String>(); evidence.fieldNames().forEachRemaining(names::add);
         if (!evidence.isObject() || !names.equals(Set.of("observedAt", "place", "observation", "reference", "attachments"))
-            || !"DISPATCHED_CONFIRMED".equals(evidence.path("observation").asText())) throw CorrectionCommand.evidenceRequired();
+            || !observation.equals(evidence.path("observation").asText())) throw CorrectionCommand.evidenceRequired();
         text(evidence.path("place"), 200); text(evidence.path("reference"), 500);
         Instant observed;
         try { observed = Instant.parse(evidence.path("observedAt").asText()); }

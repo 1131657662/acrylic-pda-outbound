@@ -16,8 +16,9 @@ class ReconciliationReadController {
     ReconciliationReadController(ReconciliationReadService service) { this.service = service; }
     @GetMapping
     ResponseEntity<byte[]> list(@RequestParam UUID warehouseId, @RequestParam(defaultValue="false") boolean review,
-        @RequestParam(required=false) UUID before, @RequestParam(required=false) UUID beforeCase) {
-        return response(service.list(new ReconciliationReadService.Page(warehouseId, review, before, beforeCase)));
+        @RequestParam(required=false) UUID before, @RequestParam(required=false) UUID beforeCase,
+        @RequestParam(required=false) UUID beforeReturned) {
+        return response(service.list(new ReconciliationReadService.Page(warehouseId, review, before, beforeCase, beforeReturned)));
     }
     @GetMapping("/context")
     ResponseEntity<byte[]> context(@RequestParam UUID warehouseId, @RequestParam(required=false) UUID dispatchId,

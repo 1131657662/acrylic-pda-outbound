@@ -21,8 +21,10 @@ class ReconciliationRequestStore {
             + " WHERE r.case_id=?", Ids.bytes(id));
         if (rows.size() != 1) throw CorrectionCommand.missing();
         var receipt = verifier.verify(rows.getFirst()).receipt();
+        var kinds = submitted ? java.util.Set.of("RECONCILE_SUBMIT", "RECONCILE_RETURN_SUBMIT")
+            : java.util.Set.of("RECONCILE_DISCOVER", "RECONCILE_RETURN_DISCOVER");
         if (!id.toString().equals(receipt.at("/businessDecision/caseId").asText())
-            || !(submitted ? "RECONCILE_SUBMIT" : "RECONCILE_DISCOVER").equals(receipt.path("commandType").asText()))
+            || !kinds.contains(receipt.path("commandType").asText()))
             throw CorrectionCommand.corrupt();
         return receipt;
     }

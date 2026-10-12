@@ -5,12 +5,13 @@ List:
       需显式启用既有更正命令开关，生产默认关闭。review=false需outbound:correct和inventory:reconcile，
       仅列本人发现的案件；review=true需correction:approve，列仓库案件。
       候选仅供核对，执行时仍须原成功、当前有效贡献、占用/周期和缺账事实完整一致。
-      before及beforeCase分别使用nextCursor及nextCaseCursor，各50项，原JSON且no-store。
+      before及beforeCase分别使用nextCursor及nextCaseCursor，beforeReturned使用nextReturnedCursor，分别各50项，原JSON且no-store。
     parameters:
       - {$ref: './correction-header-paths.yaml#/Warehouse'}
       - {in: query, name: review, schema: {type: boolean, default: false}}
       - {in: query, name: before, schema: {type: string, format: uuid}}
       - {in: query, name: beforeCase, schema: {type: string, format: uuid}}
+      - {in: query, name: beforeReturned, schema: {type: string, format: uuid}}
     responses:
       '200': {description: 候选与案件分页, content: {application/json: {schema: {$ref: './reconciliation-schemas.yaml#/List'}}}}
       '403': {$ref: './openapi.yaml#/components/responses/Error'}
@@ -22,10 +23,11 @@ Context:
       发现需dispatchId且禁止caseId，其余需caseId且禁止dispatchId。
       RECONCILE_SUBMIT仅原发现人可读提交上下文，批准需主管权限。
       批准只补实际缺失流水及账务投影，不改变出库结果/周期、占用和隔离，也不授放行或删除资格。
+      RECONCILE_RETURN_*固定原退货/错误出库签名审批及重开周期，提交RETURNED_IN_WAREHOUSE实际附件；独立主管批准仅恢复库存账投影，不新增反向流水、结果版本或周期。缺上游、隔离、占用及原贡献未反向均拒绝；恢复后原退货不可撤销。
       提交的实物核验时刻须非未来且在提交前3天内，1至5份实际受控附件由主管读取核对。
     parameters:
       - {$ref: './correction-header-paths.yaml#/Warehouse'}
-      - {in: query, name: commandType, required: true, schema: {type: string, enum: [RECONCILE_DISCOVER, RECONCILE_SUBMIT, RECONCILE_APPROVE]}}
+      - {in: query, name: commandType, required: true, schema: {type: string, enum: [RECONCILE_DISCOVER, RECONCILE_SUBMIT, RECONCILE_APPROVE, RECONCILE_RETURN_DISCOVER, RECONCILE_RETURN_SUBMIT, RECONCILE_RETURN_APPROVE]}}
       - {in: query, name: dispatchId, schema: {type: string, format: uuid}}
       - {in: query, name: caseId, schema: {type: string, format: uuid}}
     responses:

@@ -32,7 +32,7 @@ final class CorrectionOccupancyRestoration {
         UUID dispatchId = UUID.fromString(line.get("dispatch_id").toString());
         Reopening reopening = reopening(dispatchId, lineId);
         UUID baleId = originalBale(dispatchId, reopening.cycleBefore());
-        requireUnchangedBale(baleId, reopening.cycleAfter());
+        requireUnchangedBale(dispatchId, baleId, reopening.cycleAfter());
         restoreCommitment(dispatchId, baleId, reopening.cycleAfter(), write.recordedAt());
         restored.add(receipt(dispatchId, baleId, reopening));
     }
@@ -70,7 +70,10 @@ final class CorrectionOccupancyRestoration {
         return UUID.fromString(String.valueOf(rows.getFirst().get("bale_id")));
     }
 
-    private void requireUnchangedBale(UUID baleId, int cycleAfter) {
+    private void requireUnchangedBale(UUID dispatchId, UUID baleId, int cycleAfter) {
+        Integer releases = jdbc.queryForObject("SELECT COUNT(*) FROM returned_stock_release WHERE original_dispatch_id=?",
+            Integer.class, Ids.bytes(dispatchId));
+        if (releases!=null && releases>0) throw CorrectionCommand.ledgerConflict();
         Long cycle = jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=? FOR UPDATE", Long.class, Ids.bytes(baleId));
         if (cycle == null || cycle != cycleAfter) throw CorrectionCommand.ledgerConflict();
         var owners = jdbc.queryForList("SELECT bale_id FROM bale_commitment WHERE bale_id=? FOR UPDATE", Ids.bytes(baleId));
