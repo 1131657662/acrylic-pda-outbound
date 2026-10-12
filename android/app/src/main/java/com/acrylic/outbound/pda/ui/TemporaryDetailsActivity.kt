@@ -27,6 +27,10 @@ class TemporaryDetailsActivity : ComponentActivity() {
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets
         }
         binding.create.text = "调整已扫码包"
+        (binding.create.parent as android.widget.LinearLayout).addView(android.widget.Button(this).apply {
+            text = "取消本机零作业草稿"
+            setOnClickListener { startActivity(android.content.Intent(this@TemporaryDetailsActivity, TemporaryCancellationActivity::class.java).putExtra("clientOrderId", id)) }
+        }, 5)
         binding.rescueExport.visibility = android.view.View.VISIBLE
         binding.rescueExport.setOnClickListener {
             startActivity(android.content.Intent(this, RescueExportActivity::class.java).putExtra("source", "TEMP").putExtra("localOrderId", id))

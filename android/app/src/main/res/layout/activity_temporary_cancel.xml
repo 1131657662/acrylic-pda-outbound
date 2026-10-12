@@ -1,0 +1,26 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/root"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true"
+    android:background="@color/pda_canvas" android:paddingHorizontal="12dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+        <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="48dp" android:text="返回原单" />
+        <TextView android:id="@+id/title" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="取消本机零作业草稿" android:textSize="20sp" android:textStyle="bold" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp"
+            android:text="只取消零有效包、零占用且输入已处理的本机草稿。原计划、输入和审计保留。非零、冻结或上传单须走主管处置；结果未知先查原批次。" />
+        <TextView android:id="@+id/summary" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textSize="18sp" android:textIsSelectable="true" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp"
+            android:labelFor="@id/reason" android:text="取消原因（必填）" />
+        <EditText android:id="@+id/reason" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="48dp" android:inputType="text" android:maxLength="500" android:maxLines="3" />
+        <Button android:id="@+id/cancelDraft" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="48dp" android:text="核对并取消本机草稿" android:enabled="false" />
+        <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+        <Button android:id="@+id/retry" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="48dp" android:text="重读原单与取消结果" />
+        <Button android:id="@+id/details" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="48dp" android:text="查看保留的原单明细" />
+    </LinearLayout>
+</ScrollView>

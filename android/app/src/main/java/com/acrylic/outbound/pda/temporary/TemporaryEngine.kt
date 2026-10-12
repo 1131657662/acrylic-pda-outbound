@@ -94,6 +94,23 @@ class TemporaryEngine(private val store: TemporaryWorkStore, private val sound: 
         return result
     }
     fun recover() = resume(requested)
+    @Synchronized fun cancelDraft(id: String, input: TemporaryCancelInput): Deferred<TemporaryDraft> {
+        val result = CompletableDeferred<TemporaryDraft>()
+        if (preserving?.isCompleted == false) {
+            result.completeExceptionally(IllegalStateException("正在停止保全，请等待原操作")); return result
+        }
+        pause()
+        if (!enqueue {
+            try {
+                check(undurable.isEmpty()) { "已有接收输入尚未落盘，不能取消，请保留原机核对" }
+                val row = TemporaryDraftCancellation(store).cancel(id, input)
+                current = id; requested = id; fault = ""
+                mutable.update { it.copy(message = "已取消本机零作业草稿；原记录保留，未作服务端取消") }
+                result.complete(row)
+            } catch (error: Exception) { result.completeExceptionally(error) }
+        }) result.completeExceptionally(IllegalStateException("取消未进入队列，请等待已有输入处理后重试"))
+        return result
+    }
     fun stop(message: String) { fault = message.ifBlank { "存储或输入异常，请停扫核对，原记录保留" }; mutable.update { it.copy(ready = false, blocked = fault) }; sound("ERROR") }
     fun close() { pause(); scope.cancel(); dispatcher.close() }
     private fun active(id: String) = foreground && requested == id && current == id && fault.isEmpty()

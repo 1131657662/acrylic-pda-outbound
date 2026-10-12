@@ -32,6 +32,7 @@
         <activity android:name=".ui.TemporaryDraftActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.TemporaryWorkActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.TemporaryDetailsActivity" android:exported="false" android:screenOrientation="portrait" />
+        <activity android:name=".ui.TemporaryCancellationActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.TemporarySubmissionActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity android:name=".ui.TemporaryContinuationActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity android:name=".ui.LocalDraftEvidenceActivity" android:exported="false" android:screenOrientation="portrait" />

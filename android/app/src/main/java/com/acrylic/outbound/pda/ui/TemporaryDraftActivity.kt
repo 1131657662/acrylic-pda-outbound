@@ -30,6 +30,10 @@ class TemporaryDraftActivity : ComponentActivity() {
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets
         }
         binding.back.setOnClickListener { leave() }
+        (binding.back.parent as LinearLayout).addView(Button(this).apply {
+            text = "取消本机零作业草稿"
+            setOnClickListener { startActivity(Intent(this@TemporaryDraftActivity, TemporaryCancellationActivity::class.java).putExtra("clientOrderId", model.id)) }
+        }, 3)
         binding.add.setOnClickListener { add() }
         binding.save.setOnClickListener { save(false) }; binding.start.setOnClickListener { save(true) }
         (binding.start.parent as LinearLayout).addView(Button(this).apply {

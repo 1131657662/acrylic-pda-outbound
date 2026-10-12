@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-12
 branch: codex/development
-head: b3408192
-dirty_entries: 72
+head: 31cf0449
+dirty_entries: 76
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 37 }
 server: { contract: 0.56.0, paths: 157, flyway: V85, migrations: 85 }
@@ -16,11 +16,11 @@ server: { contract: 0.56.0, paths: 157, flyway: V85, migrations: 85 }
 用户范围：故障订单由有权后台撤回→重新发布→新设备独立登记并从头作业；自动换机交接、故障进度承接、多跳/接收者激活已取消，旧源码/证据保留。O01–O05/U01–U04必做，按总目标E00–E09及第8节闸门执行；总目标active，局部通过不计完成。
 
 ## Git、写权及环境
-- 主树D:/acrylic-pda-outbound、codex/development；HEAD/实际开发远端b34081921f9b89ccccc953cb045c8d75ec97785b，main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86。E01、E02/O01及首页、E03格式/本人/服务端、Android主管消费与原人申请产品已按范围推送；Web审批产品已验已推。唯一写者本聊天01a12a96-895f-7d32-875a-e8a785419cb9，清理聊天idle、其他notLoaded，无子代理/新树/旧树写入。
+- 主树D:/acrylic-pda-outbound、codex/development；HEAD/实际开发远端31cf04491ce712a0c7d463c54c0c9d4a65956fb3，main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86。E01、E02/O01及首页、E03格式/本人/服务端、Android主管消费与原人申请产品已按范围推送；Web审批与FORMAL/规模/中断产品消费者已验已推。唯一写者本聊天01a12a96-895f-7d32-875a-e8a785419cb9，清理聊天idle、其他notLoaded，无子代理/新树/旧树写入。
 - [E00基线](history/GOAL_E00_BASELINE_2026-10-11.md)及.local/goal-20261011/e03-server-baseline-01/保全全部继承原字节/哈希/diff、远端/33树、进程监听及磁盘。旧换机/UI测试、恢复工具、历史、本机请求与其他继承改动不代提交/恢复功能。本批所有路径及交付快照另落e03-server-review-checkpoint-01。
-- 本批明确范围：O02 FORMAL既存原Keystore产品停服导出/电脑核验、规模/中断已验待提交；设计见history/GOAL_E03_FORMAL_SCALE_2026-10-12.md。全dirty原字节/哈希/环境快照e03-o02-checkpoint-01；前看板归档history/ORCHESTRATION_STATE_before_e03_formal_2026-10-12.md，继承改动不代提交。
+- E04/P05普通本机零作业取消已定向验，待按范围提交推送；[验收](history/GOAL_E04_ZERO_DRAFT_CANCEL_2026-10-12.md)及e04-cancel-delivery-01保全全部74路径/原字节/哈希/diff/环境/APK，61项继承原件见e04-cancel-baseline-01，旧UI/换机改动不代提交。129项受影响回归零失败/错误/skip、APK05/lint源码一致；原人停服取消→重读→新进程历史及旧冻结拒绝通过，原冻结正文与计划保持。取消只写本机审计、不删/释放/生成提交；D05整体未完。
 - 隔离1367–1381已使用库均dump/哈希及认证shutdown退出0，失败/漂移库及datadir/binlog保留，task19330/19434/5173监听为空，无重型Gradle。1374DEFINER权限、1375自动input变量、1376 adb成功stderr及1379仓库夹具列各不同指纹1次；1377主管5阶段/1378原人页面/1381 Web组合通过且原业务checksum不变。普通服务e03-supervisor-server-unit-01含bootJar4315项，零失败错误及1个既有Windows符号链接skip，源码一致。
-- 共享3306/ADB、原1233/1293围栏保留；模拟器5562/5564仍在D盘，5560退出且userdata/Keystore保留，实体22D2910042未操作。所有新增产物在D盘.local，未清理。[独立清理记录](history/D_DISK_CLEANUP_2026-10-12.md)保全8份RAM原哈希后压缩及删除34份可重建DLL；清理聊天idle，无源码/库/活动AVD写入。C/D余量约60.1/40.5GiB，精确字节见后续快照disks.json；被忽略证据没有随源码异地备份。
+- 共享3306/ADB、原1233/1293围栏保留；模拟器5562/5564仍在D盘，5560退出且userdata/Keystore保留，实体22D2910042未操作。所有新增产物在D盘.local，未清理。[独立清理记录](history/D_DISK_CLEANUP_2026-10-12.md)保全8份RAM原哈希后压缩及删除34份可重建DLL；清理聊天idle，无源码/库/活动AVD写入。C/D余量约60.0/37.7GiB，精确字节见后续快照disks.json；被忽略证据没有随源码异地备份。
 
 ## 已验范围及原失败
 - [E01撤回重发](history/GOAL_E01_RECALL_REPUBLISH_2026-10-11.md)：无STOP/ACK及已有REQUESTED撤回、非零占用有权卸货核验释放、新计划修订/旧资格失效和新机从头作业；真实HTTP并发/尾SQL、Web原键重载、Android实际Keystore登记/领取/扫描/冻结/上传验签、Java/MySQL/Android新进程恢复及非空迁移定向通过。普通服务历史回归1个Windows符号链接skip单列；失败库/运行器原件保留，最终候选组合未做。
@@ -37,7 +37,7 @@ server: { contract: 0.56.0, paths: 157, flyway: V85, migrations: 85 }
 - 1370非空升级1项通过，原成功出库/账务及全原业务表checksum、原权限/岗位关系守恒，专用权限只授主管且Flyway validate通过；源码一致。1371旧迁移业务1项通过但期间新增契约测试导致sourceUnchanged=false，原件保留不计交付；1372固定输入复验1项通过且源码一致，普通服务4315项仅1个既有Windows符号链接skip；契约解析通过。Python未装YAML模块的工具失败原件保留，复用服务端已有SnakeYAML，不安装新依赖。
 - [原人耐久申请产品](history/GOAL_E03_RESCUE_REQUEST_PRODUCT_2026-10-12.md)：先存原键/正文/native签名、独立加密日志及回执/撤销终态保护；定向57项、受影响最终回归101项、APK03/lint通过且源码一致。1378实际导航/保存未发送→新进程HTTP提交/原键重试→签名审批查询、换人拒绝及停服保全通过，服务申请始终一份。phase01仅可选目录收集失败1次保留，修复后02通过。P01/O02/U03、D11/D12/D17仍未完成；正式来源/规模/文件故障。
 - [FORMAL/规模/中断](history/GOAL_E03_FORMAL_SCALE_2026-10-12.md)：106项受影响回归零失败/skip，APK03/lint、在线产品预置/注销、停服并关闭Wi-Fi/data的FORMAL真实SAF回读及独立登记/固定钥回执/全Excel通过。实际force-stop生成/目标回读后两新进程保全通过，原10业务表及服务出库checksum不变；1383 dump/hash/认证停机退出0、任务监听空。1382 SOURCE解析累计2次、provider缺Kotlin/签名封装/规模seed各1次保留，修正后通过；pc02正确规模/预览，pc01保留不作最终输入。O02独立来源随E06，U03全范围仍未完；APK与完整日志在e03-o02-delivery-01及本批历史目录，网络原设置/映射已恢复。
-- 后续E04 TEMP候选排除/取消与更正对账→E05净结果/受控中转→E06独立sku采集→E07历史钥/恢复/外置副本→E08留存/遗漏/U04→E09最终候选组合。D04/D05/D08/D09/D11–D18、O03–O05及暂缓U项仍有开发缺口，不移入C档。仍有可执行工作，总目标不complete。
+- E04原失败：unit01队列夹具1次；cancel01/02按钮各阶段原件保留，按实际系统栏滚动新证据修复；restart02历史行滚动1次，经历史列表外侧margin后restart03通过。首个CANCELLED与独立复验原单均保留。后续E04 TEMP候选排除/主管非零取消与更正对账→E05净结果/受控中转→E06独立sku采集→E07历史钥/恢复/外置副本→E08留存/遗漏/U04→E09最终候选组合。D04/D05/D08/D09/D11–D18、O03–O05及暂缓U项仍有开发缺口，不移入C档。仍有可执行工作，总目标不complete。
 - P01–P08按授权默认直接开发；人工关联/主管签字/实物核验不能代签。生产默认和七类决定handler/POST/放行/证据写入/关闭能力、localDeletionAllowed=false保持；不接原库/现网、不合main、不部署/发布/标签/Release、不正式签名、不绕审批、不删既有证据。原身份/Keystore、双真机/实体键/断电/长时规模、业务USB/MTP/OTG、正式HTTPS/异地介质/RPO-RTO/Linux及现场仅按C01–C08保留。
 <!-- CURRENT_STATE_END -->
 

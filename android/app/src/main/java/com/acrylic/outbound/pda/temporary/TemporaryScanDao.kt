@@ -37,6 +37,8 @@ interface TemporaryScanDao {
     fun products(id: String): List<ScanProductTotal>
     @Insert fun insertGuard(row: TemporaryGuard)
     @Query("SELECT * FROM temporary_guard WHERE barcode=:barcode") fun guard(barcode: String): TemporaryGuard?
+    @Query("SELECT COUNT(*) FROM temporary_guard g INNER JOIN temporary_scan s ON s.captureId=g.captureId WHERE s.clientOrderId=:id")
+    fun guardCount(id: String): Long
     @Query("DELETE FROM temporary_guard WHERE captureId=:id") fun release(id: String): Int
     @Insert fun insertEvent(row: TemporaryEvent)
     @Query("SELECT * FROM temporary_event WHERE clientOrderId=:id ORDER BY localSeq") fun events(id: String): List<TemporaryEvent>
