@@ -21,8 +21,8 @@ class ReconciliationRequestStore {
             + " WHERE r.case_id=?", Ids.bytes(id));
         if (rows.size() != 1) throw CorrectionCommand.missing();
         var receipt = verifier.verify(rows.getFirst()).receipt();
-        var kinds = submitted ? java.util.Set.of("RECONCILE_SUBMIT", "RECONCILE_RETURN_SUBMIT")
-            : java.util.Set.of("RECONCILE_DISCOVER", "RECONCILE_RETURN_DISCOVER");
+        var kinds = submitted ? java.util.Set.of("RECONCILE_SUBMIT", "RECONCILE_RETURN_SUBMIT", "RECONCILE_QUARANTINE_SUBMIT")
+            : java.util.Set.of("RECONCILE_DISCOVER", "RECONCILE_RETURN_DISCOVER", "RECONCILE_QUARANTINE_DISCOVER");
         if (!id.toString().equals(receipt.at("/businessDecision/caseId").asText())
             || !kinds.contains(receipt.path("commandType").asText()))
             throw CorrectionCommand.corrupt();
@@ -38,7 +38,7 @@ class ReconciliationRequestStore {
 
     void discovered(CorrectionCommand.Write write, JsonNode decision) {
         jdbc.update("INSERT INTO reconciliation_request(case_id,order_id,opened_receipt_id) VALUES(?,?,?)",
-            Ids.bytes(UUID.fromString(decision.path("caseId").asText())), Ids.bytes(write.orderId()), Ids.bytes(write.receiptId()));
+            Ids.bytes(UUID.fromString(decision.path("caseId").asText())), write.orderId()==null?null:Ids.bytes(write.orderId()), Ids.bytes(write.receiptId()));
     }
 
     void requireUndiscovered(UUID dispatch) {

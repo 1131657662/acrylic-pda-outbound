@@ -31,4 +31,10 @@ class ReconciliationInputTest {
         var body=command();body.remove("dispatchId");body.put("commandType","RECONCILE_APPROVE").put("caseId",UUID.randomUUID().toString());
         body.putObject("evidence");assertThatThrownBy(()->ReconciliationInput.validate(body)).isInstanceOf(BusinessException.class);
     }
+    @Test void quarantineDiscoveryBindsBaleWithoutInventingADispatch() {
+        var body=command(); body.remove("dispatchId"); body.put("commandType","RECONCILE_QUARANTINE_DISCOVER").put("baleId",UUID.randomUUID().toString());
+        assertThatCode(()->ReconciliationInput.validate(body)).doesNotThrowAnyException();
+        body.put("dispatchId",UUID.randomUUID().toString());
+        assertThatThrownBy(()->ReconciliationInput.validate(body)).isInstanceOf(BusinessException.class);
+    }
 }

@@ -37,7 +37,7 @@ final class ReconciliationPolicy {
         physicalEvidence(evidence, now, "RETURNED_IN_WAREHOUSE");
     }
 
-    private static void physicalEvidence(JsonNode evidence, Instant now, String observation) {
+    static void physicalEvidence(JsonNode evidence, Instant now, String observation) {
         var names = new java.util.HashSet<String>(); evidence.fieldNames().forEachRemaining(names::add);
         if (!evidence.isObject() || !names.equals(Set.of("observedAt", "place", "observation", "reference", "attachments"))
             || !observation.equals(evidence.path("observation").asText())) throw CorrectionCommand.evidenceRequired();

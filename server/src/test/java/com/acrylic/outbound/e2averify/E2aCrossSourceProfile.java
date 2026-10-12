@@ -116,6 +116,14 @@ final class E2aCrossSourceProfile {
         return jdbc;
     }
 
+    JdbcTemplate connectQuarantineHistory() {
+        var jdbc=connectChecked();
+        require(Files.isRegularFile(attempt.resolve("quarantine-source-sha256.txt")),"Preserved P05 source missing");
+        require(jdbc.queryForObject("SELECT COUNT(*) FROM temporary_physical_disposition WHERE close_mode=true",Integer.class)==1,"Original close missing");
+        require(jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE state='QUARANTINED' AND disposition_id IS NOT NULL",Integer.class)==1,"Original quarantine missing");
+        return jdbc;
+    }
+
     private JdbcTemplate connectChecked() {
         var jdbc = new JdbcTemplate(new DriverManagerDataSource(url, user, System.getenv("E2A_CROSS_PASSWORD")));
         String actual = jdbc.queryForObject("SELECT @@datadir", String.class).replace('\\', '/');

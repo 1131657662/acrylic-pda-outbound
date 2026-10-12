@@ -30,7 +30,8 @@ final class CorrectionCommand {
     static final String ROUTE_SCOPE = "r07.correction.v1";
     static final List<String> KINDS = List.of("CREATE", "APPROVE", "WITHDRAW", "WITHDRAW_CONFIRM", "RECONCILE_OPEN", "RECONCILE_ADVANCE",
         "RECONCILE_DISCOVER", "RECONCILE_SUBMIT", "RECONCILE_APPROVE",
-        "RECONCILE_RETURN_DISCOVER", "RECONCILE_RETURN_SUBMIT", "RECONCILE_RETURN_APPROVE");
+        "RECONCILE_RETURN_DISCOVER", "RECONCILE_RETURN_SUBMIT", "RECONCILE_RETURN_APPROVE",
+        "RECONCILE_QUARANTINE_DISCOVER", "RECONCILE_QUARANTINE_SUBMIT", "RECONCILE_QUARANTINE_APPROVE");
     static final Set<String> KINDS_SET = Set.copyOf(KINDS);
     /**
      * The two kinds whose decision is a <b>supervisor</b> decision (P-R07-03). One definition only: the kind-aware
@@ -39,7 +40,7 @@ final class CorrectionCommand {
      * reconciliation cases have no gate at all (design 搂5), so neither is an approval here.
      */
     static boolean requiresApproval(String kind) { return kind.equals("APPROVE") || kind.equals("WITHDRAW")
-        || kind.equals("RECONCILE_APPROVE") || kind.equals("RECONCILE_RETURN_APPROVE"); }
+        || kind.equals("RECONCILE_APPROVE") || kind.equals("RECONCILE_RETURN_APPROVE") || kind.equals("RECONCILE_QUARANTINE_APPROVE"); }
     /** Both codes are registered by V45 - the R07-1 lesson was an approval gate whose code was never registered. */
     static final String CORRECT_PERMISSION = "outbound:correct";
     static final String APPROVE_PERMISSION = "correction:approve";

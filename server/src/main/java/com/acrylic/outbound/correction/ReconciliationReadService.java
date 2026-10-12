@@ -23,7 +23,7 @@ class ReconciliationReadService {
     }
 
     JsonNode context(UUID warehouse, UUID dispatch, UUID caseId, String kind) {
-        if (!ReconciliationContext.isBusiness(kind)) throw CorrectionCommand.missing();
+        if (!ReconciliationContext.isBusiness(kind) || kind.startsWith("RECONCILE_QUARANTINE_")) throw CorrectionCommand.missing();
         if (kind.endsWith("_DISCOVER") ? dispatch==null || caseId!=null : caseId==null || dispatch!=null)
             throw CorrectionCommand.missing();
         var actor = identity.current(warehouse, CorrectionCommand.requiresApproval(kind));
@@ -90,7 +90,7 @@ class ReconciliationReadService {
         return jdbc.queryForList("""
             SELECT BIN_TO_UUID(r.id) caseId,BIN_TO_UUID(r.dispatch_id) dispatchId,r.status,r.kind
             FROM inventory_reconciliation r JOIN reconciliation_request q ON q.case_id=r.id
-            WHERE r.warehouse_id=? AND (? IS NULL OR r.id<UUID_TO_BIN(?))
+            WHERE r.warehouse_id=? AND r.kind IN ('MISSING_POSTING','RETURNED_STOCK') AND (? IS NULL OR r.id<UUID_TO_BIN(?))
               AND (?=true OR EXISTS(SELECT 1 FROM correction_command_receipt c
               WHERE c.id=q.opened_receipt_id AND c.actor_id=?)) ORDER BY r.id DESC LIMIT 51
             """, Ids.bytes(page.warehouse()), page.beforeCase()==null?null:page.beforeCase().toString(),

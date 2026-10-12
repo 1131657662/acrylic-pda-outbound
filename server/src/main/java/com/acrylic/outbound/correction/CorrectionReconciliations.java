@@ -83,7 +83,7 @@ public final class CorrectionReconciliations {
         @Override public JsonNode execute(CorrectionCommand.Write write) {
             requireReconcilePermission(write);
             var facts=write.anchor();
-            if (java.util.Set.of("MISSING_POSTING", "RETURNED_STOCK").contains(facts.path("kind").asText()))
+            if (java.util.Set.of("MISSING_POSTING", "RETURNED_STOCK", "QUARANTINE_RELEASE").contains(facts.path("kind").asText()))
                 throw new BusinessException(409,"RECONCILIATION_EVIDENCE_REQUIRED","账务差异须经原证据提交及独立主管审批，不能仅流转状态");
             UUID caseId=UUID.fromString(facts.path("caseId").asText());
             String status=facts.path("status").asText();

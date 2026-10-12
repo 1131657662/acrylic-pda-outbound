@@ -57,6 +57,8 @@ final class RecoveryReleaseAdditionalQueries {
         Map.entry("reconciliation_attachment_use","case_id IN ("+RECONCILIATIONS+")"),
         Map.entry("reconciliation_posting","case_id IN ("+RECONCILIATIONS+")"),
         Map.entry("returned_stock_release","case_id IN ("+RECONCILIATIONS+")"),
+        Map.entry("quarantine_origin","case_id IN ("+RECONCILIATIONS+")"),
+        Map.entry("quarantine_release","case_id IN ("+RECONCILIATIONS+")"),
         Map.entry("submission_chunk","submission_id IN ("+SUBMISSIONS+")"),
         Map.entry("submission_review","submission_id IN ("+SUBMISSIONS+")"),
         Map.entry("submission_upload","submission_id IN ("+SUBMISSIONS+")"),

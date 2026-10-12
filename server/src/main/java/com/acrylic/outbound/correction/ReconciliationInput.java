@@ -12,7 +12,8 @@ final class ReconciliationInput {
     static void validate(JsonNode body) {
         var allowed = new HashSet<>(Set.of("commandVersion", "commandId", "commandType", "warehouseId",
             "transportRecoveryEpoch", "reason", "expected"));
-        String id = body.path("commandType").asText().endsWith("_DISCOVER") ? "dispatchId" : "caseId";
+        String kind=body.path("commandType").asText();
+        String id = kind.endsWith("_DISCOVER") ? kind.startsWith("RECONCILE_QUARANTINE_") ? "baleId" : "dispatchId" : "caseId";
         allowed.add(id);
         if (body.path("commandType").asText().endsWith("_SUBMIT")) allowed.add("evidence");
         var actual = new HashSet<String>(); body.fieldNames().forEachRemaining(actual::add);

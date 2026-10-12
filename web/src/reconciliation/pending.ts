@@ -35,7 +35,9 @@ export async function verifyResponse(original: ReconciliationPending, receipt: R
   const digest = Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, '0')).join('');
   if (receipt.commandId !== command.commandId || receipt.commandType !== command.commandType || receipt.commandSha256 !== digest
       || receipt.actor.principalId !== original.actor || receipt.actor.warehouseId !== original.warehouse
-      || receipt.orderId !== command.expected.orderId
+      || !command.commandType.startsWith('RECONCILE_QUARANTINE_') && receipt.orderId !== command.expected.orderId
+      || command.commandType.startsWith('RECONCILE_QUARANTINE_') && (receipt.context?.baleId !== command.expected.baleId
+        || receipt.context?.dispositionId !== command.expected.dispositionId || receipt.context?.orderId !== receipt.orderId)
       || 'caseId' in command && receipt.businessDecision.caseId !== command.caseId
       || JSON.stringify(sorted(receipt.expected)) !== JSON.stringify(sorted(command.expected))) throw new Error('返回结果与差异原请求不匹配。');
 }

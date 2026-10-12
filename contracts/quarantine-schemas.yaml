@@ -1,0 +1,93 @@
+Command:
+  type: object
+  additionalProperties: false
+  required: [commandVersion, commandId, commandType, warehouseId, transportRecoveryEpoch, reason, expected]
+  properties:
+    commandVersion: {type: integer, const: 1}
+    commandId: {type: string, format: uuid}
+    commandType: {type: string, enum: [RECONCILE_QUARANTINE_DISCOVER, RECONCILE_QUARANTINE_SUBMIT, RECONCILE_QUARANTINE_APPROVE]}
+    warehouseId: {type: string, format: uuid}
+    transportRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]{0,18}$'}
+    reason: {type: string, minLength: 1, maxLength: 500}
+    expected: {type: object, additionalProperties: {type: string}}
+    baleId: {type: string, format: uuid}
+    caseId: {type: string, format: uuid}
+    evidence: {$ref: '#/Evidence'}
+  oneOf:
+    - required: [baleId]
+      properties: {commandType: {const: RECONCILE_QUARANTINE_DISCOVER}}
+      not: {anyOf: [{required: [caseId]}, {required: [evidence]}]}
+    - required: [caseId, evidence]
+      properties: {commandType: {const: RECONCILE_QUARANTINE_SUBMIT}}
+      not: {required: [baleId]}
+    - required: [caseId]
+      properties: {commandType: {const: RECONCILE_QUARANTINE_APPROVE}}
+      not: {anyOf: [{required: [baleId]}, {required: [evidence]}]}
+Evidence:
+  type: object
+  additionalProperties: false
+  required: [observedAt, place, observation, reference, attachments]
+  properties:
+    observedAt: {type: string, format: date-time}
+    place: {type: string, minLength: 1, maxLength: 200}
+    observation: {const: QUARANTINE_CLEARED_IN_WAREHOUSE}
+    reference: {type: string, minLength: 1, maxLength: 500}
+    attachments: {type: array, minItems: 1, maxItems: 5, items: {$ref: './reconciliation-schemas.yaml#/Attachment'}}
+Receipt:
+  type: object
+  required: [commandId, commandType, commandSha256, orderId, documentId, context, actor, expected, capabilities, businessDecision, signedReceipt]
+  properties:
+    commandId: {type: string, format: uuid}
+    commandType: {type: string, enum: [RECONCILE_QUARANTINE_DISCOVER, RECONCILE_QUARANTINE_SUBMIT, RECONCILE_QUARANTINE_APPROVE]}
+    commandSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+    orderId: {type: [string, 'null'], format: uuid}
+    documentId: {type: 'null'}
+    context: {$ref: '#/Preparation/properties/context'}
+    actor: {type: object}
+    expected: {type: object, additionalProperties: {type: string}}
+    capabilities: {$ref: './correction-header-paths.yaml#/Capabilities'}
+    signedReceipt: {type: string}
+    businessDecision:
+      type: object
+      required: [caseId, status, factsSha256, availability]
+      properties:
+        caseId: {type: string, format: uuid}
+        status: {type: string, enum: [OPEN, REVIEW_READY, RESOLVED]}
+        factsSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+        availability: {type: string, enum: [UNCHANGED, REEVALUATE]}
+        baleId: {type: string, format: uuid}
+Preparation:
+  type: object
+  required: [context, expected, capabilities]
+  properties:
+    context:
+      type: object
+      required: [orderId, baleId, dispositionId, warehouseId, factsSha256, facts]
+      properties:
+        orderId: {type: [string, 'null'], format: uuid}
+        baleId: {type: string, format: uuid}
+        dispositionId: {type: string, format: uuid}
+        warehouseId: {type: string, format: uuid}
+        factsSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
+        facts: {type: object, required: [origin, stock, owners, dispatches, ledger]}
+        case: {type: object}
+        discoveredReceipt: {type: object}
+        submittedReceipt: {type: object}
+        submittedCommand: {$ref: '#/Command'}
+    expected: {type: object, additionalProperties: {type: string}}
+    capabilities: {$ref: './correction-header-paths.yaml#/Capabilities'}
+List:
+  type: object
+  required: [candidates, cases, nextCursor, nextCaseCursor, capabilities]
+  properties:
+    candidates:
+      type: array
+      maxItems: 50
+      items: {type: object, required: [baleId, dispositionId, barcode], properties: {baleId: {type: string, format: uuid}, dispositionId: {type: string, format: uuid}, barcode: {type: string}}}
+    cases:
+      type: array
+      maxItems: 50
+      items: {type: object, required: [caseId, baleId, kind, status], properties: {caseId: {type: string, format: uuid}, baleId: {type: string, format: uuid}, kind: {const: QUARANTINE_RELEASE}, status: {type: string}}}
+    nextCursor: {type: [string, 'null'], format: uuid}
+    nextCaseCursor: {type: [string, 'null'], format: uuid}
+    capabilities: {$ref: './correction-header-paths.yaml#/Capabilities'}

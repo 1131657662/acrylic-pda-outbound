@@ -31,7 +31,8 @@ final class ReconciliationContext {
     ObjectNode read(UUID warehouse, UUID dispatch, UUID caseId, boolean lock) {
         JsonNode caseFacts = caseId == null ? null : store.reconciliationFacts(caseId);
         if (caseFacts != null) {
-            if (!warehouse.toString().equals(caseFacts.path("warehouseId").asText())) throw CorrectionCommand.missing();
+            if (!warehouse.toString().equals(caseFacts.path("warehouseId").asText())
+                || !Set.of("MISSING_POSTING", "RETURNED_STOCK").contains(caseFacts.path("kind").asText())) throw CorrectionCommand.missing();
             dispatch = UUID.fromString(caseFacts.path("dispatchId").asText());
         }
         if (dispatch == null) throw CorrectionCommand.missing();
@@ -68,11 +69,14 @@ final class ReconciliationContext {
     }
 
     static boolean isBusiness(String kind) { return Set.of("RECONCILE_DISCOVER", "RECONCILE_SUBMIT", "RECONCILE_APPROVE",
-        "RECONCILE_RETURN_DISCOVER", "RECONCILE_RETURN_SUBMIT", "RECONCILE_RETURN_APPROVE").contains(kind); }
+        "RECONCILE_RETURN_DISCOVER", "RECONCILE_RETURN_SUBMIT", "RECONCILE_RETURN_APPROVE",
+        "RECONCILE_QUARANTINE_DISCOVER", "RECONCILE_QUARANTINE_SUBMIT", "RECONCILE_QUARANTINE_APPROVE").contains(kind); }
 
     static ObjectNode expected(JsonNode context, String auth) {
         var result = SubmissionJson.object().put("userAuthVersion", auth);
-        for (String key : Set.of("orderId", "dispatchId", "factsSha256")) result.set(key, context.get(key));
+        var fields = context.has("dispositionId") ? Set.of("baleId", "dispositionId", "factsSha256")
+            : Set.of("orderId", "dispatchId", "factsSha256");
+        for (String key : fields) result.set(key, context.get(key));
         if (context.has("case")) {
             for (String key : Set.of("caseId", "status", "rowVersion")) result.set(key, context.path("case").get(key));
             result.put("discoveredReceiptId", context.path("discoveredReceipt").path("receiptId").asText());

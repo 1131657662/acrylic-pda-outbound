@@ -83,7 +83,8 @@ public class CorrectionCommandService {
             orderId=UUID.fromString(anchor.path("orderId").asText()); locks.order(orderId);
         }
         anchor = operation.lockContext(input, anchor);
-        if (ReconciliationContext.isBusiness(input.kind())) orderId = UUID.fromString(anchor.path("orderId").asText());
+        if (ReconciliationContext.isBusiness(input.kind()))
+            orderId = anchor.hasNonNull("orderId") ? UUID.fromString(anchor.path("orderId").asText()) : null;
         byte[] committed = replay(input, actor);
         if (committed != null) return committed;
         if (!anchor.path("warehouseId").asText().equals(actor.warehouse().toString())) throw CorrectionCommand.missing();

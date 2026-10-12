@@ -14,8 +14,8 @@ const reviewer = computed(() => session.identity?.permissions.includes('correcti
 const statuses: Record<string, string> = { OPEN: '待提交核验凭据', REVIEW_READY: '待主管核对', RESOLVED: '已处理' };
 const submitting = computed(() => kind.value?.endsWith('_SUBMIT'));
 const returning = computed(() => kind.value?.startsWith('RECONCILE_RETURN_'));
-function statusText(status: string, returned: boolean): string {
-  return status === 'RESOLVED' ? returned ? '库存账已恢复' : '已补扣' : statuses[status] ?? status;
+function statusText(status: string, returned: boolean, quarantine = false): string {
+  return status === 'RESOLVED' ? quarantine ? '原隔离已解除' : returned ? '库存账已恢复' : '已补扣' : statuses[status] ?? status;
 }
 async function open(action: ReconciliationKind, id: string): Promise<void> {
   await select(action, id); if (!selected.value || error.value) return;
@@ -40,7 +40,7 @@ async function confirm(): Promise<void> {
   <section class="reconciliation-workspace" aria-label="库存账务差异处理">
     <el-alert v-if="error && !kind" :title="error" type="error" :closable="false" />
     <el-alert v-if="unresolved" title="原差异操作结果未确认，原请求已保留。" type="warning" :closable="false"><el-button :loading="busy" @click="recover">核对或重试原差异请求</el-button></el-alert>
-    <el-alert v-if="pending?.receipt" :title="`${labels[pending.receipt.commandType]}已记录：${statusText(pending.receipt.businessDecision.status, pending.receipt.commandType.startsWith('RECONCILE_RETURN_'))}`" type="success" :closable="false" />
+    <el-alert v-if="pending?.receipt" :title="`${labels[pending.receipt.commandType]}已记录：${statusText(pending.receipt.businessDecision.status, pending.receipt.commandType.startsWith('RECONCILE_RETURN_'), pending.receipt.commandType.startsWith('RECONCILE_QUARANTINE_'))}`" type="success" :closable="false" />
     <el-alert v-if="pending?.rejection" :title="`原操作已拒绝：${pending.rejection.message}`" type="warning" :closable="false" />
     <el-button :disabled="busy || !!unresolved" @click="load()">刷新差异与原事实</el-button>
     <h2>成功出库的缺账候选</h2><p>逐笔核对原出库、上游声明、实物凭据、占用及实际流水。登记与提交不改账，独立主管批准才补扣；案件结案保持周期与隔离。</p>
