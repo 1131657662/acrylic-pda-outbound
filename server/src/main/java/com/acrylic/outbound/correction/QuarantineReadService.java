@@ -16,8 +16,9 @@ class QuarantineReadService {
     private final CorrectionCommand.Identity identity;
     private final QuarantineContext contexts;
     private final JdbcTemplate jdbc;
-    QuarantineReadService(CorrectionCommand.Identity identity,QuarantineContext contexts,JdbcTemplate jdbc) {
-        this.identity=identity; this.contexts=contexts; this.jdbc=jdbc;
+    private final QuarantineHistoryFacts history;
+    QuarantineReadService(CorrectionCommand.Identity identity,QuarantineContext contexts,JdbcTemplate jdbc,QuarantineHistoryFacts history) {
+        this.identity=identity; this.contexts=contexts; this.jdbc=jdbc;this.history=history;
     }
     JsonNode context(UUID warehouse,UUID bale,UUID caseId,String kind) {
         if(!java.util.Set.of("RECONCILE_QUARANTINE_DISCOVER","RECONCILE_QUARANTINE_SUBMIT","RECONCILE_QUARANTINE_APPROVE").contains(kind)
@@ -32,8 +33,13 @@ class QuarantineReadService {
     }
 
     record Cursors(UUID candidate,UUID caseId) { }
-    byte[] original(UUID warehouse,UUID bale,UUID caseId,String kind) {
-        return contexts.original(context(warehouse,bale,caseId,kind).path("context"));
+    record HistoryQuery(UUID dispatch,String receiptType) { }
+    byte[] original(JsonNode context,HistoryQuery query) {
+        if(query.dispatch()==null && query.receiptType()==null) return contexts.original(context);
+        if(query.dispatch()==null || query.receiptType()==null) throw CorrectionCommand.missing();
+        for(var item:context.at("/facts/history"))
+            if(query.dispatch().toString().equals(item.at("/dispatch/dispatchId").asText())) return history.original(item,query.receiptType());
+        throw CorrectionCommand.missing();
     }
     JsonNode list(UUID warehouse,boolean review,Cursors cursors) {
         var actor=identity.current(warehouse,review);

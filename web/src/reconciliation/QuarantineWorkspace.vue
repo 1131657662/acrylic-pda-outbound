@@ -4,6 +4,7 @@ import { useSessionStore } from '../session';
 import { useQuarantine } from './useQuarantine';
 import { labels } from './contracts';
 import type { QuarantineKind } from './quarantine-contracts';
+import QuarantineHistory from './QuarantineHistory.vue';
 const props = defineProps<{ actor: string; warehouse: string }>(); const session = useSessionStore();
 const { list, selected, pending, busy, blocked, error, load, select, upload, download, source, act, recover } = useQuarantine(props);
 const kind = ref<QuarantineKind | null>(null); const reason = ref(''); const place = ref(''); const reference = ref('');
@@ -64,6 +65,8 @@ async function confirm(): Promise<void> {
           <el-descriptions-item label="其他阻断">{{ selected.context.facts.stock.blockedReason || '无' }}</el-descriptions-item>
           <el-descriptions-item label="固定快照">{{ selected.context.facts.stock.snapshotId }}</el-descriptions-item>
         </el-descriptions>
+        <QuarantineHistory v-if="kind" :history="selected.context.facts.history ?? []" :actor="props.actor" :warehouse="props.warehouse" :disabled="busy || uploading"
+          :source-query="`warehouseId=${props.warehouse}&commandType=${kind}&${kind.endsWith('_DISCOVER') ? `baleId=${selected.context.baleId}` : `caseId=${selected.context.case?.caseId}`}`" />
         <el-descriptions title="原隔离与实物处置依据" :column="1" border>
           <el-descriptions-item label="原隔离">{{ selected.context.dispositionId }}</el-descriptions-item>
           <template v-if="selected.context.facts.origin.sourceKind === 'TEMP'">

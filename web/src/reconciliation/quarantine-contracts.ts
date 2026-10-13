@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { capabilities, evidenceSchema } from './contracts';
+import { quarantineHistorySchema } from './quarantine-history-contracts';
 const uuid = z.uuid(); const positive = z.string().regex(/^[1-9][0-9]*$/); const hash = z.string().regex(/^[a-f0-9]{64}$/);
 export const quarantineKind = z.enum(['RECONCILE_QUARANTINE_DISCOVER', 'RECONCILE_QUARANTINE_SUBMIT', 'RECONCILE_QUARANTINE_APPROVE']);
 export type QuarantineKind = z.infer<typeof quarantineKind>;
@@ -39,7 +40,7 @@ export const preparationSchema = z.object({ context: z.object({ orderId: uuid.nu
       snapshotId: uuid, activeSnapshotId: uuid.nullable(), upstreamPresent: z.union([z.number(), z.boolean()]),
       blockedReason: z.string().nullable() }).catchall(z.unknown()),
     owners: z.array(z.record(z.string(), z.unknown())), dispatches: z.array(z.record(z.string(), z.unknown())),
-    ledger: z.array(z.record(z.string(), z.unknown())) }),
+    ledger: z.array(z.record(z.string(), z.unknown())), history: quarantineHistorySchema.optional() }),
   case: z.object({ caseId: uuid, status: z.string() }).catchall(z.unknown()).optional(),
   discoveredReceipt: original.optional(), submittedReceipt: original.optional(),
   submittedCommand: z.object({ evidence: evidenceSchema }).catchall(z.unknown()).optional() }),

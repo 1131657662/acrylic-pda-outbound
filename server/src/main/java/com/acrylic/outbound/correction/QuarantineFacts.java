@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 @Component
 final class QuarantineFacts {
     private final JdbcTemplate jdbc;
-    QuarantineFacts(JdbcTemplate jdbc) { this.jdbc=jdbc; }
+    private final QuarantineHistoryFacts history;
+    QuarantineFacts(JdbcTemplate jdbc,QuarantineHistoryFacts history) { this.jdbc=jdbc;this.history=history; }
 
     void lock(UUID warehouse,UUID bale,JsonNode origin) {
         jdbc.queryForList("SELECT id FROM warehouse WHERE id=? FOR UPDATE",Ids.bytes(warehouse));
@@ -24,6 +25,7 @@ final class QuarantineFacts {
             jdbc.queryForList("SELECT id FROM pc_disposition WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("dispositionId").asText());
         } else if("FORMAL".equals(origin.path("sourceKind").asText())) lockFormal(origin);
         else jdbc.queryForList("SELECT id FROM submission_scope WHERE id=UUID_TO_BIN(?) FOR UPDATE",origin.path("scopeId").asText());
+        jdbc.queryForList("SELECT o.id FROM outbound_order o WHERE o.id IN (SELECT order_id FROM dispatch_record WHERE bale_id=?) ORDER BY o.id FOR UPDATE",Ids.bytes(bale));
         jdbc.queryForList("SELECT id FROM bale WHERE id=? FOR UPDATE",Ids.bytes(bale));
         jdbc.queryForList("SELECT bale_id FROM inventory_position WHERE bale_id=? FOR UPDATE",Ids.bytes(bale));
         jdbc.queryForList("SELECT bale_id FROM bale_commitment WHERE bale_id=? FOR UPDATE",Ids.bytes(bale));
@@ -43,6 +45,7 @@ final class QuarantineFacts {
     ObjectNode read(UUID bale,ObjectNode origin) {
         var result=SubmissionJson.object(); result.set("origin",origin); result.set("stock",stock(bale));
         result.set("owners",owners(bale)); result.set("dispatches",dispatches(bale)); result.set("ledger",ledger(bale));
+        if(!result.path("dispatches").isEmpty() || !result.path("ledger").isEmpty()) result.set("history",history.read(bale));
         return result;
     }
 

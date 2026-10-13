@@ -19,8 +19,10 @@ class QuarantineReadController {
     @GetMapping("/context") ResponseEntity<byte[]> context(@RequestParam UUID warehouseId,@RequestParam(required=false) UUID baleId,
         @RequestParam(required=false) UUID caseId,@RequestParam String commandType) { return response(service.context(warehouseId,baleId,caseId,commandType)); }
     @GetMapping("/original-receipt") ResponseEntity<byte[]> original(@RequestParam UUID warehouseId,@RequestParam(required=false) UUID baleId,
-        @RequestParam(required=false) UUID caseId,@RequestParam String commandType) {
-        byte[] bytes=service.original(warehouseId,baleId,caseId,commandType);
+        @RequestParam(required=false) UUID caseId,@RequestParam String commandType,@RequestParam(required=false) UUID historyDispatchId,
+        @RequestParam(required=false) String historyReceiptType) {
+        byte[] bytes=service.original(service.context(warehouseId,baleId,caseId,commandType).path("context"),
+            new QuarantineReadService.HistoryQuery(historyDispatchId,historyReceiptType));
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).contentLength(bytes.length).cacheControl(CacheControl.noStore())
             .header("X-Content-Type-Options","nosniff").header("Content-Disposition","attachment; filename=\"quarantine-source.json\"").body(bytes);
     }

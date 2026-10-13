@@ -18,7 +18,7 @@ final class QuarantinePolicy {
             || !stock.path("lastSeenSnapshotId").equals(stock.path("activeSnapshotId"))
             || !"NOT_DEDUCTED".equals(stock.path("bookStatus").asText()) || !stock.path("blockedReason").isNull()
             || !owners.isArray() || owners.size()!=1) throw CorrectionCommand.ledgerConflict();
-        owner(owners.get(0),origin); accounting(facts);
+        owner(owners.get(0),origin); QuarantineHistoryPolicy.eligible(facts);
     }
 
     private static void source(JsonNode origin) {
@@ -41,11 +41,6 @@ final class QuarantinePolicy {
         for(String key:Set.of("orderId","submissionId","recoveryPackageId","continuationId","dispositionEvidenceId",
             "pcWorkId","pcDispositionId","temporaryContinuationId","temporaryHandoverId"))
             if(!owner.path(key).isNull()) throw CorrectionCommand.ledgerConflict();
-    }
-
-    private static void accounting(JsonNode facts) {
-        if(!facts.path("dispatches").isArray() || !facts.path("dispatches").isEmpty()
-            || !facts.path("ledger").isArray() || !facts.path("ledger").isEmpty()) throw CorrectionCommand.ledgerConflict();
     }
 
     static void evidence(JsonNode evidence,Instant now) { ReconciliationPolicy.physicalEvidence(evidence,now,"QUARANTINE_CLEARED_IN_WAREHOUSE"); }

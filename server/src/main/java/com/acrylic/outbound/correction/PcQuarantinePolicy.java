@@ -20,7 +20,6 @@ final class PcQuarantinePolicy {
         for(String key:java.util.List.of("submissionId","recoveryPackageId","continuationId","dispositionEvidenceId","pcWorkId",
             "temporaryContinuationId","temporaryHandoverId","dispositionId","sourceScopeId","sourceWarehouseId","sourceEvidenceSetId"))
             if(!owner.path(key).isNull()) throw CorrectionCommand.ledgerConflict();
-        if(!facts.path("dispatches").isArray() || !facts.path("dispatches").isEmpty()
-            || !facts.path("ledger").isArray() || !facts.path("ledger").isEmpty()) throw CorrectionCommand.ledgerConflict();
+        QuarantineHistoryPolicy.eligible(facts);
     }
 }

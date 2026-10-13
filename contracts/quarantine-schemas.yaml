@@ -69,7 +69,8 @@ Preparation:
         dispositionId: {type: string, format: uuid}
         warehouseId: {type: string, format: uuid}
         factsSha256: {type: string, pattern: '^[a-f0-9]{64}$'}
-        facts: {type: object, required: [origin, stock, owners, dispatches, ledger]}
+        facts: {type: object, required: [origin, stock, owners, dispatches, ledger], properties:
+          {history: {type: array, items: {type: object}}}}
         case: {type: object}
         discoveredReceipt: {type: object}
         submittedReceipt: {type: object}
