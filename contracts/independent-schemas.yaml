@@ -1,0 +1,25 @@
+Issue:
+  type: object
+  additionalProperties: false
+  required: [deviceId, deviceKeySha256]
+  properties:
+    deviceId: {type: string, format: uuid}
+    deviceKeySha256: {type: string, pattern: '^[0-9a-f]{64}$', description: 登记设备公钥DER原字节摘要}
+Receipt:
+  type: object
+  additionalProperties: false
+  required: [credentialId, signedCredential, issuedAt, expiresAt]
+  properties:
+    credentialId: {type: string, format: uuid}
+    signedCredential:
+      type: string
+      maxLength: 16384
+      description: RS256固定用途acrylic-pda-independent-v1；签名人机仓/登记钥/权限版本/恢复代次/原期限。客户端只以独立预置的服务公钥核验，不信任文件提供的钥。
+    issuedAt: {type: string, format: date-time}
+    expiresAt: {type: string, format: date-time}
+Envelope:
+  allOf:
+    - $ref: './schemas.yaml#/Envelope'
+    - type: object
+      properties:
+        data: {$ref: '#/Receipt'}

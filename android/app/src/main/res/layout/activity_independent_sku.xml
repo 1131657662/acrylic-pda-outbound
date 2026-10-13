@@ -7,6 +7,7 @@
             android:text="独立采集始终待对账。启用仅保存资料，不授予身份或扫码权；不代表库存可用、出库确认或允许放行。新资料只供新任务，旧任务快照和防重记录保留。" />
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+        <Button android:id="@+id/identity" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="预置与核验独立采集身份" />
         <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent"
             android:layout_height="4dp" android:indeterminate="true" android:visibility="gone" />
         <Button android:id="@+id/choose" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="选择sku原文件并预检" />

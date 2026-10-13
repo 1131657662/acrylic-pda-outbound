@@ -32,6 +32,7 @@ class IndependentSkuActivity : ComponentActivity() {
         lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { model.state.collect(::render) } }
     }
     private fun actions() {
+        binding.identity.setOnClickListener { startActivity(android.content.Intent(this, IndependentCredentialActivity::class.java)) }
         binding.choose.setOnClickListener { selectFile.launch(arrayOf("text/plain", "application/octet-stream")) }
         binding.active.setOnClickListener { model.showActive() }
         binding.reload.setOnClickListener { model.load() }

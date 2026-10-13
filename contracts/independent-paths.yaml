@@ -1,0 +1,41 @@
+Issue:
+  post:
+    summary: 原人员原登记设备在线预置独立采集签名身份
+    description: 默认关闭，须有pda:independent和pda:scan；锁后复核会话、人员、设备和仓库。凭据仅允许受限独立采集，不授权正式/TEMP资格、库存可用、提交、出库确认或删除。同键返回原凭据和原期限，不能续期；口令不传入服务器。
+    security: [{pdaBearer: []}]
+    parameters:
+      - $ref: './rescue-schemas.yaml#/Epoch'
+      - $ref: './rescue-schemas.yaml#/Key'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: './independent-schemas.yaml#/Issue'}
+    responses:
+      '200':
+        description: no-store签名原件，期限最多48小时；原键重试不延长
+        content:
+          application/json:
+            schema: {$ref: './independent-schemas.yaml#/Envelope'}
+      '400': {description: 原键或设备摘要格式无效}
+      '401': {description: 会话失效或设备停用}
+      '403': {description: 无专用权限或人员仓库资格变化}
+      '409': {description: 默认关闭、恢复代次/设备钥冲突或同键异文}
+      '503': {description: 恢复模式或签名钥不可用}
+Read:
+  get:
+    summary: 原人员原设备同仓读取独立身份签名原件
+    description: 不延长原期限；旧原件可读不代表可新增采集。默认关闭，须有pda:independent。
+    security: [{pdaBearer: []}]
+    parameters:
+      - $ref: './rescue-schemas.yaml#/Id'
+    responses:
+      '200':
+        description: no-store原凭据
+        content:
+          application/json:
+            schema: {$ref: './independent-schemas.yaml#/Envelope'}
+      '401': {description: 会话或设备失效}
+      '403': {description: 未获权限}
+      '404': {description: 原件不存在或不是原人原机同仓}
+      '409': {description: 默认关闭}
