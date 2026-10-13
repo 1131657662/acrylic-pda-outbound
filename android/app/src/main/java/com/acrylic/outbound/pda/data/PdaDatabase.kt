@@ -42,7 +42,7 @@ import com.acrylic.outbound.pda.evidence.LocalDraftQueueDao
 import com.acrylic.outbound.pda.evidence.LocalDraftQueueMigration
 
 /** The single source of truth for the Room schema version; migration tests must assert against this, not a literal. */
-const val PDA_DATABASE_VERSION = 38
+const val PDA_DATABASE_VERSION = 39
 
 @Database(entities = [PreparedOrder::class, PreparedBale::class, ClaimIntent::class, WorkOrder::class,
     WorkLine::class, WorkDevice::class, WorkCapture::class, WorkScan::class, WorkGuard::class, WorkEvent::class, LocalSubmission::class, LocalRecall::class, LocalContinuation::class, LocalDisposition::class,
@@ -63,9 +63,11 @@ const val PDA_DATABASE_VERSION = 38
     TemporaryRecoveredHandoverStage::class, TemporaryRecoveredHandoverChunk::class,
     TemporaryRecoveredConfirmation::class, TemporaryRecoveredConfirmationReceipt::class,
     IndependentSkuOriginal::class, IndependentSkuChunk::class, IndependentSkuImport::class,
-    IndependentSkuDecision::class, IndependentSkuActive::class], version = PDA_DATABASE_VERSION, exportSchema = true)
+    IndependentSkuDecision::class, IndependentSkuActive::class, IndependentTask::class, IndependentTaskLine::class,
+    IndependentTaskState::class, IndependentTaskEvent::class, IndependentTaskRequest::class], version = PDA_DATABASE_VERSION, exportSchema = true)
 abstract class PdaDatabase : RoomDatabase() {
     abstract fun independentSku(): IndependentSkuDao
+    abstract fun independentTasks(): IndependentTaskDao
     abstract fun preparations(): PreparationDao
     abstract fun work(): WorkDao
     abstract fun captures(): CaptureDao
@@ -128,8 +130,10 @@ abstract class PdaDatabase : RoomDatabase() {
             .addMigrations(TemporaryRecoveredHandoverMigration)
             .addMigrations(TemporaryRecoveredConfirmationMigration)
             .addMigrations(IndependentSkuMigration)
+            .addMigrations(IndependentTaskMigration)
             .addCallback(object : Callback() {
                 override fun onOpen(db: SupportSQLiteDatabase) {
+                    IndependentTaskConstraints.install(db)
                     db.query("PRAGMA synchronous").use { check(it.moveToFirst() && it.getInt(0) == 2) { "本地数据库耐久配置不正确" } }
                 }
             }).build()

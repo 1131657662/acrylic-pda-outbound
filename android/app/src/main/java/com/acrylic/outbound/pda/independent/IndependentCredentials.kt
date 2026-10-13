@@ -8,8 +8,9 @@ import com.acrylic.outbound.pda.security.*
 import com.acrylic.outbound.pda.sync.RecoveryProtection
 import java.util.Base64
 
-internal class IndependentCaptureGrant(val proof: IndependentCredentialProof, private val check: () -> IndependentCredentialProof) {
-    fun recheck(): IndependentCredentialProof = check()
+internal class IndependentCaptureGrant(val proof: IndependentCredentialProof, private val check: () -> IndependentCredentialSnapshot) {
+    fun recheck(): IndependentCredentialProof = check().proof
+    fun snapshot(): IndependentCredentialSnapshot = check()
 }
 
 class IndependentCredentials private constructor(private val context: Context, private val session: PdaSession,
@@ -38,7 +39,7 @@ class IndependentCredentials private constructor(private val context: Context, p
     internal fun unlock(password: CharArray): IndependentCaptureGrant = try {
         val open = store.unlock(password, environment())
         val proof = store.validate(open, environment())
-        IndependentCaptureGrant(proof) { store.validate(open, environment()) }
+        IndependentCaptureGrant(proof) { store.snapshot(open, environment()) }
     } finally { password.fill('\u0000') }
     fun verifyLocally(password: CharArray): String {
         val proof = unlock(password).recheck()

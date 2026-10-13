@@ -27,6 +27,7 @@
         <Spinner android:id="@+id/history" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:contentDescription="已保存的sku原件记录" />
         <Button android:id="@+id/openHistory" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="打开所选原件预检" />
         <Button android:id="@+id/historyOlder" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="读取更早原件记录" />
+        <Button android:id="@+id/tasks" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="独立任务计划与原请求" />
         <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回，保留资料" />
     </LinearLayout>
 </ScrollView>

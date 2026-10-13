@@ -1,0 +1,32 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:fillViewport="true" android:background="@color/pda_canvas">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="12dp">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="独立任务计划"
+            android:textSize="20sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:textSize="16sp"
+            android:text="保存原资料、车号与产品计划。独立来源始终待主管对账，不代表库存可用、正式出库或可放行；现场须按车辆和责任区分工作业。" />
+        <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+        <TextView android:id="@+id/summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="18sp" android:textStyle="bold" />
+        <EditText android:id="@+id/vehicle" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
+            android:hint="车号（最多40位）" android:inputType="text" android:maxLength="40" android:textSize="16sp" />
+        <EditText android:id="@+id/reason" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="72dp"
+            android:hint="独立采集原因（最多500位）" android:inputType="textMultiLine" android:maxLength="500" android:textSize="16sp" />
+        <Spinner android:id="@+id/product" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:contentDescription="选择原资料中的计划产品" />
+        <EditText android:id="@+id/quantity" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
+            android:hint="所选产品计划包数" android:inputType="number" android:maxLength="6" android:textSize="16sp" />
+        <Button android:id="@+id/add" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="加入或更新所选产品计划" />
+        <Button android:id="@+id/remove" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="移除所选未保存产品计划" />
+        <TextView android:id="@+id/lines" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" />
+        <EditText android:id="@+id/password" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
+            android:hint="独立口令" android:inputType="textPassword" android:maxLength="128" android:textSize="16sp" android:importantForAutofill="no" android:saveEnabled="false" />
+        <Button android:id="@+id/create" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="核验口令并保存独立计划" />
+        <Button android:id="@+id/reload" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="重新读取原请求与任务" />
+        <TextView android:id="@+id/original" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textIsSelectable="true" />
+        <Button android:id="@+id/newTask" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="显式新建另一独立任务，旧原件保留" />
+        <Button android:id="@+id/historyLatest" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="读取原请求记录" />
+        <Spinner android:id="@+id/history" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:contentDescription="已保存的独立任务及未完成请求" />
+        <Button android:id="@+id/openHistory" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="打开所选原请求和任务" />
+        <Button android:id="@+id/historyOlder" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="读取更早原请求" />
+        <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回，保留原件" />
+    </LinearLayout>
+</ScrollView>

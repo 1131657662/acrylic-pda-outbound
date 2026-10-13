@@ -72,6 +72,12 @@ internal class IndependentCredentialStore(private val storage: IndependentCreden
         val root = root(); root.getJSONObject("entries").optJSONObject(root.optString("active"))?.put("locallyRevoked", true)
         storage.write(root)
     }
+    @Synchronized fun snapshot(open: IndependentCredentialOpen, context: IndependentCredentialContext): IndependentCredentialSnapshot {
+        val proof = validate(open, context)
+        val entry = root().getJSONObject("entries").getJSONObject(open.requestKey)
+        return IndependentCredentialSnapshot(proof, entry.getJSONObject("trustedKey").toString(),
+            entry.getJSONObject("timeAnchor").toString(), entry.getJSONObject("identity").getString("localSessionId"))
+    }
     @Synchronized fun status(): String {
         val root = root(); val entries = root.getJSONObject("entries"); val entry = entries.optJSONObject(root.optString("active"))
         val pending = entries.keys().asSequence().count { !entries.getJSONObject(it).has("receipt") }

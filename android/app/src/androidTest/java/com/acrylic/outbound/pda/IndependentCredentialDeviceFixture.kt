@@ -32,8 +32,8 @@ internal object IndependentCredentialDeviceFixture {
     fun secret(value: String = password) = onView(withId(R.id.password))
         .perform(independentSkuScroll(), replaceText(value), closeSoftKeyboard())
     fun message(text: String) = await { onView(withId(R.id.status)).check(matches(withText(containsString(text)))) }
-    fun await(assertion: () -> Unit) {
-        val end = System.nanoTime() + 40_000_000_000L
+    fun await(seconds: Int = 40, assertion: () -> Unit) {
+        val end = System.nanoTime() + seconds * 1_000_000_000L
         var last: Throwable? = null
         while (System.nanoTime() < end) {
             try { assertion(); return } catch (error: Throwable) { last = error; Thread.sleep(150) }
