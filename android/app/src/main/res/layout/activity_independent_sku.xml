@@ -1,0 +1,31 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:fillViewport="true" android:background="@color/pda_canvas">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="12dp">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="独立采集资料 · 预检与启用"
+            android:textSize="20sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp"
+            android:text="独立采集始终待对账。启用仅保存资料，不授予身份或扫码权；不代表库存可用、出库确认或允许放行。新资料只供新任务，旧任务快照和防重记录保留。" />
+        <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+        <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent"
+            android:layout_height="4dp" android:indeterminate="true" android:visibility="gone" />
+        <Button android:id="@+id/choose" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="选择sku原文件并预检" />
+        <Button android:id="@+id/active" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="查看使用中的资料" />
+        <Button android:id="@+id/reload" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="重新读取本次原件" />
+        <TextView android:id="@+id/summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textIsSelectable="true" />
+        <CheckBox android:id="@+id/confirmDuplicates" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+            android:text="已核对完全重复行，确认按条码及全部原字段去重；原行仍保留" />
+        <Button android:id="@+id/activate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="启用预检资料，仅供新独立任务" />
+        <Button android:id="@+id/cancel" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="取消本次预检，保留原件" />
+        <CheckBox android:id="@+id/issuesOnly" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="只看错误与完全重复行（保留原行号）" />
+        <TextView android:id="@+id/rows" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textIsSelectable="true" />
+        <Button android:id="@+id/previous" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="上一页原行" />
+        <Button android:id="@+id/next" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="下一页原行" />
+        <TextView android:id="@+id/original" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textIsSelectable="true" />
+        <Button android:id="@+id/historyLatest" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="读取最近原件记录" />
+        <Spinner android:id="@+id/history" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:contentDescription="已保存的sku原件记录" />
+        <Button android:id="@+id/openHistory" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="打开所选原件预检" />
+        <Button android:id="@+id/historyOlder" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="读取更早原件记录" />
+        <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回，保留资料" />
+    </LinearLayout>
+</ScrollView>

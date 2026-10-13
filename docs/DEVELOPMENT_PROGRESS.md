@@ -4,6 +4,8 @@
 
 # 开发验收索引
 
+- [E06独立sku资料切片](history/GOAL_E06_SKU_CATALOG_2026-10-13.md)：同字节解析、分块原件/预检/去重/原子启用及历史取回；Room/尾SQL/并发/非空升级、实际SAF/新进程/320dp字号和66旧表守恒通过。身份/任务/防重/导出/对账继续，非O04/U03或总目标完成。
+
 - [E05净值汇总切片收口](history/GOAL_E05_NET_SUMMARY_2026-10-13.md)：原出库日最新净值、固定成员/版本、原序/归零行及PC/TEMP/FORMAL消费者；定向服务/渲染、真实HTTP、Web/Chrome/新JVM、独立文件、原非空兼容及受影响组合通过。本净值切片不覆盖O03，O03另见上方验收；完整D11/D12和最终候选未完成；[换会话断点](history/D01_D18_HANDOFF_2026-10-13_E05_NET_CLOSE.md)保存实际Git/写权、清理与下一步。
 
 - [E04/P06未终结FORMAL实物应用与解隔离](history/GOAL_E04_P06_OPEN_FORMAL_QUARANTINE_2026-10-13.md)：原事务内不可变独立应用签名、原件核验及生产默认关闭；普通定向/bootJar、最终真实HTTP、固定公钥SQL、Web/Chrome双角色/原键/窄屏、新JVM与原FORMAL非空守恒/原字节、账务及终态组合通过；其他保留包继续待处理，D09/D10及总目标未完成。

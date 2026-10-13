@@ -49,6 +49,7 @@ class MainActivity : ComponentActivity() {
         binding.workPage.setOnClickListener { select("WORK", "LOCAL") }
         binding.dataPage.setOnClickListener { select("DATA", "HISTORY") }
         binding.rescueData.setOnClickListener { startActivity(Intent(this, RescueExportActivity::class.java)) }
+        binding.independentSku.setOnClickListener { startActivity(Intent(this, IndependentSkuActivity::class.java)) }
         binding.myPage.setOnClickListener { select("MY") }
         binding.refresh.setOnClickListener { model.refresh() }
         binding.localSection.setOnClickListener { model.selectSection("LOCAL") }

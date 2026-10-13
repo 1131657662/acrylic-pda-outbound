@@ -35,6 +35,7 @@
             <Button android:id="@+id/refresh" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="联网刷新订单与资格" />
         </LinearLayout>
         <LinearLayout android:id="@+id/dataActions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <Button android:id="@+id/independentSku" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="独立sku资料预检与启用" />
             <Button android:id="@+id/rescueData" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="只读应急导出" />
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="本机原记录持续保留；历史完成以已验签回执为准" android:textSize="16sp" />
             <Button android:id="@+id/historySection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="已验签完成历史" />
