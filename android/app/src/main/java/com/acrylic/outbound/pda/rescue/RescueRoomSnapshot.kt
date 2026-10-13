@@ -12,6 +12,7 @@ class RescueRoomSnapshot(private val db: PdaDatabase) {
             val snapshot = when (target.source) {
                 "FORMAL" -> RescueFormalSnapshot(db, rows).read(target.localOrderId, grant)
                 "TEMP" -> RescueTemporarySnapshot(db, rows).read(target.localOrderId, grant)
+                "INDEPENDENT" -> RescueIndependentSnapshot(db, rows).read(target.localOrderId, grant)
                 else -> error("不支持的本机救援来源")
             }
             RescueFacts.summary(snapshot)

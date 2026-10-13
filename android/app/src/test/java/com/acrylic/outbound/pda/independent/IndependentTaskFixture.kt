@@ -2,9 +2,9 @@ package com.acrylic.outbound.pda.independent
 
 import java.util.UUID
 
-internal class IndependentTaskFixture(barcode: String = "003A0000001") : AutoCloseable {
+internal class IndependentTaskFixture(barcode: String = "003A0000001", deviceKeyDigest: String? = null) : AutoCloseable {
     val sku = IndependentSkuFixture()
-    val identity = IndependentCredentialFixture().also { it.provision() }
+    val identity = IndependentCredentialFixture().also { f -> deviceKeyDigest?.let { f.binding = f.device to it }; f.provision() }
     val active = sku.activate(barcode)
     var actor = IndependentTaskActor(identity.operator, identity.device, identity.warehouse)
     val repository get() = IndependentTaskRepository(sku.db, { identity.sample }) { actor }

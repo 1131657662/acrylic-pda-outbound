@@ -61,6 +61,12 @@ const summaryRows = [
   ['失败输入', exact(summary.failed)], ['清单有效整数克', exact(summary.weightGrams)],
   ['导出时间', '本机导出时刻未获服务器证实'], ['原设备', order.deviceId], ['原操作员', order.operatorId], ['仓库', order.warehouseId],
 ];
+if (order.source === 'INDEPENDENT') {
+  const original = report.facts.independent.source;
+  summaryRows.splice(6, 0, ['对账状态', '独立采集，待主管核对原授权及实物并人工关联'], ['服务端采集授权', '尚未核验，不能自动提交或记账']);
+  summaryRows.push(['原采集凭据ID', original.credential.credentialId], ['原采集凭据摘要', original.credential.credentialSha256],
+    ['原SKU摘要', original.task.skuSha256], ['原采集期限起', original.credential.issuedAt], ['原采集期限止', original.credential.expiresAt]);
+}
 table({name: '核对汇总', headings: ['项目', '原快照事实'], rows: summaryRows, widths: [25, 80]});
 const scanSheet = table({name: '扫码原顺序', headings: ['原扫码序号', '采集ID', '条码', '产品代码', '型号', '品名', '原重量', '整数克', '状态', '保存时间', '原处置'],
   rows: scans.map(row => [row.orderScanSeq, row.captureId, row.barcode, row.deliveryCode, row.model, row.name,
@@ -90,7 +96,7 @@ table({name: '原审计', headings: ['原位置', '审计ID', '类型', '原因'
 workbook.recalculate();
 const check = await workbook.inspect({ kind: 'table', range: '扫码原顺序!A4:J7', include: 'values,formulas', maxChars: 2200 });
 await fs.writeFile(`${output}.inspection.ndjson`, check.ndjson);
-for (const [name, range] of [['核对汇总', 'A1:B20'], ['扫码原顺序', 'A1:J7'], ['产品核对', 'A1:F7'], ['采集未决与失败', 'A1:E7'], ['原审计', 'A1:D8']]) {
+for (const [name, range] of [['核对汇总', `A1:B${summaryRows.length + 4}`], ['扫码原顺序', 'A1:J7'], ['产品核对', 'A1:F7'], ['采集未决与失败', 'A1:E7'], ['原审计', 'A1:D8']]) {
   const preview = await workbook.render({ sheetName: name, range, scale: 1.25, format: 'png' });
   await fs.writeFile(`${output}.${name}.png`, new Uint8Array(await preview.arrayBuffer()));
 }

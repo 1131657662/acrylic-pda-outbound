@@ -5,7 +5,7 @@ import org.json.JSONObject
 
 /** Evidence files never carry reusable login or offline operation credentials. */
 internal object RescuePublicEvidence {
-    private val secrets = setOf("password", "accesstoken", "refreshtoken", "offlinetoken", "privatekey", "rescuepassword")
+    private val secrets = setOf("password", "accesstoken", "refreshtoken", "offlinetoken", "privatekey", "rescuepassword", "signedcredential", "localsessionid")
     fun verify(value: Any, depth: Int = 0) {
         check(depth <= 32) { "公开核验材料嵌套超过上限" }
         when (value) {

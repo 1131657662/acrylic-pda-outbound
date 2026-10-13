@@ -14,6 +14,7 @@ PURPOSE = "PDA_READONLY_RESCUE_V1"
 REQUIRED = {"order.json", "captures.ndjson", "scans.ndjson", "events.ndjson", "lines.ndjson",
             "dispositions.ndjson", "scan-details.tsv", "product-summary.tsv", "readme.txt"}
 OPTIONAL = {"submission.json", "receipt.json", "submission-info.json", "source-evidence.ndjson"}
+OPTIONAL |= {"independent-sku.bin", "independent-source.json", "independent-voids.ndjson", "independent-state.json"}
 SEAL = {"manifest.json", "manifest.sig", "device-public-key.der"}
 
 

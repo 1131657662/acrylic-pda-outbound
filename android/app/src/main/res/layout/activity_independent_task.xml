@@ -22,6 +22,7 @@
         <Button android:id="@+id/create" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="核验口令并保存独立计划" />
         <Button android:id="@+id/reload" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="重新读取原请求与任务" />
         <Button android:id="@+id/openIndependentWork" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="打开原独立任务扫码与已扫包" />
+        <Button android:id="@+id/exportIndependent" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="只读应急导出，仍待主管对账" />
         <TextView android:id="@+id/original" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textIsSelectable="true" />
         <Button android:id="@+id/newTask" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="显式新建另一独立任务，旧原件保留" />
         <Button android:id="@+id/historyLatest" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="读取原请求记录" />

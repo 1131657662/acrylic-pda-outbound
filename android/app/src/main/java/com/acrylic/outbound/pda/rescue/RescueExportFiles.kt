@@ -45,7 +45,8 @@ class RescueExportFiles(context: Context) {
             val digest = RescueFileTransfer.digest { file.inputStream() }
             check(digest == RescueBundle.sha(bytes)) { "私有应急包回读不一致" }
             val facts = RescueFacts.summary(snapshot)
-            val summary = "${snapshot.order.getString("source")} · ${snapshot.order.getString("localOrderId")}\n" +
+            val label = if (snapshot.order.getString("source") == "INDEPENDENT") "独立采集 · 待主管对账（服务端授权未核验）" else snapshot.order.getString("source")
+            val summary = "$label · ${snapshot.order.getString("localOrderId")}\n" +
                 "有效 ${facts.getString("active")} · VOID ${facts.getString("void")} · 处置 ${facts.getString("disposed")} · 未决 ${facts.getString("pending")}\n" +
                 "有效整数克 ${facts.getString("weightGrams")} · ${if ("submission.json" in snapshot.originals) "存在原冻结批次" else "未冻结，不补造批次"}"
             save(journal.put("state", "GENERATED").put("sha256", digest).put("summary", summary))

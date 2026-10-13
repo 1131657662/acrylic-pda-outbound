@@ -1,7 +1,7 @@
 package com.acrylic.outbound.pda.independent
 
-internal class IndependentScanFixture(barcode: String = "003A0000001") : AutoCloseable {
-    val task = IndependentTaskFixture(barcode)
+internal class IndependentScanFixture(barcode: String = "003A0000001", deviceKeyDigest: String? = null) : AutoCloseable {
+    val task = IndependentTaskFixture(barcode, deviceKeyDigest)
     val command = task.command()
     val grant = task.grant()
     val created = task.repository.create(command, grant)

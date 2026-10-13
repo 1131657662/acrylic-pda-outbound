@@ -7,6 +7,8 @@ def verify(plain: bytes, trusted: dict | None = None) -> dict:
     files = archive(plain)
     manifest = verify_seal(files)
     facts = verify_facts(files, manifest)
+    from .independent import verify as verify_independent
+    verify_independent(files, facts, manifest)
     return {"files": files, "manifest": manifest, "facts": facts,
             "sourceTrusted": source_trust(files, facts["order"], trusted),
             "businessReceiptVerified": False}

@@ -396,3 +396,5 @@
 | D06 LOCAL独立冻结与前置拒绝 | [LOCAL记录](history/D06_LOCAL_EXECUTION_2026-10-09.md)：1124三轮实际HTTP/MySQL/Android清单-only→LOCAL E2A/STOP→最终成功，1125首轮LOCAL无canonical拒绝；未冻结/清单-only REQUEST、APPROVE/PREPARE原件/减包/撤权拒绝及精确SQL/Room尾回滚，独立Node/只读Room消费者通过。失败、回归和当批APK/lint分列；非D06整体通过。 |
 | D07/R09 恢复交接target代次新资格 | [验收记录](history/D07_R09_RECIPIENT_QUALIFICATION_2026-10-11.md)：原来源/source代次保持、限定接收者与scope签名资格、真实MySQL/新JVM/独立消费及受影响回归；不代准备/激活/最终提交。 |
 | D07/R09 恢复交接PREPARE | [验收记录](history/D07_R09_RECOVERED_PREPARATION_2026-10-11.md)：既有准备协议、精确签名效果及原全表守恒，MySQL/新JVM/独立消费；后续下载确认/激活/最终提交未完成。 |
+
+- E06/O04独立采集只读应急导出：[验收记录](history/GOAL_E06_INDEPENDENT_EXPORT_2026-10-14.md)，原机产品文件/固定登记根/原库与Excel逐值守恒；主管人工对账及总目标未完成。

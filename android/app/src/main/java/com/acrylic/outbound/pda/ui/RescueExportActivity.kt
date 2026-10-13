@@ -88,7 +88,8 @@ class RescueExportActivity : ComponentActivity() {
         binding.supervisorImport.isEnabled = !state.busy
         binding.identity.isEnabled = !state.busy; binding.order.isEnabled = !state.busy
         binding.readSnapshot.isEnabled = !state.busy && state.unlocked && state.orders.isNotEmpty()
-        binding.importReceipt.isEnabled = !state.busy && state.unlocked && state.orders.isNotEmpty()
+        binding.importReceipt.isEnabled = !state.busy && state.unlocked &&
+            state.orders.getOrNull(state.selected)?.target?.source in setOf("FORMAL", "TEMP")
         binding.generate.isEnabled = !state.busy && state.canGenerate; binding.copy.isEnabled = !state.busy && state.canCopy
         binding.nextPage.visibility = if (state.hasMore) View.VISIBLE else View.GONE
         binding.nextPage.isEnabled = !state.busy

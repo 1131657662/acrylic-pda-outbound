@@ -30,7 +30,7 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
     private val mutable = MutableStateFlow(RescueExportUi())
     val state: StateFlow<RescueExportUi> = mutable.asStateFlow()
     fun prefer(source: String, id: String) {
-        if (source in setOf("FORMAL", "TEMP") && id.isNotBlank()) {
+        if (source in setOf("FORMAL", "TEMP", "INDEPENDENT") && id.isNotBlank()) {
             saved["preferredSource"] = source; saved["preferredId"] = id
         }
     }
@@ -119,6 +119,7 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
     fun cancelled() { mutable.update { it.copy(message = "目标选择已取消，原私有包保留；未新增已核验外置副本。") } }
     fun importReceipt(uri: Uri) = run("正在保全并核验原批次中转回执") {
         val selected = state.value.orders.getOrNull(state.value.selected) ?: error("请选择原冻结订单")
+        check(selected.target.source in setOf("FORMAL", "TEMP")) { "独立采集须由主管核对原授权和实物，不能导入业务中转回执" }
         val bytes = checkNotNull(app.contentResolver.openInputStream(uri)).use { it.readBytesBounded() }
         val message = com.acrylic.outbound.pda.relay.RelayReceiptImport(app).apply(bytes, selected.target, checkNotNull(grant))
         snapshot = null; generated = null
