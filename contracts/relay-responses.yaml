@@ -28,3 +28,13 @@ Process:
           - type: object
             properties:
               data: {$ref: './relay-schemas.yaml#/Result'}
+IndependentReview:
+  description: 历史原授权与现时主体状态分开显示；完整结束边界尚未核验，始终待实物对账。
+  content:
+    application/json:
+      schema:
+        allOf:
+          - {$ref: './schemas.yaml#/Envelope'}
+          - type: object
+            properties:
+              data: {$ref: './relay-schemas.yaml#/IndependentReview'}

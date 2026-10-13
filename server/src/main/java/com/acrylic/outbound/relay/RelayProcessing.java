@@ -10,17 +10,16 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 
 @Service
 public class RelayProcessing {
-    private final RelayEnabled enabled;private final RelayAccess access;private final RelayFiles files;private final RelayStore relays;
+    private final RelayEnabled enabled;private final RelayAccess access;private final RelayOriginals originals;private final RelayStore relays;
     private final SubmissionStore submissions;private final SubmissionService service;private final RelayReceipts receipts;private final RelayJournal journal;
-    public RelayProcessing(RelayEnabled enabled,RelayAccess access,RelayFiles files,RelayStore relays,SubmissionStore submissions,
+    public RelayProcessing(RelayEnabled enabled,RelayAccess access,RelayOriginals originals,RelayStore relays,SubmissionStore submissions,
         SubmissionService service,RelayReceipts receipts,RelayJournal journal) {
-        this.enabled=enabled;this.access=access;this.files=files;this.relays=relays;this.submissions=submissions;
+        this.enabled=enabled;this.access=access;this.originals=originals;this.relays=relays;this.submissions=submissions;
         this.service=service;this.receipts=receipts;this.journal=journal;
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode process(RelayIntake.Context c,UUID id) {
-        enabled.require();access.read(c.warehouse());var row=relays.get(id);RelayIntake.scope(row,c.warehouse());
-        var bundle=RelayArchive.read(files.read(row.archiveSha256()));
+        var selected=originals.read(c.warehouse(),id);var row=selected.row();var bundle=selected.bundle();
         if(bundle.control()==null)throw new BusinessException(409,"ORIGINAL_NOT_FROZEN","仅接收证据，不能补造冻结批次或自动记账");
         UUID operator=access.write(c.warehouse(),c.epoch(),bundle.original().user());
         var actor=access.original(bundle,c.epoch());var command=command(c,row,bundle,operator);
@@ -35,8 +34,7 @@ public class RelayProcessing {
     }
     @Transactional(readOnly=true)
     public JsonNode query(UUID warehouse,UUID id) {
-        enabled.require();access.read(warehouse);var row=relays.get(id);RelayIntake.scope(row,warehouse);
-        var bundle=RelayArchive.read(files.read(row.archiveSha256()));var result=object().put("relayId",id.toString()).put("localDeletionAllowed",false);
+        var selected=originals.read(warehouse,id);var bundle=selected.bundle();var result=object().put("relayId",id.toString()).put("localDeletionAllowed",false);
         if(bundle.control()==null) { result.put("state","EVIDENCE_ONLY");result.putNull("businessReceipt");return result; }
         if(!access.trusted(bundle,false))throw new BusinessException(409,"ORIGINAL_SOURCE_UNVERIFIED","原登记设备钥未核验，不得查询业务资料");
         var head=submissions.find(bundle.control().id());validate(head,bundle);

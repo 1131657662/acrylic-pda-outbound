@@ -18,7 +18,7 @@ class RelayContractTest {
 
     @Test void everyRelayRouteUsesWebSessionAndResolvableExternalReferences() throws Exception {
         var paths=map(load(root.resolve("openapi.yaml")).get("paths"));
-        var expected=Map.of("/original-relays","post","/original-relays/{id}","get",
+        var expected=Map.of("/original-relays","post","/original-relays/{id}","get","/original-relays/{id}/independent-review","get",
             "/original-relays/{id}/submission","get","/original-relays/{id}/process","post",
             "/original-relays/{id}/original","get","/original-relays/results/{id}","get");
         for(var route:expected.entrySet()) {

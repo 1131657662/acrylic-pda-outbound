@@ -26,6 +26,9 @@ public class RelayAccess {
         return web.require("rescue:relay",warehouse).id();
     }
     public void read(UUID warehouse) { web.require("rescue:relay",warehouse); }
+    public void reviewIndependent(UUID warehouse) {
+        web.require("rescue:relay",warehouse);web.require("temporary_order:confirm",warehouse);
+    }
     public boolean trusted(RelayArchive.Bundle bundle,boolean lock) {
         try {
             var device=devices.find(bundle.original().device(),lock);

@@ -398,3 +398,5 @@
 | D07/R09 恢复交接PREPARE | [验收记录](history/D07_R09_RECOVERED_PREPARATION_2026-10-11.md)：既有准备协议、精确签名效果及原全表守恒，MySQL/新JVM/独立消费；后续下载确认/激活/最终提交未完成。 |
 
 - E06/O04独立采集只读应急导出：[验收记录](history/GOAL_E06_INDEPENDENT_EXPORT_2026-10-14.md)，原机产品文件/固定登记根/原库与Excel逐值守恒；主管人工对账及总目标未完成。
+
+- E06/O04独立原件接收与主管核原授权：[验收记录](history/GOAL_E06_REVIEW_ACCEPTANCE_2026-10-14.md)，实际Android原包/非空恢复/真实HTTP、历史签发钥/双权限/新JVM及旧中转组合回归；完整结束、实物与人工关联继续。

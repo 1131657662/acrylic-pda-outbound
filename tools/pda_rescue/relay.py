@@ -9,6 +9,7 @@ from .envelope import decrypt
 from .integrity import archive, parse, verify_seal
 from .relay_journal import RelayJournal
 from .relay_transport import RelayWeb, base_url
+from .independent_review import checked_review
 
 
 def transfer(wire, journal, process=False):
@@ -28,14 +29,30 @@ def transfer(wire, journal, process=False):
             "notice": "返还原机使用预置可信钥严格验签；实物放行仍按原流程核对", "localDeletionAllowed": False}
 
 
-def main():
+def review_transfer(wire, journal):
+    original = (journal.directory / "original.zip").read_bytes()
+    if parse(archive(original)["order.json"])["source"] != "INDEPENDENT":
+        raise ValueError("Supervisor independent review requires independent originals")
+    result = transfer(wire, journal)
+    receipt = result["reception"]
+    result["independentReview"] = checked_review(wire.data("/" + receipt["relayId"] + "/independent-review"), receipt)
+    return result
+
+
+def arguments():
     parser = argparse.ArgumentParser(description="受控原件中转；专用仓库权限，电脑独立登录，不使用PDA Bearer")
     parser.add_argument("package", type=Path, help="完整加密.pdarescue或逐字原ZIP")
     parser.add_argument("--server", required=True, help="HTTPS服务源；隔离测试可用loopback HTTP")
     parser.add_argument("--warehouse", required=True)
     parser.add_argument("--journal", required=True, type=Path, help="受控耐久目录；丢响应时复用同目录和原包")
-    parser.add_argument("--process-frozen", action="store_true", help="核原ID后通过原提交链处理可信冻结包；TEMP仍待独立审核")
-    args = parser.parse_args()
+    action = parser.add_mutually_exclusive_group()
+    action.add_argument("--process-frozen", action="store_true", help="核原ID后通过原提交链处理可信冻结包；TEMP仍待独立审核")
+    action.add_argument("--review-independent", action="store_true", help="主管核独立原授权；仍待实物对账，不关联、记账或放行")
+    return parser, parser.parse_args()
+
+
+def main():
+    parser, args = arguments()
     try:
         if args.package.stat().st_size > 64 * 1024 * 1024 + 128:
             raise ValueError("Original package is too large")
@@ -53,7 +70,8 @@ def main():
         journal = RelayJournal(args.journal, plain, {"server": server, "warehouse": warehouse})
         wire = RelayWeb(server, warehouse)
         wire.login(input("电脑经办人网页登录名：").strip(), getpass.getpass("网页登录密码："))
-        print(json.dumps(transfer(wire, journal, args.process_frozen), ensure_ascii=False))
+        result = review_transfer(wire, journal) if args.review_independent else transfer(wire, journal, args.process_frozen)
+        print(json.dumps(result, ensure_ascii=False))
     except Exception as error:
         parser.exit(1, f"中转未完成（{type(error).__name__}）；原包与已记录的原键保留，重试复用同目录。\n")
 

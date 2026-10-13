@@ -18,7 +18,8 @@ public final class RelayArchive {
     public static final String PURPOSE="PDA_READONLY_RESCUE_V1";
     private static final Set<String> REQUIRED=Set.of("order.json","captures.ndjson","scans.ndjson","events.ndjson",
         "lines.ndjson","dispositions.ndjson","scan-details.tsv","product-summary.tsv","readme.txt");
-    private static final Set<String> OPTIONAL=Set.of("submission.json","submission-info.json","receipt.json","source-evidence.ndjson");
+    private static final Set<String> OPTIONAL=Set.of("submission.json","submission-info.json","receipt.json","source-evidence.ndjson",
+        "independent-sku.bin","independent-source.json","independent-voids.ndjson","independent-state.json");
     private static final Set<String> SEAL=Set.of("manifest.json","manifest.sig","device-public-key.der");
     private RelayArchive() { }
 
@@ -34,10 +35,11 @@ public final class RelayArchive {
         equal(text(manifest,"deviceKeySha256"),ImportFiles.sha256(files.get("device-public-key.der")),"原设备钥摘要不符");
         require(files.get("manifest.sig").length<=128,"原签名过大");
         DeviceCrypto.verify(key,PURPOSE+"\n"+utf8(files.get("manifest.json")),Base64.getEncoder().encodeToString(files.get("manifest.sig")));
-        var order=json(files.get("order.json"));var identity=identity(order);var body=frozen(files);
+        var order=json(files.get("order.json"));var identity=identity(order);
+        var independent=RelayIndependentOriginal.read(files,order,text(manifest,"deviceKeySha256"));var body=frozen(files);
         if(body!=null) bind(identity,order,body);
         return new Bundle(export,identity,key,text(manifest,"deviceKeySha256"),ImportFiles.sha256(bytes),
-            body,body==null?null:SubmissionControl.read(uuid(body,"submissionId"),body));
+            body,body==null?null:SubmissionControl.read(uuid(body,"submissionId"),body),independent);
     }
     private static Map<String,byte[]> unpack(byte[] bytes) {
         require(bytes.length>0 && bytes.length<=MAX_BYTES,"原包大小无效");var files=new LinkedHashMap<String,byte[]>();
@@ -96,5 +98,5 @@ public final class RelayArchive {
     }
     public record Identity(UUID user,UUID device,UUID warehouse,String source,UUID localOrder) { }
     public record Bundle(UUID exportId,Identity original,String publicKey,String keySha256,String archiveSha256,
-        JsonNode body,SubmissionControl control) { }
+        JsonNode body,SubmissionControl control,JsonNode independent) { }
 }

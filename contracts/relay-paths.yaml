@@ -51,6 +51,21 @@ Submission:
       '404': {$ref: './openapi.yaml#/components/responses/Error'}
       '409': {$ref: './openapi.yaml#/components/responses/Error'}
       default: {$ref: './openapi.yaml#/components/responses/Error'}
+IndependentReview:
+  get:
+    summary: 主管核对独立采集原授权
+    description: 同仓rescue:relay及temporary_order:confirm双权限；从服务端原凭据和固定历史签发钥核验历史签发。过期和后续撤权不消灭历史原件；不返回可复用token、不授权新增采集、关联、记账、放行或删除，生产入口沿原件中转默认关闭。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+    responses:
+      '200': {$ref: './relay-responses.yaml#/IndependentReview'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
 Process:
   post:
     summary: 按原提交链处理中转原件
