@@ -1,0 +1,50 @@
+Reception:
+  type: object
+  additionalProperties: false
+  required: [relayId, exportId, archiveSha256, sourceTrust, receptionState, businessProcessed, localDeletionAllowed, submissionId]
+  properties:
+    relayId: {type: string, format: uuid}
+    exportId: {type: string, format: uuid}
+    archiveSha256: {$ref: '#/Sha256'}
+    sourceTrust: {type: string, enum: [TRUSTED, UNVERIFIED]}
+    receptionState: {type: string, const: ORIGINALS_STORED}
+    businessProcessed: {type: boolean, const: false}
+    localDeletionAllowed: {type: boolean, const: false}
+    submissionId: {type: [string, 'null'], format: uuid}
+Submission:
+  type: object
+  additionalProperties: false
+  required: [relayId, state, localDeletionAllowed, businessReceipt]
+  properties:
+    relayId: {type: string, format: uuid}
+    state: {type: string, enum: [NOT_FOUND, EVIDENCE_ONLY, REGISTERED, RECEIVING, REVIEW_REQUIRED, SUCCEEDED, REJECTED, ABORTED]}
+    localDeletionAllowed: {type: boolean, const: false}
+    businessReceipt:
+      anyOf: [{$ref: './submission-schemas.yaml#/Result'}, {type: 'null'}]
+Result:
+  type: object
+  additionalProperties: false
+  required: [purpose, relayId, resultId, exportId, archiveSha256, deviceKeySha256, operatorId, deviceId, warehouseId, localOrderId, submissionId, payloadSha256, sourceRecoveryEpoch, relayOperatorId, localDeletionAllowed, businessReceipt, signedRelayReceipt]
+  properties:
+    purpose: {type: string, const: PDA_ORIGINAL_RELAY_RESULT_V1}
+    relayId: {type: string, format: uuid}
+    resultId: {type: string, format: uuid}
+    exportId: {type: string, format: uuid}
+    archiveSha256: {$ref: '#/Sha256'}
+    deviceKeySha256: {$ref: '#/Sha256'}
+    operatorId: {type: string, format: uuid, description: 原采集人，独立于中转经办人}
+    deviceId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    localOrderId: {type: string, format: uuid}
+    submissionId: {type: string, format: uuid}
+    payloadSha256: {$ref: '#/Sha256'}
+    sourceRecoveryEpoch: {type: string, pattern: '^[1-9][0-9]*$'}
+    relayOperatorId: {type: string, format: uuid}
+    localDeletionAllowed: {type: boolean, const: false}
+    businessReceipt: {$ref: './submission-schemas.yaml#/Result'}
+    signedRelayReceipt:
+      type: string
+      description: 包外预置可信根验RS256；iss=acrylic-outbound，aud=acrylic-pda-relay-result，receipt逐字段绑定除本签名外的全部结果。不得从返还文件建立信任。
+Sha256:
+  type: string
+  pattern: '^[a-f0-9]{64}$'

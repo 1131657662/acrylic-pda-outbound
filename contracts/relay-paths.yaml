@@ -1,0 +1,107 @@
+Receive:
+  post:
+    summary: 接收受控原件中转包
+    description: >-
+      使用中转操作者自己的Web会话和专用仓库权限接收逐字ZIP。服务器先保全原件并核验包签名、登记设备钥和仓库范围；
+      未冻结或未登记来源只能成为证据，不创建正式提交。生产入口默认关闭，localDeletionAllowed始终为false。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+    requestBody:
+      required: true
+      content:
+        application/zip:
+          schema: {type: string, format: binary, description: 已签名原件ZIP，最大32MiB}
+    responses:
+      '200': {$ref: './relay-responses.yaml#/Reception'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '503': {$ref: './openapi.yaml#/components/responses/Error'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Read:
+  get:
+    summary: 查询原件中转接收回执
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+    responses:
+      '200': {$ref: './relay-responses.yaml#/Reception'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Submission:
+  get:
+    summary: 查询原件对应的原提交状态
+    description: 未冻结原件返回EVIDENCE_ONLY；未核验来源不得读取业务状态。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+    responses:
+      '200': {$ref: './relay-responses.yaml#/Submission'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Process:
+  post:
+    summary: 按原提交链处理中转原件
+    description: >-
+      仅可信、冻结且仍满足原人员、设备、仓库、恢复代次和原资格的包可处理；锁内重新核验原ID和正文，
+      结果以不可变签名回执保存。已撤回重发的旧资格、异文和锁后撤权均拒绝且保全原件。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+    responses:
+      '200': {$ref: './relay-responses.yaml#/Process'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      '503': {$ref: './openapi.yaml#/components/responses/Error'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Original:
+  get:
+    summary: 下载逐字原件ZIP
+    description: 仅同仓库有权中转操作者可取回原字节；不改变业务状态或本机删除边界。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+    responses:
+      '200':
+        description: 原件ZIP字节
+        headers:
+          Cache-Control: {schema: {type: string, const: no-store}}
+          X-Content-Type-Options: {schema: {type: string, const: nosniff}}
+        content:
+          application/zip: {schema: {type: string, format: binary}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Result:
+  get:
+    summary: 下载签名中转结果回执
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+    responses:
+      '200':
+        description: 不可变JSON签名回执原字节
+        headers:
+          Cache-Control: {schema: {type: string, const: no-store}}
+          X-Content-Type-Options: {schema: {type: string, const: nosniff}}
+        content:
+          application/json: {schema: {$ref: './relay-schemas.yaml#/Result'}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}

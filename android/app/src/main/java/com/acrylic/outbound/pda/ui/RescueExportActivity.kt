@@ -22,6 +22,9 @@ class RescueExportActivity : ComponentActivity() {
     private val createDocument = registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
         if (uri == null) model.cancelled() else model.copy(uri)
     }
+    private val openReceipt = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) model.importReceipt(uri)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
@@ -43,6 +46,7 @@ class RescueExportActivity : ComponentActivity() {
             model.unlock(binding.identity.selectedItemPosition, password)
         }
         binding.readSnapshot.setOnClickListener { model.readSnapshot() }
+        binding.importReceipt.setOnClickListener { openReceipt.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }
         binding.nextPage.setOnClickListener { model.nextPage() }
         binding.lockScope.setOnClickListener { model.lock() }
         binding.recoverPackage.setOnClickListener { model.recover(binding.privatePackage.selectedItemPosition) }
@@ -84,6 +88,7 @@ class RescueExportActivity : ComponentActivity() {
         binding.supervisorImport.isEnabled = !state.busy
         binding.identity.isEnabled = !state.busy; binding.order.isEnabled = !state.busy
         binding.readSnapshot.isEnabled = !state.busy && state.unlocked && state.orders.isNotEmpty()
+        binding.importReceipt.isEnabled = !state.busy && state.unlocked && state.orders.isNotEmpty()
         binding.generate.isEnabled = !state.busy && state.canGenerate; binding.copy.isEnabled = !state.busy && state.canCopy
         binding.nextPage.visibility = if (state.hasMore) View.VISIBLE else View.GONE
         binding.nextPage.isEnabled = !state.busy

@@ -117,6 +117,22 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
         }
     }
     fun cancelled() { mutable.update { it.copy(message = "目标选择已取消，原私有包保留；未新增已核验外置副本。") } }
+    fun importReceipt(uri: Uri) = run("正在保全并核验原批次中转回执") {
+        val selected = state.value.orders.getOrNull(state.value.selected) ?: error("请选择原冻结订单")
+        val bytes = checkNotNull(app.contentResolver.openInputStream(uri)).use { it.readBytesBounded() }
+        val message = com.acrylic.outbound.pda.relay.RelayReceiptImport(app).apply(bytes, selected.target, checkNotNull(grant))
+        snapshot = null; generated = null
+        mutable.update { it.copy(message = message, canGenerate = false, canCopy = false) }
+    }
+    private fun java.io.InputStream.readBytesBounded(): ByteArray {
+        val output = java.io.ByteArrayOutputStream(); val buffer = ByteArray(8192)
+        while (true) {
+            val count = read(buffer); if (count < 0) break
+            check(count > 0 && output.size() + count <= 262144) { "中转回执文件过大或无法完整读取" }
+            output.write(buffer, 0, count)
+        }
+        return output.toByteArray()
+    }
     fun copy(uri: Uri) = run("正在写入目标并回读，完成前不要拔出介质") {
         val digest = files.copy(checkNotNull(generated), uri, checkNotNull(grant))
         mutable.update { it.copy(copyState = "目标写入与回读一致。SHA256 $digest\n电脑副本尚未核验；请另行保管解密口令。") }

@@ -20,6 +20,7 @@
         <Spinner android:id="@+id/order" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" />
         <Button android:id="@+id/nextPage" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="下一页原订单" />
         <Button android:id="@+id/readSnapshot" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="读取一致原件快照" />
+        <Button android:id="@+id/importReceipt" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="导入电脑返还的原批次签名回执" />
         <TextView android:id="@+id/summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="已生成的原私有包（本人范围内最近50份）" android:labelFor="@id/privatePackage" />
         <Spinner android:id="@+id/privatePackage" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" />

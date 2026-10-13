@@ -36,7 +36,10 @@ class RescueExportFiles(context: Context) {
             .put("deviceId", snapshot.order.getString("deviceId")).put("warehouseId", snapshot.order.getString("warehouseId"))
         save(journal)
         try {
-            val bytes = RescueEnvelope.encrypt(RescueBundle.build(snapshot, inputs.second), password)
+            val original = RescueBundle.build(snapshot, inputs.second)
+            val manifest = manifest(original)
+            journal.put("exportId", manifest.getString("exportId")).put("archiveSha256", RescueBundle.sha(original))
+            val bytes = RescueEnvelope.encrypt(original, password)
             inputs.first.check(snapshot.order)
             file.outputStream().use { it.write(bytes); it.flush(); it.fd.sync() }
             val digest = RescueFileTransfer.digest { file.inputStream() }
@@ -71,6 +74,19 @@ class RescueExportFiles(context: Context) {
         check(RescueFileTransfer.digest { file.inputStream() } == digest) { "原私有包损坏，请保留资料重新生成" }
         return RescueGeneratedFile(normalized, file, digest, journal.getString("summary"))
     }
+    fun requireRelayOriginal(receipt: JSONObject, grant: RescueReadGrant) {
+        grant.recheck()
+        val journals = directory.listFiles { file -> file.extension == "json" }.orEmpty()
+        check(journals.size <= 2_000) { "私有包目录超过读取上限，请保留原件" }
+        val original = journals.mapNotNull { runCatching { read(it.nameWithoutExtension) }.getOrNull() }
+            .firstOrNull { it.has("sha256") && it.optString("exportId") == receipt.getString("exportId") &&
+                it.optString("archiveSha256") == receipt.getString("archiveSha256") }
+        check(original != null) { "未找到与中转回执一致的本机原清单；保留文件并重新导出核对，不能改变本机状态" }
+        grant.check(original)
+        for (field in listOf("operatorId", "deviceId", "warehouseId", "localOrderId"))
+            check(original.getString(field) == receipt.getString(field)) { "原私有包范围与中转回执不符" }
+        recover(original.getString("id"), grant)
+    }
     private fun read(id: String): JSONObject {
         val file = AtomicFile(File(directory, "$id.json"))
         file.openRead().use { input ->
@@ -83,6 +99,11 @@ class RescueExportFiles(context: Context) {
             check(offset <= 32_768) { "私有包状态记录异常，请保留原件" }
             return JSONObject(String(bytes, 0, offset, Charsets.UTF_8))
         }
+    }
+    private fun manifest(original: ByteArray): JSONObject = java.util.zip.ZipInputStream(original.inputStream()).use { zip ->
+        var entry = zip.nextEntry
+        while (entry != null && entry.name != "manifest.json") entry = zip.nextEntry
+        check(entry != null); JSONObject(zip.readBytes().toString(Charsets.UTF_8))
     }
     private fun save(journal: JSONObject) {
         val file = AtomicFile(File(directory, "${journal.getString("id")}.json")); val output = file.startWrite()

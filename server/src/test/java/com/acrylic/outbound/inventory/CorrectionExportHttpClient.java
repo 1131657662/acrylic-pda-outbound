@@ -68,6 +68,12 @@ final class CorrectionExportHttpClient {
         return client.send(request(resource(path)).GET().build(),HttpResponse.BodyHandlers.ofByteArray());
     }
 
+    HttpResponse<byte[]> archive(String path,byte[] bytes,UUID key) throws Exception {
+        return client.send(request(resource(path)).header("Content-Type","application/zip")
+            .header(csrfHeader,csrfToken).header("X-Server-Recovery-Epoch",epoch).header("Idempotency-Key",key.toString())
+            .POST(HttpRequest.BodyPublishers.ofByteArray(bytes)).build(),HttpResponse.BodyHandlers.ofByteArray());
+    }
+
     static JsonNode data(HttpResponse<byte[]> response,int expected) {
         assertThat(response.statusCode()).as("HTTP response: %s",new String(response.body(),StandardCharsets.UTF_8))
                 .isEqualTo(expected);

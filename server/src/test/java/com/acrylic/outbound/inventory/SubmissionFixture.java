@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class SubmissionFixture {
-    final PublicationDriver web;final PdaTestDriver pda;final JdbcTemplate jdbc;final JsonNode tokens;final ObjectNode body;final JsonNode assignment;final String order;
+    final PublicationDriver web;final PdaTestDriver pda;final PdaTestDriver.Device device;final JdbcTemplate jdbc;final JsonNode tokens;final ObjectNode body;final JsonNode assignment;final String order;
     SubmissionFixture(PublicationDriver web,JdbcTemplate jdbc,boolean deduct,boolean shortPlan) throws Exception {
         this.web=web;this.jdbc=jdbc;pda=new PdaTestDriver(web);
         String serial=UUID.randomUUID().toString().replace("-","").substring(0,7).toUpperCase();
@@ -22,7 +22,7 @@ class SubmissionFixture {
         var orders=new OrderTestDriver(web);orders.policy("0",deduct);var plan=orders.plan();
         if(!shortPlan) plan.get("lines").forEach(line->((ObjectNode)line).put("plannedCount",1));
         order=orders.create(plan).get("orderId").asText();web.data(orders.command("/"+order+"/publish",orders.release("1","1"),UUID.randomUUID().toString()));
-        tokens=pda.login(pda.register());assignment=pda.data(pda.claim(order,UUID.randomUUID().toString()),tokens);
+        device=pda.register();tokens=pda.login(device);assignment=pda.data(pda.claim(order,UUID.randomUUID().toString()),tokens);
         jdbc.update("UPDATE order_assignment SET download_ack_at=UTC_TIMESTAMP(3) WHERE id=?",Ids.bytes(UUID.fromString(assignment.get("id").asText())));
         body=build(shortPlan).put("autoDeductInventory",deduct);
     }
@@ -30,7 +30,7 @@ class SubmissionFixture {
         web=original.web;jdbc=original.jdbc;pda=original.pda;var orders=new OrderTestDriver(web);var plan=orders.plan();
         plan.get("lines").forEach(line->((ObjectNode)line).put("plannedCount",1));
         order=orders.create(plan).get("orderId").asText();web.data(orders.command("/"+order+"/publish",orders.release("1","1"),UUID.randomUUID().toString()));
-        tokens=pda.login(pda.register());assignment=pda.data(pda.claim(order,UUID.randomUUID().toString()),tokens);
+        device=pda.register();tokens=pda.login(device);assignment=pda.data(pda.claim(order,UUID.randomUUID().toString()),tokens);
         jdbc.update("UPDATE order_assignment SET download_ack_at=UTC_TIMESTAMP(3) WHERE id=?",Ids.bytes(UUID.fromString(assignment.get("id").asText())));
         body=build(false).put("autoDeductInventory",original.body.get("autoDeductInventory").asBoolean());
     }

@@ -60,6 +60,26 @@ class RescueGeneratedFileTest {
         assertThrows(IllegalStateException::class.java) { files.recover(generated.id, access) }
         assertTrue(generated.file.exists())
     }
+    @Test fun relayReceiptMustBindActualLocalManifestAndExactArchiveBytes() = scenario { f ->
+        f.scan(); val access = grant(f)
+        val snapshot = RescueRoomSnapshot(f.db).read(RescueTarget("FORMAL", f.assignment), access)
+        val files = RescueExportFiles(f.context); val generated = files.generate(snapshot, access to signer(), password)
+        val original = RescueEnvelope.decrypt(generated.file.readBytes(), password)
+        val manifest = ZipInputStream(original.inputStream()).use { zip ->
+            var entry = zip.nextEntry
+            while (entry != null && entry.name != "manifest.json") entry = zip.nextEntry
+            check(entry != null); JSONObject(zip.readBytes().toString(Charsets.UTF_8))
+        }
+        val receipt = JSONObject(snapshot.order.toString()).put("exportId", manifest.getString("exportId"))
+            .put("archiveSha256", RescueBundle.sha(original))
+        files.requireRelayOriginal(receipt, access)
+        assertThrows(IllegalStateException::class.java) {
+            files.requireRelayOriginal(JSONObject(receipt.toString()).put("archiveSha256", "a".repeat(64)), access)
+        }
+        generated.file.appendBytes(byteArrayOf(1))
+        assertThrows(IllegalStateException::class.java) { files.requireRelayOriginal(receipt, access) }
+        assertEquals("SCANNING", f.db.work().state(f.assignment)); assertNull(f.db.submissions().forOrder(f.assignment))
+    }
     @Test fun anotherWarehouseCannotRecoverPreviouslyGeneratedPrivateFile() = scenario { f ->
         f.scan(); val access = grant(f)
         val snapshot = RescueRoomSnapshot(f.db).read(RescueTarget("FORMAL", f.assignment), access)

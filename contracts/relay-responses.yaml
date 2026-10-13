@@ -1,0 +1,30 @@
+Reception:
+  description: 同原键重试返回同一接收回执；businessProcessed恒false只描述接收动作，业务状态另行查询。
+  content:
+    application/json:
+      schema:
+        allOf:
+          - {$ref: './schemas.yaml#/Envelope'}
+          - type: object
+            properties:
+              data: {$ref: './relay-schemas.yaml#/Reception'}
+Submission:
+  description: 原提交状态查询；NOT_FOUND和EVIDENCE_ONLY的businessReceipt为null。
+  content:
+    application/json:
+      schema:
+        allOf:
+          - {$ref: './schemas.yaml#/Envelope'}
+          - type: object
+            properties:
+              data: {$ref: './relay-schemas.yaml#/Submission'}
+Process:
+  description: 不可变签名结果；businessReceipt保留原业务回执，TEMP仍可能待审核，结果不授权实物放行或本机删除。
+  content:
+    application/json:
+      schema:
+        allOf:
+          - {$ref: './schemas.yaml#/Envelope'}
+          - type: object
+            properties:
+              data: {$ref: './relay-schemas.yaml#/Result'}
