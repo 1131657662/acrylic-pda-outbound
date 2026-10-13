@@ -18,8 +18,9 @@ Context:
     summary: 核原隔离来源并固定解隔离四类事实
     description: >-
       DISCOVER需baleId且禁caseId，其余需caseId且禁baleId。SUBMIT仅原发现人可读，APPROVE需独立主管。
-      原CLOSE_DISPOSITION签名、原字节、事件和业务引用核验，固定原处置/owner、有效上游快照、库存版本及出库账务。
-      接受无历史dispatch/ledger的已关闭TEMP或原处置已应用PC/FORMAL来源；PC逐包原停止快照、计划、审批/应用及原幂等审计全部一致。
+      原CLOSE_DISPOSITION或PHYSICAL_DISPOSITION签名、精确原字节、事件和业务引用核验，固定原处置/owner、有效上游快照、库存版本及出库账务。
+      接受无历史dispatch/ledger的已关闭TEMP、原批次ABORTED/REJECTED的TEMP逐包处置或原处置已应用PC/FORMAL来源；逐包解除不关闭其余作业。
+      PC逐包原停止快照、计划、审批/应用及原幂等审计全部一致。
       FORMAL核原恢复包字节和停止签名、逐包摘要、实物批准及同原机续作批准/激活/应用终态。数据库批准不补造签名。
       提交三天内QUARANTINE_CLEARED_IN_WAREHOUSE实际核验及1至5附件。
       独立主管批准仅删除精确原QUARANTINED owner并追加不可变解除关联及条码同步；原处置/结果/账务/库存账/周期保持。
@@ -37,7 +38,7 @@ Context:
 Original:
   get:
     summary: 按适用案件权限下载原隔离依据
-    description: 与context相同的命令类型/身份/仓库/目标规则。TEMP返回原CLOSE_DISPOSITION实际JSON字节；PC返回PC_DATABASE_ORIGINALS停止/方案/审批/应用依据；FORMAL返回FORMAL_RECOVERY_APPLICATION_ORIGINALS原恢复包、实物批准和签名停止/续作/应用依据。来源摘要固定，no-store、attachment下载头，不补造签名。
+    description: 与context相同的命令类型/身份/仓库/目标规则。TEMP返回精确原CLOSE_DISPOSITION或PHYSICAL_DISPOSITION实际JSON字节；PC返回PC_DATABASE_ORIGINALS停止/方案/审批/应用依据；FORMAL返回FORMAL_RECOVERY_APPLICATION_ORIGINALS原恢复包、实物批准和签名停止/续作/应用依据。来源摘要固定，no-store、attachment下载头，不补造签名。
     parameters:
       - {$ref: './correction-header-paths.yaml#/Warehouse'}
       - {in: query, name: commandType, required: true, schema: {type: string, enum: [RECONCILE_QUARANTINE_DISCOVER, RECONCILE_QUARANTINE_SUBMIT, RECONCILE_QUARANTINE_APPROVE]}}

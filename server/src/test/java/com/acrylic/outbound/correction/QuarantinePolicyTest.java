@@ -23,6 +23,29 @@ class QuarantinePolicyTest {
         facts.putArray("dispatches"); facts.putArray("ledger"); return facts;
     }
     @Test void provenClosedUnpostedSourceCanBeCleared() { assertThatCode(()->QuarantinePolicy.eligible(facts())).doesNotThrowAnyException(); }
+    @ParameterizedTest @ValueSource(strings={"REJECTED","ABORTED"})
+    void originalTerminalPerBaleDispositionDoesNotRequireClosingOtherWork(String status) {
+        var facts=open(status);
+        assertThatCode(()->QuarantinePolicy.eligible(facts)).doesNotThrowAnyException();
+    }
+    @ParameterizedTest @ValueSource(strings={"SCANNING","REVIEW_REQUIRED","SUCCEEDED",""})
+    void openDispositionCannotReleaseAnUnprovenOriginalState(String status) {
+        assertThatThrownBy(()->QuarantinePolicy.eligible(open(status))).isInstanceOf(BusinessException.class);
+    }
+    @Test void closureReceiptCannotProveAPerBaleDisposition() {
+        var facts=open("ABORTED"); ((ObjectNode)facts.at("/origin/originalReceipt")).put("commandType","CLOSE_DISPOSITION");
+        assertThatThrownBy(()->QuarantinePolicy.eligible(facts)).isInstanceOf(BusinessException.class);
+    }
+    @Test void originalTerminalStateDriftIsRejected() {
+        var facts=open("ABORTED"); ((ObjectNode)facts.path("origin")).put("sourceStatus","REJECTED");
+        assertThatThrownBy(()->QuarantinePolicy.eligible(facts)).isInstanceOf(BusinessException.class);
+    }
+    private ObjectNode open(String status) {
+        var facts=facts(); var origin=(ObjectNode)facts.path("origin");
+        origin.put("closeMode",false).put("sourceClosed",false).put("sourceStatus",status);
+        origin.putObject("originalReceipt").put("commandType","PHYSICAL_DISPOSITION").putObject("originalContext").put("status",status);
+        return facts;
+    }
     @ParameterizedTest @ValueSource(strings={"missing-upstream","snapshot","blocked","deducted","open","not-quarantine","cycle","warehouse","dispatch","ledger"})
     void independentStockAndSourceConflictsRemainBlocked(String conflict) {
         var facts=facts(); var stock=(ObjectNode)facts.path("stock"); var origin=(ObjectNode)facts.path("origin");

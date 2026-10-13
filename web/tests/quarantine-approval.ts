@@ -2,7 +2,7 @@ import { expect, type Page } from '@playwright/test';
 import { quarantineEvidence } from './quarantine-fixture';
 import { createHash } from 'node:crypto';
 export async function quarantineReview(page:Page,bytes:Buffer,origin:{hash:string;kind:'TEMP'|'PC'|'FORMAL'}):Promise<void> {
-  await expect(page.getByText('原隔离与关闭依据',{exact:true})).toBeVisible();
+  await expect(page.getByText('原隔离与实物处置依据',{exact:true})).toBeVisible();
   const source=page.waitForResponse(r=>r.url().includes('/quarantine/original-receipt?'));
   await page.getByRole('button',{name:origin.kind==='PC'?'下载原PC审批依据':origin.kind==='FORMAL'?'下载原FORMAL处置依据':'下载原隔离签名回执',exact:true}).click(); const sourceResponse=await source;
   expect(sourceResponse.status()).toBe(200); const sourceBytes=await sourceResponse.body();

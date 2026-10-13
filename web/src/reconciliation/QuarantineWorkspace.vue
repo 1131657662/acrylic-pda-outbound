@@ -38,7 +38,7 @@ async function confirm(): Promise<void> {
     <el-alert v-if="pending?.receipt?.commandType.startsWith('RECONCILE_QUARANTINE_')" :title="`${labels[pending.receipt.commandType]}已记录：${statuses[pending.receipt.businessDecision.status] ?? pending.receipt.businessDecision.status}`" type="success" :closable="false" />
     <el-alert v-if="pending?.rejection" :title="`原操作已拒绝：${pending.rejection.message}`" type="warning" :closable="false" />
     <el-button :disabled="busy || !!unresolved" @click="load()">刷新隔离与原事实</el-button>
-    <h2>已关闭临时来源的隔离包</h2>
+    <h2>有原实物处置依据的隔离包</h2>
     <p>核对原隔离依据、实物在库及解除条件。登记与提交保留隔离，独立主管批准后重新计算可用性。</p>
     <el-empty v-if="list && !list.candidates.length" description="没有适用的隔离候选" />
     <article v-for="item in list?.candidates" :key="item.baleId" :data-quarantine-bale="item.baleId">
@@ -64,9 +64,10 @@ async function confirm(): Promise<void> {
           <el-descriptions-item label="其他阻断">{{ selected.context.facts.stock.blockedReason || '无' }}</el-descriptions-item>
           <el-descriptions-item label="固定快照">{{ selected.context.facts.stock.snapshotId }}</el-descriptions-item>
         </el-descriptions>
-        <el-descriptions title="原隔离与关闭依据" :column="1" border>
+        <el-descriptions title="原隔离与实物处置依据" :column="1" border>
           <el-descriptions-item label="原隔离">{{ selected.context.dispositionId }}</el-descriptions-item>
           <template v-if="selected.context.facts.origin.sourceKind === 'TEMP'">
+            <el-descriptions-item label="原处置方式">{{ selected.context.facts.origin.originalReceipt.commandType === 'CLOSE_DISPOSITION' ? '关闭来源后逐包隔离' : '逐包隔离，保留其余作业' }}</el-descriptions-item>
             <el-descriptions-item label="原来源/提交">{{ selected.context.facts.origin.scopeId }} / {{ selected.context.facts.origin.submissionId }}</el-descriptions-item>
             <el-descriptions-item label="原证据集/核验">{{ selected.context.facts.origin.evidenceSetId }} / {{ selected.context.facts.origin.verificationId }}</el-descriptions-item>
           </template>
@@ -79,8 +80,8 @@ async function confirm(): Promise<void> {
             <el-descriptions-item label="依据类型">原实物批准、原机停止签名和应用提交</el-descriptions-item>
           </template>
           <el-descriptions-item :label="selected.context.facts.origin.sourceKind === 'TEMP' ? '原签名回执' : selected.context.facts.origin.sourceKind === 'PC' ? '原应用回执' : '原实物批准'">{{ selected.context.facts.origin.originalReceipt.receiptId }}</el-descriptions-item>
-          <el-descriptions-item label="原关闭人/时刻">{{ selected.context.facts.origin.originalReceipt.actor.principalId }} / {{ selected.context.facts.origin.originalReceipt.recordedAt }}</el-descriptions-item>
-          <el-descriptions-item label="原关闭原因">{{ selected.context.facts.origin.closeReason }}</el-descriptions-item>
+          <el-descriptions-item label="原处置人/时刻">{{ selected.context.facts.origin.originalReceipt.actor.principalId }} / {{ selected.context.facts.origin.originalReceipt.recordedAt }}</el-descriptions-item>
+          <el-descriptions-item label="原处置原因">{{ selected.context.facts.origin.closeReason }}</el-descriptions-item>
           <el-descriptions-item label="原回执摘要">{{ selected.context.facts.origin.originalReceiptSha256 }}</el-descriptions-item>
         </el-descriptions>
         <el-button :disabled="busy || uploading || !kind" @click="kind && source(kind)">{{ selected.context.facts.origin.sourceKind === 'TEMP' ? '下载原隔离签名回执' : selected.context.facts.origin.sourceKind === 'PC' ? '下载原PC审批依据' : '下载原FORMAL处置依据' }}</el-button>

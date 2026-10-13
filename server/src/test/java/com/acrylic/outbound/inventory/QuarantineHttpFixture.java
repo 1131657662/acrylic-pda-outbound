@@ -20,12 +20,15 @@ final class QuarantineHttpFixture {
     final CorrectionAttachmentHttp maker,checker;
     final String makerUser,checkerUser;
     final JsonNode attachment;
+    final String sourceCommandType;
     String caseId;
     QuarantineHttpFixture(WebApplicationContext context,Path attempt) throws Exception {
         jdbc=context.getBean(JdbcTemplate.class); evidence=attempt.resolve("quarantine-http"); Files.createDirectory(evidence);
         publicKey=attempt.resolve("private/server-public.der");
         var row=jdbc.queryForMap("SELECT BIN_TO_UUID(bale_id) bale,BIN_TO_UUID(source_warehouse_id) warehouse FROM bale_commitment WHERE state='QUARANTINED'");
         warehouse=row.get("warehouse").toString(); bale=row.get("bale").toString();
+        sourceCommandType=jdbc.queryForObject("SELECT IF(d.close_mode,'CLOSE_DISPOSITION','PHYSICAL_DISPOSITION') "
+            +"FROM bale_commitment k JOIN temporary_physical_disposition d ON d.id=k.disposition_id WHERE k.bale_id=UUID_TO_BIN(?)",String.class,bale);
         var passwords=context.getBean(PasswordEncoder.class);
         makerUser=actor(passwords,"outbound:correct","inventory:reconcile"); checkerUser=actor(passwords,"correction:approve");
         maker=new CorrectionAttachmentHttp(makerUser,evidence.resolve("maker-http.log")); checker=new CorrectionAttachmentHttp(checkerUser,evidence.resolve("checker-http.log"));

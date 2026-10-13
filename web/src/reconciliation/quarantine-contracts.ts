@@ -7,7 +7,8 @@ const original = z.object({ receiptId: uuid, signedReceipt: z.string().min(30), 
   recordedAt: z.iso.datetime({ offset: true }) }).catchall(z.unknown());
 const tempOrigin = z.object({ sourceKind: z.literal('TEMP').default('TEMP'), dispositionId: uuid, scopeId: uuid, submissionId: uuid,
   evidenceSetId: uuid, verificationId: uuid, manifestSha256: hash, cycle: positive, closeReason: z.string(),
-  originalReceipt: original, originalReceiptSha256: hash }).catchall(z.unknown());
+  originalReceipt: original.extend({ commandType: z.enum(['CLOSE_DISPOSITION', 'PHYSICAL_DISPOSITION']) }),
+  originalReceiptSha256: hash }).catchall(z.unknown());
 const pcProof = z.object({ proofType: z.literal('PC_DATABASE_ORIGINALS'), receiptId: uuid,
   actor: z.object({ principalId: uuid }), recordedAt: z.iso.datetime({ offset: true }),
   snapshot: z.record(z.string(), z.unknown()), plan: z.record(z.string(), z.unknown()),

@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 final class QuarantineHttpRejections {
     private QuarantineHttpRejections() { }
     static void origin(QuarantineHttpFixture f) throws Exception {
-        var row=f.jdbc.queryForMap("SELECT id,signed_receipt FROM temporary_command_receipt WHERE command_type='CLOSE_DISPOSITION'");
+        var row=f.jdbc.queryForMap("SELECT id,signed_receipt FROM temporary_command_receipt WHERE command_type=?",f.sourceCommandType);
         String signature=row.get("signed_receipt").toString();
         f.jdbc.update("UPDATE temporary_command_receipt SET signed_receipt=? WHERE id=?",signature+"x",row.get("id"));
         try { f.maker.get("/corrections/quarantine/context?warehouseId="+f.warehouse+"&commandType=RECONCILE_QUARANTINE_DISCOVER&baleId="+f.bale,409); }

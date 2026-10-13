@@ -16,7 +16,7 @@ public final class QuarantineHttpChecks {
         QuarantineHttpRejections.origin(f);
         var discovery=f.command("DISCOVER",f.maker);
         f.caseId=SubmissionJson.parse(f.signed(f.maker,discovery)).at("/businessDecision/caseId").asText();
-        var source=f.jdbc.queryForObject("SELECT original_response_bytes FROM temporary_command_receipt WHERE command_type='CLOSE_DISPOSITION'",byte[].class);
+        var source=f.jdbc.queryForObject("SELECT original_response_bytes FROM temporary_command_receipt WHERE command_type=?",byte[].class,f.sourceCommandType);
         assertThat(f.maker.get("/corrections/quarantine/original-receipt?warehouseId="+f.warehouse+"&commandType=RECONCILE_QUARANTINE_SUBMIT&caseId="+f.caseId,200)).containsExactly(source);
         var submission=f.command("SUBMIT",f.maker);
         var wrong=submission.deepCopy(); ((ObjectNode)wrong.path("evidence")).put("observation","RETURNED_IN_WAREHOUSE");
@@ -63,7 +63,8 @@ public final class QuarantineHttpChecks {
         assertThat(f.jdbc.queryForObject("SELECT status FROM inventory_reconciliation WHERE id=UUID_TO_BIN(?)",String.class,f.caseId)).isEqualTo("REVIEW_READY");
     }
     private static void verifyAfter(QuarantineHttpFixture f,byte[] receipt,Map<String,List<String>> before) {
-        assertThat(SubmissionJson.parse(receipt).path("orderId").isNull()).isTrue();
+        var origin=SubmissionJson.parse(receipt).at("/context/facts/origin");
+        assertThat(SubmissionJson.parse(receipt).path("orderId")).isEqualTo(origin.path("orderId"));
         assertThat(originals(f)).isEqualTo(before);
         assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE bale_id=UUID_TO_BIN(?)",Integer.class,f.bale)).isZero();
         assertThat(f.jdbc.queryForObject("SELECT COUNT(*) FROM quarantine_release",Integer.class)).isEqualTo(1);
@@ -73,8 +74,11 @@ public final class QuarantineHttpChecks {
     private static Map<String,List<String>> originals(QuarantineHttpFixture f) {
         var result=new TreeMap<String,List<String>>();
         for(String table:List.of("temporary_physical_disposition","temporary_physical_disposition_item","temporary_command_receipt",
-            "source_evidence_set","source_evidence_verification","submission","dispatch_record","inventory_ledger","correction_ledger","order_result_version"))
+            "source_evidence_set","source_evidence_verification","source_evidence_item","submission","submission_scope","order_submission_slot",
+            "dispatch_record","inventory_ledger","correction_ledger","order_result_version","inventory_position"))
             result.put(table,f.jdbc.queryForList("SELECT * FROM "+table).stream().map(QuarantineHttpChecks::encodeRow).sorted().toList());
+        result.put("otherOwners",f.jdbc.queryForList("SELECT * FROM bale_commitment WHERE bale_id<>UUID_TO_BIN(?)",f.bale)
+            .stream().map(QuarantineHttpChecks::encodeRow).sorted().toList());
         return result;
     }
     private static String encodeRow(Map<String,Object> row) {
