@@ -14,9 +14,11 @@ def checked_review(value, reception):
     for name in ('relayId', 'exportId', 'originalTaskId', 'credentialId'):
         if str(UUID(value[name])) != value[name]:
             raise ValueError('Invalid original review identity')
-    for name in ('completeBoundaryVerified', 'newCollectionAuthorized', 'businessProcessed', 'localDeletionAllowed'):
+    for name in ('newCollectionAuthorized', 'businessProcessed', 'localDeletionAllowed'):
         if value[name] is not False:
             raise ValueError('Read-only review cannot open business capabilities')
+    if type(value['completeBoundaryVerified']) is not bool or value['completeBoundaryVerified'] and value['sourceTrust'] != 'TRUSTED':
+        raise ValueError('Complete boundary requires a trusted registered device')
     if value['pendingReconciliation'] is not True:
         raise ValueError('Independent originals must remain pending reconciliation')
     reasons = {'CREDENTIAL_NOT_FOUND', 'CREDENTIAL_CONTENT_MISMATCH', 'CREDENTIAL_SIGNATURE_INVALID', 'HISTORICAL_KEY_UNAVAILABLE'}

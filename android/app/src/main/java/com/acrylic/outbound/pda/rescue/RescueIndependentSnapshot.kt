@@ -16,6 +16,13 @@ internal class RescueIndependentSnapshot(private val db: PdaDatabase, private va
     }
     fun read(id: String, grant: RescueReadGrant): RescueSnapshot {
         val order = identity(id); grant.check(order)
+        return snapshot(id, order)
+    }
+    fun readCaptured(id: String, actor: IndependentTaskActor): RescueSnapshot {
+        actor.requireOwner(checkNotNull(db.independentTasks().task(id)))
+        return snapshot(id, identity(id))
+    }
+    private fun snapshot(id: String, order: JSONObject): RescueSnapshot {
         val captures = rows.read("""SELECT c.*,c.sequence AS orderScanSeq,c.deviceSequence AS deviceCaptureSeq,
             s.state,s.error,s.confirmedAt,s.failureAckAt FROM independent_capture c
             INNER JOIN independent_capture_state s ON s.captureId=c.id WHERE c.taskId=? ORDER BY c.sequence""", id)

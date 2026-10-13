@@ -29,7 +29,7 @@ Process:
             properties:
               data: {$ref: './relay-schemas.yaml#/Result'}
 IndependentReview:
-  description: 历史原授权与现时主体状态分开显示；完整结束边界尚未核验，始终待实物对账。
+  description: 历史原授权、现时主体及原完整结束边界分别核验，始终待实物对账；未结束原件的completeBoundaryVerified为false。
   content:
     application/json:
       schema:

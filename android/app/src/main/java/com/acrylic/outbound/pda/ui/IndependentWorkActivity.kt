@@ -59,6 +59,11 @@ class IndependentWorkActivity : ComponentActivity() {
             engine.state.value.selected?.let { engine.voidSelected(it.scan.captureId, binding.workReason.text.toString()) }
             binding.workUnloaded.isChecked = false
         }
+        binding.workFinish.setOnClickListener {
+            scanner.unregister()
+            engine.finish(binding.workFinishReason.text.toString(), binding.workFinishConfirmed.isChecked)
+            binding.workFinishConfirmed.isChecked = false
+        }
     }
     private fun manual() {
         if (engine.receive(binding.workManual.text.toString(), "MANUAL")) binding.workManual.text.clear()

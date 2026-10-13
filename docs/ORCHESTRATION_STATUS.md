@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-14
 branch: codex/development
-head: 870f90e2
-dirty_entries: 93
+head: ec558e63
+dirty_entries: 106
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.66.0, paths: 191, flyway: V93, migrations: 93 }
@@ -17,7 +17,7 @@ server: { contract: 0.66.0, paths: 191, flyway: V93, migrations: 93 }
 用户范围：坏机订单有权后台撤回→重新发布→新设备独立领取并从头作业；自动换机进度承接、多跳/接收者激活已取消，旧源码/证据保留。O01–O05/U01–U04与UI重设计全部必做。E05净值及O03已收口，接续E06–E09及全部闸门；总目标active且未完成。
 
 ## Git、写权及环境
-- 主树D:/acrylic-pda-outbound、codex/development；实际HEAD/远端870f90e2089b1271ed79b7536717fc40e54f38cb，main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86。独立导出交付32明确路径、64继承原字节保持；全脏/原字节/hash/diff/远端/写权/磁盘见.local/goal-20261013/e06-export-delivery-01/final。
+- 主树D:/acrylic-pda-outbound、codex/development；结束切片基线HEAD/远端ec558e633298ad83a8882e612c9120ba1bd3d2cb，main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86。结束切片明确路径/自审/输入及继承原字节比较见.local/goal-20261013/e06-closure-delivery-01；全部改动/原字节/hash/diff/远端/写权/磁盘见其pre-commit/final。
 - [E05净值切片](history/GOAL_E05_NET_SUMMARY_2026-10-13.md)已推送867fa701：服务/渲染/HTTP、Web/Chrome、固定文件、新JVM、非空及撤回/权限/容量/账务组合通过；两XLSX30140独立断言。原失败保全，完整D11/D12、原生Excel及D18未完成；O03以后续验收为准。
 - 写权：旧聊天01a12ff9/01a133ac为notLoaded，暂停/release.json已核；本聊天01a1341e-abd2-75f3-a023-1b9cf6c64c00唯一写者。预览1494库19330/PID11308、API19435/PID36640、worker1192、Vite5174/PID37712保留。1502–1507已dump/hash认证停机；19331/19434空闲，独立导出复验已结束，无在途重型任务。共享3306/ADB5037、原AVD5562/5564/Keystore保留，5562实际重启后字体恢复1.0，身份/320dp保持。
 - [E00基线](history/GOAL_E00_BASELINE_2026-10-11.md)、e03-server-baseline-01及session-handoff-20261012-155634保全继承输入/树/环境。源码备份不含.local数据库/密钥/APK/私有证据。
@@ -50,6 +50,7 @@ server: { contract: 0.66.0, paths: 191, flyway: V93, migrations: 93 }
 - 任务交付输入/作者自审/全脏见e06-task-delivery-01/final，无清理；1508已dump/hash停机，19331/19434空闲。预览/原件/Keystore保留，5562断网/字体1.0；全部原失败保留。
 - [E06 SCAN/VOID](history/GOAL_E06_SCAN_VOID_2026-10-14.md)已推送1979050d；[独立导出](history/GOAL_E06_INDEPENDENT_EXPORT_2026-10-14.md)已推送870f90e2。实际原机/原字节、固定钥、SQLite/Excel及各字号定向通过，全部失败保全；不计O04/U03整体、原物理PDA、原生Excel或D18。输入/作者自审/全脏在e06-scan-delivery-01与e06-export-delivery-01，无清理。
 - [E06原件/主管核原授权](history/GOAL_E06_REVIEW_ACCEPTANCE_2026-10-14.md)：最终52项/bootJar、Python-final03/38、1512原非空/实际Android原包/真实HTTP/双权限/四异常/原字节、新JVM与最终CLI通过；1513旧冻结中转/净值/账务组合通过，159表及全部继承原凭据保持。1509–1513均dump/hash认证停机，19331/19434空闲，无重型任务；预览/AVD/Keystore保持。原失败保全，不计完整结束、实物/候选/人工关联或O04/U03/D14/D18。明确路径/作者自审/输入见e06-review-delivery-01，全脏原字节见resume-03及交付final。无清理，新增D盘/TEMP子进程，C/D56406253568/22969495552字节；下一项完整结束边界，总目标active。
+- [E06完整结束边界](history/GOAL_E06_CLOSURE_ACCEPTANCE_2026-10-14.md)：原Keystore唯一末事件/Room封存、短装原因、队列与不可替换原事实/处理状态/防重；最终Android137/APK/lint、Java61/Python42及manifest通过。原机新签发/断网结束/SAF03、电脑固定外部钥/结束签名/XLSX460、1514原包HTTP/旧包/并发/丢响应/首次尾回滚、新JVM/CLI及默认关闭七路由通过。最终APK四字号/IME/只读新进程及目视通过；final-05旧66表/两旧任务守恒，相对final-04的83表逐行一致。replacement-red03显式关闭递归触发器的4类替换已复现修复，原Room/SAF/电脑/HTTP/运行器失败全保留。1514已dump/hash认证停机，测试端口空闲，无重型任务；预览/AVD/Keystore保持。自审/输入/全脏见e06-closure-delivery-01，无清理，C/D56336576512/21975990272字节。下一实物/完整候选/人工关联与跨机冲突消费者；E06/O04/U03及总目标未完，goal active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。

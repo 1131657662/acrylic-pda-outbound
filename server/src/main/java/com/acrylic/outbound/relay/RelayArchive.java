@@ -39,7 +39,8 @@ public final class RelayArchive {
         var independent=RelayIndependentOriginal.read(files,order,text(manifest,"deviceKeySha256"));var body=frozen(files);
         if(body!=null) bind(identity,order,body);
         return new Bundle(export,identity,key,text(manifest,"deviceKeySha256"),ImportFiles.sha256(bytes),
-            body,body==null?null:SubmissionControl.read(uuid(body,"submissionId"),body),independent);
+            body,body==null?null:SubmissionControl.read(uuid(body,"submissionId"),body),independent,
+            RelayIndependentClosure.read(files,independent,order,key));
     }
     private static Map<String,byte[]> unpack(byte[] bytes) {
         require(bytes.length>0 && bytes.length<=MAX_BYTES,"原包大小无效");var files=new LinkedHashMap<String,byte[]>();
@@ -98,5 +99,5 @@ public final class RelayArchive {
     }
     public record Identity(UUID user,UUID device,UUID warehouse,String source,UUID localOrder) { }
     public record Bundle(UUID exportId,Identity original,String publicKey,String keySha256,String archiveSha256,
-        JsonNode body,SubmissionControl control,JsonNode independent) { }
+        JsonNode body,SubmissionControl control,JsonNode independent,JsonNode closure) { }
 }

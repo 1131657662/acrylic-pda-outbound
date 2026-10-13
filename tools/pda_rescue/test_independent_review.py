@@ -31,9 +31,15 @@ class IndependentReviewTest(unittest.TestCase):
                 checked_review({**self.value, field: 'secret'}, self.reception)
 
     def test_business_capabilities_cannot_be_opened_by_review(self):
-        for field in ('completeBoundaryVerified', 'newCollectionAuthorized', 'businessProcessed', 'localDeletionAllowed'):
+        for field in ('newCollectionAuthorized', 'businessProcessed', 'localDeletionAllowed'):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 checked_review({**self.value, field: True}, self.reception)
+
+    def test_complete_boundary_requires_registered_source_trust(self):
+        value = {**self.value, 'completeBoundaryVerified': True}
+        self.assertTrue(checked_review(value, self.reception)['completeBoundaryVerified'])
+        with self.assertRaises(ValueError):
+            checked_review({**value, 'sourceTrust': 'UNVERIFIED'}, self.reception)
 
     def test_inconsistent_verification_reason_is_rejected(self):
         with self.assertRaises(ValueError):

@@ -101,7 +101,7 @@ def scans_and_inputs(facts, source, sku):
 
 def plans_and_state(files, facts, source, products):
     task = source["task"]; state = parse(files["independent-state.json"])
-    if state["taskId"] != task["id"] or state["state"] != facts["order"]["state"] or facts["dispositions"] or state["state"] not in {"PLANNED", "SCANNING"}:
+    if state["taskId"] != task["id"] or state["state"] != facts["order"]["state"] or facts["dispositions"] or state["state"] not in {"PLANNED", "SCANNING", "SEALED"}:
         raise ValueError("Independent local state mismatch")
     for line in facts["lines"]:
         if line["taskId"] != task["id"] or (line["model"], line["name"]) != products[line["deliveryCode"]] or integer(line, "plannedCount") < 1:
@@ -133,7 +133,7 @@ def audits(facts, source, voids):
         raise ValueError("Independent audit sequence gap or creation missing")
     allowed = {"CREATE_PLANNED", "INDEPENDENT_STARTED", "INDEPENDENT_RECEIVED", "INDEPENDENT_WAITING_CONFIRM",
                "INDEPENDENT_CONFIRM_REQUESTED", "INDEPENDENT_INVALID", "INDEPENDENT_SAVED", "INDEPENDENT_VOID",
-               "INDEPENDENT_BUSINESS_REJECTED", "INDEPENDENT_FAILURE_ACKNOWLEDGED", "INDEPENDENT_DISCARDED"}
+               "INDEPENDENT_BUSINESS_REJECTED", "INDEPENDENT_FAILURE_ACKNOWLEDGED", "INDEPENDENT_DISCARDED", "INDEPENDENT_CLOSED"}
     for row in events:
         if row["taskId"] != task["id"] or row["sequence"] != row["orderPosition"] or row["type"] not in allowed:
             raise ValueError("Independent original audit scope mismatch")
@@ -145,7 +145,10 @@ def audits(facts, source, voids):
         actual = [parse(r["detail"].encode("utf-8"))["captureId"] for r in events if r["type"] == kind]
         if len(actual) != len(ids) or set(actual) != ids:
             raise ValueError("Independent audit does not preserve original facts")
-    if sum(r["type"] == "CREATE_PLANNED" for r in events) != 1 or sum(r["type"] == "INDEPENDENT_STARTED" for r in events) != (facts["order"]["state"] == "SCANNING"):
+    started = sum(r['type'] == 'INDEPENDENT_STARTED' for r in events)
+    state = facts['order']['state']
+    if sum(r['type'] == 'CREATE_PLANNED' for r in events) != 1 or started not in {0, 1} or (
+            (state == 'SCANNING' or facts['captures']) and started != 1) or state == 'PLANNED' and started:
         raise ValueError("Independent task state lacks its original transition")
     if facts["order"]["state"] == "PLANNED" and facts["captures"]:
         raise ValueError("Independent planned task cannot contain captured work")
@@ -167,5 +170,8 @@ def verify(files, facts, manifest):
     scans_and_inputs(facts, source, sku)
     state, voids = plans_and_state(files, facts, source, products)
     audits(facts, source, voids)
+    from .independent_closure import verify as verify_closure
+    ended_at = anchored(facts['events'][-1], source['timeAnchor'], source['credential']) if order['state'] == 'SEALED' else None
+    closure = verify_closure(files, facts, source, ended_at)
     facts["independent"] = {"source": source, "state": state, "voids": voids,
-                            "pendingReconciliation": True, "serverAuthorizationVerified": False}
+                            "pendingReconciliation": True, "serverAuthorizationVerified": False, "closure": closure}

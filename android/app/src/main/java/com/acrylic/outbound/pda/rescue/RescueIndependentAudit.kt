@@ -1,5 +1,6 @@
 package com.acrylic.outbound.pda.rescue
 
+import com.acrylic.outbound.pda.independent.IndependentClosure
 import com.acrylic.outbound.pda.security.TimeSample
 import com.acrylic.outbound.pda.security.TrustedTime
 import org.json.JSONObject
@@ -9,7 +10,7 @@ import java.time.Instant
 internal object RescueIndependentAudit {
     private val types = setOf("CREATE_PLANNED", "INDEPENDENT_STARTED", "INDEPENDENT_RECEIVED", "INDEPENDENT_WAITING_CONFIRM",
         "INDEPENDENT_CONFIRM_REQUESTED", "INDEPENDENT_INVALID", "INDEPENDENT_SAVED", "INDEPENDENT_VOID",
-        "INDEPENDENT_BUSINESS_REJECTED", "INDEPENDENT_FAILURE_ACKNOWLEDGED", "INDEPENDENT_DISCARDED")
+        "INDEPENDENT_BUSINESS_REJECTED", "INDEPENDENT_FAILURE_ACKNOWLEDGED", "INDEPENDENT_DISCARDED", IndependentClosure.EVENT)
     fun verify(snapshot: RescueSnapshot, source: JSONObject) {
         state(snapshot)
         val id = source.getJSONObject("task").getString("id")
@@ -22,10 +23,13 @@ internal object RescueIndependentAudit {
             check(trusted >= Instant.parse(credential.getString("issuedAt")) && trusted < Instant.parse(credential.getString("expiresAt")))
         }
         check(snapshot.events.count { it.getString("type") == "CREATE_PLANNED" } == 1)
-        check(snapshot.events.count { it.getString("type") == "INDEPENDENT_STARTED" } == if (snapshot.order.getString("state") == "SCANNING") 1 else 0)
+        val started = snapshot.events.count { it.getString("type") == "INDEPENDENT_STARTED" }
+        check(started == if (snapshot.order.getString("state") == "PLANNED") 0 else if (snapshot.captures.isNotEmpty()) 1 else started)
+        check(started in 0..1 && (snapshot.order.getString("state") != "SCANNING" || started == 1))
         originalEvents(snapshot, "INDEPENDENT_RECEIVED", snapshot.captures.map { it.getString("id") })
         originalEvents(snapshot, "INDEPENDENT_SAVED", snapshot.scans.map { it.getString("captureId") })
         originalEvents(snapshot, "INDEPENDENT_VOID", snapshot.scans.filter { it.getString("status") == "VOID" }.map { it.getString("captureId") })
+        IndependentClosure.verify(snapshot)
     }
     private fun originalEvents(snapshot: RescueSnapshot, type: String, ids: List<String>) {
         val actual = snapshot.events.filter { it.getString("type") == type }.map { JSONObject(it.getString("detail")).getString("captureId") }
@@ -34,7 +38,7 @@ internal object RescueIndependentAudit {
     private fun state(snapshot: RescueSnapshot) {
         val state = JSONObject(snapshot.originals.getValue("independent-state.json").toString(Charsets.UTF_8))
         check(state.getString("taskId") == snapshot.order.getString("localOrderId"))
-        check(state.getString("state") == snapshot.order.getString("state") && state.getString("state") in setOf("PLANNED", "SCANNING"))
+        check(state.getString("state") == snapshot.order.getString("state") && state.getString("state") in setOf("PLANNED", "SCANNING", "SEALED"))
         check(state.getString("state") != "PLANNED" || snapshot.captures.isEmpty())
         check(snapshot.dispositions.isEmpty())
         check(snapshot.captures.filter { it.getString("state") == "COMMITTED" }.map { it.getString("id") }.toSet() ==

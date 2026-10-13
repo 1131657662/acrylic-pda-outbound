@@ -25,7 +25,7 @@ public class RelayIndependentReview {
             .put("originalTaskId",bundle.original().localOrder().toString()).put("credentialId",text(credential,"credentialId"))
             .put("sourceTrust",trusted?"TRUSTED":"UNVERIFIED").put("authorizationState",status.state()).put("authorizationReason",status.reason())
             .put("currentSubjectState",history.currentSubjectState(credential)).put("pendingReconciliation",true)
-            .put("completeBoundaryVerified",false).put("newCollectionAuthorized",false).put("businessProcessed",false).put("localDeletionAllowed",false);
+            .put("completeBoundaryVerified",trusted && bundle.closure()!=null).put("newCollectionAuthorized",false).put("businessProcessed",false).put("localDeletionAllowed",false);
         return result;
     }
 }

@@ -63,7 +63,7 @@ IndependentReview:
     authorizationReason: {type: string, enum: [ORIGINAL_ISSUANCE_VERIFIED, CREDENTIAL_NOT_FOUND, CREDENTIAL_CONTENT_MISMATCH, CREDENTIAL_SIGNATURE_INVALID, HISTORICAL_KEY_UNAVAILABLE]}
     currentSubjectState: {type: string, enum: [UNCHANGED, CHANGED_OR_UNAVAILABLE]}
     pendingReconciliation: {type: boolean, const: true}
-    completeBoundaryVerified: {type: boolean, const: false}
+    completeBoundaryVerified: {type: boolean, description: 仅原登记设备信任且完整原前缀/末事件/结束签名实际核验时为true；不代表实物或业务确认}
     newCollectionAuthorized: {type: boolean, const: false}
     businessProcessed: {type: boolean, const: false}
     localDeletionAllowed: {type: boolean, const: false}

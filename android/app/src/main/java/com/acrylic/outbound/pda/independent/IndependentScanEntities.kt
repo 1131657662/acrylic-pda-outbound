@@ -42,4 +42,5 @@ internal data class IndependentInput(val taskId: String, val raw: String, val so
     val id: String = UUID.randomUUID().toString())
 
 internal data class IndependentScanEnvironment(val sample: () -> TimeSample, val actor: () -> IndependentTaskActor,
-    val feedback: (String) -> Unit = {})
+    val feedback: (String) -> Unit = {},
+    val closureSigner: () -> com.acrylic.outbound.pda.rescue.RescueSigner = { error("原设备结束签名不可用") })
