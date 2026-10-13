@@ -16,6 +16,7 @@ export const router = createRouter({
     { path: '/orders', component: () => import('./orders/OrdersPage.vue') },
     { path: '/exports', component: () => import('./exports/ExportCenterPage.vue') },
     { path: '/rescue', component: () => import('./rescue/RescuePage.vue'), meta: { anyPermission: ['rescue:authorize'] } },
+    { path: '/independent-reviews', component: () => import('./independent-review/IndependentReviewPage.vue'), meta: { anyPermission: ['rescue:relay'] } },
     { path: '/review-reminders', component: () => import('./review/ReviewRemindersPage.vue') },
     { path: '/temporary-reviews', component: () => import('./temporary-review/TemporaryReviewsPage.vue') },
     { path: '/temporary-reviews/:id', component: () => import('./temporary-review/TemporaryReviewPage.vue') },
@@ -53,6 +54,8 @@ export function loginDestination(value: unknown, permissions: string[]): string 
   if (typeof value === 'string' && /^\/header-corrections(?:\/[0-9a-f-]+)?(?:\?|$)/.test(value)
       && permissions.some(permission => ['outbound:correct', 'correction:approve'].includes(permission))) return value;
   if (typeof value === 'string' && /^\/rescue(?:\?|$)/.test(value) && permissions.includes('rescue:authorize')) return value;
+  if (typeof value === 'string' && /^\/independent-reviews(?:\?|$)/.test(value)
+      && ['rescue:relay', 'temporary_order:confirm'].every(permission => permissions.includes(permission))) return value;
   if (typeof value === 'string' && /^\/review-reminders(?:\?|$)/.test(value) && permissions.some(p => ['submission:review', 'temporary_order:confirm'].includes(p))) return value;
   if (typeof value === 'string' && /^\/temporary-reviews(?:\/[0-9a-f-]+)?(?:\?|$)/.test(value) && permissions.includes('temporary_order:confirm')) return value;
   if (typeof value === 'string' && /^\/temporary-dispositions(?:\/[0-9a-f-]+)?(?:\?|$)/.test(value) && permissions.includes('order:dispose')) return value;

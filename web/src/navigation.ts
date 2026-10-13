@@ -11,6 +11,7 @@ export const navigation = [
     { path: '/temporary-dispositions', label: '临时实物处置', permission: 'order:dispose', icon: Files },
     { path: '/exports', label: '导出中心', permission: 'order:read', icon: Files },
     { path: '/rescue', label: '主管只读救援', permission: 'rescue:authorize', icon: Files },
+    { path: '/independent-reviews', label: '独立采集核对', permission: 'rescue:relay', icon: Files },
     { path: '/review-reminders', label: '超时待审', permission: 'submission:review', icon: Bell },
   ] },
   { group: '库存管理', items: [
@@ -28,6 +29,7 @@ export function firstWorkspacePath(permissions: string[]): string {
   return navigation.flatMap(group => group.items).find(item => canNavigate(item, permissions))?.path ?? '/orders';
 }
 export function canNavigate(item: { path: string; permission: string }, permissions: string[] = []): boolean {
+  if (item.path === '/independent-reviews') return ['rescue:relay', 'temporary_order:confirm'].every(value => permissions.includes(value));
   return permissions.includes(item.permission) || (item.path === '/review-reminders' && permissions.includes('temporary_order:confirm'))
     || (['/header-corrections', '/inventory-reconciliation'].includes(item.path) && permissions.includes('correction:approve'));
 }

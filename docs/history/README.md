@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E06主管完整核对依据](GOAL_E06_RECONCILIATION_READ_ACCEPTANCE_2026-10-14.md)：完整候选、库存和已接收原件摘要/分页、未知钥/库存变化/资源上限及真实页面；[设计](GOAL_E06_RECONCILIATION_READ_DESIGN_2026-10-14.md)，实物与人工关联继续。
+
 - [E06独立任务完整结束边界](GOAL_E06_CLOSURE_ACCEPTANCE_2026-10-14.md)：原机原签名封存/真实SAF、固定钥与电脑/HTTP/新JVM核验、最终回归及封存替换反例；[设计](GOAL_E06_CLOSURE_DESIGN_2026-10-14.md)，实物、完整候选与人工关联继续。
 
 - [E06独立原件与主管核原授权](GOAL_E06_REVIEW_ACCEPTANCE_2026-10-14.md)：实际Android原包/非空恢复/双权限核原签发、固定原件新JVM及旧中转受影响组合；[设计](GOAL_E06_REVIEW_DESIGN_2026-10-14.md)，结束边界/实物与人工关联继续。

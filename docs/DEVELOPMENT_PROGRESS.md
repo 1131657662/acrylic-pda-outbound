@@ -4,6 +4,8 @@
 
 # 开发验收索引
 
+- [E06主管完整核对依据](history/GOAL_E06_RECONCILIATION_READ_ACCEPTANCE_2026-10-14.md)：完整候选/库存/已接收原件共同摘要、分页与权限/未知钥/资源上限反例，实际HTTP/新JVM/Chrome和逐行守恒通过。实物与人工关联继续，非E06/O04/U03或总目标完成。
+
 - [E06独立任务完整结束边界](history/GOAL_E06_CLOSURE_ACCEPTANCE_2026-10-14.md)：原机暂停排空、原Keystore末事件封存与只读导出、电脑/服务独立核验及SQL替换保护；最终Android/APK/lint、真实HTTP/新进程和旧事实守恒证据分列。实物、完整候选、人工关联及跨机冲突消费者继续，不计E06/O04/U03或总目标完成。
 
 - [E06独立SCAN/VOID与三来源防重](history/GOAL_E06_SCAN_VOID_2026-10-14.md)：60项定向/82项受影响回归、APK/lint、原模拟器广播/手输/失败/放弃/实物VOID/再扫与尾SQL新进程恢复、320dp四字号目视及独立签名/原资料/74旧表守恒通过；导出/主管对账及E06/O04/U03整体继续，原失败保留。

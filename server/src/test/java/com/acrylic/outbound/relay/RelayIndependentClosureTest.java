@@ -21,7 +21,8 @@ class RelayIndependentClosureTest {
     }
     @Test void actualAndroidClosureBindsItsFullCollectionPrefix() throws Exception {
         var result=RelayArchive.read(Files.readAllBytes(Path.of(System.getenv("E06_CLOSURE_ARCHIVE"))));
-        assertThat(result.closure()).isNotNull();assertThat(result.closure().path("inputHighWater").asText()).isEqualTo("2");
+        long inputs=new String(files.get("captures.ndjson"),java.nio.charset.StandardCharsets.UTF_8).lines().filter(line->!line.isBlank()).count();
+        assertThat(result.closure()).isNotNull();assertThat(result.closure().path("inputHighWater").asText()).isEqualTo(Long.toString(inputs));
         assertThat(result.closure().path("void").asText()).isEqualTo("1");assertThat(result.body()).isNull();
     }
     @Test void changedPlanCannotInheritCompleteBoundary() {

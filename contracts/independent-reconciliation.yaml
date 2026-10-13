@@ -1,0 +1,82 @@
+Path:
+  get:
+    summary: 主管读取独立采集完整核对依据
+    description: >-
+      同仓rescue:relay及temporary_order:confirm双权限，要求原登记设备钥、历史签发及完整结束已核验。
+      服务端固定可信创建日至结束日各外扩七天，完整正式/TEMP候选、逐有效包库存及已接收其他原件共同计算上下文摘要。
+      section仅分页展示，不改变全量集合；旧游标遇任何依据变化返回409。多次导出按原设备/原任务归并。
+      其他原件的完整结束核验同时要求原登记设备钥；未知来源即使有自签结束也保持未核验并保留摘要。
+      不观察尚未接收的其他设备事实，不核实实物，不执行人工关联、占用、记账、放行或删除。生产默认关闭。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {name: section, in: query, schema: {type: string, enum: [candidates, inventory, peers], default: candidates}}
+      - {name: cursor, in: query, schema: {type: string, maxLength: 200, default: ''}}
+      - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 200, default: 20}}
+    responses:
+      '200':
+        description: 同一一致性截点的完整核对摘要及一页证据；仅供主管核对。
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - type: object
+                  properties:
+                    data: {$ref: '#/Page'}
+      '400': {$ref: './openapi.yaml#/components/responses/Error'}
+      '401': {$ref: './openapi.yaml#/components/responses/Error'}
+      '403': {$ref: './openapi.yaml#/components/responses/Error'}
+      '404': {$ref: './openapi.yaml#/components/responses/Error'}
+      '409': {$ref: './openapi.yaml#/components/responses/Error'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Page:
+  type: object
+  required: [contextSha256, section, total, items, hasMore, nextCursor, original, review, summary, checkedAt, pendingReconciliation, associationAuthorized, stockAvailable, businessProcessed, releaseAllowed, localDeletionAllowed]
+  properties:
+    contextSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    section: {type: string, enum: [candidates, inventory, peers]}
+    total: {type: string, pattern: '^[0-9]+$'}
+    items: {type: array, items: {type: object}}
+    hasMore: {type: boolean}
+    nextCursor: {type: [string, 'null']}
+    original: {$ref: '#/Original'}
+    review: {$ref: './relay-schemas.yaml#/IndependentReview'}
+    summary: {$ref: '#/Summary'}
+    checkedAt: {type: string, format: date-time}
+    pendingReconciliation: {type: boolean, const: true}
+    associationAuthorized: {type: boolean, const: false}
+    stockAvailable: {type: boolean, const: false}
+    businessProcessed: {type: boolean, const: false}
+    releaseAllowed: {type: boolean, const: false}
+    localDeletionAllowed: {type: boolean, const: false}
+Original:
+  type: object
+  required: [warehouseId, relayId, exportId, archiveSha256, taskId, deviceId, operatorId, closureSha256, task, closure]
+  properties:
+    warehouseId: {type: string, format: uuid}
+    relayId: {type: string, format: uuid}
+    exportId: {type: string, format: uuid}
+    archiveSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    taskId: {type: string, format: uuid}
+    deviceId: {type: string, format: uuid}
+    operatorId: {type: string, format: uuid}
+    closureSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    task: {type: object}
+    closure: {type: object}
+Summary:
+  type: object
+  required: [candidateTotal, activeTotal, inventoryBlocked, peerTaskTotal, crossTaskConflicts, closureDivergences, fromDate, throughDate, onlyReceivedOriginalsObserved, physicalVerified, manuallyAssociated]
+  properties:
+    candidateTotal: {type: string, pattern: '^[0-9]+$'}
+    activeTotal: {type: string, pattern: '^[0-9]+$'}
+    inventoryBlocked: {type: string, pattern: '^[0-9]+$'}
+    peerTaskTotal: {type: string, pattern: '^[0-9]+$'}
+    crossTaskConflicts: {type: string, pattern: '^[0-9]+$'}
+    closureDivergences: {type: string, pattern: '^[0-9]+$'}
+    fromDate: {type: string, format: date}
+    throughDate: {type: string, format: date}
+    onlyReceivedOriginalsObserved: {type: boolean, const: true}
+    physicalVerified: {type: boolean, const: false}
+    manuallyAssociated: {type: boolean, const: false}
