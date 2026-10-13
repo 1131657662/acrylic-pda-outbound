@@ -1,7 +1,7 @@
 Summary:
   get:
-    summary: 按北京时间日期查询正式订单原确认汇总
-    description: 当前order:read和仓库授权。只读一致性快照，限WEB正式已完成订单原确认V1（含由TEMP批次经R06受控关联并确认后正式化的订单；未关联的TEMP_PDA临时单不在汇总内，其单订单导出走TEMP路径）；不含更正净结果、未核验多设备来源。范围含首尾日，超过31天、逆序或年份越界返回400 EXPORT_RANGE_INVALID；最多100单、5000包，超限409 EXPORT_LIMIT_EXCEEDED，不截断。空范围返回零合计；原确认时刻、订单UUID升序，产品按原代码/名称/型号分组，重量为整数克字符串。查询结果不预占后续文件申请的成员。
+    summary: 按北京时间原出库日期查询最新净值汇总
+    description: 当前order:read和仓库授权。默认CURRENT_EFFECTIVE，沿已完成WEB/PDA_TEMP首版原出库日选择成员，读取一致性截止时各单最新结果版本；可显式ORIGINAL_CONFIRMED。原确认、调整、净值分别返回，归零订单/产品仍保留，逐单版本明确。原确认时刻及订单UUID升序，原采集顺序不变，整数克字符串。范围最多31天、100单、5000条原明细，超限拒绝而不截断；空范围零合计。撤回旧作业不计成功，未核验或独立待对账来源不混入。查询不预占后续文件成员。
     parameters:
       - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
       - name: fromDate
@@ -12,6 +12,9 @@ Summary:
         in: query
         required: true
         schema: {type: string, format: date}
+      - name: basis
+        in: query
+        schema: {type: string, enum: [CURRENT_EFFECTIVE, ORIGINAL_CONFIRMED], default: CURRENT_EFFECTIVE}
     responses:
       '200': {$ref: './export-components.yaml#/SummaryResponse'}
       '400': {$ref: './openapi.yaml#/components/responses/Error'}
@@ -40,8 +43,8 @@ Exports:
       '403': {$ref: './openapi.yaml#/components/responses/Error'}
       '404': {$ref: './openapi.yaml#/components/responses/Error'}
   post:
-    summary: 申请跨订单原确认汇总文件
-    description: 当前order:read和仓库授权。锁内再次核验权限，重新在一致性事务内固定完整成员及原确认V1；范围最多31天、100单，Excel5000包、PDF1000包，空范围可生成空文件。SCAN_XLSX仅单订单支持。每账号当前代次最多5项在途任务。原键丢响应回放保持原范围/格式/代次；恢复屏障、旧代次或幂等冲突拒绝。
+    summary: 申请跨订单固定结果汇总文件
+    description: 当前order:read和仓库授权。锁内再次核验权限，一致性事务固定完整成员/各单结果版本/快照；CURRENT_EFFECTIVE选截止时最新版本，ORIGINAL_CONFIRMED保留首版。最新净值不指定版本，不开放跨单指定CORRECTED。范围最多31天、100单，Excel5000条原明细、PDF1000条原明细，归零仍保留，空范围可生成空文件。每账号当前代次最多5项在途。原键丢响应及重生成保持原快照，不动态重取净值；异文、恢复屏障/旧代次拒绝。
     parameters:
       - {$ref: './export-components.yaml#/Key'}
       - {$ref: './openapi.yaml#/components/parameters/Epoch'}

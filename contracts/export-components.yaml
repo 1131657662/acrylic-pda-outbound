@@ -40,7 +40,7 @@ PageResponse:
             properties:
               data: {$ref: './export-schemas.yaml#/Page'}
 SummaryResponse:
-  description: 查询时刻的原确认汇总；申请导出会重新读取并固定成员，可能与本次查询不同。
+  description: 查询截止时的最新净值（可显式原确认）；原值/调整/净值与各单版本明确。文件申请重新固定成员与版本，可能与查询不同。
   content:
     application/json:
       schema:

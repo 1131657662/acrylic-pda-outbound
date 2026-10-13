@@ -10,12 +10,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import static com.acrylic.outbound.exports.ExportModels.*;
 
-/** Selects bounded, original confirmations in one caller-owned repeatable-read transaction. */
+/** Selects bounded confirmations in one caller-owned repeatable-read transaction. */
 @Component
 public class ExportRangeReader {
     private static final ZoneId SHANGHAI=ZoneId.of("Asia/Shanghai");
-    private final JdbcTemplate jdbc;private final ExportSnapshotReader reader;
-    public ExportRangeReader(JdbcTemplate jdbc,ExportSnapshotReader reader) { this.jdbc=jdbc;this.reader=reader; }
+    private final JdbcTemplate jdbc;private final ExportSnapshotReader reader;private final ExportResultSelection selection;
+    public ExportRangeReader(JdbcTemplate jdbc,ExportSnapshotReader reader,ExportResultSelection selection) {
+        this.jdbc=jdbc;this.reader=reader;this.selection=selection;
+    }
     public static void validate(Range range) {
         if(range==null || range.fromDate()==null || range.throughDate()==null
                 || range.fromDate().isAfter(range.throughDate())
@@ -31,13 +33,14 @@ public class ExportRangeReader {
         if(ids.size()>100) throw new BusinessException(409,"EXPORT_LIMIT_EXCEEDED","单次汇总最多100单，请缩小日期范围");
         var snapshots=new ArrayList<ReportSnapshot>();long count=0;
         for(UUID id:ids) {
-            var snapshot=reader.read(new Scope(request.scope().actor(),request.scope().warehouse(),id),request.command().format(),cutoff);
+            var snapshot=reader.read(new Scope(request.scope().actor(),request.scope().warehouse(),id),request.command().format(),cutoff,
+                    selection.version(id,request.command(),cutoff));
             count+=snapshot.orders().getFirst().originalLines().size();
             if(count>(request.command().format()==Format.PDF?1000:5000))
                 throw new BusinessException(409,"EXPORT_LIMIT_EXCEEDED","汇总Excel最多5000包、PDF最多1000包，请缩小日期范围");
             snapshots.add(snapshot);
         }
-        return combine(snapshots,range,cutoff);
+        return combine(snapshots,range,cutoff,request.command().basis());
     }
     private List<UUID> members(UUID warehouse,Range range,Instant cutoff) {
         return jdbc.query("""
@@ -50,10 +53,12 @@ public class ExportRangeReader {
                 Timestamp.from(range.fromDate().atStartOfDay(SHANGHAI).toInstant()),
                 Timestamp.from(range.throughDate().plusDays(1).atStartOfDay(SHANGHAI).toInstant()),Timestamp.from(cutoff));
     }
-    private ReportSnapshot combine(List<ReportSnapshot> snapshots,Range range,Instant cutoff) {
-        var metadata=new ReportSnapshot.Metadata(UUID.randomUUID().toString(),"original-confirmed-v1",cutoff,cutoff,
-                range.fromDate(),range.throughDate(),ReportSnapshot.Basis.ORIGINAL_CONFIRMED,reader.provenance(),
-                "固定成员的订单原确认V1；TEMP须核原确认及原设备首轮事实；不含后续更正或未经核验的多设备来源",
+    private ReportSnapshot combine(List<ReportSnapshot> snapshots,Range range,Instant cutoff,String basis) {
+        boolean latest="CURRENT_EFFECTIVE".equals(basis);
+        var metadata=new ReportSnapshot.Metadata(UUID.randomUUID().toString(),latest?"fixed-latest-results":"original-confirmed-v1",cutoff,cutoff,
+                range.fromDate(),range.throughDate(),ReportSnapshot.Basis.valueOf(basis),reader.provenance(),
+                latest?"原出库日固定成员与截止时逐单最新结果版本；保留原事实、调整及零净值":
+                    "固定成员的订单原确认V1；TEMP须核原确认及原设备首轮事实；不含后续更正或未经核验的多设备来源",
                 "原确认时刻升序、订单UUID升序；单内按持久化order_scan_seq递增");
         var snapshot=new ReportSnapshot(metadata,snapshots.stream().flatMap(s->s.orders().stream()).toList());
         try { SnapshotValidator.validate(snapshot); }

@@ -38,4 +38,11 @@ class PdfRendererTest {
         var snapshot = Samples.report(List.of(Samples.order(10_000)));
         assertThrows(IllegalArgumentException.class, () -> new PdfRenderer().render(snapshot, new ByteArrayOutputStream()));
     }
+    @Test void netDetailKeepsZeroRowsAndNamesTheFixedLatestBasis() throws Exception {
+        var order = Samples.corrected(); var html = PdfHtml.document(Samples.report(List.of(order)));
+        String detail = html.substring(html.indexOf("版本有效明细"), html.indexOf("<h3>调整凭据"));
+        for (var line : order.originalLines()) assertTrue(detail.contains(line.barcode()));
+        assertTrue(detail.contains("净包数")); assertTrue(detail.contains("<td>0</td>"));
+        assertTrue(html.contains("截止时最新净值（成员与版本已固定）"));
+    }
 }

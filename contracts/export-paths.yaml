@@ -16,9 +16,9 @@ OrderExports:
   post:
     summary: 申请单订单文件（更正净结果支持为未发布草案）
     description: >-
-      当前order:read和仓库授权。默认仍为原确认V1，含已受控关联确认正式化的TEMP来源订单；未关联TEMP和未核验多设备来源不开放。
-      本次仅完善草案、未发布：basis允许CORRECTED，并必须显式传resultVersion大于1，仅支持XLSX/PDF。
-      使用该订单指定版本的既有更正快照和渲染路径，带调整凭据；不自动取最新版本，不开放跨订单更正汇总。
+      当前order:read和仓库授权。原确认沿用首版；支持已完成且原事实可核验的正式PC、FORMAL及TEMP来源，未完成或未核验多设备来源拒绝。
+      basis必须显式提供；ORIGINAL_CONFIRMED保留原确认，CORRECTED必须显式传resultVersion大于1且仅支持XLSX/PDF。
+      CORRECTED使用指定版本的既有更正快照和渲染路径，带调整凭据。CURRENT_EFFECTIVE省略或null版本，在申请时固定截止时最新净值；跨订单最新净值使用导出中心。
       basis与版本不匹配或CORRECTED漏传版本返回400 EXPORT_VERSION_INVALID；更正扫码模板返回400 EXPORT_FORMAT_UNSUPPORTED；指定版本不存在返回409 EXPORT_SOURCE_UNAVAILABLE。
       固定快照、结果版本、修订、格式和模板；原确认支持通用Excel、扫码记录Excel、PDF；原来源最多5000包，超过为409 EXPORT_SOURCE_UNAVAILABLE，PDF另限原来源1000包，超限为409 EXPORT_LIMIT_EXCEEDED。
       同键改结果版本返回409 IDEMPOTENCY_CONFLICT；省略版本与显式1等价。每账号当前代次最多5项在途任务。锁内再次核验权限，恢复屏障或旧代次拒绝；文件有效期7天。

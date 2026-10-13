@@ -199,8 +199,8 @@ public class CorrectionStore {
             SELECT CAST(result_version AS CHAR) result_version,CAST(actual_count AS CHAR) actual_count,
               CAST(weight_g AS CHAR) weight_g,inventory_deducted,header_snapshot,
               -- original_submission_id is only filled by V46's backfill or by this service's own inserts; for versions
-              -- written later by the R05/R06 writers it stays NULL, so fall back to whichever channel the version has.
-              COALESCE(BIN_TO_UUID(original_submission_id),BIN_TO_UUID(submission_id),BIN_TO_UUID(pc_submission_id),'null')
+              -- written later by PDA writers it stays NULL. This FK is PDA-only; PC lineage remains on the v1 row.
+              COALESCE(BIN_TO_UUID(original_submission_id),BIN_TO_UUID(submission_id),'null')
                 original_submission_id
             FROM order_result_version WHERE order_id=? ORDER BY result_version DESC LIMIT 1 FOR UPDATE
             """,Ids.bytes(orderId));
@@ -231,7 +231,7 @@ public class CorrectionStore {
         return jdbc.queryForList("""
             SELECT BIN_TO_UUID(d.id) dispatch_id,BIN_TO_UUID(d.bale_id) bale_id,d.delivery_code,
               CAST(d.order_scan_seq AS CHAR) scan_seq,CAST(d.weight_g AS CHAR) weight_g,
-              BIN_TO_UUID(d.capture_id) capture_id
+              BIN_TO_UUID(COALESCE(d.capture_id,d.pc_entry_id)) capture_id
             FROM dispatch_record d WHERE d.order_id=? ORDER BY d.id FOR UPDATE
             """,Ids.bytes(orderId));
     }

@@ -31,7 +31,7 @@ public class ExportJobQueries {
         return new View(job.id(),p.orderNo(),p.format(),p.basis(),p.version(),p.revision(),old?"INVALIDATED":expired?"EXPIRED":job.status().name(),
                 job.attemptCount(),job.lastError(),job.createdAt(),p.expiresAt(),p.originalDay(),p.snapshotId(),
                 a==null?null:a.sha256(),a==null?null:a.bytes(),!old && !expired && a!=null && job.status()==BackgroundJob.Status.SUCCEEDED,
-                p.scope().order(),p.range(),p.orderCount()==null?1:p.orderCount(),p.retryOf());
+                p.scope().order(),p.range(),p.orderCount()==null?1:p.orderCount(),p.retryOf(),p.members());
     }
     public ExportModels.Page list(Scope scope,UUID before) {
         return list(scope,new Filter(before,null,null));

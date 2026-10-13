@@ -56,8 +56,11 @@ class ExcelRendererTest {
     @Test void originalAndEffectiveDetailKeepTheirOwnRows() throws Exception {
         try (var book = render(Samples.report(List.of(Samples.corrected())), 100)) {
             assertEquals(5, book.getSheet("原始扫码明细").getLastRowNum());
-            assertEquals(4, book.getSheet("版本有效明细").getLastRowNum());
-            assertEquals("2", book.getSheet("版本有效明细").getRow(3).getCell(3).getStringCellValue());
+            assertEquals(5, book.getSheet("版本有效明细").getLastRowNum());
+            assertEquals("1", book.getSheet("版本有效明细").getRow(3).getCell(3).getStringCellValue());
+            assertEquals(0, book.getSheet("版本有效明细").getRow(3).getCell(11).getNumericCellValue());
+            assertEquals("0", book.getSheet("版本有效明细").getRow(3).getCell(7).getStringCellValue());
+            assertEquals(1, book.getSheet("版本有效明细").getRow(4).getCell(11).getNumericCellValue());
             assertEquals("2026-09-18", book.getSheet("调整凭据").getRow(3).getCell(1).getLocalDateTimeCellValue().toLocalDate().toString());
             assertEquals("601.002", book.getSheet("订单汇总").getRow(3).getCell(17).getStringCellValue());
         }

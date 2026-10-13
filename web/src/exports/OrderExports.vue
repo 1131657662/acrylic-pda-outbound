@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Download, Document, Refresh } from '@element-plus/icons-vue';
 import { localTime } from '../orders/contracts';
-import { formatLabels, statusLabels } from './contracts';
+import { basisLabel, formatLabels, statusLabels } from './contracts';
 import { useOrderExports } from './useOrderExports';
 const props = defineProps<{ actor: string; warehouse: string; order: string }>();
 const { jobs, error, busy, loading, downloading, next, pending, load, create, download } = useOrderExports(props);
@@ -22,7 +22,7 @@ const { jobs, error, busy, loading, downloading, next, pending, load, create, do
     <div v-loading="loading" class="export-list">
       <article v-for="job in jobs" :key="job.id" :data-export-id="job.id" class="export-row">
         <div class="export-facts">
-          <strong>{{ formatLabels[job.format] }} · 原确认 V1</strong>
+          <strong>{{ formatLabels[job.format] }} · {{ basisLabel(job) }}</strong>
           <span>计划 V{{ job.revision }} · 原出库日 {{ job.originalDay }}</span>
           <span>申请于 {{ localTime(job.createdAt) }} · 保留至 {{ localTime(job.expiresAt) }}</span>
           <small v-if="job.status === 'FAILED'">错误编号：{{ job.errorCode }} · 尝试 {{ job.attempts }} 次</small>

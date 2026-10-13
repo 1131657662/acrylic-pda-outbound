@@ -74,7 +74,7 @@ final class CorrectionExportHttpClient {
         return SubmissionJson.parse(response.body()).path("data");
     }
 
-    private String resource(String path) { return path+"?warehouseId="+warehouse; }
+    private String resource(String path) { return path+(path.contains("?")?"&":"?")+"warehouseId="+warehouse; }
     private HttpRequest.Builder request(String path) { return HttpRequest.newBuilder(URI.create(BASE+path)).timeout(Duration.ofSeconds(45)); }
     private static String encoded(String value) { return URLEncoder.encode(value,StandardCharsets.UTF_8); }
 }

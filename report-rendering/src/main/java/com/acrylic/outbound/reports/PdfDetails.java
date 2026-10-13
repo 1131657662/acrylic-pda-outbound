@@ -9,11 +9,11 @@ final class PdfDetails {
         for (var r : o.originalLines()) row(h, r.orderScanSeq(), r.barcode() + "\n" + r.productCode(), Values.kg(Values.grams(r.weightGrams())),
                 r.originDeviceId() + " / " + r.operatorName(), "接收 " + r.receivedAt() + "\n保存 " + r.savedAt() + "\n" + r.timeQuality(), r.remark());
         h.append("</tbody></table>");
-        heading(h, "版本有效明细（指定版本净贡献）", "原序号", "条码 / 产品代码", "净重kg", "原设备 / 操作人");
+        heading(h, "版本有效明细（含归零行）", "原序号", "条码 / 产品代码", "净包数", "净重kg", "原设备 / 操作人");
         var effective = ReportTotals.effective(o);
         for (var r : o.originalLines()) {
             var e = effective.get(r.dispatchId());
-            if (e.count() == 1) row(h, r.orderScanSeq(), r.barcode() + "\n" + r.productCode(),
+            row(h, r.orderScanSeq(), r.barcode() + "\n" + r.productCode(), e.count(),
                     Values.kg(Values.grams(e.weightGrams())), r.originDeviceId() + " / " + r.operatorName());
         }
         h.append("</tbody></table>");

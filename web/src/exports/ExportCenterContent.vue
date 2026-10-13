@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Download, Refresh } from '@element-plus/icons-vue';
 import { localTime } from '../orders/contracts';
-import { formatLabels, statusLabels } from './contracts';
+import { basisLabel, formatLabels, statusLabels } from './contracts';
 import { useCenterJobs } from './useCenterJobs';
 import { useCenterRequests } from './useCenterRequests';
 import ExportSummaryPanel from './ExportSummaryPanel.vue';
@@ -31,11 +31,14 @@ const { busy, pending, error: actionError, create, retry, resume, discard } = us
     <div v-loading="loading" class="center-jobs">
       <article v-for="job in jobs" :key="job.id" class="center-job" :data-export-id="job.id">
         <div class="job-description">
-          <strong>{{ job.orderNo }} · {{ formatLabels[job.format] }} · 原确认 V1</strong>
+          <strong>{{ job.orderNo }} · {{ formatLabels[job.format] }} · {{ basisLabel(job) }}</strong>
           <span v-if="job.range">{{ job.range.fromDate }} 至 {{ job.range.throughDate }} · 固定 {{ job.orderCount }} 单</span>
           <span v-else>原出库日 {{ job.originalDay }} · 计划 V{{ job.revision }}</span>
           <span>申请于 {{ localTime(job.createdAt) }} · 保留至 {{ localTime(job.expiresAt) }}</span>
           <small v-if="job.retryOf">由原快照重新生成</small>
+          <details v-if="job.members.length"><summary>查看固定结果版本</summary><ul><li v-for="member in job.members" :key="member.orderId">
+            {{ member.orderId }} · V{{ member.resultVersion }}
+          </li></ul></details>
           <small v-if="job.errorCode">错误编号：{{ job.errorCode }} · 尝试 {{ job.attempts }} 次</small>
           <small v-if="job.status === 'INVALIDATED'">恢复代次已变化，请重新查询汇总或进入原订单生成。</small>
           <router-link v-if="job.orderId" :to="{ path: `/orders/${job.orderId}`, query: { warehouse, tab: 'exports' } }">查看原订单</router-link>

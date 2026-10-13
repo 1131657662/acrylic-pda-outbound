@@ -7,7 +7,7 @@ const session = useSessionStore();
 </script>
 <template>
   <WorkspaceLayout title="导出中心">
-    <PageHeading title="导出中心" subtitle="查询原确认汇总，生成和下载固定版本文件。" />
+    <PageHeading title="导出中心" subtitle="按原出库日查询最新净值，生成和下载固定成员与版本的文件。" />
     <ExportCenterContent v-if="session.identity && session.warehouseId && session.identity.permissions.includes('order:read')"
       :key="`${session.identity.id}:${session.warehouseId}`" :actor="session.identity.id" :warehouse="session.warehouseId" />
   </WorkspaceLayout>

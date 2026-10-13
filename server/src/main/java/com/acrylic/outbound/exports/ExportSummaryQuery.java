@@ -13,7 +13,13 @@ public class ExportSummaryQuery {
     public ExportSummaryQuery(ExportRangeReader reader,JdbcTemplate jdbc) { this.reader=reader;this.jdbc=jdbc; }
     @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)
     public ExportSummary read(Scope scope,Range range) {
+        return read(scope,range,"CURRENT_EFFECTIVE");
+    }
+    @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)
+    public ExportSummary read(Scope scope,Range range,String basis) {
         var cutoff=jdbc.queryForObject("SELECT UTC_TIMESTAMP(6)",Timestamp.class).toInstant();
-        return ExportSummary.from(reader.read(new Request(scope,null,null,new Command(Format.XLSX,"ORIGINAL_CONFIRMED",range)),cutoff));
+        var request=new Request(scope,null,null,new Command(Format.XLSX,basis,range));
+        ExportResultSelection.validate(request);
+        return ExportSummary.from(reader.read(request,cutoff));
     }
 }

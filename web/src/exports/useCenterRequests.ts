@@ -6,7 +6,8 @@ import { exportSchema, rangeSchema, type ExportJob } from './contracts';
 import type { ExportRange } from './summary-contracts';
 
 const actionSchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('range'), format: z.enum(['XLSX', 'PDF']), range: rangeSchema }),
+  z.object({ kind: z.literal('range'), format: z.enum(['XLSX', 'PDF']), range: rangeSchema,
+    basis: z.enum(['CURRENT_EFFECTIVE', 'ORIGINAL_CONFIRMED']).default('ORIGINAL_CONFIRMED') }),
   z.object({ kind: z.literal('retry'), id: z.string().uuid() }),
 ]);
 const pendingSchema = z.object({ key: z.string().uuid(), epoch: z.string().min(1), action: actionSchema });
@@ -29,7 +30,7 @@ export function useCenterRequests(scope: { actor: string; warehouse: string }, a
       }
       const original = pending.value;
       const path = original.action.kind === 'retry' ? `/exports/${original.action.id}/retry` : '/exports';
-      const body = original.action.kind === 'range' ? JSON.stringify({ ...original.action, basis: 'ORIGINAL_CONFIRMED', kind: undefined }) : undefined;
+      const body = original.action.kind === 'range' ? JSON.stringify({ ...original.action, kind: undefined }) : undefined;
       const job = await request(`${path}?warehouseId=${scope.warehouse}`, exportSchema, { method: 'POST', body, signal: abort.signal,
         headers: { 'Content-Type': 'application/json', 'Idempotency-Key': original.key, 'X-Server-Recovery-Epoch': original.epoch } });
       if (!abort.signal.aborted) { localStorage.removeItem(key); pending.value = null; accepted(job); }
@@ -50,6 +51,6 @@ export function useCenterRequests(scope: { actor: string; warehouse: string }, a
   }
   onBeforeUnmount(() => abort.abort());
   return { busy, pending, error, discard, resume: () => pending.value && send(pending.value.action),
-    create: (format: 'XLSX' | 'PDF', range: ExportRange) => send({ kind: 'range', format, range }),
+    create: (format: 'XLSX' | 'PDF', range: ExportRange) => send({ kind: 'range', format, range, basis: 'CURRENT_EFFECTIVE' }),
     retry: (job: ExportJob) => send({ kind: 'retry', id: job.id }) };
 }

@@ -20,9 +20,9 @@ watch(() => [route.query.fromDate, route.query.throughDate], () => {
 });
 </script>
 <template>
-  <section aria-label="跨订单原确认汇总" class="summary-section">
-    <h2>跨订单原确认汇总</h2>
-    <p class="muted">按北京时间原出库日查询，含正式订单及已核验临时来源的首次确认结果，不含后续更正。每次最多31天、100单、5000包。</p>
+  <section aria-label="跨订单最新净值汇总" class="summary-section">
+    <h2>跨订单最新净值汇总</h2>
+    <p class="muted">按北京时间原出库日查询，含正式订单及已核验临时来源在截止时的最新结果版本，保留归零行和精确克数。每次最多31天、100单、5000包。</p>
     <form class="summary-filters" @submit.prevent="search">
       <label>开始日期<el-input v-model="range.fromDate" type="date" aria-label="开始日期" :disabled="loading || disabled" /></label>
       <label>结束日期<el-input v-model="range.throughDate" type="date" aria-label="结束日期" :disabled="loading || disabled" /></label>
@@ -33,13 +33,14 @@ watch(() => [route.query.fromDate, route.query.throughDate], () => {
       <p v-if="changed" role="status">日期已变更，请重新查询后导出。</p>
       <div class="summary-head" :class="{ muted: changed }">
         <strong>{{ summary.orderCount }} 单 · {{ summary.actualCount }} 包 · {{ exactKg(summary.weightGrams) }} kg</strong>
-        <span>原确认 V1 · 查询于 {{ localTime(summary.readAt) }}</span>
+        <span>原确认 {{ summary.originalCount }} 包 / {{ exactKg(summary.originalWeightGrams) }} kg · 调整 {{ summary.adjustedCount }} 包 / {{ exactKg(summary.adjustedWeightGrams) }} kg</span>
+        <span>{{ summary.basis === 'CURRENT_EFFECTIVE' ? '截止时最新净值' : '原确认 V1' }} · 查询于 {{ localTime(summary.readAt) }}</span>
       </div>
       <div class="summary-actions">
         <el-button :disabled="disabled || changed || loading" @click="emit('create', 'XLSX', summary.range)">导出汇总 Excel</el-button>
-        <el-button :disabled="disabled || changed || loading || summary.actualCount > 1000" @click="emit('create', 'PDF', summary.range)">导出汇总 PDF</el-button>
+        <el-button :disabled="disabled || changed || loading || summary.originalCount > 1000" @click="emit('create', 'PDF', summary.range)">导出汇总 PDF</el-button>
       </div>
-      <p class="muted">文件按申请时的完整范围固定成员和版本，可能与查询时不同；PDF最多1000包。扫码记录 Excel 仍从单订单下载。</p>
+      <p class="muted">文件按申请时的完整范围固定成员和版本，可能与查询时不同；PDF按原明细最多1000包，归零行保留。扫码记录 Excel 仍从单订单下载。</p>
       <el-empty v-if="!summary.orderCount" description="该期间暂无已完成订单" />
       <template v-else>
         <h3>产品汇总</h3>
@@ -48,13 +49,13 @@ watch(() => [route.query.fromDate, route.query.throughDate], () => {
           <el-table-column prop="model" label="原计划型号" min-width="200" />
           <el-table-column prop="name" label="品名" min-width="120" />
           <el-table-column prop="plannedCount" label="计划包数" align="right" min-width="100" />
-          <el-table-column prop="actualCount" label="原确认包数" align="right" min-width="110" />
-          <el-table-column label="原确认 kg" align="right" min-width="150"><template #default="{ row }">{{ exactKg(row.weightGrams) }}</template></el-table-column>
+            <el-table-column prop="actualCount" label="净包数" align="right" min-width="110" />
+            <el-table-column label="净 kg" align="right" min-width="150"><template #default="{ row }">{{ exactKg(row.weightGrams) }}</template></el-table-column>
         </el-table>
-        <details><summary>查看 {{ summary.orderCount }} 个原确认订单</summary>
+        <details><summary>查看 {{ summary.orderCount }} 个订单及结果版本</summary>
           <ul class="summary-members"><li v-for="order in summary.orders" :key="order.id">
             <router-link :to="{ path: `/orders/${order.id}`, query: { warehouse, tab: 'exports' } }">{{ order.orderNo }}</router-link>
-            <span>{{ order.vehicle }} · {{ order.originalDay }} · {{ order.actualCount }} 包 · {{ exactKg(order.weightGrams) }} kg</span>
+            <span>V{{ order.resultVersion }} · {{ order.vehicle }} · {{ order.originalDay }} · {{ order.actualCount }} 包 · {{ exactKg(order.weightGrams) }} kg</span>
           </li></ul>
         </details>
       </template>

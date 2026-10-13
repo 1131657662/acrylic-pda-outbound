@@ -29,10 +29,11 @@ public class CorrectionExportSource {
     private final ExportFacts facts;
     private final PdaExportSource pda;
     private final TemporaryExportSource temporary;
+    private final PcExportSource pc;
     private final CorrectionAdjustmentSource adjustments;
     public CorrectionExportSource(JdbcTemplate jdbc, ExportFacts facts, PdaExportSource pda,
-            TemporaryExportSource temporary, CorrectionAdjustmentSource adjustments) {
-        this.jdbc=jdbc; this.facts=facts; this.pda=pda; this.temporary=temporary; this.adjustments=adjustments;
+            TemporaryExportSource temporary, CorrectionAdjustmentSource adjustments,PcExportSource pc) {
+        this.jdbc=jdbc; this.facts=facts; this.pda=pda; this.temporary=temporary; this.adjustments=adjustments;this.pc=pc;
     }
 
     /** 一个 v&gt;1 快照所需的事实，已按"缺一即拒"的纪律读出。 */
@@ -55,7 +56,7 @@ public class CorrectionExportSource {
         // TEMP 受理正文没有正式 PDA 正文的 source.sourceOrderId，走错读取器会在解析处直接失败。
         var origin = facts.head(scope.warehouse(), scope.order(), 1L);
         ExportFacts.check(origin.submission() != null, "原确认提交缺失");
-        var source = facts.tempOrigin(origin.submission())
+        var source = origin.pcSubmission()!=null?pc.read(origin):facts.tempOrigin(origin.submission())
             ? temporary.read(origin, false, cutoff) : pda.read(origin, false);
         int revision = Math.toIntExact(source.revision());
 

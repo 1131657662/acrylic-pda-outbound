@@ -17,13 +17,12 @@ SingleCommand:
   required: [format, basis]
   properties:
     format: {$ref: '#/Format'}
-    basis: {type: string, enum: [ORIGINAL_CONFIRMED, CORRECTED]}
+    basis: {type: string, enum: [ORIGINAL_CONFIRMED, CURRENT_EFFECTIVE, CORRECTED]}
     range: {type: 'null', description: 单订单请求必须省略或为null。}
     resultVersion:
       type: [integer, 'null']
       minimum: 1
-      default: 1
-      description: 草案；省略或null按版本1处理。原确认只允许1；CORRECTED必须显式指定大于1的已存在结果版本，不推断最新版本。
+      description: 原确认省略或null按1处理；CORRECTED必须显式指定大于1的版本；CURRENT_EFFECTIVE必须省略或null，接受时选截止时最新版本。
   allOf:
     - if:
         properties: {basis: {const: CORRECTED}}
@@ -33,17 +32,33 @@ SingleCommand:
         properties:
           resultVersion: {type: integer, minimum: 2}
           format: {type: string, enum: [XLSX, PDF]}
-      else:
+    - if:
+        properties: {basis: {const: ORIGINAL_CONFIRMED}}
+        required: [basis]
+      then:
         properties:
           resultVersion: {enum: [1, null]}
+    - if:
+        properties: {basis: {const: CURRENT_EFFECTIVE}}
+        required: [basis]
+      then:
+        properties:
+          resultVersion: {type: 'null'}
+          format: {enum: [XLSX, PDF]}
 RangeCommand:
   type: object
   required: [format, basis, range]
   properties:
     format: {type: string, enum: [XLSX, PDF]}
-    basis: {type: string, const: ORIGINAL_CONFIRMED}
+    basis: {type: string, enum: [ORIGINAL_CONFIRMED, CURRENT_EFFECTIVE]}
     range: {$ref: '#/Range'}
-    resultVersion: {type: [integer, 'null'], enum: [1, null], default: 1, description: 汇总仍限定原确认首版；不开放更正净结果汇总。}
+    resultVersion: {type: [integer, 'null'], enum: [1, null], description: 原确认可省略/null/1；最新净值必须省略/null，逐单版本在申请时固定。}
+  allOf:
+    - if:
+        properties: {basis: {const: CURRENT_EFFECTIVE}}
+        required: [basis]
+      then:
+        properties: {resultVersion: {type: 'null'}}
 View:
   type: object
   required: [id, orderNo, format, basis, resultVersion, revision, status, attempts, errorCode, createdAt, expiresAt, originalDay, snapshotId, sha256, bytes, downloadable, orderId, range, orderCount, retryOf]
@@ -51,8 +66,8 @@ View:
     id: {type: string, format: uuid}
     orderNo: {type: string, description: 单订单原编号；跨订单为汇总标题。}
     format: {$ref: '#/Format'}
-    basis: {type: string, enum: [ORIGINAL_CONFIRMED, CORRECTED]}
-    resultVersion: {type: integer, minimum: 1, description: 固定快照的结果版本；旧持久任务缺少该字段时按1兼容，CORRECTED任务返回请求指定版本。}
+    basis: {type: string, enum: [ORIGINAL_CONFIRMED, CURRENT_EFFECTIVE, CORRECTED]}
+    resultVersion: {type: integer, minimum: 0, description: 单单固定版本；最新净值范围汇总为0，各单版本见members；旧任务缺少字段时按1兼容。}
     revision: {type: integer, minimum: 0, description: 单订单原修订；跨订单为0。}
     status: {$ref: '#/Status'}
     attempts: {type: integer, minimum: 0}
@@ -71,6 +86,16 @@ View:
         - {type: 'null'}
     orderCount: {type: integer, minimum: 0, maximum: 100}
     retryOf: {type: [string, 'null'], format: uuid}
+    members:
+      type: array
+      maxItems: 100
+      description: 固定快照的有序成员及结果版本；旧任务返回空列表，原快照仍保持。
+      items:
+        type: object
+        required: [orderId, resultVersion]
+        properties:
+          orderId: {type: string, format: uuid}
+          resultVersion: {type: integer, minimum: 1}
 Page:
   type: object
   required: [items, nextCursor]
@@ -79,9 +104,10 @@ Page:
     nextCursor: {type: [string, 'null'], format: uuid}
 Summary:
   type: object
+  allOf: [{$ref: '#/Totals'}]
   required: [basis, range, readAt, orderCount, actualCount, weightGrams, orders, products]
   properties:
-    basis: {type: string, const: ORIGINAL_CONFIRMED}
+    basis: {type: string, enum: [ORIGINAL_CONFIRMED, CURRENT_EFFECTIVE]}
     range: {$ref: '#/Range'}
     readAt: {type: string, format: date-time}
     orderCount: {type: integer, minimum: 0, maximum: 100}
@@ -91,17 +117,20 @@ Summary:
     products: {type: array, items: {$ref: '#/ProductRow'}}
 OrderRow:
   type: object
-  required: [id, orderNo, revision, originalDay, vehicle, actualCount, weightGrams]
+  allOf: [{$ref: '#/Totals'}]
+  required: [id, orderNo, revision, resultVersion, originalDay, vehicle, actualCount, weightGrams]
   properties:
     id: {type: string, format: uuid}
     orderNo: {type: string}
     revision: {type: integer, minimum: 1}
+    resultVersion: {type: integer, minimum: 1}
     originalDay: {type: string, format: date}
     vehicle: {type: string}
     actualCount: {type: integer, minimum: 0}
     weightGrams: {type: string, pattern: '^[0-9]+$'}
 ProductRow:
   type: object
+  allOf: [{$ref: '#/Totals'}]
   required: [code, name, model, plannedCount, actualCount, weightGrams]
   properties:
     code: {type: string}
@@ -110,3 +139,11 @@ ProductRow:
     plannedCount: {type: integer, minimum: 0}
     actualCount: {type: integer, minimum: 0}
     weightGrams: {type: string, pattern: '^[0-9]+$'}
+Totals:
+  type: object
+  required: [originalCount, originalWeightGrams, adjustedCount, adjustedWeightGrams]
+  properties:
+    originalCount: {type: integer, minimum: 0}
+    originalWeightGrams: {type: string, pattern: '^[0-9]+$'}
+    adjustedCount: {type: integer}
+    adjustedWeightGrams: {type: string, pattern: '^-?[0-9]+$'}

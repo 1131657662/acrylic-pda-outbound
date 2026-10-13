@@ -15,7 +15,8 @@ export async function downloadExport(job: ExportJob, warehouse: string, signal: 
   if (signal.aborted) return;
   const url = URL.createObjectURL(new Blob([bytes], { type: response.headers.get('Content-Type') ?? 'application/octet-stream' }));
   const anchor = document.createElement('a'); anchor.href = url;
-  const prefix = job.format === 'SCAN_XLSX' ? 'scan-records-v1' : 'original-v1';
+  const prefix = job.basis === 'CURRENT_EFFECTIVE' ? 'latest-net' : job.basis === 'CORRECTED'
+    ? `corrected-v${job.resultVersion}` : job.format === 'SCAN_XLSX' ? 'scan-records-v1' : 'original-v1';
   anchor.download = `${prefix}-${job.id}.${job.format === 'PDF' ? 'pdf' : 'xlsx'}`;
   document.body.append(anchor); anchor.click(); anchor.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);

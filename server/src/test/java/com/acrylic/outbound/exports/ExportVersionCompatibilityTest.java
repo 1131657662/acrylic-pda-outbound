@@ -28,6 +28,7 @@ class ExportVersionCompatibilityTest {
     @Test void oldStoredPayloadWithoutVersionStillMeansVersionOne() throws Exception {
         var payload=json.readValue("{\"format\":\"XLSX\",\"basis\":\"ORIGINAL_CONFIRMED\"}",Payload.class);
         assertThat(payload.version()).isEqualTo(1L);
+        assertThat(payload.members()).isEmpty();
     }
 
     @Test void correctedStoredPayloadKeepsTheSelectedVersion() throws Exception {

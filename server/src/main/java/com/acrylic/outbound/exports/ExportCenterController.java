@@ -20,9 +20,9 @@ public class ExportCenterController {
     }
     @GetMapping("/summary")
     public ApiEnvelope<?> summary(@RequestParam UUID warehouseId,@RequestParam LocalDate fromDate,
-            @RequestParam LocalDate throughDate,HttpServletRequest request) {
+            @RequestParam LocalDate throughDate,@RequestParam(defaultValue="CURRENT_EFFECTIVE") String basis,HttpServletRequest request) {
         var actor=access.require("order:read",warehouseId);
-        return responses.ok(summaries.read(new Scope(actor.id(),warehouseId,null),new Range(fromDate,throughDate)),request);
+        return responses.ok(summaries.read(new Scope(actor.id(),warehouseId,null),new Range(fromDate,throughDate),basis),request);
     }
     @GetMapping
     public ApiEnvelope<?> list(@RequestParam UUID warehouseId,@RequestParam(required=false) UUID before,

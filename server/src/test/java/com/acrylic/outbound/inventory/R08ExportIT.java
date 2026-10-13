@@ -96,10 +96,10 @@ class R08ExportIT {
         jdbc.update("DELETE FROM user_role WHERE user_id=?",Ids.bytes(api.identity().user().id()));
         api.send(get("/api/v1/exports/"+job.id()+"/file")).andExpect(status().isForbidden());
     }
-    @Test void rejectsCurrentNetAndUncompletedOrders() throws Exception {
+    @Test void rejectsLatestNetAndOriginalExportsForUncompletedOrders() throws Exception {
         var fixture=new PcFixture(api,false,1,1);
         api.send(post("/api/v1/orders/"+fixture.order+"/exports").header("Idempotency-Key",UUID.randomUUID().toString())
-                .contentType("application/json").content("{\"format\":\"XLSX\",\"basis\":\"CURRENT_EFFECTIVE\"}")).andExpect(status().isBadRequest());
+                .contentType("application/json").content("{\"format\":\"XLSX\",\"basis\":\"CURRENT_EFFECTIVE\"}")).andExpect(status().isConflict());
         api.send(post("/api/v1/orders/"+fixture.order+"/exports").header("Idempotency-Key",UUID.randomUUID().toString())
                 .contentType("application/json").content("{\"format\":\"XLSX\",\"basis\":\"ORIGINAL_CONFIRMED\"}")).andExpect(status().isConflict());
     }
