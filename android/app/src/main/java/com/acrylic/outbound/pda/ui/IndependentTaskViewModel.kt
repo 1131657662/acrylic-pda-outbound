@@ -76,7 +76,7 @@ class IndependentTaskViewModel(application: Application, private val saved: Save
         val (command, task) = repository.request(id); saved["requestId"] = id
         saved["vehicle"] = command.vehicle; saved["reason"] = command.reason; save(command)
         return IndependentTaskUi(draft = command, locked = true, task = task, history = repository.requests(),
-            message = if (task == null) "原创建请求已保存，任务尚未完成；核验口令后按原计划重试。" else "独立计划已保存，尚未采集；待主管对账。")
+            message = if (task == null) "原创建请求已保存，任务尚未完成；核验口令后按原计划重试。" else "独立计划已保存，原采集记录保留；待主管对账。")
     }
     fun create(password: CharArray) {
         val draft = state.value.draft

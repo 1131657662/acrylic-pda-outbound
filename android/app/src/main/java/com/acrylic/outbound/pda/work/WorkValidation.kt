@@ -10,6 +10,7 @@ class WorkValidation(private val store: WorkStore) {
         val c = capture.context; val prepared = store.prepared(c.assignmentId)
         store.access.authorize(prepared) // Unknown/revoked identity or time remains pending; never consume it as a barcode error.
         check(store.db.temporaryScans().unresolved() == 0) { "临时单仍有未处理输入，请先恢复原单" }
+        check(store.db.independentScans().unresolved() == 0) { "独立来源仍有未处理输入，请先恢复原任务" }
         val order = checkNotNull(store.db.work().order(c.assignmentId))
         val assignment = JSONObject(prepared.assignmentJson)
         check(order.state == "SCANNING" && c.orderId == prepared.orderId && c.operatorId == prepared.operatorId &&
@@ -27,7 +28,8 @@ class WorkValidation(private val store: WorkStore) {
             !bale.available -> "该包在准备时已不可用"
             cloudReason != null -> cloudReason
             store.db.scans().guard(c.barcode) != null || store.db.temporaryScans().guard(c.barcode) != null ||
-                store.db.temporaryHandoverGuards().get(c.barcode) != null -> "该条码已在本机订单中保存，不能重复装车"
+                store.db.temporaryHandoverGuards().get(c.barcode) != null ||
+                store.db.independentScans().guard(c.barcode) != null -> "该条码已在本机订单中保存，不能重复装车"
             line.actualCount >= line.plannedCount -> "该产品已达计划，禁止超装"
             order.actualCount >= order.plannedTotal -> "整单已达计划，禁止超装"
             else -> null

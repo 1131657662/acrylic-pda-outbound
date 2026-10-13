@@ -56,7 +56,8 @@ class TemporaryWorkStore(val db: PdaDatabase, val connection: TemporaryConnectio
             db.temporary().prepared(catalog.request.key)?.copy(ackJson = catalog.preparation.ackJson) == catalog.preparation) { "原临时资料已变化，请重新核验" }
     }
     fun requireNoOtherInput(id: String) {
-        check(db.work().unresolvedCount() == 0 && db.temporaryScans().unresolved(id) == 0) { "另一订单仍有未处理输入，请先恢复原订单" }
+        check(db.work().unresolvedCount() == 0 && db.temporaryScans().unresolved(id) == 0 &&
+            db.independentScans().unresolved() == 0) { "另一来源仍有未处理输入，请先恢复原作业" }
     }
     fun event(draft: TemporaryDraft, capture: String?, type: String, detail: String = ""): Long {
         check(db.inTransaction())

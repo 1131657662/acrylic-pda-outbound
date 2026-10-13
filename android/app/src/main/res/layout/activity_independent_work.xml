@@ -1,0 +1,31 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:fillViewport="true" android:background="@color/pda_canvas">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="12dp">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="独立采集 · 待主管对账" android:textStyle="bold" android:textSize="20sp" android:textColor="@color/pda_text_primary" />
+        <TextView android:id="@+id/workSummary" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="18sp" android:textStyle="bold" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:text="本机采集不代表库存可用或出库成功，不得放行。" />
+        <TextView android:id="@+id/workBlocked" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textColor="@color/pda_text_primary" />
+        <TextView android:id="@+id/workMessage" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+        <EditText android:id="@+id/workManual" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:hint="手输完整11位条码" android:maxLength="128" android:inputType="textVisiblePassword" android:textSize="16sp" />
+        <Button android:id="@+id/workValidate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="校验手输（F1）" />
+        <TextView android:id="@+id/workCandidate" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" />
+        <Button android:id="@+id/workConfirm" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="确认保存手输（Enter）" />
+        <Button android:id="@+id/workAcknowledge" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="已核对本次失败提示" />
+        <Button android:id="@+id/workDiscard" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="放弃未确认手输（F2）" />
+        <Button android:id="@+id/workPause" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="暂停扫码" />
+        <EditText android:id="@+id/workPassword" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:hint="独立采集口令" android:maxLength="128" android:inputType="textPassword" android:textSize="16sp" android:importantForAutofill="no" android:saveEnabled="false" />
+        <Button android:id="@+id/workAuthorize" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="核验口令，开始或恢复原独立任务" />
+        <TextView android:id="@+id/workLines" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" />
+        <EditText android:id="@+id/workLocateBarcode" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:hint="定位本单已保存条码" android:maxLength="11" android:inputType="textVisiblePassword" android:textSize="16sp" />
+        <Button android:id="@+id/workLocate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="按原条码定位已扫包" />
+        <TextView android:id="@+id/workSelected" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" />
+        <EditText android:id="@+id/workReason" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="72dp" android:hint="核对实物与处理原因（最多500位）" android:maxLength="500" android:inputType="textMultiLine" android:textSize="16sp" />
+        <CheckBox android:id="@+id/workUnloaded" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="已核实本包卸下或未装车" android:textSize="16sp" />
+        <Button android:id="@+id/workVoid" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="撤销所选本包，保留原记录" />
+        <Button android:id="@+id/workLatest" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="读取原明细第一页" />
+        <Button android:id="@+id/workOlder" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="读取后续原明细" />
+        <TextView android:id="@+id/workRows" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" />
+        <TextView android:id="@+id/workOriginal" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textIsSelectable="true" />
+        <Button android:id="@+id/workBack" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回，保留全部原记录" />
+    </LinearLayout>
+</ScrollView>

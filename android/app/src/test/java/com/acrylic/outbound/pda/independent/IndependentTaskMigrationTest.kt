@@ -31,6 +31,7 @@ class IndependentTaskMigrationTest {
         val version = IndependentTaskMigration.startVersion
         val schema = JSONObject(File(System.getProperty("pda.schemas"), "$version.json").readText()).getJSONObject("database")
         f.sku.context.openOrCreateDatabase("outbound-pda.db", 0, null).use { db ->
+            listOf("guard", "void", "scan", "capture_state", "capture", "device_state").forEach { db.execSQL("DROP TABLE independent_$it") }
             listOf("event", "state", "line", "task", "request").forEach {
                 db.execSQL("DROP TABLE ${if (it == "task") "independent_task" else "independent_task_$it"}")
             }

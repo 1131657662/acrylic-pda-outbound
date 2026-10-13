@@ -40,6 +40,10 @@ class IndependentSkuMigrationTest {
         val previous = IndependentSkuMigration.startVersion
         val schema = JSONObject(File(System.getProperty("pda.schemas"), "$previous.json").readText()).getJSONObject("database")
         f.context.openOrCreateDatabase("outbound-pda.db", 0, null).use { db ->
+            listOf("guard", "void", "scan", "capture_state", "capture", "device_state").forEach { db.execSQL("DROP TABLE independent_$it") }
+            listOf("event", "state", "line", "request", "task").forEach {
+                db.execSQL("DROP TABLE ${if (it == "task") "independent_task" else "independent_task_$it"}")
+            }
             for (table in listOf("active", "decision", "import", "chunk", "original")) db.execSQL("DROP TABLE independent_sku_$table")
             db.execSQL("UPDATE room_master_table SET identity_hash=? WHERE id=42", arrayOf(schema.getString("identityHash")))
             db.version = previous

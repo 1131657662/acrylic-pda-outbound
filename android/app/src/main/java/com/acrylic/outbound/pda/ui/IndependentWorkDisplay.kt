@@ -1,0 +1,37 @@
+package com.acrylic.outbound.pda.ui
+
+import com.acrylic.outbound.pda.databinding.ActivityIndependentWorkBinding
+import com.acrylic.outbound.pda.independent.*
+import java.math.BigDecimal
+
+internal class IndependentWorkDisplay(private val binding: ActivityIndependentWorkBinding) {
+    fun render(ui: IndependentWorkUi, scanning: Boolean) {
+        val task = ui.task
+        binding.workSummary.text = task?.let { "${it.task.vehicleNo} · 计划 ${it.task.plannedTotal} 包\n有效 ${it.state.actualCount} 包 · ${kg(it.state.weightGrams)} kg" } ?: "正在读取原独立任务"
+        binding.workBlocked.text = ui.blocked
+        binding.workMessage.text = ui.message + if (ui.queued > 0) "\n已进入队列 ${ui.queued} 项；须见已保存结果后核对。" else ""
+        binding.workManual.isEnabled = ui.ready; binding.workValidate.isEnabled = ui.ready
+        binding.workConfirm.isEnabled = ui.candidate?.processing?.state == "WAITING_CONFIRM" && scanning && ui.queued == 0 && ui.blocked.isBlank()
+        binding.workAcknowledge.isEnabled = ui.candidate?.processing?.state in setOf("INVALID", "BUSINESS_REJECTED") && ui.queued == 0 && ui.blocked.isBlank()
+        binding.workDiscard.isEnabled = ui.candidate?.capture?.inputSource == "MANUAL" && ui.candidate.processing.state in setOf("RECEIVED", "WAITING_CONFIRM") && ui.queued == 0 && ui.blocked.isBlank()
+        binding.workPause.text = if (scanning) "暂停扫码，保留已接收输入" else "恢复扫码"
+        binding.workAuthorize.isEnabled = ui.queued == 0
+        val candidate = ui.candidate
+        binding.workCandidate.text = candidate?.let { "${it.capture.barcode} · ${status(it.processing.state)}\n${it.processing.error}\n原输入序 ${it.capture.sequence} · ${if (it.capture.inputSource == "MANUAL") "手输" else "扫码"}" }.orEmpty()
+        binding.workLines.text = task?.lines?.joinToString("\n") { "${it.deliveryCode} · ${it.model} · ${it.name}\n固定计划 ${it.plannedCount} 包" }.orEmpty()
+        binding.workSelected.text = ui.selected?.let { row(it) } ?: "未选择原已扫包。"
+        binding.workVoid.isEnabled = !scanning && ui.queued == 0 && candidate == null && ui.selected?.status == "ACTIVE"
+        binding.workRows.text = ui.rows.joinToString("\n\n") { row(it) }.ifEmpty { "本页尚无原保存明细。" }
+        binding.workOlder.isEnabled = ui.rows.size == 50 && ui.queued == 0
+        binding.workOriginal.text = task?.let { "原任务 ${it.task.id}\n原资料 ${it.task.importId}\n原资料摘要 ${it.task.skuSha256}\n采集原因 ${it.task.reason}" }.orEmpty()
+    }
+    private fun row(value: IndependentScanView) = "原序 ${value.scan.sequence} · ${if (value.status == "ACTIVE") "有效" else "已撤销"} · ${value.scan.barcode}\n${value.scan.deliveryCode} · ${value.scan.model} · ${value.scan.name}\n原重量 ${value.scan.rawWeight} kg / ${value.scan.weightGrams} 克"
+    private fun status(value: String) = when (value) {
+        "RECEIVED" -> "已接收，待校验"
+        "WAITING_CONFIRM" -> "手输校验通过，待确认保存"
+        "CONFIRM_REQUESTED" -> "已确认，待保存"
+        "INVALID", "BUSINESS_REJECTED" -> "本包未保存，待核对"
+        else -> "原输入状态待核对"
+    }
+    private fun kg(grams: Long) = BigDecimal.valueOf(grams, 3).stripTrailingZeros().toPlainString()
+}

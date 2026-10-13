@@ -20,6 +20,7 @@ class WorkReception(private val store: WorkStore) {
     private fun persist(input: WorkInput): WorkCapture {
         val prepared = store.prepared(input.assignmentId); store.access.authorize(prepared)
         check(store.db.temporaryScans().unresolved() == 0) { "临时单仍有未处理输入，请先恢复原单" }
+        check(store.db.independentScans().unresolved() == 0) { "独立来源仍有未处理输入，请先恢复原任务" }
         val work = checkNotNull(store.db.work().order(input.assignmentId))
         check(work.state == "SCANNING" && work.nextOrderScanSeq < Long.MAX_VALUE)
         val device = checkNotNull(store.db.work().device(prepared.deviceId))

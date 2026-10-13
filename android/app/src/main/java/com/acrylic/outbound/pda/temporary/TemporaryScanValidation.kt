@@ -18,7 +18,7 @@ class TemporaryScanValidation(private val store: TemporaryWorkStore) {
         if (bale.cycle != capture.expectedDispatchCycle) return "原出库周期不一致，请保留记录"
         availability(capture, bale)?.let { return it }
         if (store.db.scans().guard(bale.barcode) != null || store.db.temporaryScans().guard(bale.barcode) != null ||
-            store.db.temporaryHandoverGuards().get(bale.barcode) != null)
+            store.db.temporaryHandoverGuards().get(bale.barcode) != null || store.db.independentScans().guard(bale.barcode) != null)
             return "该条码已在本机订单中保存，不能重复装车"
         val actual = store.products(draft.clientOrderId).firstOrNull { it.deliveryCode == bale.code }?.count ?: 0
         if (actual >= line.plannedCount) return "该产品已达计划，禁止超装"

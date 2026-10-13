@@ -39,6 +39,9 @@ class IndependentTaskActivity : ComponentActivity() {
         }
         binding.newTask.setOnClickListener { model.newDraft() }
         binding.reload.setOnClickListener { model.reload() }
+        binding.openIndependentWork.setOnClickListener {
+            model.state.value.task?.let { startActivity(android.content.Intent(this, IndependentWorkActivity::class.java).putExtra("taskId", it.task.id)) }
+        }
         binding.historyLatest.setOnClickListener { model.history(false) }
         binding.historyOlder.setOnClickListener { model.history(true) }
         binding.openHistory.setOnClickListener { model.open(binding.history.selectedItemPosition) }
@@ -52,6 +55,7 @@ class IndependentTaskActivity : ComponentActivity() {
             binding.quantity.text.clear(); binding.password.text.clear()
         }
         binding.summary.text = IndependentTaskDisplay.summary(state)
+        binding.openIndependentWork.isEnabled = !state.busy && state.task != null
         binding.lines.text = IndependentTaskDisplay.lines(state)
         binding.original.text = IndependentTaskDisplay.original(state)
         val editable = !state.busy && !state.locked && state.draft != null
