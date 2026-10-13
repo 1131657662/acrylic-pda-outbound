@@ -81,6 +81,7 @@ async function confirm(): Promise<void> {
           <template v-else>
             <el-descriptions-item label="原恢复包/应用提交">{{ selected.context.facts.origin.recoveryPackageId }} / {{ selected.context.facts.origin.submissionId }}</el-descriptions-item>
             <el-descriptions-item label="依据类型">原实物批准、原机停止签名和应用提交</el-descriptions-item>
+            <el-descriptions-item label="原实物应用状态">{{ selected.context.facts.origin.originalReceipt.application.receipt.status === 'DISPOSITIONS_APPLIED' ? '原处置已应用，其他包按原批次继续处理' : '原批次已形成终态回执' }}</el-descriptions-item>
           </template>
           <el-descriptions-item :label="selected.context.facts.origin.sourceKind === 'TEMP' ? '原签名回执' : selected.context.facts.origin.sourceKind === 'PC' ? '原应用回执' : '原实物批准'">{{ selected.context.facts.origin.originalReceipt.receiptId }}</el-descriptions-item>
           <el-descriptions-item label="原处置人/时刻">{{ selected.context.facts.origin.originalReceipt.actor.principalId }} / {{ selected.context.facts.origin.originalReceipt.recordedAt }}</el-descriptions-item>

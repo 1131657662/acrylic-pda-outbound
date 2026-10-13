@@ -29,7 +29,14 @@ const formalProof = z.object({ proofType: z.literal('FORMAL_RECOVERY_APPLICATION
     command: z.record(z.string(), z.unknown()), body: z.record(z.string(), z.unknown()),
     approval: z.object({ signedReceipt: z.string().min(30), status: z.literal('APPROVED') }).catchall(z.unknown()),
     activation: z.object({ signedReceipt: z.string().min(30), status: z.literal('ACTIVATED') }).catchall(z.unknown()),
-    receipt: z.object({ signedReceipt: z.string().min(30), status: z.enum(['SUCCEEDED', 'ABORTED']) }).catchall(z.unknown()) }) });
+    receipt: z.union([
+      z.object({ signedReceipt: z.string().min(30), status: z.enum(['SUCCEEDED', 'ABORTED']) }).catchall(z.unknown()),
+      z.object({ applicationVersion: z.literal(1), signedApplication: z.string().min(30), status: z.literal('DISPOSITIONS_APPLIED'),
+        submissionId: uuid, orderId: uuid, warehouseId: uuid, scopeId: uuid, operatorId: uuid, freezeDeviceId: uuid,
+        assignmentId: uuid, continuationId: uuid, workRound: positive, payloadSha256: hash, dispositionsSha256: hash,
+        appliedEvidenceIds: z.array(uuid).min(1), appliedAt: z.iso.datetime({ offset: true }),
+        localDeletionAllowed: z.literal(false), mayResumeScanning: z.literal(false), stockReleased: z.literal(false) }).catchall(z.unknown()),
+    ]) }) });
 const formalOrigin = z.object({ sourceKind: z.literal('FORMAL'), dispositionId: uuid, scopeId: uuid, submissionId: uuid,
   recoveryPackageId: uuid, continuationId: uuid, captureId: uuid, cycle: positive, closeReason: z.string(),
   originalReceipt: formalProof, originalReceiptSha256: hash }).catchall(z.unknown());

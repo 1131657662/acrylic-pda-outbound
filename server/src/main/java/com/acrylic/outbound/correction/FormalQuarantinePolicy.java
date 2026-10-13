@@ -6,7 +6,9 @@ final class FormalQuarantinePolicy {
     private FormalQuarantinePolicy() { }
     static void eligible(JsonNode facts) {
         var origin=facts.path("origin"); var stock=facts.path("stock"); var owners=facts.path("owners");
-        if(!origin.path("closeMode").asBoolean() || !origin.path("sourceClosed").asBoolean()
+        boolean applied="DISPOSITIONS_APPLIED".equals(origin.at("/originalReceipt/application/receipt/status").asText())
+            && origin.at("/originalReceipt/application/receipt/signedApplication").isTextual();
+        if(!applied && (!origin.path("closeMode").asBoolean() || !origin.path("sourceClosed").asBoolean())
             || !"QUARANTINE".equals(origin.path("action").asText()) || !origin.path("cycle").equals(stock.path("dispatchCycle"))
             || !origin.path("warehouseId").equals(stock.path("warehouseId")) || !stock.path("upstreamPresent").asBoolean()
             || !stock.hasNonNull("activeSnapshotId") || !stock.path("snapshotId").equals(stock.path("activeSnapshotId"))

@@ -15,7 +15,13 @@ export async function quarantineReview(page:Page,bytes:Buffer,origin:{hash:strin
   if(origin.kind==='FORMAL') {
     await expect(page.getByText('原实物批准、原机停止签名和应用提交',{exact:true})).toBeVisible();
     const proof=JSON.parse(sourceBytes.toString());expect(proof.proofType).toBe('FORMAL_RECOVERY_APPLICATION_ORIGINALS');
-    expect(proof.signedReceipt).toBeUndefined();expect(proof.recovery.stop.signedReceipt).toBeTruthy();expect(proof.application.receipt.signedReceipt).toBeTruthy();
+    expect(proof.signedReceipt).toBeUndefined();expect(proof.recovery.stop.signedReceipt).toBeTruthy();
+    const applied=proof.application.receipt;
+    if(applied.status==='DISPOSITIONS_APPLIED') {
+      expect(applied.signedApplication).toBeTruthy();expect(applied.signedReceipt).toBeUndefined();
+      expect(applied.localDeletionAllowed).toBe(false);expect(applied.mayResumeScanning).toBe(false);expect(applied.stockReleased).toBe(false);
+      await expect(page.getByText('原处置已应用，其他包按原批次继续处理',{exact:true})).toBeVisible();
+    } else { expect(['SUCCEEDED','ABORTED']).toContain(applied.status);expect(applied.signedReceipt).toBeTruthy(); }
   }
   quarantineEvidence(origin.kind==='PC'?'original-pc-proof.json':origin.kind==='FORMAL'?'original-formal-proof.json':'original-quarantine-receipt.json',sourceBytes);
   await page.screenshot({path:`${process.env.QUARANTINE_WEB_EVIDENCE}/mobile-source.png`});

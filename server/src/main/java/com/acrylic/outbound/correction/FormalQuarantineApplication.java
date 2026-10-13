@@ -12,21 +12,12 @@ final class FormalQuarantineApplication {
     private final JdbcTemplate jdbc;
     private final SubmissionFiles files;
     private final SubmissionArchiveProofs signatures;
-    FormalQuarantineApplication(JdbcTemplate jdbc,SubmissionFiles files,SubmissionArchiveProofs signatures) {
-        this.jdbc=jdbc; this.files=files; this.signatures=signatures;
+    private final FormalQuarantineAppliedReceipt applications;
+    FormalQuarantineApplication(JdbcTemplate jdbc,SubmissionFiles files,SubmissionArchiveProofs signatures,FormalQuarantineAppliedReceipt applications) {
+        this.jdbc=jdbc; this.files=files; this.signatures=signatures;this.applications=applications;
     }
     ObjectNode read(JsonNode origin,JsonNode recovery) {
-        var rows=jdbc.queryForList("""
-            SELECT c.command_text,c.receipt_text,c.activation_text,c.status,c.to_round,c.recovery_package_id,
-              s.receipt_text applied_receipt,s.status applied_status,p.payload_sha256,BIN_TO_UUID(s.freeze_device_id) device_id,
-              BIN_TO_UUID(c.approved_by) approved_by,BIN_TO_UUID(c.requested_by) requested_by
-            FROM order_continuation c JOIN submission s ON s.assignment_id=c.new_assignment_id
-              JOIN submission_payload p ON p.submission_id=s.id WHERE c.id=UUID_TO_BIN(?) AND s.id=UUID_TO_BIN(?)
-            """,origin.path("continuationId").asText(),origin.path("submissionId").asText());
-        if(rows.size()!=1) throw CorrectionCommand.corrupt(); var row=rows.getFirst();
-        if(row.get("receipt_text")==null || row.get("activation_text")==null || row.get("applied_receipt")==null
-            || !java.util.Set.of("SUCCEEDED","ABORTED").contains(row.get("applied_status"))
-            || !java.util.Set.of("ACTIVATED","COMPLETED").contains(row.get("status"))) throw CorrectionCommand.corrupt();
+        var row=row(origin);
         var command=SubmissionJson.parse(row.get("command_text").toString()); var body=SubmissionJson.parse(files.read(row.get("payload_sha256").toString()));
         if(!"FORMAL".equals(body.at("/source/kind").asText()) || !body.at("/source/sourceOrderId").equals(origin.path("orderId"))
             || !body.path("submissionId").equals(origin.path("submissionId")) || !body.path("assignmentId").equals(origin.path("appliedAssignmentId"))
@@ -34,11 +25,39 @@ final class FormalQuarantineApplication {
             || !body.path("freezeDeviceId").equals(recovery.at("/body/freezeDeviceId"))) throw CorrectionCommand.corrupt();
         unchanged(recovery.path("body"),body); disposition(command,body,origin);
         var approval=receipt(row.get("receipt_text"),"acrylic-pda-continuation"); var activation=receipt(row.get("activation_text"),"acrylic-pda-continuation");
-        var applied=receipt(row.get("applied_receipt"),"acrylic-pda-receipt"); bind(origin,recovery,approval,activation,applied,row.get("payload_sha256").toString());
+        var applied=applied(origin,body,row);
+        bind(origin,recovery,approval,activation,applied,row.get("payload_sha256").toString());
         continuation(origin,recovery,command,body,approval,activation,row.get("requested_by").toString());
         var result=SubmissionJson.object(); result.set("command",command); result.set("approval",approval); result.set("activation",activation);
         result.set("body",body); result.set("receipt",applied); result.put("payloadSha256",row.get("payload_sha256").toString());
         result.put("approvedBy",row.get("approved_by").toString()); result.put("requestedBy",row.get("requested_by").toString()); return result;
+    }
+    private java.util.Map<String,Object> row(JsonNode origin) {
+        var rows=jdbc.queryForList("""
+            SELECT c.command_text,c.receipt_text,c.activation_text,c.status,c.to_round,c.recovery_package_id,
+              s.receipt_text applied_receipt,s.status applied_status,p.payload_sha256,BIN_TO_UUID(s.freeze_device_id) device_id,BIN_TO_UUID(s.operator_id) operator_id,
+              BIN_TO_UUID(c.approved_by) approved_by,BIN_TO_UUID(c.requested_by) requested_by
+            FROM order_continuation c JOIN submission s ON s.assignment_id=c.new_assignment_id
+              JOIN submission_payload p ON p.submission_id=s.id WHERE c.id=UUID_TO_BIN(?) AND s.id=UUID_TO_BIN(?)
+            """,origin.path("continuationId").asText(),origin.path("submissionId").asText());
+        if(rows.size()!=1) throw CorrectionCommand.corrupt(); var row=rows.getFirst();
+        if(row.get("receipt_text")==null || row.get("activation_text")==null
+            || !java.util.Set.of("SUCCEEDED","ABORTED","REVIEW_REQUIRED","REJECTED").contains(row.get("applied_status"))
+            || !java.util.Set.of("ACTIVATED","COMPLETED").contains(row.get("status"))) throw CorrectionCommand.corrupt();
+        return row;
+    }
+    private JsonNode applied(JsonNode origin,JsonNode body,java.util.Map<String,Object> row) {
+        JsonNode terminal=null;
+        if(java.util.Set.of("SUCCEEDED","ABORTED").contains(row.get("applied_status"))) {
+            if(row.get("applied_receipt")==null) throw CorrectionCommand.corrupt();
+            terminal=receipt(row.get("applied_receipt"),"acrylic-pda-receipt");
+            if(!terminal.path("status").asText().equals(row.get("applied_status"))
+                || !terminal.path("submissionId").equals(origin.path("submissionId")) || !terminal.path("orderId").equals(origin.path("orderId"))
+                || !terminal.path("payloadSha256").asText().equals(row.get("payload_sha256"))) throw CorrectionCommand.corrupt();
+        }
+        var original=applications.read(origin,body,row.get("payload_sha256").toString());
+        if(original==null) { if(terminal==null) throw CorrectionCommand.corrupt();return terminal; }
+        if(!original.path("operatorId").asText().equals(row.get("operator_id"))) throw CorrectionCommand.corrupt();return original;
     }
     private JsonNode receipt(Object text,String audience) {
         var receipt=SubmissionJson.parse(text.toString()); signatures.verify(receipt,"signedReceipt",audience,"receipt"); return receipt;
@@ -69,7 +88,7 @@ final class FormalQuarantineApplication {
             || !approval.path("assignmentId").equals(origin.path("appliedAssignmentId")) || !activation.at("/assignment/id").equals(origin.path("appliedAssignmentId"))
             || !activation.path("payloadSha256").equals(recovery.path("payloadSha256"))
             || !applied.path("submissionId").equals(origin.path("submissionId")) || !applied.path("orderId").equals(origin.path("orderId"))
-            || !applied.path("payloadSha256").asText().equals(hash) || !java.util.Set.of("SUCCEEDED","ABORTED").contains(applied.path("status").asText())) throw CorrectionCommand.corrupt();
+            || !applied.path("payloadSha256").asText().equals(hash) || !java.util.Set.of("SUCCEEDED","ABORTED","DISPOSITIONS_APPLIED").contains(applied.path("status").asText())) throw CorrectionCommand.corrupt();
     }
     private void continuation(JsonNode origin,JsonNode recovery,JsonNode command,JsonNode body,JsonNode approval,JsonNode activation,String actor) {
         var expected=SubmissionJson.object().put("orderId",origin.path("orderId").asText()); expected.set("command",command);

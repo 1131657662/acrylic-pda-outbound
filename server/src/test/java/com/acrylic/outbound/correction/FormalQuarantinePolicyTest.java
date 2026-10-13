@@ -21,6 +21,12 @@ class FormalQuarantinePolicyTest {
         facts.putArray("dispatches");facts.putArray("ledger");return facts;
     }
     @Test void originalFormalAppliedOwnerDoesNotCreateATemporarySource() { assertThatCode(()->QuarantinePolicy.eligible(facts())).doesNotThrowAnyException(); }
+    @Test void independentlySignedApplicationAllowsAnUnclosedSourceToKeepItsOtherWork() {
+        var facts=facts();var origin=(ObjectNode)facts.path("origin");origin.put("sourceClosed",false);
+        origin.putObject("originalReceipt").putObject("application").putObject("receipt")
+            .put("status","DISPOSITIONS_APPLIED").put("signedApplication","verified-original-signature");
+        assertThatCode(()->QuarantinePolicy.eligible(facts)).doesNotThrowAnyException();
+    }
     @ParameterizedTest @ValueSource(strings={"orderId","cycle","dispositionEvidenceId","submissionId","pcDispositionId","sourceScopeId","temporaryContinuationId"})
     void otherOwnersCannotBeRemoved(String field) {
         var facts=facts();((ObjectNode)facts.at("/owners/0")).put(field,"other");assertThatThrownBy(()->QuarantinePolicy.eligible(facts)).isInstanceOf(BusinessException.class);

@@ -13,7 +13,8 @@ final class FormalQuarantineHttpTampering {
         change(jdbc,()->jdbc.update("UPDATE physical_disposition_evidence SET record_sha256=UNHEX(REPEAT('0',64)) WHERE id=UUID_TO_BIN(?)",id),actor,path);
         change(jdbc,()->jdbc.update("UPDATE physical_disposition_evidence SET applied_submission_id=NULL WHERE id=UUID_TO_BIN(?)",id),actor,path,404);
         change(jdbc,()->jdbc.update("UPDATE order_continuation SET activation_text=JSON_SET(activation_text,'$.status','UNKNOWN') WHERE id=UUID_TO_BIN(?)",origin.path("continuationId").asText()),actor,path);
-        change(jdbc,()->jdbc.update("UPDATE submission SET receipt_text=JSON_SET(receipt_text,'$.status','UNKNOWN') WHERE id=UUID_TO_BIN(?)",origin.path("submissionId").asText()),actor,path);
+        if(origin.path("sourceClosed").asBoolean())
+            change(jdbc,()->jdbc.update("UPDATE submission SET receipt_text=JSON_SET(receipt_text,'$.status','UNKNOWN') WHERE id=UUID_TO_BIN(?)",origin.path("submissionId").asText()),actor,path);
     }
     private static void change(JdbcTemplate jdbc,Runnable change,CorrectionAttachmentHttp actor,String path) throws Exception { change(jdbc,change,actor,path,409); }
     private static void change(JdbcTemplate jdbc,Runnable change,CorrectionAttachmentHttp actor,String path,int status) throws Exception {

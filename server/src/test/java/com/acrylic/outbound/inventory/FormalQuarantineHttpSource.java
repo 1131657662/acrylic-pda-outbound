@@ -19,6 +19,7 @@ public final class FormalQuarantineHttpSource {
     public final Path evidence;
     public final JdbcTemplate jdbc;
     private final SubmissionFixture fixture;
+    public ObjectNode appliedBody;
     public FormalQuarantineHttpSource(WebApplicationContext context,Path attempt,JdbcTemplate jdbc) throws Exception {
         this.jdbc=jdbc; evidence=attempt.resolve("formal-quarantine-http");Files.createDirectory(evidence);
         var passwords=context.getBean(PasswordEncoder.class);var identity=IdentityFixture.create(jdbc,passwords,"WAREHOUSE_ADMIN");
@@ -31,6 +32,9 @@ public final class FormalQuarantineHttpSource {
         bale=fixture.body.at("/scans/0/baleId").asText();
     }
     public void originalsThroughHttp() throws Exception {
+        originalsThroughHttp(false);
+    }
+    public void originalsThroughHttp(boolean open) throws Exception {
         var maker=new CorrectionAttachmentHttp(makerUser,evidence.resolve("maker-original.log"));var checker=new CorrectionAttachmentHttp(checkerUser,evidence.resolve("checker-original.log"));
         var pda=new FormalQuarantinePdaHttp(fixture.tokens,evidence.resolve("pda-original.log"));
         fixture.body.put("shortShipmentReason","ISOLATED original review");
@@ -47,10 +51,20 @@ public final class FormalQuarantineHttpSource {
         var activate=SubmissionJson.object().put("payloadSha256",SubmissionJson.sha(recall.body)).put("retainedManifestSha256",ticket.path("retainedManifestSha256").asText())
             .put("nextOrderScanSeq",ticket.path("nextOrderScanSeq").asText()).put("planSha256",fixture.assignment.path("planSha256").asText());
         var activation=pda.post("/continuations/"+ticket.path("continuationId").asText()+"/activate",activate);var applied=applied(recall,activation);
-        pda.post("/orders/"+order+"/submissions",applied);checker.post("/submissions/"+applied.path("submissionId").asText()+"/review",UUID.randomUUID().toString(),review(applied,"APPROVE"),200);
+        appliedBody=applied;
+        if(open) applicationRollback(pda,applied);
+        pda.post("/orders/"+order+"/submissions",applied);
+        if(!open) checker.post("/submissions/"+applied.path("submissionId").asText()+"/review",UUID.randomUUID().toString(),review(applied,"APPROVE"),200);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE bale_id=UUID_TO_BIN(?) AND state='QUARANTINED'",Integer.class,bale)).isEqualTo(1);
         Files.writeString(evidence.resolve("browser-input.json"),SubmissionJson.canonical(SubmissionJson.object().put("warehouseId",warehouse).put("orderId",order).put("baleId",bale)
             .put("makerUsername",makerUser).put("checkerUsername",checkerUser).put("password","Test-password-123")));
+    }
+    private void applicationRollback(FormalQuarantinePdaHttp pda,ObjectNode body) throws Exception {
+        jdbc.execute("CREATE TRIGGER application_tail_fail BEFORE INSERT ON formal_disposition_application FOR EACH ROW BEGIN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='ISOLATED application receipt tail failure'; END");
+        pda.post("/orders/"+order+"/submissions",body,500);jdbc.execute("DROP TRIGGER application_tail_fail");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM physical_disposition_evidence WHERE applied_submission_id IS NOT NULL",Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM formal_disposition_application",Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM submission_payload WHERE submission_id=UUID_TO_BIN(?)",Integer.class,body.path("submissionId").asText())).isZero();
     }
     private String version(CorrectionAttachmentHttp actor) throws Exception {
         return SubmissionJson.parse(actor.get("/orders/"+order+"/change-requests?warehouseId="+warehouse,200)).at("/data/request/rowVersion").asText();
@@ -91,7 +105,7 @@ public final class FormalQuarantineHttpSource {
         body.withArray("events").add(last.deepCopy().put("id",UUID.randomUUID().toString()).put("assignmentId",assignment.path("id").asText()).put("localSeq","9").put("type","FROZEN").put("detail",id));return body;
     }
     public JsonNode originals() {
-        var result=SubmissionJson.object();for(String table:java.util.List.of("physical_disposition_evidence","formal_disposition_receipt","order_continuation","recovery_package","submission","submission_payload","order_result_version","dispatch_record","inventory_ledger")) {
+        var result=SubmissionJson.object();for(String table:java.util.List.of("physical_disposition_evidence","formal_disposition_receipt","formal_disposition_application","order_continuation","recovery_package","submission","submission_payload","order_result_version","dispatch_record","inventory_ledger")) {
             var rows=result.putArray(table);jdbc.queryForList("SELECT * FROM "+table).forEach(row->{
                 var encoded=SubmissionJson.object();new java.util.TreeMap<>(row).forEach((key,value)->{
                     if(value==null)encoded.putNull(key);else encoded.put(key,value instanceof byte[] bytes?java.util.HexFormat.of().formatHex(bytes):value.toString());

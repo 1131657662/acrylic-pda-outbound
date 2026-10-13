@@ -35,7 +35,11 @@ test('original physical approval stays unsigned while original STOP and applicat
   assert.equal(proof.recovery.stop.status,'STOPPED');assert.ok(proof.recovery.stop.signedReceipt);
   assert.equal(proof.application.approval.status,'APPROVED');assert.ok(proof.application.approval.signedReceipt);
   assert.equal(proof.application.activation.status,'ACTIVATED');assert.ok(proof.application.activation.signedReceipt);
-  assert.equal(proof.application.receipt.status,'SUCCEEDED');assert.ok(proof.application.receipt.signedReceipt);
+  if(proof.application.receipt.status==='DISPOSITIONS_APPLIED') {
+    assert.ok(proof.application.receipt.signedApplication);assert.equal(proof.application.receipt.signedReceipt,undefined);
+    assert.equal(proof.application.receipt.localDeletionAllowed,false);
+    assert.equal(proof.application.receipt.mayResumeScanning,false);assert.equal(proof.application.receipt.stockReleased,false);
+  } else { assert.equal(proof.application.receipt.status,'SUCCEEDED');assert.ok(proof.application.receipt.signedReceipt); }
   assert.equal(proof.physicalApproval.command.payloadSha256,proof.recovery.payloadSha256);
   assert.equal(proof.application.receipt.payloadSha256,proof.application.payloadSha256);
   assert.equal(createHash('sha256').update(proofBytes).digest('hex'),approved.receipt.context.facts.origin.originalReceiptSha256);

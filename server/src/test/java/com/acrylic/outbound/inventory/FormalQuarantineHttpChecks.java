@@ -44,7 +44,9 @@ public final class FormalQuarantineHttpChecks {
         assertThat(source.jdbc.queryForObject("SELECT dispatch_cycle FROM bale WHERE id=UUID_TO_BIN(?)",Integer.class,source.bale)).isEqualTo(1);
         assertThat(source.jdbc.queryForObject("SELECT COUNT(*) FROM dispatch_record WHERE bale_id=UUID_TO_BIN(?)",Integer.class,source.bale)).isZero();
         assertThat(source.jdbc.queryForObject("SELECT COUNT(*) FROM inventory_ledger WHERE bale_id=UUID_TO_BIN(?)",Integer.class,source.bale)).isZero();
-        assertThat(source.jdbc.queryForObject("SELECT COUNT(*) FROM dispatch_record WHERE order_id=UUID_TO_BIN(?)",Integer.class,source.order)).isEqualTo(1);
+        String status=source.jdbc.queryForObject("SELECT status FROM submission WHERE id=UUID_TO_BIN(?)",String.class,source.appliedBody.path("submissionId").asText());
+        assertThat(source.jdbc.queryForObject("SELECT COUNT(*) FROM dispatch_record WHERE order_id=UUID_TO_BIN(?)",Integer.class,source.order)).isEqualTo(status.equals("SUCCEEDED")?1:0);
+        if(!status.equals("SUCCEEDED")) assertThat(source.jdbc.queryForObject("SELECT COUNT(*) FROM bale_commitment WHERE order_id=UUID_TO_BIN(?) AND state='REVIEW_RESERVED'",Integer.class,source.order)).isEqualTo(1);
     }
     private void selfApproval(ObjectNode approval) throws Exception {
         source.jdbc.update("INSERT INTO user_role SELECT u.id,r.id FROM app_user u CROSS JOIN role r WHERE u.username=? AND r.code='SUPERVISOR'",source.makerUser);

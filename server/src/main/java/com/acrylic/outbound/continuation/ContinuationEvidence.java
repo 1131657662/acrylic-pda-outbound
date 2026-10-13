@@ -13,7 +13,9 @@ import static com.acrylic.outbound.continuation.ContinuationChecks.conflict;
 @Component
 public class ContinuationEvidence {
     private final ContinuationStore store;private final AssignmentStore assignments;private final JdbcTemplate jdbc;private final ContinuationChecks checks;private final DispositionStock dispositions;
-    public ContinuationEvidence(ContinuationStore store,AssignmentStore assignments,JdbcTemplate jdbc,ContinuationChecks checks,DispositionStock dispositions) { this.store=store;this.assignments=assignments;this.jdbc=jdbc;this.checks=checks;this.dispositions=dispositions; }
+    private final DispositionApplicationReceipt applications;
+    public ContinuationEvidence(ContinuationStore store,AssignmentStore assignments,JdbcTemplate jdbc,ContinuationChecks checks,DispositionStock dispositions,
+        DispositionApplicationReceipt applications) { this.store=store;this.assignments=assignments;this.jdbc=jdbc;this.checks=checks;this.dispositions=dispositions;this.applications=applications; }
     public Map<String,AssignmentStore.View> origins(AssignmentStore.View current,JsonNode body) {
         var result=new HashMap<String,AssignmentStore.View>();result.put(current.id(),current);var h=store.forAssignment(UUID.fromString(current.id()));
         if(h==null) { require(body.path("continuationId").isNull() && DispositionProofs.rows(body).isEmpty(),"首轮不可使用续作票据或处置证明");return result; }
@@ -52,5 +54,6 @@ public class ContinuationEvidence {
                 """,Ids.bytes(head.control().id()),bale,Ids.bytes(h.order()),Ids.bytes(h.id()),cycle);
             conflict(moved==1,"RETAINED_SET_MISMATCH","保留包占用已变化，停止接收新批次");
         }
+        applications.record(head,body,proofs);
     }
 }

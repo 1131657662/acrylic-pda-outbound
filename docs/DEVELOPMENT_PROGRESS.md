@@ -2,6 +2,8 @@
 
 # 开发验收索引
 
+- [E04/P06未终结FORMAL实物应用与解隔离](history/GOAL_E04_P06_OPEN_FORMAL_QUARANTINE_2026-10-13.md)：原事务内不可变独立应用签名、原件核验及生产默认关闭；普通定向/bootJar、最终真实HTTP、固定公钥SQL、Web/Chrome双角色/原键/窄屏、新JVM与原FORMAL非空守恒/原字节、账务及终态组合通过；其他保留包继续待处理，D09/D10及总目标未完成。
+
 - [E04/P06历史贡献与新周期解隔离](history/GOAL_E04_P06_QUARANTINE_HISTORY_2026-10-13.md)：原退货/撤销、实际反向贡献及独立库存恢复逐周期核验，摘要和受限原件下载；371项定向/bootJar、真实HTTP/Chrome/新JVM、旧TEMP/PC非空原字节、固定钥SQL及受影响账务组合通过。容量产品缺陷和来源夹具失败均保留；不计未终结FORMAL、D09/D10或总目标整体完成。
 
 - [E04/P06未关闭TEMP原逐包解隔离](history/GOAL_E04_P06_OPEN_TEMP_QUARANTINE_2026-10-13.md)：原Android退审来源及原逐包签名/引用固定、实际附件和独立批准，仅解除精确owner；普通定向/真实HTTP/非空兼容/Chrome/新JVM/固定公钥及受影响账务组合通过。原来源不关闭、库存账/周期保持；历史贡献、D09/D10及总目标继续未完成。
