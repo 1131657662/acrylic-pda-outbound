@@ -1,10 +1,11 @@
 import { z } from 'zod';
 import { jsonDigest, physicalResultSchema, type PhysicalOwner } from './physical-contracts';
+import { conflictResultSchema, verifyAssociationConflict } from './conflict-contracts';
 
 const hash = z.string().regex(/^[0-9a-f]{64}$/);
 export const associationEvidenceSchema = z.object({ contextSha256: hash, physicalCheckId: z.uuid(), targetOrderId: z.uuid(),
   candidateExclusions: z.array(z.object({ orderId: z.uuid(), reason: z.string().trim().min(1).max(500) }).strict()).max(2000),
-  reason: z.string().trim().min(1).max(500) }).strict()
+  reason: z.string().trim().min(1).max(500), conflictDecisionId: z.uuid().optional() }).strict()
   .refine(body => new Set(body.candidateExclusions.map(row => row.orderId)).size === body.candidateExclusions.length)
   .refine(body => body.candidateExclusions.every(row => row.orderId !== body.targetOrderId));
 export const associationResultSchema = z.object({
@@ -15,6 +16,7 @@ export const associationResultSchema = z.object({
     pendingReconciliation: z.literal(true), newCollectionAuthorized: z.literal(false), stockAvailable: z.literal(false),
     businessProcessed: z.literal(false), releaseAllowed: z.literal(false), localDeletionAllowed: z.literal(false) }).strict(),
   evidence: associationEvidenceSchema, originalContext: z.record(z.string(), z.unknown()), physicalEvidence: physicalResultSchema,
+  conflictEvidence: conflictResultSchema.optional(),
 }).strict();
 export type AssociationEvidence = z.infer<typeof associationEvidenceSchema>;
 export type AssociationResult = z.infer<typeof associationResultSchema>;
@@ -35,4 +37,6 @@ export async function verifyAssociation(result: AssociationResult, owner: Physic
       p.receipt.contextSha256 !== r.contextSha256 || p.evidence.contextSha256 !== r.contextSha256 ||
       p.receipt.requestSha256 !== await jsonDigest(p.evidence) || r.contextSha256 !== await jsonDigest(p.originalContext))
     throw new Error('关联回执与原请求、原件、目标或实物依据不一致，请保留原键核对。');
+  await verifyAssociationConflict({ conflict: result.conflictEvidence, decisionId: result.evidence.conflictDecisionId,
+    contextSha256: r.contextSha256, owner });
 }

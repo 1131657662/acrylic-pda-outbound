@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-14
 branch: codex/development
-head: b1e53def
-dirty_entries: 82
+head: 5bb6f8b9
+dirty_entries: 78
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.71.0, paths: 200, flyway: V97, migrations: 97 }
@@ -49,7 +49,10 @@ server: { contract: 0.71.0, paths: 200, flyway: V97, migrations: 97 }
 - [关联消费完整冲突决定L1](history/GOAL_E06_CONFLICT_ASSOCIATION_L1_2026-10-14.md)：173项/bootJar、契约、1529非空/双默认开关真实零写、显式原决定正向/权限/首次并发/异文/末SQL回滚/实际锁后撤权/自审拒绝/引用不可变、固定外部钥/新JVM及全表守恒通过。2431输入仅补可选响应契约行，其余源码/编译类/迁移/JAR绑定；仅服务证据单元，网页与L2/L3待跑。
 - 1529已dump/hash/认证停机/零监听消费者保全；preserve-1529-e06-conflict-association-l1-01中344文件长度/hash保持，217适用文件压缩，D增205357056字节，无删除。截点C/D余量50289782784/21830660096字节，预览/1519保留，无重型在途。
 - 1529夹具失败保留：跨原件引用先404、补证权限码误断言、消费者实物回执无newCollectionAuthorized。完整零写/已知登录逐行补证后仅续未跑业务，按各回执契约修后固定钥消费通过；原日志/断言不记通过，旧根因计数保留。
-- 下一关联消费HTTP正向/并发/回滚/权限/锁后撤权/固定钥/新JVM→冲突网页→短装/多任务及E06组合，再E07恢复/外置副本、E08留存/UI、E09候选。第8节全部实际满足前目标active且不complete，D/O/U整体未完。
+- 实际HEAD/远端5bb6f8b9afd5f953773b7a8abb032e83a1703512；服务关联消费已验，下一网页显式引用完整冲突决定→冲突登记网页→短装/多任务及E06组合，再E07恢复/外置副本、E08留存/UI、E09候选。目标active且不complete，D/O/U整体未完。
+- 压缩后核对：唯一写者仍本聊天，旧聊天idle/interrupted；全脏快照e06-audit-resume-20261014-conflict-web01。19332/19436无监听，预览/1519保持，C/D可用50289582080/21828087808字节；新网页切片尚未验收。
+- [网页显式冲突关联L1](history/GOAL_E06_CONFLICT_ASSOCIATION_WEB_L1_2026-10-14.md)：10项定向真实回执消费/类型构建/契约、1530真实Chrome正向/缺引用阻断/丢响应双页原键/空本地回读/390宽及全表守恒通过。浏览器输入全匹配；仅网页开发备份，冲突登记/短装/多任务与E06 L2/L3继续。
+- 1530已dump/hash/认证停机，preserve-1530-e06-conflict-association-web-l1-01中344文件长度hash保持、217压缩，D余量增204959744字节，零监听/消费者；无删除，预览/1519不动。post-browser01夹具GBK解码失败日志保留，显式UTF8后同一全表快照补key/引用断言通过，未重跑业务，旧根因计数保留。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。

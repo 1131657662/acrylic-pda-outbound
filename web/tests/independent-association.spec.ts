@@ -3,7 +3,7 @@ import type { Page, BrowserContext } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { z } from 'zod';
 const inputSchema = z.object({ username: z.string(), password: z.string(), relayId: z.uuid(), warehouseId: z.uuid(),
-  targetOrderId: z.uuid(), physicalCheckId: z.uuid(), evidence: z.string() });
+  targetOrderId: z.uuid(), physicalCheckId: z.uuid(), conflictDecisionId: z.uuid().optional(), evidence: z.string() });
 interface Command { key: string | undefined; body: string | null; epoch: string | undefined; status: number }
 function input(): z.infer<typeof inputSchema> {
   const path = process.env.INDEPENDENT_ASSOCIATION_WEB_INPUT;
@@ -42,6 +42,11 @@ async function prepareIntent(page: Page): Promise<void> {
   const target = page.locator(`.association-candidate`).filter({ has: page.locator(`input[value="${f.targetOrderId}"]`) });
   await target.locator('.el-radio').click(); await expect(target.getByRole('radio')).toBeChecked();
   await page.getByRole('button', { name: '保存人工关联依据', exact: true }).click();
+  if (f.conflictDecisionId) {
+    await expect(page.getByText('须显式引用覆盖全部跨任务冲突的原决定。')).toBeVisible();
+    await page.getByLabel('关联冲突决定编号').fill(f.conflictDecisionId);
+    await page.getByRole('button', { name: '保存人工关联依据', exact: true }).click();
+  }
   await expect(page.getByText('请填写有效实物回执、关联说明和其余每个候选的排除理由。')).toBeVisible();
   for (const field of await page.getByRole('textbox', { name: /^排除候选 / }).all()) await field.fill('逐项核对：该候选不是本次实物对应正式单');
 }
@@ -57,6 +62,7 @@ test('lost association response restores the original intent across Chrome tabs 
   const other = await context.newPage(); await openReview(other);
   await Promise.all([page, other].map(tab => tab.getByRole('button', { name: '按原键恢复关联结果', exact: true }).click()));
   for (const tab of [page, other]) await expect(tab.getByText(/人工关联已登记，仍待对账；未记账、未放行。回执/)).toBeVisible();
+  if (f.conflictDecisionId) await expect(page.getByText(`原冲突决定 ${f.conflictDecisionId}`, { exact: false })).toBeVisible();
   expect(commands.length).toBe(3); expect(new Set(commands.map(row => row.key)).size).toBe(1);
   expect(new Set(commands.map(row => row.body)).size).toBe(1); expect(new Set(commands.map(row => row.epoch)).size).toBe(1);
   expect(commands.every(row => row.status === 200)).toBe(true);
