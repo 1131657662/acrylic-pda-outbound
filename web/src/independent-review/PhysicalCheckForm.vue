@@ -93,7 +93,7 @@ onUnmounted(() => { generation++; });
     <template v-if="saved?.command">
       <p>原检查：{{ saved.command.body.area }} · {{ saved.command.body.checkedAt }} · {{ saved.command.body.packages.length }}包</p>
       <p>{{ saved.command.body.reason }}</p>
-      <p v-if="saved.command.result" role="status">实物观察已登记，仍待对账；未关联、未记账。回执 {{ saved.command.result.receiptId }}</p>
+      <p v-if="saved.command.result" role="status">实物观察已登记，仍待对账；关联结果见下方，未记账。回执 {{ saved.command.result.receiptId }}</p>
       <template v-else><p>原登记结果未明。已保存原请求，刷新后仍按原键恢复。</p>
         <el-button :disabled="busy || selfCheck" @click="run(record)">按原键恢复登记结果</el-button></template>
     </template>

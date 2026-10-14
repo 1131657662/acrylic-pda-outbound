@@ -44,13 +44,13 @@ test('supervisor uploads actual file, records all packages and recovers original
   await page.screenshot({ path: `${f.evidence}/390-pending.png`, fullPage: true });
   await page.reload(); await page.getByRole('button', { name: '读取完整核对依据', exact: true }).click();
   await page.getByRole('button', { name: '按原键恢复登记结果', exact: true }).click();
-  await expect(page.getByText(/实物观察已登记，仍待对账；未关联、未记账。回执/)).toBeVisible();
+  await expect(page.getByText(/实物观察已登记，仍待对账；关联结果见下方，未记账。回执/)).toBeVisible();
   expect(keys.length).toBe(2); expect(keys[0]).toBe(keys[1]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: `${f.evidence}/390-recovered.png`, fullPage: true });
   const saved = await page.evaluate(() => Object.entries(localStorage).find(([key]) => key.startsWith('acrylic.independent-physical.v1:'))?.[1]);
   if (!saved) throw new Error('Original command disappeared'); writeFileSync(`${f.evidence}/browser-original-command.json`, saved);
   await page.reload(); await page.getByRole('button', { name: '读取完整核对依据', exact: true }).click();
-  await expect(page.getByText(/实物观察已登记，仍待对账；未关联、未记账。回执/)).toBeVisible();
+  await expect(page.getByText(/实物观察已登记，仍待对账；关联结果见下方，未记账。回执/)).toBeVisible();
   writeFileSync(`${f.evidence}/browser-key-recovery.json`, JSON.stringify({ keys, syntheticPhysical: true, actualHttp: true, width: 390 }));
 });

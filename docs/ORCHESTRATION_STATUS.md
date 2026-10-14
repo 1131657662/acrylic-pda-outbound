@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-14
 branch: codex/development
-head: dd22120e
-dirty_entries: 85
+head: 3da3e81a
+dirty_entries: 82
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.69.0, paths: 198, flyway: V95, migrations: 95 }
@@ -25,7 +25,7 @@ server: { contract: 0.69.0, paths: 198, flyway: V95, migrations: 95 }
 ## 环境与磁盘
 - 保留预览1494库19330/PID11308、API19435/PID36640、worker1192、Vite5174/PID37712；保留实物1519库19331/PID13268、API19434/PID40236（e06-physical-runtime-final03/server.jar）。共享3306/ADB5037、AVD5562/5564及Keystore保持。
 - 补验1520–1523失败库均dump/hash认证停机并保留；本轮1524新建19332/19436已完成实物补验后dump/hash/认证停机，保全.local/goal-20261014/preserve-1524-e06-physical-01。零监听/消费者；339个文件长度/hash保持，仅压缩212个适用文件，无删除。无重型任务在途。
-- 收尾C/D可用52144975872/23611457536字节；1525恢复失败/1526关联L1均dump/hash认证停机保全，1526压缩213文件/340文件长度hash保持，D余量增205082624字节；preserve-1526-e06-association-l1-01/disks-after.json。新增产物优先D盘，临时仅子进程；只压缩用途结束、停机无消费者且值得压缩的未压缩文件，预览/仍消费库保持。
+- 收尾C/D可用52130824192/23243595776字节；1525失败、1526服务L1及1527网页L1均dump/hash认证停机保全。1527压缩213文件/340文件长度hash保持，D余量增205086720字节；preserve-1527-e06-association-web01/disks-after.json。新增产物D盘，临时仅子进程；仅压缩结束/停机无消费者的适用文件，预览/仍消费库保持。
 - [进度与清理](history/DEVELOPMENT_PROGRESS_AND_CLEANUP_2026-10-14.md)释放约8.23GiB，原库零删除、压缩原字节保持；证据.local/progress-cleanup-20261014。仅文档/清理，不计业务通过。失败库/binlog/dump、原件/XML/HTTP签名/原资料/唯一产物与最终APK保留。
 
 ## 已验切片与继承失败
@@ -41,7 +41,8 @@ server: { contract: 0.69.0, paths: 198, flyway: V95, migrations: 95 }
 - [SQL修复/最小验收](history/GOAL_E06_SQL_REPAIR_2026-10-14.md)：15项工具单测与真实JDBC/错误目标身份消费通过；记录每条原输出/参数/状态与JVM原stdout/stderr/exit。DELETE提示误比及认证停机进程退出竞态属明确运行器失败，原日志保留，定向续验通过。
 - [人工关联服务端首切片L1](history/GOAL_E06_ASSOCIATION_L1_2026-10-14.md)：137项/bootJar、契约、1526非空/default-off、HTTP正向/首次同键并发/异文/末SQL原键恢复、实际锁等待后撤权、固定外部钥Python/新JVM及库存/跨机拒绝通过。仅新增证据台账、生产默认关闭，无正式提交/库存/账务变化。
 - 新失败保留：unit01来源枚举错误/输入中途变化；1525恢复wrapper空表预条件/漏字符集，失败库保全；1526复合trigger夹具SQL1064、登录审计严格白名单遗漏均保存并补逐行证据。API重启覆盖旧console日志的限制明列，不称原日志完整。旧失败计数不清零。
-- 下一人工关联网页原键产品链→专用跨机冲突处置正向及E06组合，再E07恢复/外置副本、E08留存/UI、E09候选。首切片不支持短装/多任务，相关必做范围仍待实现验收。仅实物单元收口；第8节全部实际满足前目标active且不complete，D/O/U整体未完。
+- [人工关联网页L1](history/GOAL_E06_ASSOCIATION_WEB_L1_2026-10-14.md)：六项定向测试/构建、1527真实Chrome完整分页/缺排除阻断/丢响应/双页同键/空本地读回、严格全量业务守恒通过；服务/契约固定输入未变复用。首轮加载器/点击夹具及审计解码/UTF8失败原日志保留，修后定向通过；非完整E06/UI重设计收口。交付回执.local/goal-20261014/e06-association-web-delivery01。
+- 下一专用跨机冲突处置正向→短装/多任务适用路径及E06组合，再E07恢复/外置副本、E08留存/UI、E09候选。相关必做范围仍待实现验收；第8节全部实际满足前目标active且不complete，D/O/U整体未完。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。

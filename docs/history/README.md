@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E06人工关联网页L1](GOAL_E06_ASSOCIATION_WEB_L1_2026-10-14.md)：真实Chrome完整分页/双页原键/丢响应与空本地存储读回、数据库守恒；[方案](GOAL_E06_ASSOCIATION_WEB_DESIGN_2026-10-14.md)，冲突处置与组合继续，非完整E06通过。
+
 - [E06人工关联服务端首切片L1](GOAL_E06_ASSOCIATION_L1_2026-10-14.md)：真实正向/事务/权限/原键与固定钥消费；[方案](GOAL_E06_ASSOCIATION_DESIGN_2026-10-14.md)，网页及跨机冲突处置继续，非完整E06通过。
 
 - [E06实物登记限定补验](GOAL_E06_PHYSICAL_ACCEPTANCE_2026-10-14.md)：新副本严格非空/default-off/组合守恒及末SQL/并发/锁后撤权；[SQL证据/JDBC修复](GOAL_E06_SQL_REPAIR_2026-10-14.md)，原失败保全且计数继承，人工关联和冲突继续。

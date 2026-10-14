@@ -9,6 +9,7 @@ import { matchesOriginal, reviewSchema } from './contracts';
 import type { IndependentReview, ReviewSection } from './contracts';
 import IndependentEvidence from './IndependentEvidence.vue';
 import PhysicalCheckForm from './PhysicalCheckForm.vue';
+import AssociationForm from './AssociationForm.vue';
 const session = useSessionStore(); const route = useRoute();
 const relayId = ref(typeof route.query.relay === 'string' ? route.query.relay : ''); const section = ref<ReviewSection>('candidates');
 const data = ref<IndependentReview | null>(null); const busy = ref(false); const error = ref(''); const page = ref(1);
@@ -39,7 +40,7 @@ onUnmounted(() => { generation++; });
 <template>
   <WorkspaceLayout title="独立采集核对" :busy="busy" :warehouse-locked="busy">
     <section class="panel">
-      <h1>独立采集核对</h1><el-tag type="warning">待实物对账 · 未关联 · 未记账</el-tag>
+      <h1>独立采集核对</h1><el-tag type="warning">待对账 · 未记账</el-tag>
       <p>按已接收原件编号核对原独立采集、完整候选与库存，再由独立主管登记实物观察。</p>
       <el-alert v-if="error" :title="error" type="error" :closable="false" />
       <el-input v-model="relayId" aria-label="独立原件中转编号" placeholder="电脑中转接收回执中的UUID" maxlength="36" :disabled="busy || !allowed" />
@@ -55,7 +56,7 @@ onUnmounted(() => { generation++; });
       <h2>{{ data.original.task.vehicleNo }} · 原任务待对账</h2>
       <p>有效 {{ data.original.closure.active }}包 / VOID {{ data.original.closure.void }}包 / 短装 {{ data.original.closure.shortfall }}包</p>
       <p v-if="data.original.closure.shortfallReason">结束原因：{{ data.original.closure.shortfallReason }}</p>
-      <p>历史签发、原登记设备钥及完整结束已核验。实物未核验，尚未人工关联。</p>
+      <p>历史签发、原登记设备钥及完整结束已核验。下方实物与人工关联回执分别显示登记结果。</p>
       <p>候选 {{ data.summary.candidateTotal }}单 · 库存有阻断 {{ data.summary.inventoryBlocked }}包 · 跨任务重叠 {{ data.summary.crossTaskConflicts }}项</p>
       <p>固定候选日期 {{ data.summary.fromDate }} 至 {{ data.summary.throughDate }}。本次只观察已接收原件，其他设备未外置事实仍须核对。</p>
       <p v-if="data.review.currentSubjectState !== 'UNCHANGED'">原人员、设备或授权现状已变化；历史原件保留，不授予新增采集权。</p>
@@ -66,6 +67,7 @@ onUnmounted(() => { generation++; });
       <details><summary>查看原件及核对摘要</summary><p>原任务 {{ data.original.taskId }}</p><p>原设备 {{ data.original.deviceId }}</p>
         <p>原采集人 {{ data.original.operatorId }}</p><p>原包 {{ data.original.archiveSha256 }}</p><p>核对 {{ data.contextSha256 }}</p></details>
       <PhysicalCheckForm :key="`${data.original.relayId}/${data.contextSha256}`" :data="data" />
+      <AssociationForm :key="`association/${data.original.relayId}/${data.contextSha256}`" :data="data" />
     </section>
   </WorkspaceLayout>
 </template>
