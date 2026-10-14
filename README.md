@@ -16,11 +16,14 @@ Web“PDA 设备管理”已支持8位短码登记：PDA自动提交本机公钥
 
 ## 先看这里
 
+- [本机历史资料归档位置](docs/LOCAL_ARCHIVE_LOCATIONS.md)：旧工作区、快照及历史测试资料从 D 盘迁往 E 盘后的查找入口、校验与恢复说明。
+
 仓库保存源码及文档；原始业务样本、服务器资产清单、本机凭据、APK和原始测试产物不随Git上传。克隆后的资料准备见[本地资料说明](docs/GIT_WORKFLOW.md#克隆后的本地资料)。本文的 `outputs/` 和 `demo-artifacts/` 链接指本机构建产物，安装包另按测试版本规则发布。
 
 - [仓库、分支与提交约定](docs/GIT_WORKFLOW.md)：开发分支、稳定分支、每次提交说明及测试版本发布规则。
 - [后续开发路线与跨会话衔接](docs/DEVELOPMENT_ROADMAP.md)：已确认的十步顺序、当前接续位置及发送“继续”时的执行规则；实际证据见[开发进度](docs/DEVELOPMENT_PROGRESS.md)。
 - [十步完成度统计](docs/history/TEN_STEP_COMPLETION_AUDIT_2026-10-11.md)与[无人值守开发计划](docs/AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)：按修订范围统计，方案自主决策，同根因重复失败保全暂缓，按依赖继续独立工作。
+- E07 恢复与 O05 应急副本：电脑工具只复制已核验的加密原包到新目录，写入后回读并生成独立取回报告；取回须提供副本目录外另保管的 `copy.json` SHA256。记录会明确区分同机演练与真实外置介质，默认不声称外置保管、业务回执或允许本地删除。专项结果见 [E07/O05 验收](docs/history/GOAL_E07_RESTORE_COPY_ACCEPTANCE_2026-10-14.md)。
 - [PDA应用检查更新与安全升级](docs/PDA_APP_UPDATE_DESIGN.md)：更新流程、渠道签名边界和作业保护；App内更新已有[专项交付](docs/PDA_APP_UPDATE_GUIDE.md)，第9节“下载 PDA 应用”固定入口、短地址和二维码已完成[测试Web部署、隔离模拟器浏览器/系统安装验证](docs/PDA_DOWNLOAD_GUIDE.md)，code16首次安装已开放，真机和异地后补。
 - [安装与构建](docs/DEMO_INSTALL.md)：APK、设备连接、保留数据升级。
 - [真机操作与测试](docs/DEMO_TEST_GUIDE.md)：扫码、实体按键、10 分钟压测、断电、内存、导出。
