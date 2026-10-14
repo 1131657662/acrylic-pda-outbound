@@ -1,0 +1,97 @@
+Collection:
+  post:
+    summary: 主管登记独立来源跨任务实物冲突归属决定
+    description: >-
+      专用开关默认关闭，同仓中转/临时确认双权限，主管不同于全部原采集者。
+      完整可信结束原件与各方实物回执必须覆盖全部冲突任务。选定包已装载，其余各方同码已卸下且有理由；
+      未找到、结束分歧、未可信原件、漏方与选定库存阻断不能被决定覆盖。
+      仅不可变决定/引用/包周期归属声明；原采集、库存、占用、提交、账务不变。原键优先恢复，异文拒绝。
+      不自动解除关联阻断、不授采集/库存/记账/放行/删除。已有包周期决定不得用新键覆盖，增量/更正需专门责任链。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+    requestBody:
+      required: true
+      content:
+        application/json: {schema: {$ref: '#/Evidence'}}
+    responses:
+      '200': {$ref: '#/Response'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Item:
+  get:
+    summary: 读取不可变冲突决定及重核各方实物证据
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {name: decisionId, in: path, required: true, schema: {type: string, format: uuid}}
+    responses:
+      '200': {$ref: '#/Response'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Evidence:
+  type: object
+  additionalProperties: false
+  required: [contextSha256, physicalCheckId, peerChecks, reason]
+  properties:
+    contextSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    physicalCheckId: {type: string, format: uuid}
+    reason: {type: string, minLength: 1, maxLength: 500}
+    peerChecks:
+      type: array
+      minItems: 1
+      maxItems: 199
+      items:
+        type: object
+        additionalProperties: false
+        required: [relayId, physicalCheckId]
+        properties:
+          relayId: {type: string, format: uuid}
+          physicalCheckId: {type: string, format: uuid}
+Receipt:
+  type: object
+  additionalProperties: false
+  required: [purpose, decisionId, warehouseId, relayId, deviceId, taskId, supervisorId, decision, archiveSha256, closureSha256, requestSha256, contextSha256, recordedAt, signedProof, signingKeyId, conflictDecisionRecorded, pendingReconciliation, associationAuthorized, newCollectionAuthorized, stockAvailable, businessProcessed, releaseAllowed, localDeletionAllowed]
+  properties:
+    purpose: {type: string, const: INDEPENDENT_CONFLICT_EVIDENCE_V1}
+    decisionId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    relayId: {type: string, format: uuid}
+    deviceId: {type: string, format: uuid}
+    taskId: {type: string, format: uuid}
+    supervisorId: {type: string, format: uuid}
+    decision: {type: string, const: ASSIGN_TO_SELECTED_TASK}
+    archiveSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    closureSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    requestSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    contextSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    recordedAt: {type: string, format: date-time}
+    signedProof: {type: string}
+    signingKeyId: {type: string}
+    conflictDecisionRecorded: {type: boolean, const: true}
+    pendingReconciliation: {type: boolean, const: true}
+    associationAuthorized: {type: boolean, const: false}
+    newCollectionAuthorized: {type: boolean, const: false}
+    stockAvailable: {type: boolean, const: false}
+    businessProcessed: {type: boolean, const: false}
+    releaseAllowed: {type: boolean, const: false}
+    localDeletionAllowed: {type: boolean, const: false}
+Response:
+  description: 原决定与完整截点，各方原实物签名及附件引用已由服务端重核
+  content:
+    application/json:
+      schema:
+        allOf:
+          - {$ref: './schemas.yaml#/Envelope'}
+          - type: object
+            properties:
+              data:
+                type: object
+                required: [receipt, evidence, originalContext]
+                properties:
+                  receipt: {$ref: '#/Receipt'}
+                  evidence: {$ref: '#/Evidence'}
+                  originalContext: {type: object}

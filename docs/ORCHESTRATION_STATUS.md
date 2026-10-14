@@ -6,11 +6,11 @@
 ```yaml
 date: 2026-10-14
 branch: codex/development
-head: 3da3e81a
-dirty_entries: 82
+head: 17a45e5a
+dirty_entries: 85
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
-server: { contract: 0.69.0, paths: 198, flyway: V95, migrations: 95 }
+server: { contract: 0.70.0, paths: 200, flyway: V96, migrations: 96 }
 ```
 <!-- FACTS_END -->
 
@@ -42,7 +42,11 @@ server: { contract: 0.69.0, paths: 198, flyway: V95, migrations: 95 }
 - [人工关联服务端首切片L1](history/GOAL_E06_ASSOCIATION_L1_2026-10-14.md)：137项/bootJar、契约、1526非空/default-off、HTTP正向/首次同键并发/异文/末SQL原键恢复、实际锁等待后撤权、固定外部钥Python/新JVM及库存/跨机拒绝通过。仅新增证据台账、生产默认关闭，无正式提交/库存/账务变化。
 - 新失败保留：unit01来源枚举错误/输入中途变化；1525恢复wrapper空表预条件/漏字符集，失败库保全；1526复合trigger夹具SQL1064、登录审计严格白名单遗漏均保存并补逐行证据。API重启覆盖旧console日志的限制明列，不称原日志完整。旧失败计数不清零。
 - [人工关联网页L1](history/GOAL_E06_ASSOCIATION_WEB_L1_2026-10-14.md)：六项定向测试/构建、1527真实Chrome完整分页/缺排除阻断/丢响应/双页同键/空本地读回、严格全量业务守恒通过；服务/契约固定输入未变复用。首轮加载器/点击夹具及审计解码/UTF8失败原日志保留，修后定向通过；非完整E06/UI重设计收口。交付回执.local/goal-20261014/e06-association-web-delivery01。
-- 下一专用跨机冲突处置正向→短装/多任务适用路径及E06组合，再E07恢复/外置副本、E08留存/UI、E09候选。相关必做范围仍待实现验收；第8节全部实际满足前目标active且不complete，D/O/U整体未完。
+- 人工关联网页提交/远端17a45e5ab480617392f872e1a8430d44c7acd977；跨机冲突服务/契约/迁移/测试WIP未提交。最新80路径全脏快照/实际进程/监听/余量与唯一写权在.local/goal-20261013/e06-audit-resume-20261014-conflict02；旧当前区已归档ORCHESTRATION_STATE_before_e06_conflict_2026-10-14.md。
+- [跨机实物冲突服务L1](history/GOAL_E06_CONFLICT_L1_2026-10-14.md)：162项/bootJar、契约、1528非空/default-off、真实正向/权限/原键并发/异文/新键拒绝/末SQL回滚、实际锁后撤权/原采集者拒绝/三表不可变、固定外部钥/原字节/新JVM、实时NOT_FOUND/UNLOADED/库存阻断及全量业务守恒通过；2426输入/JAR类/迁移字节绑定。仅服务证据单元，网页/关联应用及E06 L2未跑。
+- 1528运行器失败原日志保留：prepare连接拒绝未种子，健康受保护401不算200；enabled并发前函数遮蔽模块，改race沿尾SQL原key续验；extra/lock漏登录审计逐行补证，原审计不变/分别仅一已知WEB_LOGIN，不重跑业务且同根因计数继承。不倒推原断言通过。
+- 1528已dump/hash/认证停机、零监听/消费者并保全压缩，preserve-1528-e06-conflict-l1-01；343文件长度/hash保持，216适用文件压缩，D余量增205545472字节，无删除。预览/1519不动；截点C/D余量50288431104/22559674368字节，无重型任务在途。
+- 下一补齐专用跨机冲突服务L1→网页/关联消费→短装/多任务及E06组合，再E07恢复/外置副本、E08留存/UI、E09候选。第8节全部实际满足前目标active且不complete，D/O/U整体未完。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。

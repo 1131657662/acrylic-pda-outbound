@@ -4,6 +4,8 @@
 
 # 开发验收索引
 
+- [E06跨机实物冲突服务L1](history/GOAL_E06_CONFLICT_L1_2026-10-14.md)：真实正向/双权限/原键并发/末SQL/锁后撤权、不可变引用和固定外部钥/新JVM/原事实守恒；[设计](history/GOAL_E06_CONFLICT_DESIGN_2026-10-14.md)。仅开发备份，网页/关联消费、短装/多任务、E06组合与总目标继续。
+
 - [E06人工关联网页L1](history/GOAL_E06_ASSOCIATION_WEB_L1_2026-10-14.md)：完整候选分页、Chrome丢响应/双页原键恢复、空本地存储读回及严格守恒；[服务端首切片L1](history/GOAL_E06_ASSOCIATION_L1_2026-10-14.md)默认关闭、真实事务/权限/固定钥消费复用。均为开发备份，冲突处置、多任务/短装、E06组合与最终闸门继续。
 
 - [E06实物登记限定补验](history/GOAL_E06_PHYSICAL_ACCEPTANCE_2026-10-14.md)：新隔离副本JDBC严格非空/default-off、原包/附件/原键/完整上下文及全表守恒，权限/并发/末SQL/锁后撤权通过；旧CLI失败保留、不倒推旧业务事实。[SQL读取修复](history/GOAL_E06_SQL_REPAIR_2026-10-14.md)附15项定向和真实消费。仅实物单元，人工关联/跨机冲突、完整D/O/U与最终L3未完。
