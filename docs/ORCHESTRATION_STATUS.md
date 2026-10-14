@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-14
 branch: codex/development
-head: 5877149c
-dirty_entries: 69
+head: 6039ed48
+dirty_entries: 68
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,9 +17,9 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标仍为active。坏机单有权撤回→重发→新机从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与断点
-- 固定 `D:/acrylic-pda-outbound`、`codex/development`；实际 HEAD/远端均为 `5877149c`，main 只读 `c6e9e0c238c657baecbf699ba6fdbada5d979b86`。不合 main、发布、部署、原库或现网。
+- 固定 `D:/acrylic-pda-outbound`、`codex/development`；实际 HEAD/远端均为 `6039ed48`，main 只读 `c6e9e0c238c657baecbf699ba6fdbada5d979b86`。不合 main、发布、部署、原库或现网。
 - 接管复核确认本聊天为唯一活动写者；旧 owner/released 标记不作依据。完整状态、差异、工作树、进程、监听、磁盘和输入哈希快照见 `.local/goal-20261014/e07-copy-resume04/`，旧当前区归档至 [history/ORCHESTRATION_STATE_before_e07_o05_refresh_2026-10-14.md](history/ORCHESTRATION_STATE_before_e07_o05_refresh_2026-10-14.md)。
-- 当前约 69 个 dirty entries，继承 Android/UI/文档/工具及 `server/physical-disposition-last-request.json` 等全部改动；本轮只允许明确暂存 O05/E07 范围，禁止 `git add .`。
+- 当前约 69 个 dirty entries，继承 Android/UI/文档/工具及 `server/physical-disposition-last-request.json` 等全部改动；O05/E07 看板阶段备份已提交并推送，本轮后续只允许按明确范围暂存，禁止 `git add .`。
 
 ## 环境、磁盘与生产边界
 - 实查项目 API/MySQL/Vite/Gradle 均未启动；共享 MySQL 3306 由 PID 5288 监听，原 AVD `emulator-5562` PID 12472 保留，1539/1540/1541 隔离实例均停机，禁止复用 1538 或 1541。
@@ -31,7 +31,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - O05 已完成有界实现：14/14 专项、41/41 受影响回归、真实 SAF 加密包创建/取回及覆盖/损坏拒绝通过；验收见 [GOAL_E07_RESTORE_COPY_ACCEPTANCE_2026-10-14.md](history/GOAL_E07_RESTORE_COPY_ACCEPTANCE_2026-10-14.md)。外置介质、人工保管/回取、业务回执仍未证实。
 - E07 已完成同机隔离恢复：1541 的 180 表/64 非空表与 15 个私有文件守恒，原 key/ZIP/附件/固定公钥可消费；负例 4/4 写前拒绝。1541 停机零监听且源 347 文件 hash/长度不变；不证明异地恢复、现场设备或生产 RPO/RTO。
 - U01/U02 首屏与草稿、D04/A1.4/1043、原生崩溃/恢复等暂缓项仍未通过；不因新证据清零。E08 留存/UI、E09 候选、P07、剩余 D/O/U 闸门及第8节条件继续未完成。
-- 下一动作：完成本次 O05/E07 看板事实刷新后，按明确范围提交/推送；随后推进 P07、E08 留存/UI、E09 候选及可独立的剩余 D/O/U，逐项定向验证并更新本看板。
+- 下一动作：推进 P07、E08 留存/UI、E09 候选及可独立的剩余 D/O/U，逐项定向验证并更新本看板；总目标保持 active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
