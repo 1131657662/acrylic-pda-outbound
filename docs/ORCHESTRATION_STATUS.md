@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-14
 branch: codex/development
-head: 68d4e345
-dirty_entries: 80
+head: efe88980
+dirty_entries: 78
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.71.0, paths: 200, flyway: V97, migrations: 97 }
@@ -57,7 +57,9 @@ server: { contract: 0.71.0, paths: 200, flyway: V97, migrations: 97 }
 - 1531启动提前登录、browser01标签歧义/browser02占位区拦截均夹具失败，原日志截图保留，决定POST未发生；新证据修正后browser03真实正向通过。1531已dump/hash认证停机，344文件长度hash保持、217压缩，D增206626816字节；C/D余量50281541632/21162635264字节，无重型在途，预览/1519保持。
 - [短装批准服务L1](history/GOAL_E06_ASSOCIATION_SHORTFALL_L1_2026-10-14.md)：输入68d4e34526b2de20e43d357afa559bd66c3a8882；188项/bootJar、两种差额正向/默认关/权限/并发/末SQL回滚/锁后撤权、固定钥/新JVM/10项响应消费及全表守恒通过；2434输入/类/迁移/JAR字节绑定。仅开发备份，网页显式批准、多任务/增量责任链及L2/L3继续。
 - 1532/1533均dump/hash/认证停机、零监听消费者及适用压缩，保全preserve-1532/1533-e06-association-shortfall-l1-01；预览/1519保持。1532 disabled漏算空引用迁移，1533 prepare列名/GBK改写/FileExists及消费者变量名夹具失败原输出保留，沿同一原事实定向续验，不重造原件、不置零旧计数。
-- 当前唯一写者/active仍本聊天；全脏快照e06-audit-resume-20261014-shortfall01，最终输入和Git回执见e06-association-shortfall-delivery01；原继承Android/UI/工具/本机请求保持，无重型构建。新产物D盘/临时仅子进程，下一接网页批准的真实Chrome，再E06组合与全部剩余闸门。
+- 短装服务提交/远端efe88980163209f05024496f605d5d06a19f4a66，13明确路径；唯一写者/active仍本聊天，输入/Git回执见e06-association-shortfall-delivery01；原继承Android/UI/工具/本机请求保持，无重型构建。新产物D盘/临时仅子进程，1533压缩217文件/344长度hash保持、D增206266368字节；截点C/D余量48028778496/20019904512字节。1534已保全停机；下一多任务/增量冲突→E06组合及全部剩余闸门。
+- [短装批准网页L1](history/GOAL_E06_ASSOCIATION_SHORTFALL_WEB_L1_2026-10-14.md)：6项真实回执/持久化、类型构建；1534 browser02真实Chrome显式两差额/说明、缺批准零POST、双页丢响应原key/空本地回读/390宽目视通过；仅一关联/引用/幂等及3已知登录/1关联审计，其余全表逐值不变。
+- 1534隐藏checkbox运行器超时、post误取冲突前基线原日志截图保留；可见标签点击与正确保留快照补核通过，未重跑业务。dump/hash认证停机/零消费者，217文件压缩、344长度hash保持，D增206733312字节；C/D余量46955192320/19705450496字节，预览/1519不动。输入与全脏/Git证据e06-association-shortfall-web-delivery01；目标active未完成。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。

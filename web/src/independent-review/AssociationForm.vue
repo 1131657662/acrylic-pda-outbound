@@ -9,11 +9,20 @@ import { associationEvidenceSchema, type AssociationResult } from './association
 import { loadAssociation, lockAssociation, saveAssociation, type AssociationSaved } from './association-storage';
 import { allCandidates, checkAssociationPhysical, readAssociation, sendAssociation, type Candidate } from './association-api';
 import { checkAssociationConflict } from './association-conflict-api';
+import AssociationShortfallApproval from './AssociationShortfallApproval.vue';
+import { associationShortfall, approveAssociationShortfall } from './association-shortfall';
 const props = defineProps<{ data: IndependentReview }>(); const session = useSessionStore();
 const busy = ref(false); const error = ref(''); const saved = ref<AssociationSaved | null>(null);
 const result = ref<AssociationResult | null>(null); const candidates = ref<Candidate[] | null>(null);
 const target = ref(''); const check = ref(''); const reason = ref(''); const exclusions = ref<Record<string, string>>({});
 const conflict = ref('');
+const shortfallConfirmed = ref(false); const shortfallReason = ref('');
+const shortfall = computed(() => {
+  const row = candidates.value?.find(candidate => candidate.id === target.value);
+  if (!row) return null;
+  try { return { facts: associationShortfall(props.data, row), error: '' }; }
+  catch (cause) { return { facts: null, error: cause instanceof Error ? cause.message : '短装依据无法核对。' }; }
+});
 let generation = 0;
 const owner = computed<PhysicalOwner>(() => ({ userId: session.identity?.id ?? '', warehouseId: session.warehouseId, relayId: props.data.original.relayId }));
 const selfCheck = computed(() => owner.value.userId === props.data.original.operatorId);
@@ -42,7 +51,7 @@ async function run(action: (captured: PhysicalOwner, assertCurrent: () => void) 
 async function prepare(captured: PhysicalOwner, assertCurrent: () => void): Promise<void> {
   if (loadAssociation(captured).command) throw new Error('原关联请求已保存，请按原键恢复。');
   const rows = await allCandidates(props.data, assertCurrent); assertCurrent();
-  candidates.value = rows; exclusions.value = {}; target.value = '';
+  candidates.value = rows; exclusions.value = {}; target.value = ''; shortfallConfirmed.value = false; shortfallReason.value = '';
   check.value ||= loadPhysical(captured).command?.result?.receiptId ?? '';
 }
 async function record(captured: PhysicalOwner, assertCurrent: () => void): Promise<void> {
@@ -50,12 +59,15 @@ async function record(captured: PhysicalOwner, assertCurrent: () => void): Promi
   if (!state.command) {
     if (selfCheck.value || !candidates.value || !candidates.value.some(row => row.id === target.value)) throw new Error('须由独立主管载入完整候选并选择目标。');
     if (props.data.summary.crossTaskConflicts !== '0' && !conflict.value.trim()) throw new Error('须显式引用覆盖全部跨任务冲突的原决定。');
+    if (!shortfall.value?.facts) throw new Error(shortfall.value?.error || '须先核对目标短装依据。');
+    const approval = approveAssociationShortfall({ facts: shortfall.value.facts, confirmed: shortfallConfirmed.value, reason: shortfallReason.value });
     const parsed = associationEvidenceSchema.safeParse({ contextSha256: props.data.contextSha256, physicalCheckId: check.value,
       ...(conflict.value.trim() ? { conflictDecisionId: conflict.value.trim() } : {}),
+      ...approval,
       targetOrderId: target.value, reason: reason.value, candidateExclusions: candidates.value.filter(row => row.id !== target.value)
         .map(row => ({ orderId: row.id, reason: exclusions.value[row.id] ?? '' })) });
     if (!parsed.success) throw new Error('请填写有效实物回执、关联说明和其余每个候选的排除理由。');
-    await checkAssociationPhysical(captured, parsed.data); assertCurrent();
+    await checkAssociationPhysical(captured, parsed.data, candidates.value.find(row => row.id === target.value)); assertCurrent();
     await checkAssociationConflict(captured, parsed.data); assertCurrent();
     state.command = { key: crypto.randomUUID(), epoch: currentRecoveryEpoch(), body: parsed.data, receipt: null }; saveAssociation(state);
   }
@@ -63,28 +75,31 @@ async function record(captured: PhysicalOwner, assertCurrent: () => void): Promi
 }
 watch(() => [owner.value.userId, owner.value.warehouseId, owner.value.relayId], () => {
   generation++; saved.value = null; result.value = null; candidates.value = null; exclusions.value = {};
-  target.value = ''; check.value = ''; conflict.value = ''; reason.value = ''; busy.value = false; error.value = '';
+  target.value = ''; check.value = ''; conflict.value = ''; reason.value = ''; shortfallConfirmed.value = false; shortfallReason.value = ''; busy.value = false; error.value = '';
   const captured = { ...owner.value }; const token = generation;
   void refresh(captured, token).catch(cause => { if (token === generation) error.value = cause instanceof Error ? cause.message : errorText(cause); });
 }, { immediate: true });
 onUnmounted(() => { generation++; });
+watch(target, () => { shortfallConfirmed.value = false; shortfallReason.value = ''; });
 </script>
 <template>
   <section class="association-panel">
     <h2>主管人工关联</h2>
-    <p>引用已登记实物依据，选择正式单并逐项说明其余候选。跨任务重码须引用完整原冲突决定；短装与多任务仍须专门处置。</p>
+    <p>引用已登记实物依据，选择正式单并逐项说明其余候选。跨任务重码须引用完整原冲突决定；原任务或目标短装须主管明确批准，多任务仍须专门处置。</p>
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
     <p v-if="selfCheck">原采集者须由另一名有权主管核对。</p>
     <template v-if="result">
       <p role="status">人工关联已登记，仍待对账；未记账、未放行。回执 {{ result.receipt.associationId }}</p>
       <p>正式单 {{ result.receipt.targetOrderId }} · 实物回执 {{ result.receipt.physicalCheckId }}</p>
       <p>原关联说明：{{ result.evidence.reason }}</p>
+      <p v-if="result.evidence.shortfallApproval">原短装批准：原任务 {{ result.evidence.shortfallApproval.originalShortfall }}包 · 目标 {{ result.evidence.shortfallApproval.targetShortfall }}包 · {{ result.evidence.shortfallApproval.reason }}</p>
       <p v-if="result.conflictEvidence">原冲突决定 {{ result.conflictEvidence.receipt.decisionId }} · 其余任务 {{ result.conflictEvidence.originalContext.peers.length }} 个；仍待对账。</p>
       <p>原关联主管 {{ result.receipt.supervisorId }} · {{ result.receipt.recordedAt }}</p>
     </template>
     <template v-else-if="saved?.command">
       <p>原关联结果未明。已保存原请求，刷新后仍按原键恢复。</p>
       <p>原目标 {{ saved.command.body.targetOrderId }} · {{ saved.command.body.reason }}</p>
+      <p v-if="saved.command.body.shortfallApproval">原短装批准：原任务 {{ saved.command.body.shortfallApproval.originalShortfall }}包 · 目标 {{ saved.command.body.shortfallApproval.targetShortfall }}包 · {{ saved.command.body.shortfallApproval.reason }}</p>
       <el-button :disabled="busy || selfCheck" @click="run(record)">按原键恢复关联结果</el-button>
     </template>
     <template v-else>
@@ -102,6 +117,8 @@ onUnmounted(() => { generation++; });
             <el-input v-if="row.id !== target" v-model="exclusions[row.id]" :aria-label="`排除候选 ${row.orderNo}`" placeholder="逐项说明排除依据" maxlength="500" :disabled="frozen" />
           </article>
         </el-radio-group>
+        <el-alert v-if="shortfall?.error" :title="shortfall.error" type="error" :closable="false" />
+        <AssociationShortfallApproval v-if="shortfall?.facts" v-model:confirmed="shortfallConfirmed" v-model:reason="shortfallReason" :facts="shortfall.facts" :data="data" :disabled="frozen" />
         <el-button type="primary" :disabled="frozen || !target || selfCheck" @click="run(record)">保存人工关联依据</el-button>
       </template>
     </template>

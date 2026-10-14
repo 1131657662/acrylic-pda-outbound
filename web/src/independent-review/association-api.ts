@@ -5,14 +5,16 @@ import { loadAssociation, saveAssociation } from './association-storage';
 import type { PhysicalOwner } from './physical-contracts';
 import { jsonDigest, physicalResultSchema } from './physical-contracts';
 import type { AssociationEvidence } from './association-contracts';
+import { checkAssociationTargetProducts } from './association-shortfall';
 export type Candidate = Extract<IndependentReview, { section: 'candidates' }>['items'][number];
-export async function checkAssociationPhysical(owner: PhysicalOwner, body: AssociationEvidence): Promise<void> {
+export async function checkAssociationPhysical(owner: PhysicalOwner, body: AssociationEvidence, target?: Candidate): Promise<void> {
   const result = await request(`/original-relays/${owner.relayId}/physical/checks/${body.physicalCheckId}?warehouseId=${owner.warehouseId}`, physicalResultSchema);
   if (result.receipt.relayId !== owner.relayId || result.receipt.warehouseId !== owner.warehouseId ||
       result.receipt.receiptId !== body.physicalCheckId || result.receipt.contextSha256 !== body.contextSha256 ||
       result.evidence.contextSha256 !== body.contextSha256 || await jsonDigest(result.originalContext) !== body.contextSha256 ||
       await jsonDigest(result.evidence) !== result.receipt.requestSha256 || result.evidence.packages.some(row => row.status !== 'LOADED'))
     throw new Error('实物检查与完整关联依据不一致，须重新核对实物回执。');
+  if (target) checkAssociationTargetProducts(result.originalContext, target);
 }
 function path(owner: PhysicalOwner, suffix = ''): string {
   return `/original-relays/${owner.relayId}/associations${suffix}?warehouseId=${owner.warehouseId}`;

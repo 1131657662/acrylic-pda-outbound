@@ -420,3 +420,5 @@
 - E06跨任务实物冲突网页：[L1开发备份](history/GOAL_E06_CONFLICT_WEB_L1_2026-10-14.md)；完整各方/原键/明确编号实际Chrome及全表守恒，短装/多任务与L2继续。
 
 - E06人工关联短装批准服务：[L1开发备份](history/GOAL_E06_ASSOCIATION_SHORTFALL_L1_2026-10-14.md)；两种差额精确审批/真实事务与全表守恒、固定钥/原键保持，网页批准与E06组合继续。
+
+- E06人工关联短装批准网页：[L1开发备份](history/GOAL_E06_ASSOCIATION_SHORTFALL_WEB_L1_2026-10-14.md)；显式两差额/说明、Chrome原键与全表守恒，非E06组合或UI整体收口。
