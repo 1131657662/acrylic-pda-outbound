@@ -6,7 +6,7 @@
 
 - 工作目录：`D:/acrylic-pda-outbound`；分支：`codex/development`；验证输入基线：`6a9a51115277884b28502c8bbc9096e660584ac6`，工作树继承的其他未提交改动全部保留。
 - 改动路径：`android/app/src/main/java/com/acrylic/outbound/pda/ui/TemporaryWorkRenderer.kt`。影响层为 Android 临时作业首屏和阻断态渲染；具体修复为空车号或无草稿时仍显示“临时作业”，并让候选/阻断状态保留确认/恢复入口可见。
-- 直接受影响测试：`WorkAdjustmentTest`、`TemporaryAdjustmentTest`、`AdjustmentLayoutTest`、`ScanFirstScreenTest`、`SubmissionActionTest`、`TemporaryProductSearchTest`、`TemporaryWorkLayoutTest`、`WorkDetailsLayoutTest`。
+- 实际执行测试：`WorkAdjustmentTest`、`TemporaryAdjustmentTest`、`AdjustmentLayoutTest`、`ScanFirstScreenTest`、`SubmissionActionTest`、`TemporaryProductSearchTest`、`TemporaryWorkLayoutTest`。命令中的 `*WorkDetailsLayoutTest` 没有对应源码/XML，不计为执行；保留 XML 中另有两个历史 0 tests 文件，也不计入 26 项。
 - 证据目录：`.local/goal-20261015/o01-u01-android01/` 至 `o01-u01-android08/`。首次错误入口、首轮断言失败、临时目录未创建的运行器失败均保留；后续使用 D 盘 Java 临时目录完成复验。
 
 ## 实际结果
@@ -17,9 +17,13 @@
 | `TemporaryWorkLayoutTest` 修复后复验 | 3/3 通过 | `.local/goal-20261015/o01-u01-android06/run.log`、`result.json` |
 | Android `lintDebug` | 通过 | `.local/goal-20261015/o01-u01-android08/lint.log` |
 | Debug APK `assembleDebug` | 通过 | `.local/goal-20261015/o01-u01-android08/assemble.log` |
-| APK | `android/app/build/outputs/apk/debug/app-debug.apk`，14,127,080 bytes | SHA-256 `F45FE0BEE5F555C9F9E45F109B6A56060799E70FB6AB36169AF01AF2D54583CB` |
+| APK | `.local/goal-20261015/o01-u01-android08/app-debug.apk`，14,127,080 bytes | SHA-256 `F45FE0BEE5F555C9F9E45F109B6A56060799E70FB6AB36169AF01AF2D54583CB` |
 
 定向运行期间未启动本项目服务，目标端口无监听；共享 MySQL 仅保持既有 `3306` 监听。执行后记录 C 盘约 72.04 GiB、D 盘约 10.59 GiB 可用。`git diff --check` 对本次源码路径通过。
+
+## 提交依赖补核
+
+`fa583628e9b94e3baf757b4d99213a4e903e3322` 提交了渲染修复，但其新增 binding 字段依赖仍在共享布局未提交差异中，不能独立还原上表构建输入。后续按明确五路径补依赖并对精确暂存树另验，见[共享扫码布局依赖记录](GOAL_U01_SCAN_DEPENDENCY_2026-10-15.md)。原 26 项包含搜索/提交工作树差异，不能替代该精确候选的 23 项；原失败、日志和原 APK 继续保留。
 
 ## 限制与后续
 

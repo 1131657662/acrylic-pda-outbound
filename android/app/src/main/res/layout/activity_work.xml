@@ -1,40 +1,46 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:orientation="vertical" android:background="@color/pda_canvas">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:paddingHorizontal="8dp">
-        <Button android:id="@+id/back" android:layout_width="64dp" android:layout_height="52dp" android:text="@string/work_back" />
-        <TextView android:id="@+id/vehicle" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-            android:textSize="20sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" android:maxLines="2" />
-        <Button android:id="@+id/sound" android:layout_width="64dp" android:layout_height="52dp" android:text="@string/work_sound" />
-    </LinearLayout>
-    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingHorizontal="12dp"
-        android:text="@string/work_not_released" android:textSize="14sp" android:textColor="@color/pda_warning_foreground" />
-    <TextView android:id="@+id/totals" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingHorizontal="12dp"
-        android:paddingVertical="6dp" android:textSize="20sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
-    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingHorizontal="12dp" android:orientation="vertical">
-            <TextView android:id="@+id/message" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:textSize="15sp" android:accessibilityLiveRegion="polite" />
-            <TextView android:id="@+id/products" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="8dp" android:textSize="15sp" />
-            <TextView android:id="@+id/recent" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="8dp" android:textSize="14sp" />
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:fillViewport="true" android:background="@color/pda_canvas">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingHorizontal="8dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+            <Button android:id="@+id/back" android:layout_width="64dp" android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/work_back" />
+            <TextView android:id="@+id/vehicle" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                android:textSize="18sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
+            <Button android:id="@+id/sound" android:layout_width="64dp" android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/work_sound" />
+        </LinearLayout>
+        <TextView android:id="@+id/source" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false"
+            android:text="正式单 · 未获最终确认不得放行" android:textSize="14sp" android:textColor="@color/pda_warning_foreground" />
+        <TextView android:id="@+id/totals" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false"
+            android:textSize="20sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
+        <TextView android:id="@+id/message" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false"
+            android:textSize="15sp" android:accessibilityLiveRegion="polite" />
+        <LinearLayout android:id="@+id/workControls" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:id="@+id/candidate" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false"
+                android:textSize="16sp" android:textStyle="bold" />
+            <Button android:id="@+id/confirm" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/work_auto" />
+            <LinearLayout android:id="@+id/manualPanel" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="手输完整条码" android:labelFor="@id/manual" android:textSize="14sp" />
+                <EditText android:id="@+id/manual" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+                    android:hint="@string/work_manual_hint" android:inputType="textVisiblePassword" android:singleLine="true" android:saveEnabled="false" android:autofillHints="" />
+                <Button android:id="@+id/validate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/work_validate" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+                <Button android:id="@+id/manualToggle" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/work_manual" />
+                <Button android:id="@+id/discard" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/work_discard" />
+            </LinearLayout>
+        </LinearLayout>
+        <TextView android:id="@+id/recentSaved" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:textSize="14sp" android:text="尚无本机已保存包" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+            <Button android:id="@+id/pauseScan" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="暂缓扫码" />
+            <Button android:id="@+id/moreActions" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:text="核对 / 异常" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/secondaryActions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+            <TextView android:id="@+id/products" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="15sp" />
+            <TextView android:id="@+id/recent" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" />
             <Button android:id="@+id/voidLast" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="@string/work_void" />
             <Button android:id="@+id/adjustPackages" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="调整已扫码包" />
             <Button android:id="@+id/details" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="订单明细" />
             <Button android:id="@+id/closeOrder" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="结单核对 / 上传回执" />
             <Button android:id="@+id/recall" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="召回核对 / 查询停止证明" />
         </LinearLayout>
-    </ScrollView>
-    <LinearLayout android:id="@+id/workControls" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingHorizontal="8dp" android:background="#FFFFFF">
-        <TextView android:id="@+id/candidate" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp"
-            android:textStyle="bold" android:paddingTop="8dp" android:maxLines="3" />
-        <Button android:id="@+id/confirm" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:text="@string/work_auto" />
-        <LinearLayout android:id="@+id/manualPanel" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
-            <EditText android:id="@+id/manual" android:layout_width="match_parent" android:layout_height="52dp" android:hint="@string/work_manual_hint"
-                android:inputType="textVisiblePassword" android:singleLine="true" android:saveEnabled="false" android:autofillHints="" />
-            <Button android:id="@+id/validate" android:layout_width="match_parent" android:layout_height="52dp" android:text="@string/work_validate" />
-        </LinearLayout>
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-            <Button android:id="@+id/manualToggle" android:layout_width="0dp" android:layout_weight="1" android:layout_height="52dp" android:text="@string/work_manual" />
-            <Button android:id="@+id/discard" android:layout_width="0dp" android:layout_weight="1" android:layout_height="52dp" android:text="@string/work_discard" />
-        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</ScrollView>

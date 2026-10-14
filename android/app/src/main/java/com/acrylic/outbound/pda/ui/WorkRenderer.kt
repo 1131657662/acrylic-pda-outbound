@@ -12,9 +12,10 @@ class WorkRenderer(private val binding: ActivityWorkBinding) {
         val order = state.order
         binding.workControls.visibility = if (order != null && order.state != "SCANNING") android.view.View.GONE else android.view.View.VISIBLE
         binding.vehicle.text = order?.vehicleNo ?: "正在打开订单"
-        binding.totals.text = order?.let { "${it.actualCount} / ${it.plannedTotal} 包 · ${kg(it.weightGrams)} kg" } ?: "暂无本地作业"
+        binding.source.text = "正式单 · 未获最终确认不得放行"
+        binding.totals.text = order?.let { "已保存 ${it.actualCount} / 计划 ${it.plannedTotal} 包\n${kg(it.weightGrams)} kg" } ?: "暂无本地作业"
         binding.message.text = listOf(state.blocked.ifEmpty { state.message },
-            "待处理 ${state.pending} · 待落盘 ${state.queued}" + if (state.pending >= 16) "，请放慢扫码" else "",
+            if (state.queued > 0) "待落盘 ${state.queued} · 请暂缓扫码" else if (state.pending > 1) "待处理 ${state.pending} · 请暂缓扫码" else "",
             soundError).filter { it.isNotEmpty() }.joinToString("\n")
         val stopped = when (order?.state) {
             "FROZEN" -> "本单已冻结，不能继续扫码或撤销；请进入结单页核对云端回执"
@@ -23,6 +24,10 @@ class WorkRenderer(private val binding: ActivityWorkBinding) {
         }
         if (stopped.isNotEmpty()) binding.message.text = listOf(state.blocked, stopped).filter { it.isNotEmpty() }.joinToString("\n")
         binding.closeOrder.isEnabled = order?.state !in setOf("RECALL_PENDING", "RECALLED")
+        binding.pauseScan.text = if (state.ready) "暂缓扫码" else "恢复本单扫码"
+        binding.pauseScan.isEnabled = order?.state == "SCANNING" && state.blocked.isBlank()
+        binding.recentSaved.text = state.recent.firstOrNull { it.status == "ACTIVE" && it.captureId !in state.dispositions }?.let {
+            "最近本机已保存：${it.orderScanSeq}. ${it.barcode} · ${kg(it.weightGrams)} kg" } ?: "尚无本机有效已保存包"
         val visibleLines = state.lines.take(3)
         binding.products.text = visibleLines.joinToString("\n") { "${it.deliveryCode}  ${it.actualCount}/${it.plannedCount} 包 · ${kg(it.weightGrams)} kg" } +
             if (state.lines.size > visibleLines.size) "\n还有 ${state.lines.size - visibleLines.size} 个产品，结单前请打开明细核对" else ""

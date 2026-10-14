@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: 6a9a5111
-dirty_entries: 89
+head: fa583628
+dirty_entries: 88
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,12 +17,12 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标仍为active。坏机单有权撤回→重发→新机从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与断点
-- 固定 `D:/acrylic-pda-outbound`、`codex/development`；HEAD 与远端实际同为 `6a9a51115277884b28502c8bbc9096e660584ac6`，main 只读。当前工作树改动全部继承并保全，脏项精确计数以事实块为准，禁止 `git add .`。
-- 2026-10-15 接续复核确认本聊天为唯一活动写者；旧 owner/released 标记不作依据。接续前与更早 UI/O04 快照均保留；本轮 O01/U01 报告前快照见 [history/ORCHESTRATION_STATE_before_o01_u01_report_2026-10-15.md](history/ORCHESTRATION_STATE_before_o01_u01_report_2026-10-15.md)，报告见 [history/GOAL_O01_U01_ANDROID_ACCEPTANCE_2026-10-15.md](history/GOAL_O01_U01_ANDROID_ACCEPTANCE_2026-10-15.md)。
-- 项目 API/Vite/目标隔离服务未运行；共享 MySQL 3306 由 PID 5288 监听，原 AVD `emulator-5562` 与 ADB 由 PID 12472/10592 保留。当前仅见历史 Gradle/Java daemon 及 Codex CUA Node，未见在途 Gradle 测试；本项目目标端口无监听。
+- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本断点输入 HEAD/实际远端同为 `fa583628e9b94e3baf757b4d99213a4e903e3322`，main 只读。五路径源码候选树 `7191302eee4d7d90105208f0b23cc82757ed4eeb` 已导出验证；提交后的精确 SHA/远端回执另存 `.local/goal-20261015/ui-dependency01/`，避免自引用提交循环。
+- 本聊天为唯一活动写者；接续 83 项继承改动原字节/哈希全部匹配，见 `.local/goal-20261015/ui-dependency01/dirty-hashes.json`、`resume-hash-check.json`、`ownership-resume.json`。更新前旧看板保存在同目录 `board-before-dependency.md`；其他恢复、搜索/提交 UI、文档、工具、私有请求继续保留，禁止 `git add .`。
+- 项目 API/Vite/隔离服务无监听；共享 MySQL 3306/33060 PID 5288、原 AVD `emulator-5562` PID 12472 和 ADB PID 10592 保留。仅停止核实后的自身卡住只读查询链，未重启原设备、未安装 APK/执行 instrumentation。最新进程/监听见同目录 `processes-resume.json`、`netstat-resume.txt`。
 
 ## 环境、磁盘与生产边界
-- 目标端口 `8080/5173/1538/1539/1540/1541/1519/1522/1523` 当前均无监听；本轮 Android 验证后余量约 C: `77,347,753,984` bytes、D: `11,371,945,984` bytes。新重型隔离动作前复测余量；所有失败库、dump/binlog、原日志/XML、原件、密钥/AVD 身份及保全目录继续保留。
+- 目标端口 `8080/5173/1538/1539/1540/1541/1542/1519/1522/1523` 复核无监听；精确候选构建后 C/D 可用 `77,333,651,456` / `11,189,850,112` bytes，后续复测存 `disks-resume.json`。新重型动作前复测；所有失败库、dump/binlog、原日志/XML、原件、密钥/AVD 身份和保全目录继续保留。
 - 生产决定 handler/POST/放行/证据写入/关闭能力、TEMP 生产归档边界与 `localDeletionAllowed=false` 保持关闭；同机合成身份/模拟器不冒充现场事实。
 
 ## 已验范围、暂缓及下一步
@@ -35,7 +35,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - U01/U02 首屏与草稿、D04/A1.4/1043、原生崩溃/恢复等暂缓项仍未通过；不因新证据清零。P07 已完成隔离开发验证但不代表 E07/L2/L3；E09 Web 候选阶段的 typecheck/契约/构建/临时审查已整理为 [GOAL_E09_WEB_CANDIDATE_ACCEPTANCE_2026-10-15.md](history/GOAL_E09_WEB_CANDIDATE_ACCEPTANCE_2026-10-15.md)，浏览器、服务端/数据库、文件/恢复组合仍未验；E06 L2、E08 完整验收、剩余 D/O/U 闸门及第8节条件继续未完成。
 - D16 清理与恢复引用保护已完成当前开发切片：19/19 定向 Android 测试通过，报告见 [GOAL_D16_RETENTION_ACCEPTANCE_2026-10-15.md](history/GOAL_D16_RETENTION_ACCEPTANCE_2026-10-15.md)，生产删除、长期留存和 D13–D15 依赖仍未验。
 - O04 独立采集开发切片已收口：短路径 Java 临时目录、既有服务端凭据向量与独立包输出绑定后 90 项独立 Android/Room/救援测试 0 失败、0 错误、1 个既有跳过；报告见 [GOAL_O04_INDEPENDENT_COLLECTION_ACCEPTANCE_2026-10-15.md](history/GOAL_O04_INDEPENDENT_COLLECTION_ACCEPTANCE_2026-10-15.md)。深路径首次运行准确保留为 38 个 SQLite 打开失败加 1 个凭据向量/输出目录缺失失败，合成/隔离身份边界和生成包均保留；不计 E06 L2、U03 完整人工关联或 D18 L3。
-- 下一动作：保全并复用 O01/U01 Android07/08 输入，完成 E06 受影响组合核对；1540 Chrome 直接入口仍受运行器审批阻断时不绕过，继续推进剩余 D/O/U，取得实际允许入口后补 E06 L2，再执行 D18 L3 全链。O01/U01 仅计 Android 开发切片；E06 多任务网页 L1 已按既有输入链复核并保留，E08 与 E09 Web 报告同样只计开发证据。总目标保持 `active`，生产默认关闭和 `localDeletionAllowed=false` 不变。
+- U01 共享扫码布局依赖已补精确候选主机证据：23/23、Debug APK/lint 通过、852 源码文件前后不变；同候选引擎补验 5/5。首次补跑因旧缓存锁在业务测试前退出、误读残留 XML 的初始汇总均保留并更正；[报告](history/GOAL_U01_SCAN_DEPENDENCY_2026-10-15.md)明示 `fa583628` 依赖遗漏和前次 26 项输入差别。模拟器查询超时，设备入口未验，不计完整 L1 或任何 D 收口。
+- 下一动作：明确路径提交共享布局开发备份，随后推进 E07/P07 外部秘密供应及停写重锚运维缺口；设备和1540 Chrome 直接入口阻断不绕过，有新依据再补实际入口/E06 L2，最后在候选上跑 D18 L3。总目标保持 `active`，剩余 D/O/U、第8节和全部暂缓项不因局部通过清零。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

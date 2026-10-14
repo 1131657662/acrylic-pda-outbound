@@ -1,6 +1,8 @@
 # 历史归档
 
-- [O01/U01 Android 交互定向验收](GOAL_O01_U01_ANDROID_ACCEPTANCE_2026-10-15.md)：扫码首屏、已扫码包调整、临时产品搜索、提交下一动作和临时作业阻断态定向单测 26/26，通过 lint 与 Debug APK 构建并登记哈希；仅开发切片，不计真机/U01-U04 完整验收、E06 L2、D18 L3 或总目标。
+- [U01 共享扫码布局依赖开发备份](GOAL_U01_SCAN_DEPENDENCY_2026-10-15.md)：精确暂存树 23/23、Debug APK/lint 通过，补齐此前遗漏依赖；设备入口未验，不计完整 L1、U01/U02、E06 L2 或 D18 L3。
+
+- [O01/U01 Android 交互定向验收](GOAL_O01_U01_ANDROID_ACCEPTANCE_2026-10-15.md)：工作树定向单测 26/26、lint 与 Debug APK 通过；测试清单及提交依赖补核，仍仅开发证据。
 
 - [D10 故障撤回/重发真实 HTTP 验收](GOAL_D10_FAULT_WITHDRAWAL_HTTP_ACCEPTANCE_2026-10-15.md)：隔离 MySQL 上 FaultWithdrawal/FaultRestart 的真实 API、HTTP 和消费者夹具 15/15 通过，附件单测 17/17，Web typecheck/contract/build 通过；失败 dump 权限与成功 `--no-tablespaces` 重试均保留。仅收口当前 D10 切片，不计 E06 L2、D18 L3 或总目标。
 

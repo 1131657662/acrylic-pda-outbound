@@ -41,6 +41,8 @@ class TemporaryWorkActivity : ComponentActivity() {
         lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { engine.state.collect { renderer.render(it, app.workSound.error) } } }
     }
     private fun actions() {
+        binding.moreActions.setOnClickListener { binding.secondaryActions.visibility = if (binding.secondaryActions.visibility == View.VISIBLE) View.GONE else View.VISIBLE }
+        binding.pauseScan.setOnClickListener { if (engine.state.value.ready) { scanner.unregister(); engine.pause() } else { engine.resume(id); scanner.register() } }
         binding.back.setOnClickListener { leave() }
         binding.recall.setOnClickListener {
             suspendInput(); startActivity(Intent(this, LocalDraftEvidenceActivity::class.java).putExtra("clientOrderId", id)); finish()
@@ -57,13 +59,12 @@ class TemporaryWorkActivity : ComponentActivity() {
         binding.manualToggle.setOnClickListener {
             val visible = binding.manualPanel.visibility != View.VISIBLE
             binding.manualPanel.visibility = if (visible) View.VISIBLE else View.GONE
-            binding.products.visibility = if (visible) View.GONE else View.VISIBLE
-            binding.recent.visibility = if (visible) View.GONE else View.VISIBLE; hideKeyboard()
+            hideKeyboard()
         }
     }
     private fun manual() {
         val raw = binding.manual.text.toString(); if (raw.isEmpty()) return
-        if (engine.receive(raw, "MANUAL")) { binding.manual.text.clear(); hideKeyboard() }
+        if (engine.receive(raw, "MANUAL")) { binding.manual.text.clear(); hideKeyboard(); binding.root.scrollTo(0, 0) }
     }
     private fun confirm() {
         val state = renderer.displayed; val row = state.candidate

@@ -54,6 +54,8 @@ class WorkActivity : ComponentActivity() {
     }
 
     private fun bindActions() {
+        binding.moreActions.setOnClickListener { binding.secondaryActions.visibility = if (binding.secondaryActions.visibility == View.VISIBLE) View.GONE else View.VISIBLE }
+        binding.pauseScan.setOnClickListener { if (engine.isScanning) { scanner.unregister(); engine.pause() } else { engine.resume(assignment); scanner.register() } }
         binding.back.setOnClickListener { leave() }
         binding.recall.setOnClickListener {
             startActivity(android.content.Intent(this, RecallActivity::class.java).putExtra("assignmentId", assignment))
@@ -78,8 +80,6 @@ class WorkActivity : ComponentActivity() {
         binding.manualToggle.setOnClickListener {
             val visible = binding.manualPanel.visibility != View.VISIBLE
             binding.manualPanel.visibility = if (visible) View.VISIBLE else View.GONE
-            binding.products.visibility = if (visible) View.GONE else View.VISIBLE
-            binding.recent.visibility = if (visible) View.GONE else View.VISIBLE
             hideKeyboard()
         }
     }
@@ -87,7 +87,7 @@ class WorkActivity : ComponentActivity() {
     private fun manualInput() {
         val text = binding.manual.text.toString()
         if (text.isEmpty()) return
-        if (engine.receive(text, "MANUAL")) { binding.manual.text.clear(); hideKeyboard() }
+        if (engine.receive(text, "MANUAL")) { binding.manual.text.clear(); hideKeyboard(); binding.root.scrollTo(0, 0) }
     }
     private fun confirmDisplayed() {
         val state = renderer.displayed; val candidate = state.candidate
