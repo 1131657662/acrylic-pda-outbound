@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-14
 branch: codex/development
-head: 91fe25d8
-dirty_entries: 84
+head: 66ee053c
+dirty_entries: 75
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,16 +17,16 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标active未完成。坏机单有权撤回→重发→新机从头作业；换机进度承接/多跳/激活已取消，原事实/源码保留。
 
 ## Git、写权与断点
-- 固定D:/acrylic-pda-outbound、codex/development；HEAD/远端91fe25d8bb83fccfd0b42f428bd734f825750f51，main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86。不合main/发布/部署/原库/现网。
-- 唯一写者本聊天01a13a57-8082-7dd2-a08f-987483dcda4b，目标active；写权.local/goal-20261014/ownership-resume-e06-web-02.json。已实查旧写者idle/末轮interrupted、无在途构建/测试；旧released=false/owner ID不作当前写权。
+- 固定D:/acrylic-pda-outbound、codex/development；HEAD/远端66ee053c875c8d5519d55e8bb71cc56df25a847e，main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86。不合main/发布/部署/原库/现网。
+- 唯一写者本聊天01a13a57-8082-7dd2-a08f-987483dcda4b，目标active；写权.local/goal-20261014/ownership-e06-l2-diagnostic01.json，交付前全脏快照e06-l2-partial-precommit01。实查只有本聊天active、无其他写者；旧released=false/owner ID不作当前写权。
 - 接管81路径原字节/长度/SHA256、diff/暂存/远端/33工作树/进程/监听/磁盘已保存.local/goal-20261014/resume-e06-web-20261014-02；修改前旧看板完整保存在其中board-before.md。提交前全脏快照e06-multitask-web-delivery02-precommit02；继承Android/UI/文档/工具及server/physical-disposition-last-request.json保护，后者不提交。
 - 旧详细结论已先归档[上一断点](history/ORCHESTRATION_STATE_before_conflict_extension_2026-10-14.md)；历史按需读，不恢复旧指令。验收路径见[索引](DEVELOPMENT_PROGRESS.md)，不能把L1开发备份拼为E06/D18。
 
 ## 环境、磁盘与生产边界
-- 主机2026-10-14 20:45重启；21:23实查无项目Java/MySQL/Android/Vite进程，19330–19332、19434–19436、5174零监听，旧预览/1519 PID失效。库/私有文件、AVD/Keystore保留且未启动；共享3306保持。实际进程/监听见delivery02-precommit02。
+- 主机2026-10-14 20:45重启，旧预览/1519 PID失效；22:08实查1539/1540均保全停机，19332/19436/5175零监听，无项目API/MySQL/Vite/Gradle；原AVD5562 PID12472/qemu5512保留、应用已force-stop，共享3306保持。材料/原身份保留，见e06-l2-partial-precommit01。
 - 1520–1523失败库和所有后续隔离库已按各保全页dump/hash认证停机，失败证据/原库零删除；1524–1534适用NTFS压缩长度/hash不变，详见上一断点与preserve目录。原CLI失败不倒推通过。
 - 1537已dump/hash认证停机，19332/19436零监听；preserve-1537-e06-multitask-service-l1-01保347文件长度/hash，压220文件，释放206954496字节，失败证据零删除；预览/1519保持。
-- 新产物D盘.local、TEMP/TMP/Java临时仅子进程；重启后C/D可用76428128256/16742309888字节，精确以delivery02-precommit02/disks.json为准。下一隔离副本预计≤2GiB，重型动作前复测；本轮未清理。
+- 新产物D盘.local、TEMP/TMP/Java临时仅子进程；22:08 C/D可用77635850240/15583322112字节，见e06-l2-partial-precommit01/disks.json。下一隔离副本预计≤2GiB，重型动作前复测；仅认证停机后NTFS压缩，字节/hash不变，无证据删除。
 - 七类生产决定handler/POST/放行/证据写入/关闭能力及TEMP归档边界保持，localDeletionAllowed=false、D16标准不变。合成主管/库存/实物/签名与模拟器不冒充原PDA现场事实。
 
 ## 已验范围、暂缓及下一步
@@ -41,7 +41,9 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 全脏快照e06-extension-web-resume01保护72脏路径；旧handoff 68路径仅AGENTS/看板受后来规则/事实影响，Android/UI/请求原件保持。1536已dump/hash认证停机/零监听，保346文件长度/hash、压219文件释放206897152字节。收尾C/D47367143424/18178719744字节，见preserve-1536-e06-extension-web-l1-01；预览/1519保留。
 - 多任务服务[L1开发备份](history/GOAL_E06_MULTITASK_ASSOCIATION_L1_2026-10-14.md)：206项零失败/错误/跳过、真实1537双任务正向/并发/末SQL/异文/实际锁后撤权/default-off/新JVM固定钥与严格守恒通过；2418输入/class/迁移绑定。extra01–03夹具失败保留，extra04新依据通过，计数不清零。
 - 多任务网页[L1报告](history/GOAL_E06_MULTITASK_ASSOCIATION_WEB_L1_2026-10-14.md)已补：原Chrome1场景/多任务13项/旧16项、类型/构建/契约通过；接管13消费者复跑通过。206输入仅测试追加2截图，重构hash完全匹配；180表原证据精确增量/旧行守恒、2418服务输入/JAR、347保全文件及dump/hash复核通过。1538停机且禁止复用，非E06 L2/D18 L3。
-- 本轮无在途重型任务、唯一写者本聊天；下一步明确路径网页L1开发备份提交推送→新隔离输入E06受影响组合→E07恢复/外置副本→E08留存/UI→E09及全部剩余闸门，不缩总目标。原失败/暂缓与原件全部保留。
+- E06[组合补验与缺口](history/GOAL_E06_COMBINATION_PARTIAL_2026-10-14.md)：Android本轮90项/APK/lint通过（3执行85复用）；新增原AVD离线新进程只读1项通过，83表/150旧证据文件不变；实际SAF/固定登记根/原ZIP与460值电脑转换、当前封存向量1项/Python21项、网页类型/构建/契约及13+16消费者通过。2418服务/985旧输入SHA匹配。
+- 1539 prepare01启动时序断言失败指纹1次，诊断原业务未写后prepare02有效；真实非空/双任务正向/权限/并发/异文/尾SQL/实际锁后撤权/固定钥原件/新JVM default-off通过。1539与1540各347保全文件长度/hash不变，dump/认证停机零监听；preserve-1539-e06-l2-service-01及preserve-1540-e06-l2-web-blocked-01，失败原件全保留。
+- 1540非空/实物与默认关闭有/无权通过，但5175 Vite启动被自动审批以blocked by policy拒绝，无更具体原因、未绕过；Chrome未执行，no-browser01核零关联/全表不变。只挂起直接依赖，不记E06 L2；需允许的预览条件才重入队。网页L1已推送66ee053c；此轮部分补验开发备份后继续E07恢复/O05→E08留存/UI→E09及剩余闸门，总目标active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

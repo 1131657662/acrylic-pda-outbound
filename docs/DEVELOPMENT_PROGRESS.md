@@ -4,6 +4,8 @@
 
 # 开发验收索引
 
+- [E06受影响组合补验（未完成）](history/GOAL_E06_COMBINATION_PARTIAL_2026-10-14.md)：原AVD封存只读/83表与旧证据守恒、实际SAF/460值转换、1539真实事务/新JVM/default-off、13+16网页消费及21项Python通过；1540零关联保全，Chrome预览启动遭自动审批拒绝。仅开发备份，不计E06 L2/D18 L3；E07独立范围继续。
+
 - [E06多任务人工关联网页L1](history/GOAL_E06_MULTITASK_ASSOCIATION_WEB_L1_2026-10-14.md)：完整成员与合计短装、Chrome实际丢响应/双页原键/主成员回读、逐值守恒和保全输入复核；仅开发备份，E06受影响L2及最终L3继续。
 
 - [E06多任务人工关联服务L1](history/GOAL_E06_MULTITASK_ASSOCIATION_L1_2026-10-14.md)：显式成员/不可变台账、真实聚合正向/事务/权限/原键、严格非空与固定钥消费；仅开发备份，多任务网页与E06组合继续。
