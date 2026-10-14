@@ -4,6 +4,8 @@
 
 # 开发验收索引
 
+- [E08 页面与作业体验开发验收（未完成）](history/GOAL_E08_UI_ACCEPTANCE_2026-10-15.md)：Work/Submission/Temporary/Handover 重设计、恢复确认和 Temporary 搜索已实现；lint/debug/staging 成功，短路径隔离复验 13/13 主机测试通过。长路径 Robolectric SQLite 失败根因和原 XML 保留；仅开发备份，U01–U04 完整验收、真机/长时、E06 L2、D18 L3 与总目标继续。
+
 - [E06受影响组合补验（未完成）](history/GOAL_E06_COMBINATION_PARTIAL_2026-10-14.md)：原AVD封存只读/83表与旧证据守恒、实际SAF/460值转换、1539真实事务/新JVM/default-off、13+16网页消费及21项Python通过；1540零关联保全，Chrome预览启动遭自动审批拒绝。仅开发备份，不计E06 L2/D18 L3；E07独立范围继续。
 
 - [E06多任务人工关联网页L1](history/GOAL_E06_MULTITASK_ASSOCIATION_WEB_L1_2026-10-14.md)：完整成员与合计短装、Chrome实际丢响应/双页原键/主成员回读、逐值守恒和保全输入复核；仅开发备份，E06受影响L2及最终L3继续。
