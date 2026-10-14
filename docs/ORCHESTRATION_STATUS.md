@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: fa583628
-dirty_entries: 88
+head: c0c72836
+dirty_entries: 95
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,12 +17,12 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标仍为active。坏机单有权撤回→重发→新机从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与断点
-- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本断点输入 HEAD/实际远端同为 `fa583628e9b94e3baf757b4d99213a4e903e3322`，main 只读。五路径源码候选树 `7191302eee4d7d90105208f0b23cc82757ed4eeb` 已导出验证；提交后的精确 SHA/远端回执另存 `.local/goal-20261015/ui-dependency01/`，避免自引用提交循环。
-- 本聊天为唯一活动写者；接续 83 项继承改动原字节/哈希全部匹配，见 `.local/goal-20261015/ui-dependency01/dirty-hashes.json`、`resume-hash-check.json`、`ownership-resume.json`。更新前旧看板保存在同目录 `board-before-dependency.md`；其他恢复、搜索/提交 UI、文档、工具、私有请求继续保留，禁止 `git add .`。
-- 项目 API/Vite/隔离服务无监听；共享 MySQL 3306/33060 PID 5288、原 AVD `emulator-5562` PID 12472 和 ADB PID 10592 保留。仅停止核实后的自身卡住只读查询链，未重启原设备、未安装 APK/执行 instrumentation。最新进程/监听见同目录 `processes-resume.json`、`netstat-resume.txt`。
+- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本轮 P07 输入 HEAD/实际远端同为 `c0c728366f074a3a2197170744e422e7bafd8084`，main 只读。该 SHA 已推共享扫码依赖开发备份，源码树 `7191302eee4d7d90105208f0b23cc82757ed4eeb` 的输入/回执保留；P07 提交后精确 SHA/远端另存 `.local/goal-20261015/p07-ops03/`，不自引用循环提交。
+- 本聊天为源码/看板唯一写者；另一清理聊天范围只含冷产物且回执登记未改源码/看板，见 `.local/goal-20261015/p07-ownership-checkpoint01/ownership-resolved.json`。继承79项原字节/哈希全部匹配；P07全差异见 `p07-ops03/dirty-hashes.json`，原字节见 `p07-ops01/dirty-files/`。旧看板先存 `p07-ops03/board-before-report.md`；其他恢复、UI、文档、工具和私有请求继续保留，禁止 `git add .`。
+- 主机07:15:24重启，旧PID/AVD状态已失效；本聊天未操作原模拟器/物理机。项目API/Vite/隔离服务无监听，共享MySQL3306/33060 PID5412（父4372）；无Java/Python/ADB/emulator/qemu重型任务。进程/监听见 `p07-ops03/processes-after.json`、`netstat-after.txt`，不操作共享库。
 
 ## 环境、磁盘与生产边界
-- 目标端口 `8080/5173/1538/1539/1540/1541/1542/1519/1522/1523` 复核无监听；精确候选构建后 C/D 可用 `77,333,651,456` / `11,189,850,112` bytes，后续复测存 `disks-resume.json`。新重型动作前复测；所有失败库、dump/binlog、原日志/XML、原件、密钥/AVD 身份和保全目录继续保留。
+- 目标端口 `8080/5173/1538/1539/1540/1541/1542/1519/1522/1523` 复核无监听；P07构建后C/D可用 `78,881,837,056` / `19,867,713,536` bytes，后续见 `p07-ops03/disks-after.json`。另一清理聊天无损压缩12冷AVD、清57可重提取DLL释放约8.4GiB，回执 `.local/disk-cleanup-20261015/cleanup-summary.json`；原库/失败库、dump/binlog、原日志/XML、原件和密钥/AVD身份继续保留。
 - 生产决定 handler/POST/放行/证据写入/关闭能力、TEMP 生产归档边界与 `localDeletionAllowed=false` 保持关闭；同机合成身份/模拟器不冒充现场事实。
 
 ## 已验范围、暂缓及下一步
@@ -36,7 +36,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - D16 清理与恢复引用保护已完成当前开发切片：19/19 定向 Android 测试通过，报告见 [GOAL_D16_RETENTION_ACCEPTANCE_2026-10-15.md](history/GOAL_D16_RETENTION_ACCEPTANCE_2026-10-15.md)，生产删除、长期留存和 D13–D15 依赖仍未验。
 - O04 独立采集开发切片已收口：短路径 Java 临时目录、既有服务端凭据向量与独立包输出绑定后 90 项独立 Android/Room/救援测试 0 失败、0 错误、1 个既有跳过；报告见 [GOAL_O04_INDEPENDENT_COLLECTION_ACCEPTANCE_2026-10-15.md](history/GOAL_O04_INDEPENDENT_COLLECTION_ACCEPTANCE_2026-10-15.md)。深路径首次运行准确保留为 38 个 SQLite 打开失败加 1 个凭据向量/输出目录缺失失败，合成/隔离身份边界和生成包均保留；不计 E06 L2、U03 完整人工关联或 D18 L3。
 - U01 共享扫码布局依赖已补精确候选主机证据：23/23、Debug APK/lint 通过、852 源码文件前后不变；同候选引擎补验 5/5。首次补跑因旧缓存锁在业务测试前退出、误读残留 XML 的初始汇总均保留并更正；[报告](history/GOAL_U01_SCAN_DEPENDENCY_2026-10-15.md)明示 `fa583628` 依赖遗漏和前次 26 项输入差别。模拟器查询超时，设备入口未验，不计完整 L1 或任何 D 收口。
-- 下一动作：明确路径提交共享布局开发备份，随后推进 E07/P07 外部秘密供应及停写重锚运维缺口；设备和1540 Chrome 直接入口阻断不绕过，有新依据再补实际入口/E06 L2，最后在候选上跑 D18 L3。总目标保持 `active`，剩余 D/O/U、第8节和全部暂缓项不因局部通过清零。
+- P07 外部秘密供应/CLI/独立回读工具L1已补：40/40、包装修复后4/4、JAR通过，原签记录成功/失败均留副本；[报告](history/GOAL_P07_OFFLINE_REKEY_ACCEPTANCE_2026-10-15.md)和[运维入口](RECOVERY_REKEY_RUNBOOK.md)记录输入/失败/真实消费者。初次17项1回执规范失败及已写合成原件完整保留；仅该工具切片，不计D13全部、E07 L2或D18 L3。
+- 下一动作：明确路径提交P07切片，随后核对D13–D15突发中止、历史钥/引用、跨截点及监控/回退独立缺口；设备和1540 Chrome阻断不绕过，有新依据再补实际入口/E06 L2，最后候选跑D18 L3。总目标保持active，剩余D/O/U、第8节和全部暂缓项不因局部通过清零。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

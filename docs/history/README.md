@@ -1,5 +1,7 @@
 # 历史归档
 
+- [P07 外部秘密供应与停机重锚 L1](GOAL_P07_OFFLINE_REKEY_ACCEPTANCE_2026-10-15.md)：40/40 专项/回归，包装改动后实际 Python 产品入口 4/4、JAR 构建通过；原件/失败保留，D13/E07/L3 其余必做继续。
+
 - [U01 共享扫码布局依赖开发备份](GOAL_U01_SCAN_DEPENDENCY_2026-10-15.md)：精确暂存树 23/23、Debug APK/lint 通过，补齐此前遗漏依赖；设备入口未验，不计完整 L1、U01/U02、E06 L2 或 D18 L3。
 
 - [O01/U01 Android 交互定向验收](GOAL_O01_U01_ANDROID_ACCEPTANCE_2026-10-15.md)：工作树定向单测 26/26、lint 与 Debug APK 通过；测试清单及提交依赖补核，仍仅开发证据。

@@ -50,3 +50,11 @@ tasks.register('recoveryControlClasspath') {
         target.text = groovy.json.JsonOutput.toJson(sourceSets.test.runtimeClasspath.files.collect { it.absolutePath })
     }
 }
+
+tasks.register('recoveryRekeyClasspath') {
+    dependsOn classes
+    doLast {
+        def target = layout.buildDirectory.file('recovery-rekey-classpath.json').get().asFile
+        target.text = groovy.json.JsonOutput.toJson(sourceSets.main.runtimeClasspath.files.collect { it.absolutePath })
+    }
+}

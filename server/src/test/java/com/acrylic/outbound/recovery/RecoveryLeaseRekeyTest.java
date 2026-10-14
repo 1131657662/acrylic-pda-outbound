@@ -19,6 +19,7 @@ class RecoveryLeaseRekeyTest {
         assertThat(result.processRecords()).isEqualTo(1);
         assertThat(result.leaseRecords()).isZero();
         assertThat(result.oldAnchorId()).isNotEqualTo(result.newAnchorId());
+        assertThat(Path.of(result.evidenceDirectory()).resolve("leases/index.json")).exists();
         assertThat(Files.readString(supply.roots().root().resolve("lease-root.json")))
             .doesNotContain(RecoveryControlFormat.hex(next));
 
@@ -74,6 +75,12 @@ class RecoveryLeaseRekeyTest {
         assertThat(Files.readString(index)).isEqualTo(indexBefore);
         assertThat(Files.readString(marker)).isEqualTo(markerBefore);
         assertThat(Files.readString(pending)).isEqualTo("occupied");
+        try (var paths = Files.list(leaseRoot.getParent())) {
+            Path backup = paths.filter(p -> p.getFileName().toString().startsWith(".rekey-backup-")).findFirst().orElseThrow();
+            assertThat(Files.readString(backup.resolve(leaseRoot.relativize(process)))).isEqualTo(processBefore);
+            assertThat(Files.readString(backup.resolve("leases/index.json"))).isEqualTo(indexBefore);
+            assertThat(Files.readString(backup.resolve("lease-root.json"))).isEqualTo(markerBefore);
+        }
     }
 
     private static RecoveryLeaseRoots.Binding binding(FenceTestSupply supply) throws Exception {

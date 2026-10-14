@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [P07 外部秘密供应与停机重锚 L1](history/GOAL_P07_OFFLINE_REKEY_ACCEPTANCE_2026-10-15.md)：40/40 专项及受影响回归，包装改动后 Python 产品入口 4/4、JAR 构建通过；旧记录副本、失败和真实 Python/JVM/独立回读保全。仅工具切片，不计 D13 全部、E07 L2 或 D18 L3。
+
 - [U01 共享扫码布局依赖开发备份](history/GOAL_U01_SCAN_DEPENDENCY_2026-10-15.md)：精确暂存树导出验证 23/23，Debug APK/lint 通过；补齐渲染修复遗漏的共享布局依赖。设备入口未验，不计完整 L1、U01/U02、E06 L2 或 D18 L3。
 
 - [O01/U01 Android 交互定向验收](history/GOAL_O01_U01_ANDROID_ACCEPTANCE_2026-10-15.md)：工作树定向单测 26/26，lint 与 Debug APK 通过；测试清单及提交依赖已补核。仅开发证据，不计真机/U01-U04 完整验收、E06 L2、D18 L3 或总目标。

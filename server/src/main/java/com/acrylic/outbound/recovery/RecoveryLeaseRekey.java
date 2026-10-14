@@ -13,7 +13,7 @@ public final class RecoveryLeaseRekey {
     private static final long LOCK_WAIT_MILLIS = 10_000L;
 
     public record Result(String oldAnchorId, String newAnchorId, String markerSha256,
-                         int processRecords, int leaseRecords) { }
+                         int processRecords, int leaseRecords, String evidenceDirectory) { }
 
     private RecoveryLeaseRekey() { }
 
@@ -43,12 +43,11 @@ public final class RecoveryLeaseRekey {
             for (var entry : rewritten.entrySet()) replace(entry.getKey(), entry.getValue());
             replace(root.resolve("leases").resolve("index.json"), indexWithAnchor(index, newAnchor));
             replace(root.resolve("lease-root.json"), marker);
-            return new Result(sha256(oldAnchor), sha256(newAnchor), hash(marker), processPaths.size(), 0);
+            return new Result(sha256(oldAnchor), sha256(newAnchor), hash(marker), processPaths.size(), 0, backup.toString());
         } catch (IOException | RuntimeException failure) {
             restore(targets, root, backup, failure);
+            failure.addSuppressed(new IOException("RECOVERY_REKEY_BACKUP_RETAINED: " + backup));
             throw failure;
-        } finally {
-            deleteTree(backup);
         }
     }
 
@@ -116,16 +115,11 @@ public final class RecoveryLeaseRekey {
     }
 
     private static void restore(List<Path> targets, Path root, Path backup, Throwable failure) {
-        try {
-            for (Path target : targets) Files.copy(backup.resolve(root.relativize(target)), target,
-                StandardCopyOption.REPLACE_EXISTING, LinkOption.NOFOLLOW_LINKS);
-        } catch (IOException rollback) { failure.addSuppressed(rollback); }
-    }
-
-    private static void deleteTree(Path root) throws IOException {
-        if (!Files.exists(root)) return;
-        try (var paths = Files.walk(root)) {
-            for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) Files.deleteIfExists(path);
+        for (Path target : targets) {
+            try { Files.copy(backup.resolve(root.relativize(target)), target,
+                StandardCopyOption.REPLACE_EXISTING, LinkOption.NOFOLLOW_LINKS); }
+            catch (IOException rollback) { failure.addSuppressed(rollback); }
         }
     }
+
 }
