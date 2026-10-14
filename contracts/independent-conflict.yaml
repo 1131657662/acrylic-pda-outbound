@@ -6,7 +6,9 @@ Collection:
       完整可信结束原件与各方实物回执必须覆盖全部冲突任务。选定包已装载，其余各方同码已卸下且有理由；
       未找到、结束分歧、未可信原件、漏方与选定库存阻断不能被决定覆盖。
       仅不可变决定/引用/包周期归属声明；原采集、库存、占用、提交、账务不变。原键优先恢复，异文拒绝。
-      不自动解除关联阻断、不授采集/库存/记账/放行/删除。已有包周期决定不得用新键覆盖，增量/更正需专门责任链。
+      不自动解除关联阻断、不授采集/库存/记账/放行/删除。已有包周期决定不得用新键覆盖。
+      增量须显式引用最新predecessorDecisionId，专用扩展开关默认关闭；同选定归属、原包周期及各方原件只增不减，禁止分叉。
+      新关联只消费最新决定，历史决定及已签关联继续可读/原键恢复；改变归属不属于本入口。
     security: [{webSession: []}]
     parameters:
       - {$ref: './openapi.yaml#/components/parameters/ImportId'}
@@ -39,6 +41,7 @@ Evidence:
   properties:
     contextSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
     physicalCheckId: {type: string, format: uuid}
+    predecessorDecisionId: {type: string, format: uuid, description: 同选定原件最新决定，追加时必填}
     reason: {type: string, minLength: 1, maxLength: 500}
     peerChecks:
       type: array
@@ -69,6 +72,8 @@ Receipt:
     requestSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
     contextSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
     recordedAt: {type: string, format: date-time}
+    predecessorDecisionId: {type: string, format: uuid}
+    predecessorReceiptSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
     signedProof: {type: string}
     signingKeyId: {type: string}
     conflictDecisionRecorded: {type: boolean, const: true}

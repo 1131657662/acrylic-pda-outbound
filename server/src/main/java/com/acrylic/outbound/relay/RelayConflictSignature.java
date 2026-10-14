@@ -19,7 +19,7 @@ public class RelayConflictSignature {
     }
     private ObjectNode claims(RelayConflictStore.Row row) {
         var s=row.scope();var original=row.context().path("selected").path("context").path("original");
-        return object().put("purpose","INDEPENDENT_CONFLICT_EVIDENCE_V1").put("decisionId",row.id().toString())
+        var result=object().put("purpose","INDEPENDENT_CONFLICT_EVIDENCE_V1").put("decisionId",row.id().toString())
             .put("warehouseId",s.warehouse().toString()).put("relayId",s.relay().toString()).put("deviceId",s.device().toString())
             .put("taskId",s.task().toString()).put("supervisorId",s.actor().toString()).put("decision","ASSIGN_TO_SELECTED_TASK")
             .put("archiveSha256",text(original,"archiveSha256")).put("closureSha256",text(original,"closureSha256"))
@@ -27,6 +27,8 @@ public class RelayConflictSignature {
             .put("conflictDecisionRecorded",true).put("pendingReconciliation",true).put("associationAuthorized",false)
             .put("newCollectionAuthorized",false).put("stockAvailable",false).put("businessProcessed",false)
             .put("releaseAllowed",false).put("localDeletionAllowed",false);
+        if(row.request().has("predecessorDecisionId"))result.put("predecessorDecisionId",text(row.request(),"predecessorDecisionId"))
+            .put("predecessorReceiptSha256",sha(row.context().path("predecessorReceipt")));return result;
     }
     public void verify(RelayConflictStore.Row row) {
         try {

@@ -13,7 +13,7 @@ public class RelayAssociationConflicts {
     }
     public JsonNode resolve(UUID warehouse,UUID relay,JsonNode request) {
         if(!request.has("conflictDecisionId"))return null;
-        access.authorize(warehouse);return conflicts.read(warehouse,relay,uuid(request,"conflictDecisionId"));
+        access.authorize(warehouse);return conflicts.current(warehouse,relay,uuid(request,"conflictDecisionId"));
     }
     public void insert(RelayAssociationStore.Row row) { refs.insert(row); }
     public JsonNode read(RelayAssociationStore.Row row) {

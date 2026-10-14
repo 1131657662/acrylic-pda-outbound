@@ -7,9 +7,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RelayConflictAccess {
-    private final RelayEnabled relay;private final RelayAccess access;private final boolean enabled;
-    public RelayConflictAccess(RelayEnabled relay,RelayAccess access,@Value("${outbound.rescue.independent-conflict-enabled:false}") boolean enabled) {
-        this.relay=relay;this.access=access;this.enabled=enabled;
+    private final RelayEnabled relay;private final RelayAccess access;private final boolean enabled,extensionEnabled;
+    public RelayConflictAccess(RelayEnabled relay,RelayAccess access,@Value("${outbound.rescue.independent-conflict-enabled:false}") boolean enabled,
+        @Value("${outbound.rescue.independent-conflict-extension-enabled:false}") boolean extensionEnabled) {
+        this.relay=relay;this.access=access;this.enabled=enabled;this.extensionEnabled=extensionEnabled;
     }
     public void read(UUID warehouse) { relay.require();access.reviewIndependent(warehouse); }
     public void authorize(UUID warehouse) {
@@ -17,5 +18,8 @@ public class RelayConflictAccess {
     }
     public UUID write(UUID warehouse,String epoch) {
         authorize(warehouse);UUID actor=access.write(warehouse,epoch,null);access.reviewIndependent(warehouse);return actor;
+    }
+    public void extension() {
+        if(!extensionEnabled)throw new BusinessException(409,"INDEPENDENT_CONFLICT_EXTENSION_DISABLED","增量冲突责任链尚未开放，原决定保留");
     }
 }

@@ -24,11 +24,19 @@ public class RelayConflicts {
             Map.of("relayId",relay.toString(),"warehouseId",c.warehouse().toString(),"requestSha256",sha(body)));
         UUID replay=journal.replay(command);if(replay!=null)return verified(c.warehouse(),relay,replay);
         var at=Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS);var context=context(new Build(c.warehouse(),relay,body,actor,at));
-        store.available(c.warehouse(),context.path("claims"));var original=context.path("selected").path("context").path("original");
+        var ancestors=extension(c.warehouse(),relay,body,context);
+        store.available(c.warehouse(),context.path("claims"),ancestors);var original=context.path("selected").path("context").path("original");
         var scope=new RelayConflictStore.Scope(c.warehouse(),relay,uuid(original,"deviceId"),uuid(original,"taskId"),actor);UUID id=Ids.next();
         var row=new RelayConflictStore.Row(id,scope,body,context,null,at);var receipt=signature.create(row);
         store.insert(new RelayConflictStore.Row(id,scope,body,context,receipt,at));journal.record(command,id,c.requestId());
         return verified(c.warehouse(),relay,id);
+    }
+    private Set<UUID> extension(UUID warehouse,UUID relay,JsonNode body,ObjectNode context) {
+        if(!body.has("predecessorDecisionId"))return Set.of();access.extension();
+        var id=uuid(body,"predecessorDecisionId");var rows=lineage(warehouse,relay,id);store.latest(id);
+        if(rows.size()>=RelayConflictExtensionPolicy.MAX_CHAIN)throw RelayConflictPolicy.blocked("责任链达到有界容量，请保全专门核对");
+        RelayConflictExtensionPolicy.complete(context,rows.getFirst());context.set("predecessorReceipt",rows.getFirst().receipt());
+        capacity(context,Map.of());var result=new HashSet<UUID>();rows.forEach(row->result.add(row.id()));return Set.copyOf(result);
     }
     private record Build(UUID warehouse,UUID relay,JsonNode body,UUID actor,Instant at) { }
     private ObjectNode context(Build input) {
@@ -55,12 +63,29 @@ public class RelayConflicts {
     }
     @Transactional(readOnly=true)
     public JsonNode read(UUID warehouse,UUID relay,UUID id) { access.read(warehouse);return verified(warehouse,relay,id); }
+    public JsonNode current(UUID warehouse,UUID relay,UUID id) {
+        var result=read(warehouse,relay,id);store.latest(id);return result;
+    }
     private JsonNode verified(UUID warehouse,UUID relay,UUID id) {
-        var row=store.read(warehouse,id);if(!row.scope().relay().equals(relay))throw RelayConflictStore.missing();signature.verify(row);store.references(row);
+        var row=lineage(warehouse,relay,id).getFirst();
+        var result=object();result.set("receipt",row.receipt());result.set("evidence",row.request());result.set("originalContext",row.context());return result;
+    }
+    private List<RelayConflictStore.Row> lineage(UUID warehouse,UUID relay,UUID id) {
+        var rows=new ArrayList<RelayConflictStore.Row>();var seen=new HashSet<UUID>();
+        while(id!=null) {
+            if(!seen.add(id) || rows.size()>=RelayConflictExtensionPolicy.MAX_CHAIN)throw RelayConflictStore.corrupt();
+            var row=store.read(warehouse,id);if(!row.scope().relay().equals(relay))throw RelayConflictStore.missing();
+            signature.verify(row);store.references(row);verifyChecks(warehouse,row);rows.add(row);id=store.predecessor(row);
+        }
+        for(int i=0;i<rows.size()-1;i++)RelayConflictExtensionPolicy.reference(rows.get(i),rows.get(i+1));
+        var ancestors=new HashSet<UUID>();
+        for(int i=rows.size()-1;i>=0;i--) { var row=rows.get(i);ancestors.add(row.id());store.available(warehouse,row.context().path("claims"),ancestors); }
+        return List.copyOf(rows);
+    }
+    private void verifyChecks(UUID warehouse,RelayConflictStore.Row row) {
         for(var check:RelayConflictStore.checks(row.context())) {
             var r=check.path("receipt");var actual=physical.read(warehouse,uuid(r,"relayId"),uuid(r,"receiptId"));
             if(!actual.equals(check))throw RelayConflictStore.corrupt();
         }
-        var result=object();result.set("receipt",row.receipt());result.set("evidence",row.request());result.set("originalContext",row.context());return result;
     }
 }

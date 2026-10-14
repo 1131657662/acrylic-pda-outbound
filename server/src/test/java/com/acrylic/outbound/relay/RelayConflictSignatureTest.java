@@ -40,4 +40,13 @@ class RelayConflictSignatureTest {
         var altered=new RelayConflictStore.Row(row.id(),changed,row.request(),row.context(),row.receipt(),row.at());
         assertThatThrownBy(()->signature.verify(altered)).isInstanceOf(BusinessException.class);
     }
+    @Test void extensionBindsTheCompleteOriginalPredecessorReceipt() {
+        var request=(ObjectNode)row.request().deepCopy();var context=(ObjectNode)row.context().deepCopy();
+        request.put("predecessorDecisionId",row.id().toString());context.set("predecessorReceipt",row.receipt().deepCopy());
+        var unsigned=new RelayConflictStore.Row(java.util.UUID.randomUUID(),row.scope(),request,context,null,row.at());
+        var next=new RelayConflictStore.Row(unsigned.id(),unsigned.scope(),request,context,signature.create(unsigned),row.at());
+        signature.verify(next);assertThat(next.receipt().path("predecessorDecisionId").asText()).isEqualTo(row.id().toString());
+        ((ObjectNode)context.path("predecessorReceipt")).put("localDeletionAllowed",true);
+        assertThatThrownBy(()->signature.verify(next)).isInstanceOf(BusinessException.class);
+    }
 }

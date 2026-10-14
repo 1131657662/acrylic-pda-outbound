@@ -4,6 +4,7 @@ import { jsonDigest, physicalResultSchema, type PhysicalOwner, type PhysicalResu
 const hash = z.string().regex(/^[0-9a-f]{64}$/);
 const context = z.record(z.string(), z.unknown());
 export const conflictEvidenceSchema = z.object({ contextSha256: hash, physicalCheckId: z.uuid(),
+  predecessorDecisionId: z.uuid().optional(),
   peerChecks: z.array(z.object({ relayId: z.uuid(), physicalCheckId: z.uuid() }).strict()).min(1).max(199),
   reason: z.string().trim().min(1).max(500) }).strict()
   .refine(body => new Set(body.peerChecks.map(row => row.relayId)).size === body.peerChecks.length);
@@ -12,11 +13,13 @@ export const conflictResultSchema = z.object({
     warehouseId: z.uuid(), relayId: z.uuid(), deviceId: z.uuid(), taskId: z.uuid(), supervisorId: z.uuid(),
     decision: z.literal('ASSIGN_TO_SELECTED_TASK'), archiveSha256: hash, closureSha256: hash,
     requestSha256: hash, contextSha256: hash, recordedAt: z.iso.datetime(), signedProof: z.string().min(1),
+    predecessorDecisionId: z.uuid().optional(), predecessorReceiptSha256: hash.optional(),
     signingKeyId: z.string().min(1), conflictDecisionRecorded: z.literal(true), pendingReconciliation: z.literal(true),
     associationAuthorized: z.literal(false), newCollectionAuthorized: z.literal(false), stockAvailable: z.literal(false),
     businessProcessed: z.literal(false), releaseAllowed: z.literal(false), localDeletionAllowed: z.literal(false) }).strict(),
   evidence: conflictEvidenceSchema,
   originalContext: z.object({ selected: z.object({ context, physical: physicalResultSchema }).strict(),
+    predecessorReceipt: context.optional(),
     peers: z.array(z.object({ group: context, context, physical: physicalResultSchema }).strict()).min(1).max(199),
     claims: z.array(z.object({ barcode: z.string().min(1), baleId: z.uuid(), dispatchCycle: z.string().regex(/^[1-9][0-9]*$/) }).strict()).min(1) }).strict(),
 }).strict();
@@ -53,6 +56,12 @@ async function verifyPeers(result: ConflictResult, owner: PhysicalOwner): Promis
 /** Display digest/reference checks; server verifies RSA and immutable database references. */
 export async function verifyConflict(result: ConflictResult, owner: PhysicalOwner, body?: ConflictEvidence): Promise<void> {
   const r = result.receipt; const selected = result.originalContext.selected; const o = original.parse(selected.context.original);
+  const previous = result.originalContext.predecessorReceipt; const predecessor = result.evidence.predecessorDecisionId;
+  if (Boolean(predecessor) !== Boolean(previous) || Boolean(predecessor) !== Boolean(r.predecessorDecisionId) ||
+      Boolean(predecessor) !== Boolean(r.predecessorReceiptSha256) || predecessor && (!previous ||
+      predecessor !== r.predecessorDecisionId || previous.decisionId !== predecessor ||
+      previous.warehouseId !== r.warehouseId || previous.relayId !== r.relayId || previous.taskId !== r.taskId ||
+      previous.deviceId !== r.deviceId || r.predecessorReceiptSha256 !== await jsonDigest(previous))) throw invalid();
   if (r.warehouseId !== owner.warehouseId || r.relayId !== owner.relayId || r.relayId !== o.relayId ||
       r.warehouseId !== o.warehouseId || r.deviceId !== o.deviceId || r.taskId !== o.taskId ||
       r.archiveSha256 !== o.archiveSha256 || r.closureSha256 !== o.closureSha256 ||

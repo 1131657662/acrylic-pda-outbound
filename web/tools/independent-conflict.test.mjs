@@ -19,6 +19,22 @@ test('actual decision binds selected original and every physical peer', async ()
   await assert.rejects(verifyConflict(success.result, { ...owner, warehouseId: crypto.randomUUID() }, success.body));
   await assert.rejects(verifyConflict(success.result, owner, { ...success.body, reason: 'changed' }));
 });
+test('extension requires complete matching predecessor references and original receipt digest', async () => {
+  if (!success.body.predecessorDecisionId) {
+    assert.equal(success.result.receipt.predecessorDecisionId, undefined);
+    assert.equal(success.result.originalContext.predecessorReceipt, undefined); return;
+  }
+  for (const field of ['predecessorDecisionId', 'predecessorReceiptSha256']) {
+    const changed = structuredClone(success.result); delete changed.receipt[field];
+    await assert.rejects(verifyConflict(conflictResultSchema.parse(changed), owner, success.body));
+  }
+  const missing = structuredClone(success.result); delete missing.originalContext.predecessorReceipt;
+  await assert.rejects(verifyConflict(conflictResultSchema.parse(missing), owner, success.body));
+  const changed = structuredClone(success.result);
+  changed.originalContext.predecessorReceipt.taskId = crypto.randomUUID();
+  await assert.rejects(verifyConflict(conflictResultSchema.parse(changed), owner, success.body));
+  await assert.rejects(verifyConflict(success.result, owner, { ...success.body, predecessorDecisionId: crypto.randomUUID() }));
+});
 test('full peer references require nonempty unique original identifiers', () => {
   const row = success.body.peerChecks[0];
   for (const peers of [[], [row, row], [{ ...row, physicalCheckId: '' }]])

@@ -11,7 +11,9 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 final class RelayConflictPolicy {
     private RelayConflictPolicy() { }
     static void validate(JsonNode body) {
-        RelayPhysicalPolicy.exact(body,"contextSha256 physicalCheckId peerChecks reason");
+        var fields=new HashSet<>(List.of("contextSha256","physicalCheckId","peerChecks","reason"));
+        if(body.has("predecessorDecisionId")) { fields.add("predecessorDecisionId");RelayPhysicalPolicy.identifier(body,"predecessorDecisionId"); }
+        RelayPhysicalPolicy.exact(body,String.join(" ",fields));
         if(!text(body,"contextSha256").matches("[0-9a-f]{64}"))throw invalid("核对摘要无效");
         RelayPhysicalPolicy.identifier(body,"physicalCheckId");reason(body);
         var rows=body.path("peerChecks");var seen=new HashSet<UUID>();
