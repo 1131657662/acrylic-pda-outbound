@@ -28,8 +28,11 @@ public class RelayAssociationStore {
         if(current!=1)throw RelayAssociationPolicy.blocked("目标库存或产品映射已变化，请先修订正式单");
     }
     public UUID byTask(UUID warehouse,UUID device,UUID task) {
-        var ids=jdbc.queryForList("SELECT BIN_TO_UUID(id) FROM independent_association WHERE warehouse_id=? AND device_id=? AND task_id=?",
-            String.class,Ids.bytes(warehouse),Ids.bytes(device),Ids.bytes(task));
+        var ids=jdbc.queryForList("""
+            SELECT BIN_TO_UUID(id) FROM independent_association WHERE warehouse_id=? AND device_id=? AND task_id=?
+            UNION ALL SELECT BIN_TO_UUID(association_id) FROM independent_association_member WHERE warehouse_id=? AND device_id=? AND task_id=?
+            """,String.class,Ids.bytes(warehouse),Ids.bytes(device),Ids.bytes(task),Ids.bytes(warehouse),Ids.bytes(device),Ids.bytes(task));
+        if(ids.size()>1)throw corrupt();
         return ids.isEmpty()?null:UUID.fromString(ids.getFirst());
     }
     public UUID byOriginal(UUID warehouse,UUID relay) {
@@ -37,7 +40,10 @@ public class RelayAssociationStore {
             SELECT BIN_TO_UUID(a.id) FROM original_relay r INNER JOIN independent_association a
               ON a.warehouse_id=r.warehouse_id AND a.device_id=r.original_device_id AND a.task_id=r.local_order_id
             WHERE r.id=? AND r.warehouse_id=? AND r.source_kind='INDEPENDENT'
-            """,String.class,Ids.bytes(relay),Ids.bytes(warehouse));
+            UNION ALL SELECT BIN_TO_UUID(a.association_id) FROM original_relay r INNER JOIN independent_association_member a
+              ON a.warehouse_id=r.warehouse_id AND a.device_id=r.original_device_id AND a.task_id=r.local_order_id
+            WHERE r.id=? AND r.warehouse_id=? AND r.source_kind='INDEPENDENT'
+            """,String.class,Ids.bytes(relay),Ids.bytes(warehouse),Ids.bytes(relay),Ids.bytes(warehouse));
         if(ids.size()!=1)throw missing();return UUID.fromString(ids.getFirst());
     }
     public void available(Scope scope) {

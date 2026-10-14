@@ -15,8 +15,11 @@ final class RelayAssociationPlan {
             throw RelayAssociationPolicy.invalid("短装批准须填写不超过500字的说明");
     }
     static void complete(JsonNode request,JsonNode target,JsonNode context) {
+        completeGroup(request,target,List.of(context));
+    }
+    static void completeGroup(JsonNode request,JsonNode target,List<JsonNode> contexts) {
         var actual=new HashMap<String,Long>();
-        for(var row:context.path("inventory")) {
+        for(var context:contexts)for(var row:context.path("inventory")) {
             actual.merge(productKey(row.path("original")),1L,Long::sum);
             if(!text(target,"inventorySnapshotId").equals(text(row.path("server"),"snapshotId")))
                 throw RelayAssociationPolicy.blocked("目标库存快照不符");
@@ -30,7 +33,10 @@ final class RelayAssociationPlan {
         if(total!=count(target,"plannedTotal"))throw RelayAssociationPolicy.blocked("目标整单计划与产品计划不符");
         for(var row:actual.entrySet())if(row.getValue()>planned.getOrDefault(row.getKey(),0L))
             throw RelayAssociationPolicy.blocked("原有效包包含异产品或超过目标产品计划，不能以短装批准放行");
-        approve(request,originalShortfall(context),total-context.path("inventory").size());
+        long original=contexts.stream().mapToLong(RelayAssociationPlan::originalShortfall).sum();
+        long active=contexts.stream().mapToLong(context->context.path("inventory").size()).sum();
+        if(original>100000 || active>100000)throw RelayAssociationPolicy.blocked("合计数量超过资源上限");
+        approve(request,original,total-active);
     }
     private static long originalShortfall(JsonNode context) {
         var closure=context.path("original").path("closure");long active=count(closure,"active");

@@ -4,6 +4,8 @@
 
 # 开发验收索引
 
+- [E06多任务人工关联服务L1](history/GOAL_E06_MULTITASK_ASSOCIATION_L1_2026-10-14.md)：显式成员/不可变台账、真实聚合正向/事务/权限/原键、严格非空与固定钥消费；仅开发备份，多任务网页与E06组合继续。
+
 - [E06人工关联消费完整冲突决定L1](history/GOAL_E06_CONFLICT_ASSOCIATION_L1_2026-10-14.md)：显式原决定/不可变引用，真实正向/默认开关/权限/事务/并发/锁后撤权、固定外部钥与新JVM/守恒；[设计](history/GOAL_E06_CONFLICT_ASSOCIATION_DESIGN_2026-10-14.md)。网页入口、短装/多任务与E06组合仍待验，非整体收口。
 
 - [E06跨机实物冲突服务L1](history/GOAL_E06_CONFLICT_L1_2026-10-14.md)：真实正向/双权限/原键并发/末SQL/锁后撤权、不可变引用和固定外部钥/新JVM/原事实守恒；[设计](history/GOAL_E06_CONFLICT_DESIGN_2026-10-14.md)。仅开发备份，网页/关联消费、短装/多任务、E06组合与总目标继续。

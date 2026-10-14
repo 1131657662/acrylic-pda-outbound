@@ -13,6 +13,7 @@ final class RelayAssociationPolicy {
         String fields="contextSha256 physicalCheckId targetOrderId candidateExclusions reason";
         if(body.has("conflictDecisionId"))fields+=" conflictDecisionId";
         if(body.has("shortfallApproval"))fields+=" shortfallApproval";
+        if(body.has("additionalTasks"))fields+=" additionalTasks";
         RelayPhysicalPolicy.exact(body,fields);RelayAssociationPlan.validate(body);
         if(body.has("conflictDecisionId"))RelayPhysicalPolicy.identifier(body,"conflictDecisionId");
         if(!text(body,"contextSha256").matches("[0-9a-f]{64}"))throw invalid("核对摘要无效");
@@ -23,11 +24,16 @@ final class RelayAssociationPolicy {
             RelayPhysicalPolicy.exact(row,"orderId reason");reason(row);
             if(!seen.add(RelayPhysicalPolicy.identifier(row,"orderId")))throw invalid("候选重复排除");
         }
+        RelayAssociationGroupPolicy.validate(body);
     }
     static JsonNode complete(JsonNode body,JsonNode context,JsonNode physical,UUID actor,Instant now) {
         return complete(body,context,physical,actor,now,null);
     }
     static JsonNode complete(JsonNode body,JsonNode context,JsonNode physical,UUID actor,Instant now,JsonNode conflict) {
+        var target=member(body,context,physical,actor,now,conflict);
+        RelayAssociationPlan.complete(body,target,context);return target;
+    }
+    static JsonNode member(JsonNode body,JsonNode context,JsonNode physical,UUID actor,Instant now,JsonNode conflict) {
         if(!sha(context).equals(text(body,"contextSha256")))throw changed();
         if(text(context.path("original"),"operatorId").equals(actor.toString()))
             throw new BusinessException(403,"INDEPENDENT_ASSOCIATION_SELF_REVIEW","原采集者不得独自关联本任务");
@@ -36,7 +42,7 @@ final class RelayAssociationPolicy {
         if(context.path("inventory").isEmpty())throw blocked("空任务不得关联正式单");
         for(var row:context.path("inventory"))if(!row.path("blockers").isEmpty())throw blocked("库存或占用尚有阻断");
         RelayAssociationConflictPolicy.complete(context,conflict,actor,now);
-        var target=target(body,context);RelayAssociationPlan.complete(body,target,context);return target;
+        return target(body,context);
     }
     private static JsonNode target(JsonNode body,JsonNode context) {
         String id=text(body,"targetOrderId");JsonNode target=null;var expected=new HashSet<String>();
