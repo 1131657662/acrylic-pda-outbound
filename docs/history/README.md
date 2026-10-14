@@ -560,3 +560,4 @@
 - [实际intake开发前看板](ORCHESTRATION_STATE_before_round_accept_2026-10-07.md)：已推送子项及未验证intake接续见当日自主进度第200条。
 - [D07 FORMAL故障换机开发记录](D07_FORMAL_FAULT_EXECUTION_2026-10-09.md)：接续全量快照、真实归档围栏/最终记账/重启、非空迁移、并发和独立工具消费；实际PDA页面/非空附件/跨源INSERT及R09未验分列，不计D07整体。
 - [E06网页显式引用原冲突决定L1](GOAL_E06_CONFLICT_ASSOCIATION_WEB_L1_2026-10-14.md)：真实回执消费、Chrome原键恢复与全表守恒；冲突登记入口和E06组合继续。
+- [E06跨任务实物冲突登记网页L1](GOAL_E06_CONFLICT_WEB_L1_2026-10-14.md)：完整各方/原键/明确编号实际Chrome与全表守恒；短装/多任务及组合继续。

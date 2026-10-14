@@ -10,6 +10,7 @@ import type { IndependentReview, ReviewSection } from './contracts';
 import IndependentEvidence from './IndependentEvidence.vue';
 import PhysicalCheckForm from './PhysicalCheckForm.vue';
 import AssociationForm from './AssociationForm.vue';
+import ConflictForm from './ConflictForm.vue';
 const session = useSessionStore(); const route = useRoute();
 const relayId = ref(typeof route.query.relay === 'string' ? route.query.relay : ''); const section = ref<ReviewSection>('candidates');
 const data = ref<IndependentReview | null>(null); const busy = ref(false); const error = ref(''); const page = ref(1);
@@ -67,6 +68,7 @@ onUnmounted(() => { generation++; });
       <details><summary>查看原件及核对摘要</summary><p>原任务 {{ data.original.taskId }}</p><p>原设备 {{ data.original.deviceId }}</p>
         <p>原采集人 {{ data.original.operatorId }}</p><p>原包 {{ data.original.archiveSha256 }}</p><p>核对 {{ data.contextSha256 }}</p></details>
       <PhysicalCheckForm :key="`${data.original.relayId}/${data.contextSha256}`" :data="data" />
+      <ConflictForm :key="`conflict/${data.original.relayId}/${data.contextSha256}`" :data="data" />
       <AssociationForm :key="`association/${data.original.relayId}/${data.contextSha256}`" :data="data" />
     </section>
   </WorkspaceLayout>
