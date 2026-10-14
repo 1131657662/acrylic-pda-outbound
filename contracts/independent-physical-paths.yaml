@@ -1,0 +1,73 @@
+Attachments:
+  post:
+    summary: 主管上传独立原件实物附件
+    description: 同仓中转及临时确认双权限，原件须可信且完整结束。独立写开关默认关闭。实际字节1至10MiB，原键异文拒绝；附件绑定原件及本人。无库存、占用、账务或关联行为。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+      - {name: X-Evidence-SHA256, in: header, required: true, schema: {type: string, pattern: '^[0-9a-f]{64}$'}}
+    requestBody:
+      required: true
+      content:
+        application/octet-stream: {schema: {type: string, format: binary}}
+    responses:
+      '200':
+        description: 耐久附件引用
+        content:
+          application/json:
+            schema:
+              allOf:
+                - {$ref: './schemas.yaml#/Envelope'}
+                - {type: object, properties: {data: {$ref: './independent-physical-schemas.yaml#/Attachment'}}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Attachment:
+  get:
+    summary: 同仓主管下载实物附件原字节
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {name: attachmentId, in: path, required: true, schema: {type: string, format: uuid}}
+    responses:
+      '200':
+        description: 重核摘要后的原字节，no-store及nosniff
+        content:
+          application/octet-stream: {schema: {type: string, format: binary}}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Checks:
+  post:
+    summary: 独立主管登记完整实物观察
+    description: >-
+      同仓双权限且主管不同于原采集者。生产写默认关闭。请求最多4MiB；绑定全部候选/库存/已接收原件上下文摘要，
+      每个有效captureId恰好一项观察，VOID不得混入；卸下或未找到须说明。检查时间过去一天至未来两分钟。
+      一条登记1至5份本人实际附件，单份10MiB、合计50MiB。原请求、完整截点、引用及签名回执同事务不可变保存。
+      同原键重试优先恢复已有结果，不因依据后来变化改写原意图。保持待对账，不授关联、库存可用、占用、记账、放行或删除权。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+    requestBody:
+      required: true
+      content:
+        application/json: {schema: {$ref: './independent-physical-schemas.yaml#/Evidence'}}
+    responses:
+      '200': {$ref: './independent-physical-schemas.yaml#/Response'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Check:
+  get:
+    summary: 读取不可变实物登记与原上下文
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {name: checkId, in: path, required: true, schema: {type: string, format: uuid}}
+    responses:
+      '200': {$ref: './independent-physical-schemas.yaml#/Response'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}

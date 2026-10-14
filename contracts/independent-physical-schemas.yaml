@@ -1,0 +1,73 @@
+Attachment:
+  type: object
+  additionalProperties: false
+  required: [attachmentId, evidenceSha256, sizeBytes]
+  properties:
+    attachmentId: {type: string, format: uuid}
+    evidenceSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    sizeBytes: {type: string, pattern: '^[1-9][0-9]{0,7}$', description: 不超过单文件上限}
+Evidence:
+  type: object
+  additionalProperties: false
+  required: [contextSha256, checkedAt, area, reason, packages, attachments]
+  properties:
+    contextSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    checkedAt: {type: string, format: date-time}
+    area: {type: string, minLength: 1, maxLength: 200}
+    reason: {type: string, minLength: 1, maxLength: 500}
+    packages:
+      type: array
+      maxItems: 10000
+      items:
+        type: object
+        additionalProperties: false
+        required: [captureId, status, note]
+        properties:
+          captureId: {type: string, format: uuid}
+          status: {type: string, enum: [LOADED, UNLOADED, NOT_FOUND]}
+          note: {type: string, maxLength: 500, description: 非LOADED必须非空}
+    attachments:
+      type: array
+      minItems: 1
+      maxItems: 5
+      items: {$ref: '#/Attachment'}
+Receipt:
+  type: object
+  required: [purpose, receiptId, warehouseId, relayId, supervisorId, taskId, archiveSha256, closureSha256, requestSha256, contextSha256, recordedAt, signedProof, signingKeyId, physicalCheckRecorded, pendingReconciliation, associationAuthorized, stockAvailable, businessProcessed, releaseAllowed, localDeletionAllowed]
+  properties:
+    purpose: {type: string, const: INDEPENDENT_PHYSICAL_EVIDENCE_V1}
+    receiptId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    relayId: {type: string, format: uuid}
+    supervisorId: {type: string, format: uuid}
+    taskId: {type: string, format: uuid}
+    archiveSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    closureSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    requestSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    contextSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    recordedAt: {type: string, format: date-time}
+    signedProof: {type: string}
+    signingKeyId: {type: string}
+    physicalCheckRecorded: {type: boolean, const: true}
+    pendingReconciliation: {type: boolean, const: true}
+    associationAuthorized: {type: boolean, const: false}
+    stockAvailable: {type: boolean, const: false}
+    businessProcessed: {type: boolean, const: false}
+    releaseAllowed: {type: boolean, const: false}
+    localDeletionAllowed: {type: boolean, const: false}
+Response:
+  description: 首次、重放及读取返回同一结构；读取重核原摘要、签名和实际附件
+  content:
+    application/json:
+      schema:
+        allOf:
+          - {$ref: './schemas.yaml#/Envelope'}
+          - type: object
+            properties:
+              data:
+                type: object
+                required: [receipt, evidence, originalContext]
+                properties:
+                  receipt: {$ref: '#/Receipt'}
+                  evidence: {$ref: '#/Evidence'}
+                  originalContext: {type: object, description: 完整候选、库存和已接收原件核对截点，非当前状态}

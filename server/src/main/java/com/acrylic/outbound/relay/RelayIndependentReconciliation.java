@@ -19,6 +19,11 @@ public class RelayIndependentReconciliation {
     }
     @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)
     public JsonNode read(UUID warehouse,UUID id,RelayIndependentReviewPage.Query query) {
+        return RelayIndependentReviewPage.read(full(warehouse,id),query);
+    }
+    @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ,propagation=Propagation.REQUIRES_NEW)
+    public ObjectNode snapshot(UUID warehouse,UUID id) { return full(warehouse,id); }
+    private ObjectNode full(UUID warehouse,UUID id) {
         var review=reviews.read(warehouse,id);eligible(review);var selected=originals.read(warehouse,id);var bundle=selected.bundle();
         var full=object();full.set("review",review);var original=full.putObject("original").put("warehouseId",warehouse.toString())
             .put("relayId",id.toString()).put("exportId",bundle.exportId().toString()).put("archiveSha256",bundle.archiveSha256())
@@ -33,7 +38,7 @@ public class RelayIndependentReconciliation {
             .put("closureDivergences",Long.toString(other.stream().filter(row->row.path("closureDivergence").asBoolean()).count()))
             .put("fromDate",text(orders,"fromDate")).put("throughDate",text(orders,"throughDate"));
         summary.put("onlyReceivedOriginalsObserved",true).put("physicalVerified",false).put("manuallyAssociated",false);
-        return RelayIndependentReviewPage.read(full,query);
+        return full;
     }
     static void eligible(JsonNode review) {
         if(!text(review,"sourceTrust").equals("TRUSTED") || !text(review,"authorizationState").equals("VERIFIED"))
