@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: 67704f5e
-dirty_entries: 86
+head: 3e39543e
+dirty_entries: 81
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标仍为active。坏机单有权撤回→重发→新机从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与断点
-- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本轮复核 HEAD 与远端同为 `67704f5e707f675644340d7c36e76b05b3efc57f`，main 只读。当前工作树改动全部继承并保全，精确计数以事实块为准，禁止 `git add .`。
+- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本轮文档收口时 HEAD 与远端同为 `3e39543ec0731ebdc7037fa18cf102167948bb76`，main 只读。当前工作树改动全部继承并保全，精确计数以事实块为准，禁止 `git add .`。
 - 2026-10-15 接续复核确认本聊天为唯一活动写者；旧 owner/released 标记不作依据。接续前状态快照见 [history/ORCHESTRATION_STATE_before_ui_resume_2026-10-15.md](history/ORCHESTRATION_STATE_before_ui_resume_2026-10-15.md)，本轮 UI 报告前快照见 [history/ORCHESTRATION_STATE_before_ui_report_2026-10-15.md](history/ORCHESTRATION_STATE_before_ui_report_2026-10-15.md)，本次 UI 后续复验前快照见 [history/ORCHESTRATION_STATE_before_ui_followup04_2026-10-15.md](history/ORCHESTRATION_STATE_before_ui_followup04_2026-10-15.md)，本轮 O04 报告前快照见 [history/ORCHESTRATION_STATE_before_o04_report_2026-10-15.md](history/ORCHESTRATION_STATE_before_o04_report_2026-10-15.md)，均保留。
 - 项目 API/Vite/目标隔离服务未运行；共享 MySQL 3306 由 PID 5288 监听，原 AVD `emulator-5562`、emulator/qemu 与 ADB 由 PID 12472/5512/10592 保留。复验命令已结束；当前仅见 Java 进程 13556/17908/21360/23204 及 Codex CUA Node，未见在途 Gradle 测试；本项目目标端口无监听。
 
