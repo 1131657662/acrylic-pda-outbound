@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: 3e39543e
-dirty_entries: 81
+head: 601c7a40
+dirty_entries: 86
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标仍为active。坏机单有权撤回→重发→新机从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与断点
-- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本轮文档收口时 HEAD 与远端同为 `3e39543ec0731ebdc7037fa18cf102167948bb76`，main 只读。当前工作树改动全部继承并保全，精确计数以事实块为准，禁止 `git add .`。
+- 固定 `D:/acrylic-pda-outbound`、`codex/development`；当前 HEAD 与远端同为 `601c7a40cd1a683310129bd1e1b53ef2cfc0b476`，main 只读。当前工作树改动全部继承并保全，精确计数以事实块为准，禁止 `git add .`。
 - 2026-10-15 接续复核确认本聊天为唯一活动写者；旧 owner/released 标记不作依据。接续前状态快照见 [history/ORCHESTRATION_STATE_before_ui_resume_2026-10-15.md](history/ORCHESTRATION_STATE_before_ui_resume_2026-10-15.md)，本轮 UI 报告前快照见 [history/ORCHESTRATION_STATE_before_ui_report_2026-10-15.md](history/ORCHESTRATION_STATE_before_ui_report_2026-10-15.md)，本次 UI 后续复验前快照见 [history/ORCHESTRATION_STATE_before_ui_followup04_2026-10-15.md](history/ORCHESTRATION_STATE_before_ui_followup04_2026-10-15.md)，本轮 O04 报告前快照见 [history/ORCHESTRATION_STATE_before_o04_report_2026-10-15.md](history/ORCHESTRATION_STATE_before_o04_report_2026-10-15.md)，均保留。
 - 项目 API/Vite/目标隔离服务未运行；共享 MySQL 3306 由 PID 5288 监听，原 AVD `emulator-5562`、emulator/qemu 与 ADB 由 PID 12472/5512/10592 保留。复验命令已结束；当前仅见 Java 进程 13556/17908/21360/23204 及 Codex CUA Node，未见在途 Gradle 测试；本项目目标端口无监听。
 
@@ -26,7 +26,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 生产决定 handler/POST/放行/证据写入/关闭能力、TEMP 生产归档边界与 `localDeletionAllowed=false` 保持关闭；同机合成身份/模拟器不冒充现场事实。
 
 ## 已验范围、暂缓及下一步
-- E01–E05、O03及既有 E06 资料/身份/任务/SCAN/VOID/导出/结束/核原/主管核对按索引和输入 SHA 复用；既有失败与未验不清零。E06 多任务网页正式 L1 已补，但 E06 L2、D18 L3 仍未完成，1540 Chrome 受运行器审批阻断的证据保留。
+- E01–E05、O03及既有 E06 资料/身份/任务/SCAN/VOID/导出/结束/核原/主管核对按索引和输入 SHA 复用；既有失败与未验不清零。E06 多任务网页正式 L1 已补，Android L2 短路径证据见 [GOAL_E06_L2_ACCEPTANCE_2026-10-15.md](history/GOAL_E06_L2_ACCEPTANCE_2026-10-15.md)：90/0/0/0、APK/lint 成功；深路径 31 项 SQLite 打开失败已保全，未执行 instrumentation，E06 L2、D18 L3 仍未完成，1540 Chrome 受运行器审批阻断的证据保留。
 - O05 已完成有界实现：14/14 专项、41/41 受影响回归、真实 SAF 加密包创建/取回及覆盖/损坏拒绝通过；验收见 [GOAL_E07_RESTORE_COPY_ACCEPTANCE_2026-10-14.md](history/GOAL_E07_RESTORE_COPY_ACCEPTANCE_2026-10-14.md)。外置介质、人工保管/回取、业务回执仍未证实。
 - E07 已完成同机隔离恢复：1541 的 180 表/64 非空表与 15 个私有文件守恒，原 key/ZIP/附件/固定公钥可消费；负例 4/4 写前拒绝。1541 停机零监听且源 347 文件 hash/长度不变；不证明异地恢复、现场设备或生产 RPO/RTO。
 - E08 UI 开发备份已形成：Work/Submission/Temporary/Handover 首屏、下一动作、恢复确认、Temporary 搜索和窄屏布局已实现；lint/debug/staging 构建成功。原短路径隔离复验 13/13 主机测试通过；本轮后续复验再完成恢复卡片读取 2/2 与恢复确认重试 1/1（共 3/3），输入/命令/日志/哈希见 [GOAL_E08_UI_FOLLOWUP_ACCEPTANCE_2026-10-15.md](history/GOAL_E08_UI_FOLLOWUP_ACCEPTANCE_2026-10-15.md) 及 `.local/goal-20261015/e08-ui-followup-04/`。
@@ -35,7 +35,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - U01/U02 首屏与草稿、D04/A1.4/1043、原生崩溃/恢复等暂缓项仍未通过；不因新证据清零。P07 已完成隔离开发验证但不代表 E07/L2/L3；E06 L2、E08 完整验收、E09 候选、剩余 D/O/U 闸门及第8节条件继续未完成。
 - D16 清理与恢复引用保护已完成当前开发切片：19/19 定向 Android 测试通过，报告见 [GOAL_D16_RETENTION_ACCEPTANCE_2026-10-15.md](history/GOAL_D16_RETENTION_ACCEPTANCE_2026-10-15.md)，生产删除、长期留存和 D13–D15 依赖仍未验。
 - O04 独立采集开发切片已收口：短路径 Java 临时目录、既有服务端凭据向量与独立包输出绑定后 90 项独立 Android/Room/救援测试 0 失败、0 错误、1 个既有跳过；报告见 [GOAL_O04_INDEPENDENT_COLLECTION_ACCEPTANCE_2026-10-15.md](history/GOAL_O04_INDEPENDENT_COLLECTION_ACCEPTANCE_2026-10-15.md)。深路径首次运行准确保留为 38 个 SQLite 打开失败加 1 个凭据向量/输出目录缺失失败，合成/隔离身份边界和生成包均保留；不计 E06 L2、U03 完整人工关联或 D18 L3。
-- 下一动作：复用 O04 输入执行 E06 受影响组合/L2 的新输入核对；1540 Chrome 直接入口若仍被运行器审批阻断则保全失败并推进独立 E09/剩余 D/O/U，随后补 D18 L3 所需链路。E08 后续复验只作为定向开发证据；D10 只复用绑定输入，不扩写为全 D10 通过。总目标保持 `active`，生产默认关闭和 `localDeletionAllowed=false` 不变。
+- 下一动作：保全并复用 Android03 输入完成 E06 受影响组合核对；1540 Chrome 直接入口仍受运行器审批阻断时不绕过，继续推进不依赖该入口的 E09 候选与剩余 D/O/U，取得实际允许入口后补 E06 L2，再执行 D18 L3 全链。E08 后续复验只作为定向开发证据；D10 只复用绑定输入，不扩写为全 D10 通过。总目标保持 `active`，生产默认关闭和 `localDeletionAllowed=false` 不变。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

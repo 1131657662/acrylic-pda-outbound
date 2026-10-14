@@ -2,6 +2,8 @@
 
 - [D10 故障撤回/重发真实 HTTP 验收](GOAL_D10_FAULT_WITHDRAWAL_HTTP_ACCEPTANCE_2026-10-15.md)：隔离 MySQL 上 FaultWithdrawal/FaultRestart 的真实 API、HTTP 和消费者夹具 15/15 通过，附件单测 17/17，Web typecheck/contract/build 通过；失败 dump 权限与成功 `--no-tablespaces` 重试均保留。仅收口当前 D10 切片，不计 E06 L2、D18 L3 或总目标。
 
+- [E06 L2 Android 验收（未完成）](GOAL_E06_L2_ACCEPTANCE_2026-10-15.md)：当前 HEAD 下短 Java 临时路径独立 Android/Room 测试 90/0/0/0，Debug 与 AndroidTest APK、lint 成功；深路径 31 项同根因 SQLite 打开失败保全，未执行 instrumentation，1540 Chrome 受运行器审批阻断。仅 Android 开发证据，E06 L2 整体、D18 L3 与总目标继续。
+
 - [O04 独立采集验收](GOAL_O04_INDEPENDENT_COLLECTION_ACCEPTANCE_2026-10-15.md)：短路径 Java 临时目录下 90 项独立 Android/Room/救援单测 0 失败、0 错误、1 个既有跳过；真实历史服务端凭据向量与独立加密包输出已绑定。仅收口 O04 开发切片，不计 E06 L2、U03 完整人工关联、D18 L3 或总目标。
 
 - [E08 UI 后续短路径复验](GOAL_E08_UI_FOLLOWUP_ACCEPTANCE_2026-10-15.md)：恢复卡片读取 2/2、恢复确认重试 1/1，在 D 盘 Java 临时目录下共 3/3 通过；输入快照、命令和 Gradle 日志保留。仅定向开发复验，长路径失败、真机/U01–U04、E06 L2、D18 L3 与总目标继续。

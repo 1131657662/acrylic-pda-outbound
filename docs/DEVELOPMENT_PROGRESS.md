@@ -2,6 +2,8 @@
 
 - [D10 故障撤回/重发真实 HTTP 验收](history/GOAL_D10_FAULT_WITHDRAWAL_HTTP_ACCEPTANCE_2026-10-15.md)：隔离 MySQL 上 15 项真实 HTTP/API/消费者测试、附件单测 17/17、Web typecheck/contract/build 全部通过，保留权限、幂等、并发、尾写回滚和新设备从头作业证据；仅收口 D10 当前切片，D10 其余范围、E06 L2、D18 L3、D01–D18 其他闸门与总目标继续。
 
+- [E06 L2 Android 验收（未完成）](history/GOAL_E06_L2_ACCEPTANCE_2026-10-15.md)：当前 HEAD 下短 Java 临时路径独立 Android/Room 测试 90/0/0/0，Debug 与 AndroidTest APK、lint 成功；深路径 31 项同根因 SQLite 打开失败保全，未执行 instrumentation，1540 Chrome 受运行器审批阻断。仅收录 Android 开发证据，E06 L2 整体、D18 L3 与总目标继续。
+
 - [O04独立采集验收](history/GOAL_O04_INDEPENDENT_COLLECTION_ACCEPTANCE_2026-10-15.md)：短路径 Java 临时目录绑定既有服务端凭据向量与独立包输出，90项独立 Android/Room/救援单测0失败、0错误、1个既有跳过；仅收口O04开发切片，E06 L2、U03完整人工关联、D18 L3与总目标继续。
 
 - [E05/O03受控原件中转切片收口](history/GOAL_E05_O03_ACCEPTANCE_2026-10-13.md)：电脑专用权限/原登记钥/原提交守恒、原Android清单与签名文件消费；新未上传批次产品正向、原成功原键/丢响应/跨JVM、非空/default-off及受影响账务/净值/导出组合通过。E06–E09、完整D/O/U及总目标继续。
