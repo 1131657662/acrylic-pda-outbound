@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [O01/U01 Android 交互定向验收](history/GOAL_O01_U01_ANDROID_ACCEPTANCE_2026-10-15.md)：扫码首屏、已扫码包调整、临时产品搜索、提交下一动作和临时作业阻断态定向单测 26/26，通过 lint 与 Debug APK 构建并登记哈希；仅开发切片，不计真机/U01-U04 完整验收、E06 L2、D18 L3 或总目标。
+
 - [D10 故障撤回/重发真实 HTTP 验收](history/GOAL_D10_FAULT_WITHDRAWAL_HTTP_ACCEPTANCE_2026-10-15.md)：隔离 MySQL 上 15 项真实 HTTP/API/消费者测试、附件单测 17/17、Web typecheck/contract/build 全部通过，保留权限、幂等、并发、尾写回滚和新设备从头作业证据；仅收口 D10 当前切片，D10 其余范围、E06 L2、D18 L3、D01–D18 其他闸门与总目标继续。
 
 - [E06 L2 Android 验收（未完成）](history/GOAL_E06_L2_ACCEPTANCE_2026-10-15.md)：当前 HEAD 下短 Java 临时路径独立 Android/Room 测试 90/0/0/0，Debug 与 AndroidTest APK、lint 成功；深路径 31 项同根因 SQLite 打开失败保全，未执行 instrumentation，1540 Chrome 受运行器审批阻断。仅收录 Android 开发证据，E06 L2 整体、D18 L3 与总目标继续。

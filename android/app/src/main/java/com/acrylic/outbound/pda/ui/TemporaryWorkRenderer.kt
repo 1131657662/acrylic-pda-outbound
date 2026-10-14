@@ -9,10 +9,17 @@ class TemporaryWorkRenderer(private val binding: ActivityWorkBinding) {
         private set
     fun render(state: TemporaryWorkUi, soundError: String) {
         displayed = state
-        binding.vehicle.text = "临时单 · ${state.draft?.vehicleNo.orEmpty()}"
-        binding.totals.text = "${state.total.count} / ${state.lines.sumOf { it.plannedCount }} 包 · ${WorkRenderer.kg(state.total.grams)} kg"
-        binding.message.text = listOf("未获云端最终确认，不得放行", state.blocked.ifBlank { state.message },
-            "待落盘 ${state.queued}", soundError).filter { it.isNotBlank() }.joinToString("\n")
+        binding.workControls.visibility = if (state.draft?.state == "SCANNING" ||
+            state.candidate != null || state.blocked.isNotBlank()) View.VISIBLE else View.GONE
+        binding.vehicle.text = state.draft?.vehicleNo?.ifBlank { "临时作业" } ?: "临时作业"
+        binding.source.text = "临时单 · 未获最终确认不得放行"
+        binding.totals.text = "已保存 ${state.total.count} / 计划 ${state.lines.sumOf { it.plannedCount }} 包\n${WorkRenderer.kg(state.total.grams)} kg"
+        binding.message.text = listOf("临时单未获最终确认，不得放行", state.blocked.ifBlank { state.message },
+            if (state.queued > 0) "接收队列待落盘 ${state.queued}，请暂缓扫码" else "", soundError).filter { it.isNotBlank() }.joinToString("\n")
+        binding.pauseScan.text = if (state.ready) "暂缓扫码" else "恢复本单扫码"
+        binding.pauseScan.isEnabled = state.draft?.state == "SCANNING" && state.blocked.isBlank()
+        binding.recentSaved.text = state.recent.firstOrNull { it.status == "ACTIVE" }?.let {
+            "最近本机已保存：${it.orderScanSeq}. ${it.barcode} · ${WorkRenderer.kg(it.weightGrams)} kg" } ?: "尚无本机有效已保存包"
         val counts = state.products.associateBy { it.deliveryCode }
         binding.products.text = state.lines.take(3).joinToString("\n") { "${it.deliveryCode} · ${counts[it.deliveryCode]?.count ?: 0}/${it.plannedCount} 包" } +
             if (state.lines.size > 3) "\n其余产品请打开明细核对" else ""
