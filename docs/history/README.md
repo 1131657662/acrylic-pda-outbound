@@ -10,6 +10,8 @@
 
 - [E08 UI 定向验收](GOAL_E08_UI_TARGETED_ACCEPTANCE_2026-10-15.md)：六个 UI/恢复相关主机测试共 13/13 通过，lint 成功；输入、缓存失败与重试、监听和磁盘证据均保留。仅开发定向证据，不计 U01–U04、E06 L2、D18 L3 或总目标。
 
+- [E09 Web 候选阶段验收](GOAL_E09_WEB_CANDIDATE_ACCEPTANCE_2026-10-15.md)：typecheck、契约校验、Web 构建及临时审查 7/7 通过，输入哈希与工作树状态可追溯；浏览器、服务端/数据库、文件、恢复组合仍未验，仅阶段候选成果。
+
 - [E08 页面与作业体验开发验收](GOAL_E08_UI_ACCEPTANCE_2026-10-15.md)：Work/Submission/Temporary/Handover 重设计与恢复确认交互、lint/debug/staging 构建及 13 项主机测试（11 通过、2 项 Robolectric SQLite 打开失败）；仅 UI 开发备份，真机/长时/E06 L2/D18 L3/总目标继续。
 
 - [E06受影响组合补验与未完成边界](GOAL_E06_COMBINATION_PARTIAL_2026-10-14.md)：原AVD/SAF、真实HTTP/MySQL、非空与独立消费已执行；Chrome预览自动审批阻断，L2未完成；[组合设计](GOAL_E06_COMBINATION_DESIGN_2026-10-14.md)。

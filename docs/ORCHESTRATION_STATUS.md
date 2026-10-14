@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: 9f1d4736
-dirty_entries: 89
+head: 002cca58
+dirty_entries: 88
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -32,10 +32,10 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - E08 UI 开发备份已形成：Work/Submission/Temporary/Handover 首屏、下一动作、恢复确认、Temporary 搜索和窄屏布局已实现；lint/debug/staging 构建成功。`e08-ui-targeted-05` 六个 UI/恢复主机测试 13/13 通过且 lint 成功，正式定向记录见 [GOAL_E08_UI_TARGETED_ACCEPTANCE_2026-10-15.md](history/GOAL_E08_UI_TARGETED_ACCEPTANCE_2026-10-15.md)；此前后续复验恢复卡片读取 2/2、恢复确认重试 1/1 的输入/日志见 [GOAL_E08_UI_FOLLOWUP_ACCEPTANCE_2026-10-15.md](history/GOAL_E08_UI_FOLLOWUP_ACCEPTANCE_2026-10-15.md)。这些均为开发证据，不替代真机/U01-U04、E06 L2 或 D18 L3。
 - 先前长路径的两个 Robolectric `SQLiteCantOpenDatabaseException` 失败 XML 保留并已归因为过深 `java.io.tmpdir` 运行器路径；两次短路径结果均不改变真机、硬件性能、长时、适用 Chrome、后台组合或 U01–U04 完整验收状态。
 - D10 故障撤回/重发当前切片已收口：FaultWithdrawal/FaultRestart 真实 API/HTTP/消费者夹具 15/15、附件单测 17/17、Web typecheck/contract/build 通过；隔离库 `1542` 已停机，180 表/53 非空表、dump 与初次权限失败均保留。报告见 [GOAL_D10_FAULT_WITHDRAWAL_HTTP_ACCEPTANCE_2026-10-15.md](history/GOAL_D10_FAULT_WITHDRAWAL_HTTP_ACCEPTANCE_2026-10-15.md)，不计 D10 全部、E06 L2、D18 L3 或总目标。
-- U01/U02 首屏与草稿、D04/A1.4/1043、原生崩溃/恢复等暂缓项仍未通过；不因新证据清零。P07 已完成隔离开发验证但不代表 E07/L2/L3；E06 L2、E08 完整验收、E09 候选、剩余 D/O/U 闸门及第8节条件继续未完成。
+- U01/U02 首屏与草稿、D04/A1.4/1043、原生崩溃/恢复等暂缓项仍未通过；不因新证据清零。P07 已完成隔离开发验证但不代表 E07/L2/L3；E09 Web 候选阶段的 typecheck/契约/构建/临时审查已整理为 [GOAL_E09_WEB_CANDIDATE_ACCEPTANCE_2026-10-15.md](history/GOAL_E09_WEB_CANDIDATE_ACCEPTANCE_2026-10-15.md)，浏览器、服务端/数据库、文件/恢复组合仍未验；E06 L2、E08 完整验收、剩余 D/O/U 闸门及第8节条件继续未完成。
 - D16 清理与恢复引用保护已完成当前开发切片：19/19 定向 Android 测试通过，报告见 [GOAL_D16_RETENTION_ACCEPTANCE_2026-10-15.md](history/GOAL_D16_RETENTION_ACCEPTANCE_2026-10-15.md)，生产删除、长期留存和 D13–D15 依赖仍未验。
 - O04 独立采集开发切片已收口：短路径 Java 临时目录、既有服务端凭据向量与独立包输出绑定后 90 项独立 Android/Room/救援测试 0 失败、0 错误、1 个既有跳过；报告见 [GOAL_O04_INDEPENDENT_COLLECTION_ACCEPTANCE_2026-10-15.md](history/GOAL_O04_INDEPENDENT_COLLECTION_ACCEPTANCE_2026-10-15.md)。深路径首次运行准确保留为 38 个 SQLite 打开失败加 1 个凭据向量/输出目录缺失失败，合成/隔离身份边界和生成包均保留；不计 E06 L2、U03 完整人工关联或 D18 L3。
-- 下一动作：保全并复用 Android03 输入完成 E06 受影响组合核对；1540 Chrome 直接入口仍受运行器审批阻断时不绕过，继续推进不依赖该入口的 E09 候选与剩余 D/O/U，取得实际允许入口后补 E06 L2，再执行 D18 L3 全链。E06 多任务网页 L1 已按 `input01/typecheck02/build02/contract01/consumers03/old-consumers02/chrome01/finish01` 及 `preserve-1538-e06-multitask-web-l1-01` 复核并保留，仍只计 L1；E08 定向报告同样只计开发证据。总目标保持 `active`，生产默认关闭和 `localDeletionAllowed=false` 不变。
+- 下一动作：保全并复用 Android03 输入完成 E06 受影响组合核对；1540 Chrome 直接入口仍受运行器审批阻断时不绕过，继续推进剩余 D/O/U，取得实际允许入口后补 E06 L2，再执行 D18 L3 全链。E06 多任务网页 L1 已按 `input01/typecheck02/build02/contract01/consumers03/old-consumers02/chrome01/finish01` 及 `preserve-1538-e06-multitask-web-l1-01` 复核并保留，仍只计 L1；E08 与 E09 Web 报告同样只计开发证据。总目标保持 `active`，生产默认关闭和 `localDeletionAllowed=false` 不变。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

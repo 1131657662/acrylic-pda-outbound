@@ -14,6 +14,8 @@
 
 - [E08 UI 定向验收](history/GOAL_E08_UI_TARGETED_ACCEPTANCE_2026-10-15.md)：`e08-ui-targeted-05` 六个 UI/恢复相关主机测试 13/13 通过，lint 成功；D 盘缓存失败与共享缓存重试均留档，未启动服务或写入业务库。仅定向开发证据，不计 U01–U04、E06 L2、D18 L3 或总目标。
 
+- [E09 Web 候选阶段验收](history/GOAL_E09_WEB_CANDIDATE_ACCEPTANCE_2026-10-15.md)：typecheck、契约校验、Web 构建及临时审查 7/7 通过，输入哈希已复核；无浏览器、服务端/数据库、文件或恢复组合证据，仅阶段候选成果，不计 D18 L3 或总目标。
+
 # 开发验收索引
 
 - [E08 页面与作业体验开发验收（未完成）](history/GOAL_E08_UI_ACCEPTANCE_2026-10-15.md)：Work/Submission/Temporary/Handover 重设计、恢复确认和 Temporary 搜索已实现；lint/debug/staging 成功，短路径隔离复验 13/13 主机测试通过。长路径 Robolectric SQLite 失败根因和原 XML 保留；仅开发备份，U01–U04 完整验收、真机/长时、E06 L2、D18 L3 与总目标继续。
