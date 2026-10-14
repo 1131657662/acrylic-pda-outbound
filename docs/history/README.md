@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E06人工关联服务端首切片L1](GOAL_E06_ASSOCIATION_L1_2026-10-14.md)：真实正向/事务/权限/原键与固定钥消费；[方案](GOAL_E06_ASSOCIATION_DESIGN_2026-10-14.md)，网页及跨机冲突处置继续，非完整E06通过。
+
 - [E06实物登记限定补验](GOAL_E06_PHYSICAL_ACCEPTANCE_2026-10-14.md)：新副本严格非空/default-off/组合守恒及末SQL/并发/锁后撤权；[SQL证据/JDBC修复](GOAL_E06_SQL_REPAIR_2026-10-14.md)，原失败保全且计数继承，人工关联和冲突继续。
 
 - [E06主管完整核对依据](GOAL_E06_RECONCILIATION_READ_ACCEPTANCE_2026-10-14.md)：完整候选、库存和已接收原件摘要/分页、未知钥/库存变化/资源上限及真实页面；[设计](GOAL_E06_RECONCILIATION_READ_DESIGN_2026-10-14.md)，实物与人工关联继续。

@@ -1,0 +1,107 @@
+Collection:
+  post:
+    summary: 主管人工关联独立来源与正式单
+    description: >-
+      同仓中转与临时确认双权限，独立开关默认关闭。原信任、历史身份、完整结束及独立主管实物检查须可核验。
+      完整上下文绑定全部候选、库存及已接收原件；逐项排除其余候选。首切片仅完整单任务与无既有作业的DRAFT/READY正式单，
+      车号、产品、计划包数与库存快照一致。库存阻断、跨任务重码及结束分歧拒绝；短装/多任务待专门流程。
+      原键优先恢复已登记关联；异文拒绝。原来源与双方业务事实不变，仅保存不可变关联、截点、实物引用与签名。
+      同任务重复导出共用原关联。关联不是正式submission、不授库存可用、扫码、记账、放行或删除。
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {$ref: './openapi.yaml#/components/parameters/Epoch'}
+      - {$ref: './openapi.yaml#/components/parameters/Idempotency'}
+      - {$ref: './openapi.yaml#/components/parameters/Csrf'}
+    requestBody:
+      required: true
+      content:
+        application/json: {schema: {$ref: '#/Evidence'}}
+    responses:
+      '200': {$ref: '#/Response'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+  get:
+    summary: 按原设备和任务恢复已登记人工关联
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+    responses:
+      '200': {$ref: '#/Response'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Item:
+  get:
+    summary: 读取原人工关联签名和实物依据
+    security: [{webSession: []}]
+    parameters:
+      - {$ref: './openapi.yaml#/components/parameters/ImportId'}
+      - {$ref: './openapi.yaml#/components/parameters/Warehouse'}
+      - {name: associationId, in: path, required: true, schema: {type: string, format: uuid}}
+    responses:
+      '200': {$ref: '#/Response'}
+      default: {$ref: './openapi.yaml#/components/responses/Error'}
+Evidence:
+  type: object
+  additionalProperties: false
+  required: [contextSha256, physicalCheckId, targetOrderId, candidateExclusions, reason]
+  properties:
+    contextSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    physicalCheckId: {type: string, format: uuid}
+    targetOrderId: {type: string, format: uuid}
+    reason: {type: string, minLength: 1, maxLength: 500}
+    candidateExclusions:
+      type: array
+      maxItems: 2000
+      items:
+        type: object
+        additionalProperties: false
+        required: [orderId, reason]
+        properties:
+          orderId: {type: string, format: uuid}
+          reason: {type: string, minLength: 1, maxLength: 500}
+Receipt:
+  type: object
+  additionalProperties: false
+  required: [purpose, associationId, warehouseId, relayId, deviceId, taskId, targetOrderId, supervisorId, physicalCheckId, archiveSha256, closureSha256, requestSha256, contextSha256, recordedAt, signedProof, signingKeyId, associationRecorded, pendingReconciliation, newCollectionAuthorized, stockAvailable, businessProcessed, releaseAllowed, localDeletionAllowed]
+  properties:
+    purpose: {type: string, const: INDEPENDENT_ASSOCIATION_EVIDENCE_V1}
+    associationId: {type: string, format: uuid}
+    warehouseId: {type: string, format: uuid}
+    relayId: {type: string, format: uuid}
+    deviceId: {type: string, format: uuid}
+    taskId: {type: string, format: uuid}
+    targetOrderId: {type: string, format: uuid}
+    supervisorId: {type: string, format: uuid}
+    physicalCheckId: {type: string, format: uuid}
+    archiveSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    closureSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    requestSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    contextSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
+    recordedAt: {type: string, format: date-time}
+    signedProof: {type: string}
+    signingKeyId: {type: string}
+    associationRecorded: {type: boolean, const: true}
+    pendingReconciliation: {type: boolean, const: true}
+    newCollectionAuthorized: {type: boolean, const: false}
+    stockAvailable: {type: boolean, const: false}
+    businessProcessed: {type: boolean, const: false}
+    releaseAllowed: {type: boolean, const: false}
+    localDeletionAllowed: {type: boolean, const: false}
+Response:
+  description: 耐久原关联、完整原截点及重核签名/实际附件后的实物依据
+  content:
+    application/json:
+      schema:
+        allOf:
+          - {$ref: './schemas.yaml#/Envelope'}
+          - type: object
+            properties:
+              data:
+                type: object
+                required: [receipt, evidence, originalContext, physicalEvidence]
+                properties:
+                  receipt: {$ref: '#/Receipt'}
+                  evidence: {$ref: '#/Evidence'}
+                  originalContext: {type: object}
+                  physicalEvidence: {type: object}

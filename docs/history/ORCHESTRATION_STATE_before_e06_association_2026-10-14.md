@@ -1,0 +1,34 @@
+# 开发看板
+
+<!-- CURRENT_STATE_START -->
+版本事实见看板生成块；此页仅保留历史接续内容。
+
+用户范围：有权后台撤回坏机未完成订单→重发→新设备从头作业；换机进度承接/多跳/接收者激活已取消，旧源码与事实保留。用户显式恢复目标，active且未完成；D01–D18、第8节与O01–O05/U01–U04及UI重设计全部必做。
+
+## Git与写权
+- 固定D:/acrylic-pda-outbound、codex/development；本轮输入HEAD/远端d5d4c9893d4f56840801b5f959431b37d39abd73，产品实物备份4fead0c7abc1ef77e6ecff70dd5df6e44b98e5d5；本轮工具/验收开发备份Git回执见.local/goal-20261014/e06-physical-delivery-01。main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86，不合main/发布/部署/原库/现网。
+- 旧release只证旧聊天释放；后续01a13800-6f5e-70d1-bff4-3d808873af68实际idle/末轮interrupted，无在途写入；本聊天01a13807-2558-7101-a38d-bc10913de36f唯一写权，旧执行不恢复。最新ownership-sql03-recheck.json；本轮前全脏快照e06-audit-resume-20261014-sql03，收尾新快照见交付目录。
+- 收口前全脏快照.local/goal-20261013/e06-audit-resume-20261014-02；最终残留全部原字节/hash/diff/远端/环境在handoff-e06-physical-wip-01/final。与final-snapshot-20261014-01的原路径相比仅看板/验收索引更新，继承业务/工具原字节保持。本机physical-disposition-last-request.json不提交。
+- 生产默认七类决定与TEMP归档边界保持，localDeletionAllowed=false、D16标准不变；内部合成签名/身份不冒充可信事实或现场验收。
+
+## 环境与磁盘
+- 保留预览1494库19330/PID11308、API19435/PID36640、worker1192、Vite5174/PID37712；保留实物1519库19331/PID13268、API19434/PID40236（e06-physical-runtime-final03/server.jar）。共享3306/ADB5037、AVD5562/5564及Keystore保持。
+- 补验1520–1523失败库均dump/hash认证停机并保留；本轮1524新建19332/19436已完成实物补验后dump/hash/认证停机，保全.local/goal-20261014/preserve-1524-e06-physical-01。零监听/消费者；339个文件长度/hash保持，仅压缩212个适用文件，无删除。无重型任务在途。
+- 收尾C/D可用50744000512/24859205632字节；1524停机压缩D余量增205144064字节，精确后值见preserve-1524-e06-physical-01/disks-after.json。新增产物优先D盘，临时仅子进程；只压缩用途结束、停机无消费者且值得压缩的未压缩文件，预览/仍消费库保持。
+- [进度与清理](history/DEVELOPMENT_PROGRESS_AND_CLEANUP_2026-10-14.md)释放约8.23GiB，原库零删除、压缩原字节保持；证据.local/progress-cleanup-20261014。仅文档/清理，不计业务通过。失败库/binlog/dump、原件/XML/HTTP签名/原资料/唯一产物与最终APK保留。
+
+## 已验切片与继承失败
+- 详细范围/证据/旧环境见[归档断点](history/ORCHESTRATION_STATE_before_physical_audit_2026-10-14.md)与[验收索引](DEVELOPMENT_PROGRESS.md)。E01撤回重发、E02调整、E03救援/原件、E04取消/候选/各来源解隔离/历史贡献、E05净值与O03各已验范围不机械重跑，不拼为D18。
+- [O03验收](history/GOAL_E05_O03_ACCEPTANCE_2026-10-13.md)已收口；E06资料/身份/本地任务/SCAN与VOID/导出/可信核原/完整结束/主管核对已按各历史页提交推送。实物、人工关联、跨机冲突及O04/U03/D14/D18整体未完。
+- U01/U02首屏519dp>509dp连续3次、草稿添加无产品连续3次暂缓；旧D04/A1.4/1043完整前缀5次失败、原资料/旧BCD/526未验、full01/02 native崩溃、1342失败/1343取消、1364/1365恢复失败继续保全，无新依据不重跑/不清零。
+
+## E06实物限定收口与下一步
+- [实物设计](history/GOAL_E06_PHYSICAL_DESIGN_2026-10-14.md)与[限定验收](history/GOAL_E06_PHYSICAL_ACCEPTANCE_2026-10-14.md)：产品22项/JAR输入全匹配；unit-final01实际110项/bootJar复用，unit-final02为UP-TO-DATE/tests=0，两次旧Gradle入口错误不计通过。仅工具和文档修改，D整体L2与最终L3未跑。
+- HTTP06/HTTP03及final02真实附件/权限/锁后撤权/容量/篡改409、新JVM/固定外部钥；browser06输入匹配、Chrome1场景及390宽原键恢复目视通过；Web/契约/四消费者已有输入绑定。runtime-binding及作者自审在e06-physical-audit-20261014-01，不称独立人员审查。
+- 新1524 JDBC同算法非空/default-off通过，原169表仅Flyway变化、新增实物三表COUNT零；启用态原包/核原/完整上下文/实际附件/登记/原键回读及全量业务表守恒通过。追加权限/同键并发/异文/末SQL回滚/实际锁等待后撤权通过；合成主管/实物不称原PDA现场。
+- 1522/1523旧业务守恒及空输出原因仍未判。1524原CLI明确pc_submission_entry SHOW COLUMNS exit0且双输出空，连续总计3保留；不再机械CLI全表重跑。此前85表与JDBC同副本全匹配，新JDBC成功不能倒推旧失败通过。
+- [SQL修复/最小验收](history/GOAL_E06_SQL_REPAIR_2026-10-14.md)：15项工具单测与真实JDBC/错误目标身份消费通过；记录每条原输出/参数/状态与JVM原stdout/stderr/exit。DELETE提示误比及认证停机进程退出竞态属明确运行器失败，原日志保留，定向续验通过。
+- 仅实物单元收口；人工关联/跨机冲突仍未实现验收，下一核主管候选/对账模块→最小人工关联与冲突设计/实现，再E07恢复/外置副本、E08留存/UI及E09候选。第8节全部实际满足前目标active且不complete；D/O/U整体未完。
+<!-- CURRENT_STATE_END -->
+
+> 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。
