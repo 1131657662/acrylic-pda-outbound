@@ -1,6 +1,12 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [D10 故障撤回/重发真实 HTTP 验收](history/GOAL_D10_FAULT_WITHDRAWAL_HTTP_ACCEPTANCE_2026-10-15.md)：隔离 MySQL 上 15 项真实 HTTP/API/消费者测试、附件单测 17/17、Web typecheck/contract/build 全部通过，保留权限、幂等、并发、尾写回滚和新设备从头作业证据；仅收口 D10 当前切片，D10 其余范围、E06 L2、D18 L3、D01–D18 其他闸门与总目标继续。
+
+- [O04独立采集验收](history/GOAL_O04_INDEPENDENT_COLLECTION_ACCEPTANCE_2026-10-15.md)：短路径 Java 临时目录绑定既有服务端凭据向量与独立包输出，90项独立 Android/Room/救援单测0失败、0错误、1个既有跳过；仅收口O04开发切片，E06 L2、U03完整人工关联、D18 L3与总目标继续。
+
 - [E05/O03受控原件中转切片收口](history/GOAL_E05_O03_ACCEPTANCE_2026-10-13.md)：电脑专用权限/原登记钥/原提交守恒、原Android清单与签名文件消费；新未上传批次产品正向、原成功原键/丢响应/跨JVM、非空/default-off及受影响账务/净值/导出组合通过。E06–E09、完整D/O/U及总目标继续。
+
+- [D16整单事实清理与恢复引用保护开发验收](history/GOAL_D16_RETENTION_ACCEPTANCE_2026-10-15.md)：RetentionCleaner/DAO 定向 Android 测试 19/19 通过，覆盖 90 天严格边界、恢复/下载状态保护、订单/条码引用、批量清理、事务回滚和 Room 迁移保留；仅可隔离开发证据，生产删除、长期留存、D13–D15 依赖、D18 L3 与总目标继续。
 
 # 开发验收索引
 
