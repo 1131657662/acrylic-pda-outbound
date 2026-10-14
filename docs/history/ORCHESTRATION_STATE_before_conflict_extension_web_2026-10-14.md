@@ -1,0 +1,36 @@
+> 历史断点；不恢复旧写权或执行。版本事实见看板生成块。
+
+# 开发看板
+
+<!-- CURRENT_STATE_START -->
+版本事实见看板生成块。
+
+用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标active未完成。坏机单有权撤回→重发→新机从头作业；换机进度承接/多跳/激活已取消，原事实/源码保留。
+
+## Git、写权与断点
+- 固定D:/acrylic-pda-outbound、codex/development；HEAD/远端dfd9e9ecb861e95a0d74d6e461993ae6f35f204d，main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86。不合main/发布/部署/原库/现网。
+- 唯一写者本聊天01a13807-2558-7101-a38d-bc10913de36f，目标active、released=false；写权e06-association-shortfall-web-delivery01/ownership.json。旧聊天idle/interrupted，旧release只证明旧聊天释放，不恢复旧执行。
+- 67路径与.local/goal-20261014/e06-association-shortfall-web-delivery01/final原字节全部匹配；本轮后续切片仅明确路径修改。继承Android/UI/文档/工具及server/physical-disposition-last-request.json保护，后者不提交。
+- 旧详细结论已先归档[上一断点](history/ORCHESTRATION_STATE_before_conflict_extension_2026-10-14.md)；历史按需读，不恢复旧指令。验收路径见[索引](DEVELOPMENT_PROGRESS.md)，不能把L1开发备份拼为E06/D18。
+
+## 环境、磁盘与生产边界
+- 保留预览1494库19330/PID11308、API19435/PID36640、worker1192、Vite5174/PID37712；实物1519库19331/PID13268、API19434/PID40236（e06-physical-runtime-final03/server.jar）。共享3306、ADB/AVD/Keystore身份保持。
+- 1520–1523失败库和所有后续隔离库已按各保全页dump/hash认证停机，失败证据/原库零删除；1524–1534适用NTFS压缩长度/hash不变，详见上一断点与preserve目录。原CLI失败不倒推通过。
+- 1535已完成服务L1补验、dump/hash认证停机及适用NTFS压缩；preserve-1535-e06-extension-service-l1-01保346文件长度/hash、压219文件，释放206749696字节。19332/19436零监听，预览/1519保持。
+- 新产物D盘.local、TEMP/TMP/Java临时仅子进程；收尾C/D余量47384236032/18501132288字节，见1535保全disks-after.json；网页补验新副本预计≤2GiB，动作前复测。
+- 七类生产决定handler/POST/放行/证据写入/关闭能力及TEMP归档边界保持，localDeletionAllowed=false、D16标准不变。合成主管/库存/实物/签名与模拟器不冒充原PDA现场事实。
+
+## 已验范围、暂缓及下一步
+- E01撤回重发、E02调整、E03原件/救援、E04各来源解隔离/历史贡献、E05净值与[O03验收](history/GOAL_E05_O03_ACCEPTANCE_2026-10-13.md)已验范围按输入复用；原资料/旧BCD/526现场未验与恢复限制继续单列。
+- E06资料/身份/任务/SCAN/VOID/导出/结束/核原/主管核对及[实物限定验收](history/GOAL_E06_PHYSICAL_ACCEPTANCE_2026-10-14.md)已验；1524 JDBC严格非空/default-off/正向/全表守恒通过，不证明1522/1523旧空输出原因。CLI连续3次暂缓，无新证据不重跑。
+- 人工关联服务/网页、跨机冲突服务/关联消费/登记网页各L1已验并提交，详见索引；短装服务efe88980163209f05024496f605d5d06a19f4a66与网页dfd9e9ec的L1报告分别见GOAL_E06_ASSOCIATION_SHORTFALL_L1与WEB_L1。多任务、增量责任链与E06 L2/L3未完。
+- [增量冲突设计](history/GOAL_E06_CONFLICT_EXTENSION_DESIGN_2026-10-14.md)：显式最新前驱、原归属/包周期/原件只增不减、禁止分叉与改归属、原三表不变；扩展开关默认false、旧key可读，新关联要求最新决定。服务[增量冲突L1](history/GOAL_E06_CONFLICT_EXTENSION_L1_2026-10-14.md)通过，开发备份提交中；网页追加未接线。
+- 本轮unit02真实200项/零跳过、bootJar输入不变，契约通过；unit01漏原件变量17跳过及PowerShell汇总假false，原日志/XML保留，实际源hash无漂移，修运行器重跑后通过。不是E06收口。
+- 1535 prepare01迁移新增表清单漏历史表，原facts显示新增10个空表、未业务写；沿保留快照补清单后prepare02继续，不重造原件/换库。旧夹具指纹及计数继承，不称失败断言通过。
+- U01/U02首屏519dp>509dp连续3次、草稿无产品连续3次；D04/A1.4/1043完整前缀5次、full01/02 native崩溃、1342失败/1343取消、1364/1365恢复失败保全暂缓。无新依据不重跑，不清零，不记通过。
+- 1535追加/新关联、最新引用/尾SQL/并发/异文/实际锁后撤权/跨原件/改归属拒绝/固定钥及新JVMdefault-off回读通过，原claim不变；11项响应消费通过。新增夹具失败保留，详见L1页，非E06/L2/L3。
+- 全脏快照与Git回执e06-extension-service-delivery01；继承源码与请求原件保持，唯一写权active/released=false。
+- 接续：网页增量追加真实入口→多任务与E06组合；再E07恢复/外置副本、E08留存/UI、E09最终候选及全部剩余D/O/U闸门。逐项最小验收、定向验证、自审修复复验、明确路径开发备份推送，不缩总目标。
+<!-- CURRENT_STATE_END -->
+
+> 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

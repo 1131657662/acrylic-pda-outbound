@@ -2,20 +2,23 @@ import { request } from '../api';
 import { z } from 'zod';
 import { reviewSchema, type IndependentReview } from './contracts';
 import { conflictResultSchema, verifyConflict, type ConflictResult, type ConflictEvidence } from './conflict-contracts';
-import { loadConflict, saveConflict } from './conflict-storage';
+import { loadConflict, saveConflict, sameConflictReceipt } from './conflict-storage';
 import { jsonDigest, physicalResultSchema, type PhysicalOwner } from './physical-contracts';
 export type Peer = Extract<IndependentReview, { section: 'peers' }>['items'][number];
 function path(owner: PhysicalOwner, suffix = ''): string {
   return `/original-relays/${owner.relayId}/conflict-decisions${suffix}?warehouseId=${owner.warehouseId}`;
 }
 export async function readConflict(owner: PhysicalOwner, id?: string): Promise<ConflictResult | null> {
-  const command = loadConflict(owner).command; const decision = id ?? command?.receipt?.decisionId;
+  const state = loadConflict(owner); const command = state.command;
+  const decision = id ?? command?.receipt?.decisionId ?? (!command ? state.predecessor?.decisionId : undefined);
   if (!decision) return null;
   z.uuid().parse(decision);
   const result = await request(path(owner, `/${decision}`), conflictResultSchema);
-  await verifyConflict(result, owner, id ? undefined : command?.body);
-  if (result.receipt.decisionId !== decision || !id && command?.receipt && JSON.stringify(result.receipt) !== JSON.stringify(command.receipt))
+  await verifyConflict(result, owner, id || !command?.receipt ? undefined : command.body);
+  if (result.receipt.decisionId !== decision || !id && command?.receipt && !sameConflictReceipt(result.receipt, command.receipt))
     throw new Error('服务器与原冲突回执不一致。');
+  if (!id && !command && state.predecessor && !sameConflictReceipt(result.receipt, state.predecessor))
+    throw new Error('服务器与已保存前驱回执不一致，请保留原记录。');
   return result;
 }
 export async function sendConflict(owner: PhysicalOwner, assertCurrent: () => void): Promise<void> {

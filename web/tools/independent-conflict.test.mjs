@@ -7,7 +7,7 @@ const hook = registerHooks({ resolve(specifier, context, nextResolve) {
   return nextResolve(specifier, context);
 } });
 const { conflictResultSchema, conflictEvidenceSchema, verifyConflict } = await import('../src/independent-review/conflict-contracts.ts');
-const { loadConflict, saveConflict } = await import('../src/independent-review/conflict-storage.ts');
+const { loadConflict, saveConflict, prepareConflictExtension, sameConflictReceipt } = await import('../src/independent-review/conflict-storage.ts');
 hook.deregister();
 const file = process.env.INDEPENDENT_CONFLICT_EVIDENCE;
 if (!file) throw new Error('Requires retained actual conflict HTTP evidence');
@@ -53,4 +53,37 @@ test('unreadable persistence prevents sending and foreign receipt cannot replace
   const saved = { ...owner, version: 1, command: { key: success.key, epoch: '1', body: success.body, receipt: null } };
   assert.throws(() => saveConflict(saved), /持久化回读失败/);
   assert.throws(() => saveConflict({ ...saved, command: { ...saved.command, receipt: { ...success.result.receipt, supervisorId: crypto.randomUUID() } } }), /身份不一致/);
+});
+test('confirmed original is retained before extension and pending result cannot be replaced', () => {
+  const values = new Map(); globalThis.localStorage = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+  const command = { key: success.key, epoch: '1', body: success.body, receipt: success.result.receipt };
+  saveConflict({ ...owner, version: 1, command });
+  const next = prepareConflictExtension(owner, success.result.receipt);
+  assert.deepEqual(next.history, [command]); assert.equal(next.command, null);
+  assert.deepEqual(loadConflict(owner).predecessor, success.result.receipt);
+  const pending = { key: crypto.randomUUID(), epoch: '1', body: { ...success.body, predecessorDecisionId: success.result.receipt.decisionId }, receipt: null };
+  saveConflict({ ...next, command: pending });
+  assert.throws(() => prepareConflictExtension(owner, success.result.receipt), /结果未明/);
+  assert.deepEqual(loadConflict(owner).command, pending); assert.deepEqual(loadConflict(owner).history, [command]);
+  assert.throws(() => saveConflict({ ...next, command: { ...pending, body: { ...pending.body, predecessorDecisionId: crypto.randomUUID() } } }), /原前驱范围/);
+  assert.throws(() => saveConflict({ ...next, history: [{ ...command, receipt: null }] }), /未明结果/);
+  assert.throws(() => saveConflict({ ...next, command }), /重复原键/);
+});
+
+test('receipt field order preserves equality while any signed byte change is refused', () => {
+  const receipt = success.result.receipt;
+  const reordered = Object.fromEntries(Object.entries(receipt).reverse());
+  assert.equal(sameConflictReceipt(receipt, reordered), true);
+  for (const field of ['signedProof', 'recordedAt', 'contextSha256']) {
+    const changed = { ...receipt, [field]: field === 'recordedAt' ? '2000-01-01T00:00:00.000Z' : field === 'contextSha256' ? '0'.repeat(64) : 'changed' };
+    assert.equal(sameConflictReceipt(receipt, changed), false);
+  }
+});
+
+test('confirmed receipt mismatch leaves the stored original command unchanged', () => {
+  const values = new Map(); globalThis.localStorage = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+  const command = { key: success.key, epoch: '1', body: success.body, receipt: success.result.receipt };
+  saveConflict({ ...owner, version: 1, command });
+  assert.throws(() => prepareConflictExtension(owner, { ...command.receipt, signedProof: 'changed' }), /读取决定不一致/);
+  assert.deepEqual(loadConflict(owner).command, command);
 });
