@@ -6,11 +6,11 @@
 ```yaml
 date: 2026-10-14
 branch: codex/development
-head: 17a45e5a
-dirty_entries: 85
+head: b1e53def
+dirty_entries: 82
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
-server: { contract: 0.70.0, paths: 200, flyway: V96, migrations: 96 }
+server: { contract: 0.71.0, paths: 200, flyway: V97, migrations: 97 }
 ```
 <!-- FACTS_END -->
 
@@ -42,11 +42,14 @@ server: { contract: 0.70.0, paths: 200, flyway: V96, migrations: 96 }
 - [人工关联服务端首切片L1](history/GOAL_E06_ASSOCIATION_L1_2026-10-14.md)：137项/bootJar、契约、1526非空/default-off、HTTP正向/首次同键并发/异文/末SQL原键恢复、实际锁等待后撤权、固定外部钥Python/新JVM及库存/跨机拒绝通过。仅新增证据台账、生产默认关闭，无正式提交/库存/账务变化。
 - 新失败保留：unit01来源枚举错误/输入中途变化；1525恢复wrapper空表预条件/漏字符集，失败库保全；1526复合trigger夹具SQL1064、登录审计严格白名单遗漏均保存并补逐行证据。API重启覆盖旧console日志的限制明列，不称原日志完整。旧失败计数不清零。
 - [人工关联网页L1](history/GOAL_E06_ASSOCIATION_WEB_L1_2026-10-14.md)：六项定向测试/构建、1527真实Chrome完整分页/缺排除阻断/丢响应/双页同键/空本地读回、严格全量业务守恒通过；服务/契约固定输入未变复用。首轮加载器/点击夹具及审计解码/UTF8失败原日志保留，修后定向通过；非完整E06/UI重设计收口。交付回执.local/goal-20261014/e06-association-web-delivery01。
-- 人工关联网页提交/远端17a45e5ab480617392f872e1a8430d44c7acd977；跨机冲突服务/契约/迁移/测试WIP未提交。最新80路径全脏快照/实际进程/监听/余量与唯一写权在.local/goal-20261013/e06-audit-resume-20261014-conflict02；旧当前区已归档ORCHESTRATION_STATE_before_e06_conflict_2026-10-14.md。
+- 跨机冲突服务提交/远端b1e53def98138cb225b7b62ef68721ddc40d5beb，18明确路径回执e06-conflict-delivery01；原人工关联网页17a45e5ab480617392f872e1a8430d44c7acd977复用。全脏快照e06-audit-resume-20261014-conflict03，继承原字节/角色边界保护；当前唯一写者仍本聊天。
 - [跨机实物冲突服务L1](history/GOAL_E06_CONFLICT_L1_2026-10-14.md)：162项/bootJar、契约、1528非空/default-off、真实正向/权限/原键并发/异文/新键拒绝/末SQL回滚、实际锁后撤权/原采集者拒绝/三表不可变、固定外部钥/原字节/新JVM、实时NOT_FOUND/UNLOADED/库存阻断及全量业务守恒通过；2426输入/JAR类/迁移字节绑定。仅服务证据单元，网页/关联应用及E06 L2未跑。
 - 1528运行器失败原日志保留：prepare连接拒绝未种子，健康受保护401不算200；enabled并发前函数遮蔽模块，改race沿尾SQL原key续验；extra/lock漏登录审计逐行补证，原审计不变/分别仅一已知WEB_LOGIN，不重跑业务且同根因计数继承。不倒推原断言通过。
 - 1528已dump/hash/认证停机、零监听/消费者并保全压缩，preserve-1528-e06-conflict-l1-01；343文件长度/hash保持，216适用文件压缩，D余量增205545472字节，无删除。预览/1519不动；截点C/D余量50288431104/22559674368字节，无重型任务在途。
-- 下一补齐专用跨机冲突服务L1→网页/关联消费→短装/多任务及E06组合，再E07恢复/外置副本、E08留存/UI、E09候选。第8节全部实际满足前目标active且不complete，D/O/U整体未完。
+- [关联消费完整冲突决定L1](history/GOAL_E06_CONFLICT_ASSOCIATION_L1_2026-10-14.md)：173项/bootJar、契约、1529非空/双默认开关真实零写、显式原决定正向/权限/首次并发/异文/末SQL回滚/实际锁后撤权/自审拒绝/引用不可变、固定外部钥/新JVM及全表守恒通过。2431输入仅补可选响应契约行，其余源码/编译类/迁移/JAR绑定；仅服务证据单元，网页与L2/L3待跑。
+- 1529已dump/hash/认证停机/零监听消费者保全；preserve-1529-e06-conflict-association-l1-01中344文件长度/hash保持，217适用文件压缩，D增205357056字节，无删除。截点C/D余量50289782784/21830660096字节，预览/1519保留，无重型在途。
+- 1529夹具失败保留：跨原件引用先404、补证权限码误断言、消费者实物回执无newCollectionAuthorized。完整零写/已知登录逐行补证后仅续未跑业务，按各回执契约修后固定钥消费通过；原日志/断言不记通过，旧根因计数保留。
+- 下一关联消费HTTP正向/并发/回滚/权限/锁后撤权/固定钥/新JVM→冲突网页→短装/多任务及E06组合，再E07恢复/外置副本、E08留存/UI、E09候选。第8节全部实际满足前目标active且不complete，D/O/U整体未完。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。

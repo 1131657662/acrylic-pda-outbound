@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E06人工关联消费完整冲突决定L1](GOAL_E06_CONFLICT_ASSOCIATION_L1_2026-10-14.md)：真实正向、双开关/权限/事务/原键和固定钥/新JVM守恒；[方案](GOAL_E06_CONFLICT_ASSOCIATION_DESIGN_2026-10-14.md)，网页及组合继续。
+
 - [E06跨机实物冲突服务L1](GOAL_E06_CONFLICT_L1_2026-10-14.md)：真实决定正向/事务/权限/不可变与固定外部钥消费；[方案](GOAL_E06_CONFLICT_DESIGN_2026-10-14.md)，网页/关联消费及组合继续，非完整E06通过。
 
 - [E06人工关联网页L1](GOAL_E06_ASSOCIATION_WEB_L1_2026-10-14.md)：真实Chrome完整分页/双页原键/丢响应与空本地存储读回、数据库守恒；[方案](GOAL_E06_ASSOCIATION_WEB_DESIGN_2026-10-14.md)，冲突处置与组合继续，非完整E06通过。

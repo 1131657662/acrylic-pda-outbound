@@ -4,7 +4,8 @@ Collection:
     description: >-
       同仓中转与临时确认双权限，独立开关默认关闭。原信任、历史身份、完整结束及独立主管实物检查须可核验。
       完整上下文绑定全部候选、库存及已接收原件；逐项排除其余候选。首切片仅完整单任务与无既有作业的DRAFT/READY正式单，
-      车号、产品、计划包数与库存快照一致。库存阻断、跨任务重码及结束分歧拒绝；短装/多任务待专门流程。
+      车号、产品、计划包数与库存快照一致。跨任务重码须显式引用覆盖完整实时截点的原冲突决定并重核各方实物与包周期；
+      消费冲突决定时两个专用开关均须启用。无有效原决定、库存阻断或结束分歧仍拒绝；短装/多任务待专门流程。
       原键优先恢复已登记关联；异文拒绝。原来源与双方业务事实不变，仅保存不可变关联、截点、实物引用与签名。
       同任务重复导出共用原关联。关联不是正式submission、不授库存可用、扫码、记账、放行或删除。
     security: [{webSession: []}]
@@ -48,6 +49,7 @@ Evidence:
   properties:
     contextSha256: {type: string, pattern: '^[0-9a-f]{64}$'}
     physicalCheckId: {type: string, format: uuid}
+    conflictDecisionId: {type: string, format: uuid, description: 可选完整冲突归属原决定；无冲突不得填无关引用}
     targetOrderId: {type: string, format: uuid}
     reason: {type: string, minLength: 1, maxLength: 500}
     candidateExclusions:
@@ -89,7 +91,7 @@ Receipt:
     releaseAllowed: {type: boolean, const: false}
     localDeletionAllowed: {type: boolean, const: false}
 Response:
-  description: 耐久原关联、完整原截点及重核签名/实际附件后的实物依据
+  description: 耐久原关联、完整原截点及重核签名/实际附件后的实物依据；显式冲突引用时追加conflictEvidence
   content:
     application/json:
       schema:
@@ -105,3 +107,4 @@ Response:
                   evidence: {$ref: '#/Evidence'}
                   originalContext: {type: object}
                   physicalEvidence: {type: object}
+                  conflictEvidence: {type: object, description: 显式冲突引用时返回原决定与各方签名实物依据；不授业务能力}

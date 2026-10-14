@@ -10,7 +10,9 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 final class RelayAssociationPolicy {
     private RelayAssociationPolicy() { }
     static void validate(JsonNode body) {
-        RelayPhysicalPolicy.exact(body,"contextSha256 physicalCheckId targetOrderId candidateExclusions reason");
+        String fields="contextSha256 physicalCheckId targetOrderId candidateExclusions reason";
+        RelayPhysicalPolicy.exact(body,body.has("conflictDecisionId")?fields+" conflictDecisionId":fields);
+        if(body.has("conflictDecisionId"))RelayPhysicalPolicy.identifier(body,"conflictDecisionId");
         if(!text(body,"contextSha256").matches("[0-9a-f]{64}"))throw invalid("核对摘要无效");
         RelayPhysicalPolicy.identifier(body,"physicalCheckId");RelayPhysicalPolicy.identifier(body,"targetOrderId");reason(body);
         var exclusions=body.path("candidateExclusions");var seen=new HashSet<UUID>();
@@ -21,6 +23,9 @@ final class RelayAssociationPolicy {
         }
     }
     static JsonNode complete(JsonNode body,JsonNode context,JsonNode physical,UUID actor,Instant now) {
+        return complete(body,context,physical,actor,now,null);
+    }
+    static JsonNode complete(JsonNode body,JsonNode context,JsonNode physical,UUID actor,Instant now,JsonNode conflict) {
         if(!sha(context).equals(text(body,"contextSha256")))throw changed();
         if(text(context.path("original"),"operatorId").equals(actor.toString()))
             throw new BusinessException(403,"INDEPENDENT_ASSOCIATION_SELF_REVIEW","原采集者不得独自关联本任务");
@@ -28,8 +33,7 @@ final class RelayAssociationPolicy {
         for(var row:physical.path("packages"))if(!text(row,"status").equals("LOADED"))throw blocked("实物异常须先专门核对");
         if(context.path("inventory").isEmpty())throw blocked("空任务不得关联正式单");
         for(var row:context.path("inventory"))if(!row.path("blockers").isEmpty())throw blocked("库存或占用尚有阻断");
-        for(var peer:context.path("peers"))if(peer.path("crossTaskConflict").asBoolean() || peer.path("closureDivergence").asBoolean())
-            throw blocked("跨任务重码或结束分歧尚未处置");
+        RelayAssociationConflictPolicy.complete(context,conflict,actor,now);
         var target=target(body,context);products(target,context);return target;
     }
     private static JsonNode target(JsonNode body,JsonNode context) {
