@@ -10,12 +10,14 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 
 @Service
 public class RelayAssociations {
+    private final RelayAssociationShortfall shortfall;
     private final RelayAssociationAccess access;private final RelayAssociationStore store;private final RelayAssociationSignature signature;
     private final RelayIndependentReconciliation reconciliation;private final RelayPhysicalChecks physical;private final RelayJournal journal;
     private final RelayAssociationConflicts conflicts;
     public RelayAssociations(RelayAssociationAccess access,RelayAssociationStore store,RelayAssociationSignature signature,
-        RelayIndependentReconciliation reconciliation,RelayPhysicalChecks physical,RelayJournal journal,RelayAssociationConflicts conflicts) {
-        this.access=access;this.store=store;this.signature=signature;this.reconciliation=reconciliation;this.physical=physical;this.journal=journal;this.conflicts=conflicts;
+        RelayIndependentReconciliation reconciliation,RelayPhysicalChecks physical,RelayJournal journal,RelayAssociationConflicts conflicts,
+        RelayAssociationShortfall shortfall) {
+        this.access=access;this.store=store;this.signature=signature;this.reconciliation=reconciliation;this.physical=physical;this.journal=journal;this.conflicts=conflicts;this.shortfall=shortfall;
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
     public JsonNode record(RelayIntake.Context c,UUID relay,JsonNode body) {
@@ -23,6 +25,7 @@ public class RelayAssociations {
         var command=new RelayJournal.Command(new IdempotencyRequests.Key(actor,"relay.independent.associate",c.key()),
             Map.of("relayId",relay.toString(),"warehouseId",c.warehouse().toString(),"requestSha256",sha(body)));
         UUID replay=journal.replay(command);if(replay!=null)return verified(c.warehouse(),relay,replay);
+        shortfall.require(body);
         UUID target=RelayPhysicalPolicy.identifier(body,"targetOrderId");store.lockTarget(c.warehouse(),target);
         var context=reconciliation.snapshot(c.warehouse(),relay);UUID check=RelayPhysicalPolicy.identifier(body,"physicalCheckId");
         var evidence=physical.read(c.warehouse(),relay,check);var at=Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS);

@@ -12,12 +12,13 @@ final class RelayAssociationFixture {
     final ObjectNode context=physical.context,request=object();
     RelayAssociationFixture() {
         ((ObjectNode)context.path("original")).put("deviceId",UUID.randomUUID().toString()).putObject("task").put("vehicleNo","合成车01");
+        ((ObjectNode)context.path("original")).putObject("closure").put("plannedTotal","1").put("active","1").put("shortfall","0").put("shortfallReason","");
         var inventory=(ObjectNode)context.path("inventory").get(0);inventory.putArray("blockers");
         inventory.putObject("original").put("deliveryCode","001").put("model","M").put("name","合成纤维");
         inventory.putObject("server").put("snapshotId",snapshot.toString());context.putArray("peers");
         var candidate=context.putObject("candidates").putArray("items").addObject();
         candidate.put("id",target.toString()).put("source","WEB").put("status","READY").put("vehicleNo","合成车01")
-            .put("inventorySnapshotId",snapshot.toString());candidate.putArray("blockers");candidate.putArray("workFacts");
+            .put("inventorySnapshotId",snapshot.toString()).put("plannedTotal","1");candidate.putArray("blockers");candidate.putArray("workFacts");
         candidate.putArray("products").addObject().put("deliveryCode","001").put("model","M").put("name","合成纤维").put("plannedCount","1");
         request.put("targetOrderId",target.toString()).put("physicalCheckId",check.toString()).put("reason","合成独立人工关联");
         request.putArray("candidateExclusions");refresh();

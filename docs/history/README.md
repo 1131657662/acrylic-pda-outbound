@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E06人工关联短装批准服务L1](GOAL_E06_ASSOCIATION_SHORTFALL_L1_2026-10-14.md)：原/目标两差额明确批准，真实正向/默认关/事务/固定钥与全表守恒；[设计](GOAL_E06_ASSOCIATION_SHORTFALL_DESIGN_2026-10-14.md)，网页与组合继续。
+
 - [E06人工关联消费完整冲突决定L1](GOAL_E06_CONFLICT_ASSOCIATION_L1_2026-10-14.md)：真实正向、双开关/权限/事务/原键和固定钥/新JVM守恒；[方案](GOAL_E06_CONFLICT_ASSOCIATION_DESIGN_2026-10-14.md)，网页及组合继续。
 
 - [E06跨机实物冲突服务L1](GOAL_E06_CONFLICT_L1_2026-10-14.md)：真实决定正向/事务/权限/不可变与固定外部钥消费；[方案](GOAL_E06_CONFLICT_DESIGN_2026-10-14.md)，网页/关联消费及组合继续，非完整E06通过。

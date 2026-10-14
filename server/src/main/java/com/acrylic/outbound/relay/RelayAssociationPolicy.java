@@ -11,7 +11,9 @@ final class RelayAssociationPolicy {
     private RelayAssociationPolicy() { }
     static void validate(JsonNode body) {
         String fields="contextSha256 physicalCheckId targetOrderId candidateExclusions reason";
-        RelayPhysicalPolicy.exact(body,body.has("conflictDecisionId")?fields+" conflictDecisionId":fields);
+        if(body.has("conflictDecisionId"))fields+=" conflictDecisionId";
+        if(body.has("shortfallApproval"))fields+=" shortfallApproval";
+        RelayPhysicalPolicy.exact(body,fields);RelayAssociationPlan.validate(body);
         if(body.has("conflictDecisionId"))RelayPhysicalPolicy.identifier(body,"conflictDecisionId");
         if(!text(body,"contextSha256").matches("[0-9a-f]{64}"))throw invalid("核对摘要无效");
         RelayPhysicalPolicy.identifier(body,"physicalCheckId");RelayPhysicalPolicy.identifier(body,"targetOrderId");reason(body);
@@ -34,7 +36,7 @@ final class RelayAssociationPolicy {
         if(context.path("inventory").isEmpty())throw blocked("空任务不得关联正式单");
         for(var row:context.path("inventory"))if(!row.path("blockers").isEmpty())throw blocked("库存或占用尚有阻断");
         RelayAssociationConflictPolicy.complete(context,conflict,actor,now);
-        var target=target(body,context);products(target,context);return target;
+        var target=target(body,context);RelayAssociationPlan.complete(body,target,context);return target;
     }
     private static JsonNode target(JsonNode body,JsonNode context) {
         String id=text(body,"targetOrderId");JsonNode target=null;var expected=new HashSet<String>();
@@ -47,22 +49,6 @@ final class RelayAssociationPolicy {
             || !target.path("blockers").isEmpty() || !target.path("workFacts").isEmpty())throw blocked("目标不是无既有作业的正式单");
         if(!text(target,"vehicleNo").equals(text(context.path("original").path("task"),"vehicleNo")))throw blocked("目标车号与原任务不符");
         return target;
-    }
-    private static void products(JsonNode target,JsonNode context) {
-        var actual=new HashMap<String,Long>();
-        for(var row:context.path("inventory")) {
-            var original=row.path("original");actual.merge(productKey(original),1L,Long::sum);
-            var server=row.path("server");
-            if(!text(target,"inventorySnapshotId").equals(text(server,"snapshotId")))throw blocked("目标库存快照不符");
-        }
-        var planned=new HashMap<String,Long>();
-        for(var row:target.path("products")) {
-            if(planned.put(productKey(row),Long.parseLong(text(row,"plannedCount")))!=null)throw blocked("目标产品重复");
-        }
-        if(!planned.equals(actual))throw blocked("首切片要求完整计划匹配，短装及多任务仍待专门核对");
-    }
-    private static String productKey(JsonNode row) {
-        return canonical(object().put("deliveryCode",text(row,"deliveryCode")).put("model",text(row,"model")).put("name",text(row,"name")));
     }
     private static void reason(JsonNode row) {
         if(!row.path("reason").isTextual() || text(row,"reason").isBlank() || text(row,"reason").length()>500)throw invalid("须填写不超过500字的关联或排除依据");

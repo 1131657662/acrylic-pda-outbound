@@ -5,7 +5,9 @@ import { conflictResultSchema, verifyAssociationConflict } from './conflict-cont
 const hash = z.string().regex(/^[0-9a-f]{64}$/);
 export const associationEvidenceSchema = z.object({ contextSha256: hash, physicalCheckId: z.uuid(), targetOrderId: z.uuid(),
   candidateExclusions: z.array(z.object({ orderId: z.uuid(), reason: z.string().trim().min(1).max(500) }).strict()).max(2000),
-  reason: z.string().trim().min(1).max(500), conflictDecisionId: z.uuid().optional() }).strict()
+  reason: z.string().trim().min(1).max(500), conflictDecisionId: z.uuid().optional(),
+  shortfallApproval: z.object({ originalShortfall: z.string().regex(/^(0|[1-9][0-9]{0,5})$/),
+    targetShortfall: z.string().regex(/^(0|[1-9][0-9]{0,5})$/), reason: z.string().trim().min(1).max(500) }).strict().optional() }).strict()
   .refine(body => new Set(body.candidateExclusions.map(row => row.orderId)).size === body.candidateExclusions.length)
   .refine(body => body.candidateExclusions.every(row => row.orderId !== body.targetOrderId));
 export const associationResultSchema = z.object({
