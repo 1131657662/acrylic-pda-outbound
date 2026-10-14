@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E06多任务人工关联网页L1](GOAL_E06_MULTITASK_ASSOCIATION_WEB_L1_2026-10-14.md)：实际Chrome、主/成员回读、消费者和精确全表增量；[设计](GOAL_E06_MULTITASK_ASSOCIATION_WEB_DESIGN_2026-10-14.md)，E06组合继续。
+
 - [E06短装批准网页L1](GOAL_E06_ASSOCIATION_SHORTFALL_WEB_L1_2026-10-14.md)：显式批准、实际Chrome双页/丢响应原键与全表守恒；[设计](GOAL_E06_ASSOCIATION_SHORTFALL_WEB_DESIGN_2026-10-14.md)，多任务与组合继续。
 
 - [E06人工关联短装批准服务L1](GOAL_E06_ASSOCIATION_SHORTFALL_L1_2026-10-14.md)：原/目标两差额明确批准，真实正向/默认关/事务/固定钥与全表守恒；[设计](GOAL_E06_ASSOCIATION_SHORTFALL_DESIGN_2026-10-14.md)，网页与组合继续。

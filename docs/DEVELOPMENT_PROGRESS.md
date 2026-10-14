@@ -4,6 +4,8 @@
 
 # 开发验收索引
 
+- [E06多任务人工关联网页L1](history/GOAL_E06_MULTITASK_ASSOCIATION_WEB_L1_2026-10-14.md)：完整成员与合计短装、Chrome实际丢响应/双页原键/主成员回读、逐值守恒和保全输入复核；仅开发备份，E06受影响L2及最终L3继续。
+
 - [E06多任务人工关联服务L1](history/GOAL_E06_MULTITASK_ASSOCIATION_L1_2026-10-14.md)：显式成员/不可变台账、真实聚合正向/事务/权限/原键、严格非空与固定钥消费；仅开发备份，多任务网页与E06组合继续。
 
 - [E06人工关联消费完整冲突决定L1](history/GOAL_E06_CONFLICT_ASSOCIATION_L1_2026-10-14.md)：显式原决定/不可变引用，真实正向/默认开关/权限/事务/并发/锁后撤权、固定外部钥与新JVM/守恒；[设计](history/GOAL_E06_CONFLICT_ASSOCIATION_DESIGN_2026-10-14.md)。网页入口、短装/多任务与E06组合仍待验，非整体收口。

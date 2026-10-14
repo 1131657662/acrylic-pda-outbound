@@ -7,8 +7,10 @@ import type { PhysicalOwner } from './physical-contracts';
 import { loadPhysical } from './physical-storage';
 import { associationEvidenceSchema, type AssociationResult } from './association-contracts';
 import { loadAssociation, lockAssociation, saveAssociation, type AssociationSaved } from './association-storage';
-import { allCandidates, checkAssociationPhysical, readAssociation, sendAssociation, type Candidate } from './association-api';
-import { checkAssociationConflict } from './association-conflict-api';
+import { allCandidates, readAssociation, sendAssociation, type Candidate } from './association-api';
+import AssociationMembers from './AssociationMembers.vue';
+import { selectedMembers, type AssociationSelection } from './association-selection';
+import { checkAssociationSelection } from './association-selection-api';
 import AssociationShortfallApproval from './AssociationShortfallApproval.vue';
 import { associationShortfall, approveAssociationShortfall } from './association-shortfall';
 const props = defineProps<{ data: IndependentReview }>(); const session = useSessionStore();
@@ -16,17 +18,18 @@ const busy = ref(false); const error = ref(''); const saved = ref<AssociationSav
 const result = ref<AssociationResult | null>(null); const candidates = ref<Candidate[] | null>(null);
 const target = ref(''); const check = ref(''); const reason = ref(''); const exclusions = ref<Record<string, string>>({});
 const conflict = ref('');
+const members = ref<AssociationSelection[]>([]); const memberBusy = ref(false);
 const shortfallConfirmed = ref(false); const shortfallReason = ref('');
 const shortfall = computed(() => {
   const row = candidates.value?.find(candidate => candidate.id === target.value);
   if (!row) return null;
-  try { return { facts: associationShortfall(props.data, row), error: '' }; }
+  try { return { facts: associationShortfall(props.data, row, members.value.map(member => member.data)), error: '' }; }
   catch (cause) { return { facts: null, error: cause instanceof Error ? cause.message : '短装依据无法核对。' }; }
 });
 let generation = 0;
 const owner = computed<PhysicalOwner>(() => ({ userId: session.identity?.id ?? '', warehouseId: session.warehouseId, relayId: props.data.original.relayId }));
 const selfCheck = computed(() => owner.value.userId === props.data.original.operatorId);
-const frozen = computed(() => busy.value || Boolean(saved.value?.command) || Boolean(result.value));
+const frozen = computed(() => busy.value || memberBusy.value || Boolean(saved.value?.command) || Boolean(result.value));
 function assertScope(captured: PhysicalOwner, token: number): void {
   if (token !== generation || JSON.stringify(captured) !== JSON.stringify(owner.value)) throw new Error('身份、仓库或原件已变化，停止发送。');
 }
@@ -57,40 +60,48 @@ async function prepare(captured: PhysicalOwner, assertCurrent: () => void): Prom
 async function record(captured: PhysicalOwner, assertCurrent: () => void): Promise<void> {
   const state = loadAssociation(captured);
   if (!state.command) {
+    if (memberBusy.value) throw new Error('额外任务正在载入，请等待完整依据。');
     if (selfCheck.value || !candidates.value || !candidates.value.some(row => row.id === target.value)) throw new Error('须由独立主管载入完整候选并选择目标。');
     if (props.data.summary.crossTaskConflicts !== '0' && !conflict.value.trim()) throw new Error('须显式引用覆盖全部跨任务冲突的原决定。');
     if (!shortfall.value?.facts) throw new Error(shortfall.value?.error || '须先核对目标短装依据。');
     const approval = approveAssociationShortfall({ facts: shortfall.value.facts, confirmed: shortfallConfirmed.value, reason: shortfallReason.value });
+    const references = selectedMembers({ main: props.data, members: members.value, target: target.value, userId: captured.userId });
     const parsed = associationEvidenceSchema.safeParse({ contextSha256: props.data.contextSha256, physicalCheckId: check.value,
       ...(conflict.value.trim() ? { conflictDecisionId: conflict.value.trim() } : {}),
       ...approval,
+      ...(references.length ? { additionalTasks: references } : {}),
       targetOrderId: target.value, reason: reason.value, candidateExclusions: candidates.value.filter(row => row.id !== target.value)
         .map(row => ({ orderId: row.id, reason: exclusions.value[row.id] ?? '' })) });
     if (!parsed.success) throw new Error('请填写有效实物回执、关联说明和其余每个候选的排除理由。');
-    await checkAssociationPhysical(captured, parsed.data, candidates.value.find(row => row.id === target.value)); assertCurrent();
-    await checkAssociationConflict(captured, parsed.data); assertCurrent();
+    const selected = candidates.value.find(row => row.id === target.value);
+    if (!selected) throw new Error('所选目标已变化。');
+    await checkAssociationSelection({ owner: captured, body: parsed.data, target: selected, assertCurrent }); assertCurrent();
     state.command = { key: crypto.randomUUID(), epoch: currentRecoveryEpoch(), body: parsed.data, receipt: null }; saveAssociation(state);
   }
   assertCurrent(); await sendAssociation(captured, assertCurrent);
 }
-watch(() => [owner.value.userId, owner.value.warehouseId, owner.value.relayId], () => {
+watch(() => [owner.value.userId, owner.value.warehouseId, owner.value.relayId, props.data.contextSha256], () => {
   generation++; saved.value = null; result.value = null; candidates.value = null; exclusions.value = {};
   target.value = ''; check.value = ''; conflict.value = ''; reason.value = ''; shortfallConfirmed.value = false; shortfallReason.value = ''; busy.value = false; error.value = '';
+  members.value = []; memberBusy.value = false;
   const captured = { ...owner.value }; const token = generation;
   void refresh(captured, token).catch(cause => { if (token === generation) error.value = cause instanceof Error ? cause.message : errorText(cause); });
 }, { immediate: true });
 onUnmounted(() => { generation++; });
 watch(target, () => { shortfallConfirmed.value = false; shortfallReason.value = ''; });
+watch(members, () => { shortfallConfirmed.value = false; shortfallReason.value = ''; }, { deep: true });
 </script>
 <template>
   <section class="association-panel">
     <h2>主管人工关联</h2>
-    <p>引用已登记实物依据，选择正式单并逐项说明其余候选。跨任务重码须引用完整原冲突决定；原任务或目标短装须主管明确批准，多任务仍须专门处置。</p>
+    <p>引用各任务已登记实物依据，选择一个正式单并逐项说明其余候选。共同关联须显式载入额外任务；跨任务重码须引用完整原冲突决定，原任务合计或目标短装须主管明确批准。</p>
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
     <p v-if="selfCheck">原采集者须由另一名有权主管核对。</p>
     <template v-if="result">
       <p role="status">人工关联已登记，仍待对账；未记账、未放行。回执 {{ result.receipt.associationId }}</p>
       <p>正式单 {{ result.receipt.targetOrderId }} · 实物回执 {{ result.receipt.physicalCheckId }}</p>
+      <p>主原件 {{ result.receipt.relayId }} · 原任务 {{ result.receipt.taskId }} · 共 {{ (result.additionalEvidence?.length ?? 0) + 1 }} 个任务</p>
+      <p v-for="member in result.additionalEvidence" :key="member.evidence.relayId">共同关联原件 {{ member.evidence.relayId }} · 实物回执 {{ member.evidence.physicalCheckId }}<template v-if="member.evidence.conflictDecisionId"> · 冲突决定 {{ member.evidence.conflictDecisionId }}</template></p>
       <p>原关联说明：{{ result.evidence.reason }}</p>
       <p v-if="result.evidence.shortfallApproval">原短装批准：原任务 {{ result.evidence.shortfallApproval.originalShortfall }}包 · 目标 {{ result.evidence.shortfallApproval.targetShortfall }}包 · {{ result.evidence.shortfallApproval.reason }}</p>
       <p v-if="result.conflictEvidence">原冲突决定 {{ result.conflictEvidence.receipt.decisionId }} · 其余任务 {{ result.conflictEvidence.originalContext.peers.length }} 个；仍待对账。</p>
@@ -99,6 +110,7 @@ watch(target, () => { shortfallConfirmed.value = false; shortfallReason.value = 
     <template v-else-if="saved?.command">
       <p>原关联结果未明。已保存原请求，刷新后仍按原键恢复。</p>
       <p>原目标 {{ saved.command.body.targetOrderId }} · {{ saved.command.body.reason }}</p>
+      <p v-for="member in saved.command.body.additionalTasks" :key="member.relayId">原请求共同关联原件 {{ member.relayId }} · 实物回执 {{ member.physicalCheckId }}</p>
       <p v-if="saved.command.body.shortfallApproval">原短装批准：原任务 {{ saved.command.body.shortfallApproval.originalShortfall }}包 · 目标 {{ saved.command.body.shortfallApproval.targetShortfall }}包 · {{ saved.command.body.shortfallApproval.reason }}</p>
       <el-button :disabled="busy || selfCheck" @click="run(record)">按原键恢复关联结果</el-button>
     </template>
@@ -117,6 +129,8 @@ watch(target, () => { shortfallConfirmed.value = false; shortfallReason.value = 
             <el-input v-if="row.id !== target" v-model="exclusions[row.id]" :aria-label="`排除候选 ${row.orderNo}`" placeholder="逐项说明排除依据" maxlength="500" :disabled="frozen" />
           </article>
         </el-radio-group>
+        <AssociationMembers :key="data.contextSha256" v-model="members" :owner="owner" :target="target" :disabled="frozen" @loading="memberBusy = $event" />
+        <p v-if="members.length">全组有效 {{ Number(data.summary.activeTotal) + members.reduce((sum, member) => sum + Number(member.data.summary.activeTotal), 0) }}包，原短装合计 {{ shortfall?.facts?.original ?? '待核对' }}包。</p>
         <el-alert v-if="shortfall?.error" :title="shortfall.error" type="error" :closable="false" />
         <AssociationShortfallApproval v-if="shortfall?.facts" v-model:confirmed="shortfallConfirmed" v-model:reason="shortfallReason" :facts="shortfall.facts" :data="data" :disabled="frozen" />
         <el-button type="primary" :disabled="frozen || !target || selfCheck" @click="run(record)">保存人工关联依据</el-button>
@@ -125,7 +139,7 @@ watch(target, () => { shortfallConfirmed.value = false; shortfallReason.value = 
   </section>
 </template>
 <style scoped>
-.association-panel { border-top: 1px solid var(--separator); margin-top: var(--space-6); padding-top: var(--space-4); }
+.association-panel { border-top: 1px solid var(--separator); margin-top: var(--space-6); padding-top: var(--space-4); overflow-wrap: anywhere; }
 .association-panel :deep(.el-input), .association-panel :deep(.el-textarea) { margin-bottom: var(--space-2); width: 100%; }
 .association-panel :deep(.el-radio-group) { display: block; width: 100%; }
 .association-candidate { margin-block: var(--space-4); padding: var(--space-4); border: 1px solid var(--separator); border-radius: var(--radius-control); }

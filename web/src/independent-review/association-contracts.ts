@@ -1,15 +1,19 @@
 import { z } from 'zod';
 import { jsonDigest, physicalResultSchema, type PhysicalOwner } from './physical-contracts';
 import { conflictResultSchema, verifyAssociationConflict } from './conflict-contracts';
+import { associationMemberSchema, associationMemberResultSchema, candidateExclusionsSchema, verifyAssociationMembers } from './association-members-contracts';
 
 const hash = z.string().regex(/^[0-9a-f]{64}$/);
 export const associationEvidenceSchema = z.object({ contextSha256: hash, physicalCheckId: z.uuid(), targetOrderId: z.uuid(),
-  candidateExclusions: z.array(z.object({ orderId: z.uuid(), reason: z.string().trim().min(1).max(500) }).strict()).max(2000),
+  candidateExclusions: candidateExclusionsSchema,
   reason: z.string().trim().min(1).max(500), conflictDecisionId: z.uuid().optional(),
   shortfallApproval: z.object({ originalShortfall: z.string().regex(/^(0|[1-9][0-9]{0,5})$/),
-    targetShortfall: z.string().regex(/^(0|[1-9][0-9]{0,5})$/), reason: z.string().trim().min(1).max(500) }).strict().optional() }).strict()
+    targetShortfall: z.string().regex(/^(0|[1-9][0-9]{0,5})$/), reason: z.string().trim().min(1).max(500) }).strict().optional(),
+  additionalTasks: z.array(associationMemberSchema).min(1).max(19).optional() }).strict()
   .refine(body => new Set(body.candidateExclusions.map(row => row.orderId)).size === body.candidateExclusions.length)
-  .refine(body => body.candidateExclusions.every(row => row.orderId !== body.targetOrderId));
+  .refine(body => body.candidateExclusions.every(row => row.orderId !== body.targetOrderId))
+  .refine(body => new Set(body.additionalTasks?.map(row => row.relayId)).size === (body.additionalTasks?.length ?? 0))
+  .refine(body => body.additionalTasks?.every(row => row.candidateExclusions.every(exclusion => exclusion.orderId !== body.targetOrderId)) ?? true);
 export const associationResultSchema = z.object({
   receipt: z.object({ purpose: z.literal('INDEPENDENT_ASSOCIATION_EVIDENCE_V1'), associationId: z.uuid(), warehouseId: z.uuid(),
     relayId: z.uuid(), deviceId: z.uuid(), taskId: z.uuid(), targetOrderId: z.uuid(), supervisorId: z.uuid(), physicalCheckId: z.uuid(),
@@ -19,6 +23,7 @@ export const associationResultSchema = z.object({
     businessProcessed: z.literal(false), releaseAllowed: z.literal(false), localDeletionAllowed: z.literal(false) }).strict(),
   evidence: associationEvidenceSchema, originalContext: z.record(z.string(), z.unknown()), physicalEvidence: physicalResultSchema,
   conflictEvidence: conflictResultSchema.optional(),
+  additionalEvidence: z.array(associationMemberResultSchema).min(1).max(19).optional(),
 }).strict();
 export type AssociationEvidence = z.infer<typeof associationEvidenceSchema>;
 export type AssociationResult = z.infer<typeof associationResultSchema>;
@@ -28,7 +33,7 @@ const originalSchema = z.object({ warehouseId: z.uuid(), relayId: z.uuid(), devi
 /** Digest/context binding for display; RSA signature verification remains on the server. */
 export async function verifyAssociation(result: AssociationResult, owner: PhysicalOwner, body?: AssociationEvidence): Promise<void> {
   const r = result.receipt; const p = result.physicalEvidence; const original = originalSchema.parse(result.originalContext.original);
-  if (r.warehouseId !== owner.warehouseId || r.relayId !== owner.relayId || original.warehouseId !== r.warehouseId ||
+  if (r.warehouseId !== owner.warehouseId || original.warehouseId !== r.warehouseId ||
       original.relayId !== r.relayId || original.deviceId !== r.deviceId || original.taskId !== r.taskId ||
       original.archiveSha256 !== r.archiveSha256 || original.closureSha256 !== r.closureSha256 ||
       r.requestSha256 !== await jsonDigest(result.evidence) || body && r.requestSha256 !== await jsonDigest(body) ||
@@ -40,5 +45,7 @@ export async function verifyAssociation(result: AssociationResult, owner: Physic
       p.receipt.requestSha256 !== await jsonDigest(p.evidence) || r.contextSha256 !== await jsonDigest(p.originalContext))
     throw new Error('关联回执与原请求、原件、目标或实物依据不一致，请保留原键核对。');
   await verifyAssociationConflict({ conflict: result.conflictEvidence, decisionId: result.evidence.conflictDecisionId,
-    contextSha256: r.contextSha256, owner });
+    contextSha256: r.contextSha256, owner: { ...owner, relayId: r.relayId } });
+  await verifyAssociationMembers({ references: result.evidence.additionalTasks, members: result.additionalEvidence,
+    main: r, owner });
 }
