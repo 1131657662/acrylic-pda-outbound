@@ -4,6 +4,8 @@
 
 - [O04 独立采集验收](GOAL_O04_INDEPENDENT_COLLECTION_ACCEPTANCE_2026-10-15.md)：短路径 Java 临时目录下 90 项独立 Android/Room/救援单测 0 失败、0 错误、1 个既有跳过；真实历史服务端凭据向量与独立加密包输出已绑定。仅收口 O04 开发切片，不计 E06 L2、U03 完整人工关联、D18 L3 或总目标。
 
+- [E08 UI 后续短路径复验](GOAL_E08_UI_FOLLOWUP_ACCEPTANCE_2026-10-15.md)：恢复卡片读取 2/2、恢复确认重试 1/1，在 D 盘 Java 临时目录下共 3/3 通过；输入快照、命令和 Gradle 日志保留。仅定向开发复验，长路径失败、真机/U01–U04、E06 L2、D18 L3 与总目标继续。
+
 - [E08 页面与作业体验开发验收](GOAL_E08_UI_ACCEPTANCE_2026-10-15.md)：Work/Submission/Temporary/Handover 重设计与恢复确认交互、lint/debug/staging 构建及 13 项主机测试（11 通过、2 项 Robolectric SQLite 打开失败）；仅 UI 开发备份，真机/长时/E06 L2/D18 L3/总目标继续。
 
 - [E06受影响组合补验与未完成边界](GOAL_E06_COMBINATION_PARTIAL_2026-10-14.md)：原AVD/SAF、真实HTTP/MySQL、非空与独立消费已执行；Chrome预览自动审批阻断，L2未完成；[组合设计](GOAL_E06_COMBINATION_DESIGN_2026-10-14.md)。

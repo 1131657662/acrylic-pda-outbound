@@ -8,6 +8,8 @@
 
 - [D16整单事实清理与恢复引用保护开发验收](history/GOAL_D16_RETENTION_ACCEPTANCE_2026-10-15.md)：RetentionCleaner/DAO 定向 Android 测试 19/19 通过，覆盖 90 天严格边界、恢复/下载状态保护、订单/条码引用、批量清理、事务回滚和 Room 迁移保留；仅可隔离开发证据，生产删除、长期留存、D13–D15 依赖、D18 L3 与总目标继续。
 
+- [E08 UI 后续短路径复验](history/GOAL_E08_UI_FOLLOWUP_ACCEPTANCE_2026-10-15.md)：恢复卡片读取 2/2、恢复确认重试 1/1，在 D 盘 Java 临时目录下共 3/3 通过；输入哈希、命令和日志见 `.local/goal-20261015/e08-ui-followup-04/`。仅补定向开发证据，长路径失败、真机/U01–U04、E06 L2、D18 L3 与总目标继续。
+
 # 开发验收索引
 
 - [E08 页面与作业体验开发验收（未完成）](history/GOAL_E08_UI_ACCEPTANCE_2026-10-15.md)：Work/Submission/Temporary/Handover 重设计、恢复确认和 Temporary 搜索已实现；lint/debug/staging 成功，短路径隔离复验 13/13 主机测试通过。长路径 Robolectric SQLite 失败根因和原 XML 保留；仅开发备份，U01–U04 完整验收、真机/长时、E06 L2、D18 L3 与总目标继续。
