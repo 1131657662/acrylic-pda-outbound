@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: 76c83820
-dirty_entries: 98
+head: a213b4b4
+dirty_entries: 97
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标active。故障订单有权撤回→重发→新设备从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与输入
-- 固定`D:/acrylic-pda-outbound`、`codex/development`；实际HEAD/远端同为`76c83820846d6012e1a81ab8401c62401bf7fef7`。提交/远端以本批明确路径提交回执及生成块为准。main只读，禁止`git add .`。
+- 固定`D:/acrylic-pda-outbound`、`codex/development`；本次核实实际HEAD/远端同为`a213b4b447acfe6cfde38dfebfe7f7c85de711b3`，生成事实块已刷新。提交/远端以本批明确路径提交回执及生成块为准。main只读，禁止`git add .`。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`为源码/库/看板/索引唯一写者，无子代理。清理聊天22:17实际回执complete-released、范围/在途任务为空且无监听/待写；无并行项目任务。旧owner/release不作活动证明。
 - 接管基线及旧看板结论已归档至`.local/goal-20261016/resume-20261016-014245/`（git状态/全量改动哈希、diff、进程、监听、C/D余量）；清理聊天已确认不再写入，当前仍由本聊天单写者保全。
 - 629消费者冻结输入5,292项全部逐字节不变；完整接管改动/哈希/工作树与写权快照见`.local/goal-20261015/e07-independent-checkpoint01/resume629-consumer01.json`、`runtime629-consumer01.json`及`board-before-e07-consumer629-report.md`。621–628原快照、失败库、日志与报告继续保留；继承Android/UI/工具/文档与私有请求保护。
@@ -43,6 +43,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - [O03原件中转跨截点组合](history/GOAL_E07_RELAY_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：625前缀缺结果/未冻结不提交、原binlog精确终点、同键双并发/原PDA/两份RSA原回执/default-off及独立消费通过；消费者登录审计误判保留。仅开发备份，非E07 L2/D14整体/D18 L3。
 - [642独立检查点L1报告](history/GOAL_E07_O04_INDEPENDENT_CHECKPOINT_2026-10-16.md)：641隔离恢复切片由独立只读Python消费，双次854文件清单、SHA/长度、七组HTTP、179表/622行事实与文件守恒通过；首轮解析失败原件保留。仅L1开发备份，不计E07 L2/D18 L3或总目标。
 - [629消费者报告](history/GOAL_E07_O04_INDEPENDENT_CHECKPOINT_CONSUMER_ACCEPTANCE_2026-10-16.md)：冻结输入5,292项、三库540表、854文件、dump/binlog/存储守恒、原ZIP/设备签名、credential/关联/实物附件签名、短装/缺关联/重建/default-off HTTP消费及目标DRAFT围栏均通过；结果与脚本SHA见`.local/goal-20261015/e07-independent-checkpoint01/consumer629-result.json`。626–628三类失败根因和原件保全不清零；本批仍仅开发备份，非E07 L2/D14整体/D18 L3。随后执行E07受影响组合，再推进E08/E09及剩余D/O/U；最终候选必须实际执行Android、真实HTTP/MySQL、Chrome、Python、非空迁移、原模拟器和恢复组合。第8节全部满足前总目标保持active。
+- [644受影响组合报告](history/GOAL_E07_COMBINATION_644_ACCEPTANCE_2026-10-16.md)：新隔离实例 644 的真实 HTTP/MySQL、更正账务、撤回、导出和退库周期 1/1 通过，认证停机且 `19350/19434/19435/19436` 零监听；643 端口配置失败原件保留。仅组合开发验收，不计 E07 L2、D18 L3 或总目标。证据、命令、运行后进程/磁盘和旧结论快照见`.local/goal-20261016/e07-l2-combination-644/`。
+- 本次看板替换前旧结论快照：`.local/goal-20261016/e07-l2-combination-644/checkpoint-before-report-20261016-0445/`；当前工作树仍约 97 项既有改动及本批文档改动，未使用 `git add .`。下一步执行 E07 剩余受影响组合，再推进 E08/E09、D/O/U 及最终 L3；总目标保持 `active`。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
