@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: ee98d4cd
-dirty_entries: 91
+head: 8d97743b
+dirty_entries: 86
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,12 +17,12 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标仍为active。坏机单有权撤回→重发→新机从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与断点
-- 固定 `D:/acrylic-pda-outbound`、`codex/development`；610切片以`ee98d4cd5aeb34b877aefdfad5c5b0e78e5da2ea`为运行输入；全改动/hash/写权见`.local/goal-20261015/e07-cross610/finalize-input.json`、`impact-plan.json`，明确路径备份回执见`post-commit.json`；main只读。
-- 本聊天 `01a13a57-8082-7dd2-a08f-987483dcda4b`为源码/库/看板/索引唯一写者，无子代理。清理round3已complete-released且无在途任务，见独立清理报告/完成回执；旧结论已归档，5262输入和393来源不变。继承Android/UI/工具/私有请求保护，禁止`git add .`。
-- 610启动前核实33 worktree无同号路径；现已认证停机、19330/19434零监听、无项目Java/Gradle/隔离MySQL任务，共享3306只观察。进程/监听见`e07-cross610/environment-finalize.json`；第三轮清理见[独立报告](history/D_DISK_ROUND3_CLEANUP_2026-10-15.md)。
+- 固定 `D:/acrylic-pda-outbound`、`codex/development`；HEAD/远端 `8d97743be419606f9a744b06ef0e66d9577689e6`。610回执见`e07-cross610/post-commit.json`；611/612实物及运维组合的全改动/hash/输入与计划见`.local/goal-20261015/e07-cross611/input-before.json`、`impact-plan.json`，旧结论已归档；main只读。
+- 本聊天 `01a13a57-8082-7dd2-a08f-987483dcda4b`为源码/库/看板/索引唯一写者，无子代理。清理round3已complete-released且无在途任务，见独立清理报告/完成回执；旧结论已归档，两批5265输入和393来源不变。继承Android/UI/工具/私有请求保护，禁止`git add .`。
+- 611/612分配前核实33 worktree无同号路径、19330/19434零监听，无项目重型任务；顺序使用同端口和独立datadir/schema，来源1233只读。611实物/独立JVM重放及612运维已通过并认证停机；旧失败/停机库不复用。收尾全改动/写权/环境见`e07-cross612/finalize-input.json`、`environment-finalize.json`。
 
 ## 环境、磁盘与生产边界
-- E07的602–610均认证停机；610收尾C/D可用78,771,994,624 /67,907,416,064 bytes，证据/专属临时目录均在D盘。正确预检见`e07-cross610/preflight-environment-corrected.json`，收尾见`environment-finalize.json`。原库/失败库、dump/binlog、日志/XML、原件及密钥/AVD身份保留。
+- E07的602–612均认证停机，19330/19434零监听；收尾C/D可用78,877,573,120 /67,424,559,104 bytes，无项目重型任务；证据/专属临时目录均在D盘。原库/失败库、dump/binlog、日志/XML、原件及密钥/AVD身份保留。
 - 生产决定 handler/POST/放行/证据写入/关闭能力、TEMP 生产归档边界与 `localDeletionAllowed=false` 保持关闭；同机合成身份/模拟器不冒充现场事实。
 
 ## 已验范围、暂缓及下一步
@@ -47,7 +47,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - E07闭合恢复前置组合已补：[正式报告](history/GOAL_E07_CLOSED_RECOVERY_ACCEPTANCE_2026-10-15.md)。新1546 Authority、1547 Projection 各1/1通过；6库206表/10库225表的JDBC与dump前后、storage守恒，认证停机且19330/19434零监听。1545辅助库ACL失败（1次，探针已写）与1546业务前路径误判均保留；不计E07 L2、D14/D15整体或D18 L3。
 - E07原检查点/binlog重建开发切片完成：[报告](history/GOAL_E07_CHECKPOINT_REBUILD_ACCEPTANCE_2026-10-15.md)。1551参数拒绝、601缺配置、602排序规则失败原件保留；新603真实导入/重放1/1，109触发器/146业务表/迁移历史/19文件一致，三项写前拒绝，147表独立dump与停机保全。源393文件及5,245输入仅运行器计划内变化；非E07 L2/D14整体/D18 L3。
 - E07归档闭合消费/主管故障围栏已补：[报告](history/GOAL_E07_RECEIVED_ARCHIVE_FAULT_ACCEPTANCE_2026-10-15.md)。新604/605各1/1、Node403/404项消费通过；源393文件不变，停机357/364/375文件复核通过，148表/dump/storage守恒。仅开发切片，非E07 L2/D14整体/D18 L3。
-- E07历史覆盖与恢复后升级开发切片完成：[报告](history/GOAL_E07_HISTORY_COVERAGE_ACCEPTANCE_2026-10-15.md)。606缺候选表、607无领取TEMP revision断言失败均保全；新608实际HTTP/MySQL 1/1、137表独立成员消费、历史损失窗口覆盖及非空升级/原字段/19文件守恒通过。606/607/608停机363/390/405文件hash不变；编码与摘要回读器原失败保留。仅切片，非E07 L2/D14整体/D18 L3。609历史缺列兼容失败完整保全。610严格升级兼容/全局编号/只读对账切片已补：[报告](history/GOAL_E07_NUMBER_RECONCILIATION_ACCEPTANCE_2026-10-15.md)；真实HTTP/MySQL 1/1、相关回归54/54、Node/Python独立消费、181表/dump守恒、408文件和停机零监听通过；实物/运维资格不在本切片内，非E07 L2/D18 L3。随后E07组合、E08/E09及剩余D/O/U，总目标active。
+- E07历史覆盖与恢复后升级开发切片完成：[报告](history/GOAL_E07_HISTORY_COVERAGE_ACCEPTANCE_2026-10-15.md)。606缺候选表、607无领取TEMP revision断言失败均保全；新608实际HTTP/MySQL 1/1、137表独立成员消费、历史损失窗口覆盖及非空升级/原字段/19文件守恒通过。606/607/608停机363/390/405文件hash不变；编码与摘要回读器原失败保留。仅切片，非E07 L2/D14整体/D18 L3。609历史缺列兼容失败完整保全。610严格升级兼容/全局编号/只读对账切片已补：[报告](history/GOAL_E07_NUMBER_RECONCILIATION_ACCEPTANCE_2026-10-15.md)；真实HTTP/MySQL 1/1、相关回归54/54、Node/Python独立消费、181表/dump守恒、408文件和停机零监听通过；实物/运维资格不在本切片内，非E07 L2/D18 L3。611实物/第二JVM重放与612运维各1/1、非空升级/消费者及全表保全通过，414/416停机文件不变；[正式报告](history/GOAL_E07_PHYSICAL_OPERATIONS_ACCEPTANCE_2026-10-15.md)。下一步核撤回/更正跨检查点事实缺口，再E07组合、E08/E09及剩余D/O/U；总目标active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
