@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: 7afaafca
+head: 50879f04
 dirty_entries: 84
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
@@ -17,14 +17,14 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标active。故障订单有权撤回→重发→新设备从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与输入
-- 固定`D:/acrylic-pda-outbound`、`codex/development`；621运行HEAD/远端`7afaafca06002d79a23bb4d3a3ed734f9b5d3925`。提交/远端以本批明确路径提交回执及生成块为准。main只读，禁止`git add .`。
+- 固定`D:/acrylic-pda-outbound`、`codex/development`；622运行与报告接续HEAD/远端`50879f048466b540b0fa27c5f9a4d9ec1990a086`。提交/远端以本批明确路径提交回执及生成块为准。main只读，禁止`git add .`。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`为源码/库/看板/索引唯一写者，无子代理。清理聊天22:17实际回执complete-released、范围/在途任务为空且无监听/待写；无并行项目任务。旧owner/release不作活动证明。
-- 621运行5,278项输入中5,277项逐字节不变，看板仅生成块漂移且原文hash匹配。全部tracked/untracked/hash/长度/补丁/工作树及写权见`.local/goal-20261015/e07-combo01/input621.json`、`resume-20261015.json`、`ownership621-resume.json`。继承Android/UI/工具/文档与私有请求保护；旧看板在`board-before-621.md`、`board-before-621-report.md`。
+- 622运行5,279项输入全部逐字节不变。全部tracked/untracked/hash/长度/补丁/工作树及写权见`.local/goal-20261015/e07-combo01/input622.json`、`resume622-review.json`、`runtime622-review.json`；621原快照保留。继承Android/UI/工具/文档与私有请求保护；替换前看板在`board-before-622-report.md`。
 
 ## 环境、磁盘与边界
 - 613/615失败库已全表/dump/storage保全并认证停机；614初始化前失败原件保留。616测试18:38通过后系统20:03重启，原实例未取得认证停机，原1,374文件封存且未重启。
 - 新分配617仅恢复616同字节副本，路径`.local/e2a-preservation-20261015-617/`，schema仍为616家族。11个schema中6个非空/共1,080表守恒，dump/binlog/storage/身份完整，认证停机且19330/19434零监听；1,260副本文件与全部原件保留。不得复用旧库。
-- 621已全表/dump/storage保全并认证停机，674文件长度/hash核验；接续19330/19434零监听。C/D约83.41/65.02GB可用；精确bytes/进程见`e07-combo01/runtime-resume-20261015.json`，提交收尾另留快照。无项目重型任务，共享MySQL仅观察；证据/临时目录在D盘，TEMP/TMP/Java tmp仅子进程设置。
+- 621/622已全表/dump/storage保全并认证停机，分别674/507文件长度/hash核验；接续19330/19434零监听。C/D约83.41/64.74GB可用；精确bytes/进程见`e07-combo01/runtime622-review.json`，提交收尾另留快照。无项目重型任务，共享MySQL仅观察；证据/临时目录在D盘，TEMP/TMP/Java tmp仅子进程设置。
 - 七类生产决定handler/POST/放行/证据写入/关闭能力、TEMP生产归档边界及`localDeletionAllowed=false`保持关闭。不接原库/现网、不合main、不发布部署、不用正式签名；合成身份/签名/模拟器不代表现场。
 
 ## 已验范围与剩余
@@ -37,7 +37,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - D10撤回/重发15项真实API/HTTP/消费者及附件17项按原报告复用；D15任务监控、升级检查点、P07各工具专项和D16清理/引用保护19项仅按各自开发切片收录，D13–D16整体与依赖未完成。旧1548连接失败及其他原失败计数保留。
 - E08首屏/下一动作/恢复确认/独立搜索/窄屏UI已形成开发备份，O01/U01交互26项、共享扫码依赖23项及引擎5项等输入范围见报告；E09 Web类型/契约/构建/审查阶段通过。均不能代替对应设备/Chrome/后台恢复组合、U01–U04完整开发验收或D18 L3。
 - O04独立采集90项（1个既有跳过）及O05 SAF实际创建/取回/覆盖损坏拒绝已记录；完整人工关联/设备组合与O01–O05/U01–U04逐项退出仍需完成。U01/U02首屏草稿、D04/A1.4/1043、原生崩溃/恢复等历史暂缓项不记通过。
-- 下一步完整退库HTTP正反例与恢复检查点后缺更正围栏，再E07其余组合、E08/E09及剩余D/O/U。最终候选必须实际执行Android、真实HTTP/MySQL、Chrome、Python、非空迁移、原模拟器和恢复组合；L1/L2不免除L3。第8节全部满足前总目标保持active。
+- [独立退库审批与新周期HTTP组合](history/GOAL_E07_RETURNED_STOCK_HTTP_ACCEPTANCE_2026-10-15.md)：622真实HTTP/MySQL 1/1、独立Python消费180表/32RSA/3项退库引用/新旧周期、507文件/dump/storage及认证停机通过；同键并发/异文/身份/跨仓/末SQL回滚均有实际证据。仅组合开发备份，非E07 L2/D14-D15整体/D18 L3。
+- 下一步恢复检查点后缺更正围栏，再E07其余组合、E08/E09及剩余D/O/U。最终候选必须实际执行Android、真实HTTP/MySQL、Chrome、Python、非空迁移、原模拟器和恢复组合；L1/L2不免除L3。第8节全部满足前总目标保持active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

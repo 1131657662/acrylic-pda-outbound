@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E07独立退库审批与新周期HTTP组合](history/GOAL_E07_RETURNED_STOCK_HTTP_ACCEPTANCE_2026-10-15.md)：622真实HTTP/MySQL 1/1、180表/32份RSA/3项退库引用及新旧周期独立消费、507文件保全和认证停机通过；仅组合开发备份，恢复截点缺更正、E07 L2/D14-D15整体/D18 L3仍未完成。
+
 - [E07撤回五检查点恢复](history/GOAL_E07_WITHDRAWAL_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：新616五检查点真实恢复/HTTP重放1/1、独立Python/原RSA回执消费及617六库保全通过；613/614/615原失败与系统重启事实保留。仅开发备份，E07 L2/D14整体/D18 L3未完成。
 
 - [E07原检查点实物与运维组合](history/GOAL_E07_PHYSICAL_OPERATIONS_ACCEPTANCE_2026-10-15.md)：新611实物与独立JVM重放、612运维各1/1，非空升级、Node/Python消费及两库181表保全通过；414/416停机文件不变。仅开发备份，E07 L2/D14-D15整体/D18 L3未完成。
