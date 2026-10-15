@@ -468,3 +468,4 @@
 - E06增量冲突责任链网页：[L1开发备份](history/GOAL_E06_CONFLICT_EXTENSION_WEB_L1_2026-10-14.md)；完整各方追加、Chrome丢响应/刷新/双页原key与历史保全、全表精确增量；多任务及E06组合继续。
 
 - E07/O05同机恢复与加密副本：[专项验收](history/GOAL_E07_RESTORE_COPY_ACCEPTANCE_2026-10-14.md)；1541恢复180表/64非空表和15个私有/存储文件守恒，写前缺失/损坏输入4/4拒绝；O05专项14/14、受影响回归41/41、实际SAF CLI创建/取回及覆盖/损坏拒绝通过。仅同机开发演练，异地/现场保管、P07、E08/E09、E06 L2、D18 L3和总目标未完成。
+- [E07闭合恢复跨截点前置验收](history/GOAL_E07_CLOSED_RECOVERY_ACCEPTANCE_2026-10-15.md)：1546 Authority、1547 Projection 均通过真实隔离 MySQL、辅助 schema、JDBC/dump/文件守恒和认证停机；1545 ACL 失败与新运行器误判保留。仅闭合恢复前置组合，不计 D14/D15 整体、E07 L2、D18 L3 或总目标。
