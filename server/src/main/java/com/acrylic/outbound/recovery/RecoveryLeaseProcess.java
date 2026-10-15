@@ -83,6 +83,16 @@ final class RecoveryLeaseProcess {
         text(value, "jvmVersion"); instant(value, "createdAt");
     }
 
+    static synchronized void verifyRetained(Path path, RecoveryLeaseRoots roots) throws IOException {
+        RecoveryControlPaths.file(path);
+        var local = LOCAL.get(path);
+        boolean held = local != null && local.lock.isValid();
+        if (held) require(local.nativeIdentity.equals(RecoveryWriterProtocol.fileIdentity(path)), "RECOVERY_LEASE_OUTSTANDING");
+        // Closing a second descriptor can release POSIX lifecycle locks held by this JVM.
+        var value = held ? local.readHeld() : RecoveryControlHistory.read(path);
+        validate(value, path, hash(value), roots);
+    }
+
     private JsonNode readHeld() throws IOException {
         var buffer = ByteBuffer.allocate(RecoveryControlJson.MAX_BYTES + 1);
         int count = channel.read(buffer, 0);

@@ -48,3 +48,17 @@ python tools/recovery_rekey.py --java <absolute-java-executable> --classpath D:/
 首次尾替换失败会逐目标尝试恢复，回滚失败作为原异常附加信息保留；备份始终保留。强制进程终止可能留下部分新签记录，旧绑定及后续启动将拒绝不一致状态；工具不自动修复这种状态。成功和失败日志都不包含原钥字节，私有测试钥/运行配置也不得上传 Git。
 
 开发证据及准确未验范围由历史验收页登记；本页只描述操作契约，不声称任何现场/生产验收已经通过。
+
+## 中止后的只读诊断
+
+`tools/recovery_rekey_inspect.py`只读消费原请求、明确指定的相邻原签备份和外部两代钥，不扫描或挑选“最新”备份，也不修复文件、供应运行秘密、启动服务或授权继续。请求/备份来源仍须由操作者核对：
+
+```powershell
+python tools/recovery_rekey_inspect.py --request <external-request-json> --backup <exact-adjacent-rekey-backup> --current-key-file <external-old-bin> --next-key-file <external-next-bin>
+```
+
+工具核对固定身份、旧marker摘要、两代钥ID、原HMAC、进程原字段、空索引和文件集合，对当前每条记录与预期原/新字节比较。完整读回可报告`ALL_OLD`、`ALL_NEW`、`MIXED`或`PENDING`；部分/零字节pending、缺失文件、错钥、篡改、额外布局或可见并发变化返回`UNKNOWN`及退出3。原有非法或半写pending必须保留；不能为取得可读状态而删除。退出0仅表示本次可解释的只读分类，所有结果均`keepWritersStopped=true`、`recoveryAllowed=false`、`productionApproved=false`。
+
+`processSetAuthenticated=false`说明旧备份没有签名的完整进程集合清单；同时丢失当前及备份的同名原件，不能靠剩余HMAC证明完整。`writerLivenessVerified=false`说明前后hash相等只是两次观察，不是持锁快照或全部写者已退出的证明。该工具不能替代独立保管清单、P3锁身份核验、数据库/文件/业务事实对账或人工恢复审批。即使`ALL_OLD/ALL_NEW`也不能直接启服务。显式恢复工具及其可信全集/进程排空前置仍是后续开发范围，不允许用手工覆盖完成局部测试后记全部恢复通过。
+
+产品P5启动还会在持协调锁的检查内验证全部保留进程记录的HMAC/身份/文件名，并拒绝未完成root/process布局；空租约索引不再掩盖部分轮换。该检查不重签、不清pending、不生成新权威；同JVM活动进程使用原持有描述符验证，避免POSIX关闭第二句柄释放生命周期锁。旧秘密不能启动含新签进程记录的混合树。

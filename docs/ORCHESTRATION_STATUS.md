@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: ff2e4dfb
-dirty_entries: 99
+head: faa46a82
+dirty_entries: 93
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,12 +17,12 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标仍为active。坏机单有权撤回→重发→新机从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与断点
-- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本轮 P07 输入 HEAD/实际远端同为 `c0c728366f074a3a2197170744e422e7bafd8084`，main 只读。该 SHA 已推共享扫码依赖开发备份，源码树 `7191302eee4d7d90105208f0b23cc82757ed4eeb` 的输入/回执保留；P07 提交后精确 SHA/远端另存 `.local/goal-20261015/p07-ops03/`，不自引用循环提交。
-- 本聊天为源码/看板唯一写者；另一清理聊天范围只含冷产物且回执登记未改源码/看板，见 `.local/goal-20261015/p07-ownership-checkpoint01/ownership-resolved.json`。继承79项原字节/哈希全部匹配；P07全差异见 `p07-ops03/dirty-hashes.json`，原字节见 `p07-ops01/dirty-files/`。旧看板先存 `p07-ops03/board-before-report.md`；其他恢复、UI、文档、工具和私有请求继续保留，禁止 `git add .`。
-- 主机07:15:24重启，旧PID/AVD状态已失效；本聊天未操作原模拟器/物理机。项目API/Vite/隔离服务无监听，共享MySQL3306/33060 PID5412（父4372）；无Java/Python/ADB/emulator/qemu重型任务。进程/监听见 `p07-ops03/processes-after.json`、`netstat-after.txt`，不操作共享库。
+- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本批输入HEAD/实际远端同为 `faa46a825356cf1fc22c7a05fc08e3cf1a20b85b`。P07提交后精确SHA/远端另存 `.local/goal-20261015/p07-close01/post-commit.json`，main只读，不自引用循环提交。
+- 本聊天 `01a13a57-8082-7dd2-a08f-987483dcda4b` 为源码/库/看板/索引唯一写者；清理聊天已结束释放，无子代理。接续91项原字节/hash/diff及旧看板存 `.local/goal-20261015/p07-close01/`，78项继承字节与D15提交后清单全部匹配，497源码输入与inspect04相同。其他Android/UI/工具/私有请求保持，禁止 `git add .`。
+- 主机07:15:24重启；未操作原模拟器/物理机。接续无项目API/Vite/Java/Python/ADB/emulator/qemu或隔离库活动；共享MySQL3306/33060 PID5412（父4372）不操作。实际进程/监听见 `p07-close01/processes-before.json`、`listeners-before.json`。
 
 ## 环境、磁盘与生产边界
-- 目标端口 `8080/5173/1538/1539/1540/1541/1542/1519/1522/1523` 复核无监听；P07构建后C/D可用 `78,881,837,056` / `19,867,713,536` bytes，后续见 `p07-ops03/disks-after.json`。另一清理聊天无损压缩12冷AVD、清57可重提取DLL释放约8.4GiB，回执 `.local/disk-cleanup-20261015/cleanup-summary.json`；原库/失败库、dump/binlog、原日志/XML、原件和密钥/AVD身份继续保留。
+- 目标服务/隔离库端口均无监听，D15的19343/19344保持零监听。接续C/D可用78,882,426,880 /20,558,868,480 bytes，见 `p07-close01/disks-before.json`。原库/失败库、dump/binlog、原日志/XML、原件及密钥/AVD身份继续保留。
 - 生产决定 handler/POST/放行/证据写入/关闭能力、TEMP 生产归档边界与 `localDeletionAllowed=false` 保持关闭；同机合成身份/模拟器不冒充现场事实。
 
 ## 已验范围、暂缓及下一步
@@ -38,8 +38,10 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - U01 共享扫码布局依赖已补精确候选主机证据：23/23、Debug APK/lint 通过、852 源码文件前后不变；同候选引擎补验 5/5。首次补跑因旧缓存锁在业务测试前退出、误读残留 XML 的初始汇总均保留并更正；[报告](history/GOAL_U01_SCAN_DEPENDENCY_2026-10-15.md)明示 `fa583628` 依赖遗漏和前次 26 项输入差别。模拟器查询超时，设备入口未验，不计完整 L1 或任何 D 收口。
 - P07 外部秘密供应/CLI/独立回读工具L1已补：40/40、包装修复后4/4、JAR通过，原签记录成功/失败均留副本；[报告](history/GOAL_P07_OFFLINE_REKEY_ACCEPTANCE_2026-10-15.md)和[运维入口](RECOVERY_REKEY_RUNBOOK.md)记录输入/失败/真实消费者。初次17项1回执规范失败及已写合成原件完整保留；仅该工具切片，不计D13全部、E07 L2或D18 L3。
 - D15任务监控工具L1已补：新隔离MySQL/CLI 15/15、配置/ACL 4/4，R09回归139通过/11跳过；首次ACL误通过已修复并在新1544完整复验。报告[GOAL_D15_JOBS_MONITOR_ACCEPTANCE_2026-10-15.md](history/GOAL_D15_JOBS_MONITOR_ACCEPTANCE_2026-10-15.md)，仅工具切片，不计D15全部/E07 L2/D18 L3。1543/1544 dump/binlog/失败原件保留，510/517文件hash复核一致；两实例认证停机、19343/19344零监听，停机清单运行器失败及补验均保留。
-- 本批输入HEAD/远端 `ff2e4dfb1a011955ec088273f64cf56b7919d060`；源码/看板唯一写者不变，清理聊天释放回执与报告见[独立记录](history/D_DISK_CLEANUP_2026-10-15.md)。80项输入原字节见 `.local/goal-20261015/d15-jobs01/`；除本助手更新看板外79项全未变。收尾C/D余量78,896,844,800 / 19,392,180,224 bytes，无项目API/Java/设备/隔离库活动，共享3306不操作；提交后精确SHA/远端与全改动快照另存本批post-commit回执。
-- 下一动作：提交推送本批明确路径，随后核对P07突发中止/部分替换停写恢复入口、D13–D15历史钥/引用、跨截点及升级回退；设备和1540 Chrome阻断不绕过。最终候选仍须D18 L3，总目标active，其余D/O/U、第8节和暂缓项不因局部通过清零。
+- D15的原ACL失败、停机清单失败及新1544复验均保留；提交精确输入/远端/改动见 `.local/goal-20261015/d15-jobs01/post-commit.json`。不因后续P07通过覆盖其未验范围。
+- P07中止诊断/启动拒绝L1已补：[正式报告](history/GOAL_P07_INTERRUPTION_ACCEPTANCE_2026-10-15.md)。最终IT10/10、CLI/锁25/25、JAR成功；2005项及供应4项按输入hash复用。实际中止110新签/405旧签且启动拒绝；换行、pending夹具、AssertJ及产品误放行原失败全部保留。所有分类保持停写，可信全集/显式恢复、D13–D15整体、E07 L2、D18 L3未完成。
+- 第二轮清理完成并释放三处冷Android产物范围，见[独立报告](history/D_DISK_REBUILDABLE_CLEANUP_2026-10-15.md)和`.local/disk-cleanup-20261015-rebuildable/task-complete.json`；16目录/22,858文件，205保护文件不变。后续可正常构建，沿默认共享依赖，不恢复弃用专用cache旧命令；server/build及本批原件继续保护。
+- 下一动作：本批自审/明确路径开发备份后，继续P07可信原签全集/历史钥引用及显式恢复，再推进跨截点和升级回退。设备和1540 Chrome阻断不绕过；总目标active，D/O/U、第8节及原暂缓项不因局部通过清零。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

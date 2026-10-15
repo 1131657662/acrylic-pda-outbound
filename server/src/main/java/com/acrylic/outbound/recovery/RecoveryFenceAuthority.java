@@ -21,7 +21,7 @@ public final class RecoveryFenceAuthority implements RecoveryEffectGate.Authorit
         guarded(() -> {
             signal = RecoveryFenceLock.forRoots(roots);
             coordinated(() -> {
-                signal.probe(roots); RecoveryLeaseScan.check(roots);
+                signal.probe(roots); RecoveryLeaseHistory.check(roots); RecoveryLeaseScan.check(roots);
                 if (process == null) process = RecoveryLeaseProcess.open(roots);
                 return null;
             });
