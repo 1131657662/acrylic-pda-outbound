@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E07更正账务、缺记账与退库候选组合](GOAL_E07_RETURNED_STOCK_COMBINATION_ACCEPTANCE_2026-10-15.md)：621真实HTTP/MySQL、180表/103份RSA/补记账与冲正独立消费及674文件保全通过；原消费者失败保留，仅局部组合开发备份。
+
 - [E07更正身份与两阶段撤回组合](GOAL_E07_IDENTITY_COMBINATION_ACCEPTANCE_2026-10-15.md)：新620真实HTTP/MySQL、独立Python和180表保全通过；619运行器与消费者原失败保留，仅组合开发备份。
 
 - [E07撤回五检查点恢复](GOAL_E07_WITHDRAWAL_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：新616五检查点真实恢复/HTTP重放1/1、独立Python/原RSA回执消费及617六库保全通过；613/614/615原失败与系统重启事实保留。仅开发备份，E07 L2/D14整体/D18 L3未完成。

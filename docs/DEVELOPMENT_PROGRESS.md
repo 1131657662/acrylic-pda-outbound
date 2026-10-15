@@ -44,6 +44,8 @@
 
 # 开发验收索引
 
+- [E07更正账务、缺记账与退库候选组合](history/GOAL_E07_RETURNED_STOCK_COMBINATION_ACCEPTANCE_2026-10-15.md)：621真实HTTP/MySQL 1/1，独立Python消费180表/103份RSA回执/3项补记账引用/13条冲正与674文件保全通过；消费者引用图误判失败原件保留。仅局部组合开发备份，完整退库入口、恢复后缺更正围栏、E07 L2和D18 L3继续。
+
 - [E07更正身份与两阶段撤回组合](history/GOAL_E07_IDENTITY_COMBINATION_ACCEPTANCE_2026-10-15.md)：新620非空升级后真实HTTP/MySQL 1/1、四份RSA/180表/独立Python及保全通过；619临时目录与消费者二进制SHA误读失败保留。仅组合开发备份，不计E07 L2、D14/D15整体或D18 L3。
 
 - [E07/D14 恢复归档消费与主管故障围栏](history/GOAL_E07_RECEIVED_ARCHIVE_FAULT_ACCEPTANCE_2026-10-15.md)：新604/605分别执行原归档闭合事务消费和恢复态独立主管故障围栏，XML 各 1/0/0/0，Node/Python 输入守恒、数据库与文件守恒、认证停机及零监听；仅开发切片，不计 E07 L2、D14/D15 整体、E06 L2、D18 L3 或总目标。
