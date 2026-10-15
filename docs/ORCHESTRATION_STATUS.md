@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: 18f07cf2
-dirty_entries: 104
+head: dac477f1
+dirty_entries: 102
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,14 +17,18 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。故障订单按“有权撤回→重发→新设备从头作业”，已取消的换机承接/多跳/激活不恢复，原事实与源码保留。
 
 ## Git、写权与输入
-- 固定工作区`D:/acrylic-pda-outbound`、分支`codex/development`；本次复核HEAD与远端同为`18f07cf2e36806686aef67c7efca241049067758`，当前事实块由脚本生成。main只读，禁止`git add .`。
+- 固定工作区`D:/acrylic-pda-outbound`、分支`codex/development`；本次复核HEAD与远端同为`dac477f1b834d4bbffad71418e3588471275905e`，当前事实块由脚本生成。main只读，禁止`git add .`。
 - 本聊天为源码、库、看板、索引唯一写者；清理聊天已回执`complete-released`，确认无活动清理进程、监听、占用路径或待写入。无子代理、无并行项目写者。
-- E02提交前快照`.local/goal-20261016/resume-20261016-e02-l1-precommit/`：5304项输入哈希、全部Git状态/62个未跟踪原件、binary diff、写权、进程/监听及磁盘；旧看板先存`board-before.md`。UTF-8路径补核与build10输入零差异；保留全部继承改动。
+- E02提交推送后快照`.local/goal-20261016/resume-20261016-e02-l1-postpush/`：全量输入哈希、Git状态/未跟踪原件、binary diff、唯一写权、进程/监听及磁盘；旧看板先存`board-before.md`。提交前快照保留，继承改动未混入。
+- E02保存扫码/确认反馈证据根`.local/goal-20261016/e02-save-scan-combination01/`：input10绑定构建，提交前input12保存全量5310项（SHA `c008014ca86c193c5b6d7e7b3f72de4ac424e9f69d96f9e26a2f792c21dd571f`）；全部差异/未跟踪原件、ownership12及环境/旧看板已保全。build08-source-recheck12与六项代码/测试SHA复核未漂移，正式报告/索引/看板按明确路径开发备份，其余继承改动保留。
 - E06多任务网页L1正式报告为`docs/history/GOAL_E06_MULTITASK_ASSOCIATION_WEB_L1_2026-10-14.md`；E07 644、647组合报告分别为`docs/history/GOAL_E07_COMBINATION_644_ACCEPTANCE_2026-10-16.md`、`docs/history/GOAL_E07_COMBINATION_647_ACCEPTANCE_2026-10-16.md`，均仅开发切片。
 
 ## 环境、磁盘与边界
 - 656认证停机，19366/19456/19457/19458零监听，无本批Java/MySQL残留；共享`mysqld` PID4632/5440仅观察，数据目录身份未核清，不复用。E02诊断已启动原TEMP AVD（emulator12912/qemu12108，5564/5565）；ADB8500/5037，未操作物理机。
-- E02提交前实测C/D可用`83,188,764,672`/`47,475,564,544` bytes；新证据和临时目录优先D盘`.local`，重型动作前复测。
+- E02确认反馈提交前磁盘、进程和监听见`e02-save-scan-combination01/disks-12.json`、`processes-12.json`、`listeners-12.json`；新证据和临时目录优先D盘`.local`，重型动作前复测。
+- 658合法续备首轮已登录后在准备按钮滚动处失败，未点击新准备；设备83表不变。658库/原binlog/完整dump与设备原件已保全、认证停机，19368/19460零监听且无本批Java/MySQL；`disks03.json`记C/D余量。658不复用。
+- 659登录后真实点击未打开确认框，未新准备；83表前后完全相同。完整dump SHA `82b5c2b92dddb253463330f656affb3e84569539de9bba453006ead14e07baf7`、认证停机exit0，现场19369/19461零监听且无本批Java/MySQL；失败库不复用。input05实测C/D余量`83,118,501,888`/`46,588,825,600` bytes。
+- 660库`acrylic_e02_20261016_660`/UUID `1ae47637-c8ee-11f1-96dc-d8bbc13a2b36`、路径`.local/goal-20261016/e02-save-scan-660/data`已完整dump（SHA `c68fa77c1da44ae3b89ba4c96b50dbafb2e43fa731005310ce0ecbe312de3b32`）、认证停机exit0；现场19370/19462零监听，无本批Java/MySQL，失败库不复用。input08保存进程/监听/C/D余量，重型前复测。
 - 生产决定handler/POST/放行/证据写入/关闭能力、TEMP生产归档边界及`localDeletionAllowed=false`继续关闭；不接原库/现网、不合main、不发布部署、不用正式签名，合成身份/签名/模拟器不代表现场。
 
 ## 已验范围与剩余
@@ -33,7 +37,9 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 642/629独立检查点消费者与644受影响组合均通过并有正式报告；仅局部开发备份，不计E07 L2、D14/D15整体、D18 L3或总目标。643端口偏差失败及更早失败原件继续保留。
 - E07/647受影响组合：IT 1/0/0/0、7组HTTP 200/OK、消费者649通过，859文件双次守恒、179表/622行及迁移历史一致，认证停机；645/646失败保留。仅组合开发验收。
 - E07/656-657补齐撤回恢复执行输入：IT 1/0/0/0，五截点旧文/异文409、原回执/成功重放成立，1362文件双次守恒，5301项源码输入未变、179表/2存储文件及原binlog核对。外层UTF-8取证错误退出1，业务testExit=0；只读补取证，不重跑业务。654原输入缺口与650–653失败均保留，报告见进度索引。非E07 L2/D18 L3/总目标。
-- E02草稿视口/页面编辑L1见`docs/history/GOAL_E02_DRAFT_VIEWPORT_EDITOR_L1_2026-10-16.md`：外层吸收insets，device10原序列/device11真实触摸通过；editor01异步退出断言失败保留，补等待/清旧error后editor02数量/移除/重建/丢弃/重开通过，83表/原草稿守恒。build10定向11/11、APK/lint通过，5304项输入未变。目录`.local/goal-20261016/e02-touch-diagnostic01/`。未保存计划或扫码，不计U整体；原三次失败不清零。下一步核合法资格补保存→扫码受影响组合，再推进E07、E08/UI及E09；1540浏览器审批阻断保留，最终D18 L3必跑。
+- E02草稿视口/页面编辑L1见`docs/history/GOAL_E02_DRAFT_VIEWPORT_EDITOR_L1_2026-10-16.md`：外层吸收insets，device10原序列/device11真实触摸通过；editor01异步退出断言失败保留，补等待/清旧error后editor02数量/移除/重建/丢弃/重开通过，83表/原草稿守恒。build10定向11/11、APK/lint通过，5304项输入未变。目录`.local/goal-20261016/e02-touch-diagnostic01/`；后续保存扫码分段证据见下项，不计U整体，原三次失败不清零。1540浏览器审批阻断保留，最终D18 L3必跑。
+- 保存→扫码组合：`renewal660-01`真实HTTP/MySQL/原模拟器合法续备通过；`savescan660-01`误用F1确认失败且本地已写入，原件保留。build07与`savescan660-resume01`通过：Enter确认原待输入→有效1包300500g→暂停拒收→恢复重复拒绝→确认处理结果，无提交。分段接续不称一次全程成功。独立Python `consumer02`原签/分片/ACK/plan及83表差异、180服务表事实通过，原业务行保留（work_device计数按预期递增），3788文件哈希见索引；658/659失败不追认通过。
+- 确认重复失败后旧提示残留已最小修复；build08定向18/0/0/0、产品/测试APK及lint通过。ack-ui01原订单真实重复拒绝→页面确认→完成反馈通过，截图已自审；Python consumer03核83表受控差异、有效仍1、无submission、binding/原输入保留，36原件双次哈希守恒。consumer02库外binlog父级路径错误已保留旧脚本并只读补核；3785旧原件未变，3项日志/运行器/脚本差异明确记录。正式报告`docs/history/GOAL_E02_SAVE_SCAN_ACK_L1_2026-10-16.md`，仅L1开发备份。下一步提交后推进E08结单/恢复确认实际入口及E07/E06剩余组合、E09，不计U整体/L2/L3或总目标。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

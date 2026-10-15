@@ -38,4 +38,27 @@ class TemporaryEngineTest {
             } finally { engine.close() }
         }
     }
+    @Test fun acknowledgingFailureReplacesPromptAndNextQueuedFailureRemainsActionable() = runBlocking<Unit>(Dispatchers.IO) {
+        TemporaryWorkFixture(folder.root).use { f ->
+            f.start(); val engine = TemporaryEngine(f.newStore()) {}
+            try {
+                engine.resume(f.id)
+                withTimeout(10000) { engine.state.first { it.ready && it.queued == 0 } }
+                assertTrue(engine.receive("bad", "BROADCAST"))
+                val first = withTimeout(10000) { engine.state.first { it.candidate?.state == "INVALID" && it.queued == 0 } }.candidate!!
+                assertTrue(engine.receive("also-bad", "BROADCAST"))
+                withTimeout(10000) { engine.state.first { it.queued == 0 } }
+                engine.acknowledge(first.id)
+                val next = withTimeout(10000) { engine.state.first { it.candidate?.id != first.id && it.candidate?.state == "INVALID" && it.queued == 0 } }
+                assertEquals("本包未保存，请确认处理结果", next.message)
+                assertNotNull(f.db.temporaryScans().capture(first.id)?.failureAckAt)
+                engine.acknowledge(next.candidate!!.id)
+                val done = withTimeout(10000) { engine.state.first { it.candidate == null && it.queued == 0 } }
+                assertEquals("已确认本包未保存，原输入保留", done.message)
+                assertEquals(0L, done.total.count)
+                assertEquals(2, f.db.temporaryScans().captures(f.id).size)
+                assertNotNull(f.db.temporaryScans().capture(next.candidate.id)?.failureAckAt)
+            } finally { engine.close() }
+        }
+    }
 }

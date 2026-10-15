@@ -82,7 +82,11 @@ class TemporaryEngine(private val store: TemporaryWorkStore, private val sound: 
         return result
     }
     fun confirm(id: String) = enqueue { check(active(current)); processor.saving.confirm(id); processor.drain(current) { active(current) } }
-    fun acknowledge(id: String) = enqueue { processor.corrections.acknowledge(id); processor.drain(current) { active(current) } }
+    fun acknowledge(id: String) = enqueue {
+        processor.corrections.acknowledge(id)
+        mutable.update { it.copy(message = "已确认本包未保存，原输入保留") }
+        processor.drain(current) { active(current) }
+    }
     fun discard(id: String, reason: String) = enqueue { processor.corrections.discard(id, reason); processor.drain(current) { active(current) } }
     fun voidLast(id: String, reason: String) = enqueue { processor.corrections.voidLast(current, id, reason) }
     fun adjust(order: String, capture: String, reason: String): Deferred<Unit> {
