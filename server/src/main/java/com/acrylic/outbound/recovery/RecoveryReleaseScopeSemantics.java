@@ -11,7 +11,7 @@ final class RecoveryReleaseScopeSemantics {
     static void verify(JsonNode original,JsonNode actual,RecoveryReleaseFenceReceipts receipts,Context context) {
         var effects=new RecoveryReleaseFenceEffects(receipts,context.inventory(),context.observedAt());
         for(String name:RecoveryReleaseInventoryRows.tableNames()) {
-            var before=original.path(name); var after=actual.path(name);
+            var after=actual.path(name); var before=RecoveryReleaseSchemaCompatibility.original(name,original,after);
             require(before.path("columns").equals(after.path("columns")),"RECOVERY_SCOPE_COLUMNS_CHANGED_"+name);
             var oldRows=decode(before); var newRows=decode(after);
             if(Set.of("device","pda_session","outbound_order").contains(name)) { effects.changed(name,oldRows,newRows); continue; }

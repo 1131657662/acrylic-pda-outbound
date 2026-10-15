@@ -48,6 +48,7 @@ class E2aReceivedCheckpointIT {
         var profile=new E2aCrossSourceProfile(); var jdbc=profile.connect(); Files.createFile(profile.attempt.resolve("test-started.marker"));
         Path original=Path.of(System.getenv("E2A_RECEIVED_SOURCE"));
         RecoveryReceivedCheckpointTargetChecks.verify(jdbc,profile.attempt,original);
+        E2aReceivedCheckpointUpgrade.verify(profile,jdbc);
         for(String file:new String[]{"server-private.der","server-public.der"})
             Files.copy(original.resolve("private").resolve(file),profile.attempt.resolve("private").resolve(file));
         try(var app=E2aCrossSourceHttpIT.start(profile,"--outbound.handover.commands.enabled=true",

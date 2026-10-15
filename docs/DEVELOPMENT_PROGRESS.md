@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E07全局编号历史与只读恢复对账](history/GOAL_E07_NUMBER_RECONCILIATION_ACCEPTANCE_2026-10-15.md)：新610真实HTTP/MySQL 1/1、相关回归54/54、Node/Python独立摘要/成员消费、非空升级与181表保全通过；609产品失败及消费者/预检原失败保留。仅开发切片，非E07 L2/D14整体/D18 L3。
+
 - [E07历史覆盖与恢复后非空升级](history/GOAL_E07_HISTORY_COVERAGE_ACCEPTANCE_2026-10-15.md)：新608实际HTTP/MySQL 1/1、独立历史/137表成员消费者及全表/文件守恒；606/607失败保全，原输入5255项和来源393项不变。仅开发切片，不计E07 L2/D14整体/D18 L3。
 
 - [P07历史钥及固定恢复引用核验L1](history/GOAL_P07_KEYRING_ACCEPTANCE_2026-10-15.md)：最终实际专项19/19、产品JVM原签取回后Python逐件消费与输入守恒；原编译/Windows夹具失败保留，运行源码与前批消费者按SHA复用。只计工具开发切片，外部保管、E07组合及D18 L3继续。
