@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: b8bf3db8
-dirty_entries: 85
+head: 68e9852a
+dirty_entries: 87
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,12 +17,12 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标仍为active。坏机单有权撤回→重发→新机从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与断点
-- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本批E07检查点输入精确HEAD/实际远端与全部改动见 `.local/goal-20261015/e07-cross602/ownership-input.json`、`input-before.json`；提交/推送回执见 `e07-cross603/post-commit.json`，main只读，不自引用循环提交。
-- 本聊天 `01a13a57-8082-7dd2-a08f-987483dcda4b` 为源码/库/看板/索引唯一写者；清理聊天再次确认全部释放且无在途写入，无子代理。全部改动/hash、旧结论及写权见 `.local/goal-20261015/e07-cross604/finalize-input.json`、`board-before-finalize.md`；5252项输入除计划内文档外保持，Android/UI/工具/私有请求保护，禁止 `git add .`。
+- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本批输入HEAD/远端`68e9852a8691a63605b2a8709c86d4e12d706963`；精确输入/全部改动/hash/写权见`.local/goal-20261015/e07-cross608/input-before.json`、`finalize-input.json`；提交回执见同目录`post-commit.json`。main只读，不循环自引用提交。
+- 本聊天 `01a13a57-8082-7dd2-a08f-987483dcda4b`为源码/库/看板/索引唯一写者，无子代理。清理round3仅写自身证据/报告及逐项协调冷临时文件，不写共享文件/库；旧结论已归档，5255输入和393来源不变。继承Android/UI/工具/私有请求保护，禁止`git add .`。
 - 2026-10-15 12:06 接管核对：未操作原模拟器/物理机；清理聊天已释放全部源码/证据/看板/数据库写权。共享MySQL 3306/33060 PID5412（父4372）及既有Java PID1988仅观察；未见本聊天启动的Python/ADB/emulator/qemu，19330/19434及相关服务端口均无监听。清理交接快照见 `.local/disk-cleanup-20261015/task-complete.json`、`.local/disk-cleanup-20261015-rebuildable/task-complete.json`；本批1550进程/监听见 `.local/goal-20261015/d15-upgrade03/`。
 
 ## 环境、磁盘与生产边界
-- E07的602–605均认证停机，19330/19434零监听；收尾C/D可用78,794,436,608 /17,226,407,936 bytes，进程/监听见 `e07-cross604/finalize-environment.json`。原库/失败库、dump/binlog、原日志/XML、原件及密钥/AVD身份继续保留，清理范围及保护清单见两份清理交接快照。
+- E07的602–608均认证停机，19330/19434零监听；收尾C/D可用78,777,085,952 /16,473,927,680 bytes，进程/监听见`e07-cross608/environment-finalize.json`及同目录快照。原库/失败库、dump/binlog、原日志/XML、原件与密钥/AVD身份保留。
 - 生产决定 handler/POST/放行/证据写入/关闭能力、TEMP 生产归档边界与 `localDeletionAllowed=false` 保持关闭；同机合成身份/模拟器不冒充现场事实。
 
 ## 已验范围、暂缓及下一步
@@ -38,8 +38,6 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - U01 共享扫码布局依赖已补精确候选主机证据：23/23、Debug APK/lint 通过、852 源码文件前后不变；同候选引擎补验 5/5。首次补跑因旧缓存锁在业务测试前退出、误读残留 XML 的初始汇总均保留并更正；[报告](history/GOAL_U01_SCAN_DEPENDENCY_2026-10-15.md)明示 `fa583628` 依赖遗漏和前次 26 项输入差别。模拟器查询超时，设备入口未验，不计完整 L1 或任何 D 收口。
 - P07 外部秘密供应/CLI/独立回读工具L1已补：40/40、包装修复后4/4、JAR通过，原签记录成功/失败均留副本；[报告](history/GOAL_P07_OFFLINE_REKEY_ACCEPTANCE_2026-10-15.md)和[运维入口](RECOVERY_REKEY_RUNBOOK.md)记录输入/失败/真实消费者。初次17项1回执规范失败及已写合成原件完整保留；仅该工具切片，不计D13全部、E07 L2或D18 L3。
 - D15任务监控工具L1已补：新隔离MySQL/CLI 15/15、配置/ACL 4/4，R09回归139通过/11跳过；首次ACL误通过已修复并在新1544完整复验。报告[GOAL_D15_JOBS_MONITOR_ACCEPTANCE_2026-10-15.md](history/GOAL_D15_JOBS_MONITOR_ACCEPTANCE_2026-10-15.md)，仅工具切片，不计D15全部/E07 L2/D18 L3。1543/1544 dump/binlog/失败原件保留，510/517文件hash复核一致；两实例认证停机、19343/19344零监听，停机清单运行器失败及补验均保留。
-- D15升级检查点恢复切片已补：1548因旧夹具连接耗尽失败并完整保全；1550独立隔离运行器 JUnit 1/1、Gradle 退出码0，非空增量升级、SQL dump/import、storage/开发签名字节守恒、空伴随恢复及非空覆盖拒绝通过，2库/359表、认证停机、19330/19434零监听。报告见 [GOAL_D15_UPGRADE_CHECKPOINT_ACCEPTANCE_2026-10-15.md](history/GOAL_D15_UPGRADE_CHECKPOINT_ACCEPTANCE_2026-10-15.md)；仅开发切片，不计D15整体、E07 L2或D18 L3。1548/1549/1550原始证据继续保留。
-- D15的原ACL失败、停机清单失败及新1544复验均保留；提交精确输入/远端/改动见 `.local/goal-20261015/d15-jobs01/post-commit.json`。不因后续P07通过覆盖其未验范围。
 - D15升级检查点恢复切片已收口：1548旧夹具因连接耗尽失败并完整保全；1550独立隔离运行器 JUnit 1/1、Gradle 退出码0，非空增量升级、SQL dump/import、storage/开发签名字节守恒、空伴随恢复及非空覆盖拒绝通过，2库/359表、认证停机、19330/19434零监听。正式报告见 [GOAL_D15_UPGRADE_CHECKPOINT_ACCEPTANCE_2026-10-15.md](history/GOAL_D15_UPGRADE_CHECKPOINT_ACCEPTANCE_2026-10-15.md)；仅开发切片，不计D15整体、E07 L2或D18 L3。1548/1549/1550原始证据继续保留。
 - P07中止诊断/启动拒绝L1已补：[正式报告](history/GOAL_P07_INTERRUPTION_ACCEPTANCE_2026-10-15.md)。最终IT10/10、CLI/锁25/25、JAR成功；2005项及供应4项按输入hash复用。实际中止110新签/405旧签且启动拒绝；换行、pending夹具、AssertJ及产品误放行原失败全部保留。所有分类保持停写，可信全集/已知原签还原后续见下条；D13–D15整体、E07 L2、D18 L3未完成。
 - 第二轮清理完成并释放三处冷Android产物范围，见[独立报告](history/D_DISK_REBUILDABLE_CLEANUP_2026-10-15.md)和`.local/disk-cleanup-20261015-rebuildable/task-complete.json`；16目录/22,858文件，205保护文件不变。后续可正常构建，沿默认共享依赖，不恢复弃用专用cache旧命令；server/build及本批原件继续保护。
@@ -48,7 +46,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - P07历史钥/固定引用取回核验L1完成：[正式报告](history/GOAL_P07_KEYRING_ACCEPTANCE_2026-10-15.md)。最终专项19/19、真实JVM原签→Python离线归档逐件消费；双pin/全集/身份/类型/引用和只读守恒通过，编译及Windows夹具原失败保留。输入5241文件与接管快照全匹配，78项继承改动保持；写权、输入/结果在 `.local/goal-20261015/p07-keyring01/`、`p07-keyring03/`。不证明外部保管/防覆盖/全局引用全集，不能计E07 L2。收尾C/D可用78,853,111,808 /19,991,306,240 bytes，无项目重型任务，进程/监听见keyring03。
 - E07闭合恢复前置组合已补：[正式报告](history/GOAL_E07_CLOSED_RECOVERY_ACCEPTANCE_2026-10-15.md)。新1546 Authority、1547 Projection 各1/1通过；6库206表/10库225表的JDBC与dump前后、storage守恒，认证停机且19330/19434零监听。1545辅助库ACL失败（1次，探针已写）与1546业务前路径误判均保留；不计E07 L2、D14/D15整体或D18 L3。
 - E07原检查点/binlog重建开发切片完成：[报告](history/GOAL_E07_CHECKPOINT_REBUILD_ACCEPTANCE_2026-10-15.md)。1551参数拒绝、601缺配置、602排序规则失败原件保留；新603真实导入/重放1/1，109触发器/146业务表/迁移历史/19文件一致，三项写前拒绝，147表独立dump与停机保全。源393文件及5,245输入仅运行器计划内变化；非E07 L2/D14整体/D18 L3。
-- E07归档闭合消费/主管故障围栏已补：[报告](history/GOAL_E07_RECEIVED_ARCHIVE_FAULT_ACCEPTANCE_2026-10-15.md)。新604/605各1/1、Node403/404项消费通过；源393文件不变，停机357/364/375文件复核通过，148表/dump/storage守恒。仅开发切片，非E07 L2/D14整体/D18 L3。下一步核对跨截点覆盖并推进E07、E06可执行组合及剩余D/O/U；设备/1540 Chrome阻断不绕过，总目标active。
+- E07归档闭合消费/主管故障围栏已补：[报告](history/GOAL_E07_RECEIVED_ARCHIVE_FAULT_ACCEPTANCE_2026-10-15.md)。新604/605各1/1、Node403/404项消费通过；源393文件不变，停机357/364/375文件复核通过，148表/dump/storage守恒。仅开发切片，非E07 L2/D14整体/D18 L3。
+- E07历史覆盖与恢复后升级开发切片完成：[报告](history/GOAL_E07_HISTORY_COVERAGE_ACCEPTANCE_2026-10-15.md)。606缺候选表、607无领取TEMP revision断言失败均保全；新608实际HTTP/MySQL 1/1、137表独立成员消费、历史损失窗口覆盖及非空升级/原字段/19文件守恒通过。606/607/608停机363/390/405文件hash不变；编码与摘要回读器原失败保留。仅切片，非E07 L2/D14整体/D18 L3。下一步新隔离输入验证全局编号历史/对账，再E07组合、E08/E09及剩余D/O/U；总目标active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
