@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: cf831df3
-dirty_entries: 89
+head: 122fbd5f
+dirty_entries: 85
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标active。故障订单有权撤回→重发→新设备从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与输入
-- 固定`D:/acrylic-pda-outbound`、`codex/development`；本切片运行HEAD/远端`cf831df355af309538a64d9150a667b21ec03eaa`。提交/远端以`.local/goal-20261015/e07-withdrawal02/post-commit.json`及生成块为准。main只读，禁止`git add .`。
+- 固定`D:/acrylic-pda-outbound`、`codex/development`；本切片运行HEAD/远端`122fbd5f44fc8a27867875579bdd828e8c5d3aaf`。提交/远端以本批明确路径提交回执及生成块为准。main只读，禁止`git add .`。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`为源码/库/看板/索引唯一写者，无子代理。清理聊天complete-released且重启后notLoaded；无并行项目任务。旧owner/release不作活动证明。
 - 原5,268项输入0项改变，新增4个测试；616运行清单5,272项。所有tracked/untracked、hash/长度、补丁、工作树和写权见`e07-withdrawal02/input616.json`、`finalize-input.json`。继承Android/UI/工具/文档与私有请求保护；旧结论已归档。
 
@@ -31,10 +31,11 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - E01–E05/O03、E06既有资料/身份/任务/SCAN/VOID/导出/结束/核原/实物/关联/冲突及多任务L1，按[进度索引](DEVELOPMENT_PROGRESS.md)与输入SHA复用；失败/暂缓不清零。E06 Android短路径90项通过，深路径SQLite失败保留，instrumentation未验；Chrome运行器阻断保留。E06 L2、D18 L3未完成。
 - E07/O05已验同机恢复、外置副本工具、历史钥/重锚/中止/原签还原、原检查点/binlog、闭合归档消费、主管故障围栏、历史覆盖/非空升级、编号对账、实物/独立JVM/运维等开发切片；报告及输入SHA见索引。外置介质/真实保管回取与组合必跑范围仍未证实，不能计E07 L2。
 - 本批[撤回五检查点正式报告](history/GOAL_E07_WITHDRAWAL_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：新616真实HTTP/MySQL 1/1、五非空dump→原binlog重放→精确终点/触发器/迁移历史/文件、原键/回执和旧资格拒绝、账务逐行不变；独立Python读取5,272输入、两份RSA回执、五终点及617保全通过。仅开发备份，不计D14整体/E07 L2/D18 L3。613过滤器、614临时目录、615连接耗尽及消费者两次误判原失败均保留。
+- 本批[更正五检查点正式报告](history/GOAL_E07_CORRECTION_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：新618真实HTTP/MySQL四步更正、五个非空dump→原ROW binlog重建、179表/迁移/触发器/文件守恒、四份RSA原回执及20次原键重放、独立Python和认证停机通过；仅开发备份，不计E07 L2/D14/D15整体/D18 L3。表名修正前编译记录、全部输入、618库/dump/binlog/XML和原件保留。
 - D10撤回/重发15项真实API/HTTP/消费者及附件17项按原报告复用；D15任务监控、升级检查点、P07各工具专项和D16清理/引用保护19项仅按各自开发切片收录，D13–D16整体与依赖未完成。旧1548连接失败及其他原失败计数保留。
 - E08首屏/下一动作/恢复确认/独立搜索/窄屏UI已形成开发备份，O01/U01交互26项、共享扫码依赖23项及引擎5项等输入范围见报告；E09 Web类型/契约/构建/审查阶段通过。均不能代替对应设备/Chrome/后台恢复组合、U01–U04完整开发验收或D18 L3。
 - O04独立采集90项（1个既有跳过）及O05 SAF实际创建/取回/覆盖损坏拒绝已记录；完整人工关联/设备组合与O01–O05/U01–U04逐项退出仍需完成。U01/U02首屏草稿、D04/A1.4/1043、原生崩溃/恢复等历史暂缓项不记通过。
-- 下一步核更正/取消/缺更正围栏的跨检查点覆盖，只补直接缺口，再E07受影响组合、E08/E09及剩余D/O/U。最终候选必须实际执行Android、真实HTTP/MySQL、Chrome、Python、非空迁移、原模拟器和恢复组合；L1/L2不免除L3。第8节全部满足前总目标保持active。
+- 下一步核取消/缺更正围栏的直接缺口并执行E07受影响组合，再E08/E09及剩余D/O/U。最终候选必须实际执行Android、真实HTTP/MySQL、Chrome、Python、非空迁移、原模拟器和恢复组合；L1/L2不免除L3。第8节全部满足前总目标保持active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
