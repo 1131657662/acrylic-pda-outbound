@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: 65bd5b37
-dirty_entries: 101
+head: 18f07cf2
+dirty_entries: 104
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,14 +17,14 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。故障订单按“有权撤回→重发→新设备从头作业”，已取消的换机承接/多跳/激活不恢复，原事实与源码保留。
 
 ## Git、写权与输入
-- 固定工作区`D:/acrylic-pda-outbound`、分支`codex/development`；本次复核HEAD与远端同为`65bd5b37265563a9ce372afea5a713a38bd957e1`，当前事实块由脚本生成。main只读，禁止`git add .`。
+- 固定工作区`D:/acrylic-pda-outbound`、分支`codex/development`；本次复核HEAD与远端同为`18f07cf2e36806686aef67c7efca241049067758`，当前事实块由脚本生成。main只读，禁止`git add .`。
 - 本聊天为源码、库、看板、索引唯一写者；清理聊天已回执`complete-released`，确认无活动清理进程、监听、占用路径或待写入。无子代理、无并行项目写者。
-- 提交前复核快照`.local/goal-20261016/resume-20261016-053210/`：5301项输入哈希、Git全部101项状态/61个未跟踪原件、binary diff、写权、进程/监听及磁盘；656执行前基线仍保留052214目录，旧结论另存`docs/history/ORCHESTRATION_STATE_before_e07_655_20261016.md`。保留全部继承改动。
+- E02提交前快照`.local/goal-20261016/resume-20261016-e02-l1-precommit/`：5304项输入哈希、全部Git状态/62个未跟踪原件、binary diff、写权、进程/监听及磁盘；旧看板先存`board-before.md`。UTF-8路径补核与build10输入零差异；保留全部继承改动。
 - E06多任务网页L1正式报告为`docs/history/GOAL_E06_MULTITASK_ASSOCIATION_WEB_L1_2026-10-14.md`；E07 644、647组合报告分别为`docs/history/GOAL_E07_COMBINATION_644_ACCEPTANCE_2026-10-16.md`、`docs/history/GOAL_E07_COMBINATION_647_ACCEPTANCE_2026-10-16.md`，均仅开发切片。
 
 ## 环境、磁盘与边界
-- 656认证停机，19366/19456/19457/19458零监听，无本批Java/MySQL残留；共享`mysqld` PID4632/5440仅观察，数据目录身份未核清，不复用。无AVD/ADB运行。
-- 补取证实测C/D可用`83,236,741,120`/`56,796,782,592` bytes；新证据和临时目录优先D盘`.local`，重型动作前复测。
+- 656认证停机，19366/19456/19457/19458零监听，无本批Java/MySQL残留；共享`mysqld` PID4632/5440仅观察，数据目录身份未核清，不复用。E02诊断已启动原TEMP AVD（emulator12912/qemu12108，5564/5565）；ADB8500/5037，未操作物理机。
+- E02提交前实测C/D可用`83,188,764,672`/`47,475,564,544` bytes；新证据和临时目录优先D盘`.local`，重型动作前复测。
 - 生产决定handler/POST/放行/证据写入/关闭能力、TEMP生产归档边界及`localDeletionAllowed=false`继续关闭；不接原库/现网、不合main、不发布部署、不用正式签名，合成身份/签名/模拟器不代表现场。
 
 ## 已验范围与剩余
@@ -33,7 +33,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 642/629独立检查点消费者与644受影响组合均通过并有正式报告；仅局部开发备份，不计E07 L2、D14/D15整体、D18 L3或总目标。643端口偏差失败及更早失败原件继续保留。
 - E07/647受影响组合：IT 1/0/0/0、7组HTTP 200/OK、消费者649通过，859文件双次守恒、179表/622行及迁移历史一致，认证停机；645/646失败保留。仅组合开发验收。
 - E07/656-657补齐撤回恢复执行输入：IT 1/0/0/0，五截点旧文/异文409、原回执/成功重放成立，1362文件双次守恒，5301项源码输入未变、179表/2存储文件及原binlog核对。外层UTF-8取证错误退出1，业务testExit=0；只读补取证，不重跑业务。654原输入缺口与650–653失败均保留，报告见进度索引。非E07 L2/D18 L3/总目标。
-- 下一步核E02首屏与草稿三次失败的新诊断依据，补实际客户端入口；保留1540浏览器审批阻断，不换包装绕过。随后推进E07其余组合、E08/UI及E09候选，最终执行D18 L3全链。
+- E02草稿视口/页面编辑L1见`docs/history/GOAL_E02_DRAFT_VIEWPORT_EDITOR_L1_2026-10-16.md`：外层吸收insets，device10原序列/device11真实触摸通过；editor01异步退出断言失败保留，补等待/清旧error后editor02数量/移除/重建/丢弃/重开通过，83表/原草稿守恒。build10定向11/11、APK/lint通过，5304项输入未变。目录`.local/goal-20261016/e02-touch-diagnostic01/`。未保存计划或扫码，不计U整体；原三次失败不清零。下一步核合法资格补保存→扫码受影响组合，再推进E07、E08/UI及E09；1540浏览器审批阻断保留，最终D18 L3必跑。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

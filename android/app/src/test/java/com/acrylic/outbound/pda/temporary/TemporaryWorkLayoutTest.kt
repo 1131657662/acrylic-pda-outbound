@@ -18,11 +18,14 @@ class TemporaryWorkLayoutTest {
         contexts().forEach { context ->
             val b = ActivityTemporaryDraftBinding.inflate(LayoutInflater.from(context))
             b.status.text = "TMP-00000000-0000-4000-8000-000000000001\n临时资格已到期，原草稿和扫码保留，请联系主管"
+            b.root.setPadding(0, 24, 0, 24)
             measure(b.root)
             assertTrue(b.start.height >= 56); assertTrue(b.save.height >= 56)
-            assertTrue(b.root.getChildAt(0).height > 400)
+            assertEquals(352, b.draftScroll.height)
+            assertEquals(0, b.draftScroll.paddingTop + b.draftScroll.paddingBottom)
+            assertTrue(b.draftScroll.getChildAt(0).height > b.draftScroll.height)
             assertTrue(b.status.layout.height <= b.status.height - b.status.compoundPaddingTop - b.status.compoundPaddingBottom)
-            assertTrue(b.start.right <= b.root.getChildAt(0).width)
+            assertTrue(b.start.right <= b.draftScroll.getChildAt(0).width)
         }
     }
     @Test fun workPageAlwaysShowsTemporaryAndNeverEnablesDispatch() {
@@ -52,7 +55,7 @@ class TemporaryWorkLayoutTest {
     }
     private fun contexts(): List<Context> {
         val original = ApplicationProvider.getApplicationContext<Context>()
-        return listOf(1f, 2f).map { scale -> original.createConfigurationContext(Configuration(original.resources.configuration).apply { fontScale = scale }) }
+        return listOf(1f, 1.3f, 1.5f, 2f).map { scale -> original.createConfigurationContext(Configuration(original.resources.configuration).apply { fontScale = scale }) }
     }
     private fun measure(view: View) {
         view.measure(View.MeasureSpec.makeMeasureSpec(320, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(400, View.MeasureSpec.EXACTLY))

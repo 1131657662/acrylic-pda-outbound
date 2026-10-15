@@ -1,19 +1,28 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent"
-    android:fillViewport="true" android:background="@color/pda_canvas">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/pda_canvas">
+    <ScrollView android:id="@+id/draftScroll" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
         <Button android:id="@+id/back" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="48dp" android:text="保留草稿并返回" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="临时订单 · 未确认不得放行" android:textSize="22sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textColor="@color/pda_text_primary" android:accessibilityLiveRegion="polite" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="车号（必填）" android:textSize="16sp" android:labelFor="@id/vehicle" />
         <EditText android:id="@+id/vehicle" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:hint="车号（必填）" android:inputType="textCapCharacters" android:maxLength="50" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="柜号（选填）" android:textSize="16sp" android:labelFor="@id/container" />
         <EditText android:id="@+id/container" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:hint="柜号（选填）" android:inputType="textCapCharacters" android:maxLength="50" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="临时建单原因（必填）" android:textSize="16sp" android:labelFor="@id/reason" />
         <EditText android:id="@+id/reason" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:hint="临时建单原因（必填）" android:inputType="text" android:maxLength="500" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="选择产品并填写计划包数" android:textSize="18sp" android:textColor="@color/pda_text_primary" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="搜索产品代码、型号或品名" android:textSize="16sp" android:labelFor="@id/productSearch" />
+        <EditText android:id="@+id/productSearch" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="text" android:singleLine="true" android:imeOptions="actionDone" android:maxLength="100" />
         <Spinner android:id="@+id/product" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" />
-        <EditText android:id="@+id/count" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:hint="计划包数（正整数）" android:inputType="number" android:maxLength="9" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="计划包数（正整数）" android:textSize="16sp" android:labelFor="@id/count" />
+        <EditText android:id="@+id/count" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:hint="计划包数（正整数）" android:inputType="number" android:imeOptions="actionDone" android:maxLength="9" />
         <Button android:id="@+id/add" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="添加 / 更新该产品" />
         <LinearLayout android:id="@+id/lines" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="开始扫码后计划锁定。请按车分堆并核对实物；本版本暂不能上传确认出库。" android:textSize="16sp" android:textColor="@color/pda_text_primary" />
+        <TextView android:id="@+id/dirty" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="有未保存修改" android:textSize="16sp" android:visibility="gone" android:accessibilityLiveRegion="polite" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="草稿可保存；有效临时资格及完整资料核验后才能扫码。开始扫码后计划锁定，冻结原件可受控上传，仍须独立确认，不得放行。" android:textSize="16sp" android:textColor="@color/pda_text_primary" />
         <Button android:id="@+id/save" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:text="保存草稿" />
         <Button android:id="@+id/start" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:text="保存计划并开始扫码" />
     </LinearLayout>
-</ScrollView>
+    </ScrollView>
+</FrameLayout>
