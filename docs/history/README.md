@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E07/O03原件中转跨截点组合](GOAL_E07_RELAY_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：625真实HTTP/MySQL 1/1、原包/两原签/同键并发与前缀拒绝、独立Python及540表/830文件保全通过；消费者登录审计误判原件保留。仅开发备份，非E07 L2/D14整体/D18 L3。
+
 - [E07更正前截点不退库及原binlog重建](GOAL_E07_RETURN_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：624前缀拒绝/五原签重放/default-off与540表保全通过；623 CSRF夹具原失败保留。仅开发备份，非E07 L2/D18 L3。
 
 - [E07独立退库审批与新周期HTTP组合](GOAL_E07_RETURNED_STOCK_HTTP_ACCEPTANCE_2026-10-15.md)：622真实HTTP/MySQL、180表/32份RSA/3项引用/新旧周期独立消费及507文件认证停机保全通过；仅组合开发备份，不计E07 L2/D18 L3。

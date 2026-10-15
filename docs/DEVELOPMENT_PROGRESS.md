@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E07/O03原件中转跨截点组合](history/GOAL_E07_RELAY_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：625真实HTTP/MySQL 1/1、原包/两原签/同键并发与前缀拒绝、独立Python及540表/830文件保全通过；消费者登录审计误判原件保留。仅开发备份，非E07 L2/D14整体/D18 L3。
+
 - [E07更正前截点不退库及原binlog重建](history/GOAL_E07_RETURN_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：624真实HTTP/MySQL 1/1、179业务表终点/前缀拒绝/五原签重放/default-off、独立Python与三库540表/809文件保全通过；623 CSRF取样失败及598原件保留。仅开发备份，非E07 L2/D14-D15整体/D18 L3。
 
 - [E07独立退库审批与新周期HTTP组合](history/GOAL_E07_RETURNED_STOCK_HTTP_ACCEPTANCE_2026-10-15.md)：622真实HTTP/MySQL 1/1、180表/32份RSA/3项退库引用及新旧周期独立消费、507文件保全和认证停机通过；仅组合开发备份，恢复截点缺更正、E07 L2/D14-D15整体/D18 L3仍未完成。

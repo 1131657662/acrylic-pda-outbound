@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: 39bfb924
-dirty_entries: 87
+head: 2fa5b2ef
+dirty_entries: 86
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标active。故障订单有权撤回→重发→新设备从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与输入
-- 固定`D:/acrylic-pda-outbound`、`codex/development`；624运行与报告接续HEAD/远端`39bfb924b3731986ff3decc1c7996ecb7bdfe74f`。提交/远端以本批明确路径提交回执及生成块为准。main只读，禁止`git add .`。
+- 固定`D:/acrylic-pda-outbound`、`codex/development`；625接续HEAD/远端`2fa5b2ef4f7992a5dae426fee1057483fa431b13`。提交/远端以本批明确路径提交回执及生成块为准。main只读，禁止`git add .`。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`为源码/库/看板/索引唯一写者，无子代理。清理聊天22:17实际回执complete-released、范围/在途任务为空且无监听/待写；无并行项目任务。旧owner/release不作活动证明。
 - 624运行5,283项输入全部逐字节不变。全部tracked/untracked/hash/长度/补丁/工作树及写权见`.local/goal-20261015/e07-return-checkpoint01/input624.json`、`review624.json`、`runtime624-review.json`；621/622原快照保留。继承Android/UI/工具/文档与私有请求保护；替换前看板在`board-before-624-report.md`。
 
@@ -39,7 +39,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - O04独立采集90项（1个既有跳过）及O05 SAF实际创建/取回/覆盖损坏拒绝已记录；完整人工关联/设备组合与O01–O05/U01–U04逐项退出仍需完成。U01/U02首屏草稿、D04/A1.4/1043、原生崩溃/恢复等历史暂缓项不记通过。
 - [独立退库审批与新周期HTTP组合](history/GOAL_E07_RETURNED_STOCK_HTTP_ACCEPTANCE_2026-10-15.md)：622真实HTTP/MySQL 1/1、独立Python消费180表/32RSA/3项退库引用/新旧周期、507文件/dump/storage及认证停机通过；同键并发/异文/身份/跨仓/末SQL回滚均有实际证据。仅组合开发备份，非E07 L2/D14-D15整体/D18 L3。
 - [更正前截点不退库及原binlog重建](history/GOAL_E07_RETURN_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：新增三测试文件，624真实HTTP/MySQL 1/1、前缀缺更正拒绝/五原签重放/default-off、179业务表/schema/迁移/触发器/文件终点精确、独立Python通过。623首次CSRF取样原失败保留，同根因1次不清零；仅开发备份，非E07 L2/D14-D15整体/D18 L3。
-- 下一步定位O03中转/O04独立来源跨截点直接未验组合，再E07其余组合、E08/E09及剩余D/O/U。最终候选必须实际执行Android、真实HTTP/MySQL、Chrome、Python、非空迁移、原模拟器和恢复组合；L1/L2不免除L3。第8节全部满足前总目标保持active。
+- [O03原件中转跨截点组合](history/GOAL_E07_RELAY_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：625前缀缺结果/未冻结不提交、原binlog精确终点、同键双并发/原PDA/两份RSA原回执/default-off及独立消费通过；消费者登录审计误判保留。仅开发备份，非E07 L2/D14整体/D18 L3。
+- 接续快照`.local/goal-20261015/e07-relay-checkpoint01/resume*`确认5,284输入相对624提交后不变；旧看板已保存，事实块已刷新。625真实HTTP/MySQL 1/1与独立Python通过，三库540表/830文件保全、认证停机，19330/19434零监听；输入/复用SHA/写权及盘量见该目录。随后O04独立来源跨截点组合，再E07其余组合、E08/E09及剩余D/O/U。最终候选必须实际执行Android、真实HTTP/MySQL、Chrome、Python、非空迁移、原模拟器和恢复组合；L1/L2不免除L3。第8节全部满足前总目标保持active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
