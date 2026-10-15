@@ -13,7 +13,7 @@ public final class RecoveryLeaseRekey {
     private static final long LOCK_WAIT_MILLIS = 10_000L;
 
     public record Result(String oldAnchorId, String newAnchorId, String markerSha256,
-                         int processRecords, int leaseRecords, String evidenceDirectory) { }
+                         int processRecords, int leaseRecords, String evidenceDirectory, String inventorySha256) { }
 
     private RecoveryLeaseRekey() { }
 
@@ -31,6 +31,7 @@ public final class RecoveryLeaseRekey {
         Path root = roots.root();
         var index = readEmptyIndex(root.resolve("leases").resolve("index.json"), roots, oldAnchor);
         var processPaths = processPaths(root.resolve("processes"));
+        require(processPaths.size() <= RecoveryRekeyInventory.MAX_RECORDS - 2, "RECOVERY_REKEY_INVENTORY_LIMIT");
         var rewritten = new LinkedHashMap<Path, JsonNode>();
         for (Path path : processPaths) rewritten.put(path, rewriteProcess(path, roots, oldAnchor, newAnchor));
         var marker = rewriteMarker(root.resolve("lease-root.json"), newAnchor);
@@ -38,14 +39,17 @@ public final class RecoveryLeaseRekey {
         targets.add(root.resolve("leases").resolve("index.json"));
         targets.add(root.resolve("lease-root.json"));
         Path backup = Files.createTempDirectory(root.getParent(), ".rekey-backup-");
+        boolean replacementsStarted = false;
         try {
             backup(targets, root, backup);
+            String inventory = RecoveryRekeyInventory.seal(new RecoveryRekeyInventory.Input(roots, oldAnchor, newAnchor), backup, targets);
+            replacementsStarted = true;
             for (var entry : rewritten.entrySet()) replace(entry.getKey(), entry.getValue());
             replace(root.resolve("leases").resolve("index.json"), indexWithAnchor(index, newAnchor));
             replace(root.resolve("lease-root.json"), marker);
-            return new Result(sha256(oldAnchor), sha256(newAnchor), hash(marker), processPaths.size(), 0, backup.toString());
+            return new Result(sha256(oldAnchor), sha256(newAnchor), hash(marker), processPaths.size(), 0, backup.toString(), inventory);
         } catch (IOException | RuntimeException failure) {
-            restore(targets, root, backup, failure);
+            if (replacementsStarted) restore(targets, root, backup, failure);
             failure.addSuppressed(new IOException("RECOVERY_REKEY_BACKUP_RETAINED: " + backup));
             throw failure;
         }

@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 import uuid
 from recovery_rekey import checked_file
-from recovery_rekey_verify import authenticated, canonical, digest, read, require
+from recovery_rekey_verify import authenticated, canonical, digest, read, require, INVENTORY_FILE
 
 PROCESS_FIELDS = {'formatVersion', 'installationId', 'processIdentity', 'identitySha256',
                   'pid', 'jvmVersion', 'createdAt', 'anchorTag'}
@@ -45,7 +45,8 @@ def originals(request, backup, old_key, new_key):
             'REKEY_INSPECT_ACTIVE_LEASE')
     expected['leases/index.json'] = (signed(index, old_key, 'indexTag'), signed(index, new_key, 'indexTag'))
     processes(request, backup, old_key, new_key, expected)
-    require(set(inventory(backup)) == set(expected), 'REKEY_INSPECT_BACKUP_LAYOUT')
+    allowed = set(expected) | ({INVENTORY_FILE} if (backup / INVENTORY_FILE).exists() else set())
+    require(set(inventory(backup)) == allowed, 'REKEY_INSPECT_BACKUP_LAYOUT')
     return expected
 
 

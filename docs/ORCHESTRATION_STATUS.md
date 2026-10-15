@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: faa46a82
+head: d8bd20eb
 dirty_entries: 93
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
@@ -17,12 +17,12 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标仍为active。坏机单有权撤回→重发→新机从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与断点
-- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本批输入HEAD/实际远端同为 `faa46a825356cf1fc22c7a05fc08e3cf1a20b85b`。P07提交后精确SHA/远端另存 `.local/goal-20261015/p07-close01/post-commit.json`，main只读，不自引用循环提交。
-- 本聊天 `01a13a57-8082-7dd2-a08f-987483dcda4b` 为源码/库/看板/索引唯一写者；清理聊天已结束释放，无子代理。接续91项原字节/hash/diff及旧看板存 `.local/goal-20261015/p07-close01/`，78项继承字节与D15提交后清单全部匹配，497源码输入与inspect04相同。其他Android/UI/工具/私有请求保持，禁止 `git add .`。
-- 主机07:15:24重启；未操作原模拟器/物理机。接续无项目API/Vite/Java/Python/ADB/emulator/qemu或隔离库活动；共享MySQL3306/33060 PID5412（父4372）不操作。实际进程/监听见 `p07-close01/processes-before.json`、`listeners-before.json`。
+- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本批输入HEAD/实际远端同为 `d8bd20eb8dcfdcf5598c09b350b996f39f558758`。签名全集提交后精确SHA/远端另存 `.local/goal-20261015/p07-inventory02/post-commit.json`，main只读，不自引用循环提交。
+- 本聊天 `01a13a57-8082-7dd2-a08f-987483dcda4b` 为源码/库/看板/索引唯一写者；清理聊天已结束释放，无子代理。接续79项原字节/hash及旧看板存 `.local/goal-20261015/p07-inventory01/`，78项继承字节与接续清单全部匹配，本批2230项输入/hash及复用关系保存。其他Android/UI/工具/私有请求保持，禁止 `git add .`。
+- 主机07:15:24重启；未操作原模拟器/物理机。接续无项目API/Vite/Java/Python/ADB/emulator/qemu或隔离库活动；共享MySQL3306/33060 PID5412（父4372）不操作。实际进程/监听见 `p07-inventory02/processes-after.json`、`listeners-after.json`。
 
 ## 环境、磁盘与生产边界
-- 目标服务/隔离库端口均无监听，D15的19343/19344保持零监听。接续C/D可用78,882,426,880 /20,558,868,480 bytes，见 `p07-close01/disks-before.json`。原库/失败库、dump/binlog、原日志/XML、原件及密钥/AVD身份继续保留。
+- 目标服务/隔离库端口均无监听，D15的19343/19344保持零监听。本批结束C/D可用78,858,129,408 /20,269,182,976 bytes，见 `p07-inventory02/disks-after.json`。原库/失败库、dump/binlog、原日志/XML、原件及密钥/AVD身份继续保留。
 - 生产决定 handler/POST/放行/证据写入/关闭能力、TEMP 生产归档边界与 `localDeletionAllowed=false` 保持关闭；同机合成身份/模拟器不冒充现场事实。
 
 ## 已验范围、暂缓及下一步
@@ -41,7 +41,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - D15的原ACL失败、停机清单失败及新1544复验均保留；提交精确输入/远端/改动见 `.local/goal-20261015/d15-jobs01/post-commit.json`。不因后续P07通过覆盖其未验范围。
 - P07中止诊断/启动拒绝L1已补：[正式报告](history/GOAL_P07_INTERRUPTION_ACCEPTANCE_2026-10-15.md)。最终IT10/10、CLI/锁25/25、JAR成功；2005项及供应4项按输入hash复用。实际中止110新签/405旧签且启动拒绝；换行、pending夹具、AssertJ及产品误放行原失败全部保留。所有分类保持停写，可信全集/显式恢复、D13–D15整体、E07 L2、D18 L3未完成。
 - 第二轮清理完成并释放三处冷Android产物范围，见[独立报告](history/D_DISK_REBUILDABLE_CLEANUP_2026-10-15.md)和`.local/disk-cleanup-20261015-rebuildable/task-complete.json`；16目录/22,858文件，205保护文件不变。后续可正常构建，沿默认共享依赖，不恢复弃用专用cache旧命令；server/build及本批原件继续保护。
-- 下一动作：本批自审/明确路径开发备份后，继续P07可信原签全集/历史钥引用及显式恢复，再推进跨截点和升级回退。设备和1540 Chrome阻断不绕过；总目标active，D/O/U、第8节及原暂缓项不因局部通过清零。
+- P07中止L1已提交推送`d8bd20eb8dcfdcf5598c09b350b996f39f558758`；新签名全集切片输入/设计见`.local/goal-20261015/p07-inventory01/`。[签名全集L1报告](history/GOAL_P07_INVENTORY_ACCEPTANCE_2026-10-15.md)：首批IT21/21、定向33/33、JAR成功；回读自审后Python5/5，其余按hash复用。实际中止79新签/436旧签，全集认证true仍停写；1677/100文件原件保留，无活动重型任务，显式恢复仍未开发。
+- 下一动作：签名全集明确路径开发备份后，继续历史钥引用/显式恢复、跨截点和升级回退。设备和1540 Chrome阻断不绕过；总目标active，D/O/U、第8节及原暂缓项不因局部通过清零。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

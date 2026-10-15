@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [P07 原签全集封存 L1](history/GOAL_P07_INVENTORY_ACCEPTANCE_2026-10-15.md)：首次实际IT21/21、定向33/33；回读自审后Python供应5/5，其他输入按hash复用。真实中止/双侧缺件/旧备份边界通过，显式恢复未完成。
+
 - [P07 中止诊断与启动拒绝 L1](history/GOAL_P07_INTERRUPTION_ACCEPTANCE_2026-10-15.md)：最终专项 IT 10/10、CLI/锁回归25/25；按产品输入哈希复用2005项及供应4项。真实中止与全部失败原件保留，显式可信恢复仍未完成。
 
 - [D15 身份绑定任务监控 L1](history/GOAL_D15_JOBS_MONITOR_ACCEPTANCE_2026-10-15.md)：新隔离 MySQL/CLI 15/15、最终配置/ACL 4/4；既有 R09 回归139通过/11跳过。首次ACL误通过及修复、两实例保全完整；仅工具开发备份，D15整体、L2/L3和总目标继续。

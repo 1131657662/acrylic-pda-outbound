@@ -4,7 +4,7 @@ import hashlib
 from pathlib import Path
 import sys
 from recovery_rekey import checked_file, external, key_file
-from recovery_rekey_verify import canonical, digest, read, require
+from recovery_rekey_verify import canonical, digest, read, require, verify_inventory
 from recovery_rekey_inspect_state import inventory, originals, classify
 
 FIELDS = {'formatVersion', 'operation', 'installationId', 'authorityRoot', 'leaseRoot', 'closedAuthority',
@@ -46,11 +46,12 @@ def inspect(args):
         require(old != new, 'REKEY_INSPECT_SAME_KEY')
         before = {str(path): inventory(path) for path in (root, backup, authority)}
         expected = originals(request, backup, old, new)
+        set_authenticated = verify_inventory(request, backup, (old, new))
         state, counts = classify(root, expected)
         after = {str(path): inventory(path) for path in (root, backup, authority)}
         require(before == after, 'REKEY_INSPECT_CONCURRENT_CHANGE')
         return {'status': 'INSPECTED', 'state': state, 'counts': counts, 'snapshotUnchanged': True,
-                'processSetAuthenticated': False, 'writerLivenessVerified': False,
+                'processSetAuthenticated': set_authenticated, 'writerLivenessVerified': False,
                 'recoveryAllowed': False, 'keepWritersStopped': True, 'productionApproved': False}
     finally:
         for key in (old, new, retained):
@@ -71,6 +72,7 @@ def main():
         return 0
     except (OSError, ValueError, KeyError, TypeError, AttributeError):
         sys.stdout.buffer.write(canonical({'status': 'UNKNOWN', 'recoveryAllowed': False,
+                                          'processSetAuthenticated': False, 'writerLivenessVerified': False,
                                           'keepWritersStopped': True, 'productionApproved': False}))
         sys.stdout.buffer.flush()
         return 3

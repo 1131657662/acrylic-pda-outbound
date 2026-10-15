@@ -23,6 +23,10 @@ record RecoveryRekeyInspectFixture(RecoveryRekeyCliFixture rotation, Path backup
     }
 
     String inspect(String scenario, int... expectedExits) throws Exception {
+        return report(scenario, expectedExits).path("state").asText("UNKNOWN");
+    }
+
+    com.fasterxml.jackson.databind.JsonNode report(String scenario, int... expectedExits) throws Exception {
         String python = Objects.requireNonNull(System.getenv("P07_PYTHON"));
         Path tool = Path.of(Objects.requireNonNull(System.getenv("P07_TOOLS_ROOT")), "recovery_rekey_inspect.py");
         var cmd = List.of(python, tool.toString(), "--request", rotation.request().toString(), "--backup", backup.toString(),
@@ -39,7 +43,8 @@ record RecoveryRekeyInspectFixture(RecoveryRekeyCliFixture rotation, Path backup
             assertThat(output).doesNotContain(rotation.supply().anchorHex(), hex(rotation.next()));
             var report = readCanonical(output.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             assertThat(report.path("keepWritersStopped").asBoolean()).isTrue();
-            assertThat(report.path("recoveryAllowed").asBoolean()).isFalse(); return report.path("state").asText("UNKNOWN");
+            assertThat(report.path("recoveryAllowed").asBoolean()).isFalse();
+            assertThat(report.path("writerLivenessVerified").asBoolean()).isFalse(); return report;
         } finally { if (child.isAlive()) { child.destroyForcibly(); child.waitFor(5, TimeUnit.SECONDS); } }
     }
 

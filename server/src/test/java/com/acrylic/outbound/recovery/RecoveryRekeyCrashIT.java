@@ -30,6 +30,9 @@ class RecoveryRekeyCrashIT {
         try (var files = Files.list(f.supply().base())) {
             backup = files.filter(p -> p.getFileName().toString().startsWith(".rekey-backup-")).findFirst().orElseThrow();
         }
+        var manifest = RecoveryControlHistory.read(backup.resolve(RecoveryRekeyInventory.FILE));
+        anchorTag(f.supply().roots().anchor(), manifest, "inventoryTag");
+        assertThat(manifest.path("recordCount").asInt()).isEqualTo(515);
         var inspector = new RecoveryRekeyInspectFixture(f, backup, RecoveryRekeyInspectFixture.keys(f));
         assertThat(inspector.inspect("crash", 0, 3)).isIn("MIXED", "PENDING", "UNKNOWN");
         assertThatThrownBy(() -> f.supply().authority().validateStartup()).isInstanceOf(Exception.class);

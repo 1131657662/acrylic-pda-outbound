@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 from pathlib import Path
+import re
 
 
 def require(condition, code):
@@ -35,6 +36,67 @@ def authenticated(path, key, field="anchorTag"):
     return body
 
 
+INVENTORY_FILE = 'rekey-inventory.json'
+
+
+def original_descriptor(backup, name):
+    path = backup / name
+    for item in (path, *path.parents):
+        require(not item.is_symlink() and not item.is_junction(), 'REKEY_INVENTORY_PATH')
+    require(path.is_file() and path.stat().st_nlink == 1, 'REKEY_INVENTORY_FILE')
+    raw = canonical(read(path))
+    return {'bytes': len(raw), 'path': name, 'sha256': hashlib.sha256(raw).hexdigest()}
+
+
+def original_names(backup):
+    allowed = {'lease-root.json', 'leases', 'processes', INVENTORY_FILE}
+    require({p.name for p in backup.iterdir()} <= allowed, 'REKEY_INVENTORY_LAYOUT')
+    for directory in (backup / 'leases', backup / 'processes'):
+        require(not directory.is_symlink() and not directory.is_junction(), 'REKEY_INVENTORY_PATH')
+    require({p.name for p in (backup / 'leases').iterdir()} == {'index.json'}, 'REKEY_INVENTORY_LAYOUT')
+    names = ['lease-root.json', 'leases/index.json']
+    processes = backup / 'processes'
+    for path in processes.iterdir() if processes.exists() else []:
+        require(re.fullmatch(r'[0-9a-f-]{36}\.json', path.name), 'REKEY_INVENTORY_PROCESS')
+        names.append('processes/' + path.name)
+        require(len(names) <= 9998, 'REKEY_INVENTORY_LIMIT')
+    return sorted(names)
+
+
+def verify_inventory(request, backup, keys):
+    path = backup / INVENTORY_FILE
+    if not path.exists():
+        return False
+    original_descriptor(backup, INVENTORY_FILE)
+    manifest = authenticated(path, keys[0], 'inventoryTag')
+    fields = {'formatVersion', 'operation', 'installationId', 'authorityRoot', 'leaseRoot', 'identitySha256',
+              'markerSha256', 'oldAnchorId', 'newAnchorId', 'recordCount', 'processRecords', 'totalBytes', 'recordsSha256'}
+    require(set(manifest) == fields and type(manifest['formatVersion']) is int and
+            manifest['formatVersion'] == 1 and manifest['operation'] == 'REKEY_P5_INVENTORY', 'REKEY_INVENTORY_FORMAT')
+    for name in ('installationId', 'authorityRoot', 'leaseRoot', 'identitySha256', 'markerSha256', 'oldAnchorId', 'newAnchorId'):
+        require(manifest[name] == request[name], 'REKEY_INVENTORY_BINDING')
+    for name, key in zip(('oldAnchorId', 'newAnchorId'), keys):
+        require(manifest[name] == hashlib.sha256(key).hexdigest(), 'REKEY_INVENTORY_KEY')
+    descriptors = [original_descriptor(backup, name) for name in original_names(backup)]
+    summary = hashlib.sha256()
+    for entry in descriptors:
+        summary.update(canonical(entry))
+    facts = {'recordCount': len(descriptors), 'processRecords': len(descriptors) - 2,
+             'totalBytes': sum(entry['bytes'] for entry in descriptors), 'recordsSha256': summary.hexdigest()}
+    for name, value in facts.items():
+        require(type(manifest[name]) is type(value) and manifest[name] == value, 'REKEY_INVENTORY_SET')
+    return True
+
+
+def verify_receipt_inventory(request, receipt, keys):
+    backup = Path(receipt['evidenceDirectory'])
+    authenticated_set = verify_inventory(request, backup, keys)
+    if 'inventorySha256' in receipt:
+        require(authenticated_set and digest(read(backup / INVENTORY_FILE)) == receipt['inventorySha256'],
+                'REKEY_VERIFY_INVENTORY_RECEIPT')
+    return authenticated_set
+
+
 def verify(request, receipt, old_key, new_key):
     require(receipt["status"] == "REKEYED" and receipt["runtimeUpdated"] is False, "REKEY_VERIFY_STATUS")
     for name, key in (("oldAnchorId", old_key), ("newAnchorId", new_key)):
@@ -43,6 +105,7 @@ def verify(request, receipt, old_key, new_key):
     backup = Path(receipt["evidenceDirectory"])
     require(backup.is_dir() and backup.parent == root.parent and backup.name.startswith(".rekey-backup-"),
             "REKEY_VERIFY_BACKUP")
+    set_authenticated = verify_receipt_inventory(request, receipt, (old_key, new_key))
     marker = read(root / "lease-root.json")
     original = read(backup / "lease-root.json")
     require(digest(original) == request["markerSha256"], "REKEY_VERIFY_ORIGINAL")
@@ -62,4 +125,5 @@ def verify(request, receipt, old_key, new_key):
         require(old == new, "REKEY_VERIFY_PROCESS_FACTS")
     require(receipt["processRecords"] == len(old_files) and receipt["leaseRecords"] == 0, "REKEY_VERIFY_COUNTS")
     return {"rotationVerified": True, "processRecords": len(old_files), "originalEvidenceRetained": True,
+            "processSetAuthenticated": set_authenticated,
             "runtimeUpdated": False, "productionApproved": False}

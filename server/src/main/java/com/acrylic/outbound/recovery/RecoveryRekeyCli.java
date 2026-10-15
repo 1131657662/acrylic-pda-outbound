@@ -44,6 +44,7 @@ public final class RecoveryRekeyCli {
             .put("oldAnchorId", result.oldAnchorId()).put("newAnchorId", result.newAnchorId())
             .put("markerSha256", result.markerSha256()).put("processRecords", result.processRecords())
             .put("leaseRecords", result.leaseRecords()).put("evidenceDirectory", result.evidenceDirectory())
+            .put("inventorySha256", result.inventorySha256())
             .put("runtimeUpdated", false);
         return canonical(value);
     }

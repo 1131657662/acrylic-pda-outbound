@@ -19,6 +19,7 @@ class RecoveryRekeyPythonIT {
         var report = RecoveryControlHistory.read(evidence.resolve("verified.json"));
         assertThat(report.path("rotationVerified").asBoolean()).isTrue();
         assertThat(report.path("originalEvidenceRetained").asBoolean()).isTrue();
+        assertThat(report.path("processSetAuthenticated").asBoolean()).isTrue();
         assertThat(report.path("runtimeUpdated").asBoolean()).isFalse();
         assertThat(report.path("productionApproved").asBoolean()).isFalse();
         String files = Files.readString(evidence.resolve("invocation.json")) + Files.readString(evidence.resolve("stdout.json"));
@@ -31,6 +32,26 @@ class RecoveryRekeyPythonIT {
         Path evidence = f.supply().base().resolve("refused-evidence");
         assertThat(run(f, keys, evidence)).isEqualTo(3); assertThat(f.facts()).isEqualTo(before);
         assertThat(evidence.resolve("verified.json")).doesNotExist();
+    }
+
+    @Test void successfulReceiptCannotBeDowngradedByRemovingItsInventory() throws Exception {
+        var f = RecoveryRekeyCliFixture.create(parent); Path keys = keys(f);
+        Path evidence = f.supply().base().resolve("pinned-evidence");
+        assertThat(run(f, keys, evidence)).isZero();
+        var receipt = RecoveryControlHistory.read(evidence.resolve("stdout.json"));
+        Path backup = Path.of(text(receipt, "evidenceDirectory"));
+        Files.move(backup.resolve(RecoveryRekeyInventory.FILE), f.supply().base().resolve("retained-inventory.json"));
+        String script = "import sys,os; from pathlib import Path; sys.path.insert(0,os.environ['P07_TOOLS_ROOT']); "
+            + "from recovery_rekey_verify import read,verify; "
+            + "verify(read(sys.argv[1]),read(sys.argv[2]),Path(sys.argv[3]).read_bytes(),Path(sys.argv[4]).read_bytes())";
+        var child = new ProcessBuilder(System.getenv("P07_PYTHON"), "-c", script, f.request().toString(),
+            evidence.resolve("stdout.json").toString(), keys.resolve("current.bin").toString(), keys.resolve("next.bin").toString())
+            .redirectOutput(evidence.resolve("downgrade-stdout.txt").toFile())
+            .redirectError(evidence.resolve("downgrade-stderr.txt").toFile()).start();
+        try {
+            assertThat(child.waitFor(15, TimeUnit.SECONDS)).isTrue(); assertThat(child.exitValue()).isEqualTo(1);
+            assertThat(Files.readString(evidence.resolve("downgrade-stderr.txt"))).contains("REKEY_VERIFY_INVENTORY_RECEIPT");
+        } finally { if (child.isAlive()) { child.destroyForcibly(); child.waitFor(5, TimeUnit.SECONDS); } }
     }
 
     @Test void supplierNeverOverwritesAnExistingEvidenceDirectory() throws Exception {
