@@ -28,10 +28,15 @@ def arguments():
     legacy.add_argument('--backup', required=True)
     monitor = commands.add_parser('monitor')
     monitor.add_argument('--config', required=True)
+    jobs_monitor = commands.add_parser('jobs-monitor')
+    jobs_monitor.add_argument('--config', required=True)
     return parser.parse_args()
 
 
 def execute(args):
+    if args.command == 'jobs-monitor':
+        from jobs_probe import collect
+        return collect(read_json(args.config))
     if args.command.startswith('control-'):
         from control_cli import execute as control_execute
         return control_execute(args)

@@ -114,6 +114,9 @@ def collect(config):
     if 'restore_evidence' in config:
         from restore_monitor import latest_evidence
         results.append(check('restore_evidence', lambda: latest_evidence(config, now)))
+    if 'jobs' in config:
+        from jobs_probe import collect as jobs_collect
+        results.append(check('jobs', lambda: jobs_collect(config['jobs'])))
     for name in ('http', 'tcp'):
         if name in config:
             results.append(check(name, lambda name=name: globals()[name](config[name])))

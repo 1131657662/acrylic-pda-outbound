@@ -1,0 +1,16 @@
+{
+  "host": "127.0.0.1",
+  "port": 3306,
+  "datadir": "/var/lib/mysql",
+  "database": "replace_with_authorized_database",
+  "current_user": "outbound_monitor@127.0.0.1",
+  "server_uuid": "00000000-0000-0000-0000-000000000000",
+  "credentials_file": "/etc/acrylic-outbound-test/monitor-private.cnf",
+  "limits": {
+    "failed": 0,
+    "expired_leases": 0,
+    "ready": 100,
+    "oldest_ready_seconds": 300,
+    "retry": 20
+  }
+}
