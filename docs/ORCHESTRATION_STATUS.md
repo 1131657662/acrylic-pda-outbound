@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: 122fbd5f
-dirty_entries: 85
+head: 456cd22b
+dirty_entries: 80
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标active。故障订单有权撤回→重发→新设备从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与输入
-- 固定`D:/acrylic-pda-outbound`、`codex/development`；本切片运行HEAD/远端`122fbd5f44fc8a27867875579bdd828e8c5d3aaf`。提交/远端以本批明确路径提交回执及生成块为准。main只读，禁止`git add .`。
+- 固定`D:/acrylic-pda-outbound`、`codex/development`；本切片运行HEAD/远端`456cd22b`（提交后事实生成块随该提交更新）。提交/远端以本批明确路径提交回执及生成块为准。main只读，禁止`git add .`。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`为源码/库/看板/索引唯一写者，无子代理。清理聊天complete-released且重启后notLoaded；无并行项目任务。旧owner/release不作活动证明。
 - 原5,268项输入0项改变，新增4个测试；616运行清单5,272项。所有tracked/untracked、hash/长度、补丁、工作树和写权见`e07-withdrawal02/input616.json`、`finalize-input.json`。继承Android/UI/工具/文档与私有请求保护；旧结论已归档。
 
