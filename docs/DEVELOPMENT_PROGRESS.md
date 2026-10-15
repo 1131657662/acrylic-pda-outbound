@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [P07历史钥及固定恢复引用核验L1](history/GOAL_P07_KEYRING_ACCEPTANCE_2026-10-15.md)：最终实际专项19/19、产品JVM原签取回后Python逐件消费与输入守恒；原编译/Windows夹具失败保留，运行源码与前批消费者按SHA复用。只计工具开发切片，外部保管、E07组合及D18 L3继续。
+
 - [P07 显式原签还原 L1](history/GOAL_P07_RESTORE_ACCEPTANCE_2026-10-15.md)：最终实际IT38/38、Java输入不变的33项复用、JAR成功；布尔/整数误接受已复现修复，原失败/真实还原中止/末替换失败原件保留。仅工具切片，UNKNOWN/pending及E07组合仍未完成。
 
 - [P07 原签全集封存 L1](history/GOAL_P07_INVENTORY_ACCEPTANCE_2026-10-15.md)：首次实际IT21/21、定向33/33；回读自审后Python供应5/5，其他输入按hash复用。真实中止/双侧缺件/旧备份边界通过，显式恢复未完成。

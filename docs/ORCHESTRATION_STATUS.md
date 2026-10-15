@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: 57ba1263
-dirty_entries: 95
+head: 5ce48879
+dirty_entries: 89
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标仍为active。坏机单有权撤回→重发→新机从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与断点
-- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本批输入HEAD/实际远端同为 `57ba12634428dcd0ed2962b24fd8990c69cfb467`。原签还原提交后精确SHA/远端另存 `.local/goal-20261015/p07-restore03/post-commit.json`，main只读，不自引用循环提交。
+- 固定 `D:/acrylic-pda-outbound`、`codex/development`；本批原签还原已提交推送，精确SHA/远端见 `.local/goal-20261015/p07-restore03/post-commit.json`；提交前输入HEAD/实际远端见该批 evidence，main只读，不自引用循环提交。
 - 本聊天 `01a13a57-8082-7dd2-a08f-987483dcda4b` 为源码/库/看板/索引唯一写者；清理聊天已结束释放，无子代理。接续79项原字节/hash及旧看板存 `.local/goal-20261015/p07-restore01/`，78项继承字节与接续清单全部匹配，本批2238项输入/hash及复用关系保存。其他Android/UI/工具/私有请求保持，禁止 `git add .`。
 - 主机07:15:24重启；未操作原模拟器/物理机。接续无项目API/Vite/Java/Python/ADB/emulator/qemu或隔离库活动；共享MySQL3306/33060 PID5412（父4372）不操作。实际进程/监听见 `p07-restore03/processes-after.json`、`listeners-after.json`。
 
@@ -43,7 +43,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 第二轮清理完成并释放三处冷Android产物范围，见[独立报告](history/D_DISK_REBUILDABLE_CLEANUP_2026-10-15.md)和`.local/disk-cleanup-20261015-rebuildable/task-complete.json`；16目录/22,858文件，205保护文件不变。后续可正常构建，沿默认共享依赖，不恢复弃用专用cache旧命令；server/build及本批原件继续保护。
 - P07中止L1已提交推送`d8bd20eb8dcfdcf5598c09b350b996f39f558758`；新签名全集切片输入/设计见`.local/goal-20261015/p07-inventory01/`。[签名全集L1报告](history/GOAL_P07_INVENTORY_ACCEPTANCE_2026-10-15.md)：首批IT21/21、定向33/33、JAR成功；回读自审后Python5/5，其余按hash复用。实际中止79新签/436旧签，全集认证true仍停写；1677/100文件原件保留，无活动重型任务，显式还原后续见下条。
 - 签名全集已提交推送`57ba12634428dcd0ed2962b24fd8990c69cfb467`。显式原签还原[正式L1报告](history/GOAL_P07_RESTORE_ACCEPTANCE_2026-10-15.md)：最终IT38/38、Java输入相同的33项复用、JAR通过。实际Python正向/并发/持锁拒绝/末替换失败及真实还原中止通过；布尔整数误接受2项原失败已修复，全部原件保留。UNKNOWN/pending继续拒绝，不计E07 L2或D13–D15整体。
-- 下一动作：原签还原切片明确路径开发备份后，继续E07跨截点事实重建、历史钥引用/保管及升级回退实际组合。设备和1540 Chrome阻断不绕过；总目标active，D/O/U、第8节及原暂缓项不因局部通过清零。
+- P07历史钥/固定引用取回核验L1完成：[正式报告](history/GOAL_P07_KEYRING_ACCEPTANCE_2026-10-15.md)。最终专项19/19、真实JVM原签→Python离线归档逐件消费；双pin/全集/身份/类型/引用和只读守恒通过，编译及Windows夹具原失败保留。输入5241文件与接管快照全匹配，78项继承改动保持；写权、输入/结果在 `.local/goal-20261015/p07-keyring01/`、`p07-keyring03/`。不证明外部保管/防覆盖/全局引用全集，不能计E07 L2。收尾C/D可用78,853,111,808 /19,991,306,240 bytes，无项目重型任务，进程/监听见keyring03。
+- 下一动作：保存上述明确路径开发备份后继续E07跨截点事实重建、保管及升级回退实际组合。设备和1540 Chrome阻断不绕过；总目标active，D/O/U、第8节及原暂缓项不因局部通过清零。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

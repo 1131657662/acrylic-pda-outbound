@@ -59,7 +59,7 @@ python tools/recovery_rekey_inspect.py --request <external-request-json> --backu
 
 工具核对固定身份、旧marker摘要、两代钥ID、原HMAC、进程原字段、空索引和文件集合，对当前每条记录与预期原/新字节比较。完整读回可报告`ALL_OLD`、`ALL_NEW`、`MIXED`或`PENDING`；部分/零字节pending、缺失文件、错钥、篡改、额外布局或可见并发变化返回`UNKNOWN`及退出3。原有非法或半写pending必须保留；不能为取得可读状态而删除。退出0仅表示本次可解释的只读分类，所有结果均`keepWritersStopped=true`、`recoveryAllowed=false`、`productionApproved=false`。
 
-带有效签名清单的备份，独立Python逐项重算原记录全集后返回`processSetAuthenticated=true`；同时丢失当前及备份的同名原件也会因全集摘要不符而拒绝。旧无清单备份继续返回`processSetAuthenticated=false`，不得为其补造清单或凭剩余HMAC证明完整。此证明只覆盖轮换持锁快照时实际保存的集合，不能证明更早已丢失的历史。`writerLivenessVerified=false`说明前后hash相等只是两次观察，不是持锁快照或全部写者已退出的证明。该工具不能替代独立保管清单、P3锁身份核验、数据库/文件/业务事实对账或人工恢复审批。即使`ALL_OLD/ALL_NEW`也不能直接启服务。显式恢复工具、清单外部保管与实际进程排空仍是后续开发范围，不允许用手工覆盖完成局部测试后记全部恢复通过。
+带有效签名清单的备份，独立Python逐项重算原记录全集后返回`processSetAuthenticated=true`；同时丢失当前及备份的同名原件也会因全集摘要不符而拒绝。旧无清单备份继续返回`processSetAuthenticated=false`，不得为其补造清单或凭剩余HMAC证明完整。此证明只覆盖轮换持锁快照时实际保存的集合，不能证明更早已丢失的历史。`writerLivenessVerified=false`说明前后hash相等只是两次观察，不是持锁快照或全部写者已退出的证明。该工具不能替代独立保管清单、P3锁身份核验、数据库/文件/业务事实对账或人工恢复审批。即使`ALL_OLD/ALL_NEW`也不能直接启服务。显式还原入口见下文；外部保管、实际进程排空和业务恢复仍须分别验证，不允许用手工覆盖完成局部测试后记全部恢复通过。
 
 产品P5启动还会在持协调锁的检查内验证全部保留进程记录的HMAC/身份/文件名，并拒绝未完成root/process布局；空租约索引不再掩盖部分轮换。该检查不重签、不清pending、不生成新权威；同JVM活动进程使用原持有描述符验证，避免POSIX关闭第二句柄释放生命周期锁。旧秘密不能启动含新签进程记录的混合树。
 
@@ -82,3 +82,19 @@ python tools/recovery_rekey_restore.py --java <absolute-java> --classpath <absol
 所有前置满足且存在新签时，先保存完整当前P5字节到相邻`.rekey-restore-before-*`，再逐个原子替换process、index，最后marker。原签备份、签名清单和故障前快照始终保留。已经全旧且无新事实时，返回`alreadyOriginal=true`，不重复替换文件。还原后Python独立验原HMAC、全集摘要、原marker和每条原字节，写`verified.json`；它依然不能替代数据库/业务截点、外部保管或重新启动审批。
 
 退出0只说明本次原签字节还原与回读，`runtimeUpdated=false`、`keepWritersStopped=true`、`recoveryAllowed=false`。前置拒绝退出2；I/O、超时、回读失败或替换后任何不确定性退出3。替换后失败在stderr给出保留快照路径；不自动重试或反向覆盖，失败pending继续保留，启动检查拒绝。再次执行前先保全并核对原始输入和所有事实；未知状态不能原样机械重跑。历史钥仍需保留，本工具不供应运行配置、不启动服务、不放行业务。
+
+## 历史钥与固定引用目录的离线取回核验
+
+`tools/recovery_keyring.py`只读核验明确取回的历史钥和原签归档，可在运行控制记录/业务目录不可用时消费。不读取当前运行配置，不做运行期多钥回退。先从可信保管记录取得两个独立固定SHA：历史钥清单SHA和恢复引用目录SHA。不能从待验目录现算摘要后把它称为独立可信pin，也不能自动扫描剩余文件、生成较小目录后声称历史完整。
+
+历史钥清单使用前述规范JSON，字段严格为`formatVersion:1`、`purpose:"HISTORICAL_VERIFY_ONLY"`、`keys`。每项仅含`keyId`（原始32字节钥的SHA）、`file`（严格为`<keyId>.bin`）、`retainedFrom`和`minimumRetainUntil`（ISO日期）。清单所在隔离目录只放清单和列明钥文件，且在全部控制/恢复业务树之外；链接、junction、硬链接拒绝。每项声明的最低保管期限须不少于五个日历年；闰日无法对应时取下一年的3月1日，避免缩短期限。声明日期不证明已经实际保管，也不能改变仍有引用则继续保留的要求。
+
+恢复引用目录独立置于钥目录外，字段严格为`formatVersion:1`、`operation:"VERIFY_P5_REFERENCES"`、`references`。每项仅含`requestFile`（原请求副本绝对路径）、`requestSha256`、`backupDirectory`（精确取回原签归档绝对路径）、`inventorySha256`。原请求中的原安装/路径/两代钥ID与marker摘要保持原值；归档可取回至不同隔离位置，不改写签名路径。重复清单pin/请求/备份、无清单旧备份和缺失引用均拒绝。两个目录分别最多100项，单JSON沿用有界读取；这不是现场历史规模承诺。
+
+```powershell
+python -B tools/recovery_keyring.py --keyring <absolute-historical-manifest> --keyring-sha256 <independently-pinned-sha> --catalog <absolute-reference-catalog> --catalog-sha256 <independently-pinned-sha>
+```
+
+工具逐件核对取回钥ID、固定请求/签名清单摘要、旧钥HMAC、原记录全集及每条原签/身份，并前后重算输入哈希。退出0且`status:VERIFIED`仅表示**固定目录所声明范围**的全部引用本次可消费；任何缺失/异文返回3和`UNKNOWN`，无部分通过授权。输入和钥均只读打开，不输出秘密字节；报告可另存至新的树外证据位置，不能覆盖原件。
+
+所有结果保持`keepWritersStopped:true`、`runtimeUpdated:false`、`recoveryAllowed:false`、`deletionAllowed:false`。即使最低日期已过或目录内引用数为零也不提供删除资格。`globalReferenceCoverageVerified:false`表示本工具不能证明外部目录没有漏登；`writeProtectionVerified:false`、`externalCustodyVerified:false`表示只读访问及两次哈希相等不证明ACL/防覆盖、介质/异地保管、长期留存或实时写者排空。原请求、清单、原签、两代钥及引用登记继续按独立保管流程保存；这些外部事实与E07组合验收须另有证据。
