@@ -72,12 +72,13 @@ def classify(root, expected):
     require((root / 'fenced.lock').read_bytes() == b'0', 'REKEY_INSPECT_FENCE_INVALID')
     counts = {'old': 0, 'new': 0, 'pending': 0}
     for name, (old, new) in expected.items():
-        current = read(checked_file(root / name))
-        require(current in (old, new), 'REKEY_INSPECT_UNTRUSTED_CONTENT')
-        counts['old' if current == old else 'new'] += 1
+        current = canonical(read(checked_file(root / name)))
+        old_bytes, new_bytes = canonical(old), canonical(new)
+        require(current in (old_bytes, new_bytes), 'REKEY_INSPECT_UNTRUSTED_CONTENT')
+        counts['old' if current == old_bytes else 'new'] += 1
         pending = root / (name + '.rekey.pending')
         if pending.exists():
-            require(read(checked_file(pending)) in (old, new), 'REKEY_INSPECT_UNTRUSTED_PENDING')
+            require(canonical(read(checked_file(pending))) in (old_bytes, new_bytes), 'REKEY_INSPECT_UNTRUSTED_PENDING')
             counts['pending'] += 1
     state = 'MIXED' if counts['old'] and counts['new'] else ('ALL_OLD' if counts['old'] else 'ALL_NEW')
     return ('PENDING' if counts['pending'] else state), counts

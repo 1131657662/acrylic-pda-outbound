@@ -72,7 +72,7 @@ public final class RecoveryLeaseRoots {
         return marker;
     }
 
-    private void identity() throws IOException {
+    void identity() throws IOException {
         var location = binding.location().checked();
         require(location.root().equals(authorityRoot()), "RECOVERY_LEASE_ROOT_UNBOUND");
         Path lease = RecoveryControlPaths.checked(root()), closed = RecoveryControlPaths.checked(binding.closedAuthority());

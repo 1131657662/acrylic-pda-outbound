@@ -15,6 +15,51 @@ final class RecoveryRekeyInventory {
 
     record Input(RecoveryLeaseRoots roots, byte[] oldAnchor, byte[] newAnchor) { }
 
+    static List<Path> verified(Input input, Path backup, String pinnedHash) throws IOException {
+        var value = RecoveryControlHistory.read(backup.resolve(FILE));
+        fields(value, "formatVersion operation installationId authorityRoot leaseRoot identitySha256 oldAnchorId newAnchorId markerSha256 recordCount processRecords recordsSha256 totalBytes inventoryTag");
+        version(value); anchorTag(input.oldAnchor(), value, "inventoryTag");
+        var roots = input.roots();
+        require(hash(value).equals(pinnedHash) && text(value, "operation").equals("REKEY_P5_INVENTORY")
+            && text(value, "installationId").equals(roots.installation())
+            && text(value, "authorityRoot").equals(roots.authorityRoot().toString())
+            && text(value, "leaseRoot").equals(roots.root().toString())
+            && text(value, "identitySha256").equals(roots.identityHash())
+            && text(value, "oldAnchorId").equals(sha256(input.oldAnchor()))
+            && text(value, "newAnchorId").equals(sha256(input.newAnchor()))
+            && text(value, "markerSha256").equals(hash(RecoveryControlHistory.read(backup.resolve("lease-root.json")))),
+            "RECOVERY_RESTORE_INVENTORY_BINDING");
+        var targets = targets(roots.root(), backup); var summary = summarize(roots.root(), backup, targets);
+        require(value.path("recordCount").isInt() && value.path("recordCount").asInt() == targets.size()
+            && value.path("processRecords").isInt() && value.path("processRecords").asInt() == targets.size() - 2
+            && value.path("totalBytes").isIntegralNumber() && value.path("totalBytes").asLong() == summary.bytes()
+            && text(value, "recordsSha256").equals(summary.hash()), "RECOVERY_RESTORE_INVENTORY_SET");
+        return targets;
+    }
+
+    private static List<Path> targets(Path root, Path backup) throws IOException {
+        try (var paths = Files.list(backup)) {
+            for (Path p : paths.toList()) require(Set.of("processes", "leases", "lease-root.json", FILE)
+                .contains(p.getFileName().toString()), "RECOVERY_RESTORE_BACKUP_LAYOUT");
+        }
+        var result = new ArrayList<Path>();
+        Path processes = RecoveryControlPaths.checked(backup.resolve("processes"));
+        if (Files.exists(processes)) try (var files = Files.list(processes)) {
+            for (Path p : files.sorted().toList()) {
+                require(p.getFileName().toString().matches("[0-9a-f-]{36}\\.json") && result.size() < MAX_RECORDS - 2,
+                    "RECOVERY_RESTORE_BACKUP_LAYOUT");
+                result.add(root.resolve("processes").resolve(p.getFileName()));
+            }
+        }
+        Path leases = RecoveryControlPaths.checked(backup.resolve("leases"));
+        try (var files = Files.list(leases)) {
+            require(files.map(p -> p.getFileName().toString()).toList().equals(List.of("index.json")),
+                "RECOVERY_RESTORE_BACKUP_LAYOUT");
+        }
+        result.add(root.resolve("leases/index.json")); result.add(root.resolve("lease-root.json"));
+        return result;
+    }
+
     static String seal(Input input, Path backup, List<Path> targets) throws IOException {
         var roots = input.roots();
         RecoveryControlLock.requireOwner(roots.authorityRoot());

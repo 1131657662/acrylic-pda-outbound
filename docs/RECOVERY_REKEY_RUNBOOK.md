@@ -68,3 +68,17 @@ python tools/recovery_rekey_inspect.py --request <external-request-json> --backu
 全集摘要按相对路径升序，对每个原文件的规范描述`{"bytes":<整数>,"path":<相对路径>,"sha256":<原字节摘要>}`加单个LF后连续送入SHA-256；只含原marker、空index和原process记录，不含清单自身，也不改变单条记录格式。最多9,998条记录；签名清单本身沿用有界规范JSON。此上限为当前离线工具的显式拒绝边界，不是已测真实规模或产品历史留存上限。
 
 清单、原签文件、请求及轮换回执需一并进入独立只读保管；两代钥仍位于控制/业务树之外，至少五年及仍有恢复引用时继续保留。清单可读和HMAC通过不证明异地可取回、当前写者退出、数据库截点一致或人工保管完成，也不允许启服务。删除新备份的清单会失去全集证明；带清单SHA的成功回执消费会拒绝这种降级。
+
+## 显式还原原签字节
+
+`tools/recovery_rekey_restore.py`是独立离线工具，只把完整签名快照内的已知原/新规范字节还原为原签字节。必须显式给原请求、精确相邻备份、独立保管的清单SHA及两代钥；不能只根据目录中的“最新清单”自行选输入。没有签名清单的旧备份不可用此入口，不补造历史证明。
+
+```powershell
+python tools/recovery_rekey_restore.py --java <absolute-java> --classpath <absolute-classpath-json> --request <external-original-request-json> --backup <exact-adjacent-backup> --inventory-sha256 <independently-pinned-inventory-sha256> --current-key-file <external-old-bin> --next-key-file <external-next-bin> --evidence-dir <new-external-evidence-directory>
+```
+
+供应器按二进制管道送两代秘密；产品持原P3协调锁，验证固定身份、原锁原生身份和完整签名集合，再持原fence独占锁逐一探测process生命周期锁。当前每个文件只能是清单对应的原签或可推导新签规范字节，空租约必须保持；任何新增process、活跃锁、新租约、改换锁、异文、缺件或未知文件均拒绝。首版拒绝所有pending，包括可解释的rekey pending；不移走或清除未知状态来满足前置。
+
+所有前置满足且存在新签时，先保存完整当前P5字节到相邻`.rekey-restore-before-*`，再逐个原子替换process、index，最后marker。原签备份、签名清单和故障前快照始终保留。已经全旧且无新事实时，返回`alreadyOriginal=true`，不重复替换文件。还原后Python独立验原HMAC、全集摘要、原marker和每条原字节，写`verified.json`；它依然不能替代数据库/业务截点、外部保管或重新启动审批。
+
+退出0只说明本次原签字节还原与回读，`runtimeUpdated=false`、`keepWritersStopped=true`、`recoveryAllowed=false`。前置拒绝退出2；I/O、超时、回读失败或替换后任何不确定性退出3。替换后失败在stderr给出保留快照路径；不自动重试或反向覆盖，失败pending继续保留，启动检查拒绝。再次执行前先保全并核对原始输入和所有事实；未知状态不能原样机械重跑。历史钥仍需保留，本工具不供应运行配置、不启动服务、不放行业务。

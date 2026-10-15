@@ -51,4 +51,17 @@ class RecoveryRekeyInspectIT {
         Files.writeString(target, "{}\n");
         assertThat(f.inspect("tampered", 3)).isEqualTo("UNKNOWN");
     }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(booleans = {false, true})
+    void booleanCannotImpersonateIntegerInCurrentOrPendingCanonicalBytes(boolean pending) throws Exception {
+        var f = RecoveryRekeyInspectFixture.rotated(parent); Path process;
+        try (var files = Files.list(f.rotation().supply().roots().root().resolve("processes"))) { process = files.findFirst().orElseThrow(); }
+        var value = (com.fasterxml.jackson.databind.node.ObjectNode) RecoveryControlHistory.read(process);
+        Files.copy(process, f.rotation().supply().base().resolve("retained-numeric-original.json"));
+        value.put("formatVersion", true);
+        Path target = pending ? process.resolveSibling(process.getFileName() + ".rekey.pending") : process;
+        Files.writeString(target, RecoveryControlFormat.canonical(value));
+        assertThat(f.inspect("boolean-" + pending, 3)).isEqualTo("UNKNOWN");
+    }
 }
