@@ -10,6 +10,8 @@
 
 - [D15 身份绑定任务监控 L1](history/GOAL_D15_JOBS_MONITOR_ACCEPTANCE_2026-10-15.md)：新隔离 MySQL/CLI 15/15、最终配置/ACL 4/4；既有 R09 回归139通过/11跳过。首次ACL误通过及修复、两实例保全完整；仅工具开发备份，D15整体、L2/L3和总目标继续。
 
+- [D15升级检查点与恢复切片验收](history/GOAL_D15_UPGRADE_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：1548连接耗尽失败保全；1550独立隔离运行器1/1通过，完成非空增量升级、SQL dump/import、storage/开发签名字节守恒、空伴随恢复与非空覆盖拒绝。仅开发切片，不计D15整体、E07 L2、D18 L3或总目标。
+
 - [P07 外部秘密供应与停机重锚 L1](history/GOAL_P07_OFFLINE_REKEY_ACCEPTANCE_2026-10-15.md)：40/40 专项及受影响回归，包装改动后 Python 产品入口 4/4、JAR 构建通过；旧记录副本、失败和真实 Python/JVM/独立回读保全。仅工具切片，不计 D13 全部、E07 L2 或 D18 L3。
 
 - [U01 共享扫码布局依赖开发备份](history/GOAL_U01_SCAN_DEPENDENCY_2026-10-15.md)：精确暂存树导出验证 23/23，Debug APK/lint 通过；补齐渲染修复遗漏的共享布局依赖。设备入口未验，不计完整 L1、U01/U02、E06 L2 或 D18 L3。

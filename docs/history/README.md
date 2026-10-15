@@ -607,3 +607,4 @@
 
 - [P07历史钥及固定引用核验L1](GOAL_P07_KEYRING_ACCEPTANCE_2026-10-15.md)：19/19真实JVM原签→Python离线取回核验，双pin/全集/语义及守恒；不证明异地保管或E07整体。
 - [E07闭合恢复跨截点前置验收](GOAL_E07_CLOSED_RECOVERY_ACCEPTANCE_2026-10-15.md)：新隔离实例1546/1547的闭合权威与投影组合通过，JDBC/dump/文件守恒及认证停机通过；1545 ACL失败和运行器误判保全；不计E07 L2、D14/D15整体或D18 L3。
+- [D15升级检查点与恢复切片验收](GOAL_D15_UPGRADE_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：1548连接耗尽失败完整保全，1549候选1/1，1550最终1/1；非空增量升级、SQL dump/import、storage/开发签名字节守恒、空伴随恢复与非空覆盖拒绝通过。仅开发切片，不计D15整体、E07 L2、D18 L3或总目标。

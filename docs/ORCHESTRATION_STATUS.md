@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-15
 branch: codex/development
-head: 142033de
-dirty_entries: 83
+head: 83b4f1a2
+dirty_entries: 85
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -38,6 +38,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - U01 共享扫码布局依赖已补精确候选主机证据：23/23、Debug APK/lint 通过、852 源码文件前后不变；同候选引擎补验 5/5。首次补跑因旧缓存锁在业务测试前退出、误读残留 XML 的初始汇总均保留并更正；[报告](history/GOAL_U01_SCAN_DEPENDENCY_2026-10-15.md)明示 `fa583628` 依赖遗漏和前次 26 项输入差别。模拟器查询超时，设备入口未验，不计完整 L1 或任何 D 收口。
 - P07 外部秘密供应/CLI/独立回读工具L1已补：40/40、包装修复后4/4、JAR通过，原签记录成功/失败均留副本；[报告](history/GOAL_P07_OFFLINE_REKEY_ACCEPTANCE_2026-10-15.md)和[运维入口](RECOVERY_REKEY_RUNBOOK.md)记录输入/失败/真实消费者。初次17项1回执规范失败及已写合成原件完整保留；仅该工具切片，不计D13全部、E07 L2或D18 L3。
 - D15任务监控工具L1已补：新隔离MySQL/CLI 15/15、配置/ACL 4/4，R09回归139通过/11跳过；首次ACL误通过已修复并在新1544完整复验。报告[GOAL_D15_JOBS_MONITOR_ACCEPTANCE_2026-10-15.md](history/GOAL_D15_JOBS_MONITOR_ACCEPTANCE_2026-10-15.md)，仅工具切片，不计D15全部/E07 L2/D18 L3。1543/1544 dump/binlog/失败原件保留，510/517文件hash复核一致；两实例认证停机、19343/19344零监听，停机清单运行器失败及补验均保留。
+- D15升级检查点恢复切片已补：1548因旧夹具连接耗尽失败并完整保全；1550独立隔离运行器 JUnit 1/1、Gradle 退出码0，非空增量升级、SQL dump/import、storage/开发签名字节守恒、空伴随恢复及非空覆盖拒绝通过，2库/359表、认证停机、19330/19434零监听。报告见 [GOAL_D15_UPGRADE_CHECKPOINT_ACCEPTANCE_2026-10-15.md](history/GOAL_D15_UPGRADE_CHECKPOINT_ACCEPTANCE_2026-10-15.md)；仅开发切片，不计D15整体、E07 L2或D18 L3。1548/1549/1550原始证据继续保留。
 - D15的原ACL失败、停机清单失败及新1544复验均保留；提交精确输入/远端/改动见 `.local/goal-20261015/d15-jobs01/post-commit.json`。不因后续P07通过覆盖其未验范围。
 - P07中止诊断/启动拒绝L1已补：[正式报告](history/GOAL_P07_INTERRUPTION_ACCEPTANCE_2026-10-15.md)。最终IT10/10、CLI/锁25/25、JAR成功；2005项及供应4项按输入hash复用。实际中止110新签/405旧签且启动拒绝；换行、pending夹具、AssertJ及产品误放行原失败全部保留。所有分类保持停写，可信全集/已知原签还原后续见下条；D13–D15整体、E07 L2、D18 L3未完成。
 - 第二轮清理完成并释放三处冷Android产物范围，见[独立报告](history/D_DISK_REBUILDABLE_CLEANUP_2026-10-15.md)和`.local/disk-cleanup-20261015-rebuildable/task-complete.json`；16目录/22,858文件，205保护文件不变。后续可正常构建，沿默认共享依赖，不恢复弃用专用cache旧命令；server/build及本批原件继续保护。
