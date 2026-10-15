@@ -44,6 +44,8 @@
 
 # 开发验收索引
 
+- [E07更正身份与两阶段撤回组合](history/GOAL_E07_IDENTITY_COMBINATION_ACCEPTANCE_2026-10-15.md)：新620非空升级后真实HTTP/MySQL 1/1、四份RSA/180表/独立Python及保全通过；619临时目录与消费者二进制SHA误读失败保留。仅组合开发备份，不计E07 L2、D14/D15整体或D18 L3。
+
 - [E07/D14 恢复归档消费与主管故障围栏](history/GOAL_E07_RECEIVED_ARCHIVE_FAULT_ACCEPTANCE_2026-10-15.md)：新604/605分别执行原归档闭合事务消费和恢复态独立主管故障围栏，XML 各 1/0/0/0，Node/Python 输入守恒、数据库与文件守恒、认证停机及零监听；仅开发切片，不计 E07 L2、D14/D15 整体、E06 L2、D18 L3 或总目标。
 
 - [E07/D14 原检查点与 binlog 重建](history/GOAL_E07_CHECKPOINT_REBUILD_ACCEPTANCE_2026-10-15.md)：新603真实导入/重放1/1，109触发器、146业务表与迁移历史/19文件守恒，三项写前拒绝，147表独立dump/停机保全；601/602失败保留，仅开发切片，不计E07 L2/D18 L3。
