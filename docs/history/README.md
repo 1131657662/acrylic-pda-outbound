@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E07/O04 独立采集检查点 L1（642）](GOAL_E07_O04_INDEPENDENT_CHECKPOINT_2026-10-16.md)：641 隔离恢复切片由独立只读 Python 消费，双次 854 文件清单、SHA/长度、七组 HTTP 响应、179 表/622 行事实与文件守恒均通过；首轮附件长度/库存前置解析失败原件保留。仅 L1 开发验收，不计 E07 L2、D18 L3 或总目标。
+
 - [E07/O03原件中转跨截点组合](GOAL_E07_RELAY_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：625真实HTTP/MySQL 1/1、原包/两原签/同键并发与前缀拒绝、独立Python及540表/830文件保全通过；消费者登录审计误判原件保留。仅开发备份，非E07 L2/D14整体/D18 L3。
 
 - [E07更正前截点不退库及原binlog重建](GOAL_E07_RETURN_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：624前缀拒绝/五原签重放/default-off与540表保全通过；623 CSRF夹具原失败保留。仅开发备份，非E07 L2/D18 L3。

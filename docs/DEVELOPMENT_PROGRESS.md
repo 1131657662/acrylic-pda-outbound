@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E07/O04 独立采集检查点 L1（642）](history/GOAL_E07_O04_INDEPENDENT_CHECKPOINT_2026-10-16.md)：641 隔离恢复切片由独立只读 Python 消费，双次 854 文件清单、SHA/长度、七组 HTTP 响应、179 表/622 行事实与文件守恒均通过；首轮附件长度/库存前置解析失败原件保留。本批仅 L1 开发验收，不计 E07 L2、D18 L3 或总目标。
+
 - [E07/O04 独立采集跨截点消费者](history/GOAL_E07_O04_INDEPENDENT_CHECKPOINT_CONSUMER_ACCEPTANCE_2026-10-16.md)：629 隔离实例的 5,292 项冻结输入、三库 540 表、854 文件、dump/binlog/存储守恒、原 ZIP/设备签名、credential/关联/实物附件签名与 HTTP/default-off 事实均由独立只读 Python 消费通过；626–628 原失败继续保全。本批为开发备份，不计 E07 L2、D14 整体、D18 L3 或总目标。
 
 - [E07/O03原件中转跨截点组合](history/GOAL_E07_RELAY_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：625真实HTTP/MySQL 1/1、原包/两原签/同键并发与前缀拒绝、独立Python及540表/830文件保全通过；消费者登录审计误判原件保留。仅开发备份，非E07 L2/D14整体/D18 L3。

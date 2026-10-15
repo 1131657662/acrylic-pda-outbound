@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: 22852dee
-dirty_entries: 88
+head: 76c83820
+dirty_entries: 98
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,14 +17,15 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标active。故障订单有权撤回→重发→新设备从头作业；换机进度承接/多跳/激活已取消，原事实与源码保留。
 
 ## Git、写权与输入
-- 固定`D:/acrylic-pda-outbound`、`codex/development`；629消费者接续HEAD/远端`22852deeea70e5b84b0dd56ac459e5b52a295db3`。提交/远端以本批明确路径提交回执及生成块为准。main只读，禁止`git add .`。
+- 固定`D:/acrylic-pda-outbound`、`codex/development`；实际HEAD/远端同为`76c83820846d6012e1a81ab8401c62401bf7fef7`。提交/远端以本批明确路径提交回执及生成块为准。main只读，禁止`git add .`。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`为源码/库/看板/索引唯一写者，无子代理。清理聊天22:17实际回执complete-released、范围/在途任务为空且无监听/待写；无并行项目任务。旧owner/release不作活动证明。
+- 接管基线及旧看板结论已归档至`.local/goal-20261016/resume-20261016-014245/`（git状态/全量改动哈希、diff、进程、监听、C/D余量）；清理聊天已确认不再写入，当前仍由本聊天单写者保全。
 - 629消费者冻结输入5,292项全部逐字节不变；完整接管改动/哈希/工作树与写权快照见`.local/goal-20261015/e07-independent-checkpoint01/resume629-consumer01.json`、`runtime629-consumer01.json`及`board-before-e07-consumer629-report.md`。621–628原快照、失败库、日志与报告继续保留；继承Android/UI/工具/文档与私有请求保护。
 
 ## 环境、磁盘与边界
 - 613/615失败库已全表/dump/storage保全并认证停机；614初始化前失败原件保留。616测试18:38通过后系统20:03重启，原实例未取得认证停机，原1,374文件封存且未重启；629三库/540表/854文件消费者通过，629实例认证停机且19330/19434零监听。
 - 新分配617仅恢复616同字节副本，路径`.local/e2a-preservation-20261015-617/`，schema仍为616家族。11个schema中6个非空/共1,080表守恒，dump/binlog/storage/身份完整，认证停机且19330/19434零监听；1,260副本文件与全部原件保留。不得复用旧库。
-- 621/622及623/624均已全表/dump/storage保全并认证停机；624三库540表/809文件，623失败两库360表/598文件保留且再次核不变。接续19330/19434零监听。C/D约83.18/64.12GB可用；精确bytes/进程见`e07-return-checkpoint01/runtime624-review.json`，提交收尾另留快照。无项目重型任务，共享MySQL仅观察；证据/临时目录在D盘，TEMP/TMP/Java tmp仅子进程设置。
+- 621/622及623/624均已全表/dump/storage保全并认证停机；624三库540表/809文件，623失败两库360表/598文件保留且再次核不变。接续19330/19434零监听。接管实测C/D约77.58/58.40GiB可用；系统`mysqld` PID4632/5440监听3306/33060，数据目录身份尚未核清，不分配复用；其余项目端口未见。精确bytes/进程见`.local/goal-20261016/resume-20261016-014245/`，无项目重型任务，共享MySQL仅观察；证据/临时目录在D盘，TEMP/TMP/Java tmp仅子进程设置。
 - 七类生产决定handler/POST/放行/证据写入/关闭能力、TEMP生产归档边界及`localDeletionAllowed=false`保持关闭。不接原库/现网、不合main、不发布部署、不用正式签名；合成身份/签名/模拟器不代表现场。
 
 ## 已验范围与剩余
@@ -40,6 +41,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - [独立退库审批与新周期HTTP组合](history/GOAL_E07_RETURNED_STOCK_HTTP_ACCEPTANCE_2026-10-15.md)：622真实HTTP/MySQL 1/1、独立Python消费180表/32RSA/3项退库引用/新旧周期、507文件/dump/storage及认证停机通过；同键并发/异文/身份/跨仓/末SQL回滚均有实际证据。仅组合开发备份，非E07 L2/D14-D15整体/D18 L3。
 - [更正前截点不退库及原binlog重建](history/GOAL_E07_RETURN_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：新增三测试文件，624真实HTTP/MySQL 1/1、前缀缺更正拒绝/五原签重放/default-off、179业务表/schema/迁移/触发器/文件终点精确、独立Python通过。623首次CSRF取样原失败保留，同根因1次不清零；仅开发备份，非E07 L2/D14-D15整体/D18 L3。
 - [O03原件中转跨截点组合](history/GOAL_E07_RELAY_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：625前缀缺结果/未冻结不提交、原binlog精确终点、同键双并发/原PDA/两份RSA原回执/default-off及独立消费通过；消费者登录审计误判保留。仅开发备份，非E07 L2/D14整体/D18 L3。
+- [642独立检查点L1报告](history/GOAL_E07_O04_INDEPENDENT_CHECKPOINT_2026-10-16.md)：641隔离恢复切片由独立只读Python消费，双次854文件清单、SHA/长度、七组HTTP、179表/622行事实与文件守恒通过；首轮解析失败原件保留。仅L1开发备份，不计E07 L2/D18 L3或总目标。
 - [629消费者报告](history/GOAL_E07_O04_INDEPENDENT_CHECKPOINT_CONSUMER_ACCEPTANCE_2026-10-16.md)：冻结输入5,292项、三库540表、854文件、dump/binlog/存储守恒、原ZIP/设备签名、credential/关联/实物附件签名、短装/缺关联/重建/default-off HTTP消费及目标DRAFT围栏均通过；结果与脚本SHA见`.local/goal-20261015/e07-independent-checkpoint01/consumer629-result.json`。626–628三类失败根因和原件保全不清零；本批仍仅开发备份，非E07 L2/D14整体/D18 L3。随后执行E07受影响组合，再推进E08/E09及剩余D/O/U；最终候选必须实际执行Android、真实HTTP/MySQL、Chrome、Python、非空迁移、原模拟器和恢复组合。第8节全部满足前总目标保持active。
 <!-- CURRENT_STATE_END -->
 
