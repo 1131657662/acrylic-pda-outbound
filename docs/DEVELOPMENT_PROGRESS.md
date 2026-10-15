@@ -36,6 +36,10 @@
 
 # 开发验收索引
 
+- [E07/D14 恢复归档消费与主管故障围栏](history/GOAL_E07_RECEIVED_ARCHIVE_FAULT_ACCEPTANCE_2026-10-15.md)：新604/605分别执行原归档闭合事务消费和恢复态独立主管故障围栏，XML 各 1/0/0/0，Node/Python 输入守恒、数据库与文件守恒、认证停机及零监听；仅开发切片，不计 E07 L2、D14/D15 整体、E06 L2、D18 L3 或总目标。
+
+- [E07/D14 原检查点与 binlog 重建](history/GOAL_E07_CHECKPOINT_REBUILD_ACCEPTANCE_2026-10-15.md)：新603真实导入/重放1/1，109触发器、146业务表与迁移历史/19文件守恒，三项写前拒绝，147表独立dump/停机保全；601/602失败保留，仅开发切片，不计E07 L2/D18 L3。
+
 - [E08 页面与作业体验开发验收（未完成）](history/GOAL_E08_UI_ACCEPTANCE_2026-10-15.md)：Work/Submission/Temporary/Handover 重设计、恢复确认和 Temporary 搜索已实现；lint/debug/staging 成功，短路径隔离复验 13/13 主机测试通过。长路径 Robolectric SQLite 失败根因和原 XML 保留；仅开发备份，U01–U04 完整验收、真机/长时、E06 L2、D18 L3 与总目标继续。
 
 - [E06受影响组合补验（未完成）](history/GOAL_E06_COMBINATION_PARTIAL_2026-10-14.md)：原AVD封存只读/83表与旧证据守恒、实际SAF/460值转换、1539真实事务/新JVM/default-off、13+16网页消费及21项Python通过；1540零关联保全，Chrome预览启动遭自动审批拒绝。仅开发备份，不计E06 L2/D18 L3；E07独立范围继续。

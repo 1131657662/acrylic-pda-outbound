@@ -63,7 +63,7 @@ $password = -join (1..64 | ForEach-Object { '{0:x}' -f (Get-Random -Minimum 0 -M
 # _restore is the archive ITs' companion schema.
 $suffixes = @('_copy', '_conflict', '_missing', '_gap', '_overflow', '_rollback', '_instance', '_skip', '_mapping',
     '_restore')
-$bootstrap = "CREATE DATABASE $schema;`n" +
+$bootstrap = "CREATE DATABASE $schema CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs;`n" +
     "CREATE USER '$user'@'127.0.0.1' IDENTIFIED BY '$password';`n" +
     "GRANT ALL ON $schema.* TO '$user'@'127.0.0.1';`n" +
     # The entry checks read information_schema.INNODB_TRX, which needs the PROCESS privilege.
@@ -84,6 +84,8 @@ $bootstrap = "CREATE DATABASE $schema;`n" +
 [IO.File]::WriteAllText((Join-Path $attempt 'private/bootstrap.sql'), $bootstrap, $utf8)
 [IO.File]::WriteAllText((Join-Path $attempt 'private/admin.cnf'),
     "[client]`nhost=127.0.0.1`nport=$port`nuser=root`nprotocol=tcp`n", $utf8)
+[IO.File]::WriteAllText((Join-Path $attempt 'private/root-client.cnf'),
+    "[client]`nhost=127.0.0.1`nport=$port`nuser=root`npassword=`nprotocol=tcp`n", $utf8)
 
 & $mysqld '--no-defaults' '--initialize-insecure' "--datadir=$data" '--mysqlx=OFF' `
     "--log-error=$attempt/initialize.log" *> "$attempt/initialize.stdout.log"
