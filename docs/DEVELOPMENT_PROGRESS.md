@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E07 产品提交仓库与原未知批次恢复组合](history/GOAL_E07_FORMAL_REPOSITORY_RESTORE_COMBINATION_2026-10-16.md)：667实际PdaSession/SubmissionRepository真实提交丢响应→Room重开原ID查询→SQL/文件恢复→第二Android JVM原ID查询及原签归档通过；604原件独立Python守恒，666失败和consumer01时间断言原件保留。仅组合开发备份，非E07整体L2/D16整体/D18 L3。
+
 - [D16 恢复后正式事实与引用组合](history/GOAL_D16_RESTORED_FORMAL_REFERENCE_COMBINATION_2026-10-16.md)：12项实际CLI/恢复/并发/锁后撤权/末DELETE回滚通过，665正常正式订单/有效guard/原签审计及原生trigger保持；250case/28次合成提交独立核对。两轮装配失败和部分自动提交原件保留，仅组合开发备份，非D16整体/E07 L2/D18 L3。
 
 - [E07 正式原批次恢复与D16原生结构边界](history/GOAL_E07_FORMAL_RESTORE_NATIVE_RETENTION_2026-10-16.md)：665两阶段Android/真实HTTP/MySQL及Python通过，原签/179业务表/83本地表/591原件保持；101项原生trigger实际CLI回归通过，正常目标有效guard仍拒绝。全部失败保留，仅组合开发备份，非E07 L2/D16整体/D18 L3。

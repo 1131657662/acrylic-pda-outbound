@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E07 产品提交仓库与原未知批次恢复组合](GOAL_E07_FORMAL_REPOSITORY_RESTORE_COMBINATION_2026-10-16.md)：667真实产品提交丢响应/原Room查询/整库文件恢复及第二Android JVM原ID恢复通过，604原件独立Python守恒；666失败/consumer01保留。仅组合开发备份，非E07整体L2/D16整体/D18 L3。
+
 - [D16 恢复后正式事实与引用组合](GOAL_D16_RESTORED_FORMAL_REFERENCE_COMBINATION_2026-10-16.md)：12项实际消费者/恢复/并发/撤权/回滚通过，正常正式订单/有效guard/原签审计/trigger完整保留；250case/28次合成提交独立核对，失败及装配部分写入保全。仅组合开发备份，非D16整体/E07 L2/D18 L3。
 
 - [E07 正式原批次恢复与D16原生结构边界](GOAL_E07_FORMAL_RESTORE_NATIVE_RETENTION_2026-10-16.md)：665实际Android/HTTP/MySQL恢复及独立Python通过，591原件不变；101项留存CLI回归和47项原生trigger精确保护通过，有效目标guard正确拒绝。失败保全，非E07 L2/D16整体/D18 L3。
