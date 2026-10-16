@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: f0a99181
-dirty_entries: 92
+head: 5dd06695
+dirty_entries: 96
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。故障订单按“有权撤回→重发→新设备从头作业”，已取消的换机承接/多跳/激活不恢复，原事实与源码保留。
 
 ## Git、写权与输入
-- 固定工作区`D:/acrylic-pda-outbound`、分支`codex/development`；E08结单入口L1开发备份已提交推送，HEAD与远端同为`f0a99181ddf4cd9828e956ae26763141a79c0961`，当前事实块由脚本生成。main只读，禁止`git add .`。
+- 固定工作区`D:/acrylic-pda-outbound`、分支`codex/development`；D16整单消费者L1开发备份已提交推送，HEAD与远端同为`5dd06695af6595a95d16a170fcc00830d5191eb8`。提交后input07保全于D16证据根，5334项SHA `6e3f48522d09bfecfe3a5f06ea276c668895e744efe344fa893c8a3116510b5b`；main只读，禁止`git add .`。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`为源码、库、看板、索引唯一写者；清理聊天已回执`complete-released`且实查idle。“查看当前开发进度。”聊天仅只读核查。无子代理、无并行项目写者。
 - E08结单入口证据`.local/goal-20261016/e08-submission-entry01/`；提交推送后input12全量5315项SHA `f038fe5f756e859a6ea4a263e2f13d2b4012f48a7a7df1614ca27d5c7fd29cf7`，接续逐项实算无漂移；状态/全部差异/未跟踪原件/写权/环境已保存，ownership12-current.json纠正模板旧措辞。更新前先存`board-before-d16-start.md`；只提交15个明确路径，全部继承改动保留。
 - E02提交推送后快照`.local/goal-20261016/resume-20261016-e02-l1-postpush/`：全量输入哈希、Git状态/未跟踪原件、binary diff、唯一写权、进程/监听及磁盘；旧看板先存`board-before.md`。提交前快照保留，继承改动未混入。
@@ -37,7 +37,9 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - E08 FORMAL01后台worker先取得原回执导致固定请求数断言失败，真实SYNCED写入已完整保全，不复用。夹具改为显式开放原结果；新FORMAL02隔离AVD实际入口/两次断连/同ID验原RSA回执/强停重启2项通过。独立Python核63→83表、新20表为空、仅提交与Room元数据变化、重启业务表守恒且无新增请求，合成身份和HTTP回放不代表原身份/真实MySQL。
 - E08 build04产品/测试APK及lint成功；单测UP-TO-DATE明确复用build03的6通过/1跳过，HTTP跳过未执行，424警告/0错误。FORMAL01原65文件与FORMAL02证据/完整AVD93文件双次SHA/长度不变。正式L1报告`docs/history/GOAL_E08_SUBMISSION_ENTRY_L1_2026-10-16.md`与索引已提交推送；产物字节/10项代码SHA自审核对通过，非E08整体/L2/L3。下一项D16受控整单消费者。
 - D16旧缓存报告范围已纠正且原件另存；新整单消费者L1见`docs/history/GOAL_D16_WHOLE_ORDER_L1_2026-10-16.md`：27项实际CLI/SQLite删除恢复、并发、锁后撤权、末DELETE回滚通过。仅guard-free初轮FORMAL合成副本，正常带防重/复杂引用资格及D13–D15组合仍未完成，生产删除关闭。
-- D16证据`.local/goal-20261016/d16-whole-order01/`：input04共5331项SHA `beb68542912692591f1e6b14fab0ddcdcbc43bd3bdd3dc671191f9b3364a58ef`绑定tests04；manifest01 SHA `0bb2113f2db511df37533b5c227d37248c9cac10bfe65d2985a9ac004ef3c366`核代码无漂移、405证据双次不变。input05共5334项SHA `92e247fce7da73c3023331b7003fa6567ba2159e0041cbbcfa03cf187860773c`保全全部改动/原件/旧看板/ownership05；失败保留。无本批重任务/监听；C/D余量83,075,272,704/34,357,403,648 bytes（disks-05）。随后提交并补正常资格/恢复组合，推进E08/E09。
+- D16证据`.local/goal-20261016/d16-whole-order01/`：input04共5331项SHA `beb68542912692591f1e6b14fab0ddcdcbc43bd3bdd3dc671191f9b3364a58ef`绑定tests04；manifest01 SHA `0bb2113f2db511df37533b5c227d37248c9cac10bfe65d2985a9ac004ef3c366`核代码无漂移、405证据双次不变。input05/06/07保全全部改动/原件/旧看板/写权；失败保留。有效防重按既定政策阻断，不按日龄释放。D16仍缺正常链/复杂引用及D13–D15组合。
+- E08设置/连接诊断L1见`docs/history/GOAL_E08_SETTINGS_DIAGNOSIS_L1_2026-10-16.md`：6项定向/APK/lint通过（434警告/0错误）；原模拟器100/130/150/200%字号实际导航/声音往返/停机后台诊断/详情/更新页/取消退出通过，83表328行及244原件不变。滚动和取证失败保留；旧恢复接收确认属取消交接链，不执行或提交。
+- 设置证据`.local/goal-20261016/e08-settings01/`：input04 SHA `ed1de1983ad0dda2247ff0f044d14cf2e3cc75be0624e5a0ffd0ca251427364b`绑定build02，input05/06全量5339项SHA `1be0a668a55cbb42a0ba5ae5e11fb32985d3d882f82faed9513a1af4ae6b0ab5`；manifest01 SHA `4e591004d4a1688f6ca29a07fd07b0f13edaee7520eec580f067f388b75fe5e9`核1956证据双次不变。字号还原1.0、App强停、reverse为空；无本批重任务/服务，C/D余量83,064,414,208/34,044,616,704 bytes。下一步明确路径提交及E06/E07/E08剩余组合，不计U整体/L2/L3。
 - E01–E05/O03及E06既有资料按进度索引和输入SHA复用；E06 L2、D18 L3、U01–U04完整组合仍未完成，历史失败/暂缓计数保留。
 - E07/O05已有同机恢复、外置副本工具、历史钥/重锚/中止/原签还原、检查点/binlog、闭合归档消费、故障围栏、非空升级、编号对账、实物/独立JVM/运维等切片；剩余受影响组合仍未形成E07 L2证据。真实异地介质/保管回取单列C06，不阻断独立开发。
 - 642/629独立检查点消费者与644受影响组合均通过并有正式报告；仅局部开发备份，不计E07 L2、D14/D15整体、D18 L3或总目标。643端口偏差失败及更早失败原件继续保留。

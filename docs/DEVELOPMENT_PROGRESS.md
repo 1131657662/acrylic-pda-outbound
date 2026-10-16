@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E08 设置分组与连接诊断 L1](history/GOAL_E08_SETTINGS_DIAGNOSIS_L1_2026-10-16.md)：6项定向/APK/lint、原隔离模拟器四档字号实际导航/声音/离线诊断/详情/更新页/取消退出通过；83表328行及244原件保持，1956证据双次核验。滚动和取证失败保留，非E08/U整体或L2/L3。
+
 - [D16合成隔离整单消费者 L1](history/GOAL_D16_WHOLE_ORDER_L1_2026-10-16.md)：实际CLI删除/完整恢复、27项定向、default-off/同键并发/真实锁等待撤权/末DELETE回滚通过；仅guard-free初轮FORMAL合成副本。正常带防重/复杂引用资格和D13–D15组合仍未完成，旧失败保留，不计D16整体/L2/L3。
 
 - [E08 FORMAL/TEMP结单入口 L1](history/GOAL_E08_SUBMISSION_ENTRY_L1_2026-10-16.md)：TEMP原批次冻结失败后分段查询/展开/重建补验，FORMAL新隔离副本同ID查询原签回执及强停重启通过；独立Python、APK/lint及原件守恒有输入绑定。首轮失败和HTTP跳过保留，仅L1开发备份，真实HTTP/MySQL组合、E08/U整体、L2/L3与总目标继续。
