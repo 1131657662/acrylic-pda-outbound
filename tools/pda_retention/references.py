@@ -1,6 +1,7 @@
-"""Fail-closed reference closure for an initial, guard-free FORMAL batch."""
+"""Fail-closed reference closure for an initial FORMAL batch without target guards."""
 from .catalog import GLOBAL, OWNED, validate
 from .codec import canonical, parse, require
+from .guard_reference import unrelated_guards
 from .proof import check
 from .store import facts
 
@@ -76,6 +77,10 @@ def closure(rows, owned, body):
     tokens.update(r['barcode'] for r in body['scans'])
     for table, records in rows.items():
         if table in GLOBAL:
+            continue
+        if table == 'work_guard':
+            require(not any(references(r, tokens) for r in records), 'Effective guard protects target order')
+            unrelated_guards(rows)
             continue
         if table not in OWNED:
             require(not records, 'Protected or opaque reference table: ' + table)

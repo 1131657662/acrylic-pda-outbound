@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [D16 其他订单防重保留 L1](history/GOAL_D16_UNRELATED_GUARD_L1_2026-10-16.md)：49项CLI/全表恢复、default-off/并发/锁后撤权/末DELETE回滚通过；无关guard及引用行完整保留，目标有效guard仍拒绝。全部失败副本保留；正常目标/复杂引用/D13–D15组合及D16整体继续，非L2/L3。
+
 - [E07 644原回执与固定版本导出独立消费](history/GOAL_E07_644_RECEIPT_EXPORT_CONSUMER_2026-10-16.md)：92份RSA/6份Excel及原payload/审批交叉绑定通过，526原件多次SHA不变；不启动旧库，不计全表恢复或E07 L2/D18 L3。
 
 - [E08 独立口令标签与键盘布局 L1](history/GOAL_E08_CREDENTIAL_LAYOUT_L1_2026-10-16.md)：11项定向/APK/lint、四字号直接身份页键盘/输入/滑动/返回通过，83表328行及304原件不变；完整数据/SKU返回导航失败继续保留，仅布局开发备份，非U整体/L2/L3。
