@@ -6,6 +6,7 @@ import com.acrylic.outbound.pda.work.ScanProductTotal
 
 @Dao
 interface TemporaryScanDao {
+    @RawQuery fun detailRows(query: androidx.sqlite.db.SupportSQLiteQuery): List<com.acrylic.outbound.pda.work.WorkDetailRow>
     @Query("SELECT COUNT(*) FROM temporary_scan s INNER JOIN temporary_capture c ON c.id=s.captureId WHERE c.originDeviceId=:device")
     fun deviceScanCount(device: String): Long
     @Query("""SELECT s.* FROM temporary_scan s INNER JOIN temporary_capture c ON c.id=s.captureId

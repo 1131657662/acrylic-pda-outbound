@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: c61cf6ac
-dirty_entries: 105
+head: b7436c7d
+dirty_entries: 108
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,9 +17,9 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。取消的换机承接/多跳/激活不恢复。只有第8节全部满足才complete；L1/有界组合开发备份不计D项整体或D18 L3。
 
 ## Git、写权与输入
-- 固定树`D:/acrylic-pda-outbound`、`codex/development`，实核提交/远端`c61cf6acaf2cdc0965c3b7c0348ee00c4b479a7b`，86项继承改动保护。提交后HEAD只读生成块；所有继承Android/UI/文档/工具与`server/physical-disposition-last-request.json`保护，禁止`git add .`。
+- 固定树`D:/acrylic-pda-outbound`、`codex/development`，实核提交/远端`b7436c7dea746ae175dbe236edbb6203c2553cf2`，正式明细L1已明确19路径提交推送，回执`formal-details-git01.json`；86项继承改动保护。所有继承Android/UI/文档/工具与`server/physical-disposition-last-request.json`保护，禁止`git add .`。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`独占源码/看板写权，无子代理；清理聊天`01a13cb4`已释放全部窗口、实际idle，无清理/压缩进程。旧owner/released不代实际核查。
-- 全量tracked/untracked长度/SHA、binary diff、未跟踪副本/worktrees、旧看板、写权与环境见`.local/goal-20261016-resume/input47.json`及同号附件；5437项，SHA`018594ad1489c56edd0c9761a86c56270f7bbba9f2286d81b82272158cb40aae`。旧结论已归档`docs/history/ORCHESTRATION_STATE_before_formal_details_seal_20261016.md`；最终产品/测试绑定input46，86项继承输入逐字保护。
+- 全量tracked/untracked长度/SHA、binary diff、未跟踪副本/worktrees、旧看板、写权与环境见`.local/goal-20261016-resume/input55.json`及同号附件；5454项，SHA`db894abce2fce727a9810c1ea72bd46c71e96efd092c327ce832afed0f4094ee`。旧结论已归档`docs/history/ORCHESTRATION_STATE_before_temporary_details_seal_20261016.md`；TEMP最终产品/测试绑定input53，input54同SHA，86项继承输入逐字保护。
 
 ## 环境、停机与边界
 - 665–670/1668及本批671/672/673均认证停机；本批DB19381–19383、HTTP19443–19451零监听，无本批Java/Gradle/MySQL残留。共享mysqld4632/5440身份未知，仅观察不连接停止。原TEMP AVD emulator12912/qemu12108、5564/5565及ADB8500/5037保留；真机22D2910042只读列出，未操作。
@@ -37,6 +37,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 原255路径不变；服务旧清单10项/Android16项漂移及新增57/29项另存source-bindings/added-inputs。1539重复JAR沿清理回执定位1537同SHA保留件，不启动旧库。三审计器/依赖/路径失败与partial均保留；旧页“该次未跑instrumentation”不抹去更早实际通过，仍非E06 L2。
 
 ## 已验复用、失败与未验
+- U04 TEMP明细见`GOAL_U04_TEMPORARY_DETAILS_L1_2026-10-16.md`：21主机/受影响6复验、最终APK四字号和阻断前驱真实交互/Python83表303行及65行守恒；原5564两tar/455文件/83表328行保持。1703/1704恢复设置停机、5574–5577零监听。1770证据12559082116 bytes双核，清单SHA`b643b96f77ca06f99163da82e8c243e9dec674b49ff7e14ea5567bec2ac71966`；首次host01失败库被旧teardown删除的限制明确，其余失败原件保留。仅L1，非U整体/L2/L3。
 - U04正式明细见`GOAL_U04_FORMAL_DETAILS_L1_2026-10-16.md`：每页20条/筛选/原序号及条码末次定位，23项主机、最终APK四字号实际交互和Python83表342行守恒通过；产品SHA`245e409679a0ecd4a2e8446fa81ad41417f2dc728fe55c385d74210723ab1c29`。原5564两tar相同、455文件/83表328行保持；1701/1702均停机、5570–5573零监听。3970证据12853102777 bytes双核，清单SHA`6f0418da6f84149e5a97baf09724c70df8a475c571fdafceeafafc9742832858`。WAL漏尾/三种滚动器/GBK/旧解包副本比较失败保留并定向纠正；仅L1，非U整体/L2/L3。
 - U04原生独立队列见`GOAL_U04_NATIVE_INDEPENDENT_QUEUE_2026-10-16.md`：三个分离instrumentation实际通过，尾SQL失败无成功→新副本原ID恢复一次→满入口65条已接收全部耐久保留/溢出拒绝。Python逐表核对3/5/5张受控变化、原83表328行保持；433原文件430逐字不变，3项WorkManager元数据单列且各阶段0活动工作。3176证据双核，原失败库/触发器保留；仅测试组合备份，非U整体/L2/L3。
 - 独立旧投影保护见`GOAL_INDEPENDENT_CACHE_RETENTION_L1_2026-10-16.md`：修复三张独立来源引用遗漏；原产品三例误删DB保留，修复后25主机/APK/lint/原AVD单次消费者通过，83表328行原业务库不变。428原文件中426字节不变，另两项WorkManager WAL/SHM调度变化单列，前后均3个已取消/0活动工作；新增7合成输入/证据文件，982证据双核。首次封存器BLOB序列化失败只读补核，原件保留；只计缓存L1，不计D16整单/整体L2/L3。
@@ -49,7 +50,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 1522/1523旧失败/暂缓及全部计数保留，无新依据不机械重跑。原资料/旧BCD/真机/原身份/原签/现场/异地介质可取回/长时限制单列；U01–U04完整组合、E06/E07/E08剩余L2、E09实际候选及D18最终Android/HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复L3仍未完成。
 
 ## 下一步
-正式明细L1正式报告与3970证据已封存，按明确路径提交/推送开发分支后，直接补TEMP明细筛选/定位/未处理输入和有界前后页；先保留原签、身份及历史只读前驱，取消换机范围不恢复。停机后C/D余量77448675328/30864261120 bytes，无本批重型进程；原5564/ADB保留，共享MySQL与真机未操作。继续D17、E07、D16及E09；Chrome审批不绕过，总目标active。
+TEMP明细正式L1报告及证据已封存，明确16产品/测试路径及相关文档待提交推送；86项继承输入不变。停机C/D余量77436452864/18235404288 bytes，无本批重型进程，原5564/共享MySQL/真机保留。接着继续D16正常带防重目标合法退出：先核Q12、引用/恢复及原产品释放路径，不删除有效guard造资格；同时推进可独立D17、E07/E08组合与E09。Chrome审批不绕过，总目标active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

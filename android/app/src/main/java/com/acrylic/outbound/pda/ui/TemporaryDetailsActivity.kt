@@ -1,74 +1,145 @@
 package com.acrylic.outbound.pda.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.view.WindowManager
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.acrylic.outbound.pda.PdaApplication
-import com.acrylic.outbound.pda.databinding.ActivityTemporaryOrdersBinding
+import com.acrylic.outbound.pda.databinding.ActivityTemporaryDetailsBinding
+import com.acrylic.outbound.pda.work.*
+import com.acrylic.outbound.pda.temporary.*
 import kotlinx.coroutines.*
 
-/** Read-only keyset paging, including VOID evidence; never changes original capture order. */
 class TemporaryDetailsActivity : ComponentActivity() {
-    private lateinit var binding: ActivityTemporaryOrdersBinding
-    private val history = arrayListOf(0L)
-    private var next: Long? = null
-    private var busy = false
+    private lateinit var binding: ActivityTemporaryDetailsBinding
+    private val app get() = application as PdaApplication
     private var id = ""
+    private var filter = WorkDetailFilter.ALL
+    private var page: TemporaryDetailsPage? = null
+    private var anchor = 0L
+    private var busy = false
     private var adjustmentBlock = "正在核对原单资格"
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState); id = intent.getStringExtra("clientOrderId").orEmpty()
-        if (id.isEmpty()) { finish(); return }
-        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        binding = ActivityTemporaryOrdersBinding.inflate(layoutInflater); setContentView(binding.root)
-        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
-            val bars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-            view.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets
-        }
-        binding.create.text = "调整已扫码包"
-        (binding.create.parent as android.widget.LinearLayout).addView(android.widget.Button(this).apply {
-            text = "取消本机零作业草稿"
-            setOnClickListener { startActivity(android.content.Intent(this@TemporaryDetailsActivity, TemporaryCancellationActivity::class.java).putExtra("clientOrderId", id)) }
-        }, 5)
-        binding.rescueExport.visibility = android.view.View.VISIBLE
-        binding.rescueExport.setOnClickListener {
-            startActivity(android.content.Intent(this, RescueExportActivity::class.java).putExtra("source", "TEMP").putExtra("localOrderId", id))
-        }
-        binding.create.setOnClickListener { startActivity(android.content.Intent(this, ScanAdjustmentActivity::class.java).putExtra("clientOrderId", id)) }
-        binding.back.setOnClickListener { finish() }; binding.retry.setOnClickListener { load() }
-        binding.previous.setOnClickListener { history.removeAt(history.lastIndex); load() }
-        binding.next.setOnClickListener { next?.let { history.add(it); load() } }
-        savedInstanceState?.getLongArray("history")?.let { history.clear(); history.addAll(it.toList()) }
-        load()
+    private val reader by lazy {
+        TemporaryDetailsReader(app.temporaryStore(), id)
     }
-    override fun onSaveInstanceState(outState: Bundle) { outState.putLongArray("history", history.toLongArray()); super.onSaveInstanceState(outState) }
-    private fun load() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        id = intent.getStringExtra("clientOrderId").orEmpty()
+        if (id.isBlank()) { finish(); return }
+        anchor = savedInstanceState?.getLong("anchor") ?: 0L
+        filter = WorkDetailFilter.entries.firstOrNull { it.name == savedInstanceState?.getString("filter") } ?: WorkDetailFilter.ALL
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        binding = ActivityTemporaryDetailsBinding.inflate(layoutInflater); setContentView(binding.root)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val safe = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            view.setPadding(safe.left, safe.top, safe.right, safe.bottom); insets
+        }
+        bindActions(); bindFilters()
+    }
+
+    override fun onResume() { super.onResume(); if (::binding.isInitialized) load(anchor) }
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putLong("anchor", anchor); outState.putString("filter", filter.name)
+        super.onSaveInstanceState(outState)
+    }
+
+    private fun bindActions() {
+        binding.back.setOnClickListener { finish() }
+        binding.cancelDraft.setOnClickListener {
+            startActivity(Intent(this, TemporaryCancellationActivity::class.java).putExtra("clientOrderId", id))
+        }
+        binding.rescueExport.setOnClickListener {
+            startActivity(Intent(this, RescueExportActivity::class.java).putExtra("source", "TEMP").putExtra("localOrderId", id))
+        }
+        binding.adjustPackages.setOnClickListener {
+            startActivity(Intent(this, ScanAdjustmentActivity::class.java).putExtra("clientOrderId", id))
+        }
+        binding.previous.setOnClickListener { page?.rows?.firstOrNull()?.let { load(it.sequence, backwards = true) } }
+        binding.next.setOnClickListener { page?.rows?.lastOrNull()?.let { load(it.sequence) } }
+        binding.first.setOnClickListener { load() }
+        binding.retry.setOnClickListener { load(anchor) }
+        binding.locate.setOnClickListener { load(locate = true) }
+        binding.qualificationDetails.setOnClickListener {
+            android.app.AlertDialog.Builder(this).setTitle("资格核对原始原因")
+                .setMessage(adjustmentBlock).setPositiveButton("返回", null).show()
+        }
+        controls(false)
+    }
+
+    private fun bindFilters() {
+        binding.filter.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, WorkDetailFilter.entries.map { it.label })
+        binding.filter.setSelection(filter.ordinal)
+        binding.locateMode.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, listOf("原序号", "完整条码"))
+        binding.filter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selected = WorkDetailFilter.entries[position]
+                if (selected != filter) { filter = selected; load() }
+            }
+        }
+    }
+
+    private fun load(cursor: Long = 0, backwards: Boolean = false, locate: Boolean = false) {
         if (busy) return
-        busy = true; controls(false); binding.orders.removeAllViews()
+        busy = true; controls(false)
+        val raw = binding.locateInput.text.toString()
+        val byBarcode = binding.locateMode.selectedItemPosition == 1
+        binding.status.text = "正在读取本机原记录"
         lifecycleScope.launch {
             try {
-                val text = withContext(Dispatchers.IO) { details() }
-                binding.status.text = "本机原记录 · 每页最多50条 · 撤销保留序号"
-                binding.orders.addView(TextView(this@TemporaryDetailsActivity).apply { this.text = text; textSize = 18f; setTextIsSelectable(true) })
-            } catch (error: Exception) { binding.status.text = error.message ?: "读取失败，请重试" }
-            finally { busy = false; controls(true) }
+                val result = withContext(Dispatchers.IO) {
+                    val start = if (locate) checkNotNull(reader.locate(raw, byBarcode)) { "没有匹配原记录，请核对原序号或条码" }.sequence - 1 else cursor
+                    reader.page(if (locate) WorkDetailFilter.ALL else filter, start, backwards).also {
+                        adjustmentBlock = AdjustmentRecords(app, "", id).blockReason()
+                    }
+                }
+                if (locate) { filter = WorkDetailFilter.ALL; binding.filter.setSelection(filter.ordinal) }
+                render(result)
+            } catch (error: Exception) {
+                if (error is CancellationException) throw error
+                page = null; binding.rows.removeAllViews(); binding.summary.text = ""; binding.products.text = ""
+                adjustmentBlock = "请先重新核对原单"
+                binding.status.text = "读取未完成，原记录保留。${error.message.orEmpty()}"
+            } finally { busy = false; controls(true) }
         }
     }
-    private fun details(): String {
-        val store = (application as PdaApplication).temporaryStore(); val row = store.load(id)
-        adjustmentBlock = AdjustmentRecords(application as PdaApplication, "", id).blockReason()
-        val lines = store.db.temporaryDrafts().lines(id); val scans = store.db.temporaryScans()
-        val counts = store.products(id).associateBy { it.deliveryCode }; val page = store.page(id, history.last())
-        next = page.lastOrNull()?.orderScanSeq?.takeIf { store.page(id, it).isNotEmpty() }
-        return "${row.temporaryNo}\n车号 ${row.vehicleNo} · 柜号 ${row.containerNo.ifBlank { "未填" }}\n原因 ${row.reason}\n" +
-            lines.joinToString("\n") { "${it.deliveryCode} · ${it.model} · ${it.name}：${counts[it.deliveryCode]?.count ?: 0}/${it.plannedCount} 包" } +
-            "\n\n原扫码明细\n" + page.joinToString("\n") { "${it.orderScanSeq}. ${it.barcode} · ${WorkRenderer.kg(it.weightGrams)} kg${if (it.status == "VOID") " · 已撤销" else ""}" }
+
+    private fun render(result: TemporaryDetailsPage) {
+        page = result; anchor = result.rows.firstOrNull()?.sequence?.minus(1) ?: 0L
+        val order = result.order
+        binding.summary.text = "临时单 · ${order.temporaryNo}\n车号 ${order.vehicleNo} · 柜号 ${order.containerNo.ifBlank { "未填" }}\n" +
+            "原因 ${order.reason}\n有效原记录 ${result.total.count} 包 · ${WorkRenderer.kg(result.total.grams)} kg\n" +
+            "前驱原记录仅供只读核对，不授予新作业或实物放行资格\n未获后台最终确认不得放行"
+        val counts = result.totals.associateBy { it.deliveryCode }
+        binding.products.text = "本单产品汇总\n" + result.products.joinToString("\n") {
+            val count = counts[it.deliveryCode]
+            "${it.deliveryCode} · ${it.model} · ${it.name}\n${count?.count ?: 0}/${it.plannedCount} 包 · ${WorkRenderer.kg(count?.grams ?: 0)} kg"
+        }
+        binding.status.text = "只读原记录 · 每页最多20条\n${filter.label} · 本页 ${result.rows.size} 条" +
+            (result.rows.firstOrNull()?.let { " · 原序号 ${it.sequence}–${result.rows.last().sequence}" } ?: " · 暂无匹配记录")
+        binding.rows.removeAllViews()
+        result.rows.forEach { row -> binding.rows.addView(TextView(this).apply {
+            text = TemporaryDetailsText.row(row); textSize = 18f; setTextIsSelectable(true)
+            setPadding(0, (12 * resources.displayMetrics.density).toInt(), 0, 0)
+        }) }
     }
+
     private fun controls(enabled: Boolean) {
-        binding.create.isEnabled = enabled && adjustmentBlock.isBlank()
-        binding.create.text = if (adjustmentBlock.isBlank()) "调整已扫码包" else "调整不可用 · $adjustmentBlock"
-        binding.retry.isEnabled = enabled; binding.previous.isEnabled = enabled && history.size > 1
-        binding.next.isEnabled = enabled && next != null
+        binding.filter.isEnabled = enabled; binding.locateMode.isEnabled = enabled
+        binding.locate.isEnabled = enabled; binding.retry.isEnabled = enabled; binding.first.isEnabled = enabled
+        binding.previous.isEnabled = enabled && page?.previous == true
+        binding.next.isEnabled = enabled && page?.next == true
+        binding.adjustPackages.isEnabled = enabled && adjustmentBlock.isBlank()
+        binding.adjustPackages.text = WorkDetailsText.adjustment(adjustmentBlock)
+        binding.qualificationDetails.visibility = if (adjustmentBlock.isBlank()) View.GONE else View.VISIBLE
+        binding.qualificationDetails.isEnabled = enabled
     }
 }
