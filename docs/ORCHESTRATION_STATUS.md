@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: 4b3a4deb
+head: e9000e22
 dirty_entries: 94
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
@@ -17,13 +17,13 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。取消的换机承接/多跳/激活不恢复。只有第8节全部满足才complete；L1/有界组合开发备份不计D项整体或D18 L3。
 
 ## Git、写权与输入
-- 固定树`D:/acrylic-pda-outbound`、`codex/development`，接续输入HEAD/实核远端`4b3a4debbef74f64f6b08b46b1dbaf63ddde58d5`，86项继承改动保护。提交后HEAD只读生成块；所有继承Android/UI/文档/工具与`server/physical-disposition-last-request.json`保护，禁止`git add .`。
+- 固定树`D:/acrylic-pda-outbound`、`codex/development`，本切片输入HEAD/实核远端`e9000e2200322801629a698f23deda2f2016c258`，86项继承改动保护。提交后HEAD只读生成块；所有继承Android/UI/文档/工具与`server/physical-disposition-last-request.json`保护，禁止`git add .`。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`独占源码/看板写权，无子代理；清理聊天`01a13cb4`已释放全部窗口、实际idle，无清理/压缩进程。旧owner/released不代实际核查。
-- 全量tracked/untracked长度/SHA、binary diff、未跟踪副本/worktrees、旧看板、写权与环境见`.local/goal-20261016-resume/input22/23.json`及同号附件；5411/5412项，SHA`da458eb7e44ed9f86eccd11440420bd2a0de64a2697123ef3b4a97bb4aeec156`/`a1731d0098f01e873560a1a2cafea7cde0db81bb3bd7b7e46a00a352e2e38a68`。旧结论先归档`docs/history/ORCHESTRATION_STATE_before_e08_aux_combination_20261016.md`，继承输入逐字保护。
+- 全量tracked/untracked长度/SHA、binary diff、未跟踪副本/worktrees、旧看板、写权与环境见`.local/goal-20261016-resume/input32.json`及同号附件；5422项，SHA`35f5c0a8b2bd7dbb508a451f6f2c9b745bb97eaaae99f34526b06716321678a5`。旧结论先归档`docs/history/ORCHESTRATION_STATE_before_independent_cache_20261016.md`，继承输入逐字保护。
 
 ## 环境、停机与边界
 - 665–670/1668及本批671/672/673均认证停机；本批DB19381–19383、HTTP19443–19451零监听，无本批Java/Gradle/MySQL残留。共享mysqld4632/5440身份未知，仅观察不连接停止。原TEMP AVD emulator12912/qemu12108、5564/5565及ADB8500/5037保留；真机22D2910042只读列出，未操作。
-- U04结束C/D余量82355429376/44341858304 bytes，详见disks-28；重型动作前复测。新证据/DB/dump/binlog/tmp均D盘，仅任务子进程设置TEMP/TMP/Java临时；失败库/日志/XML/HTTP签名/回执、原资料/Keystore/AVD/最终APK保留，无本批清理。
+- 缓存切片结束C/D余量82349039616/44116946944 bytes，详见device-final01及disks-31；重型动作前复测。新证据/DB/dump/binlog/tmp均D盘，仅任务子进程设置TEMP/TMP/Java临时；失败库/日志/XML/HTTP签名/回执、原资料/Keystore/AVD/最终APK保留，无本批清理。
 - 七类生产决定handler/POST/放行/证据写入/关闭能力、TEMP生产归档和`localDeletionAllowed=false`保持关闭。不接原库/现网、不合main、不发布部署、不用正式签名；合成身份/fixture/模拟器不能代原PDA现场事实，D16标准不变。
 
 ## D15本批程序回退
@@ -37,6 +37,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 原255路径不变；服务旧清单10项/Android16项漂移及新增57/29项另存source-bindings/added-inputs。1539重复JAR沿清理回执定位1537同SHA保留件，不启动旧库。三审计器/依赖/路径失败与partial均保留；旧页“该次未跑instrumentation”不抹去更早实际通过，仍非E06 L2。
 
 ## 已验复用、失败与未验
+- 独立旧投影保护见`GOAL_INDEPENDENT_CACHE_RETENTION_L1_2026-10-16.md`：修复三张独立来源引用遗漏；原产品三例误删DB保留，修复后25主机/APK/lint/原AVD单次消费者通过，83表328行原业务库不变。428原文件中426字节不变，另两项WorkManager WAL/SHM调度变化单列，前后均3个已取消/0活动工作；新增7合成输入/证据文件，982证据双核。首次封存器BLOB序列化失败只读补核，原件保留；只计缓存L1，不计D16整单/整体L2/L3。
 - U04声效未就绪见`GOAL_U04_SOUND_READINESS_2026-10-16.md`：只新增三测试文件，四定向/最终31组合通过，事务后回调/尾SQL回滚/原ID重开保持。input25/27全量5413/5416项与附件齐全；编译漏参/旧XML失败保留，938条Android既存输入不变。无新APK/服务/设备写入，仅测试开发备份，非U整体/L2/L3。
 - E08辅助导航/队列有界组合见`GOAL_E08_AUXILIARY_QUEUE_COMBINATION_2026-10-16.md`：同输入25项主机与原AVD三个200%实际页面场景通过，938条Android输入不变、83表328行/403原文件守恒。874证据双核；字号/IME还原、App强停、reverse空，无新服务或库；仅组合开发备份，非E08/U整体L2或D18 L3。
 - 全部已验入口只从`docs/DEVELOPMENT_PROGRESS.md`及`docs/history/README.md`进入正式报告，按路径+SHA复用。E01–E05/O03、E06资料/身份/任务/SCAN/VOID/导出/结束/核原/实物/关联冲突/多任务网页L1不从头重做。E06 L2未完成，Chrome1540启动自动审批`blocked by policy`及347文件保全继续；无新批准/依据不换包装重试。
@@ -46,7 +47,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 1522/1523旧失败/暂缓及全部计数保留，无新依据不机械重跑。原资料/旧BCD/真机/原身份/原签/现场/异地介质可取回/长时限制单列；U01–U04完整组合、E06/E07/E08剩余L2、E09实际候选及D18最终Android/HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复L3仍未完成。
 
 ## 下一步
-D15已推送e8dc7970、E06原组合2a25690b、E08辅助/队列五文档4b3a4deb；本批U04声效三测试及报告/索引/旧看板归档按明确路径提交，86项继承改动保护。继续D17兼容/队列缺口、E07恢复组合、D16正常合法退出依据及E09候选；Chrome审批不绕过。L1/有界组合不计总目标通过，仍有独立工作即持续推进。
+U04声效开发备份已推送e9000e22；本批独立引用缓存保护仅3源码及报告/索引/旧看板归档按明确路径提交，86项继承改动保护。继续D17兼容/队列缺口、E07恢复组合、D16正常合法退出依据及E09候选；Chrome审批不绕过。L1/有界组合不计总目标通过，仍有独立工作即持续推进。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

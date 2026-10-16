@@ -36,7 +36,8 @@ interface RetentionDao {
         AND c.warehouseId=:warehouse AND c.baselineId=:baseline
         AND c.barcode NOT IN (SELECT barcode FROM prepared_bale UNION SELECT barcode FROM work_capture
             UNION SELECT barcode FROM work_guard UNION SELECT barcode FROM work_scan
-            UNION SELECT barcode FROM temporary_capture UNION SELECT barcode FROM temporary_guard UNION SELECT barcode FROM temporary_scan)
+            UNION SELECT barcode FROM temporary_capture UNION SELECT barcode FROM temporary_guard UNION SELECT barcode FROM temporary_scan
+            UNION SELECT barcode FROM independent_capture UNION SELECT barcode FROM independent_guard UNION SELECT barcode FROM independent_scan)
         ORDER BY c.barcode LIMIT :limit)""")
     fun deleteBarcodes(epoch: String, warehouse: String, baseline: String, limit: Int): Int
 }
