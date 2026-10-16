@@ -5,6 +5,7 @@ param(
     [int]$TimeWaitLimit = 400,
     [int]$PacingSeconds = 5,
     [int]$SqlPortWarmupSeconds = 30,
+    [string]$InstanceRoot = '',
     [string]$ClassDirBase = '',
     [string[]]$Only = @(),
     [string[]]$Classes = @(),
@@ -75,7 +76,8 @@ if ($Pinned) {
         $started.Id | Set-Content -LiteralPath (Join-Path $EvidenceRoot 'pinned-server-pid.txt') -Encoding UTF8
     }
 } else {
-    $instance = Join-Path $Root ('.local/mysql' + $Port + '-r09batch')
+    $instanceBase = if ($InstanceRoot) { $InstanceRoot } else { $Root }
+    $instance = Join-Path $instanceBase ('.local/mysql' + $Port + '-r09batch')
     $schema = 'r09_batch_' + (Get-Date -Format 'yyyyMMdd')
     $account = $schema
     if (Test-Path -LiteralPath $instance) { throw "Instance directory exists; preserve it: $instance" }
