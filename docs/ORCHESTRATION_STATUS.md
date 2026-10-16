@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: 291a0f59
+head: 4d2d8e31
 dirty_entries: 94
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
@@ -17,9 +17,9 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户明确恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；目标active，只有全部闸门满足才complete。取消的换机承接/多跳/激活不恢复。L1/有界组合开发备份不能计D项整体或D18 L3。
 
 ## Git、写权、输入
-- 固定树D:/acrylic-pda-outbound、codex/development；R08报告/harness修复及D13 HTTP/Session、lease、worker/file/export报告与runner修复已明确路径提交并推送，接续实核HEAD/真实远端均291a0f59；其他继承Android/server/工具/资料不夹带，禁止git add .。
+- 固定树D:/acrylic-pda-outbound、codex/development；R08报告/harness修复及D13 HTTP/Session、lease、worker/file/export报告与runner修复已明确路径提交并推送，接续实核HEAD/真实远端均4d2d8e31；其他继承Android/server/工具/资料不夹带，禁止git add .。
 - 本聊天01a13a57-8082-7dd2-a08f-987483dcda4b唯一写者，无子代理；清理聊天01a13cb4及另两项目聊天实际idle，已回复无清理进程/监听/写入/重型任务并释放写权。登记ownership52.json，旧owner/released字段不代实际核查。
-- 全量输入.local/goal-20261017-resume/input53.json：5491项，SHA E8D4265DD419BF9CE444D4985DCFE63C3CE39E00A5F724AC0A02F1A4AAE39664；推送后同号全部dirty/untracked原件、binary diff、33树、远端、写权、进程/监听/磁盘齐。更新前旧看板另存board-before-d13-worker-postpush-update01.md；input52及旧input51保留。
+- 全量输入.local/goal-20261017-resume/input54.json：5491项，SHA DA740663A1729B9CDFA257F6E8BD02D78432BDA129BDBCD86B610BCC906B020A；推送后同号全部dirty/untracked原件、binary diff、33树、远端、写权、进程/监听/磁盘齐。更新前旧看板另存board-before-d13-status-postpush02.md；input53、input52及旧input51保留。
 
 ## 环境与边界
 - 本批676/677及既有665–675/1668均封存停机，不复用旧库。R08 680 在 `127.0.0.1:23308/acrylic_r08_it_680` 完整14项通过，停机后数据目录约236697749 bytes仍保留且目标监听为零；共享mysqld4632/5440身份未知，只观察不连接停止。原TEMP AVD emulator12912/qemu12108、5564/5565及ADB8500保留，真机未操作。
