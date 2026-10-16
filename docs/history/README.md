@@ -1,5 +1,9 @@
 # 历史归档
 
+- [D01必做范围与剩余验收矩阵](GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17.md)：27项/60报告SHA绑定，区分历史适用、旧失败、开发缺口、L2/L3和现场；盘点不计业务通过。
+
+- [D17/U04实际作业Activity生命周期](GOAL_D17_ACTIVITY_LIFECYCLE_COMBINATION_2026-10-17.md)：FORMAL/TEMP四原生阶段、实际按钮与新PID原ID恢复及Python全表消费通过；原83表328行/491全部文件保持。合成身份/时间，有界测试组合开发备份，非整体L2/L3。
+
 - [D17/U04原生广播暂停与跨进程原ID组合](GOAL_D17_NATIVE_FOREGROUND_QUEUE_2026-10-17.md)：FORMAL/TEMP四原生阶段、7项主机及Python全表守恒通过；原ID唯一保存/重复拒绝，原83表328行保持，失败副本完整保留。仅测试组合开发备份，非Activity生命周期、整体L2或D18 L3。
 
 - [U04原生反馈异常与原ID恢复 L1](GOAL_U04_NATIVE_FEEDBACK_L1_2026-10-17.md)：实际instrumentation与Python全表消费通过，提交后反馈异常停扫/原ID新engine恢复无重复，原83表328行不变；WorkManager元数据单列，失败下载保留，仅测试L1，非整体L2/L3。

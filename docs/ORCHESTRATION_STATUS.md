@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: 19c61023
-dirty_entries: 94
+head: e76979aa
+dirty_entries: 95
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。取消的换机承接/多跳/激活不恢复。只有第8节全部满足才complete；L1/有界组合开发备份不计D项整体或D18 L3。
 
 ## Git、写权与输入
-- 固定树`D:/acrylic-pda-outbound`、`codex/development`，实核HEAD/远端`19c61023c757c4af40f5670ba16ce1d6f465329a`；本批U04原生反馈明确6路径已提交推送，回执`.local/goal-20261017-resume/native-feedback-git01.json`。5451项非本批继承输入逐字保持，TEMP既有推送回执保留；禁止`git add .`。
+- 固定树`D:/acrylic-pda-outbound`、`codex/development`，实核HEAD/远端`e76979aa887aae790ead004b2e548d63cfd4b93a`；本批D17/U04原生广播明确9路径已提交推送，回执`.local/goal-20261017-resume/native-foreground-git01.json`。5454项非本批继承输入逐字保持，既有反馈/TEMP回执保留；禁止`git add .`。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`独占源码/看板写权，无子代理；清理聊天`01a13cb4`已释放全部窗口、实际idle，无清理/压缩进程。旧owner/released不代实际核查。
 - 全量输入、binary diff、未跟踪原字节/worktrees、写权/进程/监听/C/D余量和实际远端见`.local/goal-20261017-resume/input02.json`及同号附件：5456项、SHA`ed82ca920f2495aa54df1c6127c2916a671a9c74bfd6406e91755f0c5cef474f`。执行后全部输入核同；旧看板先归档`ORCHESTRATION_STATE_before_resume_20261017_android_confirmation.md`。本批提交前后继续保存新快照，旧input55/57等保留。
 
@@ -52,7 +52,9 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 1522/1523旧失败/暂缓及全部计数保留，无新依据不机械重跑。原资料/旧BCD/真机/原身份/原签/现场/异地介质可取回/长时限制单列；U01–U04完整组合、E06/E07/E08剩余L2、E09实际候选及D18最终Android/HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复L3仍未完成。
 
 ## 下一步
-D17/U04两来源原生广播/跨进程切片待明确路径开发备份，input08/09全量5461项SHA`4f6fd2890c9d0aacefc620d2874170e11e704ddf5772f44a4d09ebe4381c5bd6`与附件齐全，5457继承项逐字保持。接着更新D01–D18/O/U证据与剩余必跑矩阵，选择E07/E08尚缺真实组合；不因原生引擎通过声称Activity生命周期或整体L2/L3。D16无正常有效guard目标合法退出依据，不删guard造资格；E06/E07/E08、E09/D18继续。原5564/共享MySQL/真机保留，Chrome审批不绕过，总目标active。
+D01逐项矩阵`GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17.md`已绑定27项/60报告，清单SHA`bf89cdbe2e41a824257269c9b312a12e41e49ba1087834f01cdc0fdacc419db6`；仅历史范围盘点，不计L2/L3。input12与input11同5463项，input13含新矩阵/原生Activity测试5465项SHA`199d23e602aee0d6eeeb69dc5464c42aeef63e1b03190a399c3ea8cfca812dff`，同号全量附件齐全，原内容保护。旧看板先归档`ORCHESTRATION_STATE_before_requirement_matrix_20261017.md`。
+`GOAL_D17_ACTIVITY_LIFECYCLE_COMBINATION_2026-10-17.md`补实际FORMAL/TEMP Activity四阶段/新PID原ID/真实按钮唯一保存，Python通过；原83表328行/491全部文件不变。`.local/goal-20261017-resume/activity-lifecycle02/`1166证据双核SHA`798e1e522e6a8a6e412399e099aae82c5bae37e937d0a9e53812380fc7bb1d76`；首轮缺合成session字段失败1024原件保全，新独立包复验。仅合成身份/授时，有界测试组合备份，非L2/L3。C/D余量78704898048/15004090368 bytes，无本批任务/新监听，原AVD/ADB/共享MySQL/真机保持。
+本批矩阵/测试/证据索引准备明确路径提交；旧看板先归档`ORCHESTRATION_STATE_before_activity_lifecycle_20261017.md`。接着核TEMP产品提交仓库跨截点恢复的实际覆盖，与FORMAL667及TEMP旧抽象连接证据比较，有确切缺口才补。D16合法资格、D04旧前缀、E06/E07/E08剩余组合、E09/D18继续；Chrome审批不绕过，总目标active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
