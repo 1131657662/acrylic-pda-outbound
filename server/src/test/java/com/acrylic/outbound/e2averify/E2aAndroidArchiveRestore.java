@@ -47,6 +47,7 @@ public final class E2aAndroidArchiveRestore {
             "--outbound.signing.public-key="+copier.restored.resolve("config/server-public.der"))) {
             try(var adapter=new TemporaryArchiveHttpAdapter((WebApplicationContext)context,profile.attempt)) {
                 E2aAndroidArchiveClient.run(profile.attempt,"restored");
+                E2aAndroidArchiveClient.run(profile.attempt,"lost-success");
             }
         }
     }

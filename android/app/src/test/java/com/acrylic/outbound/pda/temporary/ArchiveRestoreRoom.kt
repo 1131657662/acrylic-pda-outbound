@@ -51,4 +51,16 @@ internal object ArchiveRestoreRoom {
             check(file.isFile); file.copyTo(File(target, file.name), overwrite = false)
         }
     }
+
+    fun pendingSnapshot(db: PdaDatabase, attempt: File) {
+        check(!db.inTransaction())
+        val before = snapshot(db)
+        val directory = File(attempt, "android-pending-room"); check(directory.mkdirs())
+        val target = File(directory, "outbound-pda.db"); check(!target.exists())
+        db.openHelper.writableDatabase.execSQL("VACUUM INTO ?", arrayOf(target.absolutePath))
+        check(target.isFile && target.length() > 0)
+        check(com.acrylic.outbound.pda.submission.SubmissionJson.canonical(before) ==
+            com.acrylic.outbound.pda.submission.SubmissionJson.canonical(snapshot(db)))
+        File(attempt, "android-pending-facts.json").writeText(before.toString())
+    }
 }

@@ -32,6 +32,7 @@ class TemporaryArchiveRestoreHttpTest {
         when (System.getenv("E2A_ARCHIVE_RESTORE_PHASE")) {
             "source" -> source(attempt, input)
             "restored" -> restored(attempt, input)
+            "lost-success" -> TemporaryLostSuccessRestore.run(attempt, input)
             else -> error("Explicit one-shot source/restored phase required")
         }
     }
@@ -57,6 +58,8 @@ class TemporaryArchiveRestoreHttpTest {
         val connection = E2aRealHttpConnection(work, input)
         val frozen = TemporaryFreeze(TemporaryWorkStore(db, connection, work.store.sample)).freeze(work.id, "")
         assertEquals("REVIEW_REQUIRED", TemporarySubmissionRepository(db, connection).upload(frozen.id).state)
+        assertNull(db.temporarySuccess().evidence(frozen.id))
+        ArchiveRestoreRoom.pendingSnapshot(db, attempt)
         val adapter = PdaNetwork("http://127.0.0.1:19435/internal/")
         adapter.original("confirm", JSONObject().put("submissionId", frozen.id).toString().toByteArray(), headers(input))
         assertEquals("SYNCED", TemporarySubmissionRepository(db, connection).upload(frozen.id).state)

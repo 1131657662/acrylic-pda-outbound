@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E07 丢失成功回执的原批次恢复组合](history/GOAL_E07_LOST_SUCCESS_RESTORE_COMBINATION_2026-10-16.md)：664三阶段Android/真实HTTP/MySQL及Python通过；原待审Room→首响应丢失→关闭重开原ID重查成功，仅三表受控增量，611原件守恒。首轮消费者元数据断言失败保留并只读补核；非E07 L2/D18 L3。
+
 - [E07 Android原批次与整库恢复组合](history/GOAL_E07_ANDROID_ARCHIVE_RESTORE_COMBINATION_2026-10-16.md)：663实际冻结/HTTP成功归档→完整SQL/文件恢复→新Android JVM消费原Room/原签通过；独立Python核179业务表/83本地表及599原件守恒。661/662失败保全，非E07整体L2或D18 L3。
 
 - [D16 无关审计引用保留 L1](history/GOAL_D16_UNRELATED_AUDIT_L1_2026-10-16.md)：82项实际CLI/恢复/并发/锁后撤权/末DELETE回滚通过，两代原签审计和依赖原样保留，404case/37次真实合成提交独立核对。失败保留，正常有效guard目标及D13–D15组合继续，非D16整体/L2/L3。
