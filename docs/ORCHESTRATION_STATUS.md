@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: 227b0763
-dirty_entries: 99
+head: 2fc32c3a
+dirty_entries: 95
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,9 +17,9 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户明确恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；目标active，只有全部闸门满足才complete。取消的换机承接/多跳/激活不恢复。L1/有界组合开发备份不能计D项整体或D18 L3。
 
 ## Git、写权、输入
-- 固定树D:/acrylic-pda-outbound、codex/development；提交后实核HEAD/真实远端均227b0763ef73575d1378f96bbcd95e576ff5f86f；D15旧worker六测试/正式报告及必要索引/矩阵/断点共11路径已提交推送，回执.local/goal-20261017-resume/d15-old-worker-git01.json；其他继承Android/server/工具/资料不夹带，禁止git add .。
+- 固定树D:/acrylic-pda-outbound、codex/development；R08报告/harness修复已以提交2fc32c3a推送，提交后实核HEAD/真实远端均该SHA；D15旧worker及本批R08必要索引/报告均明确路径提交，其他继承Android/server/工具/资料不夹带，禁止git add .。
 - 本聊天01a13a57-8082-7dd2-a08f-987483dcda4b唯一写者，无子代理；清理聊天01a13cb4及另两项目聊天实际idle，其他旧聊天notLoaded，清理已明确释放。登记ownership38.json，旧owner/released字段不代实际核查。
-- 全量输入.local/goal-20261017-resume/input43.json：5485项，SHA 2e4ddaf1a5fc08d8e50735746076ffbe2db8a0a47b4eee1da7fa2f06a42594f5；同号全部dirty/untracked原件、binary diff、33树、远端、写权、进程/监听/磁盘齐。input40–42同哈希；input43包含 R08 harness 收尾修复。更新前旧看板另存board-before-r08-update01.md。
+- 全量输入.local/goal-20261017-resume/input44.json：5486项，SHA 0e0a5b800f900cea1a1ba14acced04a599072ebbaef796ed1b37be26f228f8c6；同号全部dirty/untracked原件、binary diff、33树、远端、写权、进程/监听/磁盘齐。input43为提交前R08修改快照；更新前旧看板另存board-before-r08-postpush-update01.md。
 
 ## 环境与边界
 - 本批676/677及既有665–675/1668均封存停机，不复用旧库。R08 680 在 `127.0.0.1:23308/acrylic_r08_it_680` 完整14项通过，停机后数据目录约236697749 bytes仍保留且目标监听为零；共享mysqld4632/5440身份未知，只观察不连接停止。原TEMP AVD emulator12912/qemu12108、5564/5565及ADB8500保留，真机未操作。
@@ -48,7 +48,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 清理回执.local/disk-cleanup-20261016-round4/REPORT.md及completion-receipt.json保持；原件/失败库/donor/最终APK保留，QCOW第24调用状态未知、25–35未执行，D盘暂降回升原因未明，不以allocated变化当卷净释放。
 
 ## 下一动作
-本批R08 L1报告与harness修复待明确路径提交并推送；之后继续逐项核D13–D16剩余验收，优先有证据的新缺口及E06/E07/E08受影响组合，推进E09/D18。旧写入/多任务格式先确认实际兼容要求和原输入，禁止为凑验收重跑已有链；D16先找合法退出依据。总目标继续active。
+R08 L1报告与harness修复已在2fc32c3a推送并实核；之后继续逐项核D13–D16剩余验收，优先有证据的新缺口及E06/E07/E08受影响组合，推进E09/D18。旧写入/多任务格式先确认实际兼容要求和原输入，禁止为凑验收重跑已有链；D16先找合法退出依据。总目标继续active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
