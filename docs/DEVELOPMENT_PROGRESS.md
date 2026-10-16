@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E06既有组合事实补录与电脑消费](history/GOAL_E06_RETAINED_COMBINATION_AUDIT_2026-10-16.md)：原1539真实HTTP/39份表快照/原模拟器83表150文件与347停机文件补核，本批原SAF实际Python/Excel460项通过；源码漂移与JAR去重取回分列，Chrome审批阻断保留，非E06 L2/D18 L3。
+
 - [D15 原非空副本程序回退读取](history/GOAL_D15_PROGRAM_ROLLBACK_2026-10-16.md)：新→旧→新JAR/24次真实HTTP/180表与文件守恒，离线dump/会话补核通过；671部分导入、672子JVM排空失败保留。仅有界组合开发备份，非D15整体/E07 L2/D18 L3。
 
 - [D15 Linux隔离资源约束 L1](history/GOAL_D15_ISOLATED_RESOURCE_L1_2026-10-16.md)：三模板九项实际user unit CPU/任务上限、分段内存OOM及停止排空通过，2101原件独立回读守恒；原软阈值限流和回收时序失败保留。仅合成负载L1开发备份，非项目Linux部署启停/D15整体/L2/L3。
