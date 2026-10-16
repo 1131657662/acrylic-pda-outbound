@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [D15旧程序定时worker兼容 L1](history/GOAL_D15_OLD_WORKER_COMPATIBILITY_L1_2026-10-17.md)：新程序真实HTTP创建→旧worker实际执行→旧/新下载及Python七表/全表守恒通过；原driver exit1、消费者离线补核和676失败保留。仅ORIGINAL_CONFIRMED/XLSX有界L1开发备份，非D15整体/L2/L3。
+
 - [TEMP产品会话与原ID恢复 L1](history/GOAL_E06_TEMP_REPOSITORY_RESTORE_L1_2026-10-17.md)：真实会话/仓库丢GET响应→UNKNOWN→重开及SQL恢复后原ID查询、73项Python消费通过；仅合成隔离L1开发备份，未提交运行器依赖和历史失败单列，非整体L2/L3。
 
 - [D01必做范围与剩余验收矩阵](history/GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17.md)：27项/60报告SHA绑定，区分历史适用、旧失败、开发缺口、L2/L3和现场；盘点不计业务通过。

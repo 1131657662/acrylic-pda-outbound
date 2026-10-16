@@ -6,55 +6,45 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: e76979aa
-dirty_entries: 95
+head: 0aa20567
+dirty_entries: 105
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ```
 <!-- FACTS_END -->
 
-用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。取消的换机承接/多跳/激活不恢复。只有第8节全部满足才complete；L1/有界组合开发备份不计D项整体或D18 L3。
+用户明确恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；目标active，只有全部闸门满足才complete。取消的换机承接/多跳/激活不恢复。L1/有界组合开发备份不能计D项整体或D18 L3。
 
-## Git、写权与输入
-- 固定树`D:/acrylic-pda-outbound`、`codex/development`，实核HEAD/远端`e76979aa887aae790ead004b2e548d63cfd4b93a`；本批D17/U04原生广播明确9路径已提交推送，回执`.local/goal-20261017-resume/native-foreground-git01.json`。5454项非本批继承输入逐字保持，既有反馈/TEMP回执保留；禁止`git add .`。
-- 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`独占源码/看板写权，无子代理；清理聊天`01a13cb4`已释放全部窗口、实际idle，无清理/压缩进程。旧owner/released不代实际核查。
-- 全量输入、binary diff、未跟踪原字节/worktrees、写权/进程/监听/C/D余量和实际远端见`.local/goal-20261017-resume/input02.json`及同号附件：5456项、SHA`ed82ca920f2495aa54df1c6127c2916a671a9c74bfd6406e91755f0c5cef474f`。执行后全部输入核同；旧看板先归档`ORCHESTRATION_STATE_before_resume_20261017_android_confirmation.md`。本批提交前后继续保存新快照，旧input55/57等保留。
+## Git、写权、输入
+- 固定树D:/acrylic-pda-outbound、codex/development；提交前实核HEAD/真实远端均0aa205676fb3a4e83d438a3a69f26e165eef2319。拟仅提交D15旧worker六测试/正式报告及必要索引/矩阵/断点；其他继承Android/server/工具/资料不夹带，禁止git add .。
+- 本聊天01a13a57-8082-7dd2-a08f-987483dcda4b唯一写者，无子代理；清理聊天01a13cb4及另两项目聊天实际idle，其他旧聊天notLoaded，清理已明确释放。登记ownership35.json，旧owner/released字段不代实际核查。
+- 全量输入.local/goal-20261017-resume/input35.json：5485项，SHA 4cdc932566eeaea7c3a41b4d8c244a11402e602cd32fb93ccc6279943d3ae180；同号全部dirty/untracked原件、binary diff、33树、远端、写权、进程/监听/磁盘齐。相比input34仅四份本批文档改变；input33→34只checks离线断言。旧看板先另存同目录board-before-d15-old-worker-commit01.md。
 
-## 环境、停机与边界
-- 665–670/1668及本批671/672/673均认证停机；本批DB19381–19383、HTTP19443–19451零监听，无本批Java/Gradle/MySQL残留。共享mysqld4632/5440身份未知，仅观察不连接停止。原TEMP AVD emulator12912/qemu12108、5564/5565及ADB8500/5037保留；真机22D2910042只读列出，未操作。
-- 本批原生队列结束C/D余量78717718528/15527215104 bytes，见`.local/goal-20261017-resume/foreground-queue02/device-final01.json`；无本批Java/Gradle/Kotlin重型任务，重型前复测。复用既有Gradle依赖、D盘子进程短TEMP/TMP/Java临时，原下载残件/失败与全部证据保留，无清理。
-- 七类生产决定handler/POST/放行/证据写入/关闭能力、TEMP生产归档和`localDeletionAllowed=false`保持关闭。不接原库/现网、不合main、不发布部署、不用正式签名；合成身份/fixture/模拟器不能代原PDA现场事实，D16标准不变。
+## 环境与边界
+- 本批676/677及既有665–675/1668均封存停机，不复用旧库。snapshot35实测19380–19465零监听，无Java/Gradle/MySQL重型任务；共享mysqld4632/5440身份未知，只观察不连接停止。原TEMP AVD emulator12912/qemu12108、5564/5565及ADB8500保留，真机未操作。
+- snapshot35 C/D余量78577717248/13925572608 bytes；新增证据/临时/隔离库均优先D盘，本批无清理。重型前复测及估计增长，子进程TEMP/TMP/Java临时专用，不改全局HOME/CODEX_HOME。
+- 不接原库现网、不合main、不发布部署/Release、不用正式签名、不绕过审批。七类生产决定handler/POST/放行/证据写入/关闭、TEMP生产归档保持关闭，localDeletionAllowed=false，D16标准不变；合成输入不代原PDA现场事实。
 
-## D15本批程序回退
-- 正式报告`docs/history/GOAL_D15_PROGRAM_ROLLBACK_2026-10-16.md`：新673恢复667原SQL/7存储文件/2开发验签DER/原HTTP输入，指定新→旧→新JAR三个独立直接JDK进程，24次真实HTTP全部通过；原订单列表/详情/修订/发布/本查询用户导出列表data相同。仅FORMAL读取兼容，旧worker/写入/多任务新格式未验；Windows定向终止不称优雅或Linux项目启停。
-- 180表322行恢复，合成查询身份5行后327行，三段登录/会话后336行。每段177表逐值不变，仅三认证表明确新增，原审计/会话保留；DDL/原trigger/迁移历史保持，仅登录审计下一自增值推进。10私有/存储文件逐值相同；667原604文件261439064 bytes多次不变，清单SHA`180c908a8966ea3bf0a64a4355ad49e521b6a78b2ab4e145d363d5417f8042c3`。
-- `.local/goal-20261016-resume/program-rollback-run04.log` exit0；consumer02离线SQL/原HTTP/会话归属/dump180表336行通过，SHA`6f0b57f0a1b1af7485526dff57c260967f97013c4f7d616f6928f835f4cd8f74`。dump SHA`98e8836988a337dc9d936423935d0b1b5efa8d2994b2859208aa15bf849f90b4`。673认证停机485文件225893307 bytes双次核同，清单SHA`dc1dc6d46352cec396828c5c77aeb7069c4e3b8311ce8d481c73244da53d68c5`。
-- 671缺原DEFINER权限部分导入、672java快捷入口子JVM排空失败完整保全；分别196/420文件双次hash不变，原库不复用。673分离导入账号、锁定原DEFINER账号、直接JDK/监听PID核对后通过。run03既有目录拒绝、文本替换误SHA的静态修复及consumer01列名正则失败保留；consumer02仅离线补核，未重跑业务，同根因不清零。
+## D15旧worker有界L1
+- 正式报告docs/history/GOAL_D15_OLD_WORKER_COMPATIBILITY_L1_2026-10-17.md：新程序真实HTTP创建ORIGINAL_CONFIRMED/XLSX→保留旧JAR实际scheduled worker→旧/新下载→新原键重放/异文拒绝；20次真实HTTP，Python七表逐值通过，范围仅该格式，不外推旧写入/多任务新格式/D15整体/L2/L3。
+- 新隔离677 DB19387/HTTP19461，job01a14667-461e-70a6-835d-98af496c6b5d PENDING/0→SUCCEEDED/1；XLSX13697 bytes，SHA a25cfc2fae170fc990b95560a018c210f5fe62271eecc6c7219fdef845b023d8。180表322行→查询身份327→queued333→worked334→old339→new344；176表逐值不变，四表精确预期变化，原10文件保持，仅新增三产物。
+- 原driver run02 exit1保留：业务完成后session属性/UUID审计断言错；仅离线补核，不重启库不重复HTTP。offline01编码失败保留，offline02/03 exit0；offline03 JSON SHA d40388d24be15828631b5394cb3024851cc14ad5be2f9d0b88251f06859dcd16。原48业务输入47不变，checks只改离线断言，verifier新增，不改写原驱动结果。
+- 677认证停机、四JDK/renderer排空、19387零监听；封存488文件227026255 bytes，manifest SHA 5bf81029004a0434ad51ac77c5a00f1f143993366911c83b4b63ec9a3e768deb，dump SHA c72d57a52262bb3f851565cb22fa190cafe17b99401de8d4d3daeb115eb0abe4；封存根禁止新输出。
+- 676先登录后错期望403/实际404，run01 exit1完整保全415文件223604182 bytes；manifest SHA 1c82743a8026e9151433d4ef173bc1ff9a14117f93d556acde45c6c564f54813，dump SHA 1f4c760c68973ec8f15e4627bae2a6ce0b9e310bc4cd5365acbe36a65aeacf63，不复用/不清零计数。原667共604文件261439064 bytes保持，manifest SHA 180c908a8966ea3bf0a64a4355ad49e521b6a78b2ab4e145d363d5417f8042c3。
 
-## E06历史组合事实补核
-- 正式报告`docs/history/GOAL_E06_RETAINED_COMBINATION_AUDIT_2026-10-16.md`：原1539服务HTTP、39份JDBC逐表/增量与原签、原5562模拟器83表/150文件、347停机文件重新核同。本批实际消费原SAF/包外根并转换Excel，独立460项通过；audit04 exit0，11708输入再核一致。
-- 原255路径不变；服务旧清单10项/Android16项漂移及新增57/29项另存source-bindings/added-inputs。1539重复JAR沿清理回执定位1537同SHA保留件，不启动旧库。三审计器/依赖/路径失败与partial均保留；旧页“该次未跑instrumentation”不抹去更早实际通过，仍非E06 L2。
+## 已验复用与未验
+- 正式入口统一docs/DEVELOPMENT_PROGRESS.md及docs/history/README.md；D01矩阵GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17.md绑定27项/原60报告，后续增量各按路径+SHA引用，不拼作L2/L3。
+- E01–E05/O03，E06资料/身份/任务/SCAN/VOID/导出/结束/核原/实物/关联冲突/多任务网页L1按正式报告复用。1539原HTTP/JDBC/原签/原AVD/347停机文件及460文件消费者补核见GOAL_E06_RETAINED_COMBINATION_AUDIT_2026-10-16.md；仍非E06完整L2。Chrome1540 blocked by policy无新批准不换包装重试。
+- E07历史钥/重锚/原签/撤回/更正/退库/中转/独立/实物/编号/运维及644/647/663–667按报告复用；FORMAL667产品提交仓库与TEMP675真实Vault/PdaSession/TemporarySession仓库原ID UNKNOWN→重开→SQL/files恢复已有有界证据。675未提交Java运行器依赖、674失败及consumer01–06保留；不从头重做。
+- D15非空升级1550、恢复监控1668、产品worker670、新→旧→新673及资源约束均按报告复用；本批只补指定旧worker格式。670/677 driver exit1只读补核不冒称原成功，669/671/672/676失败原件保留。合成user unit不等于Linux项目实际启停，真实异地/现场另列C06。
+- D17/U04实际FORMAL/TEMP Activity四原生阶段见GOAL_D17_ACTIVITY_LIFECYCLE_COMBINATION_2026-10-17.md，原83表328行/491文件不变；四字号明细/辅助导航/独立满队列/反馈故障/声音未就绪及缓存引用保护按报告复用，仍非U整体或L2/L3。
+- D16整单消费者/原生trigger/复杂引用/恢复后事实及12CLI有报告；正常成功目标仍有有效guard，合法退出依据未齐，不删guard或伪造状态造资格，D16整体未完成。D13–D15完整组合、E06/E07/E08剩余L2、E09候选、D18实际Android/HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复全链L3未完成。
+- 1522/1523、1043/A1.4、Chrome1540及其他历史失败/暂缓原件与同根因计数保留，无新依据不机械重试。原资料/旧BCD/原身份/原签/真机/现场/异地取回及长时限制单列；不能把可隔离开发缺口挪入现场项。
+- 清理回执.local/disk-cleanup-20261016-round4/REPORT.md及completion-receipt.json保持；原件/失败库/donor/最终APK保留，QCOW第24调用状态未知、25–35未执行，D盘暂降回升原因未明，不以allocated变化当卷净释放。
 
-## 已验复用、失败与未验
-- D17/U04原生广播见`GOAL_D17_NATIVE_FOREGROUND_QUEUE_2026-10-17.md`：FORMAL/TEMP四原生阶段、7项主机及Python通过，暂停零接收→不同PID原capture确认一次→重复码精确INVALID/ACK；原83表328行不变。464原文件461字节同、3项WorkManager元数据单列且0活动工作；4411证据双核SHA`54590acb9daf3f3991d198317139f59364d0b885232488cdc20df151f4d97968`。首轮真实隔离写入后错误断言的2417原件保全，新副本复验，未用失败库。仅测试组合备份，非实际Activity/整体L2/L3。
-- U04原生反馈异常见`GOAL_U04_NATIVE_FEEDBACK_L1_2026-10-17.md`：单次instrumentation/两APK/lint及Python通过，提交后回调异常停扫→新engine原ID恢复无重复，原83表328行不变；448原文件446字节相同，另2项WorkManager WAL/SHM明确单列、前后0活动任务。954证据双核，清单SHA`13cfde4c78e454dc0f2ccf04caf6398b13ee09f4793f88f1c8f483f1483f1319`。仅测试L1，非OS进程恢复/硬件音频或L2/L3；另5项主机复核通过、wrapper下载超时保留。
-- U04 TEMP明细见`GOAL_U04_TEMPORARY_DETAILS_L1_2026-10-16.md`：21主机/受影响6复验、最终APK四字号和阻断前驱真实交互/Python83表303行及65行守恒；原5564两tar/455文件/83表328行保持。1703/1704恢复设置停机、5574–5577零监听。1770证据12559082116 bytes双核，清单SHA`b643b96f77ca06f99163da82e8c243e9dec674b49ff7e14ea5567bec2ac71966`；首次host01失败库被旧teardown删除的限制明确，其余失败原件保留。仅L1，非U整体/L2/L3。
-- U04正式明细见`GOAL_U04_FORMAL_DETAILS_L1_2026-10-16.md`：每页20条/筛选/原序号及条码末次定位，23项主机、最终APK四字号实际交互和Python83表342行守恒通过；产品SHA`245e409679a0ecd4a2e8446fa81ad41417f2dc728fe55c385d74210723ab1c29`。原5564两tar相同、455文件/83表328行保持；1701/1702均停机、5570–5573零监听。3970证据12853102777 bytes双核，清单SHA`6f0418da6f84149e5a97baf09724c70df8a475c571fdafceeafafc9742832858`。WAL漏尾/三种滚动器/GBK/旧解包副本比较失败保留并定向纠正；仅L1，非U整体/L2/L3。
-- U04原生独立队列见`GOAL_U04_NATIVE_INDEPENDENT_QUEUE_2026-10-16.md`：三个分离instrumentation实际通过，尾SQL失败无成功→新副本原ID恢复一次→满入口65条已接收全部耐久保留/溢出拒绝。Python逐表核对3/5/5张受控变化、原83表328行保持；433原文件430逐字不变，3项WorkManager元数据单列且各阶段0活动工作。3176证据双核，原失败库/触发器保留；仅测试组合备份，非U整体/L2/L3。
-- 独立旧投影保护见`GOAL_INDEPENDENT_CACHE_RETENTION_L1_2026-10-16.md`：修复三张独立来源引用遗漏；原产品三例误删DB保留，修复后25主机/APK/lint/原AVD单次消费者通过，83表328行原业务库不变。428原文件中426字节不变，另两项WorkManager WAL/SHM调度变化单列，前后均3个已取消/0活动工作；新增7合成输入/证据文件，982证据双核。首次封存器BLOB序列化失败只读补核，原件保留；只计缓存L1，不计D16整单/整体L2/L3。
-- U04声效未就绪见`GOAL_U04_SOUND_READINESS_2026-10-16.md`：只新增三测试文件，四定向/最终31组合通过，事务后回调/尾SQL回滚/原ID重开保持。input25/27全量5413/5416项与附件齐全；编译漏参/旧XML失败保留，938条Android既存输入不变。无新APK/服务/设备写入，仅测试开发备份，非U整体/L2/L3。
-- E08辅助导航/队列有界组合见`GOAL_E08_AUXILIARY_QUEUE_COMBINATION_2026-10-16.md`：同输入25项主机与原AVD三个200%实际页面场景通过，938条Android输入不变、83表328行/403原文件守恒。874证据双核；字号/IME还原、App强停、reverse空，无新服务或库；仅组合开发备份，非E08/U整体L2或D18 L3。
-- 全部已验入口只从`docs/DEVELOPMENT_PROGRESS.md`及`docs/history/README.md`进入正式报告，按路径+SHA复用。E01–E05/O03、E06资料/身份/任务/SCAN/VOID/导出/结束/核原/实物/关联冲突/多任务网页L1不从头重做。E06 L2未完成，Chrome1540启动自动审批`blocked by policy`及347文件保全继续；无新批准/依据不换包装重试。
-- E07既有钥/重锚/原签还原/中止、跨截点更正/退库/撤回/独立来源/实物/编号/运维及644/647、663–665/667真实产品提交/未知原批次恢复/原签/Room/SQL链按原报告复用，不拼为E07整体L2。670恢复worker/renderer真实下载与Python七表逐值通过，原driver exit1只读补核、669失败全部保留。1668恢复监控七CLI与resource-07三模板九user unit负载均见报告，非D15整体/Linux项目启停。
-- D16原生trigger保护、正常有效guard拒绝、复杂引用/无关审计/恢复后原正式事实及12项CLI组合有报告。正常目标合法退出仍无依据；不删guard造资格，D13–D15完整组合/D16整体未完成。E08四字号导航/设置诊断/身份/恢复确认及E02草稿/调整直接页L1见索引；旧FORMAL worker装配、658–660及长路径SQLite失败保留，不改称一次成功。
-- 清理正式回执`.local/disk-cleanup-20261016-round4/REPORT.md`与completion-receipt.json已核；旧原件、失败库、donor/最终APK保留，QCOW第24原调用状态未知、25–35未执行，D暂降回升原因未明。不将allocated变化当卷净释放。
-- 1522/1523旧失败/暂缓及全部计数保留，无新依据不机械重跑。原资料/旧BCD/真机/原身份/原签/现场/异地介质可取回/长时限制单列；U01–U04完整组合、E06/E07/E08剩余L2、E09实际候选及D18最终Android/HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复L3仍未完成。
-
-## 下一步
-D01逐项矩阵`GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17.md`已绑定27项/60报告，清单SHA`bf89cdbe2e41a824257269c9b312a12e41e49ba1087834f01cdc0fdacc419db6`；仅历史范围盘点，不计L2/L3。input12与input11同5463项，input13含新矩阵/原生Activity测试5465项SHA`199d23e602aee0d6eeeb69dc5464c42aeef63e1b03190a399c3ea8cfca812dff`，同号全量附件齐全，原内容保护。旧看板先归档`ORCHESTRATION_STATE_before_requirement_matrix_20261017.md`。
-`GOAL_D17_ACTIVITY_LIFECYCLE_COMBINATION_2026-10-17.md`补实际FORMAL/TEMP Activity四阶段/新PID原ID/真实按钮唯一保存，Python通过；原83表328行/491全部文件不变。`.local/goal-20261017-resume/activity-lifecycle02/`1166证据双核SHA`798e1e522e6a8a6e412399e099aae82c5bae37e937d0a9e53812380fc7bb1d76`；首轮缺合成session字段失败1024原件保全，新独立包复验。仅合成身份/授时，有界测试组合备份，非L2/L3。C/D余量78704898048/15004090368 bytes，无本批任务/新监听，原AVD/ADB/共享MySQL/真机保持。
-本批矩阵/测试/证据索引准备明确路径提交；旧看板先归档`ORCHESTRATION_STATE_before_activity_lifecycle_20261017.md`。接着核TEMP产品提交仓库跨截点恢复的实际覆盖，与FORMAL667及TEMP旧抽象连接证据比较，有确切缺口才补。D16合法资格、D04旧前缀、E06/E07/E08剩余组合、E09/D18继续；Chrome审批不绕过，总目标active。
+## 下一动作
+先完成本批明确路径暂存自审、L1开发备份提交/推送并核真实远端；随后逐项核D13–D16剩余验收，优先有证据的新缺口及E06/E07/E08受影响组合，推进E09/D18。旧写入/多任务格式先确认实际兼容要求和原输入，禁止为凑验收重跑已有链；D16先找合法退出依据。总目标继续active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

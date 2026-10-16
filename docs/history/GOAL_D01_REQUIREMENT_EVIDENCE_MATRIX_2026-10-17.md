@@ -29,10 +29,10 @@
 | D11 | E05净值、[独立来源导出](GOAL_E06_INDEPENDENT_EXPORT_2026-10-14.md)、E03电脑工具 | E05当批未跑完整R08ExportIT，不能称全套。候选按正式/TEMP/R06/撤回重发/调整/独立来源映射汇总、固定版本及原顺序，独立来源不计成功出库 |
 | D12 | [O03受控中转](GOAL_E05_O03_ACCEPTANCE_2026-10-13.md)、E03救援/主管Android、[恢复后产品worker](GOAL_D15_RESTORED_EXPORT_WORKER_2026-10-16.md) | 格式/安全Excel/文件失败和回执消费已分层验证；候选实际执行任务/下载/重启/授权变化/损坏与Android文件消费组合，不将“已接收”当成功 |
 | D13 | P07 keyring/offline-rekey/restore及[历史覆盖](GOAL_E07_HISTORY_COVERAGE_ACCEPTANCE_2026-10-15.md)；原根/原钥与UNKNOWN围栏报告 | 历史轮换/中止/显式还原有专项，不能用旧“尚无历史钥”判断。候选补跨入口（HTTP/Session/worker/文件/导出）有界组合与错根/错库/水位反例 |
-| D14 | [撤回656/657](GOAL_E07_WITHDRAWAL_RECOVERY_COMBINATION_654_ACCEPTANCE_2026-10-16.md)、更正618、退库624、中转625、[独立647](GOAL_E07_COMBINATION_647_ACCEPTANCE_2026-10-16.md)、[产品仓库667](GOAL_E07_FORMAL_REPOSITORY_RESTORE_COMBINATION_2026-10-16.md) | 不重复原截点。各受影响输入必须绑定后再组合Android/HTTP/MySQL/文件；TEMP/独立来源客户端恢复以及U入口的剩余覆盖逐一核，最终L3不可免除 |
-| D15 | 非空升级1550、恢复任务1668/worker670、[新→旧→新673](GOAL_D15_PROGRAM_ROLLBACK_2026-10-16.md)、[资源约束](GOAL_D15_ISOLATED_RESOURCE_L1_2026-10-16.md) | 回退仅FORMAL读取，旧worker/写入/多任务新格式兼容未验；资源为合成user unit，不是项目Linux启停。开发恢复/可取回组合继续，真实异地/生产RPO/RTO/Linux现场另列C06 |
+| D14 | [撤回656/657](GOAL_E07_WITHDRAWAL_RECOVERY_COMBINATION_654_ACCEPTANCE_2026-10-16.md)、更正618、退库624、中转625、[独立647](GOAL_E07_COMBINATION_647_ACCEPTANCE_2026-10-16.md)、[产品仓库667](GOAL_E07_FORMAL_REPOSITORY_RESTORE_COMBINATION_2026-10-16.md)、[TEMP产品仓库675](GOAL_E06_TEMP_REPOSITORY_RESTORE_L1_2026-10-17.md) | 不重复原截点。各受影响输入绑定后再组合Android/HTTP/MySQL/文件；TEMP原会话/原ID恢复具体单元已有L1，独立来源客户端及U入口剩余覆盖逐一核，最终L3不可免除 |
+| D15 | 非空升级1550、恢复任务1668/worker670、[新→旧→新673](GOAL_D15_PROGRAM_ROLLBACK_2026-10-16.md)、[资源约束](GOAL_D15_ISOLATED_RESOURCE_L1_2026-10-16.md)、[旧worker677](GOAL_D15_OLD_WORKER_COMPATIBILITY_L1_2026-10-17.md) | 回退FORMAL读取与指定ORIGINAL_CONFIRMED/XLSX旧worker已有有界证据；旧写入/多任务新格式仍未验。资源为合成user unit，不是项目Linux启停。开发恢复/可取回组合继续，真实异地/生产RPO/RTO/Linux现场另列C06 |
 | D16 | [实际整单消费者](GOAL_D16_WHOLE_ORDER_L1_2026-10-16.md)、无关guard/审计和[恢复后复杂引用](GOAL_D16_RESTORED_FORMAL_REFERENCE_COMBINATION_2026-10-16.md) | 正常成功单仍有有效guard；正常目标合法退出资格没有依据。不能删guard、改状态或以任意孤立fixture造资格；新可信退出依据前该部分未完成。其余引用/原生trigger反例已有，不机械重跑 |
-| D17 | E02/E03/E06/E08与U项；[旧恢复客户端非空升级](GOAL_E07_LEGACY_RECOVERY_UPGRADE_L1_2026-10-16.md)、[原生广播四阶段](GOAL_D17_NATIVE_FOREGROUND_QUEUE_2026-10-17.md) | 引擎/接收器不等于Activity生命周期。下一有界单元验证实际FORMAL/TEMP Activity暂停/新PID原输入恢复；旧BCD/原资料/526逐材料核，不用fixture替代原件 |
+| D17 | E02/E03/E06/E08与U项；[旧恢复客户端非空升级](GOAL_E07_LEGACY_RECOVERY_UPGRADE_L1_2026-10-16.md)、[原生广播四阶段](GOAL_D17_NATIVE_FOREGROUND_QUEUE_2026-10-17.md)、[实际作业Activity四阶段](GOAL_D17_ACTIVITY_LIFECYCLE_COMBINATION_2026-10-17.md) | 有界Activity暂停/新PID原ID恢复已补；整套组合/候选仍未完成。旧BCD/原资料/526逐材料核，不用fixture替代原件 |
 | D18 | [Web候选阶段](GOAL_E09_WEB_CANDIDATE_ACCEPTANCE_2026-10-15.md)仅typecheck/契约/build/审查 | 尚无统一最终候选。实际Android、HTTP/MySQL、Chrome、Python、非空迁移、原模拟器及恢复全链L3必跑；未实现/暂缓/工具阻断未核清不能complete |
 
 ## O01–O05、U01–U04与UI重设计
@@ -47,7 +47,7 @@
 | U01 | 高频导航、E02草稿视口/搜索/数量/移除/重建、save-scan-ack实际反馈 | “作业/数据/我的”、首屏/320dp/键盘与按键按原报告范围复用；整套实际操作组合及生命周期继续，不能用静态预览通过 |
 | U02 | [结单入口](GOAL_E08_SUBMISSION_ENTRY_L1_2026-10-16.md)、[原生反馈故障](GOAL_U04_NATIVE_FEEDBACK_L1_2026-10-17.md) | 接收/确认/待落盘/耐久保存文案及未知原ID查询有切片；真实HTTP/MySQL与客户端页面组合仍需候选实跑，不能把回放说成真实服务 |
 | U03 | E03导出/救援、E06 SKU/审阅/实物、多任务Web、[SKU返回导航](GOAL_E08_SKU_NAVIGATION_L1_2026-10-16.md) | 格式/预检/待对账及分层核验有证据；受影响Android、真实文件往返、Web及恢复责任链组合继续，不以按钮或接收文件代完成 |
-| U04 | 正式/TEMP明细四字号、辅助三页组合、独立原生队列、声音未就绪、原生反馈及FORMAL/TEMP四阶段报告 | 已验分页/筛选/定位/系统栏/IME/四字号按源SHA复用。实际作业Activity生命周期仍缺；原生队列满/故障有证据，真机P50/P95/30分钟/实体键与操作员走查未验C档 |
+| U04 | 正式/TEMP明细四字号、辅助三页组合、独立原生队列、声音未就绪、原生反馈、FORMAL/TEMP广播及实际Activity四阶段报告 | 已验分页/筛选/定位/系统栏/IME/四字号和有界Activity生命周期按源SHA复用；整套业务/候选组合未完成。原生队列满/故障有证据，真机P50/P95/30分钟/实体键与操作员走查未验C档 |
 
 UI重设计属于U01–U04的产品实现及真实交互标准，不另设“视觉静态通过”口径。上述布局/导航实现不能免除同一候选上的业务组合；也不因现场设备缺失而把可隔离页面/队列测试移出开发范围。
 
@@ -67,4 +67,4 @@ UI重设计属于U01–U04的产品实现及真实交互标准，不另设“视
 
 Chrome1540 `blocked by policy`不换端口/包装重试；1522/1523、1043/A1.4、原native崩溃/恢复与本轮原生断言失败等原件和计数不清零。若有新材料/具体修复假设，先记录新增依据、旧指纹、直接依赖和一次性输入再入队。没有新依据不机械重复已验或失败链。
 
-后续增量：[实际作业Activity生命周期](GOAL_D17_ACTIVITY_LIFECYCLE_COMBINATION_2026-10-17.md)已补FORMAL/TEMP四原生阶段及Python全表消费，原应用83表328行/491全部文件不变。仅有限生命周期/合成身份与授时，不再将该具体单元列为缺证；上表D17/U04整套组合/真实服务与候选仍未完成。下一单元核TEMP产品提交仓库跨截点恢复消费者的实际覆盖，与已有FORMAL667及TEMP旧抽象连接证据比较；有确切缺口才新增，不重复旧恢复。
+后续增量：[实际作业Activity生命周期](GOAL_D17_ACTIVITY_LIFECYCLE_COMBINATION_2026-10-17.md)已补FORMAL/TEMP四原生阶段及Python全表消费，原应用83表328行/491全部文件不变；[TEMP产品仓库675](GOAL_E06_TEMP_REPOSITORY_RESTORE_L1_2026-10-17.md)已补真实会话/仓库原ID恢复；[旧worker677](GOAL_D15_OLD_WORKER_COMPATIBILITY_L1_2026-10-17.md)已补指定格式新建→旧worker→旧/新消费。各自输入/复用SHA见正式报告，不把新增报告混入原60份绑定清单，不再将这些具体单元列为缺证；整套组合/候选仍未完成。下一步逐项核D13–D16开发剩余及E06/E07/E08受影响组合，有确切缺口才新增，不重复旧恢复或无新依据失败链。

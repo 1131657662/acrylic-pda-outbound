@@ -1,5 +1,7 @@
 # 历史归档
 
+- [D15旧程序定时worker兼容 L1](GOAL_D15_OLD_WORKER_COMPATIBILITY_L1_2026-10-17.md)：新程序真实HTTP创建→旧worker实际执行→旧/新下载及Python七表/全表守恒通过；原driver exit1、离线补核与676失败均保留，仅指定格式L1开发备份，非D15整体/L2/L3。
+
 - [TEMP产品会话与原ID恢复 L1](GOAL_E06_TEMP_REPOSITORY_RESTORE_L1_2026-10-17.md)：真实会话/仓库丢GET响应→UNKNOWN→重开及SQL恢复后原ID查询、73项Python消费通过；仅合成隔离L1开发备份，运行器依赖和历史失败单列，非整体L2/L3。
 
 - [D01必做范围与剩余验收矩阵](GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17.md)：27项/60报告SHA绑定，区分历史适用、旧失败、开发缺口、L2/L3和现场；盘点不计业务通过。
