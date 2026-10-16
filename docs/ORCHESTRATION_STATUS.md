@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: ddc47564
-dirty_entries: 86
+head: b1493af9
+dirty_entries: 93
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。已取消换机承接/多跳/激活不恢复；坏机订单走有权撤回→重发→新设备从头作业，原事实与源码保留。
 
 ## Git、输入与写权
-- 固定树`D:/acrylic-pda-outbound`、`codex/development`，本批输入HEAD/实核远端`966113d88de6b18ebad08336abfa1fdc5ea8779c`；所有继承改动保护，禁止`git add .`。全部路径/哈希、binary diff、未跟踪副本/worktrees/旧看板见`.local/goal-20261016-resume/input06–08.json`及同号附件；input07/08共5391项SHA`63611e0656c4b548c386c7f536337193ab5b9beb8259d7ea7786d06d7dbaeeab`相同。
+- 固定树`D:/acrylic-pda-outbound`、`codex/development`，恢复worker交付HEAD/实核远端`b1493af99b0cbcda0d73e55f26ed623c76a895fc`；业务输入HEAD为`966113d8`。所有继承改动保护，禁止`git add .`。全部路径/哈希、binary diff、未跟踪副本/worktrees/旧看板见`.local/goal-20261016-resume/input10.json`及同号附件，5392项SHA`6f0ef5a16702ef75495ee0bef031ccc4665b8390c63d6be6dd356595d7e574d1`；提交正文换行修正前结论亦保留。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`独占源码/看板写权；清理聊天`01a13cb4`已释放全部窗口，无清理/压缩进程或后续变更。无子代理，旧owner/released标记不代替实际活动核查。
 
 ## 环境与边界
@@ -51,7 +51,12 @@ D16核Q12/WorkCorrections/BarcodeWorkGuard：有效guard须保留，VOID只适�
 正式报告`docs/history/GOAL_D15_RESTORED_EXPORT_WORKER_2026-10-16.md`：670真实HTTP创建PENDING→完整SQL/文件恢复→独立JVM产品worker/renderer→HTTP下载及Python七表逐值回读通过。179业务表229→235行、175表不变，任务仅执行一次，原14审计保留/新增3条；8原文件不变，固定snapshot原字节相同。1141复用路径SHA见同根reuse-input01，产品及原667输入未变。
 主driver业务后守恒断言exit1（会话表大小写、审计自增值），修正后仅只读Java/Python补核均通过，未同库重跑；原exit1、669部分SQL导入失败、编译/文本解码失败保留。binlog原bytes核恢复切点后源零写入。670认证停机583文件258995013 bytes双次不变，清单SHA`36ff784804eedc7eeab1d56a1324113bebc9ea57a19c564e000a760d64a1ebf2`；原667604件仍不变。三入口为main，非JUnit；仅有界组合开发备份，不计D15整体/E07 L2/D18 L3。
 清理正式回执`.local/disk-cleanup-20261016-round4/REPORT.md` SHA`2563abbd268484c37263cf36a369c7b3ace4155a6369940206fc55631efe6e8a`及`completion-receipt.json` SHA`a51db8d1abeefea1eeea8beb9cdf6907e02b4ceb65bc39c757a01314dcde839c`已实核。17957文件/10757603054逻辑bytes删除，donor/原证据保留；3冷ram.img及23完整QCOW压缩SHA/长度不变，第24中断补核通过但原调用状态未知，25–35未执行。D最终45224742912 bytes、净增23421804544，暂降原因未明；无卷级策略变更。
-下一项先明确路径提交本组合及断点，再补D15可隔离资源约束/进程启停、升级回退缺口，继续D13–D15、E06/E07/E08剩余及E09实际候选。最终D18 L3必跑范围不免除，只有第8节全部满足才complete。
+恢复worker七路径已明确提交推送`b1493af9`；生成块为提交后事实，不为自指HEAD反复amend。最终D18 L3必跑范围不免除，只有第8节全部满足才complete。
+
+## D15隔离资源L1及下一步
+正式报告`docs/history/GOAL_D15_ISOLATED_RESOURCE_L1_2026-10-16.md`：resource-07三模板九项user unit实际CPU节流、Tasks拒绝、分段MemoryHigh/MemoryMax OOM与停止排空通过。内存先验模板原high，再仅本轮随机unit临时抬软阈值测试原硬上限，未改模板；不声称原组合下OOM或生产swap策略。resource01–03等待失败、06内核回收时序断言失败保留，05通过后自审修复并07复验通过。
+独立Python核2101原件1389228 bytes双次不变，清单SHA`3ed4957b3c6e242590f60b53249fb6012b4ea34926a73419c566828c8e54415b`。input13共5395项SHA`dfe29cc9236e0ac5238ad709f5734fbde87ecb040aec3f6d1813a9a028750b0d`及同号全部改动/写权/进程/监听/磁盘/旧看板附件，继承输入仅看板变化，新增三工具；本聊天独占写权，清理聊天17:15:51再次释放全部窗口。
+九unit无活动负载/PID，Ubuntu及Docker已自动Stopped；C/D余量82745679872/45209354240 bytes，原AVD/ADB与共享mysqld保持。提交前input14共5396项SHA`5a185cee4a2eb72f32c6366fa5e8556fd277ec3d544a98264b8ea2f7757450f1`及同号附件保全，review01核仅本批七路径变化、无删除。仅L1开发备份，非项目Linux143启停/D15整体/E07 L2/D18 L3。下一项D15升级/程序回退与数据库恢复隔离实测；D16正常合法退出、E06/E07/E08剩余L2、E09实际候选继续。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

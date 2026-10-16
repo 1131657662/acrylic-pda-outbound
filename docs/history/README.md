@@ -1,5 +1,7 @@
 # 历史归档
 
+- [D15 Linux隔离资源约束 L1](GOAL_D15_ISOLATED_RESOURCE_L1_2026-10-16.md)：三模板九项实际user unit CPU/任务上限、分段内存OOM与停止排空通过，2101原件独立回读守恒；原失败保留，仅合成负载L1开发备份，非项目部署/D15整体/L2/L3。
+
 - [D15 恢复后原导出任务执行](GOAL_D15_RESTORED_EXPORT_WORKER_2026-10-16.md)：670真实HTTP/独立JVM worker/renderer/XLSX及只读守恒补核；原driver exit1、669失败和原件保留。仅有界组合开发备份，非D15整体/E07 L2/D18 L3。
 
 - [D15 恢复后任务事实与受限监控组合](GOAL_D15_RESTORED_JOBS_COMBINATION_2026-10-16.md)：新1668原667 dump/七存储文件/两验签配置守恒；派生合成任务实际备份恢复及CLI七项通过，180表/597停机文件保全。仅受影响组合开发备份，非D15整体/E07 L2/D18 L3。

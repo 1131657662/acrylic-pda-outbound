@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [D15 Linux隔离资源约束 L1](history/GOAL_D15_ISOLATED_RESOURCE_L1_2026-10-16.md)：三模板九项实际user unit CPU/任务上限、分段内存OOM及停止排空通过，2101原件独立回读守恒；原软阈值限流和回收时序失败保留。仅合成负载L1开发备份，非项目Linux部署启停/D15整体/L2/L3。
+
 - [D15 恢复后原导出任务执行](history/GOAL_D15_RESTORED_EXPORT_WORKER_2026-10-16.md)：670实际HTTP待处理任务经SQL/文件恢复，由另一JVM产品worker/renderer完成并下载；Python逐值回读及全表守恒补核通过。原driver exit1与669部分导入失败完整保留，未同库重跑；仅有界组合开发备份，非D15整体/E07 L2/D18 L3。
 
 - [D15 恢复后任务事实与受限监控组合](history/GOAL_D15_RESTORED_JOBS_COMBINATION_2026-10-16.md)：新1668原667 dump/七存储文件/两验签配置守恒；派生合成任务实际备份恢复及CLI七项通过，180表/597停机文件保全。仅受影响组合开发备份，非D15整体/E07 L2/D18 L3。
