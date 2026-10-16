@@ -1,5 +1,7 @@
 # 历史归档
 
+- [D15 原非空副本程序回退读取](GOAL_D15_PROGRAM_ROLLBACK_2026-10-16.md)：新→旧→新JAR/24次HTTP/180表与文件守恒，离线dump/会话补核通过；671部分导入、672子JVM排空失败保留。仅有界组合开发备份，非D15整体/E07 L2/D18 L3。
+
 - [D15 Linux隔离资源约束 L1](GOAL_D15_ISOLATED_RESOURCE_L1_2026-10-16.md)：三模板九项实际user unit CPU/任务上限、分段内存OOM与停止排空通过，2101原件独立回读守恒；原失败保留，仅合成负载L1开发备份，非项目部署/D15整体/L2/L3。
 
 - [D15 恢复后原导出任务执行](GOAL_D15_RESTORED_EXPORT_WORKER_2026-10-16.md)：670真实HTTP/独立JVM worker/renderer/XLSX及只读守恒补核；原driver exit1、669失败和原件保留。仅有界组合开发备份，非D15整体/E07 L2/D18 L3。
