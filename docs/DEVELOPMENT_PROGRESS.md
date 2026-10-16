@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [D15 恢复后任务事实与受限监控组合](history/GOAL_D15_RESTORED_JOBS_COMBINATION_2026-10-16.md)：新1668原667 dump/七存储文件/两验签配置守恒；派生合成任务实际备份恢复及CLI七项通过，180表/597停机文件保全。仅受影响组合开发备份，非D15整体/E07 L2/D18 L3。
+
 - [E08 独立 SKU 返回导航 L1](history/GOAL_E08_SKU_NAVIGATION_L1_2026-10-16.md)：原 AVD 四档字号实际数据/SKU/身份/真实键盘输入与两次返回通过；83 表 328 行及 358 原文件不变，2018 证据双次核验，运行器失败保留。仅导航 L1 开发备份，非 E08/U 整体或 L2/L3。
 
 - [E07 产品提交仓库与原未知批次恢复组合](history/GOAL_E07_FORMAL_REPOSITORY_RESTORE_COMBINATION_2026-10-16.md)：667实际PdaSession/SubmissionRepository真实提交丢响应→Room重开原ID查询→SQL/文件恢复→第二Android JVM原ID查询及原签归档通过；604原件独立Python守恒，666失败和consumer01时间断言原件保留。仅组合开发备份，非E07整体L2/D16整体/D18 L3。

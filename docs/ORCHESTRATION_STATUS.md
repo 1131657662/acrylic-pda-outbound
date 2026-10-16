@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: e1faced3
-dirty_entries: 87
+head: 0b4e5073
+dirty_entries: 92
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,12 +17,12 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。已取消换机承接/多跳/激活不恢复；坏机订单走有权撤回→重发→新设备从头作业，原事实与源码保留。
 
 ## Git、输入与写权
-- 固定树`D:/acrylic-pda-outbound`、`codex/development`，HEAD/远端`e1faced32ceabc0ffc4e40036c8303d8360b9ffe`；88项切片前改动保持，禁止`git add .`。667已推送。E08导航运行input02/03/04共5384项SHA`27fee1cfe647e5459c3151b99614df3cdc17908e7da60063285dffb941f31ce9`；全部路径/哈希、binary diff、未跟踪副本/worktrees/旧看板见`.local/goal-20261016/e08-sku-navigation02/input08.json`及同号附件。
-- 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`唯一写者；清理聊天complete-released且复查idle，进度聊天idle，无并行写者/子代理/在途清理。e08-sku-navigation02/ownership08及processes/listeners-08记录实际状态，旧owner/released标记不单独证明写权。
+- 固定树`D:/acrylic-pda-outbound`、`codex/development`，本批输入HEAD/远端`0b4e5073e27b09cca9d53d1ab631a8b16b01f9b4`；86项继承改动保持，禁止`git add .`。667已推送。E08导航运行input02/03/04共5384项SHA`27fee1cfe647e5459c3151b99614df3cdc17908e7da60063285dffb941f31ce9`；全部路径/哈希、binary diff、未跟踪副本/worktrees/旧看板见`.local/goal-20261016/d15-restored-jobs01/input04.json`及同号附件。
+- 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`唯一写者；清理聊天complete-released且复查idle，进度聊天idle，无并行写者/子代理/在途清理。d15-restored-jobs01/ownership04及processes/listeners-04记录实际状态，旧owner/released标记不单独证明写权。
 
 ## 环境与边界
 - 665/666/667认证停机，667 DB19377/HTTP19437/proxy19438/预留19439零监听，无本批Java/Gradle/MySQL残留；旧失败库不复用。共享mysqld4632/5440身份未核清仅观察，不连接/停止；原TEMP AVD emulator12912/qemu12108、5564/5565与ADB8500/5037保留；E08实际操作原AVD后字号恢复1.0、IME设置0、reverse空、App强停。
-- E08同根disks-05保存C/D实际余量；disks-04为`82,991,566,848 / 22,093,291,520` bytes；新证据/DB/dump/binlog/临时均D盘，无清理。失败库、原日志/XML/HTTP/签名/回执、原资料/Keystore/AVD/最终APK保留。
+- D15同根disks-03为C/D余量`82,983,694,336 / 21,807,439,872` bytes，disks-04再采样；新证据/DB/dump/binlog/临时均D盘，无清理。失败库、原日志/XML/HTTP/签名/回执、原资料/Keystore/AVD/最终APK保留。
 - 七类生产决定handler/POST/放行/证据写入/关闭能力、TEMP生产归档及`localDeletionAllowed=false`保持关闭；不接原库/现网、不合main、不发布部署、不用正式签名。合成身份/fixture/模拟器不能代替原PDA事实，D16标准不变。
 
 ## 本切片及可复用证据
@@ -40,11 +40,12 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 本批retention01因旧catalog全面拒绝原trigger，tests02规范化清单常量错误导致19原生setUp errors，review01清单文件名错误，原件/脚本/失败指纹均保留；只有直接受影响范围补验，不清零计数。1522/1523旧失败不机械重跑，全部失败库/datadir/dump/binlog及原日志保留。
 - 原资料/旧BCD/真机/原身份/原签/现场回执与长时限制保持单列；本批无新Chrome/产品APK/普通全回归/外置介质结论；测试APK构建及原AVD四档导航另见正式报告。U01–U04完整组合、E06/E07/E08剩余L2、E09实际候选与D18最终Android/真实HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复L3均未完成。
 
-## 本批导航L1及下一步
-正式报告`docs/history/GOAL_E08_SKU_NAVIGATION_L1_2026-10-16.md`：真实数据→SKU→身份→实际IME/非凭据文本输入清除→SKU→数据，1.0/1.3/1.5/2.0四档分别54.859/52.001/62.777/76.369秒通过。仅测试滑动采用实际系统栏/IME安全区，产品九个UI/XML路径按原布局报告SHA复用。
-独立Python每档核83表328行零差异、358既有文件不变；2018原件161406238 bytes双次SHA一致，manifest SHA`a742604e23fa7c21d116171d5d109d1b47f94d6f9f0ba2e7c19caaf9b784581c`。runner首轮font重复关键字在instrumentation前失败，摘要保留，无业务执行；原SKU失败保留，不机械重跑。
-本切片仅E08导航L1开发备份，五路径已明确提交推送并核远端；667原恢复组合报告和604原件可按SHA复用。666真实写入后autoRetry断言失败及consumer01时间断言原件继续保留，不复用失败库。
-继续D16正常目标合法退出/复杂引用与D13–D15组合、E06受影响组合、E07/E08独立剩余及E09实际候选；最终D18 L3必跑范围不免除。阶段备份不标总目标complete，仅第8节全部满足后收口。
+## 本批D15恢复监控及下一步
+正式报告`docs/history/GOAL_D15_RESTORED_JOBS_COMBINATION_2026-10-16.md`：新1668/19378实际恢复667原dump/7存储文件/2验签配置，原dump逐字SHA`fa024e4683d9471fd329107614993d4bec0368a6c919ae333f9bb363a8bcca30`；原180表322行、派生合成5任务后180表327行再次备份恢复dump逐字相同。
+真实CLI七项30.515秒全过：原空任务/显式阈值成功，默认FAILED/过期租约/等待告警、错UUID/撤权/载荷与写入/非空覆盖拒绝；九守恒回执，Python逐行独立计数。input02/03共5387项SHA`fa1db06d7171f3aee29a480ce3bcd46fafa2b76deb69547e6ccbbba737b1ce80`，7产品监控路径与旧L1最终输入一致。
+1668两schema/360表认证dump停机，597文件双次hash/长度不变、19378零监听且全mysqld命令行无本批路径；原667604件不变。review01数量/review02独立before读取错误与一次引号失败均保留，review03只读补核通过，未重跑业务。
+E08导航L1已推送e1faced3，后断点推送0b4e5073；四档83表328行/358文件不变及2018证据按报告SHA复用，不重跑。本批仅D15/E07受影响组合开发备份，待六路径明确提交；无恢复后worker执行/完整应用写链/Linux限额/外部介质结论。
+下一项核对D16正常目标合法退出/复杂引用与可取回缺口，不删guard制造资格；继续D13–D15组合、E06/E07/E08剩余及E09实际候选。最终D18 L3必跑范围不免除，只有第8节全部满足才complete。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
