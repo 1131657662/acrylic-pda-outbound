@@ -39,9 +39,10 @@ class DataCredentialLayoutDeviceTest {
             await { onView(withId(R.id.reload)).check(matches(isEnabled())) }
             keyboardLayout()
             tap(R.id.back)
-            onView(withId(R.id.back)).perform(ViewActions.scrollTo())
-            settle()
-            onView(withId(R.id.back)).check(matches(isCompletelyDisplayed())).perform(ViewActions.click())
+            await { onView(withId(R.id.choose)).check(matches(isEnabled())) }
+            reveal(R.id.back)
+            inspectAndSave("sku-return")
+            tap(R.id.back)
             onView(withId(R.id.dataPage)).check(matches(isSelected()))
         }
         androidx.work.WorkManager.getInstance(app).cancelAllWork().result.get()
@@ -84,34 +85,38 @@ class DataCredentialLayoutDeviceTest {
     private fun tap(id: Int) { reveal(id); onView(withId(id)).perform(ViewActions.click()); settle() }
 
     private fun reveal(id: Int) {
-        repeat(25) {
+        repeat(12) {
             settle()
-            if (runCatching { onView(withId(id)).check(matches(isCompletelyDisplayed())) }.isSuccess) return
+            var visible = false
             var below = true
-            onView(withId(id)).perform(object : androidx.test.espresso.ViewAction {
-                override fun getConstraints() = withEffectiveVisibility(Visibility.VISIBLE)
-                override fun getDescription() = "Read position without invoking action"
-                override fun perform(controller: androidx.test.espresso.UiController, view: View) {
-                    val root = view.rootView
-                    val insets = checkNotNull(ViewCompat.getRootWindowInsets(root))
-                    val top = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
-                    val bottom = maxOf(insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom,
-                        insets.getInsets(WindowInsetsCompat.Type.ime()).bottom)
-                    val p = IntArray(2); view.getLocationInWindow(p)
-                    below = p[1] > (top + root.height - bottom) / 2
-                }
-            })
+            onView(withId(id)).check { view, error ->
+                if (error != null) throw error
+                val bounds = safeBounds(view)
+                val p = IntArray(2); view.getLocationOnScreen(p)
+                visible = p[1] >= bounds.first && p[1] + view.height <= bounds.second
+                below = p[1] > (bounds.first + bounds.second) / 2
+            }
+            if (visible) return
             onView(isAssignableFrom(ScrollView::class.java)).perform(GeneralSwipeAction(Swipe.SLOW,
-                { v -> point(v, if (below) 0.8f else 0.25f) },
-                { v -> point(v, if (below) 0.25f else 0.8f) }, Press.FINGER))
+                { v -> point(v, if (below) 0.8f else 0.2f) },
+                { v -> point(v, if (below) 0.2f else 0.8f) }, Press.FINGER))
         }
-        onView(withId(id)).check(matches(isCompletelyDisplayed()))
+        error("Control $id is unreachable in the real safe viewport")
+    }
+
+    private fun safeBounds(view: View): Pair<Int, Int> {
+        val root = view.rootView
+        val insets = checkNotNull(ViewCompat.getRootWindowInsets(root))
+        val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+        val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+        val p = IntArray(2); root.getLocationOnScreen(p)
+        return p[1] + bars.top to p[1] + root.height - maxOf(bars.bottom, ime.bottom)
     }
 
     private fun point(view: View, fraction: Float): FloatArray {
+        val bounds = safeBounds(view)
         val p = IntArray(2); view.getLocationOnScreen(p)
-        val ime = ViewCompat.getRootWindowInsets(view)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
-        return floatArrayOf(p[0] + view.width * 0.5f, p[1] + (view.height - ime).coerceAtLeast(1) * fraction)
+        return floatArrayOf(p[0] + view.width * 0.5f, bounds.first + (bounds.second - bounds.first) * fraction)
     }
 
     private fun settle() {
