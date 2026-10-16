@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E06 多任务关联网页 L1 接续复核](GOAL_E06_MULTITASK_ASSOCIATION_WEB_L1_REVIEW_2026-10-17.md)：复核历史输入绑定、八项日志、13/16 项消费者、Chrome、180 表事实与 1538 的 347 文件保全；记录当前输入漂移和只读复核脚本失败指纹。仅历史 L1 开发备份，不计 E06 L2、D18 L3 或总目标。
+
 - [D15旧程序定时worker兼容 L1](GOAL_D15_OLD_WORKER_COMPATIBILITY_L1_2026-10-17.md)：新程序真实HTTP创建→旧worker实际执行→旧/新下载及Python七表/全表守恒通过；原driver exit1、离线补核与676失败均保留，仅指定格式L1开发备份，非D15整体/L2/L3。
 
 - [D13 恢复 worker、文件与导出 L1](GOAL_D13_RECOVERY_WORKER_FILE_EXPORT_L1_2026-10-17.md)：新隔离 run 684 真实 HTTP 创建、SQL/文件恢复、独立 worker JVM、renderer/XLSX 下载及 Python/Java 只读消费者通过；681–683 失败原件保留。仅有界 L1 开发备份，不计 D13 L2、D18 L3 或总目标。
