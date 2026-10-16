@@ -1,5 +1,7 @@
 # 历史归档
 
+- [D17/U04原生广播暂停与跨进程原ID组合](GOAL_D17_NATIVE_FOREGROUND_QUEUE_2026-10-17.md)：FORMAL/TEMP四原生阶段、7项主机及Python全表守恒通过；原ID唯一保存/重复拒绝，原83表328行保持，失败副本完整保留。仅测试组合开发备份，非Activity生命周期、整体L2或D18 L3。
+
 - [U04原生反馈异常与原ID恢复 L1](GOAL_U04_NATIVE_FEEDBACK_L1_2026-10-17.md)：实际instrumentation与Python全表消费通过，提交后反馈异常停扫/原ID新engine恢复无重复，原83表328行不变；WorkManager元数据单列，失败下载保留，仅测试L1，非整体L2/L3。
 
 - [U04 TEMP明细有限分页 L1](GOAL_U04_TEMPORARY_DETAILS_L1_2026-10-16.md)：21项主机及受影响6项复验、最终APK四字号/阻断前驱实际交互及Python全表守恒通过；原5564的455文件/83表328行保持，1703/1704停机。首次失败库缺失限制和所有失败原件单列，仅L1开发备份，非U整体/E08 L2/D18 L3。
