@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: 884e17b8
-dirty_entries: 93
+head: 7d0e26da
+dirty_entries: 94
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。故障订单按“有权撤回→重发→新设备从头作业”，已取消的换机承接/多跳/激活不恢复，原事实与源码保留。
 
 ## Git、写权与输入
-- 固定工作区`D:/acrylic-pda-outbound`、分支`codex/development`；设置诊断L1开发备份10路径已提交推送，HEAD与远端同为`884e17b8b47e50f1a1bdb00b2e6699ed33e9987c`。提交推送后设置input09全量5339项SHA `ad7486430a2492f86b288374600c4d91d00f2642f74c111ab390bfed8cff56fc`；全部差异/原件/写权/环境保全，main只读，禁止`git add .`。
+- 固定工作区`D:/acrylic-pda-outbound`、分支`codex/development`；更新页L1开发备份7路径已提交推送，HEAD与远端同为`7d0e26da65445ec16aebf078f621f7895b67bc29`。提交推送后更新页input07全量5341项SHA `e5da889e9600936f29507b7b6c7b73da4fda0a09ec314e1871ccc2e48a45064e`；全部差异/原件/写权/环境保全，main只读，禁止`git add .`。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`为源码、库、看板、索引唯一写者；清理聊天已回执`complete-released`且实查idle。“查看当前开发进度。”聊天仅只读核查。无子代理、无并行项目写者。
 - E08结单入口证据`.local/goal-20261016/e08-submission-entry01/`；提交推送后input12全量5315项SHA `f038fe5f756e859a6ea4a263e2f13d2b4012f48a7a7df1614ca27d5c7fd29cf7`，接续逐项实算无漂移；状态/全部差异/未跟踪原件/写权/环境已保存，ownership12-current.json纠正模板旧措辞。更新前先存`board-before-d16-start.md`；只提交15个明确路径，全部继承改动保留。
 - E02提交推送后快照`.local/goal-20261016/resume-20261016-e02-l1-postpush/`：全量输入哈希、Git状态/未跟踪原件、binary diff、唯一写权、进程/监听及磁盘；旧看板先存`board-before.md`。提交前快照保留，继承改动未混入。
@@ -41,7 +41,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - E08设置/连接诊断L1见`docs/history/GOAL_E08_SETTINGS_DIAGNOSIS_L1_2026-10-16.md`：6项定向/APK/lint通过（434警告/0错误）；原模拟器100/130/150/200%字号实际导航/声音往返/停机后台诊断/详情/更新页/取消退出通过，83表328行及244原件不变。滚动和取证失败保留；旧恢复接收确认属取消交接链，不执行或提交。
 - 设置证据`.local/goal-20261016/e08-settings01/`：input04 SHA `ed1de1983ad0dda2247ff0f044d14cf2e3cc75be0624e5a0ffd0ca251427364b`绑定build02，input05/06全量5339项SHA `1be0a668a55cbb42a0ba5ae5e11fb32985d3d882f82faed9513a1af4ae6b0ab5`；manifest01 SHA `4e591004d4a1688f6ca29a07fd07b0f13edaee7520eec580f067f388b75fe5e9`核1956证据双次不变。字号还原1.0、App强停、reverse为空；无本批重任务/服务，C/D余量83,064,414,208/34,044,616,704 bytes。下一步明确路径提交及E06/E07/E08剩余组合，不计U整体/L2/L3。
 - E01–E05/O03及E06既有资料按进度索引和输入SHA复用；E06 L2、D18 L3、U01–U04完整组合仍未完成，历史失败/暂缓计数保留。
-- E08更新页L1见`docs/history/GOAL_E08_UPDATE_LAYOUT_L1_2026-10-16.md`：29项实际更新模块/APK/lint通过，build02单测UP-TO-DATE复用原XML；四字号实际入口/系统栏/滑动/返回通过。83表328行及269原文件不变，截图错位原件保留并补正；证据`.local/goal-20261016/e08-update-layout01/`input04/05 SHA `86af7445fc5567cd4626a292119d987d100e6657c18c5df95eece48557d6c1ee`、manifest01 SHA `f538a4fcb5b064c94982718f590938530f2eee25c867d5269005fe306c858a30`核2786项双次不变。C/D余量83,058,728,960/33,685,938,176 bytes，字号1.0/App强停/reverse空；下一步7路径提交及数据/独立来源辅助页，非U整体/L2/L3。
+- E08更新页L1见`docs/history/GOAL_E08_UPDATE_LAYOUT_L1_2026-10-16.md`：29项实际更新模块/APK/lint通过，build02单测UP-TO-DATE复用原XML；四字号实际入口/系统栏/滑动/返回通过。83表328行及269原文件不变，截图错位原件保留并补正；证据`.local/goal-20261016/e08-update-layout01/`input04/05 SHA `86af7445fc5567cd4626a292119d987d100e6657c18c5df95eece48557d6c1ee`、manifest01 SHA `f538a4fcb5b064c94982718f590938530f2eee25c867d5269005fe306c858a30`核2786项双次不变。C/D余量83,058,728,960/33,685,938,176 bytes，字号1.0/App强停/reverse空；7路径已推送；身份页后续见下项，非U整体/L2/L3。
 - E07/O05已有同机恢复、外置副本工具、历史钥/重锚/中止/原签还原、检查点/binlog、闭合归档消费、故障围栏、非空升级、编号对账、实物/独立JVM/运维等切片；剩余受影响组合仍未形成E07 L2证据。真实异地介质/保管回取单列C06，不阻断独立开发。
 - 642/629独立检查点消费者与644受影响组合均通过并有正式报告；仅局部开发备份，不计E07 L2、D14/D15整体、D18 L3或总目标。643端口偏差失败及更早失败原件继续保留。
 - E07/647受影响组合：IT 1/0/0/0、7组HTTP 200/OK、消费者649通过，859文件双次守恒、179表/622行及迁移历史一致，认证停机；645/646失败保留。仅组合开发验收。
@@ -49,6 +49,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - E02草稿视口/页面编辑L1见`docs/history/GOAL_E02_DRAFT_VIEWPORT_EDITOR_L1_2026-10-16.md`：外层吸收insets，device10原序列/device11真实触摸通过；editor01异步退出断言失败保留，补等待/清旧error后editor02数量/移除/重建/丢弃/重开通过，83表/原草稿守恒。build10定向11/11、APK/lint通过，5304项输入未变。目录`.local/goal-20261016/e02-touch-diagnostic01/`；后续保存扫码分段证据见下项，不计U整体，原三次失败不清零。1540浏览器审批阻断保留，最终D18 L3必跑。
 - 保存→扫码组合：`renewal660-01`真实HTTP/MySQL/原模拟器合法续备通过；`savescan660-01`误用F1确认失败且本地已写入，原件保留。build07与`savescan660-resume01`通过：Enter确认原待输入→有效1包300500g→暂停拒收→恢复重复拒绝→确认处理结果，无提交。分段接续不称一次全程成功。独立Python `consumer02`原签/分片/ACK/plan及83表差异、180服务表事实通过，原业务行保留（work_device计数按预期递增），3788文件哈希见索引；658/659失败不追认通过。
 - 确认重复失败后旧提示残留已最小修复；build08定向18/0/0/0、产品/测试APK及lint通过。ack-ui01原订单真实重复拒绝→页面确认→完成反馈通过，截图已自审；Python consumer03核83表受控差异、有效仍1、无submission、binding/原输入保留，36原件双次哈希守恒。consumer02库外binlog父级路径错误已保留旧脚本并只读补核；3785旧原件未变，3项日志/运行器/脚本差异明确记录。正式报告`docs/history/GOAL_E02_SAVE_SCAN_ACK_L1_2026-10-16.md`，仅L1开发备份。结单/设置L1已有后续索引；下一步E07/E06剩余组合、E08辅助体验和E09，不恢复已取消接收者确认链，不计U整体/L2/L3或总目标。
+- E08身份页布局L1见`docs/history/GOAL_E08_CREDENTIAL_LAYOUT_L1_2026-10-16.md`：11项原XML/APK/lint及四字号直接键盘/输入/滑动/返回通过；完整数据/SKU返回导航失败保留并暂缓，非U整体/L2/L3。证据`.local/goal-20261016/e08-data-credential-layout01/`input16/17共5343项SHA `15075c3e2fdb64d7b582d14bc232531c60e4cfe82be4942fb6a9f624d7064267`、manifest01 SHA `d1c1d621dc4ae2737962c08995e587f8395e9cf4433cbc0993ced517a5f43c59`核5056项双次不变；各轮83表328行/304原件保持。宽筛选误选旧取消链的合成主机方法已纠正，不计本批；所有失败原件保留。input17 C/D余量83,033,030,656/33,004,785,664 bytes，字号1.0/IME设置0/App强停/reverse空、无本批重任务。下一步明确路径开发备份后补E07 644只读独立消费，不重跑旧业务。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

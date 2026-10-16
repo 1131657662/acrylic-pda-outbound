@@ -18,7 +18,8 @@ class IndependentCredentialActivity : ComponentActivity() {
         binding = ActivityIndependentCredentialBinding.inflate(layoutInflater); setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets
+            val keyboard = insets.getInsets(WindowInsetsCompat.Type.ime())
+            view.setPadding(bars.left, bars.top, bars.right, maxOf(bars.bottom, keyboard.bottom)); insets
         }
         binding.provision.setOnClickListener { model.provision(password()) }
         binding.verify.setOnClickListener { model.verify(password()) }
