@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: 0aa20567
-dirty_entries: 105
+head: 227b0763
+dirty_entries: 99
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,13 +17,13 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户明确恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；目标active，只有全部闸门满足才complete。取消的换机承接/多跳/激活不恢复。L1/有界组合开发备份不能计D项整体或D18 L3。
 
 ## Git、写权、输入
-- 固定树D:/acrylic-pda-outbound、codex/development；提交前实核HEAD/真实远端均0aa205676fb3a4e83d438a3a69f26e165eef2319。拟仅提交D15旧worker六测试/正式报告及必要索引/矩阵/断点；其他继承Android/server/工具/资料不夹带，禁止git add .。
-- 本聊天01a13a57-8082-7dd2-a08f-987483dcda4b唯一写者，无子代理；清理聊天01a13cb4及另两项目聊天实际idle，其他旧聊天notLoaded，清理已明确释放。登记ownership35.json，旧owner/released字段不代实际核查。
-- 全量输入.local/goal-20261017-resume/input35.json：5485项，SHA 4cdc932566eeaea7c3a41b4d8c244a11402e602cd32fb93ccc6279943d3ae180；同号全部dirty/untracked原件、binary diff、33树、远端、写权、进程/监听/磁盘齐。相比input34仅四份本批文档改变；input33→34只checks离线断言。旧看板先另存同目录board-before-d15-old-worker-commit01.md。
+- 固定树D:/acrylic-pda-outbound、codex/development；提交后实核HEAD/真实远端均227b0763ef73575d1378f96bbcd95e576ff5f86f；D15旧worker六测试/正式报告及必要索引/矩阵/断点共11路径已提交推送，回执.local/goal-20261017-resume/d15-old-worker-git01.json；其他继承Android/server/工具/资料不夹带，禁止git add .。
+- 本聊天01a13a57-8082-7dd2-a08f-987483dcda4b唯一写者，无子代理；清理聊天01a13cb4及另两项目聊天实际idle，其他旧聊天notLoaded，清理已明确释放。登记ownership38.json，旧owner/released字段不代实际核查。
+- 全量输入.local/goal-20261017-resume/input43.json：5485项，SHA 2e4ddaf1a5fc08d8e50735746076ffbe2db8a0a47b4eee1da7fa2f06a42594f5；同号全部dirty/untracked原件、binary diff、33树、远端、写权、进程/监听/磁盘齐。input40–42同哈希；input43包含 R08 harness 收尾修复。更新前旧看板另存board-before-r08-update01.md。
 
 ## 环境与边界
-- 本批676/677及既有665–675/1668均封存停机，不复用旧库。snapshot35实测19380–19465零监听，无Java/Gradle/MySQL重型任务；共享mysqld4632/5440身份未知，只观察不连接停止。原TEMP AVD emulator12912/qemu12108、5564/5565及ADB8500保留，真机未操作。
-- snapshot35 C/D余量78577717248/13925572608 bytes；新增证据/临时/隔离库均优先D盘，本批无清理。重型前复测及估计增长，子进程TEMP/TMP/Java临时专用，不改全局HOME/CODEX_HOME。
+- 本批676/677及既有665–675/1668均封存停机，不复用旧库。R08 680 在 `127.0.0.1:23308/acrylic_r08_it_680` 完整14项通过，停机后数据目录约236697749 bytes仍保留且目标监听为零；共享mysqld4632/5440身份未知，只观察不连接停止。原TEMP AVD emulator12912/qemu12108、5564/5565及ADB8500保留，真机未操作。
+- R08 678/679 的旧浏览器路径503及679收尾自动删除495个旧datadir事实已在专项报告登记；678/679日志、marker、storage保留。`tools/r08-provision-and-run.ps1` 已移除自动清理调用，后续清理须单独、明确路径执行。680 preflight/postflight记录C/D余量、进程和监听；子进程TEMP/TMP/Java临时专用，不改全局HOME/CODEX_HOME。
 - 不接原库现网、不合main、不发布部署/Release、不用正式签名、不绕过审批。七类生产决定handler/POST/放行/证据写入/关闭、TEMP生产归档保持关闭，localDeletionAllowed=false，D16标准不变；合成输入不代原PDA现场事实。
 
 ## D15旧worker有界L1
@@ -33,18 +33,22 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 677认证停机、四JDK/renderer排空、19387零监听；封存488文件227026255 bytes，manifest SHA 5bf81029004a0434ad51ac77c5a00f1f143993366911c83b4b63ec9a3e768deb，dump SHA c72d57a52262bb3f851565cb22fa190cafe17b99401de8d4d3daeb115eb0abe4；封存根禁止新输出。
 - 676先登录后错期望403/实际404，run01 exit1完整保全415文件223604182 bytes；manifest SHA 1c82743a8026e9151433d4ef173bc1ff9a14117f93d556acde45c6c564f54813，dump SHA 1f4c760c68973ec8f15e4627bae2a6ce0b9e310bc4cd5365acbe36a65aeacf63，不复用/不清零计数。原667共604文件261439064 bytes保持，manifest SHA 180c908a8966ea3bf0a64a4355ad49e521b6a78b2ab4e145d363d5417f8042c3。
 
+## D11 R08导出套件 L1
+- `docs/history/GOAL_D11_R08_EXPORT_INTEGRATION_L1_2026-10-17.md`：680新隔离库完整 `R08ExportIT` 14 tests/0 failures/0 errors/0 skipped，覆盖真实 HTTP/MySQL、renderer、PDF/XLSX、幂等/并发/权限/篡改及拒绝路径；关键 XML SHA 444bbb923154046a2302b130868f34cbd375e331e30e358f07b1bd11e278710f。仅补 R08 套件 L1，D11受影响组合、E06/E07 L2、D18 L3及Python/Android/Chrome全链仍未完成。
+
 ## 已验复用与未验
 - 正式入口统一docs/DEVELOPMENT_PROGRESS.md及docs/history/README.md；D01矩阵GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17.md绑定27项/原60报告，后续增量各按路径+SHA引用，不拼作L2/L3。
 - E01–E05/O03，E06资料/身份/任务/SCAN/VOID/导出/结束/核原/实物/关联冲突/多任务网页L1按正式报告复用。1539原HTTP/JDBC/原签/原AVD/347停机文件及460文件消费者补核见GOAL_E06_RETAINED_COMBINATION_AUDIT_2026-10-16.md；仍非E06完整L2。Chrome1540 blocked by policy无新批准不换包装重试。
 - E07历史钥/重锚/原签/撤回/更正/退库/中转/独立/实物/编号/运维及644/647/663–667按报告复用；FORMAL667产品提交仓库与TEMP675真实Vault/PdaSession/TemporarySession仓库原ID UNKNOWN→重开→SQL/files恢复已有有界证据。675未提交Java运行器依赖、674失败及consumer01–06保留；不从头重做。
 - D15非空升级1550、恢复监控1668、产品worker670、新→旧→新673及资源约束均按报告复用；本批只补指定旧worker格式。670/677 driver exit1只读补核不冒称原成功，669/671/672/676失败原件保留。合成user unit不等于Linux项目实际启停，真实异地/现场另列C06。
+- D11 R08完整套件按专项报告复用；678旧浏览器路径失败和679定向PDF补验不覆盖680全套，自动datadir删除事实保留并不记作证据通过。
 - D17/U04实际FORMAL/TEMP Activity四原生阶段见GOAL_D17_ACTIVITY_LIFECYCLE_COMBINATION_2026-10-17.md，原83表328行/491文件不变；四字号明细/辅助导航/独立满队列/反馈故障/声音未就绪及缓存引用保护按报告复用，仍非U整体或L2/L3。
 - D16整单消费者/原生trigger/复杂引用/恢复后事实及12CLI有报告；正常成功目标仍有有效guard，合法退出依据未齐，不删guard或伪造状态造资格，D16整体未完成。D13–D15完整组合、E06/E07/E08剩余L2、E09候选、D18实际Android/HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复全链L3未完成。
 - 1522/1523、1043/A1.4、Chrome1540及其他历史失败/暂缓原件与同根因计数保留，无新依据不机械重试。原资料/旧BCD/原身份/原签/真机/现场/异地取回及长时限制单列；不能把可隔离开发缺口挪入现场项。
 - 清理回执.local/disk-cleanup-20261016-round4/REPORT.md及completion-receipt.json保持；原件/失败库/donor/最终APK保留，QCOW第24调用状态未知、25–35未执行，D盘暂降回升原因未明，不以allocated变化当卷净释放。
 
 ## 下一动作
-先完成本批明确路径暂存自审、L1开发备份提交/推送并核真实远端；随后逐项核D13–D16剩余验收，优先有证据的新缺口及E06/E07/E08受影响组合，推进E09/D18。旧写入/多任务格式先确认实际兼容要求和原输入，禁止为凑验收重跑已有链；D16先找合法退出依据。总目标继续active。
+本批R08 L1报告与harness修复待明确路径提交并推送；之后继续逐项核D13–D16剩余验收，优先有证据的新缺口及E06/E07/E08受影响组合，推进E09/D18。旧写入/多任务格式先确认实际兼容要求和原输入，禁止为凑验收重跑已有链；D16先找合法退出依据。总目标继续active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

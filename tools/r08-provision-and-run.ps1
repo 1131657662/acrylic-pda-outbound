@@ -243,9 +243,6 @@ if (-not $KeepServerRunning) {
 }
 if ($gradleExit -ne 0) { exit $gradleExit }
 
-# 例行维护：只保留最近 50 个 attempt 的 datadir（MySQL 数据目录），删除更早的 datadir；
-# 日志/marker/storage/签名材料一律保留（见 tools/cleanup-old-attempt-datadirs.ps1 的说明）。
-$cleanup = Join-Path (Split-Path -Parent $PSCommandPath) 'cleanup-old-attempt-datadirs.ps1'
-if (Test-Path -LiteralPath $cleanup) {
-    & powershell -NoProfile -ExecutionPolicy Bypass -File $cleanup -Local (Join-Path $Workspace '.local') -Keep 50 -CleanupAfterRun
-}
+# Datadirs are part of the reproducible database evidence and remain available for
+# post-run dumps or independent readback. Any disk cleanup must be an explicit,
+# separately reviewed operation; the harness never deletes prior attempt data.

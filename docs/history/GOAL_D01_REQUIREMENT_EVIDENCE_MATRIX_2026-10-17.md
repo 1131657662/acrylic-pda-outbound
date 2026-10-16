@@ -26,7 +26,7 @@
 | D08 | [P06 HEADER补偿](GOAL_E04_P06_HEADER_COMPENSATION_2026-10-12.md)、[净值多来源](GOAL_E05_NET_SUMMARY_2026-10-13.md)及D14更正检查点 | 保留原出库/原签、逐包贡献与账务；候选覆盖退货/错误/重量/抬头及撤销、独立审批/并发/后继冲突，不能只跑查询 |
 | D09 | [对账](GOAL_E04_P06_RECONCILIATION_2026-10-13.md)、[退库新周期](GOAL_E04_P06_RETURNED_STOCK_2026-10-13.md)、FORMAL/开放FORMAL/开放TEMP/PC解隔离报告（完整路径见绑定清单） | 逐来源正向已有，按E06新增组合与恢复范围核漂移；最终新周期再出库/旧周期防重/账务唯一性必须实际组合，不以案件结案代业务完成 |
 | D10 | D10故障撤回HTTP、P04产品、E01/P06各入口与附件证据 | 核附件三容量边界及真实字节、越权/撤权/原请求恢复的候选覆盖；受影响Android/Web实际成功操作仍必跑，Chrome1540阻断不绕过 |
-| D11 | E05净值、[独立来源导出](GOAL_E06_INDEPENDENT_EXPORT_2026-10-14.md)、E03电脑工具 | E05当批未跑完整R08ExportIT，不能称全套。候选按正式/TEMP/R06/撤回重发/调整/独立来源映射汇总、固定版本及原顺序，独立来源不计成功出库 |
+| D11 | E05净值、[独立来源导出](GOAL_E06_INDEPENDENT_EXPORT_2026-10-14.md)、E03电脑工具、[R08完整导出套件 L1](GOAL_D11_R08_EXPORT_INTEGRATION_L1_2026-10-17.md) | R08ExportIT 已在新隔离库完整执行14项并通过；仍只收口该套件 L1。候选按正式/TEMP/R06/撤回重发/调整/独立来源映射汇总、固定版本及原顺序，独立来源不计成功出库；D11 受影响组合及 D18 L3 仍必做 |
 | D12 | [O03受控中转](GOAL_E05_O03_ACCEPTANCE_2026-10-13.md)、E03救援/主管Android、[恢复后产品worker](GOAL_D15_RESTORED_EXPORT_WORKER_2026-10-16.md) | 格式/安全Excel/文件失败和回执消费已分层验证；候选实际执行任务/下载/重启/授权变化/损坏与Android文件消费组合，不将“已接收”当成功 |
 | D13 | P07 keyring/offline-rekey/restore及[历史覆盖](GOAL_E07_HISTORY_COVERAGE_ACCEPTANCE_2026-10-15.md)；原根/原钥与UNKNOWN围栏报告 | 历史轮换/中止/显式还原有专项，不能用旧“尚无历史钥”判断。候选补跨入口（HTTP/Session/worker/文件/导出）有界组合与错根/错库/水位反例 |
 | D14 | [撤回656/657](GOAL_E07_WITHDRAWAL_RECOVERY_COMBINATION_654_ACCEPTANCE_2026-10-16.md)、更正618、退库624、中转625、[独立647](GOAL_E07_COMBINATION_647_ACCEPTANCE_2026-10-16.md)、[产品仓库667](GOAL_E07_FORMAL_REPOSITORY_RESTORE_COMBINATION_2026-10-16.md)、[TEMP产品仓库675](GOAL_E06_TEMP_REPOSITORY_RESTORE_L1_2026-10-17.md) | 不重复原截点。各受影响输入绑定后再组合Android/HTTP/MySQL/文件；TEMP原会话/原ID恢复具体单元已有L1，独立来源客户端及U入口剩余覆盖逐一核，最终L3不可免除 |
@@ -67,4 +67,4 @@ UI重设计属于U01–U04的产品实现及真实交互标准，不另设“视
 
 Chrome1540 `blocked by policy`不换端口/包装重试；1522/1523、1043/A1.4、原native崩溃/恢复与本轮原生断言失败等原件和计数不清零。若有新材料/具体修复假设，先记录新增依据、旧指纹、直接依赖和一次性输入再入队。没有新依据不机械重复已验或失败链。
 
-后续增量：[实际作业Activity生命周期](GOAL_D17_ACTIVITY_LIFECYCLE_COMBINATION_2026-10-17.md)已补FORMAL/TEMP四原生阶段及Python全表消费，原应用83表328行/491全部文件不变；[TEMP产品仓库675](GOAL_E06_TEMP_REPOSITORY_RESTORE_L1_2026-10-17.md)已补真实会话/仓库原ID恢复；[旧worker677](GOAL_D15_OLD_WORKER_COMPATIBILITY_L1_2026-10-17.md)已补指定格式新建→旧worker→旧/新消费。各自输入/复用SHA见正式报告，不把新增报告混入原60份绑定清单，不再将这些具体单元列为缺证；整套组合/候选仍未完成。下一步逐项核D13–D16开发剩余及E06/E07/E08受影响组合，有确切缺口才新增，不重复旧恢复或无新依据失败链。
+后续增量：[实际作业Activity生命周期](GOAL_D17_ACTIVITY_LIFECYCLE_COMBINATION_2026-10-17.md)已补FORMAL/TEMP四原生阶段及Python全表消费，原应用83表328行/491全部文件不变；[TEMP产品仓库675](GOAL_E06_TEMP_REPOSITORY_RESTORE_L1_2026-10-17.md)已补真实会话/仓库原ID恢复；[旧worker677](GOAL_D15_OLD_WORKER_COMPATIBILITY_L1_2026-10-17.md)已补指定格式新建→旧worker→旧/新消费；[R08导出套件680](GOAL_D11_R08_EXPORT_INTEGRATION_L1_2026-10-17.md)已补完整14项隔离执行。各自输入/复用SHA见正式报告，不把新增报告混入原60份绑定清单，不再将这些具体单元列为缺证；整套组合/候选仍未完成。下一步逐项核D13–D16开发剩余及E06/E07/E08受影响组合，有确切缺口才新增，不重复旧恢复或无新依据失败链。
