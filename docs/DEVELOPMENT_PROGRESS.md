@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E08辅助导航与扫码队列组合](history/GOAL_E08_AUXILIARY_QUEUE_COMBINATION_2026-10-16.md)：同输入25项主机回归与原AVD三个200%实际页面场景通过，83表328行/403原文件保持；仅有界组合开发备份，非E08/U整体L2或D18 L3。
+
 - [E06既有组合事实补录与电脑消费](history/GOAL_E06_RETAINED_COMBINATION_AUDIT_2026-10-16.md)：原1539真实HTTP/39份表快照/原模拟器83表150文件与347停机文件补核，本批原SAF实际Python/Excel460项通过；源码漂移与JAR去重取回分列，Chrome审批阻断保留，非E06 L2/D18 L3。
 
 - [D15 原非空副本程序回退读取](history/GOAL_D15_PROGRAM_ROLLBACK_2026-10-16.md)：新→旧→新JAR/24次真实HTTP/180表与文件守恒，离线dump/会话补核通过；671部分导入、672子JVM排空失败保留。仅有界组合开发备份，非D15整体/E07 L2/D18 L3。

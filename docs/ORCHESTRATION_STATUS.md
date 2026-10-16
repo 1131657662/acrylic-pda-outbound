@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: e8dc7970
-dirty_entries: 95
+head: 2a25690b
+dirty_entries: 91
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,13 +17,13 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。取消的换机承接/多跳/激活不恢复。只有第8节全部满足才complete；L1/有界组合开发备份不计D项整体或D18 L3。
 
 ## Git、写权与输入
-- 固定树`D:/acrylic-pda-outbound`、`codex/development`，本批输入HEAD/实核远端`e8dc7970dc01f190ebcb6c43b7edb49368700c31`。提交后HEAD只读生成块；所有继承Android/UI/文档/工具与`server/physical-disposition-last-request.json`保护，禁止`git add .`。
+- 固定树`D:/acrylic-pda-outbound`、`codex/development`，接续输入HEAD/实核远端`2a25690ba836e162bc37dbcd95ce3b1b93b7e774`，86项继承改动、暂存为空。提交后HEAD只读生成块；所有继承Android/UI/文档/工具与`server/physical-disposition-last-request.json`保护，禁止`git add .`。
 - 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`独占源码/看板写权，无子代理；清理聊天`01a13cb4`已释放全部窗口、实际idle，无清理/压缩进程。旧owner/released不代实际核查。
-- 全量tracked/untracked长度/SHA、binary diff、未跟踪副本/worktrees、旧看板、写权与环境见`.local/goal-20261016-resume/input19/20.json`及同号附件；分别5405/5409项，SHA`7641d76832bad43c1f07f60631bb6b561a3bf87ae82cca6849182df4063ad6f7`/`d2b9682d0319c82eb5a6653521646bf82b0a15534f58919c36f47e3249c94faa`。旧结论先归档`docs/history/ORCHESTRATION_STATE_before_e06_retained_audit_20261016.md`，继承输入逐字保护。
+- 全量tracked/untracked长度/SHA、binary diff、未跟踪副本/worktrees、旧看板、写权与环境见`.local/goal-20261016-resume/input22/23.json`及同号附件；5411/5412项，SHA`da458eb7e44ed9f86eccd11440420bd2a0de64a2697123ef3b4a97bb4aeec156`/`a1731d0098f01e873560a1a2cafea7cde0db81bb3bd7b7e46a00a352e2e38a68`。旧结论先归档`docs/history/ORCHESTRATION_STATE_before_e08_aux_combination_20261016.md`，继承输入逐字保护。
 
 ## 环境、停机与边界
 - 665–670/1668及本批671/672/673均认证停机；本批DB19381–19383、HTTP19443–19451零监听，无本批Java/Gradle/MySQL残留。共享mysqld4632/5440身份未知，仅观察不连接停止。原TEMP AVD emulator12912/qemu12108、5564/5565及ADB8500/5037保留；真机22D2910042只读列出，未操作。
-- 最终C/D余量82826579968/44549193728 bytes，详见program-rollback-disks-final01；重型动作前复测。新证据/DB/dump/binlog/tmp均D盘，仅任务子进程设置TEMP/TMP/Java临时；失败库/日志/XML/HTTP签名/回执、原资料/Keystore/AVD/最终APK保留，无本批清理。
+- E08结束C/D余量82318438400/44405825536 bytes，详见disks-23；重型动作前复测。新证据/DB/dump/binlog/tmp均D盘，仅任务子进程设置TEMP/TMP/Java临时；失败库/日志/XML/HTTP签名/回执、原资料/Keystore/AVD/最终APK保留，无本批清理。
 - 七类生产决定handler/POST/放行/证据写入/关闭能力、TEMP生产归档和`localDeletionAllowed=false`保持关闭。不接原库/现网、不合main、不发布部署、不用正式签名；合成身份/fixture/模拟器不能代原PDA现场事实，D16标准不变。
 
 ## D15本批程序回退
@@ -37,6 +37,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 原255路径不变；服务旧清单10项/Android16项漂移及新增57/29项另存source-bindings/added-inputs。1539重复JAR沿清理回执定位1537同SHA保留件，不启动旧库。三审计器/依赖/路径失败与partial均保留；旧页“该次未跑instrumentation”不抹去更早实际通过，仍非E06 L2。
 
 ## 已验复用、失败与未验
+- E08辅助导航/队列有界组合见`GOAL_E08_AUXILIARY_QUEUE_COMBINATION_2026-10-16.md`：同输入25项主机与原AVD三个200%实际页面场景通过，938条Android输入不变、83表328行/403原文件守恒。874证据双核；字号/IME还原、App强停、reverse空，无新服务或库；仅组合开发备份，非E08/U整体L2或D18 L3。
 - 全部已验入口只从`docs/DEVELOPMENT_PROGRESS.md`及`docs/history/README.md`进入正式报告，按路径+SHA复用。E01–E05/O03、E06资料/身份/任务/SCAN/VOID/导出/结束/核原/实物/关联冲突/多任务网页L1不从头重做。E06 L2未完成，Chrome1540启动自动审批`blocked by policy`及347文件保全继续；无新批准/依据不换包装重试。
 - E07既有钥/重锚/原签还原/中止、跨截点更正/退库/撤回/独立来源/实物/编号/运维及644/647、663–665/667真实产品提交/未知原批次恢复/原签/Room/SQL链按原报告复用，不拼为E07整体L2。670恢复worker/renderer真实下载与Python七表逐值通过，原driver exit1只读补核、669失败全部保留。1668恢复监控七CLI与resource-07三模板九user unit负载均见报告，非D15整体/Linux项目启停。
 - D16原生trigger保护、正常有效guard拒绝、复杂引用/无关审计/恢复后原正式事实及12项CLI组合有报告。正常目标合法退出仍无依据；不删guard造资格，D13–D15完整组合/D16整体未完成。E08四字号导航/设置诊断/身份/恢复确认及E02草稿/调整直接页L1见索引；旧FORMAL worker装配、658–660及长路径SQLite失败保留，不改称一次成功。
@@ -44,7 +45,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 1522/1523旧失败/暂缓及全部计数保留，无新依据不机械重跑。原资料/旧BCD/真机/原身份/原签/现场/异地介质可取回/长时限制单列；U01–U04完整组合、E06/E07/E08剩余L2、E09实际候选及D18最终Android/HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复L3仍未完成。
 
 ## 下一步
-D15的12路径已推送e8dc7970；本批补录/四审计工具/索引/旧看板归档按明确路径提交，86项继承改动保护。Chrome审批仍阻断且不绕过；推进E08辅助页/队列和E07恢复受影响组合、D16正常合法退出依据及E09候选。L1/有界补录不计总目标通过，仍有独立工作即持续推进。
+D15的12路径已推送e8dc7970；E06原组合等9路径已推送2a25690b。本批E08组合报告/索引/旧看板归档按明确路径提交，86项继承改动保护。继续U04声效未就绪保存链、E07恢复组合、D16正常合法退出依据及E09候选；Chrome审批不绕过。L1/有界组合不计总目标通过，仍有独立工作即持续推进。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
