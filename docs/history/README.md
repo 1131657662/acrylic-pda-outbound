@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E07 Android原批次与整库恢复组合](GOAL_E07_ANDROID_ARCHIVE_RESTORE_COMBINATION_2026-10-16.md)：663实际冻结/HTTP成功归档→完整SQL/文件恢复→新Android JVM消费原Room/原签通过；独立Python核179业务表/83本地表及599原件守恒。661/662失败保全，非E07整体L2或D18 L3。
+
 - [D16 无关审计引用保留 L1](GOAL_D16_UNRELATED_AUDIT_L1_2026-10-16.md)：82项实际CLI/全表恢复、并发/锁后撤权/末DELETE回滚通过，两代原签审计及依赖完整保留；404case/37次真实合成提交独立核对，失败原件保留，仅L1开发备份，非D16整体/L2/L3。
 
 - [E07 旧恢复客户端非空升级 L1](GOAL_E07_LEGACY_RECOVERY_UPGRADE_L1_2026-10-16.md)：20项主机测试、两阶段原生迁移/强停重启及独立Python通过，23旧表42行/原签与恢复屏障保持，75原件多次SHA一致；首轮消费者封装错误保留，仅L1开发备份，非E07 L2/D18 L3。
