@@ -5,7 +5,7 @@
         android:orientation="vertical" android:padding="16dp">
         <Button android:id="@+id/back" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="52dp" android:text="返回" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="应用更新"
-            android:textSize="22sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" android:paddingTop="12dp" />
+            android:textSize="22sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" android:paddingTop="12dp" android:accessibilityHeading="true" />
         <TextView android:id="@+id/environment" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:textSize="15sp" android:paddingTop="8dp" />
         <TextView android:id="@+id/currentVersion" android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -13,7 +13,11 @@
         <TextView android:id="@+id/lastCheck" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:textSize="14sp" android:paddingTop="8dp" android:text="尚未完成更新检查" />
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:textSize="16sp" android:paddingTop="14dp" android:accessibilityLiveRegion="polite" />
+            android:textSize="16sp" android:paddingTop="14dp" android:accessibilityLiveRegion="polite"
+            android:text="尚未检查更新。请核对当前版本，再选择检查更新；进入此页不会自动下载或安装。" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textSize="14sp" android:paddingTop="8dp" android:textColor="@color/pda_text_secondary"
+            android:text="原作业资料保留。安装前仍须满足原有安全条件；请勿卸载应用或清除数据。" />
         <TextView android:id="@+id/release" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:textSize="15sp" android:paddingTop="10dp" />
         <TextView android:id="@+id/notes" android:layout_width="match_parent" android:layout_height="wrap_content"

@@ -9,6 +9,8 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.acrylic.outbound.pda.BuildConfig
 import com.acrylic.outbound.pda.PdaApplication
@@ -35,6 +37,11 @@ class PdaUpdateActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding = ActivityPdaUpdateBinding.inflate(layoutInflater); setContentView(binding.root)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            insets
+        }
         binding.back.setOnClickListener { if (!busy) finish() }
         binding.check.setOnClickListener { checkUpdate() }
         binding.download.setOnClickListener { download() }
