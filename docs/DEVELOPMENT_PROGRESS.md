@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [U04声效未就绪与耐久保存](history/GOAL_U04_SOUND_READINESS_2026-10-16.md)：新增四项及受影响31项主机原生Room组合通过；事务后回调、尾SQL回滚/原ID恢复、声音未就绪准确反馈有断言；编译失败/旧XML保留，仅测试开发备份，非U整体/L2/L3。
+
 - [E08辅助导航与扫码队列组合](history/GOAL_E08_AUXILIARY_QUEUE_COMBINATION_2026-10-16.md)：同输入25项主机回归与原AVD三个200%实际页面场景通过，83表328行/403原文件保持；仅有界组合开发备份，非E08/U整体L2或D18 L3。
 
 - [E06既有组合事实补录与电脑消费](history/GOAL_E06_RETAINED_COMBINATION_AUDIT_2026-10-16.md)：原1539真实HTTP/39份表快照/原模拟器83表150文件与347停机文件补核，本批原SAF实际Python/Excel460项通过；源码漂移与JAR去重取回分列，Chrome审批阻断保留，非E06 L2/D18 L3。
