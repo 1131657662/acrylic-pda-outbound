@@ -1,12 +1,23 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true" android:background="@color/pda_canvas">
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="12dp">
-        <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="52dp" android:text="返回扫码作业" />
-        <Button android:id="@+id/rescueExport" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="只读应急导出" />
-        <Button android:id="@+id/adjustPackages" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="调整已扫码包" />
+        <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="返回原页面" />
         <TextView android:id="@+id/summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="20sp" android:textStyle="bold" android:textColor="@color/pda_text_primary" />
-        <TextView android:id="@+id/products" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="12dp" android:textSize="16sp" />
-        <TextView android:id="@+id/packages" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="12dp" android:textSize="15sp" />
-        <TextView android:id="@+id/pending" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="12dp" android:textSize="15sp" />
-        <Button android:id="@+id/loadMore" android:layout_width="match_parent" android:layout_height="56dp" android:text="加载更早明细" />
+        <Button android:id="@+id/rescueExport" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="只读应急导出" />
+        <Button android:id="@+id/adjustPackages" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="调整已扫码包" android:textColor="@color/pda_text_primary" />
+        <Button android:id="@+id/qualificationDetails" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="查看资格核对原始原因" />
+        <TextView android:id="@+id/products" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="12dp" android:textSize="16sp" android:textColor="@color/pda_text_primary" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="12dp" android:text="原记录状态" android:labelFor="@id/filter" android:textSize="16sp" />
+        <Spinner android:id="@+id/filter" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:contentDescription="筛选原记录状态" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="定位方式" android:labelFor="@id/locateMode" android:textSize="16sp" />
+        <Spinner android:id="@+id/locateMode" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:contentDescription="选择原序号或完整条码" />
+        <TextView android:id="@+id/locateLabel" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="原序号或11位完整条码" android:labelFor="@id/locateInput" android:textSize="16sp" />
+        <EditText android:id="@+id/locateInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:inputType="textCapCharacters" android:maxLength="40" android:singleLine="true" android:hint="先选择定位方式" android:imeOptions="actionDone" />
+        <Button android:id="@+id/locate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="定位原记录（条码取末次）" />
+        <Button android:id="@+id/retry" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="重新读取本页" />
+        <Button android:id="@+id/first" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="回到首批原记录" />
+        <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+        <Button android:id="@+id/previous" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="上一页原记录" />
+        <Button android:id="@+id/next" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="下一页原记录" />
+        <LinearLayout android:id="@+id/rows" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
     </LinearLayout>
 </ScrollView>

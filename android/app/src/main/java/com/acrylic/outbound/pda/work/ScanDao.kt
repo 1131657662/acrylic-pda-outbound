@@ -4,6 +4,7 @@ import androidx.room.*
 
 @Dao
 interface ScanDao {
+    @RawQuery fun detailRows(query: androidx.sqlite.db.SupportSQLiteQuery): List<WorkDetailRow>
     @Query("SELECT COUNT(*) FROM work_scan s INNER JOIN work_capture c ON c.id=s.captureId WHERE c.originDeviceId=:device")
     fun deviceCount(device: String): Long
     @Query("""SELECT s.* FROM work_scan s INNER JOIN work_capture c ON c.id=s.captureId

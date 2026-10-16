@@ -21,7 +21,7 @@
         <activity android:name=".ui.IndependentWorkActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.IndependentCredentialActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.SubmissionActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".ui.WorkDetailsActivity" android:exported="false" android:screenOrientation="portrait" />
+        <activity android:name=".ui.WorkDetailsActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.RescueExportActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.RescueCredentialActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.RescueRequestActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
