@@ -575,3 +575,4 @@
 - [D11 R08完整导出套件 L1](history/GOAL_D11_R08_EXPORT_INTEGRATION_L1_2026-10-17.md)：新隔离库 680 的 `R08ExportIT` 14项真实 HTTP/MySQL/renderer 全部通过；678 旧浏览器路径 503 与 679定向PDF补验、自动删除 datadir 事件均保留并单列。仅补该套件 L1，D11受影响组合、E06/E07 L2及D18 L3仍未完成。
 - [D13 HTTP/Session入口 L1](history/GOAL_D13_RECOVERY_HTTP_SESSION_L1_2026-10-17.md)：新19444隔离实例真实 Spring Session JDBC/HTTP 2项通过，覆盖 ERROR/ASYNC/multipart、并发、fenced/stale 拒绝和 cleanup guard；证据路径身份不匹配的 19442/19443 失败原件保留。仅补 HTTP/Session L1，worker/文件/导出跨入口组合、D13整体及D18 L3仍未完成。
 - [D13 跨进程 lease L1](history/GOAL_D13_RECOVERY_LEASE_PUBLICATION_L1_2026-10-17.md)：新19445隔离实例真实应用根发布 lease，子进程拒绝并退休孤儿后再次启动，1项通过；仅补 lease 发布边界，worker/文件/导出、错库/水位与 D13 整体仍未完成。
+- [D13 恢复 worker、文件与导出 L1](history/GOAL_D13_RECOVERY_WORKER_FILE_EXPORT_L1_2026-10-17.md)：新隔离 run 684 真实 HTTP 创建、SQL/文件恢复、独立 worker JVM、renderer/XLSX 下载及 Python/Java 只读消费者通过；681–683 失败原件保留。仅有界 L1 开发备份，不计 D13 L2、D18 L3 或总目标。

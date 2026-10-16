@@ -14,14 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** A separate restored service JVM, constrained to this one fresh lab. */
 public final class E2aRestoredWorkerProcess {
     public static void main(String[] ignored) throws Exception {
-        Path attempt=Path.of(System.getenv("E2A_CROSS_ATTEMPT")).toAbsolutePath().normalize();
-        assertThat(attempt).isEqualTo(Path.of("D:/acrylic-pda-outbound/.local/e2a-cross-20260925-670"));
-        assertThat(System.getenv("E2A_CROSS_RUN")).isEqualTo("670");
-        assertThat(E2aTestPorts.database()).isEqualTo(19380);assertThat(E2aTestPorts.http()).isEqualTo(19440);
-        String database=System.getenv("E2A_CROSS_DATABASE")+"_restore";
-        assertThat(database).isEqualTo("acrylic_e2a_cross_20260925_670_restore");
-        String url="jdbc:mysql://127.0.0.1:19380/"+database+"?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-        String user=System.getenv("E2A_CROSS_USER"),password=System.getenv("E2A_CROSS_PASSWORD");
+        Path attempt=E2aRestoredWorkerConfig.attempt();
+        String database=E2aRestoredWorkerConfig.database()+"_restore";
+        String url=E2aRestoredWorkerConfig.databaseUrl(database);
+        String user=E2aRestoredWorkerConfig.user(),password=System.getenv("E2A_CROSS_PASSWORD");
         var jdbc=new JdbcTemplate(new DriverManagerDataSource(url,user,password));
         identity(jdbc,attempt,database,user);
         assertThat(Files.exists(attempt.resolve("restored-worker-completed.marker"))).isFalse();
@@ -35,7 +31,7 @@ public final class E2aRestoredWorkerProcess {
     static void identity(JdbcTemplate jdbc,Path attempt,String database,String user) {
         assertThat(jdbc.queryForObject("SELECT DATABASE()",String.class)).isEqualTo(database);
         assertThat(jdbc.queryForObject("SELECT CURRENT_USER()",String.class)).isEqualTo(user+"@127.0.0.1");
-        assertThat(jdbc.queryForObject("SELECT @@port",Integer.class)).isEqualTo(19380);
+        assertThat(jdbc.queryForObject("SELECT @@port",Integer.class)).isEqualTo(E2aRestoredWorkerConfig.databasePort());
         assertThat(jdbc.queryForObject("SELECT @@log_bin",Integer.class)).isEqualTo(1);
         assertThat(Path.of(jdbc.queryForObject("SELECT @@datadir",String.class)).toAbsolutePath().normalize())
             .isEqualTo(attempt.resolve("data"));
@@ -43,7 +39,7 @@ public final class E2aRestoredWorkerProcess {
 
     private static String[] options(Path attempt,String url,String user,String password) {
         Path restored=attempt.resolve("restored");
-        return new String[]{"--server.address=127.0.0.1","--server.port=19440","--spring.flyway.enabled=false",
+        return new String[]{"--server.address=127.0.0.1","--server.port="+E2aRestoredWorkerConfig.httpPort(),"--spring.flyway.enabled=false",
             "--spring.datasource.url="+url,"--spring.datasource.username="+user,"--spring.datasource.password="+password,
             "--outbound.storage="+restored.resolve("storage"),"--outbound.signing.private-key="+restored.resolve("config/server-private.der"),
             "--outbound.signing.public-key="+restored.resolve("config/server-public.der"),"--outbound.worker.enabled=false",

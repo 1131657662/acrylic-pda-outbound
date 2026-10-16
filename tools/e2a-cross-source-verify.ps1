@@ -1,11 +1,21 @@
-param([Parameter(Mandatory=$true)][ValidateRange(1,9999)][int]$Run, [switch]$Android, [switch]$Abort, [switch]$PartialAbort, [switch]$Accounting, [switch]$CorrectionAccounting, [switch]$Renderer, [switch]$Confirmation, [switch]$SuccessConsumer, [switch]$Archive, [switch]$Candidates, [switch]$DecisionProtocol, [switch]$ArchiveRecovery, [switch]$Export, [switch]$DraftEvidence, [switch]$UnsubmittedSource, [switch]$JobFence, [switch]$Link, [switch]$HandoverRollback, [switch]$HandoverContinuation, [string]$Root = 'D:\acrylic-pda-outbound')
+param([Parameter(Mandatory=$true)][ValidateRange(1,9999)][int]$Run, [switch]$Android, [switch]$Abort, [switch]$PartialAbort, [switch]$Accounting, [switch]$CorrectionAccounting, [switch]$Renderer, [switch]$Confirmation, [switch]$SuccessConsumer, [switch]$Archive, [switch]$Candidates, [switch]$DecisionProtocol, [switch]$ArchiveRecovery, [switch]$Export, [switch]$DraftEvidence, [switch]$UnsubmittedSource, [switch]$JobFence, [switch]$Link, [switch]$HandoverRollback, [switch]$HandoverContinuation, [switch]$IndependentCheckpoint, [switch]$WithdrawalRecovery, [switch]$RestoredWorker, [string]$RestoredSourcePath = '', [string]$Root = 'D:\acrylic-pda-outbound', [string]$AttemptPath = '', [int]$DbPort = 0, [int]$HttpPort = 0, [string]$DatabaseName = '', [string]$DatabaseUser = '')
 $ErrorActionPreference = 'Stop'
 $root = $Root
-$attempt = Join-Path $root ".local\e2a-cross-20260925-$Run"
-$database = "acrylic_e2a_cross_20260925_$Run"
-$dbUser = "e2a_cross_20260925_$Run"
+$attempt = if ([string]::IsNullOrWhiteSpace($AttemptPath)) { Join-Path $root ".local\e2a-cross-20260925-$Run" } else { [IO.Path]::GetFullPath($AttemptPath) }
+$database = if ([string]::IsNullOrWhiteSpace($DatabaseName)) { "acrylic_e2a_cross_20260925_$Run" } else { $DatabaseName }
+$dbUser = if ([string]::IsNullOrWhiteSpace($DatabaseUser)) { "e2a_cross_20260925_$Run" } else { $DatabaseUser }
 $mysqlBin = 'C:\Program Files\MySQL\MySQL Server 8.0\bin'
-$port = 19330
+$port = if ($DbPort -gt 0) { $DbPort } else { 19330 }
+$httpPort = if ($HttpPort -gt 0) { $HttpPort } else { 19434 }
+$auxHttpPort = $httpPort + 1
+$candidateHttpPort = $httpPort + 2
+if ($database -notmatch '^[A-Za-z0-9_]{1,48}$' -or $dbUser -notmatch '^[A-Za-z0-9_]{1,32}$') {
+    throw 'Invalid isolated database or user identifier'
+}
+if ($port -lt 1024 -or $port -gt 65535 -or $httpPort -lt 1024 -or $candidateHttpPort -gt 65535 `
+    -or $port -in @($httpPort, $auxHttpPort, $candidateHttpPort)) {
+    throw 'Invalid or overlapping isolated ports'
+}
 
 function Require-FreePort([int]$Number) {
     if (Get-NetTCPConnection -State Listen -LocalPort $Number -ErrorAction SilentlyContinue) {
@@ -15,7 +25,8 @@ function Require-FreePort([int]$Number) {
 
 function New-PrivateAttempt {
     $resolvedRoot = (Resolve-Path -LiteralPath $root).Path
-    if ((Get-Location).Path -ne $resolvedRoot -or [IO.Path]::GetFullPath($attempt) -ne "$resolvedRoot\.local\e2a-cross-20260925-$Run") {
+    $resolvedAttempt = [IO.Path]::GetFullPath($attempt)
+    if ((Get-Location).Path -ne $resolvedRoot -or -not $resolvedAttempt.StartsWith("$resolvedRoot\", [StringComparison]::OrdinalIgnoreCase)) {
         throw 'Unexpected workspace or attempt path'
     }
     if (Test-Path -LiteralPath $attempt) { throw 'Attempt already exists; preserve it and allocate a new run' }
@@ -39,8 +50,39 @@ function Write-PrivateConfiguration {
     $sql = "ALTER USER 'root'@'localhost' IDENTIFIED BY '$rootPassword';`n"
     $sql += "CREATE DATABASE $database;`nCREATE USER '$dbUser'@'127.0.0.1' IDENTIFIED BY '$dbPassword';`n"
     $sql += "GRANT ALL ON $database.* TO '$dbUser'@'127.0.0.1';`nGRANT SHUTDOWN ON *.* TO '$dbUser'@'127.0.0.1';`n"
+    if ($IndependentCheckpoint) {
+        $sql += "CREATE DATABASE ${database}_missing;`nCREATE DATABASE ${database}_restore;`n"
+        # The independent checkpoint seed recreates locked historical DEFINER accounts and grants
+        # them access to the three disposable schemas. Keep this elevated capability local to the
+        # isolated test user and this one-shot attempt; it is never used by production profiles.
+        # RELOAD rotates the captured log; REPLICATION_APPLIER replays ROW events only
+        # with the schema privileges above/below, rather than granting global ALL.
+        $sql += "GRANT CREATE USER, SET_USER_ID, REPLICATION CLIENT, RELOAD, REPLICATION_APPLIER, SESSION_VARIABLES_ADMIN ON *.* TO '$dbUser'@'127.0.0.1';`n"
+        $sql += "GRANT ALL ON $database.* TO '$dbUser'@'127.0.0.1' WITH GRANT OPTION;`n"
+        $sql += "GRANT ALL ON ${database}_missing.* TO '$dbUser'@'127.0.0.1' WITH GRANT OPTION;`n"
+        $sql += "GRANT ALL ON ${database}_restore.* TO '$dbUser'@'127.0.0.1' WITH GRANT OPTION;`n"
+    }
+    if ($WithdrawalRecovery) {
+        # Recovery checkpoints are restored into five empty companion schemas. The source
+        # snapshot also captures and rotates the binary log, so the isolated account needs the
+        # same one-shot checkpoint privileges as the independent restore harness.
+        $sql += "CREATE DATABASE ${database}_copy;`nCREATE DATABASE ${database}_conflict;`nCREATE DATABASE ${database}_missing;`nCREATE DATABASE ${database}_gap;`nCREATE DATABASE ${database}_restore;`n"
+        $sql += "GRANT CREATE USER, SET_USER_ID, REPLICATION CLIENT, RELOAD, REPLICATION_APPLIER, SESSION_VARIABLES_ADMIN ON *.* TO '$dbUser'@'127.0.0.1';`n"
+        foreach ($suffix in @('', '_copy', '_conflict', '_missing', '_gap', '_restore')) {
+            $schema = "$database$suffix"
+            $sql += "GRANT ALL ON $schema.* TO '$dbUser'@'127.0.0.1' WITH GRANT OPTION;`n"
+        }
+    }
     if ($Confirmation -or $JobFence) { $sql += "GRANT SELECT ON performance_schema.* TO '$dbUser'@'127.0.0.1';`n" }
-    if ($ArchiveRecovery) { $sql += "CREATE DATABASE $($database)_restore;`nGRANT ALL ON $($database)_restore.* TO '$dbUser'@'127.0.0.1';`n" }
+    if ($ArchiveRecovery -or $RestoredWorker) {
+        $sql += "CREATE DATABASE $($database)_restore;`nGRANT ALL ON $($database)_restore.* TO '$dbUser'@'127.0.0.1';`n"
+    }
+    if ($RestoredWorker) {
+        $sql += "GRANT SET_USER_ID ON *.* TO '$dbUser'@'127.0.0.1';`n"
+        $sql += "CREATE USER 'e2a_cross_20260925_667'@'127.0.0.1' ACCOUNT LOCK;`n"
+        $sql += "GRANT ALL ON $database.* TO 'e2a_cross_20260925_667'@'127.0.0.1';`n"
+        $sql += "GRANT ALL ON $($database)_restore.* TO 'e2a_cross_20260925_667'@'127.0.0.1';`n"
+    }
     [IO.File]::WriteAllText((Join-Path $attempt 'private\bootstrap.sql'),$sql)
     $client = "[client]`nuser=$dbUser`npassword=$dbPassword`nhost=127.0.0.1`nport=$port`nprotocol=tcp`n"
     [IO.File]::WriteAllText((Join-Path $attempt 'private\client.cnf'),$client)
@@ -86,14 +128,29 @@ function Read-Identity {
 
 function Invoke-IsolatedChecks {
     $env:E2A_CROSS_VERIFY = 'true'; $env:E2A_CROSS_RUN = [string]$Run; $env:E2A_CROSS_PASSWORD = $dbPassword
+    $env:E2A_CROSS_ROOT = $root; $env:E2A_CROSS_ATTEMPT = $attempt; $env:E2A_CROSS_DATABASE = $database; $env:E2A_CROSS_USER = $dbUser
+    $env:E2A_CROSS_PORT = [string]$port; $env:E2A_HTTP_PORT = [string]$httpPort
+    if ($RestoredWorker) {
+        $classpathSource = Join-Path $root '.local\goal-20261016\d15-restored-worker01\runtime-classpath06.json'
+        if (-not (Test-Path -LiteralPath $classpathSource)) { throw 'Restored-worker runtime classpath is missing' }
+        Copy-Item -LiteralPath $classpathSource -Destination (Join-Path $attempt 'runtime-classpath.json')
+        $env:E2A_RESTORED_CLASSPATH = Join-Path $attempt 'runtime-classpath.json'
+        $env:E2A_RESTORED_SOURCE = if ([string]::IsNullOrWhiteSpace($RestoredSourcePath)) {
+            Join-Path $root '.local\e2a-cross-20260925-667'
+        } else { [IO.Path]::GetFullPath($RestoredSourcePath) }
+    }
     if ($Renderer) {
         $env:OUTBOUND_EXPORTS_RENDERER_HOME = 'D:/acrylic-pda-outbound/report-rendering/build/install/acrylic-report-rendering'
-        $env:OUTBOUND_EXPORTS_BROWSERS = 'D:/acrylic-pda-worktrees/r08-export/report-rendering/build/browsers'
+        $env:OUTBOUND_EXPORTS_BROWSERS = 'D:/acrylic-pda-outbound/report-rendering/build/browsers'
     }
     try {
-        $testName = if ($JobFence) { 'E2aJobFenceHttpIT' } elseif ($HandoverContinuation) { 'E2aHandoverContinuationIT' } elseif ($HandoverRollback) { 'E2aHandoverRollbackIT' } elseif ($Link) { 'E2aTemporaryLinkIT' } elseif ($UnsubmittedSource) { 'E2aUnsubmittedHttpIT' } elseif ($DraftEvidence) { 'E2aDraftEvidenceIT' } elseif ($Export) { 'E2aTemporaryExportIT' } elseif ($ArchiveRecovery) { 'E2aTemporaryArchiveRecoveryIT' } elseif ($DecisionProtocol) { 'E2aTemporaryDecisionProtocolIT' } elseif ($Candidates) { 'E2aTemporaryCandidatesIT' } elseif ($Archive) { 'E2aTemporaryArchiveIT' } elseif ($SuccessConsumer) { 'E2aTemporarySuccessConsumerIT' } elseif ($Confirmation) { 'E2aTemporaryConfirmationIT' } elseif ($CorrectionAccounting) { 'E2aCorrectionAccountingHttpIT' } elseif ($Accounting) { 'E2aTemporaryAccountingIT' } elseif ($PartialAbort) { 'E2aAndroidPartialAbortHttpIT' } elseif ($Abort) { 'E2aAndroidAbortHttpIT' } elseif ($Android) { 'E2aAndroidHttpIT' } else { 'E2aCrossSourceHttpIT' }
+        $testName = if ($RestoredWorker) { 'E2aRestoredWorkerRestore' } elseif ($IndependentCheckpoint) { 'E2aIndependentCheckpointIT' } elseif ($WithdrawalRecovery) { 'E2aFaultWithdrawalRecoveryIT' } elseif ($JobFence) { 'E2aJobFenceHttpIT' } elseif ($HandoverContinuation) { 'E2aHandoverContinuationIT' } elseif ($HandoverRollback) { 'E2aHandoverRollbackIT' } elseif ($Link) { 'E2aTemporaryLinkIT' } elseif ($UnsubmittedSource) { 'E2aUnsubmittedHttpIT' } elseif ($DraftEvidence) { 'E2aDraftEvidenceIT' } elseif ($Export) { 'E2aTemporaryExportIT' } elseif ($ArchiveRecovery) { 'E2aTemporaryArchiveRecoveryIT' } elseif ($DecisionProtocol) { 'E2aTemporaryDecisionProtocolIT' } elseif ($Candidates) { 'E2aTemporaryCandidatesIT' } elseif ($Archive) { 'E2aTemporaryArchiveIT' } elseif ($SuccessConsumer) { 'E2aTemporarySuccessConsumerIT' } elseif ($Confirmation) { 'E2aTemporaryConfirmationIT' } elseif ($CorrectionAccounting) { 'E2aCorrectionAccountingHttpIT' } elseif ($Accounting) { 'E2aTemporaryAccountingIT' } elseif ($PartialAbort) { 'E2aAndroidPartialAbortHttpIT' } elseif ($Abort) { 'E2aAndroidAbortHttpIT' } elseif ($Android) { 'E2aAndroidHttpIT' } else { 'E2aCrossSourceHttpIT' }
         $log = Join-Path $attempt 'integration.log'
-        & cmd.exe /c "`"$(Join-Path $root 'gradlew.bat')`" -p server integrationTest --tests `"*$testName`" --no-daemon --rerun-tasks > `"$log`" 2>&1"
+        if ($RestoredWorker) {
+            & (Join-Path $root '.local\r09-control-venv\Scripts\python.exe') (Join-Path $root 'tools\r09-restored-worker-launch.py')
+        } else {
+            & cmd.exe /c "`"$(Join-Path $root 'gradlew.bat')`" -p server integrationTest --tests `"*$testName`" --no-daemon --rerun-tasks > `"$log`" 2>&1"
+        }
         $script:testExit = $LASTEXITCODE
         $xml = Join-Path $root "server\build\test-results\integrationTest\TEST-com.acrylic.outbound.e2averify.$testName.xml"
         if (Test-Path -LiteralPath (Join-Path $attempt 'test-started.marker')) {
@@ -105,7 +162,7 @@ function Invoke-IsolatedChecks {
         }
         if ($script:testExit -eq 0 -and $JobFence) { Invoke-JobRegression }
     } finally {
-        Remove-Item Env:E2A_CROSS_VERIFY,Env:E2A_CROSS_RUN,Env:E2A_CROSS_PASSWORD,Env:OUTBOUND_EXPORTS_RENDERER_HOME,Env:OUTBOUND_EXPORTS_BROWSERS -ErrorAction SilentlyContinue
+        Remove-Item Env:E2A_CROSS_VERIFY,Env:E2A_CROSS_RUN,Env:E2A_CROSS_PASSWORD,Env:E2A_CROSS_ROOT,Env:E2A_CROSS_ATTEMPT,Env:E2A_CROSS_DATABASE,Env:E2A_CROSS_USER,Env:E2A_CROSS_PORT,Env:E2A_HTTP_PORT,Env:E2A_RESTORED_CLASSPATH,Env:E2A_RESTORED_SOURCE,Env:OUTBOUND_EXPORTS_RENDERER_HOME,Env:OUTBOUND_EXPORTS_BROWSERS -ErrorAction SilentlyContinue
     }
 }
 
@@ -146,9 +203,9 @@ function Stop-IsolatedMySql {
 }
 
 Require-FreePort $port
-Require-FreePort 19434
-Require-FreePort 19435
-if ($Candidates) { Require-FreePort 19436 }
+Require-FreePort $httpPort
+Require-FreePort $auxHttpPort
+if ($Candidates) { Require-FreePort $candidateHttpPort }
 New-PrivateAttempt
 Write-PrivateConfiguration
 Initialize-MySql

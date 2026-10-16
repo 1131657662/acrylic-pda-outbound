@@ -15,12 +15,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public final class E2aRestoredWorkerRestore {
     public static void main(String[] args) throws Exception {
         if(args.length==1 && args[0].equals("--verify-recorded")) {
-            verifyRecorded(Path.of("D:/acrylic-pda-outbound/.local/e2a-cross-20260925-670"));return;
+            verifyRecorded(E2aRestoredWorkerConfig.attempt());return;
         }
         assertThat(args).isEmpty();
         assertThat(System.getenv("E2A_CROSS_VERIFY")).isEqualTo("true");
         var profile=new E2aCrossSourceProfile();
-        assertThat(profile.attempt).isEqualTo(Path.of("D:/acrylic-pda-outbound/.local/e2a-cross-20260925-670"));
         var jdbc=new JdbcTemplate(new DriverManagerDataSource(profile.url,profile.user,System.getenv("E2A_CROSS_PASSWORD")));
         E2aRestoredWorkerProcess.identity(jdbc,profile.attempt,profile.database,profile.user);
         var copier=new E2aArchiveSnapshotRestore(profile,jdbc);
