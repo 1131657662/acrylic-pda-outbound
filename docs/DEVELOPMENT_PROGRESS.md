@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [D16合成隔离整单消费者 L1](history/GOAL_D16_WHOLE_ORDER_L1_2026-10-16.md)：实际CLI删除/完整恢复、27项定向、default-off/同键并发/真实锁等待撤权/末DELETE回滚通过；仅guard-free初轮FORMAL合成副本。正常带防重/复杂引用资格和D13–D15组合仍未完成，旧失败保留，不计D16整体/L2/L3。
+
 - [E08 FORMAL/TEMP结单入口 L1](history/GOAL_E08_SUBMISSION_ENTRY_L1_2026-10-16.md)：TEMP原批次冻结失败后分段查询/展开/重建补验，FORMAL新隔离副本同ID查询原签回执及强停重启通过；独立Python、APK/lint及原件守恒有输入绑定。首轮失败和HTTP跳过保留，仅L1开发备份，真实HTTP/MySQL组合、E08/U整体、L2/L3与总目标继续。
 
 - [E02 保存扫码分段接续与失败确认反馈 L1](history/GOAL_E02_SAVE_SCAN_ACK_L1_2026-10-16.md)：原身份真实HTTP/MySQL续备、原失败订单/原pending接续、改后实际确认反馈与独立Python通过；build08定向18项、APK/lint通过，83表受控差异与180服务表守恒，补齐原binlog哈希。F1误用失败及取证补正保留，非一次全程通过，仅L1开发备份，U整体/L2/L3/总目标继续。
@@ -56,7 +58,7 @@
 
 - [E05/O03受控原件中转切片收口](history/GOAL_E05_O03_ACCEPTANCE_2026-10-13.md)：电脑专用权限/原登记钥/原提交守恒、原Android清单与签名文件消费；新未上传批次产品正向、原成功原键/丢响应/跨JVM、非空/default-off及受影响账务/净值/导出组合通过。E06–E09、完整D/O/U及总目标继续。
 
-- [D16整单事实清理与恢复引用保护开发验收](history/GOAL_D16_RETENTION_ACCEPTANCE_2026-10-15.md)：RetentionCleaner/DAO 定向 Android 测试 19/19 通过，覆盖 90 天严格边界、恢复/下载状态保护、订单/条码引用、批量清理、事务回滚和 Room 迁移保留；仅可隔离开发证据，生产删除、长期留存、D13–D15 依赖、D18 L3 与总目标继续。
+- [D16缓存投影清理与引用保护开发证据](history/GOAL_D16_RETENTION_ACCEPTANCE_2026-10-15.md)：历史19/19只覆盖缓存投影判定、引用、批量清理、回滚及迁移保留；2026-10-16已纠正范围并保存原报告。整单消费者首切片另见本页新L1索引，D16整体继续。
 
 - [E08 UI 后续短路径复验](history/GOAL_E08_UI_FOLLOWUP_ACCEPTANCE_2026-10-15.md)：恢复卡片读取 2/2、恢复确认重试 1/1，在 D 盘 Java 临时目录下共 3/3 通过；输入哈希、命令和日志见 `.local/goal-20261015/e08-ui-followup-04/`。仅补定向开发证据，长路径失败、真机/U01–U04、E06 L2、D18 L3 与总目标继续。
 

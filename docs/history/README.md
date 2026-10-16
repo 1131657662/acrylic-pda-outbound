@@ -1,5 +1,7 @@
 # 历史归档
 
+- [D16合成隔离整单消费者 L1](GOAL_D16_WHOLE_ORDER_L1_2026-10-16.md)：实际CLI整单删除/备份恢复、27项定向、并发/锁后撤权/末DELETE回滚通过，仅guard-free初轮FORMAL合成副本；正常链及复杂引用/D13–D15组合仍未完成，非D16整体或L2/L3。
+
 - [E08 FORMAL/TEMP结单入口 L1](GOAL_E08_SUBMISSION_ENTRY_L1_2026-10-16.md)：TEMP原批次分段补验、FORMAL新隔离副本原签回执及强停重启、独立Python和APK/lint通过；首轮失败及HTTP跳过保留，仅L1开发备份，不计E08/U整体、L2/L3或总目标。
 
 - [E02 保存扫码分段接续与失败确认反馈 L1](GOAL_E02_SAVE_SCAN_ACK_L1_2026-10-16.md)：原身份续备、原pending接续、改后原订单确认反馈、18项定向/APK/lint及独立Python通过；历史失败与binlog取证补正保留，仅L1开发备份，不计U整体/L2/L3或总目标。
