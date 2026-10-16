@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E08 FORMAL/TEMP结单入口 L1](history/GOAL_E08_SUBMISSION_ENTRY_L1_2026-10-16.md)：TEMP原批次冻结失败后分段查询/展开/重建补验，FORMAL新隔离副本同ID查询原签回执及强停重启通过；独立Python、APK/lint及原件守恒有输入绑定。首轮失败和HTTP跳过保留，仅L1开发备份，真实HTTP/MySQL组合、E08/U整体、L2/L3与总目标继续。
+
 - [E02 保存扫码分段接续与失败确认反馈 L1](history/GOAL_E02_SAVE_SCAN_ACK_L1_2026-10-16.md)：原身份真实HTTP/MySQL续备、原失败订单/原pending接续、改后实际确认反馈与独立Python通过；build08定向18项、APK/lint通过，83表受控差异与180服务表守恒，补齐原binlog哈希。F1误用失败及取证补正保留，非一次全程通过，仅L1开发备份，U整体/L2/L3/总目标继续。
 
 - [E02 草稿视口与页面编辑 L1](history/GOAL_E02_DRAFT_VIEWPORT_EDITOR_L1_2026-10-16.md)：原模拟器真实触摸与编辑/移除/重建/丢弃/重开通过，83表及原草稿守恒；build10定向11项、APK/lint通过，917项既有Android输入仅旧error清除变化。历史失败保留，仅页面L1开发备份，后续保存→扫码分段证据见上项，U整体、L2/L3与总目标未完成。

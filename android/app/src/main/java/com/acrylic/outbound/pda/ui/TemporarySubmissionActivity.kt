@@ -35,6 +35,7 @@ class TemporarySubmissionActivity : ComponentActivity() {
         app.temporaryWork.pause(); binding.back.text = "返回临时订单"; binding.back.setOnClickListener { if (!busy) finish() }
         binding.freeze.setOnClickListener { freeze() }; binding.upload.setOnClickListener { upload() }
         binding.refresh.setOnClickListener { run { local?.let { app.temporarySubmissions.upload(it.id) } } }
+        binding.technicalDetails.setOnClickListener { binding.notice.visibility = if (binding.notice.visibility == View.VISIBLE) View.GONE else View.VISIBLE }
         abort = Button(this).apply { text = "取消原批次 · 保留实物占用"; setOnClickListener { abort() } }
         (binding.refresh.parent as LinearLayout).addView(abort)
         evidence = Button(this).apply { text = "补传原机证据 · 保留待核对"; setOnClickListener { evidence() } }
@@ -128,15 +129,15 @@ class TemporarySubmissionActivity : ComponentActivity() {
             "REVIEW_REQUIRED" -> "已接收，待独立确认 · 不得放行"
             "ABORTED" -> if (continuation) "停止回执已验签 · 实物及占用保留" else "取消回执已验签 · 实物及占用保留"
             "FROZEN" -> "原临时单已冻结 · 尚未上传 · 不得放行"
-            "RESULT_UNKNOWN" -> "结果待核对 · 不得放行"
+            "RESULT_UNKNOWN", "REGISTERED", "RECEIVING" -> "结果待核对 · 不得放行"
             "ACTION_REQUIRED" -> "上传待处理 · 不得放行"
             else -> "本机临时作业 · 尚未冻结 · 不得放行"
         }
         if (reconciling) binding.status.text = "恢复待对账 · 不得放行\n${binding.status.text}"
         renderNotice(item)
         controls(true)
-        binding.freeze.visibility = if (item == null) View.VISIBLE else View.GONE
-        binding.reason.visibility = binding.freeze.visibility
+        TemporarySubmissionNextAction.render(binding, item?.state)
+        binding.freeze.isEnabled = item == null && !reconciling
         binding.upload.isEnabled = item != null && !terminal; binding.refresh.isEnabled = item != null && !terminal
         abort.text = if (handover) "停止本轮临时交接 · 保留实物占用" else if (continuation) "停止本轮续作 · 保留实物占用" else "取消原批次 · 保留实物占用"
         abort.visibility = if (item != null && !terminal && (!continuation ||

@@ -34,7 +34,8 @@ class FormalFaultSubmissionDeviceTest {
                 retryOriginal(f, before)
                 FormalFaultUiEvidence.click(R.id.back)
             }
-            assertEquals(2, f.calls.get())
+            val unavailableQueries = File(f.directory, "release-after-queries.txt").readText().toInt()
+            assertEquals(unavailableQueries + 1, f.calls.get())
             File(f.directory, "opening.marker").writeText("Actual HandoverActivity/SubmissionActivity lost-query/retry, same original ID, synthetic session and HTTP replay.\n")
         }
     }
@@ -47,6 +48,9 @@ class FormalFaultSubmissionDeviceTest {
             val intent = Intent(app, SubmissionActivity::class.java).putExtra("assignmentId", f.assignment)
             ActivityScenario.launch<SubmissionActivity>(intent).use { page ->
                 status("云端已确认出库")
+                onView(withId(R.id.upload)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+                onView(withId(R.id.refresh)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+                onView(withId(R.id.notice)).check(matches(withEffectiveVisibility(Visibility.GONE)))
                 page.onActivity { FormalFaultUiEvidence.screen(it.window.decorView, f.directory, "restarted") }
                 assertEquals(before, app.database.submissions().get(f.id))
                 assertEquals(0, f.calls.get())
@@ -72,16 +76,23 @@ class FormalFaultSubmissionDeviceTest {
 
     private fun retryOriginal(f: FormalFaultUiFixture, before: LocalSubmission) {
         status("本单已冻结")
-        FormalFaultUiEvidence.click(R.id.refresh)
+        onView(withId(R.id.refresh)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+        onView(withId(R.id.notice)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+        onView(withId(R.id.upload)).check(matches(withText("核对并上传原批次")))
+        FormalFaultUiEvidence.click(R.id.upload)
         try { status("上传结果待核对") }
         catch (error: Throwable) {
             runCatching { snapshotCurrent(f, "failed-result-query") }.exceptionOrNull()?.let(error::addSuppressed)
             throw error
         }
-        assertEquals(1, f.calls.get())
+        assertTrue(f.calls.get() >= 1)
+        assertEquals("RESULT_UNKNOWN", app.database.submissions().get(f.id)!!.state)
         assertEquals(before.payload, app.database.submissions().get(f.id)!!.payload)
         assertNull(app.database.submissions().get(f.id)!!.receipt)
+        onView(withId(R.id.upload)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+        onView(withId(R.id.refresh)).check(matches(withText("先查询原批次结果")))
         snapshotCurrent(f, "lost-result")
+        f.releaseOriginalResult()
         FormalFaultUiEvidence.click(R.id.refresh)
         status("云端已确认出库")
         val after = checkNotNull(app.database.submissions().get(f.id))

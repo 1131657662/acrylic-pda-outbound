@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: dac477f1
+head: 43bbb847
 dirty_entries: 102
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
@@ -17,21 +17,26 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。故障订单按“有权撤回→重发→新设备从头作业”，已取消的换机承接/多跳/激活不恢复，原事实与源码保留。
 
 ## Git、写权与输入
-- 固定工作区`D:/acrylic-pda-outbound`、分支`codex/development`；本次复核HEAD与远端同为`dac477f1b834d4bbffad71418e3588471275905e`，当前事实块由脚本生成。main只读，禁止`git add .`。
-- 本聊天为源码、库、看板、索引唯一写者；清理聊天已回执`complete-released`，确认无活动清理进程、监听、占用路径或待写入。无子代理、无并行项目写者。
+- 固定工作区`D:/acrylic-pda-outbound`、分支`codex/development`；本次E02确认反馈L1开发备份已提交推送，HEAD与远端同为`43bbb84708018afe68a921638b68650f6ac906c6`，当前事实块由脚本生成。main只读，禁止`git add .`。
+- 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`为源码、库、看板、索引唯一写者；清理聊天已回执`complete-released`且实查idle。“查看当前开发进度。”聊天仅只读核查。无子代理、无并行项目写者。
+- E08结单入口证据`.local/goal-20261016/e08-submission-entry01/`；input09与build04前input08全量5313项SHA同为`6e462bf1f39620b35c49f958cc8c672c22385eb0659e169dabe7497cc5f9acfd`；状态/全部差异/未跟踪原件/写权/进程/监听/磁盘已保存。旧看板先存`docs/history/ORCHESTRATION_STATE_before_e08_formal02_20261016.md`及`board-before-09.md`。
 - E02提交推送后快照`.local/goal-20261016/resume-20261016-e02-l1-postpush/`：全量输入哈希、Git状态/未跟踪原件、binary diff、唯一写权、进程/监听及磁盘；旧看板先存`board-before.md`。提交前快照保留，继承改动未混入。
-- E02保存扫码/确认反馈证据根`.local/goal-20261016/e02-save-scan-combination01/`：input10绑定构建，提交前input12保存全量5310项（SHA `c008014ca86c193c5b6d7e7b3f72de4ac424e9f69d96f9e26a2f792c21dd571f`）；全部差异/未跟踪原件、ownership12及环境/旧看板已保全。build08-source-recheck12与六项代码/测试SHA复核未漂移，正式报告/索引/看板按明确路径开发备份，其余继承改动保留。
+- E02保存扫码/确认反馈证据根`.local/goal-20261016/e02-save-scan-combination01/`：input10绑定构建，提交前input12/提交推送后input13保存全量5310项（input13 SHA `5e7e47b1e726d0393e93fadadbdc0502e4c78a737719c7a2eee46d9f17d7e966`）；全部差异/未跟踪原件、ownership13及环境/旧看板已保全。六项代码/测试SHA未漂移，10路径明确暂存，继承改动保留。
 - E06多任务网页L1正式报告为`docs/history/GOAL_E06_MULTITASK_ASSOCIATION_WEB_L1_2026-10-14.md`；E07 644、647组合报告分别为`docs/history/GOAL_E07_COMBINATION_644_ACCEPTANCE_2026-10-16.md`、`docs/history/GOAL_E07_COMBINATION_647_ACCEPTANCE_2026-10-16.md`，均仅开发切片。
 
 ## 环境、磁盘与边界
 - 656认证停机，19366/19456/19457/19458零监听，无本批Java/MySQL残留；共享`mysqld` PID4632/5440仅观察，数据目录身份未核清，不复用。E02诊断已启动原TEMP AVD（emulator12912/qemu12108，5564/5565）；ADB8500/5037，未操作物理机。
-- E02确认反馈提交前磁盘、进程和监听见`e02-save-scan-combination01/disks-12.json`、`processes-12.json`、`listeners-12.json`；新证据和临时目录优先D盘`.local`，重型动作前复测。
+- E08 FORMAL01失败副本和FORMAL02通过副本均已停机，5566–5569零监听，无本批Java/MySQL/构建残留。input10环境C/D余量`83,081,179,136`/`34,541,006,848` bytes（精确采样`disks-10.json`）；重型前复测。原TEMP App无进程、reverse为空，postformal01原83表与resume01后完全相同。新证据和临时目录优先D盘。
 - 658合法续备首轮已登录后在准备按钮滚动处失败，未点击新准备；设备83表不变。658库/原binlog/完整dump与设备原件已保全、认证停机，19368/19460零监听且无本批Java/MySQL；`disks03.json`记C/D余量。658不复用。
 - 659登录后真实点击未打开确认框，未新准备；83表前后完全相同。完整dump SHA `82b5c2b92dddb253463330f656affb3e84569539de9bba453006ead14e07baf7`、认证停机exit0，现场19369/19461零监听且无本批Java/MySQL；失败库不复用。input05实测C/D余量`83,118,501,888`/`46,588,825,600` bytes。
 - 660库`acrylic_e02_20261016_660`/UUID `1ae47637-c8ee-11f1-96dc-d8bbc13a2b36`、路径`.local/goal-20261016/e02-save-scan-660/data`已完整dump（SHA `c68fa77c1da44ae3b89ba4c96b50dbafb2e43fa731005310ce0ecbe312de3b32`）、认证停机exit0；现场19370/19462零监听，无本批Java/MySQL，失败库不复用。input08保存进程/监听/C/D余量，重型前复测。
 - 生产决定handler/POST/放行/证据写入/关闭能力、TEMP生产归档边界及`localDeletionAllowed=false`继续关闭；不接原库/现网、不合main、不发布部署、不用正式签名，合成身份/签名/模拟器不代表现场。
 
 ## 已验范围与剩余
+- E08 TEMP首轮冻结后网络错误断言失败保留；沿原submission `8396b6c8-d3f3-4b41-a827-0f24dc6e4525`离线查询/展开/重建补验通过，不重跑冻结。Python consumer03核83表受控差异、原设备STOP签名及72请求/manifest/page链通过，1207原件双次不变；无真实HTTP受理/成功回执。
+- E08 FORMAL01后台worker先取得原回执导致固定请求数断言失败，真实SYNCED写入已完整保全，不复用。夹具改为显式开放原结果；新FORMAL02隔离AVD实际入口/两次断连/同ID验原RSA回执/强停重启2项通过。独立Python核63→83表、新20表为空、仅提交与Room元数据变化、重启业务表守恒且无新增请求，合成身份和HTTP回放不代表原身份/真实MySQL。
+- E08 build04产品/测试APK及lint成功；单测UP-TO-DATE明确复用build03的6通过/1跳过，HTTP跳过未执行，424警告/0错误。FORMAL01原65文件与FORMAL02证据/完整AVD93文件双次SHA/长度不变。正式L1报告`docs/history/GOAL_E08_SUBMISSION_ENTRY_L1_2026-10-16.md`与索引已补，input10保全全部5315项，明确路径提交在途，非E08整体/L2/L3。
+- D16旧报告仅覆盖无引用缓存投影清理，不能计整单事实清理通过；原报告已另存，下一切片补受控整单消费者及新合成隔离副本允许/拒绝、引用保护、原子性和恢复验证，生产删除保持关闭。
 - E01–E05/O03及E06既有资料按进度索引和输入SHA复用；E06 L2、D18 L3、U01–U04完整组合仍未完成，历史失败/暂缓计数保留。
 - E07/O05已有同机恢复、外置副本工具、历史钥/重锚/中止/原签还原、检查点/binlog、闭合归档消费、故障围栏、非空升级、编号对账、实物/独立JVM/运维等切片；剩余受影响组合仍未形成E07 L2证据。真实异地介质/保管回取单列C06，不阻断独立开发。
 - 642/629独立检查点消费者与644受影响组合均通过并有正式报告；仅局部开发备份，不计E07 L2、D14/D15整体、D18 L3或总目标。643端口偏差失败及更早失败原件继续保留。
