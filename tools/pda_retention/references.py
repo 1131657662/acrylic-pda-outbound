@@ -1,5 +1,6 @@
 """Fail-closed reference closure for an initial FORMAL batch without target guards."""
 from .catalog import GLOBAL, OWNED, validate
+from .audit_reference import AUDIT, unrelated_audits
 from .codec import canonical, parse, require
 from .guard_reference import unrelated_guards
 from .proof import check
@@ -16,7 +17,7 @@ def selection(db, context):
     body, confirmation = check(local, archive, context)
     owned = owned_rows(rows, local)
     formal(owned, body, confirmation)
-    closure(rows, owned, body)
+    closure(rows, owned, dict(body=body, spec=context))
     return {t: sorted(canonical(r).decode() for r in owned[t]) for t in OWNED}
 
 
@@ -68,14 +69,20 @@ def frozen_rows(actual, frozen):
             require(row[field] == expected, 'Frozen record differs: ' + field)
 
 
-def closure(rows, owned, body):
+def closure(rows, owned, context):
+    body = context['body']
     control = one(rows['local_recovery_control'])
     require(control['mode'] == 'NORMAL' and control['recoverySessionId'] is None and
             control['observedServerEpoch'] == body['sourceRecoveryEpoch'], 'Recovery reference protected')
     tokens = {body['assignmentId'], body['submissionId'], body['source']['sourceOrderId']}
     tokens.update(r['id'] for r in body['captures'])
+    tokens.update(r['id'] for r in body['events'])
     tokens.update(r['barcode'] for r in body['scans'])
+    unrelated_audits(rows, owned, context['spec'])
     for table, records in rows.items():
+        if table in AUDIT:
+            require(not any(references(r, tokens) for r in records), 'Target audit envelope protected')
+            continue
         if table in GLOBAL:
             continue
         if table == 'work_guard':

@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [D16 无关审计引用保留 L1](history/GOAL_D16_UNRELATED_AUDIT_L1_2026-10-16.md)：82项实际CLI/恢复/并发/锁后撤权/末DELETE回滚通过，两代原签审计和依赖原样保留，404case/37次真实合成提交独立核对。失败保留，正常有效guard目标及D13–D15组合继续，非D16整体/L2/L3。
+
 - [E07 旧恢复客户端非空升级 L1](history/GOAL_E07_LEGACY_RECOVERY_UPGRADE_L1_2026-10-16.md)：20项主机测试、两阶段原生迁移/强停重启及独立Python通过，23旧表42行/原签与恢复屏障保持，75原件多次SHA一致；首轮消费者封装错误保留，仅L1开发备份，非E07 L2/D18 L3。
 
 - [D16 其他订单防重保留 L1](history/GOAL_D16_UNRELATED_GUARD_L1_2026-10-16.md)：49项CLI/全表恢复、default-off/并发/锁后撤权/末DELETE回滚通过；无关guard及引用行完整保留，目标有效guard仍拒绝。全部失败副本保留；正常目标/复杂引用/D13–D15组合及D16整体继续，非L2/L3。
