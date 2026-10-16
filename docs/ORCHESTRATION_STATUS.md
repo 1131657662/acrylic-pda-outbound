@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-16
 branch: codex/development
-head: 0b4e5073
-dirty_entries: 92
+head: ddc47564
+dirty_entries: 86
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,12 +17,12 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标保持`active`。已取消换机承接/多跳/激活不恢复；坏机订单走有权撤回→重发→新设备从头作业，原事实与源码保留。
 
 ## Git、输入与写权
-- 固定树`D:/acrylic-pda-outbound`、`codex/development`，本批输入HEAD/远端`0b4e5073e27b09cca9d53d1ab631a8b16b01f9b4`；86项继承改动保持，禁止`git add .`。667已推送。E08导航运行input02/03/04共5384项SHA`27fee1cfe647e5459c3151b99614df3cdc17908e7da60063285dffb941f31ce9`；全部路径/哈希、binary diff、未跟踪副本/worktrees/旧看板见`.local/goal-20261016/d15-restored-jobs01/input04.json`及同号附件。
-- 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`唯一写者；清理聊天complete-released且复查idle，进度聊天idle，无并行写者/子代理/在途清理。d15-restored-jobs01/ownership04及processes/listeners-04记录实际状态，旧owner/released标记不单独证明写权。
+- 固定树`D:/acrylic-pda-outbound`、`codex/development`，本批输入HEAD/实核远端`966113d88de6b18ebad08336abfa1fdc5ea8779c`；所有继承改动保护，禁止`git add .`。全部路径/哈希、binary diff、未跟踪副本/worktrees/旧看板见`.local/goal-20261016-resume/input06–08.json`及同号附件；input07/08共5391项SHA`63611e0656c4b548c386c7f536337193ab5b9beb8259d7ea7786d06d7dbaeeab`相同。
+- 本聊天`01a13a57-8082-7dd2-a08f-987483dcda4b`独占源码/看板写权；清理聊天`01a13cb4`已释放全部窗口，无清理/压缩进程或后续变更。无子代理，旧owner/released标记不代替实际活动核查。
 
 ## 环境与边界
-- 665/666/667认证停机，667 DB19377/HTTP19437/proxy19438/预留19439零监听，无本批Java/Gradle/MySQL残留；旧失败库不复用。共享mysqld4632/5440身份未核清仅观察，不连接/停止；原TEMP AVD emulator12912/qemu12108、5564/5565与ADB8500/5037保留；E08实际操作原AVD后字号恢复1.0、IME设置0、reverse空、App强停。
-- D15同根disks-03为C/D余量`82,983,694,336 / 21,807,439,872` bytes，disks-04再采样；新证据/DB/dump/binlog/临时均D盘，无清理。失败库、原日志/XML/HTTP/签名/回执、原资料/Keystore/AVD/最终APK保留。
+- 665–670及1668均已停机；670 DB19380/HTTP19440/预留19441–19442零监听，无本批Java/Gradle/MySQL残留，未分配671；旧失败库不复用。共享mysqld4632/5440身份未核清仅观察，不连接/停止；原TEMP AVD emulator12912/qemu12108、5564/5565与ADB8500/5037保留；E08操作后字号1.0、IME设置0、reverse空、App强停。
+- input07 C/D余量82969149440/28969144320 bytes，续采样C82956455936/D45224947712 bytes；压缩期间D余量异常下降后回升、原因未明，allocated变化不当作卷净释放。新证据/DB/dump/binlog/临时均D盘；失败库、原日志/XML/HTTP/签名/回执、原资料/Keystore/AVD/最终APK保留。
 - 七类生产决定handler/POST/放行/证据写入/关闭能力、TEMP生产归档及`localDeletionAllowed=false`保持关闭；不接原库/现网、不合main、不发布部署、不用正式签名。合成身份/fixture/模拟器不能代替原PDA事实，D16标准不变。
 
 ## 本切片及可复用证据
@@ -44,8 +44,14 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 正式报告`docs/history/GOAL_D15_RESTORED_JOBS_COMBINATION_2026-10-16.md`：新1668/19378实际恢复667原dump/7存储文件/2验签配置，原dump逐字SHA`fa024e4683d9471fd329107614993d4bec0368a6c919ae333f9bb363a8bcca30`；原180表322行、派生合成5任务后180表327行再次备份恢复dump逐字相同。
 真实CLI七项30.515秒全过：原空任务/显式阈值成功，默认FAILED/过期租约/等待告警、错UUID/撤权/载荷与写入/非空覆盖拒绝；九守恒回执，Python逐行独立计数。input02/03共5387项SHA`fa1db06d7171f3aee29a480ce3bcd46fafa2b76deb69547e6ccbbba737b1ce80`，7产品监控路径与旧L1最终输入一致。
 1668两schema/360表认证dump停机，597文件双次hash/长度不变、19378零监听且全mysqld命令行无本批路径；原667604件不变。review01数量/review02独立before读取错误与一次引号失败均保留，review03只读补核通过，未重跑业务。
-E08导航L1已推送e1faced3，后断点推送0b4e5073；四档83表328行/358文件不变及2018证据按报告SHA复用，不重跑。本批仅D15/E07受影响组合开发备份，待六路径明确提交；无恢复后worker执行/完整应用写链/Linux限额/外部介质结论。
-下一项核对D16正常目标合法退出/复杂引用与可取回缺口，不删guard制造资格；继续D13–D15组合、E06/E07/E08剩余及E09实际候选。最终D18 L3必跑范围不免除，只有第8节全部满足才complete。
+E08导航L1已推送e1faced3，后断点推送0b4e5073；D15恢复监控六路径已明确提交推送`966113d88de6b18ebad08336abfa1fdc5ea8779c`。四档导航及原监控证据按报告SHA复用，不重跑；无D15整体/Linux限额/外部介质结论。
+
+## 恢复worker组合及下一步
+D16核Q12/WorkCorrections/BarcodeWorkGuard：有效guard须保留，VOID只适用未冻结作业，无成功终态合法退出依据，不能删guard造资格。设计记录`.local/goal-20261016-resume/design-worker01.md`，D16缺口保持。
+正式报告`docs/history/GOAL_D15_RESTORED_EXPORT_WORKER_2026-10-16.md`：670真实HTTP创建PENDING→完整SQL/文件恢复→独立JVM产品worker/renderer→HTTP下载及Python七表逐值回读通过。179业务表229→235行、175表不变，任务仅执行一次，原14审计保留/新增3条；8原文件不变，固定snapshot原字节相同。1141复用路径SHA见同根reuse-input01，产品及原667输入未变。
+主driver业务后守恒断言exit1（会话表大小写、审计自增值），修正后仅只读Java/Python补核均通过，未同库重跑；原exit1、669部分SQL导入失败、编译/文本解码失败保留。binlog原bytes核恢复切点后源零写入。670认证停机583文件258995013 bytes双次不变，清单SHA`36ff784804eedc7eeab1d56a1324113bebc9ea57a19c564e000a760d64a1ebf2`；原667604件仍不变。三入口为main，非JUnit；仅有界组合开发备份，不计D15整体/E07 L2/D18 L3。
+清理正式回执`.local/disk-cleanup-20261016-round4/REPORT.md` SHA`2563abbd268484c37263cf36a369c7b3ace4155a6369940206fc55631efe6e8a`及`completion-receipt.json` SHA`a51db8d1abeefea1eeea8beb9cdf6907e02b4ceb65bc39c757a01314dcde839c`已实核。17957文件/10757603054逻辑bytes删除，donor/原证据保留；3冷ram.img及23完整QCOW压缩SHA/长度不变，第24中断补核通过但原调用状态未知，25–35未执行。D最终45224742912 bytes、净增23421804544，暂降原因未明；无卷级策略变更。
+下一项先明确路径提交本组合及断点，再补D15可隔离资源约束/进程启停、升级回退缺口，继续D13–D15、E06/E07/E08剩余及E09实际候选。最终D18 L3必跑范围不免除，只有第8节全部满足才complete。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
