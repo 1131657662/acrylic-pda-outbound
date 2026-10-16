@@ -22,7 +22,7 @@ def prepare(spec_path):
     restore(source, run / 'backup.sqlite')
     restore(run / 'backup.sqlite', run / 'candidate.sqlite')
     with closing(connect(run / 'backup.sqlite')) as db:
-        validate(db)
+        validate(db, spec.get('triggerProfile', 'SYNTHETIC_SCHEMA_ONLY'))
         before = facts(db)
         selected = selection(db, spec)
     plan = dict(spec=spec, runId=run.name, before=before, selected=selected,
@@ -50,7 +50,7 @@ def transaction(db, plan, control):
     db.execute('BEGIN IMMEDIATE')
     try:
         permit(run, plan_sha)  # Deliberately read after the actual SQLite lock wait.
-        validate(db)
+        validate(db, plan['spec'].get('triggerProfile', 'SYNTHETIC_SCHEMA_ONLY'))
         current, after = facts(db), expected_after(plan)
         if current == after:
             db.execute('ROLLBACK')

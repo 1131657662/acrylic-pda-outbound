@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E07 正式原批次恢复与D16原生结构边界](GOAL_E07_FORMAL_RESTORE_NATIVE_RETENTION_2026-10-16.md)：665实际Android/HTTP/MySQL恢复及独立Python通过，591原件不变；101项留存CLI回归和47项原生trigger精确保护通过，有效目标guard正确拒绝。失败保全，非E07 L2/D16整体/D18 L3。
+
 - [E07 丢失成功回执的原批次恢复组合](GOAL_E07_LOST_SUCCESS_RESTORE_COMBINATION_2026-10-16.md)：664三阶段Android/真实HTTP/MySQL及Python通过；原待审Room→首响应丢失→关闭重开原ID重查成功，仅三表受控增量，611原件守恒。首轮消费者元数据断言失败保留并只读补核；非E07 L2/D18 L3。
 
 - [E07 Android原批次与整库恢复组合](GOAL_E07_ANDROID_ARCHIVE_RESTORE_COMBINATION_2026-10-16.md)：663实际冻结/HTTP成功归档→完整SQL/文件恢复→新Android JVM消费原Room/原签通过；独立Python核179业务表/83本地表及599原件守恒。661/662失败保全，非E07整体L2或D18 L3。

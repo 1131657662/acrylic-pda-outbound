@@ -3,6 +3,7 @@ from contextlib import closing
 import sqlite3
 
 from .codec import digest, parse, require
+from .product_triggers import validate as validate_triggers
 from .store import ROOT, quote
 
 # A schema change must prompt a new full reference review, even if Room accepts it.
@@ -22,15 +23,14 @@ def schema():
     return model, digest(raw)
 
 
-def validate(db):
+def validate(db, trigger_profile='SYNTHETIC_SCHEMA_ONLY'):
     model, sha = schema()
     expected = {e['tableName']: e for e in model['entities']}
     actual = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     require(set(expected) <= actual <= set(expected) | {'room_master_table', 'android_metadata'},
             'Missing or unknown tables')
     require(db.execute('PRAGMA user_version').fetchone()[0] == model['version'], 'Schema version mismatch')
-    require(not list(db.execute("SELECT name FROM sqlite_master WHERE type IN ('trigger','view')")),
-            'Triggers or views require reference review')
+    validate_triggers(db, trigger_profile)
     with closing(sqlite3.connect(':memory:')) as reference:
         create(reference, model)
         for table in [*expected, 'room_master_table']:
@@ -58,5 +58,5 @@ def structure(db, table):
         values = [tuple(r)[1:] for r in db.execute('PRAGMA index_xinfo(' + quote(index[1]) + ')')]
         indices.append((index[2], index[3], index[4], values))
     definitions = [tuple(r) for r in db.execute(
-        'SELECT type,name,sql FROM sqlite_master WHERE tbl_name=? ORDER BY type,name', (table,))]
+        "SELECT type,name,sql FROM sqlite_master WHERE tbl_name=? AND type IN ('table','index') ORDER BY type,name", (table,))]
     return columns, foreign, sorted(indices), definitions

@@ -8,7 +8,7 @@ from .store import facts
 
 
 def selection(db, context):
-    validate(db)
+    validate(db, context.get('triggerProfile', 'SYNTHETIC_SCHEMA_ONLY'))
     rows = {t: [parse(raw) for raw in values] for t, values in facts(db).items()}
     local = one([r for r in rows['local_submission'] if r['id'] == context['submissionId']])
     require(local['state'] == 'SYNCED' and local['autoRetry'] == 0 and

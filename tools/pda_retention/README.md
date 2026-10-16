@@ -6,7 +6,7 @@
 
 ## 输入和运行
 
-使用 Python 3.11+，依赖见 `requirements.txt`；优先复用已安装依赖。全部输入、证据和候选必须位于本项目 `.local/`，拒绝目录穿越、链接、reparse point、硬链接和未停止的 WAL 输入。输入父路径须足够短以容纳 Windows 的结果文件名。该路径检查面向已确认的单写者离线工作区，不声称抵御同一账号恶意并发替换文件；出现未知写者必须先保全并停止消费。
+使用 Python 3.11+，依赖见 `requirements.txt`；优先复用已安装依赖。全部输入、证据和候选必须位于本项目 `.local/`，拒绝目录穿越、链接、reparse point、硬链接和未停止的 WAL 输入。`triggerProfile` 默认 `SYNTHETIC_SCHEMA_ONLY`（无触发器）；产品原生副本须显式 `PRODUCT_NATIVE`，核对 `product-triggers.json` 固定清单、对应源码SHA和全部原SQL定义。缺失、增加、篡改触发器、未知profile或view均拒绝；所有保护触发器原样保留，不从输入动态学习信任。输入父路径须足够短以容纳 Windows 的结果文件名。该路径检查面向已确认的单写者离线工作区，不声称抵御同一账号恶意并发替换文件；出现未知写者必须先保全并停止消费。
 
 `synthetic-only.json` 字段：
 
@@ -18,6 +18,7 @@
 | `submissionId` | 唯一待清理成功批次的原 ID |
 | `keySha256` | 原归档行公钥对象 canonical JSON 的 SHA，独立固定于输入 |
 | `auditKeySha256` | 有无关审计时必填；审计原公钥对象 canonical JSON 的独立 SHA，不能用目标公钥替代 |
+| `triggerProfile` | `SYNTHETIC_SCHEMA_ONLY` 或 `PRODUCT_NATIVE`，原计划及事务内重新核验；不能将删掉保护逻辑的原生副本改称合成结构 |
 | `now` | 显式模拟 UTC 时间，最多纳秒；严格超过完成后90天且归档仍有效 |
 
 ```powershell
