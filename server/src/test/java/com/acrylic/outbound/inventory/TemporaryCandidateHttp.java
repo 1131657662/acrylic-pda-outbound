@@ -1,5 +1,6 @@
 package com.acrylic.outbound.inventory;
 
+import com.acrylic.outbound.e2averify.E2aTestPorts;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.net.*;
@@ -39,7 +40,7 @@ final class TemporaryCandidateHttp {
             .header("X-Server-Recovery-Epoch","1").POST(HttpRequest.BodyPublishers.ofString(SubmissionJson.canonical(body))),status);
     }
     private HttpRequest.Builder builder(String path) {
-        return HttpRequest.newBuilder(URI.create("http://127.0.0.1:19434/api/v1"+path)).timeout(Duration.ofSeconds(30));
+        return HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + E2aTestPorts.http() + "/api/v1"+path)).timeout(Duration.ofSeconds(30));
     }
     private JsonNode exchange(HttpRequest.Builder request,int expected) throws Exception {
         var response=client.send(request.build(),HttpResponse.BodyHandlers.ofString());

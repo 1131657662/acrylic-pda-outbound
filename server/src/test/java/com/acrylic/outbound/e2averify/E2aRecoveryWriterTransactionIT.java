@@ -18,11 +18,12 @@ class E2aRecoveryWriterTransactionIT {
         assertThat(submissions).isPositive(); profile.migrate(jdbc,"38");
         RecoveryTransactionChecks.verify(jdbc, profile.attempt);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM submission",Integer.class)).isEqualTo(submissions);
+        profile.migrate(jdbc);
         E2aCrossSourceHttpSetup.signing(profile.attempt);
         Path renderer=Path.of("../report-rendering/build/install/acrylic-report-rendering").toAbsolutePath().normalize();
         try(var context=E2aCrossSourceHttpIT.start(profile,"--outbound.exports.sample-data=true","--server.servlet.session.cookie.secure=false",
                 "--outbound.exports.renderer-home="+renderer,
-                "--outbound.exports.browsers=D:/acrylic-pda-worktrees/r08-export/report-rendering/build/browsers")) {
+                "--outbound.exports.browsers=" + E2aWorktree.ROOT.resolve("report-rendering/build/browsers"))) {
             new TemporaryExportChecks((WebApplicationContext)context).verify(profile.attempt.resolve("exports-verified"));
             E2aTemporaryExportBrowser.verify(profile.attempt);
         }

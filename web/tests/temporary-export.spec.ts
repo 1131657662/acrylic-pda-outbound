@@ -22,7 +22,7 @@ test('normal and short TEMP originals are accessible from order and summary page
     expect((await download).suggestedFilename()).toMatch(/\.xlsx$/);
     await page.screenshot({ path: info.outputPath(`${f.order}-originals.png`), fullPage: true });
     await page.goto(`/exports?warehouse=${f.warehouse}`);
-    const summary = page.getByRole('region', { name: '跨订单原确认汇总' });
+    const summary = page.getByRole('region', { name: '跨订单最新净值汇总' });
     await expect(summary).toContainText('已核验临时来源'); await summary.getByRole('button', { name: '查询汇总' }).click();
     await expect(summary).toContainText('1 单'); await expect(summary).toContainText('2 包');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);

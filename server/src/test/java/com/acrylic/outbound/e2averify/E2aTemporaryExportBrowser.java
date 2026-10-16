@@ -11,7 +11,7 @@ final class E2aTemporaryExportBrowser {
         builder.directory(Path.of("D:/acrylic-pda-outbound/web").toFile());builder.environment().remove("E2A_CROSS_PASSWORD");
         builder.environment().put("TEMP_EXPORT_PRIVATE",attempt.resolve("private/temporary-export-browser.json").toString());
         builder.environment().put("TEMP_EXPORT_OUTPUT",attempt.resolve("browser").toString());
-        builder.environment().put("OUTBOUND_API_PROXY","http://127.0.0.1:19434");
+        builder.environment().put("OUTBOUND_API_PROXY","http://127.0.0.1:" + E2aTestPorts.http());
         builder.redirectErrorStream(true).redirectOutput(attempt.resolve("private/browser.log").toFile());
         var process=builder.start();Files.writeString(attempt.resolve("browser-process-pid.txt"),Long.toString(process.pid()));
         assertThat(process.waitFor(90,TimeUnit.SECONDS)).as("Browser runner must finish; inspect PID before retry").isTrue();

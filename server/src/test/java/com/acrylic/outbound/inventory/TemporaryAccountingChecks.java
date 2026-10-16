@@ -2,6 +2,7 @@ package com.acrylic.outbound.inventory;
 
 import com.acrylic.outbound.submissions.*;
 import com.acrylic.outbound.temporary.*;
+import com.acrylic.outbound.e2averify.E2aTestPorts;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
@@ -128,7 +129,7 @@ public final class TemporaryAccountingChecks {
     }
 
     private JsonNode http(String token, String path, JsonNode body) throws Exception {
-        var request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:19434/api/v1" + path))
+        var request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + E2aTestPorts.http() + "/api/v1" + path))
             .header("Authorization", "Bearer " + token)
             .header("X-Server-Recovery-Epoch", "1");
         if (body == null) request.GET();

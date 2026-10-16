@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: 68634dac
-dirty_entries: 93
+head: b6e7b540
+dirty_entries: 105
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,15 +17,15 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户明确恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；目标active，只有全部闸门满足才complete。取消的换机承接/多跳/激活不恢复。L1/有界组合开发备份不能计D项整体或D18 L3。
 
 ## Git、写权、输入
-- 固定树D:/acrylic-pda-outbound、codex/development；R08报告/harness修复及D13 HTTP/Session、lease、worker/file/export报告与runner修复已明确路径提交并推送，接续实核HEAD/真实远端均459705e4；其他继承Android/server/工具/资料不夹带，禁止git add .。
-- 本聊天01a13a57-8082-7dd2-a08f-987483dcda4b为当前唯一写者，无子代理；清理聊天01a13cb4-88f1-7fc3-9af2-7a0fde6bd26e已明确idle、清理进程/监听/数据库/重型任务为0并释放写权。接管快照见`.local/goal-20261017-resume/resume-20261017-0710/`，旧owner/released字段不代实际核查。
-- 全量输入`.local/goal-20261017-resume/resume-20261017-0710/input55.json`：5492项，SHA `0a67c0fde8c283f13390db29c9cc29da42b150ca88175bda587be8c067180c2f`；HEAD/远端、全部dirty/untracked原件、binary diff、33树、写权、进程/监听和C/D余量已同目录保存。更新前旧看板归档`docs/history/ORCHESTRATION_STATE_before_resume_20261017-0710.md`。
+- 固定树D:/acrylic-pda-outbound、codex/development；接续实核 HEAD/远端均 `b6e7b540`，工作区继承改动和本轮 D13 runner/测试夹具改动均保留，禁止 `git add .`。历史已提交报告不替代本轮输入绑定。
+- 本聊天01a13a57-8082-7dd2-a08f-987483dcda4b为当前唯一写者，无子代理；清理聊天01a13cb4-88f1-7fc3-9af2-7a0fde6bd26e已明确idle、清理进程/监听/数据库/重型任务为0并释放写权。旧owner/released字段不代实际核查，当前接管快照见`.local/goal-20261017-resume/resume-20261017-0752/`。
+- 全量输入`.local/goal-20261017-resume/resume-20261017-0752/input.json`：5489项，SHA `bd5e5c02413b35dcae3052b693471ef0c4636da598733748f212352ffdc0a425`；HEAD/远端、全部dirty/untracked原件、binary diff、33树、写权、进程/监听和C/D余量已同目录保存。更新前旧结论快照为`docs/history/ORCHESTRATION_STATE_before_resume_20261017-075235.md`。
 
 ## 环境与边界
 - 本批676/677及既有665–675/1668均封存停机，不复用旧库。R08 680 在 `127.0.0.1:23308/acrylic_r08_it_680` 完整14项通过，停机后数据目录约236697749 bytes仍保留且目标监听为零；共享mysqld4632/5440身份未知，只观察不连接停止。原TEMP AVD emulator12912/qemu12108、5564/5565及ADB8500保留，真机未操作。
 - R08 678/679 的旧浏览器路径503及679收尾自动删除495个旧datadir事实已在专项报告登记；678/679日志、marker、storage保留。`tools/r08-provision-and-run.ps1` 已移除自动清理调用，后续清理须单独、明确路径执行。680 preflight/postflight记录C/D余量、进程和监听；子进程TEMP/TMP/Java临时专用，不改全局HOME/CODEX_HOME。
-- D13 19444 实例位于 `server/.local/mysql19444-r09batch`，证据 `server/.local/d13-s3session04`；真实测试结束认证停机、19444/19458零监听，datadir和失败19442/19443原件保留。`r09-recovery-it-batch.ps1` 新增显式 `-InstanceRoot`，未改产品测试源码。
-- 不接原库现网、不合main、不发布部署/Release、不用正式签名、不绕过审批。七类生产决定handler/POST/放行/证据写入/关闭、TEMP生产归档保持关闭，localDeletionAllowed=false，D16标准不变；合成输入不代原PDA现场事实。接管时C盘约78.53GB、D盘约65.37GB可用；共享MySQL 3306/33060、原TEMP AVD 5564/5565及长期工具监听仅观察，未停止或写入。
+- D13 L2 组合报告`docs/history/GOAL_D13_RECOVERY_COMBINATION_L2_2026-10-17.md`已补：run 805/806/812 分别覆盖原提交/未提交占用与恢复事务、非空迁移、错库/水位/事务拒绝、HTTP 导出/renderer/PDF/XLSX 及 Chrome；19500/19520 批次已认证停机并保留 datadir、binlog、失败原件。仅 D13 受影响组合 L2，不计 D13 整体或 D18 L3。
+- 不接原库现网、不合main、不发布部署/Release、不用正式签名、不绕过审批。七类生产决定handler/POST/放行/证据写入/关闭、TEMP生产归档保持关闭，localDeletionAllowed=false，D16标准不变；合成输入不代原PDA现场事实。接管实测 C 盘约73.13GB、D盘约58.58GB可用；共享MySQL 3306/33060、原TEMP AVD 5564/5565及长期工具监听仅观察，未停止或写入。
 
 ## D15旧worker有界L1
 - 正式报告docs/history/GOAL_D15_OLD_WORKER_COMPATIBILITY_L1_2026-10-17.md：新程序真实HTTP创建ORIGINAL_CONFIRMED/XLSX→保留旧JAR实际scheduled worker→旧/新下载→新原键重放/异文拒绝；20次真实HTTP，Python七表逐值通过，范围仅该格式，不外推旧写入/多任务新格式/D15整体/L2/L3。
@@ -38,7 +38,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - `docs/history/GOAL_D11_R08_EXPORT_INTEGRATION_L1_2026-10-17.md`：680新隔离库完整 `R08ExportIT` 14 tests/0 failures/0 errors/0 skipped，覆盖真实 HTTP/MySQL、renderer、PDF/XLSX、幂等/并发/权限/篡改及拒绝路径；关键 XML SHA 444bbb923154046a2302b130868f34cbd375e331e30e358f07b1bd11e278710f。仅补 R08 套件 L1，D11受影响组合、E06/E07 L2、D18 L3及Python/Android/Chrome全链仍未完成。
 
 ## D13 HTTP/Session入口 L1
-- `docs/history/GOAL_D13_RECOVERY_HTTP_SESSION_L1_2026-10-17.md`：19444新隔离实例 `RecoveryRequestRootHttpIT` 2 tests/0 failures/0 errors/0 skipped，真实 Session JDBC、ERROR/ASYNC/multipart、并发和fenced/stale拒绝通过；19442/19443 evidence/datadir guard失败原件保留。仅补HTTP/Session L1，worker/文件/导出跨入口、D13整体和D18 L3仍未完成。
+- `docs/history/GOAL_D13_RECOVERY_HTTP_SESSION_L1_2026-10-17.md`：19444新隔离实例 `RecoveryRequestRootHttpIT` 2 tests/0 failures/0 errors/0 skipped，真实 Session JDBC、ERROR/ASYNC/multipart、并发和fenced/stale拒绝通过；19442/19443 evidence/datadir guard失败原件保留。该页只计HTTP/Session L1；跨入口组合由D13 L2报告补充，D13整体和D18 L3仍未完成。
 
 ## D13 worker/file/export L1
 - `docs/history/GOAL_D13_RECOVERY_WORKER_FILE_EXPORT_L1_2026-10-17.md`：新隔离 run 684（MySQL 19384、HTTP 19471、辅助 19472/19473）真实 HTTP 创建 PENDING→SQL/文件恢复→独立 worker JVM→HTTP XLSX；179表中175表不变，Python/Java只读消费者通过，XLSX SHA `12c96188…3ab14`。681 attempt守卫、682临时目录、683旧definer失败原件保留；仅 worker/file/export L1，不计 D13 L2、D18 L3或总目标。
@@ -50,15 +50,15 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - E07历史钥/重锚/原签/撤回/更正/退库/中转/独立/实物/编号/运维及644/647/663–667按报告复用；FORMAL667产品提交仓库与TEMP675真实Vault/PdaSession/TemporarySession仓库原ID UNKNOWN→重开→SQL/files恢复已有有界证据。675未提交Java运行器依赖、674失败及consumer01–06保留；不从头重做。
 - D15非空升级1550、恢复监控1668、产品worker670、新→旧→新673及资源约束均按报告复用；本批只补指定旧worker格式。670/677 driver exit1只读补核不冒称原成功，669/671/672/676失败原件保留。合成user unit不等于Linux项目实际启停，真实异地/现场另列C06。
 - D11 R08完整套件按专项报告复用；678旧浏览器路径失败和679定向PDF补验不覆盖680全套，自动datadir删除事实保留并不记作证据通过。
-- D13 HTTP/Session入口按19444专项报告复用；19442/19443为证据/datadir路径守卫失败，19444修复harness后2项全通过。worker/文件/导出及错根/错库/水位组合仍未验。
-- D13 lease发布按19445专项报告复用；真实lease发布、孤儿拒绝/退休/再启动1项通过，worker/文件/导出及错库/水位仍未验。
+- D13 HTTP/Session入口按19444专项报告复用；19442/19443为证据/datadir路径守卫失败，19444修复harness后2项全通过；本轮 run 805/806/812 已补受影响组合 L2，Android、完整外部 Python、原模拟器和恢复全链仍未验。
+- D13 lease发布按19445专项报告复用；真实lease发布、孤儿拒绝/退休/再启动1项通过；worker/文件/导出、错库/水位和事务拒绝已由本轮 L2 组合覆盖，Android、完整外部 Python 和恢复全链仍未验。
 - D17/U04实际FORMAL/TEMP Activity四原生阶段见GOAL_D17_ACTIVITY_LIFECYCLE_COMBINATION_2026-10-17.md，原83表328行/491文件不变；四字号明细/辅助导航/独立满队列/反馈故障/声音未就绪及缓存引用保护按报告复用，仍非U整体或L2/L3。
-- D16整单消费者/原生trigger/复杂引用/恢复后事实及12CLI有报告；正常成功目标仍有有效guard，合法退出依据未齐，不删guard或伪造状态造资格，D16整体未完成。D13–D15完整组合、E06/E07/E08剩余L2、E09候选、D18实际Android/HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复全链L3未完成。
+- D16整单消费者/原生trigger/复杂引用/恢复后事实及12CLI有报告；正常成功目标仍有有效guard，合法退出依据未齐，不删guard或伪造状态造资格，D16整体未完成。D13整体、D14–D15完整组合、E06/E07/E08剩余L2、E09候选、D18实际Android/HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复全链L3未完成。
 - 1522/1523、1043/A1.4、Chrome1540及其他历史失败/暂缓原件与同根因计数保留，无新依据不机械重试。原资料/旧BCD/原身份/原签/真机/现场/异地取回及长时限制单列；不能把可隔离开发缺口挪入现场项。
 - 清理回执.local/disk-cleanup-20261016-round4/REPORT.md及completion-receipt.json保持；原件/失败库/donor/最终APK保留，QCOW第24调用状态未知、25–35未执行，D盘暂降回升原因未明，不以allocated变化当卷净释放。
 
 ## 下一动作
-D13 HTTP/Session、lease及worker/file/export L1均已留正式报告；先完成E06多任务网页输入与证据绑定复核，再做D13受影响组合（错根/错库/水位及适用并发/回滚反例），随后推进D14–D18、E06–E09、O/U及最终候选L3。旧写入/多任务格式先确认实际兼容要求和原输入，禁止为凑验收重跑已有链；D16先找合法退出依据。总目标继续active。
+D13 HTTP/Session、lease及worker/file/export L1及受影响组合 L2均已留正式报告；先完成 E06 多任务网页输入与证据绑定复核，再推进 D14–D18、E06–E09、O/U 及最终候选 L3。旧写入/多任务格式先确认实际兼容要求和原输入，禁止为凑验收重跑已有链；D16先找合法退出依据。总目标继续 active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
