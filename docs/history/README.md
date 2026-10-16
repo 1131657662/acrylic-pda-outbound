@@ -1,5 +1,7 @@
 # 历史归档
 
+- [TEMP产品会话与原ID恢复 L1](GOAL_E06_TEMP_REPOSITORY_RESTORE_L1_2026-10-17.md)：真实会话/仓库丢GET响应→UNKNOWN→重开及SQL恢复后原ID查询、73项Python消费通过；仅合成隔离L1开发备份，运行器依赖和历史失败单列，非整体L2/L3。
+
 - [D01必做范围与剩余验收矩阵](GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17.md)：27项/60报告SHA绑定，区分历史适用、旧失败、开发缺口、L2/L3和现场；盘点不计业务通过。
 
 - [D17/U04实际作业Activity生命周期](GOAL_D17_ACTIVITY_LIFECYCLE_COMBINATION_2026-10-17.md)：FORMAL/TEMP四原生阶段、实际按钮与新PID原ID恢复及Python全表消费通过；原83表328行/491全部文件保持。合成身份/时间，有界测试组合开发备份，非整体L2/L3。
