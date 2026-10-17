@@ -50,7 +50,11 @@ class ExportRendererProcessTest {
             Files.copy(classes.resolve("com/acrylic/outbound/reports/ReportCli.class"),jar);jar.closeEntry();
         }
         execution=mock(BackgroundJobExecution.class);output=directory.resolve("attempt/report.xlsx");
-        process=new ExportRendererProcess(directory.toString(),directory.toString(),10);
+        var beans=new org.springframework.beans.factory.support.StaticListableBeanFactory();
+        var handoffs=new com.acrylic.outbound.recovery.RecoveryProcessHandoff(
+            beans.getBeanProvider(com.acrylic.outbound.recovery.RecoveryOperationRegistry.class),
+            beans.getBeanProvider(com.acrylic.outbound.recovery.RecoveryEffectGate.class));
+        process=new ExportRendererProcess(directory.toString(),directory.toString(),10,handoffs);
     }
     private void render() throws Exception { process.render(execution,directory.resolve("snapshot.json"),output,ExportModels.Format.XLSX); }
     /**

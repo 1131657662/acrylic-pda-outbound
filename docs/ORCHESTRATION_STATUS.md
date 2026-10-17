@@ -6,41 +6,42 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: 4b982682
-dirty_entries: 121
+head: f3ad4289
+dirty_entries: 120
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ```
 <!-- FACTS_END -->
 
-用户已恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；总目标active，未完成。取消的换机承接/多跳/接收者确认激活不恢复。
+总目标D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计保持active、未完成。取消的换机承接/多跳/接收者确认激活不恢复。
 
-## Git、写权与保全
-- 固定树D:/acrylic-pda-outbound，codex/development；本切片输入HEAD/实核远端4b98268204984f17e1b02df075789e09f8b9b687。本次提交/推送回执及最终全量输入见下列同号快照，不合main、不发布部署。
-- 唯一写者聊天01a147c5-0495-7703-ba98-2e7637cbc619；list_threads及OS复核无其他项目活动写者/子代理。登记d13-worker-closeout02/ownership.json，未释放；本批重型任务已结束。
-- 本段短路径均属.local/goal-20261017-resume/。推送后输入inputd15combination-postpush04.json共5533项，SHA ea782dd87c76f5fb749671c7e847ff9b0cdc340121963d69c3febd6180c1f5d3。收口前inputd13worker-beforecloseout03.json共5542项，SHA fb40135e51c0aa97df5d36dcb78ab9907067cbd439d6b1ca8a7e645b02e1c190；同号patch/未跟踪副本/写权/进程/监听/盘余量已存。
-- 提交前最终inputd13worker-prepush06.json及同号附件、推送后inputd13worker-postpush07.json与remote回执为后续精确断点。仅明确路径纳入本切片；E2aCrossSourceHttpIT两端口改动作为必要设施依赖，其余继承改动保留，禁止git add .。
-- handoff-final01全部原快照与run03指定失败日志保留；逐路径审计history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-17.md已完成，不重启旧run03。旧看板结论归档history/ORCHESTRATION_STATE_before_d13_worker_20261017.md，不复制版本块。
+## Git、写权与输入
+- 固定树D:/acrylic-pda-outbound，codex/development；本切片输入HEAD/实核远端f3ad4289437e8a272c051d7e55160f7b89511c76，前序生产调度有界L1已推送。本批提交和实核远端见下列推送后回执，不合main、不发布部署。
+- 唯一写者聊天01a147c5-0495-7703-ba98-2e7637cbc619，list_threads/OS已核无其他活动项目写者或子代理；本批登记d13-renderer-handoff01/ownership.json，未释放，重型任务结束。
+- 本段短路径均在.local/goal-20261017-resume/。完整输入inputd13worker-postpush07.json共5543项，SHA323c1e2667da276368db1ef0c467a7e6d8e73c9e360be82bd8d70860b61ff93c；预跑inputd13renderer-before1559-01.json共5550项，SHA329ffdf4716692d1be5d8a58af9500ac1902229b601dc186ab0b4d20e3a8df59；同号patch/未跟踪副本/写权/环境已保留。
+- 本切片提交前inputd13renderer-prepush02.json及推送后inputd13renderer-postpush03.json的同号patch/未跟踪副本/ownership/进程/监听/CDE余量/remote为最终断点。明确路径暂存，其他继承改动逐字保护；source-bindings.json绑定32条直接/复用输入。
+- 原handoff-final01全快照及run03指定原失败日志保留；逐路径审计GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-17已完成，不重启旧run03。旧看板结论归档history/ORCHESTRATION_STATE_before_d13_renderer_20261017.md，不复制事实块。
 
-## D13生产调度恢复准入：有界L1
-- 报告history/GOAL_D13_WORKER_ADMISSION_2026-10-17.md；新隔离run1557 DB19336/HTTP19440，runner exit0、IT1项0失败/错误/跳过；consumer/result.json PASS。仅服务端L1开发备份，不计D13整体/L2/D18L3。
-- 默认关闭真实HTTP→生产调度→XLSX下载；准入后真实HTTP/Session→生产调度→独立JDK renderer→XLSX/PDF下载均通过。API/worker为同一测试JVM中独立Spring上下文，合成TEMP确认只备输入，不是生产POST/原PDA验收。
-- 401/跨仓404/同键同任务/异文409已验；probe不提供root，观察生产WORKER_JOB。持根期间独立Python推进被CONTROL_WRITERS_ACTIVE拒绝，根外JDBC拒绝；completion末SQL重复主键真实回滚，probe0行/任务FAILED。排空scheduler后root RELEASED/registry0，权威推进成功，旧HTTP503及worker两入口拒绝且任务不变。
-- 36条导出HTTP+1条stale HTTP原文核SHA；两XLSX各7表、前导零/原顺序/整数克/无公式及两页PDF无批注通过；PDF两页实际看图无裁切/重叠/缺字。三份业务orders相等；最终dump SHA05fe0f779ae187cbce5ff5b42f4b38566caf73e7f2f64be3e1c240a5f755ad7c。
-- .local/e2a-cross-20260925-1557/保留原XML/SQL/HTTP/进程/文件/停机；d13-worker-closeout02/source-bindings.json绑定直接和复用SHA，inherited-protection.json核继承源码。作者/自审同助手，独立工具不称独立人员。
-- 1555错预期跨仓403，实际404，未进导出；1556提醒可能读旧行，自审后1557先断言0行再实际新增，完整复验。原失败XML/HTTP/dump/诊断保留，不改记通过，不复用失败库。
+## D13 renderer未确认排空：有界L1通过
+- 报告history/GOAL_D13_RENDERER_HANDOFF_2026-10-17.md；新run1559 DB19338/HTTP19442，runner exit0；普通test20项、IT2项全部0失败/错误/跳过，consumer01/result.json PASS。未执行完整server test，不计D13整体/L2/D18L3。
+- 产品renderer在tmp/attempt落盘前登记PROCESS_HANDOFF，确认退出才关闭；终止未确认先隔离根/毒化并保留L2，再调用已有权威围栏。普通fence不混同quarantine，不改生产默认/权限/契约/迁移。
+- 无根不创建attempt、HTTP根越集拒绝、正常子租约释放、UNKNOWN回调返回后根FENCED/registry1/子操作1/新根拒绝均通过。真实父/子进程丢租约/超时/中断排空回归通过。
+- 独立子JVM显式建WORKER_JOB根、运行真实合成CLI；父JVM原生独占锁观察受阻。真实排空后MODEL注入丢失终止回执，生产F1prime/F2/F3/F4及真实halt70；renderer已停、错误返回标记不存在；原P5/unknown身份一致，保全原件后后继独立JVM权威以孤儿拒绝。该故障非真实OS拒绝kill，触发根非生产scheduler创建。
+- 同批另一IT实际HTTP/Session→生产非web调度→独立JDK renderer→XLSX/PDF下载及default-off通过。API/worker是同一IT JVM内独立Spring上下文；401/跨仓404/同键/异文409、持根阻Python推进、末SQL回滚/零probe行、stale HTTP/worker拒绝通过。TEMP合成确认只备输入，七类CommandOperation为空，无normal admission。
+- 独立消费37条HTTP、两XLSX各7表/原顺序/前导零/整数克/无公式、两页PDF无批注，三份orders相同；PDF两PNG实际看图无裁切/重叠/缺字。dump SHAd9db8eed2e97cd0e0fb50b8454388078e75aeb3f0ed6786b90d90ef588987ae8；原证据.local/e2a-cross-20260925-1559/。同助手作者/自审，独立工具不称独立人员。
+- run1558正常导出及19项通过，native在已exit70之后读取平台编码stderr失败，整轮失败；rootless-red实际复现早建目录，修后新1559完整复验。原XML/SQL/HTTP/raw stderr/P5/回归失败保留；1558未跟踪运行源码按原inputs SHA逐项保全，未覆盖旧证据、不复用失败库。
 
-## 环境、清理及边界
-- 1555/1556/1557均认证停机，批次19334–19336/19438–19440无监听；本批JVM/renderer退出，OS采样无项目Java/ADB/模拟器。共享MySQL4632/5440及3306/33060仅观察，身份未知不连接不停止；原AVD/Keystore未重配。
-- 1555/1556清合成datadir/binlog逻辑445076580 bytes，D卷增加453824512 bytes。1557先因PID22272消费者保护拒绝，本次核已退出且无消费者后单独执行成功，逻辑222637362 bytes，D57108062208→57335005184 bytes（卷增加226942976），C78778314752/E195634057216 bytes。详见closeout01/02清理前后记录及清单。
-- SQL/HTTP/XML/原失败日志/开发DER、继承源码/原资料/原身份/原回执/唯一证据/最终APK保留。七类生产能力、TEMP生产归档和localDeletionAllowed=false保持；不接原库/现网、不用正式签名、不绕设备/Chrome审批。
+## 环境与清理
+- 1558/1559均认证停机，19337/19338/19441/19442无监听，项目JVM/renderer退出；采样无ADB/模拟器。共享MySQL4632/5440、3306/33060只观察，身份未知不连接不停止；原AVD/Keystore未重配。
+- 按持续授权清理两个合成datadir/binlog，逻辑445271853 bytes；D56853528576→57307037696 bytes，卷增加453509120；C78769664000/E195634057216 bytes。停机/无消费者、逐文件SHA、输入/命令/依赖/结果详见d13-renderer-handoff01/cleanup前后记录与manifest、cleanup1558-1559.ps1。
+- SQL/HTTP/XML/原失败日志/开发DER/P5/合成控制树保留；继承/未提交源码、原资料/身份/原回执/唯一证据/最终APK不清。七类生产决定、TEMP生产归档及localDeletionAllowed=false保持，不接原库现网/正式签名，不绕Chrome/设备审批。
 
-## 已有验收、未完成与下一步
-- D01矩阵history/GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17.md维护D/O/U映射；matrix-report-bindings01.json原60报告与handoff-final01/evidence-bindings.json后34报告保留。D15七段56HTTP/非空升级/原备份恢复run1554报告已推送，范围不扩为D15整体。
-- D11完整14项L1、D13 HTTP/Session及lease发布、D14明确截点、E06 TEMP仓库恢复、D17实际Activity/UI各有正式范围证据；复用前核路径+SHA，不重复已验起点。D04旧前缀/Chrome1540策略阻断无新依据不重跑，原资料/旧BCD/原身份/真机/异地/长时/项目Linux现场仍单列。
-- 下一切片：沿RecoveryFenceAuthority/RecoveryOperationLease/ExportRendererProcess核EXPORT_PROCESS_DRAIN_INCOMPLETE：普通失败退根是否过早放开尚未确认退出的子进程围栏。完整retirement/quarantine/halt协议未实现；本次正常排空通过不能覆盖该缺口。先定最小标准与输入，再实现/真实验证，不另建平行权威。
-- D16正常目标合法退出仍缺可信依据，不删guard/伪造资格/降低标准。D13整体、D14/D15剩余、E06/E07/E08L2、统一候选、D18 Android/真实HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复全链L3及第8节闸门仍未完成。
+## 验收边界、剩余与下一步
+- D01矩阵history/GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17维护D/O/U；原60报告与后34报告绑定保留。前序D13调度1557/D15七段1554、D11完整14项L1、D14明确截点、E06 TEMP恢复及D17实际Activity/UI均依各报告输入复用，不重复已验起点、不拼为总体验收。
+- 下一切片先沿RecoveryOperationLease.close/RecoveryFenceAuthority核P5正常退役。正常根close仍留记录至进程死亡后孤儿扫描，与完整退役协议不符；需先定根子操作/终态确认、原权威下删除并读回、失败隔离及索引原子性标准，再实现与原生/HTTP组合验证。不另建权威，不把本次未确认分支通过当完整retirement。
+- D04旧前缀/Chrome1540策略阻断无新依据不重跑；原资料/旧BCD/原身份/真机/异地/长时/项目Linux现场继续单列。D16正常目标缺可信合法退出依据，不删guard/伪造资格/降低标准。
+- D13整体、D14/D15剩余、E06/E07/E08L2、统一最终候选、D18 Android/真实HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复全链L3及第8节全部闸门仍未满足，持续推进独立可执行项。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

@@ -15,8 +15,9 @@ import static com.acrylic.outbound.recovery.RecoveryControlFormat.require;
  * started releasing refuses it ({@code CONTROL_SUBOPERATION_FORBIDDEN}) and a released root is no
  * longer resolvable from its token ({@code CONTROL_OPERATION_RELEASED}). The full retirement
  * protocol of the design (release ordering, confirmation, quarantine and halt on an unconfirmed
- * release) is not implemented here; this class only stops accepting work and drops its own lease
- * reference when it is closed.
+ * release) is not fully implemented here. An explicitly quarantined renderer root retains its
+ * poisoned writer reference even when its dispatch owner closes it; ordinary roots drop their own
+ * reference when closed.
  */
 public final class RecoveryOperationLease implements AutoCloseable {
     private final RecoveryOperationRegistry registry;
@@ -25,6 +26,7 @@ public final class RecoveryOperationLease implements AutoCloseable {
     private final Map<RecoverySubOperation, Integer> open = new EnumMap<>(RecoverySubOperation.class);
     private RecoveryOperationPhase phase = RecoveryOperationPhase.SERVING;
     private boolean retired;
+    private boolean quarantined;
     private java.util.UUID leaseId;
 
     /**
@@ -63,6 +65,14 @@ public final class RecoveryOperationLease implements AutoCloseable {
     /** Publishes a fence for this root; the transition is irreversible. */
     public synchronized void fence() {
         phase = RecoveryOperationPhase.FENCED;
+    }
+
+    /** An unconfirmed process must survive the owner's finally/close as retained, poisoned work. */
+    synchronized void quarantineUnconfirmed() {
+        require(!retired, "CONTROL_OPERATION_RELEASED");
+        quarantined = true;
+        phase = RecoveryOperationPhase.FENCED;
+        writer.poison();
     }
 
     /**
@@ -126,13 +136,14 @@ public final class RecoveryOperationLease implements AutoCloseable {
 
     /**
      * Ends the root: its token stops resolving, no further work is accepted and its own writer lease
-     * reference is dropped. Bindings are cleared by the dispatch owner (the request destroy path),
-     * not here, so a token that outlives its dispatch is still observable as released.
+     * reference is dropped, unless an unconfirmed renderer quarantined it. A quarantined root stays
+     * fenced, registered and poisoned until process isolation. Bindings are cleared by the dispatch
+     * owner (the request destroy path), not here.
      */
     @Override
     public void close() {
         synchronized (this) {
-            if (retired) return;
+            if (retired || quarantined) return;
             retired = true;
             phase = RecoveryOperationPhase.RELEASED;
         }

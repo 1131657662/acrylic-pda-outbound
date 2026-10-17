@@ -2,6 +2,7 @@ package com.acrylic.outbound.exports;
 
 import com.acrylic.outbound.common.BusinessException;
 import com.acrylic.outbound.jobs.*;
+import com.acrylic.outbound.recovery.RecoveryProcessHandoff;
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.Duration;
@@ -14,9 +15,11 @@ import org.springframework.stereotype.Component;
 public class ExportRendererProcess {
     private final String home;private final String browsers;private final long timeout;
     private volatile boolean drainFailed;
+    private final RecoveryProcessHandoff handoffs;
     public ExportRendererProcess(@Value("${outbound.exports.renderer-home:}") String home,
-            @Value("${outbound.exports.browsers:}") String browsers,@Value("${outbound.exports.timeout-seconds:180}") long timeout) {
-        this.home=home;this.browsers=browsers;this.timeout=Math.clamp(timeout,10,600);
+            @Value("${outbound.exports.browsers:}") String browsers,@Value("${outbound.exports.timeout-seconds:180}") long timeout,
+            RecoveryProcessHandoff handoffs) {
+        this.home=home;this.browsers=browsers;this.timeout=Math.clamp(timeout,10,600);this.handoffs=handoffs;
     }
     public void requireAvailable(ExportModels.Format format) {
         if(drainFailed) throw new BusinessException(503,"EXPORT_PROCESS_DRAIN_INCOMPLETE","文件写入进程停止未确认，暂不能生成报表");
@@ -25,14 +28,18 @@ public class ExportRendererProcess {
             throw new BusinessException(503,"EXPORT_UNAVAILABLE","报表生成服务尚未配置，请联系管理员");
     }
     public void render(BackgroundJobExecution execution,Path snapshot,Path output,ExportModels.Format format) throws Exception {
-        requireAvailable(format);Path directory=output.getParent();Files.createDirectories(directory.resolve("tmp"));
-        var builder=new ProcessBuilder(command(snapshot,output,format));builder.directory(directory.toFile());
-        configureEnvironment(builder,directory);builder.redirectErrorStream(true).redirectOutput(directory.resolve("renderer.log").toFile());
-        try(var job=windows()?new ExportWindowsJob():null) { run(builder,execution,job); }
+        requireAvailable(format);
+        try(var handoff=handoffs.begin()) {
+            Path directory=output.getParent();Files.createDirectories(directory.resolve("tmp"));
+            var builder=new ProcessBuilder(command(snapshot,output,format));builder.directory(directory.toFile());
+            configureEnvironment(builder,directory);builder.redirectErrorStream(true).redirectOutput(directory.resolve("renderer.log").toFile());
+            try(var job=windows()?new ExportWindowsJob():null) { run(builder,execution,job,handoff); }
+        }
     }
-    private void run(ProcessBuilder builder,BackgroundJobExecution execution,ExportWindowsJob job) throws Exception {
+    private void run(ProcessBuilder builder,BackgroundJobExecution execution,ExportWindowsJob job,
+            RecoveryProcessHandoff.Lease handoff) throws Exception {
         Process process=builder.start();var children=new HashSet<ProcessHandle>();
-        Thread shutdown=new Thread(()->stop(process,children,job),"r08-renderer-stop");
+        Thread shutdown=new Thread(()->stop(process,children,job,handoff),"r08-renderer-stop");
         boolean hook=false;
         try {
             Runtime.getRuntime().addShutdownHook(shutdown);hook=true;
@@ -40,7 +47,7 @@ public class ExportRendererProcess {
             process.getOutputStream().close();
             await(process,children,execution);
         } finally {
-            try { stop(process,children,job); }
+            try { stop(process,children,job,handoff); }
             finally { if(hook)removeHook(shutdown); }
         }
         if(process.exitValue()!=0) throw new JobFailure("EXPORT_RENDER_FAILED",true);
@@ -71,12 +78,17 @@ public class ExportRendererProcess {
             execution.renew();
         }
     }
-    private void stop(Process process,Set<ProcessHandle> children,ExportWindowsJob job) {
+    private void stop(Process process,Set<ProcessHandle> children,ExportWindowsJob job,
+            RecoveryProcessHandoff.Lease handoff) {
         try {
-            if(job!=null)job.stop(Duration.ofSeconds(10));
-            ExportProcessDrain.stop(process,children,Duration.ofSeconds(10));
+            drain(process,children,job);
         }
-        catch(RuntimeException error) { drainFailed=true;throw error; }
+        catch(RuntimeException | Error error) { drainFailed=true;handoff.unconfirmed();throw error; }
+    }
+    /** OS termination boundary; return means all observed exits were confirmed. */
+    void drain(Process process,Set<ProcessHandle> children,ExportWindowsJob job) {
+        if(job!=null)job.stop(Duration.ofSeconds(10));
+        ExportProcessDrain.stop(process,children,Duration.ofSeconds(10));
     }
     private static boolean windows() { return System.getProperty("os.name").startsWith("Windows"); }
     private static void removeHook(Thread hook) {

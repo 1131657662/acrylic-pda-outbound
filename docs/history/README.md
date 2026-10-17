@@ -1,5 +1,7 @@
 # 历史归档
 
+- [D13 renderer未确认排空围栏](GOAL_D13_RENDERER_HANDOFF_2026-10-17.md)：run1559定向20项/IT2项及独立消费通过；真实子JVM halt70/后继孤儿拒绝，回执丢失为MODEL。仅有界L1，完整P5退役/组合仍未完成。
+
 - [D13 生产调度恢复准入](GOAL_D13_WORKER_ADMISSION_2026-10-17.md)：run1557 默认关闭/准入后真实HTTP、生产调度、XLSX/PDF及独立Python消费通过；普通失败末SQL回滚/持根阻推进/旧权威拒绝，仍仅有界L1，未确认排空围栏另列。
 
 - [D15 非空升级/程序回退/升级前备份恢复组合](GOAL_D15_UPGRADE_ROLLBACK_COMBINATION_2026-10-17.md)：run1554 同一候选七个独立 JAR JVM、56次真实 HTTP、非空升级、原备份恢复、认证增量及独立 Python/dump 消费通过；失败与清理证据保留，仅有界组合开发备份，非D15整体/E07完整L2/D18 L3。
