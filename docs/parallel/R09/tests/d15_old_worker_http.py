@@ -63,7 +63,7 @@ class Client:
         return self.request(f'/exports/{job}/file?warehouseId=' + identity['warehouse'], binary=True)
 
 
-def enqueue(identity, reader, label='new-queued'):
+def enqueue(identity, reader, label='new-queued', result_name='queued-http-result.json'):
     client, key = Client(label), uuid.uuid4()
     client.request('/orders/' + identity['order'] + '?warehouseId=' + identity['warehouse'], 401)
     client.login(reader)
@@ -74,7 +74,7 @@ def enqueue(identity, reader, label='new-queued'):
     assert client.create(identity, key)['data'] == created
     alternate = 'SCAN_XLSX' if FORMAT == 'XLSX' else 'XLSX'
     assert client.create(identity, key, 409, alternate, BASIS)['code'] == 'IDEMPOTENCY_CONFLICT'
-    sql.save('queued-http-result.json', dict(view=created, key=str(key), requests=client.index))
+    sql.save(result_name, dict(view=created, key=str(key), requests=client.index))
     return uuid.UUID(created['id']), key
 
 
