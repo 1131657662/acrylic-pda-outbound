@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E08 / D17 UI构建、清理与最终交接](GOAL_E08_D17_UI_CLOSEOUT_HANDOFF_2026-10-17.md)：默认关闭/隔离构建和lint通过，业务UI未验、范围待核；旧D06命名已更正，Force停机及一次D盘清理有记录。仅文档/构建开发备份，交接后停止，非UI L1或D项整体/L2/L3。
+
 - [E07/D14 独立检查点恢复组合](GOAL_E07_D14_INDEPENDENT_CHECKPOINT_COMBINATION_2026-10-17.md)：run 814 的真实隔离 HTTP/MySQL、非空迁移、原件/签名、恢复前后 179 表/622 行与文件守恒、独立 Python 只读消费者及停机身份通过；run 813 预创建 attempt 失败原件保留。仅受影响组合开发验收，不计 E07 L2、D14 整体或 D18 L3。
 
 - [D13 恢复受影响组合 L2](GOAL_D13_RECOVERY_COMBINATION_L2_2026-10-17.md)：run 805/806/812 的原提交与未提交占用、真实 HTTP/MySQL、非空迁移、事务/回滚/拒绝路径、renderer/export 和 Chrome 组合通过；明确未覆盖 Android、完整外部 Python、原模拟器和 D18 L3。
