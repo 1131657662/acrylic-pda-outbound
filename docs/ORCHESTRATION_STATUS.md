@@ -6,15 +6,15 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: 16f6911e
-dirty_entries: 101
+head: 92cae4c5
+dirty_entries: 97
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ```
 <!-- FACTS_END -->
 
-本会话已按目标文件完成只读接管并恢复D01–D18、第8节、O01–O05/U01–U04和UI工作；长期目标仍未complete。取消的换机承接/多跳/接收确认与激活不恢复。
+本会话已按目标文件完成只读接管并继续D01–D18、第8节、O01–O05/U01–U04和UI工作；长期目标仍未complete。取消的换机承接/多跳/接收确认与激活不恢复。
 
 ## Git、写权、输入
 - 固定树D:/acrylic-pda-outbound，codex/development；HEAD/远端/最后推送均为16f6911e73dba039c4f2d12aca0c6c479ba03c12（仅6文档开发备份）；精确Git/远端回执及全部dirty/untracked见`.local/goal-20261017-resume/handoff-final01/`，最终可复制指令见`docs/history/GOAL_E08_D17_UI_CLOSEOUT_HANDOFF_2026-10-17.md`。继承源码、Android/UI、工具、历史文档及server/physical-disposition-last-request.json保留，禁止git add .。
