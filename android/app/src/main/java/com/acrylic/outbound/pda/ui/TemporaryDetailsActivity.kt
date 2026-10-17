@@ -26,6 +26,7 @@ class TemporaryDetailsActivity : ComponentActivity() {
     private var anchor = 0L
     private var busy = false
     private var adjustmentBlock = "正在核对原单资格"
+    private var readOnly = true
     private val reader by lazy {
         TemporaryDetailsReader(app.temporaryStore(), id)
     }
@@ -105,7 +106,7 @@ class TemporaryDetailsActivity : ComponentActivity() {
                 render(result)
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
-                page = null; binding.rows.removeAllViews(); binding.summary.text = ""; binding.products.text = ""
+                page = null; readOnly = true; binding.rows.removeAllViews(); binding.summary.text = ""; binding.products.text = ""
                 adjustmentBlock = "请先重新核对原单"
                 binding.status.text = "读取未完成，原记录保留。${error.message.orEmpty()}"
             } finally { busy = false; controls(true) }
@@ -115,9 +116,11 @@ class TemporaryDetailsActivity : ComponentActivity() {
     private fun render(result: TemporaryDetailsPage) {
         page = result; anchor = result.rows.firstOrNull()?.sequence?.minus(1) ?: 0L
         val order = result.order
+        readOnly = order.state == "HANDOVER_BLOCKED"
         binding.summary.text = "临时单 · ${order.temporaryNo}\n车号 ${order.vehicleNo} · 柜号 ${order.containerNo.ifBlank { "未填" }}\n" +
             "原因 ${order.reason}\n有效原记录 ${result.total.count} 包 · ${WorkRenderer.kg(result.total.grams)} kg\n" +
-            "前驱原记录仅供只读核对，不授予新作业或实物放行资格\n未获后台最终确认不得放行"
+            if (readOnly) "旧冻结原件仅供只读核对，不授予新作业或实物放行资格\n接收确认与激活已取消，未获后台最终确认不得放行"
+            else "前驱原记录仅供只读核对，不授予新作业或实物放行资格\n未获后台最终确认不得放行"
         val counts = result.totals.associateBy { it.deliveryCode }
         binding.products.text = "本单产品汇总\n" + result.products.joinToString("\n") {
             val count = counts[it.deliveryCode]
@@ -137,7 +140,10 @@ class TemporaryDetailsActivity : ComponentActivity() {
         binding.locate.isEnabled = enabled; binding.retry.isEnabled = enabled; binding.first.isEnabled = enabled
         binding.previous.isEnabled = enabled && page?.previous == true
         binding.next.isEnabled = enabled && page?.next == true
-        binding.adjustPackages.isEnabled = enabled && adjustmentBlock.isBlank()
+        binding.adjustPackages.visibility = if (readOnly) View.GONE else View.VISIBLE
+        binding.cancelDraft.visibility = if (readOnly) View.GONE else View.VISIBLE
+        binding.adjustPackages.isEnabled = enabled && !readOnly && adjustmentBlock.isBlank()
+        binding.cancelDraft.isEnabled = enabled && !readOnly
         binding.adjustPackages.text = WorkDetailsText.adjustment(adjustmentBlock)
         binding.qualificationDetails.visibility = if (adjustmentBlock.isBlank()) View.GONE else View.VISIBLE
         binding.qualificationDetails.isEnabled = enabled

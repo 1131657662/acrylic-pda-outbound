@@ -1,5 +1,9 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E08 recovered-confirmation 范围审计](history/GOAL_E08_RECOVERED_CONFIRMATION_SCOPE_AUDIT_2026-10-17.md)：接管后逐路径核对 Android worker/dialog/fixture/bridge 与 R07/R09；确认真实确认 POST、确认队列及主管激活等待属于已取消旧接收者链，只读恢复资料展示和普通阻断导航保留候选复用。仅范围审计，不计 D06/D07/D13/D14、UI L1、E08 L2 或 D18 L3。
+
+- [E08/D17 HANDOVER_BLOCKED 只读明细收口](history/GOAL_E08_D17_HANDOVER_BLOCKED_READONLY_2026-10-17.md)：阻断入口明确为只读原件核对，隐藏取消/调整写入口，保留导出、分页、定位和返回；明细单测、Debug 构建/lint 通过。未安装或跑独立 instrumentation，UI L1、D17 整体、E06 L2、D18 L3及总目标仍未完成。
+
 - [E08 / D17 UI构建、清理与最终交接](history/GOAL_E08_D17_UI_CLOSEOUT_HANDOFF_2026-10-17.md)：默认关闭/隔离构建和lint通过，业务UI未验、范围待核；旧D06命名已更正，Force停机及一次D盘清理有记录。仅文档/构建开发备份，交接后停止，非UI L1或D项整体/L2/L3。
 
 - 2026-10-17：新增 [E07/D14 独立检查点恢复组合](history/GOAL_E07_D14_INDEPENDENT_CHECKPOINT_COMBINATION_2026-10-17.md)。run 814 的真实隔离 HTTP/MySQL、恢复前后事实、非空迁移、原件/签名、独立 Python 只读消费者和认证停机通过；854 文件 manifest 未漂移，恢复前后 179 表/622 行一致。run 813 的 `Attempt already exists` 原件保留。范围仅受影响组合开发验收，不计 E07 L2、D14 整体、D18 L3 或总目标。

@@ -6,30 +6,34 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: 979777f4
-dirty_entries: 102
+head: 16f6911e
+dirty_entries: 101
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ```
 <!-- FACTS_END -->
 
-用户本轮要求收口当前最小切片、清理一次并交接后停下；长期目标已paused，未complete。新会话显式接续后才恢复D01–D18、第8节、O01–O05/U01–U04和UI工作。取消的换机承接/多跳/接收确认与激活不恢复。
+本会话已按目标文件完成只读接管并恢复D01–D18、第8节、O01–O05/U01–U04和UI工作；长期目标仍未complete。取消的换机承接/多跳/接收确认与激活不恢复。
 
 ## Git、写权、输入
-- 固定树D:/acrylic-pda-outbound，codex/development；精确Git/远端回执及全部dirty/untracked见`.local/goal-20261017-resume/handoff-final01/`，最终可复制指令见`docs/history/GOAL_E08_D17_UI_CLOSEOUT_HANDOFF_2026-10-17.md`。继承源码、Android/UI、工具、历史文档及server/physical-disposition-last-request.json保留，禁止git add .。
-- 本聊天01a13a57-8082-7dd2-a08f-987483dcda4b仅做文档收口，无子代理/本轮重型任务；清理聊天01a13cb4-88f1-7fc3-9af2-7a0fde6bd26e已明确停止并释放写权，复查idle。交接结束释放本聊天写权；新会话须按实际活动状态重新登记，旧owner/released文件不授权。
+- 固定树D:/acrylic-pda-outbound，codex/development；HEAD/远端/最后推送均为16f6911e73dba039c4f2d12aca0c6c479ba03c12（仅6文档开发备份）；精确Git/远端回执及全部dirty/untracked见`.local/goal-20261017-resume/handoff-final01/`，最终可复制指令见`docs/history/GOAL_E08_D17_UI_CLOSEOUT_HANDOFF_2026-10-17.md`。继承源码、Android/UI、工具、历史文档及server/physical-disposition-last-request.json保留，禁止git add .。
+- 当前写者为本会话 `01a147c5-0495-7703-ba98-2e7637cbc619`，已核对旧写者释放、无其他项目写者/子代理；接管快照为`.local/goal-20261017-resume/resume-20261017-1014/`，登记见`writer-takeover-current.json`。共享MySQL、TemporaryAdjustment1364与ADB仅观察保留，未启动/停止。
 - 全输入5501项见`resume-20261017-0849/input.json`（SHA42d8f5d3febab41ae9e3a1c4104b6d56d2416d0da6aa292f04f049b3a68dacfe）；本段所指resume目录均在`.local/goal-20261017-resume/`。收口/最终全量dirty哈希、补丁与副本分别在`resume-20261017-closeout/`及`handoff-final01/`，替换前旧结论为`docs/history/ORCHESTRATION_STATE_before_final_handoff_20261017.md`。
 
 ## 本轮最小切片：E08 / D17 UI构建和环境收口
+- 接管后的首个有界审计已完成，报告为`history/GOAL_E08_RECOVERED_CONFIRMATION_SCOPE_AUDIT_2026-10-17.md`：recovered-confirmation 的真实POST、确认队列/worker、确认dialog及Android bridge均属于已取消的旧接收者确认/激活链；只读原资料展示和普通阻断导航保留为候选复用，未运行旧run03。
 - 原报告文件名`GOAL_D06_RECOVERED_CONFIRMATION_UI_BUILD_CLOSEOUT_2026-10-17.md`保留，但已更正误映射：现行D06为坏机撤回。worker/dialog/fixture的recovered-confirmation链是否属于仍有效灾后恢复范围未核清，不自动继续旧接收机确认/激活。
-- run02默认关闭和run03启用pdaIsolatedRecoveredHandover的assembleDebug/assembleDebugAndroidTest/lintDebug均通过；APK和测试APK及原日志保留。未安装、未跑instrumentation/业务UI，UI L1未通过，不计D项整体、E06 L2、D18 L3或总目标。
+- 只读守卫已落地：RecoveredHandoverCardReader统一返回`RECOVERED_READ`，遗留`RECOVERED_CONFIRM`由ViewModel拒绝，SyncWorker不再恢复旧确认任务，HandoverActivity不再打开确认dialog；历史worker/dialog/fixture/bridge仍保全但无现行入口。
+- 本轮Debug `assembleDebug`、`assembleDebugAndroidTest`、`lintDebug`均通过；定向`RecoveredHandoverCardReaderTest`因Robolectric native SQLite `SQLITE_CANTOPEN`在fixture创建阶段2/2失败，同环境独立`WorkRecoveryTest`亦有1项相同失败。APK和测试APK及原日志保留；未安装、未跑instrumentation/业务UI，UI L1未通过，不计D项整体、E06 L2、D18 L3或总目标。
+- `HANDOVER_BLOCKED` 只读明细收口已完成：`TemporaryDetailsActivity` 成功读取时隐藏取消/调整入口，摘要明确旧冻结原件、接收确认/激活已取消，导出/分页/定位/返回保留；读取异常默认只读。`TemporaryDetailsReaderTest`、`lintDebug`、`assembleDebug`、`assembleDebugAndroidTest` 通过，证据为`.local/goal-20261017-resume/e08-handblocked-readonly-01/`和`history/GOAL_E08_D17_HANDOVER_BLOCKED_READONLY_2026-10-17.md`。
+- 下一独立切片锁定为E08/D17的`HANDOVER_BLOCKED`只读详情导航与窄屏/大字入口核对；先做实际页面行为和定向输入登记，再决定是否需要产品改动。不得重新启用recovered-confirmation POST、队列、dialog或activation。
 - run03临时目录、Windows quoting、skip-grants无TCP/pipe等准备失败原件与指纹保留。run02 emulator23964/qemu25908及run03 mysqld22920按归属核实后Force停止；不声称SQL优雅shutdown。5580/5581/19534/19535零监听，停机记录为stop-result.json。
 
 ## 清理与环境
 - 用户持续清理授权优先于旧开发测试产物一律保留纪律；原文已追加AGENTS.md并同步Git工作流，交接指令逐字保留。每切片/阶段收口先摘要/输入/命令/锁/结果/哈希与无消费者核验，再清可文字化原大文件、已停隔离测试数据和可重建垃圾；不改D16或生产删除政策。
 - 已清run02的default_boot快照、run03测试datadir及派生seed.sql；删除逻辑长度4496529637 bytes，D可用52180439040→56677748736 bytes，卷观测增加4497309696 bytes。清理脚本、逐文件哈希及前后清单为cleanup-run-20261017.ps1、cleanup-20261017-{pre,post}.json；未清原日志/钥/APK/继承改动。
-- 共享MySQL父4632/服务5440，3306/33060，身份未知不连接不停止；原TemporaryAdjustment1364 emulator12912/qemu12108在5564/5565，ADB8500/5037与8792/5040仅观察保留。SDK/工具/Keystore与所有监听/隔离身份、C/D/E精确可用字节和时间见handoff-final01/environment-final.json；旧停机批次与1538/失败库不复用。
+- 共享MySQL父4632/服务5440，3306/33060，身份未知不连接不停止；原TemporaryAdjustment1364 emulator12912/qemu12108在5564/5565，ADB8500/5037与8792/5040仅观察保留。SDK/工具/Keystore与所有监听/隔离身份、C/D/E精确可用字节和时间见handoff-final01/environment-release.json；旧停机批次与1538/失败库不复用。
 - 不接原库现网、不合main、不发布部署/Release、不用正式签名、不绕审批。七类生产决定handler/POST/放行/证据写入/关闭及TEMP生产归档保持关闭，localDeletionAllowed=false；合成输入不代原身份/原PDA/现场回执。
 
 ## 可复用证据与剩余
@@ -40,7 +44,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 1043/A1.4、Chrome1540工具策略阻断、原资料/旧BCD/原身份/签名/真机/现场/异地/长时限制继续单列；失败计数不清零，无新材料/明确修复假设不机械重试，不绕工具审批。
 
 ## 下一动作与分层验证
-本轮交接后停止。新会话先只读复核精确Git/全改动/实际写者和环境，再审计本UI WIP与现行范围的逐路径关系；不启动旧run03。之后仅从有效E06/E07/E08剩余矩阵选一个受影响验收单元。L1须直接入口实际行为，L2须D步骤受影响组合，D18须实际候选全链L3；路径→影响层→必跑→复用路径+SHA先登记。快速修复仅明确运行器/夹具且无产品写入/未核事实；否则完整保全。连续同根因3次或主动诊断60分钟不收敛暂缓直接依赖，新会话不清零；开发缺口不能挪成现场项或记通过。
+接管、范围审计和 `HANDOVER_BLOCKED` 只读明细代码收口已完成，未启动旧run03；独立 AVD instrumentation 仍待分配。下一步从有效E06/E07/E08剩余矩阵选一个不依赖已取消确认链的最小受影响验收单元，同时为本入口分配全新隔离身份完成Android UI L1。L2须D步骤受影响组合，D18须实际候选全链L3；快速修复仅明确运行器/夹具且无产品写入/未核事实；否则完整保全。连续同根因3次或主动诊断60分钟不收敛暂缓直接依赖，新会话不清零；开发缺口不能挪成现场项或记通过。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
