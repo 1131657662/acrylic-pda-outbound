@@ -4,7 +4,7 @@ import importlib.util
 import json
 import uuid
 
-from d15_old_worker_lab import BASIS, LAB, ROOT, fixture, compare, sql
+from d15_old_worker_lab import BASIS, FORMAT, LAB, ROOT, fixture, compare, sql
 
 
 def decoded(table, row):
@@ -95,9 +95,7 @@ def conservation(baseline, after, options):
 
 
 def workbook(path, payload, artifact):
-    source = (ROOT / 'docs/parallel/R09/tests/d15_current_effective_xlsx_consumer.py'
-              if BASIS == 'CURRENT_EFFECTIVE' else
-              ROOT / '.local/goal-20261016/d15-restored-worker01/xlsx_readback01.py')
+    source = consumer_source()
     spec = importlib.util.spec_from_file_location('retained_xlsx_consumer', source)
     consumer = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(consumer)
@@ -106,6 +104,14 @@ def workbook(path, payload, artifact):
     assert sql.digest(path) == artifact['sha256'] and path.stat().st_size == artifact['bytes']
     return dict(consumer=consumer.consume(path, json.loads(snapshot.read_bytes())),
                 consumerSha256=sql.digest(source), snapshotSha256=sql.digest(snapshot))
+
+
+def consumer_source():
+    if FORMAT == 'SCAN_XLSX':
+        return ROOT / 'docs/parallel/R09/tests/d15_scan_xlsx_consumer.py'
+    if BASIS == 'CURRENT_EFFECTIVE':
+        return ROOT / 'docs/parallel/R09/tests/d15_current_effective_xlsx_consumer.py'
+    return ROOT / '.local/goal-20261016/d15-restored-worker01/xlsx_readback01.py'
 
 
 def final_files(payload, artifact, job):

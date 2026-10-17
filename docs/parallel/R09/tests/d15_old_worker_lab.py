@@ -17,7 +17,8 @@ FORMAT = os.environ.get('D15_WORKER_FORMAT', 'XLSX')
 BASIS = os.environ.get('D15_WORKER_BASIS', 'ORIGINAL_CONFIRMED')
 assert 600 <= RUN <= 999 and 1024 <= PORT <= 65535 and 1024 <= HTTP <= 65533
 assert PORT not in (HTTP, HTTP + 1, HTTP + 2) and PRODUCER in ('old', 'new')
-assert FORMAT == 'XLSX' and BASIS in ('ORIGINAL_CONFIRMED', 'CURRENT_EFFECTIVE')
+assert FORMAT in ('XLSX', 'SCAN_XLSX') and BASIS in ('ORIGINAL_CONFIRMED', 'CURRENT_EFFECTIVE')
+assert FORMAT != 'SCAN_XLSX' or BASIS == 'ORIGINAL_CONFIRMED'
 LAB = ROOT / f'.local/e2a-cross-20260925-{RUN}'
 DATABASE, USER = f'acrylic_e2a_cross_20260925_{RUN}', f'e2a_cross_20260925_{RUN}'
 assert sql.ROOT == ROOT

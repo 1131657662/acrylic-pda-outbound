@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: 23f8691b
-dirty_entries: 108
+head: d6082f26
+dirty_entries: 115
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -48,11 +48,11 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - D01矩阵`GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17.md`覆盖D/O/U；原60报告SHA绑定与本轮34报告`handoff-final01/evidence-bindings.json`分别保留。路径+SHA只绑定引用对象，还须核产品输入漂移；不拼接不同输入为最终通过。
 - E06多任务Web正式L1与10-17复核页齐全，1538输入/八日志/347文件保全可复用；源码漂移单列，1539补核不等于E06完整L2。1522/1523后续严格非空/default-off/全表守恒已有补验，不原样重跑。
 - D11 run680导出完整14项L1、D13 run805/806/812受影响L2、D14 run814独立检查点组合、D15 run677旧worker有界L1及D17实际Activity四阶段均有正式报告，按交接逐D索引复用，不从头重复。
-- D15 run698/700 补验旧JAR真实HTTP写入→新JAR定时worker→旧/新下载及Python/全表守恒，分别覆盖`ORIGINAL_CONFIRMED/XLSX`与`CURRENT_EFFECTIVE/XLSX`；699 的既有消费者口径失败保留。证据为`history/GOAL_D15_OLD_PRODUCER_NEW_WORKER_L1_2026-10-17.md`、`.local/e2a-cross-20260925-698/`、`.local/e2a-cross-20260925-699/`、`.local/e2a-cross-20260925-700/`和对应resume目录；输入为保留SQL/存储逻辑重建，527个原InnoDB datadir文件已缺失，不能声称604文件原字节恢复。多任务格式、升级/回退完整组合和项目Linux现场未验。D16正常成功目标仍有有效guard、缺可信合法退出依据，不删guard/伪造状态造资格。D13整体、D14–D15完整组合、E06/E07/E08余项、E09统一候选及D18全链L3未完成。
+- D15 run698/700/701 补验旧JAR真实HTTP写入→新JAR定时worker→旧/新下载及独立消费者/全表守恒，覆盖`ORIGINAL_CONFIRMED/XLSX`、`CURRENT_EFFECTIVE/XLSX`与`ORIGINAL_CONFIRMED/SCAN_XLSX`；699 的既有消费者口径失败保留。run701 证据为`history/GOAL_D15_OLD_PRODUCER_SCAN_XLSX_L1_2026-10-17.md`、`.local/e2a-cross-20260925-701/`和`.local/goal-20261017-resume/d15-scan-xlsx-l1/`；输入为保留SQL/存储逻辑重建，527个原InnoDB datadir文件已缺失，不能声称604文件原字节恢复。多任务格式、PDF、升级/回退完整组合和项目Linux现场未验。D16正常成功目标仍有有效guard、缺可信合法退出依据，不删guard/伪造状态造资格。D13整体、D14–D15完整组合、E06/E07/E08余项、E09统一候选及D18全链L3未完成。
 - 1043/A1.4、Chrome1540工具策略阻断、原资料/旧BCD/原身份/签名/真机/现场/异地/长时限制继续单列；失败计数不清零，无新材料/明确修复假设不机械重试，不绕工具审批。
 
 ## 下一动作与分层验证
-接管、范围审计和`HANDOVER_BLOCKED`/`CONTINUATION_BLOCKED`只读明细 Android UI L1 已完成；未启动旧run03。run692已完成E06/D12 TEMP仓库恢复局部L2候选，run695补充E07/O05有界隔离候选，run698/700补充D15旧写入→新worker的两种XLSX口径，仍须继续独立范围和统一最终候选；D17整体、E06/E07完整L2、D18全链L3及第8节闸门仍未完成。下一步按输入SHA选择下一独立缺口，保留失败原件和环境快照；不得用本候选或历史L1拼接总目标通过。
+接管、范围审计和`HANDOVER_BLOCKED`/`CONTINUATION_BLOCKED`只读明细 Android UI L1 已完成；未启动旧run03。run692已完成E06/D12 TEMP仓库恢复局部L2候选，run695补充E07/O05有界隔离候选，run698/700/701补充D15旧写入→新worker的三种导出格式口径，仍须继续独立范围和统一最终候选；D17整体、E06/E07完整L2、D18全链L3及第8节闸门仍未完成。下一步按输入SHA选择多任务/PDF或升级回退等下一独立缺口，保留失败原件和环境快照；不得用本候选或历史L1拼接总目标通过。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

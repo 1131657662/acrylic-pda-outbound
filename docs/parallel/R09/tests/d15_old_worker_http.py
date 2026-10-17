@@ -72,7 +72,8 @@ def enqueue(identity, reader, label='new-queued'):
     created = client.create(identity, key)['data']
     assert created['status'] == 'PENDING' and created['attempts'] == 0 and not created['downloadable']
     assert client.create(identity, key)['data'] == created
-    assert client.create(identity, key, 409, 'SCAN_XLSX', 'ORIGINAL_CONFIRMED')['code'] == 'IDEMPOTENCY_CONFLICT'
+    alternate = 'SCAN_XLSX' if FORMAT == 'XLSX' else 'XLSX'
+    assert client.create(identity, key, 409, alternate, BASIS)['code'] == 'IDEMPOTENCY_CONFLICT'
     sql.save('queued-http-result.json', dict(view=created, key=str(key), requests=client.index))
     return uuid.UUID(created['id']), key
 
@@ -86,7 +87,8 @@ def read_completed(label, identity, reader, job, key=None):
     assert hashlib.sha256(body).hexdigest() == view['sha256'] and len(body) == view['bytes']
     if key:
         assert client.create(identity, key)['data'] == view
-        assert client.create(identity, key, 409, 'SCAN_XLSX', 'ORIGINAL_CONFIRMED')['code'] == 'IDEMPOTENCY_CONFLICT'
+        alternate = 'SCAN_XLSX' if FORMAT == 'XLSX' else 'XLSX'
+        assert client.create(identity, key, 409, alternate, BASIS)['code'] == 'IDEMPOTENCY_CONFLICT'
     target = LAB / (label + '.xlsx')
     target.write_bytes(body)
     sql.save(label + '-result.json', dict(view=view, requests=client.index, sha256=sql.digest(target)))
