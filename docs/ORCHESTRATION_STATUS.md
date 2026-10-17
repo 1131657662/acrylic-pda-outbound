@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: 4369e76b
+head: 76c4645c
 dirty_entries: 96
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
@@ -17,15 +17,20 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户明确恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；目标active，只有全部闸门满足才complete。取消的换机承接/多跳/激活不恢复。L1/有界组合开发备份不能计D项整体或D18 L3。
 
 ## Git、写权、输入
-- 固定树D:/acrylic-pda-outbound、codex/development；接续实核 HEAD/远端均 `cbeee674`，工作区继承改动和本轮 D13/E07 runner、测试夹具及报告改动均保留，禁止 `git add .`。历史已提交报告不替代本轮输入绑定。
-- 本聊天01a13a57-8082-7dd2-a08f-987483dcda4b为当前唯一写者，无子代理；清理聊天01a13cb4-88f1-7fc3-9af2-7a0fde6bd26e已明确idle、清理进程/监听/数据库/重型任务为0并释放写权。旧owner/released字段不代实际核查，当前接管快照见`.local/goal-20261017-resume/resume-20261017-0752/`。
-- 全量输入`.local/goal-20261017-resume/resume-20261017-0752/input.json`：5489项，SHA `bd5e5c02413b35dcae3052b693471ef0c4636da598733748f212352ffdc0a425`；HEAD/远端、全部dirty/untracked原件、binary diff、33树、写权、进程/监听和C/D余量已同目录保存。更新前旧结论快照为`docs/history/ORCHESTRATION_STATE_before_resume_20261017-075235.md`。
+- 固定树D:/acrylic-pda-outbound、`codex/development`；接续实核 HEAD/远端均 `78b448d1`，99 个 dirty 条目及继承源码、Android/UI、服务、工具、报告和未跟踪证据均保留，禁止 `git add .`。收口快照见`.local/goal-20261017-resume/resume-20261017-closeout/`，历史报告不替代本轮输入绑定。
+- 本聊天 `01a13a57-8082-7dd2-a08f-987483dcda4b` 为当前唯一写者，无子代理；清理聊天 `01a13cb4-88f1-7fc3-9af2-7a0fde6bd26e` 已确认 idle、清理写入/进程/监听/数据库/重型任务为0并释放写权。旧 owner/released 字段不代实际核查；最新接管快照见`.local/goal-20261017-resume/resume-20261017-0849/`。
+- 全量输入`.local/goal-20261017-resume/resume-20261017-0849/input.json`：5501项，SHA `42d8f5d3febab41ae9e3a1c4104b6d56d2416d0da6aa292f04f049b3a68dacfe`；收口后的全部 dirty/untracked、进程/监听、磁盘、清理前后清单见`resume-20261017-closeout/`及`cleanup-20261017-{pre,post}.json`。更新前旧结论快照为`docs/history/ORCHESTRATION_STATE_before_ui_closeout_20261017.md`。
 
 ## 环境与边界
 - 本批676/677及既有665–675/1668均封存停机，不复用旧库。R08 680 在 `127.0.0.1:23308/acrylic_r08_it_680` 完整14项通过，停机后数据目录约236697749 bytes仍保留且目标监听为零；共享mysqld4632/5440身份未知，只观察不连接停止。原TEMP AVD emulator12912/qemu12108、5564/5565及ADB8500保留，真机未操作。
 - R08 678/679 的旧浏览器路径503及679收尾自动删除495个旧datadir事实已在专项报告登记；678/679日志、marker、storage保留。`tools/r08-provision-and-run.ps1` 已移除自动清理调用，后续清理须单独、明确路径执行。680 preflight/postflight记录C/D余量、进程和监听；子进程TEMP/TMP/Java临时专用，不改全局HOME/CODEX_HOME。
 - D13 L2 组合报告`docs/history/GOAL_D13_RECOVERY_COMBINATION_L2_2026-10-17.md`已补：run 805/806/812 分别覆盖原提交/未提交占用与恢复事务、非空迁移、错库/水位/事务拒绝、HTTP 导出/renderer/PDF/XLSX 及 Chrome；19500/19520 批次已认证停机并保留 datadir、binlog、失败原件。仅 D13 受影响组合 L2，不计 D13 整体或 D18 L3。
-- 不接原库现网、不合main、不发布部署/Release、不用正式签名、不绕过审批。七类生产决定handler/POST/放行/证据写入/关闭、TEMP生产归档保持关闭，localDeletionAllowed=false，D16标准不变；合成输入不代原PDA现场事实。接管实测 C 盘约73.13GB、D盘约58.58GB可用；共享MySQL 3306/33060、原TEMP AVD 5564/5565及长期工具监听仅观察，未停止或写入。清理聊天 08:07:23 再次确认 idle、清理进程/监听/未交接写者为0。
+- 不接原库现网、不合main、不发布部署/Release、不用正式签名、不绕过审批。七类生产决定handler/POST/放行/证据写入/关闭、TEMP生产归档保持关闭，localDeletionAllowed=false，D16标准不变；合成输入不代原PDA现场事实。收口后 C/D/E 可用字节为`78435827712/56677744640/195634057216`；共享MySQL 3306/33060、原TEMP AVD 5564/5565、ADB 5037/5040仅观察，run02/run03目标资源已停机。
+
+## D06 恢复确认 UI 隔离构建
+- `.local/goal-20261017-resume/android-ui-run02/` 默认关闭属性、run03 启用`pdaIsolatedRecoveredHandover=true`的`assembleDebug`/`assembleDebugAndroidTest`/`lintDebug`均成功；APK与测试APK保留，未安装或跑instrumentation。
+- run02 AVD 与 run03 MySQL 已停机，`5580/5581/19534/19535`零监听；本切片清理释放实际`4497309696`字节，详见`docs/history/GOAL_D06_RECOVERED_CONFIRMATION_UI_BUILD_CLOSEOUT_2026-10-17.md`。
+- run03服务准备失败指纹、输入绑定、WIP路径和下一步边界均在该报告；只计D06有界L1前置，不计D06整体、E06 L2、D18 L3或总目标。
 
 ## D15旧worker有界L1
 - 正式报告docs/history/GOAL_D15_OLD_WORKER_COMPATIBILITY_L1_2026-10-17.md：新程序真实HTTP创建ORIGINAL_CONFIRMED/XLSX→保留旧JAR实际scheduled worker→旧/新下载→新原键重放/异文拒绝；20次真实HTTP，Python七表逐值通过，范围仅该格式，不外推旧写入/多任务新格式/D15整体/L2/L3。
@@ -62,7 +67,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 清理回执.local/disk-cleanup-20261016-round4/REPORT.md及completion-receipt.json保持；原件/失败库/donor/最终APK保留，QCOW第24调用状态未知、25–35未执行，D盘暂降回升原因未明，不以allocated变化当卷净释放。
 
 ## 下一动作
-D13 HTTP/Session、lease及worker/file/export L1及受影响组合 L2、E07/D14 独立检查点组合均已留正式报告；继续 E07 外置副本、E08/UI、D14–D18、E06–E09、O/U 及最终候选 L3。旧写入/多任务格式先确认实际兼容要求和原输入，禁止为凑验收重跑已有链；D16先找合法退出依据。总目标继续 active。
+本轮仅收口D06恢复确认UI build/lint前置并停止；下次第一步复核run03服务事实与新隔离输入，再决定是否进入Android UI L1。D13/E07既有报告按路径+SHA复用，继续项仍为E07外置副本、E08/UI、D14–D18、E06–E09、O/U及最终候选L3；总目标继续active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
