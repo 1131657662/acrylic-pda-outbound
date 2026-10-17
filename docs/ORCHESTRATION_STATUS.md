@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: bcbff6a5
-dirty_entries: 118
+head: 8b6aab3d
+dirty_entries: 122
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -16,37 +16,31 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 
 总目标D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计保持active、未完成。取消的换机承接/多跳/接收者确认激活不恢复。
 
-## Git、写权与输入
-- 固定树D:/acrylic-pda-outbound，codex/development；HEAD与实核远端bcbff6a54df5ece2b4b0c57bf82bacef8e710bc1；39路径有界服务端L1开发备份已提交推送。不合main、不发布部署。
-- 唯一写者聊天01a147c5-0495-7703-ba98-2e7637cbc619；list_threads及OS再次确认无其他活动项目写者或子代理。run1567/session42276已exit0，专属DB19346/HTTP19452认证停机且无监听，无在途重型任务或项目Java/MySQL。
-- 以下短路径在.local/goal-20261017-resume/。完整inputd13retirement-closeout06.json共5571项/SHAa5c29958fdf090662223c390e03436c78d1b38d6a5aa998591fed9eb84aaba3a；同号patch/全部未跟踪副本/ownership/环境/远端保全。后续文档和快照另记，不用旧输入代替新增改动。
-- 前序resume02/failed1560-03及本轮sql-before04快照保留；handoff-final01、逐路径继承审计和run03指定失败原件全部保护，不重启run03。旧正文归档history/ORCHESTRATION_STATE_before_d13_retirement_20261017.md。
+## Git、写权与保全
+- 固定树D:/acrylic-pda-outbound；codex/development，HEAD及实核远端8b6aab3d0b08916c703bb7e660ec6fbdf64cd88f。导出重试切片已推送，仅有界服务端L1开发备份，不合main、不发布部署。
+- 唯一写者聊天01a147c5-0495-7703-ba98-2e7637cbc619；list_threads/OS已复核，无其他活动项目写者或子代理。继承WIP、handoff-final01及run03指定失败原件保护，不还原/重排/覆盖。
+- 以下证据短路径位于.local/goal-20261017-resume/。完整inputd13import-failed01.json：5586项/SHAcf4a209139a7a22147626df48c2c89cb4355bff6ca19976af96cecc791ebc129；同号patch、未跟踪副本、ownership、进程/监听/磁盘/远端已保全。后续修复另绑定。
+- 旧看板全文history/ORCHESTRATION_STATE_before_d13_import_20261017.md；前序retirement/retry快照及继承逐路径审计保留。不得以旧快照替代新增改动。
 
-## D13正常P5退役：有界L1收口中
-- 报告history/GOAL_D13_NORMAL_RETIREMENT_2026-10-17.md。沿原权威实现子操作零/绑定清除/写者未毒化的正常根退役；原记录原子移至.json.retiring→更新读回签名索引→清标记，保留进程记录。中断标记继续拒绝，不自动修补。
-- 决策期失败保持根/L2并沿UNKNOWN围栏；确认退役后的清理/释放失败只做本地围栏。Writer引用与释放统一class锁；8线程8000次借还不早释、不泄漏。
-- run1560 DB19339/HTTP19443实际P5登录500：CONTROL_EFFECT_UNCLASSIFIED，Session JOIN及worker查询超出SQL小语法；是产品失败，不能用夹具快速修复统称。原XML/SQL/HTTP/日志保持，已认证停机exit0/无监听。同轮classpath读取/不存在测试名的运行器错误已修复，未复用失败库。
-- 新run1561 native-only：45普通定向+3IT零失败/错误/跳过；正常索引为空、进程记录保留、独立后继JVM启动。真实Windows禁FILE_SHARE_DELETE句柄使rename拒绝→原围栏→halt70→后继拒绝。renderer丢终止回执是明确MODEL。独立Python consumer01/result.json核HMAC/原进程SHA/孤儿一致/UNKNOWN/XML通过，仅native/unit，不算HTTP。
-- 修改SQL有限解析器覆盖实际Session/权限/作业/导出查询；所有新增查询均SOURCE_READ且仍过效果门。未知函数/注释/多语句/变量/文件输出/未消费token继续拒绝，长度/token/嵌套有界，不放宽不透明getter。
-- run1562真实Session已通过，但导出锁查询getObject被拒；run1563随后TEMP历史通用映射getObject被拒。均产品失败，认证停机exit0/无监听；原XML/SQL/HTTP/日志保留。二进制锁查询显式byte[]、TEMP历史只用标量getter；不放宽不透明getter，也不声称其他旧分支已兼容。
-- 新run1564 DB19343/HTTP19449：126普通定向+4IT零失败/错误/跳过、runner exit0、认证停机exit0。实际default-off/准入/P5 HTTP/Session→生产调度→renderer/XLSX/PDF→下载→排空→独立后继JVM通过；原进程记录保留，索引为空。
-- 独立Python consumer1564首次误预期进程记录数2而失败；修消费者后consumer1564b/result.json消费同一原件通过，不重跑产品。60条HTTP/五导出/原顺序整数克/五快照orders相同及P5/HMAC/native/UNKNOWN均通过。两份PDF四页实际看图无裁切/重叠/缺字。
-- SQL改动前完整普通server test exit0：4710项、零失败/错误、19条件跳过；原XML/逐套件SHA/计数d13-retirement01/server-test01/result.json，日志retirement-server-test01.log，session31090已结束。该输入不代SQL改动后完整回归。
-- 修改后完整普通server test exit0：308套件4756项、零失败/错误、19条件跳过，XML/逐套件SHA/全部skip在d13-retirement01/server-test02/；不算IT或L2/L3。source-bindings/candidate-binding核run1564直接Java零漂移，inherited-protection核基底5552项无意外变化。
+## 已验范围与正在执行
+- D13正常根退役：history/GOAL_D13_NORMAL_RETIREMENT_2026-10-17.md；run1564真实default-off/P5 Session→HTTP→worker→renderer→文件下载/排空/后继JVM，独立Python及PDF可见核对通过。其后完整普通回归4756项/零失败错误/19条件跳过；不算IT或L2/L3。
+- D13导出重试：history/GOAL_D13_EXPORT_RETRY_2026-10-17.md；run1567普通82项+真实IT1项零失败错误跳过，重试/原键/异目标拒绝/同键并发/末审计回滚/锁等待撤权/P5排空后继通过。Python核80 HTTP、10文件及P5；四PDF八页已渲染看图。source-bindings/candidate-binding/impact-map保全；范围仅服务端L1。
+- 本轮history/GOAL_D13_IMPORT_FILE_ENTRY_2026-10-17.md：实际multipart→GB18030→持久文件→事务/幂等/行/审计。验收覆盖default-off/P5、原键/异文/权限/并发/末SQL回滚、原生锁等待期间文件与根守恒、独立writer探针、撤权/排空/后继及Python原件消费。
+- run1568/session24750已exit1：普通93项通过，真实IT1项失败；default-off正向及拒绝已执行，P5首次写入后原键重放因IdempotencyRequests通用getObject触发CONTROL_EFFECT_UNCLASSIFIED→500。属于产品失败，不计通过；原XML/HTTP/SQL/dump/日志在.local/e2a-cross-20260925-1568，认证停机exit0，DB19347/HTTP19453无监听。
+- 两字符串显式RowMapper/record修复已验，不放宽效果门，SQL/参数/事务/权限不变；证据content/facts分名防覆盖。source-bindings 734路径/直接Java零漂移，impact-map逐路径必跑+复用SHA，34共用消费者已列，2465源码到普通完整回归零漂移。
 
 ## 环境、清理与未验
-- run1560/1562/1563/1564/1565/1566/1567均已认证停机，无这些轮次监听。共享MySQL4632/5440及3306/33060仅观察，不连接/停止；另项目jiachengfangzhi实例已自行结束，未操作。无ADB/模拟器采样，原AVD/Keystore未重配。
-- 四轮可重建datadir/binlog已清，1392文件/890627334逻辑bytes；D56065372160→56973672448 bytes，实增908300288。清理前逐文件hash/输入命令结果/无消费者回执在d13-retirement01/cleanup-before及after.json。C78688804864/E195634057216 bytes；SQL/HTTP/失败日志/原身份/唯一证据/最终APK和继承改动保留。
-- 七类生产决定、TEMP生产归档及localDeletionAllowed=false保持；不接原库现网/正式签名、不绕设备审批或Chrome策略。D16缺可信合法退出依据，标准不降。
-- D01矩阵及前序D11/D13/D14/D15、E06/Android/UI局部证据按各报告路径+SHA复用，不重做、不拼为整体通过。D04旧前缀/Chrome1540策略阻断无新依据不重跑。
-- D13整体、D14/D15剩余、E06/E07/E08 L2、统一最终候选、D18 Android/真实HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复全链L3及第8节全部闸门尚未满足；原资料/旧BCD/原身份/真机/异地/长时/项目Linux现场继续单列。
-- 本批提交前inputd13retirement-precommit08.json共5572项/SHA2b2098812861ac6fbc770367ffab09d05725ed61c2dd8ea9ec3a91473d58b4d5；source-bindings/impact-map/staging-review及inherited-protection-final均保全。提交后完整快照另存，不把新断点复述为已提交。
-- history/GOAL_D13_EXPORT_RETRY_2026-10-17.md：ExportRetry显式byte[]锁读取；run1567普通82项/IT1项零失败错误跳过，default-off/P5真实重试/原键/异目标冲突/同键并发、末审计主键冲突整事务回滚/同键恢复、真实锁等待后撤权401零新任务通过。P5排空/原进程保持/独立后继通过；仅服务端L1，非D13整体/L2/L3。
-- consumer02/result.json用已有bundled Python核80 HTTP/10文件（6XLSX/4PDF）/顺序整数克无公式/原快照/dump/P5 HMAC通过。首消费者系统Python缺pypdf未消费，consumer01.log保留。四PDF八页全部渲染，三种不同图实际查看，另五图SHA相同；无裁切重叠缺字。source-bindings/impact-map逐路径273源绑定run1567零漂移；5578基底无意外改动；前轮普通完整回归对比2458源仅2项明确改动，未改路径按SHA复用。
-- run1565未知45000围栏/halt70无完整IT XML、1566误预期500而实际409/WRITE_CONFLICT均保留，不计通过；原binary/HTTP/UNKNOWN在d13-retry01/run1565-failure。未放宽未知围栏，不属无产品写入快修。三轮datadir/binlog按用户授权清理1041文件/667992570逻辑bytes，D56271433728→56952586240，实增681152512；C78732627968/E195634057216。原XML/dump/日志/HTTP/签名/身份及继承WIP均保留，cleanup-before/after.json有完整回执。
-- 完整inputd13retry-failed03.json共5578项/SHA21b6966a10d6583833f531271749af67183ed8493a7fbbbb6f823a6216094e66及同号patch/未跟踪副本/写权/环境/远端保全；run1566运行快照同前缀running04。旧看板全文history/ORCHESTRATION_STATE_before_d13_retry_20261017.md。C78720974848/D56513765376/E195634057216 bytes，后续余量另核。
-- 下一步明确路径提交本切片开发备份并核实际远端；随后核D13有效文件入口及E06/E07/E08剩余受影响组合，取消链不恢复。完整提交前快照另登记，不以本切片结束宣告总目标完成。
-- inputd13retry-precommit05.json共5579项/SHAd1650eb260f4074b2af686fd92ef72616c39c1a5c79a5eb8627dd4a3c50b83e1及同号完整patch/未跟踪副本/写权/环境/远端已存；其后仅本段等断点修正。实际提交和推送回执沿后续快照，不把未提交断点称作已提交。
+- 采样时无项目Java/Gradle/MySQL或ADB/模拟器；共享MySQL4632/5440与3306/33060、另项目MySQL20424/26476仅观察，不连接/停止；Keystore/原AVD未改。启动新轮后以运行快照为准。
+- C78846910464/D56470503424/E195634057216 bytes；本轮尚未清理。1568保留待消费，已结束可重建测试数据按用户授权于切片收口清理并记前后空间。
+- 前序1560/1562/1563/1565/1566失败与原证据保留，失败计数不因会话重置；已清可重建库详各报告cleanup-before/after，不清原材料/身份/签名回执/最终APK/继承改动。
+- 七类生产决定、TEMP生产归档保持关闭，localDeletionAllowed=false；不接原库现网/正式签名、不绕设备审批或Chrome策略；D16缺可信合法退出依据，标准不降。
+- 前序D11/D13/D14/D15及E06/Android/UI局部证据按报告路径+SHA复用；D04旧前缀/Chrome1540策略阻断无新依据不机械重跑。
+- D13整体、D14/D15剩余、E06/E07/E08 L2、统一最终候选及D18 Android/真实HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复全链L3与第8节闸门尚未满足；原资料/旧BCD/原身份/真机/异地/长时/Linux现场单列。
+- run1569/session52350已exit0、认证停机exit0/DB19348与HTTP19454无监听；93普通+1真实IT零失败/错误/跳过；consumer05/result.json消费60 HTTP/5文件/10行及dump/P5/native writer探针通过。早期消费者PDF依赖与全库种子计数口径失败保留。
+- 普通完整server test/session91122已exit0：308套件4756项零失败/错误、19条件跳过；原XML/逐套件SHA/skip在d13-import01/server-test01。无项目Java重型任务；保留tmp未清。消费者04全库计数误含旧种子失败后，05按本轮仓库及原ID通过，原失败保留。
+- 1568/1569清理仅认证停机后datadir/binlog：694文件/444713379逻辑bytes；D56101183488→56554676224，实增453492736；C78866210816/E195634057216。cleanup-before/after、逐文件manifest、原dump/XML/HTTP/日志/签名/身份均保留。
+- 提交前完整inputd13import-precommit03.json共5590项/SHA139dd53c38b3ea25b7c19e956251c465c1adda4287cfd6b482fe72395b9886d5及同号patch/未跟踪副本/ownership/进程/监听/磁盘/远端保全；暂存check发现运行器末尾空行，已仅修该格式并另存快照，不重跑业务。
+- 17明确路径拟提交库存入口服务端L1开发备份；提交/推送实际回执和完整输入快照另存，不把文档断点称作已提交。下一步核submission/relay/source-evidence有效入口的调用/既有证据与P5缺口，再推进E06/E07/E08组合；不恢复取消链、不把切片结束记总目标完成。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

@@ -11,14 +11,15 @@ public class IdempotencyRequests {
     public UUID find(Key key, String digest) {
         if (!key.value().matches("[A-Za-z0-9._:-]{16,80}"))
             throw new BusinessException(400, "INVALID_IDEMPOTENCY_KEY", "幂等键须为16至80位ASCII标识");
-        var found = jdbc.queryForList("""
+        var found = jdbc.query("""
             SELECT request_sha256,BIN_TO_UUID(resource_id) AS resource_id FROM api_idempotency_request
             WHERE principal_id=? AND route_scope=? AND idempotency_key=?
-            """, Ids.bytes(key.actor()), key.scope(), key.value());
+            """, (rs, row) -> new Stored(rs.getString("request_sha256"), rs.getString("resource_id")),
+            Ids.bytes(key.actor()), key.scope(), key.value());
         if (found.isEmpty()) return null;
-        if (!found.getFirst().get("request_sha256").equals(digest))
+        if (!found.getFirst().digest().equals(digest))
             throw new BusinessException(409, "IDEMPOTENCY_CONTENT_MISMATCH", "同一幂等键对应了不同请求内容");
-        return UUID.fromString((String) found.getFirst().get("resource_id"));
+        return UUID.fromString(found.getFirst().resource());
     }
     public void record(Key key, String digest, UUID resource) {
         jdbc.update("""
@@ -27,4 +28,5 @@ public class IdempotencyRequests {
             """, Ids.bytes(Ids.next()), Ids.bytes(key.actor()), key.scope(), key.value(), digest, Ids.bytes(resource));
     }
     public record Key(UUID actor, String scope, String value) { }
+    private record Stored(String digest, String resource) { }
 }

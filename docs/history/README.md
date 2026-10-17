@@ -1,5 +1,6 @@
 # 历史归档
 
+- [D13 库存文件入口 L1](GOAL_D13_IMPORT_FILE_ENTRY_2026-10-17.md)：run1569真实multipart/非空迁移/权限/幂等/并发/末SQL回滚/锁后撤权、原生writer锁及Python原HTTP/文件/dump/P5消费通过；1568产品失败保留。仅服务端切片L1，普通完整回归4756项/零失败错误/19条件跳过，非D13整体/L2/L3。
 - [D13 导出重试效果门兼容 L1](GOAL_D13_EXPORT_RETRY_2026-10-17.md)：run1567真实HTTP/MySQL与独立文件/dump消费通过，82普通+1IT；未知错误围栏及夹具预期失败保留，仅切片L1，非整体/L2/L3。
 
 - [D13 正常P5退役有界L1](GOAL_D13_NORMAL_RETIREMENT_2026-10-17.md)：run1564真实P5/Session/生产调度/导出排空、独立JVM/Python及修改后完整普通回归通过；历史产品失败与消费者修正保留，仅切片L1，非D13整体/L2/L3。

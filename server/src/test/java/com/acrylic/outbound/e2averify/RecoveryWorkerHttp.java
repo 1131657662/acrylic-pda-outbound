@@ -56,6 +56,18 @@ final class RecoveryWorkerHttp {
         return SubmissionJson.parse(new String(bytes, StandardCharsets.UTF_8));
     }
 
+    JsonNode upload(String warehouse, byte[] file, String key, int expected) throws Exception {
+        var csrf = get("/auth/csrf", 200).path("data"); String boundary = "d13-" + UUID.randomUUID();
+        var publisher = HttpRequest.BodyPublishers.concat(HttpRequest.BodyPublishers.ofString("--" + boundary
+            + "\r\nContent-Disposition: form-data; name=\"file\"; filename=\"sku.txt\"\r\nContent-Type: text/plain\r\n\r\n"),
+            HttpRequest.BodyPublishers.ofByteArray(file), HttpRequest.BodyPublishers.ofString("\r\n--" + boundary + "--\r\n"));
+        byte[] bytes = send(builder("/inventory/imports?warehouseId=" + warehouse)
+            .header(csrf.path("headerName").asText(), csrf.path("token").asText())
+            .header("Content-Type", "multipart/form-data; boundary=" + boundary).header("Idempotency-Key", key)
+            .header("X-Server-Recovery-Epoch", "1").POST(publisher), expected);
+        return SubmissionJson.parse(new String(bytes, StandardCharsets.UTF_8));
+    }
+
     private HttpRequest.Builder builder(String path) {
         return HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + E2aTestPorts.http() + "/api/v1" + path))
             .timeout(Duration.ofSeconds(30));
