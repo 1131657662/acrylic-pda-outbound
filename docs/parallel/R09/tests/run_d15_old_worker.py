@@ -1,4 +1,4 @@
-"""New HTTP producer -> retained older product worker -> old/new HTTP consumers."""
+"""Pinned HTTP producer -> opposite product worker -> old/new HTTP consumers."""
 import json
 import traceback
 
@@ -21,21 +21,24 @@ def baseline():
 
 
 def queued(identity, reader):
-    api = process.start(lab.JARS['new'][0], 'new-queued')
+    label = lab.PRODUCER + '-queued'
+    api = process.start(lab.JARS[lab.PRODUCER][0], label)
     try:
-        process.ready(api, 'new-queued')
-        job, key = http.enqueue(identity, reader)
+        process.ready(api, label)
+        job, key = http.enqueue(identity, reader, label)
     finally:
-        process.stop(api, 'new-queued')
+        process.stop(api, label)
     return job, key, lab.fixture.facts('queued')
 
 
 def run_worker(job):
-    worker = process.start(lab.JARS['old'][0], 'old-worker', worker=True)
+    version = 'new' if lab.PRODUCER == 'old' else 'old'
+    label = version + '-worker'
+    worker = process.start(lab.JARS[version][0], label, worker=True)
     try:
         process.completed(worker, job)
     finally:
-        process.stop(worker, 'old-worker')
+        process.stop(worker, label)
     return lab.fixture.facts('worked')
 
 
@@ -70,11 +73,11 @@ def scenario():
     identity, reader, base = baseline()
     print(lab.LAB.name + ': original nonempty facts restored; five synthetic reader rows verified', flush=True)
     job, key, queued_facts = queued(identity, reader)
-    print('New JAR real HTTP PENDING/idempotency/permission paths completed', flush=True)
+    print(lab.PRODUCER + ' JAR ' + lab.BASIS + ' real HTTP PENDING/idempotency/permission paths completed', flush=True)
     worked = run_worker(job)
-    print('Retained old product scheduled worker completed original task', flush=True)
+    print('Opposite pinned product scheduled worker completed original task', flush=True)
     stages = []
-    for label, version, replay in [('old-read', 'old', None), ('new-read', 'new', key)]:
+    for label, version, replay in [('old-read', 'old', key), ('new-read', 'new', key)]:
         file, view, facts = downloaded(label, version, identity, reader, job, replay)
         stages.append((label, file, view, facts))
         print(label + ': real HTTP status/download completed', flush=True)
@@ -94,7 +97,9 @@ def main():
     try:
         scenario()
         lab.unchanged(manifest)
-        lab.sql.save('success.json', dict(scope='D15 old scheduled worker original-confirmed XLSX only',
+        lab.sql.save('success.json', dict(scope='D15 pinned producer/worker XLSX compatibility',
+            producer=lab.PRODUCER, worker='new' if lab.PRODUCER == 'old' else 'old',
+            format=lab.FORMAT, basis=lab.BASIS,
             inputsUnchanged=True, sourcePreserved=True, productionDefaultsChanged=False))
     except BaseException:
         lab.sql.save('failure.json', dict(traceback=traceback.format_exc()))

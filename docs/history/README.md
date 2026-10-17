@@ -1,5 +1,9 @@
 # 历史归档
 
+- [E06/D12 TEMP 仓库恢复 L2 候选](GOAL_E06_D12_TEMP_REPOSITORY_L2_ACCEPTANCE_2026-10-17.md)：run 692 的真实隔离 HTTP/MySQL、非空迁移、Android 两阶段产品会话、丢响应后的 `RESULT_UNKNOWN` 与原 ID 恢复、Room/SQL/文件/JWS 守恒及独立 Python 75 项消费通过；run 691 端口夹具失败原件保留。Chrome 对无 Web/UI 入口路径不适用；仅局部候选，不计 E06/D12/D17 完整 L2、D18 L3 或总目标。
+
+- [E08/D17 recovered-confirmation WIP 逐路径范围审计](GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-17.md)：对 worker、dialog、display、Android fixture/device test、Android bridge 及 Handover/Sync/Temporary 相关路径逐项核对 R07 取消范围与 R09 只读恢复边界；确认确认 POST、队列和激活链不恢复，只读原件展示和阻断导航保留候选。仅范围审计，不计 D06/D07/D13/D14、D17、E06 L2、D18 L3 或总目标。
+
 - [E08/D17 `CONTINUATION_BLOCKED` 只读明细 L1](GOAL_E08_D17_CONTINUATION_BLOCKED_READONLY_L1_2026-10-17.md)：修复前驱明细页错误显示取消/调整入口；主机定向单测、lint、Debug 构建和独立 AVD instrumentation 通过，前后数据库字节相同。两次运行器/Launcher 环境失败原件保留；仅合成输入上的 Android UI L1 开发备份，不计 D17 整体、E06 L2、D18 L3 或总目标。
 
 - [E08 / D17 UI构建、清理与最终交接](GOAL_E08_D17_UI_CLOSEOUT_HANDOFF_2026-10-17.md)：默认关闭/隔离构建和lint通过，业务UI未验、范围待核；旧D06命名已更正，Force停机及一次D盘清理有记录。仅文档/构建开发备份，交接后停止，非UI L1或D项整体/L2/L3。
@@ -11,6 +15,8 @@
 - [E06 多任务关联网页 L1 接续复核](GOAL_E06_MULTITASK_ASSOCIATION_WEB_L1_REVIEW_2026-10-17.md)：复核历史输入绑定、八项日志、13/16 项消费者、Chrome、180 表事实与 1538 的 347 文件保全；记录当前输入漂移和只读复核脚本失败指纹。仅历史 L1 开发备份，不计 E06 L2、D18 L3 或总目标。
 
 - [D15旧程序定时worker兼容 L1](GOAL_D15_OLD_WORKER_COMPATIBILITY_L1_2026-10-17.md)：新程序真实HTTP创建→旧worker实际执行→旧/新下载及Python七表/全表守恒通过；原driver exit1、离线补核与676失败均保留，仅指定格式L1开发备份，非D15整体/L2/L3。
+
+- [D15旧程序写入→新worker L1](GOAL_D15_OLD_PRODUCER_NEW_WORKER_L1_2026-10-17.md)：run698 完成 `ORIGINAL_CONFIRMED/XLSX`，run700 完成 `CURRENT_EFFECTIVE/XLSX`；均使用保留SQL/存储逻辑输入，699 的消费者口径失败和原件保留，原667的527个datadir文件已缺失，非D15整体/L2/L3。
 
 - [D13 恢复 worker、文件与导出 L1](GOAL_D13_RECOVERY_WORKER_FILE_EXPORT_L1_2026-10-17.md)：新隔离 run 684 真实 HTTP 创建、SQL/文件恢复、独立 worker JVM、renderer/XLSX 下载及 Python/Java 只读消费者通过；681–683 失败原件保留。仅有界 L1 开发备份，不计 D13 L2、D18 L3 或总目标。
 
@@ -716,6 +722,7 @@
 - [E06增量冲突责任链网页L1](GOAL_E06_CONFLICT_EXTENSION_WEB_L1_2026-10-14.md)：全部各方显式追加、历史保全、丢响应/双页原键与全表精确增量；多任务及E06组合继续。
 
 - [E07/O05同机恢复与加密副本](GOAL_E07_RESTORE_COPY_ACCEPTANCE_2026-10-14.md)：1541恢复逐表/逐文件守恒、4/4写前拒绝、O05 14/14专项与41/41回归及实际SAF CLI通过；同机开发演练，异地/现场/D18 L3/总目标继续。
+- [E07/O05归档恢复隔离候选](GOAL_E07_O05_ARCHIVE_RECOVERY_CANDIDATE_2026-10-17.md)：run695新隔离输入完成 TEMP/FORMAL真实HTTP、独立Python源/恢复消费、全库/文件恢复、11/11故障回滚及恢复后HTTP；仅有界候选，不计外置保管、现场/Android/Chrome、E07/O05完整L2或D18 L3。
 
 - [P07历史钥及固定引用核验L1](GOAL_P07_KEYRING_ACCEPTANCE_2026-10-15.md)：19/19真实JVM原签→Python离线取回核验，双pin/全集/语义及守恒；不证明异地保管或E07整体。
 - [E07闭合恢复跨截点前置验收](GOAL_E07_CLOSED_RECOVERY_ACCEPTANCE_2026-10-15.md)：新隔离实例1546/1547的闭合权威与投影组合通过，JDBC/dump/文件守恒及认证停机通过；1545 ACL失败和运行器误判保全；不计E07 L2、D14/D15整体或D18 L3。

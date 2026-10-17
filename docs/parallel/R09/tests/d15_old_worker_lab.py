@@ -1,6 +1,7 @@
 """Bind the retained rollback fixture to one fresh, identity-checked worker lab."""
 from pathlib import Path
 import json
+import os
 import shutil
 import socket
 import subprocess
@@ -8,9 +9,17 @@ import subprocess
 import d15_rollback_sql as sql
 
 ROOT = Path(__file__).resolve().parents[4]
-LAB = ROOT / '.local/e2a-cross-20260925-677'
-PORT, HTTP = 19387, 19461
-DATABASE, USER = 'acrylic_e2a_cross_20260925_677', 'e2a_cross_20260925_677'
+RUN = int(os.environ.get('D15_WORKER_RUN', '677'))
+PORT = int(os.environ.get('D15_WORKER_DB_PORT', '19387'))
+HTTP = int(os.environ.get('D15_WORKER_HTTP_PORT', '19461'))
+PRODUCER = os.environ.get('D15_WORKER_PRODUCER', 'new')
+FORMAT = os.environ.get('D15_WORKER_FORMAT', 'XLSX')
+BASIS = os.environ.get('D15_WORKER_BASIS', 'ORIGINAL_CONFIRMED')
+assert 600 <= RUN <= 999 and 1024 <= PORT <= 65535 and 1024 <= HTTP <= 65533
+assert PORT not in (HTTP, HTTP + 1, HTTP + 2) and PRODUCER in ('old', 'new')
+assert FORMAT == 'XLSX' and BASIS in ('ORIGINAL_CONFIRMED', 'CURRENT_EFFECTIVE')
+LAB = ROOT / f'.local/e2a-cross-20260925-{RUN}'
+DATABASE, USER = f'acrylic_e2a_cross_20260925_{RUN}', f'e2a_cross_20260925_{RUN}'
 assert sql.ROOT == ROOT
 sql.LAB, sql.PORT, sql.DATABASE, sql.USER = LAB, PORT, DATABASE, USER
 # These modules capture the SQL bindings at import. The standalone runner imports
@@ -41,7 +50,8 @@ def allocation():
     for path, expected in JARS.values():
         assert sql.digest(path) == expected, str(path)
     assert RENDERER.is_dir() and len(list((RENDERER / 'lib').glob('*.jar'))) == 29
-    return dict(worktrees=trees, ports=[PORT, HTTP, HTTP + 1, HTTP + 2],
+    return dict(worktrees=trees, ports=[PORT, HTTP, HTTP + 1, HTTP + 2], producer=PRODUCER,
+                format=FORMAT, basis=BASIS,
                 disks=disks, estimatedGrowthBytes=1 << 30, exclusiveBind=True)
 
 

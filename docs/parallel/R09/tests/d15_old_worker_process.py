@@ -49,14 +49,14 @@ def ready(process, label):
 
 def completed(process, job):
     for _ in range(240):
-        assert process.poll() is None, 'Old worker exited unexpectedly'
+        assert process.poll() is None, 'Pinned worker exited unexpectedly'
         row = sql.query("SELECT JSON_ARRAY(status,attempt_count,last_error) FROM background_job WHERE id=X'" + job.hex + "'")[0]
         if row[0] == 'SUCCEEDED':
             assert row == ['SUCCEEDED', 1, None], row
             return
         assert row[0] in ('PENDING', 'RUNNING'), row
         time.sleep(.5)
-    raise AssertionError('Old worker completion timeout')
+    raise AssertionError('Pinned worker completion timeout')
 
 
 def stop(process, label):

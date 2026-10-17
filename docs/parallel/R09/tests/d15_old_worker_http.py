@@ -7,7 +7,7 @@ import urllib.parse
 import urllib.request
 import uuid
 
-from d15_old_worker_lab import LAB, HTTP, sql
+from d15_old_worker_lab import BASIS, FORMAT, LAB, HTTP, sql
 
 
 class Client:
@@ -49,8 +49,8 @@ class Client:
         self.headers = {csrf['data']['headerName']: csrf['data']['token']}
         self.epoch = csrf['serverRecoveryEpoch']
 
-    def create(self, identity, key, status=200, format_name='XLSX'):
-        body = json.dumps(dict(format=format_name, basis='ORIGINAL_CONFIRMED')).encode()
+    def create(self, identity, key, status=200, format_name=FORMAT, basis=BASIS):
+        body = json.dumps(dict(format=format_name, basis=basis)).encode()
         headers = {'Idempotency-Key': str(key), 'X-Server-Recovery-Epoch': self.epoch,
                    'Content-Type': 'application/json'}
         return self.request('/orders/' + identity['order'] + '/exports?warehouseId=' + identity['warehouse'],
@@ -63,8 +63,8 @@ class Client:
         return self.request(f'/exports/{job}/file?warehouseId=' + identity['warehouse'], binary=True)
 
 
-def enqueue(identity, reader):
-    client, key = Client('new-queued'), uuid.uuid4()
+def enqueue(identity, reader, label='new-queued'):
+    client, key = Client(label), uuid.uuid4()
     client.request('/orders/' + identity['order'] + '?warehouseId=' + identity['warehouse'], 401)
     client.login(reader)
     denied = client.create(identity | dict(warehouse=str(uuid.uuid4())), uuid.uuid4(), 404)
@@ -72,7 +72,7 @@ def enqueue(identity, reader):
     created = client.create(identity, key)['data']
     assert created['status'] == 'PENDING' and created['attempts'] == 0 and not created['downloadable']
     assert client.create(identity, key)['data'] == created
-    assert client.create(identity, key, 409, 'SCAN_XLSX')['code'] == 'IDEMPOTENCY_CONFLICT'
+    assert client.create(identity, key, 409, 'SCAN_XLSX', 'ORIGINAL_CONFIRMED')['code'] == 'IDEMPOTENCY_CONFLICT'
     sql.save('queued-http-result.json', dict(view=created, key=str(key), requests=client.index))
     return uuid.UUID(created['id']), key
 
@@ -86,7 +86,7 @@ def read_completed(label, identity, reader, job, key=None):
     assert hashlib.sha256(body).hexdigest() == view['sha256'] and len(body) == view['bytes']
     if key:
         assert client.create(identity, key)['data'] == view
-        assert client.create(identity, key, 409, 'SCAN_XLSX')['code'] == 'IDEMPOTENCY_CONFLICT'
+        assert client.create(identity, key, 409, 'SCAN_XLSX', 'ORIGINAL_CONFIRMED')['code'] == 'IDEMPOTENCY_CONFLICT'
     target = LAB / (label + '.xlsx')
     target.write_bytes(body)
     sql.save(label + '-result.json', dict(view=view, requests=client.index, sha256=sql.digest(target)))

@@ -4,7 +4,7 @@ import importlib.util
 import json
 import uuid
 
-from d15_old_worker_lab import LAB, ROOT, fixture, compare, sql
+from d15_old_worker_lab import BASIS, LAB, ROOT, fixture, compare, sql
 
 
 def decoded(table, row):
@@ -95,7 +95,9 @@ def conservation(baseline, after, options):
 
 
 def workbook(path, payload, artifact):
-    source = ROOT / '.local/goal-20261016/d15-restored-worker01/xlsx_readback01.py'
+    source = (ROOT / 'docs/parallel/R09/tests/d15_current_effective_xlsx_consumer.py'
+              if BASIS == 'CURRENT_EFFECTIVE' else
+              ROOT / '.local/goal-20261016/d15-restored-worker01/xlsx_readback01.py')
     spec = importlib.util.spec_from_file_location('retained_xlsx_consumer', source)
     consumer = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(consumer)

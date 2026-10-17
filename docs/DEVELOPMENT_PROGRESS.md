@@ -1,6 +1,10 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E06/D12 TEMP 仓库恢复 L2 候选](history/GOAL_E06_D12_TEMP_REPOSITORY_L2_ACCEPTANCE_2026-10-17.md)：run 692 真实隔离 HTTP/MySQL、非空 Flyway、Android 两阶段产品会话、丢响应 `RESULT_UNKNOWN`→原 ID `SYNCED`、SQL/文件/JWS/Room 守恒及独立 Python 75 项消费通过；run 691 固定端口夹具失败原件保留。Chrome 对该无 Web/UI 入口路径不适用；仅局部候选，不计 E06/D12/D17 完整 L2、D18 L3 或总目标。
+
 - [E08/D17 `CONTINUATION_BLOCKED` 只读明细 L1](history/GOAL_E08_D17_CONTINUATION_BLOCKED_READONLY_L1_2026-10-17.md)：修复前驱明细页错误显示取消/调整入口；主机定向单测、lint、Debug 构建和独立 AVD instrumentation 通过，前后数据库字节相同。两次运行器/Launcher 环境失败原件保留；仅合成输入上的 Android UI L1 开发备份，不计 D17 整体、E06 L2、D18 L3 或总目标。
+
+- [E08/D17 recovered-confirmation WIP 逐路径范围审计](history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-17.md)：接管后补充完整路径、调用事实、SHA、处置建议与直接验证；按 R07/R09 确认旧接收者确认/激活链已取消，只读恢复资料和普通阻断导航保留候选。仅范围审计，不计 D06/D07/D13/D14、D17、E06 L2、D18 L3 或总目标。
 
 - [E08 recovered-confirmation 范围审计](history/GOAL_E08_RECOVERED_CONFIRMATION_SCOPE_AUDIT_2026-10-17.md)：接管后逐路径核对 Android worker/dialog/fixture/bridge 与 R07/R09；确认真实确认 POST、确认队列及主管激活等待属于已取消旧接收者链，只读恢复资料展示和普通阻断导航保留候选复用。仅范围审计，不计 D06/D07/D13/D14、UI L1、E08 L2 或 D18 L3。
 
@@ -584,9 +588,11 @@
 - E06增量冲突责任链网页：[L1开发备份](history/GOAL_E06_CONFLICT_EXTENSION_WEB_L1_2026-10-14.md)；完整各方追加、Chrome丢响应/刷新/双页原key与历史保全、全表精确增量；多任务及E06组合继续。
 
 - E07/O05同机恢复与加密副本：[专项验收](history/GOAL_E07_RESTORE_COPY_ACCEPTANCE_2026-10-14.md)；1541恢复180表/64非空表和15个私有/存储文件守恒，写前缺失/损坏输入4/4拒绝；O05专项14/14、受影响回归41/41、实际SAF CLI创建/取回及覆盖/损坏拒绝通过。仅同机开发演练，异地/现场保管、P07、E08/E09、E06 L2、D18 L3和总目标未完成。
+- E07/O05归档恢复隔离候选：[验收记录](history/GOAL_E07_O05_ARCHIVE_RECOVERY_CANDIDATE_2026-10-17.md)；run695新隔离输入真实HTTP/MySQL、Python源/恢复消费、179表/15文件守恒、11/11故障回滚和恢复后HTTP通过；run693/694失败保留。仅有界候选，不计O05完整L2、E07/D14/D15整体、Android/Chrome或D18 L3。
 - [E07闭合恢复跨截点前置验收](history/GOAL_E07_CLOSED_RECOVERY_ACCEPTANCE_2026-10-15.md)：1546 Authority、1547 Projection 均通过真实隔离 MySQL、辅助 schema、JDBC/dump/文件守恒和认证停机；1545 ACL 失败与新运行器误判保留。仅闭合恢复前置组合，不计 D14/D15 整体、E07 L2、D18 L3 或总目标。
 - [E07更正五检查点恢复验收](history/GOAL_E07_CORRECTION_CHECKPOINT_ACCEPTANCE_2026-10-15.md)：618真实HTTP/MySQL完成更正 create/approve/withdraw/confirm，五个非空dump与原ROW binlog重建、179表/迁移/触发器/文件守恒、四份RSA原回执及20次原键重放，独立Python和认证停机通过；不计E07 L2、D14/D15整体、D18 L3或总目标。
 - [D11 R08完整导出套件 L1](history/GOAL_D11_R08_EXPORT_INTEGRATION_L1_2026-10-17.md)：新隔离库 680 的 `R08ExportIT` 14项真实 HTTP/MySQL/renderer 全部通过；678 旧浏览器路径 503 与 679定向PDF补验、自动删除 datadir 事件均保留并单列。仅补该套件 L1，D11受影响组合、E06/E07 L2及D18 L3仍未完成。
 - [D13 HTTP/Session入口 L1](history/GOAL_D13_RECOVERY_HTTP_SESSION_L1_2026-10-17.md)：新19444隔离实例真实 Spring Session JDBC/HTTP 2项通过，覆盖 ERROR/ASYNC/multipart、并发、fenced/stale 拒绝和 cleanup guard；证据路径身份不匹配的 19442/19443 失败原件保留。仅补 HTTP/Session L1，worker/文件/导出跨入口组合、D13整体及D18 L3仍未完成。
 - [D13 跨进程 lease L1](history/GOAL_D13_RECOVERY_LEASE_PUBLICATION_L1_2026-10-17.md)：新19445隔离实例真实应用根发布 lease，子进程拒绝并退休孤儿后再次启动，1项通过；仅补 lease 发布边界，worker/文件/导出、错库/水位与 D13 整体仍未完成。
 - [D13 恢复 worker、文件与导出 L1](history/GOAL_D13_RECOVERY_WORKER_FILE_EXPORT_L1_2026-10-17.md)：新隔离 run 684 真实 HTTP 创建、SQL/文件恢复、独立 worker JVM、renderer/XLSX 下载及 Python/Java 只读消费者通过；681–683 失败原件保留。仅有界 L1 开发备份，不计 D13 L2、D18 L3 或总目标。
+- [D15 旧程序写入→新 worker L1](history/GOAL_D15_OLD_PRODUCER_NEW_WORKER_L1_2026-10-17.md)：run698 完成 `ORIGINAL_CONFIRMED/XLSX`，run700 完成 `CURRENT_EFFECTIVE/XLSX` 的旧 JAR 创建→新 JAR worker→旧/新下载及独立 Python/全表守恒；run699 的消费者口径失败和原件保留。527 个原 InnoDB datadir 文件已缺失，不能写成原字节恢复，非 D15 整体/L2/L3。

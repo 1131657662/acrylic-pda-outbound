@@ -1,4 +1,4 @@
-"""Pinned SQL/file preparation for one read-only program rollback experiment."""
+"""Pinned retained SQL/file preparation for isolated program compatibility."""
 import json
 import shutil
 import uuid
@@ -10,13 +10,30 @@ from d15_rollback_sql import LAB, ROOT, SOURCE, digest, query, save, sql, dump_s
 
 def original_files():
     manifest = ROOT / '.local/goal-20261016/e07-formal-repository01/consumer02/manifest-after.json'
+    assert digest(manifest) == '180c908a8966ea3bf0a64a4355ad49e521b6a78b2ab4e145d363d5417f8042c3'
     rows = json.loads(manifest.read_bytes())
     assert len(rows) == 604
+    retained, removed_data = [], []
     for row in rows:
         path = (SOURCE / row['path']).resolve()
-        assert path.is_relative_to(SOURCE) and path.stat().st_size == row['length']
+        assert path.is_relative_to(SOURCE)
+        if not path.exists():
+            assert row['path'].startswith('data/'), 'Missing retained source: ' + row['path']
+            removed_data.append(row)
+            continue
+        assert path.is_file() and path.stat().st_size == row['length'], row['path']
         assert digest(path) == row['sha256'], row['path']
-    return dict(files=len(rows), bytes=sum(row['length'] for row in rows), manifestSha256=digest(manifest))
+        retained.append(row)
+    names = {row['path'] for row in retained}
+    required = {'private/archive-snapshot.sql', 'private/formal-http-input.json',
+                'private/server-private.der', 'private/server-public.der'}
+    assert required <= names
+    storage = {path.relative_to(SOURCE).as_posix() for path in (SOURCE / 'storage').rglob('*') if path.is_file()}
+    assert storage == {name for name in names if name.startswith('storage/')}
+    return dict(originalManifestFiles=len(rows), files=len(retained),
+                bytes=sum(row['length'] for row in retained), manifestSha256=digest(manifest),
+                removedDataFiles=len(removed_data), removedDataBytes=sum(row['length'] for row in removed_data),
+                restorationInput='retained SQL/storage/development signing inputs; no datadir reconstruction')
 
 
 def prepare():
