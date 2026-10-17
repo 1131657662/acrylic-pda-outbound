@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: f3c02f67
-dirty_entries: 94
+head: cbeee674
+dirty_entries: 99
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 用户明确恢复D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计；目标active，只有全部闸门满足才complete。取消的换机承接/多跳/激活不恢复。L1/有界组合开发备份不能计D项整体或D18 L3。
 
 ## Git、写权、输入
-- 固定树D:/acrylic-pda-outbound、codex/development；接续实核 HEAD/远端均 `b6e7b540`，工作区继承改动和本轮 D13 runner/测试夹具改动均保留，禁止 `git add .`。历史已提交报告不替代本轮输入绑定。
+- 固定树D:/acrylic-pda-outbound、codex/development；接续实核 HEAD/远端均 `cbeee674`，工作区继承改动和本轮 D13/E07 runner、测试夹具及报告改动均保留，禁止 `git add .`。历史已提交报告不替代本轮输入绑定。
 - 本聊天01a13a57-8082-7dd2-a08f-987483dcda4b为当前唯一写者，无子代理；清理聊天01a13cb4-88f1-7fc3-9af2-7a0fde6bd26e已明确idle、清理进程/监听/数据库/重型任务为0并释放写权。旧owner/released字段不代实际核查，当前接管快照见`.local/goal-20261017-resume/resume-20261017-0752/`。
 - 全量输入`.local/goal-20261017-resume/resume-20261017-0752/input.json`：5489项，SHA `bd5e5c02413b35dcae3052b693471ef0c4636da598733748f212352ffdc0a425`；HEAD/远端、全部dirty/untracked原件、binary diff、33树、写权、进程/监听和C/D余量已同目录保存。更新前旧结论快照为`docs/history/ORCHESTRATION_STATE_before_resume_20261017-075235.md`。
 
@@ -25,7 +25,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 本批676/677及既有665–675/1668均封存停机，不复用旧库。R08 680 在 `127.0.0.1:23308/acrylic_r08_it_680` 完整14项通过，停机后数据目录约236697749 bytes仍保留且目标监听为零；共享mysqld4632/5440身份未知，只观察不连接停止。原TEMP AVD emulator12912/qemu12108、5564/5565及ADB8500保留，真机未操作。
 - R08 678/679 的旧浏览器路径503及679收尾自动删除495个旧datadir事实已在专项报告登记；678/679日志、marker、storage保留。`tools/r08-provision-and-run.ps1` 已移除自动清理调用，后续清理须单独、明确路径执行。680 preflight/postflight记录C/D余量、进程和监听；子进程TEMP/TMP/Java临时专用，不改全局HOME/CODEX_HOME。
 - D13 L2 组合报告`docs/history/GOAL_D13_RECOVERY_COMBINATION_L2_2026-10-17.md`已补：run 805/806/812 分别覆盖原提交/未提交占用与恢复事务、非空迁移、错库/水位/事务拒绝、HTTP 导出/renderer/PDF/XLSX 及 Chrome；19500/19520 批次已认证停机并保留 datadir、binlog、失败原件。仅 D13 受影响组合 L2，不计 D13 整体或 D18 L3。
-- 不接原库现网、不合main、不发布部署/Release、不用正式签名、不绕过审批。七类生产决定handler/POST/放行/证据写入/关闭、TEMP生产归档保持关闭，localDeletionAllowed=false，D16标准不变；合成输入不代原PDA现场事实。接管实测 C 盘约73.13GB、D盘约58.58GB可用；共享MySQL 3306/33060、原TEMP AVD 5564/5565及长期工具监听仅观察，未停止或写入。
+- 不接原库现网、不合main、不发布部署/Release、不用正式签名、不绕过审批。七类生产决定handler/POST/放行/证据写入/关闭、TEMP生产归档保持关闭，localDeletionAllowed=false，D16标准不变；合成输入不代原PDA现场事实。接管实测 C 盘约73.13GB、D盘约58.58GB可用；共享MySQL 3306/33060、原TEMP AVD 5564/5565及长期工具监听仅观察，未停止或写入。清理聊天 08:07:23 再次确认 idle、清理进程/监听/未交接写者为0。
 
 ## D15旧worker有界L1
 - 正式报告docs/history/GOAL_D15_OLD_WORKER_COMPATIBILITY_L1_2026-10-17.md：新程序真实HTTP创建ORIGINAL_CONFIRMED/XLSX→保留旧JAR实际scheduled worker→旧/新下载→新原键重放/异文拒绝；20次真实HTTP，Python七表逐值通过，范围仅该格式，不外推旧写入/多任务新格式/D15整体/L2/L3。
@@ -43,6 +43,10 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ## D13 worker/file/export L1
 - `docs/history/GOAL_D13_RECOVERY_WORKER_FILE_EXPORT_L1_2026-10-17.md`：新隔离 run 684（MySQL 19384、HTTP 19471、辅助 19472/19473）真实 HTTP 创建 PENDING→SQL/文件恢复→独立 worker JVM→HTTP XLSX；179表中175表不变，Python/Java只读消费者通过，XLSX SHA `12c96188…3ab14`。681 attempt守卫、682临时目录、683旧definer失败原件保留；仅 worker/file/export L1，不计 D13 L2、D18 L3或总目标。
 
+## E07/D14 独立检查点组合
+- 正式报告 `docs/history/GOAL_E07_D14_INDEPENDENT_CHECKPOINT_COMBINATION_2026-10-17.md`：run 814 的真实隔离 HTTP/MySQL、恢复前后事实、非空迁移、原件/签名、default-off、认证停机及独立 Python 只读消费者通过；854 个输入文件双 manifest 完全一致，179 表/622 行守恒。run 813 `Attempt already exists` 原件保留；本批仅受影响组合开发验收，不计 E07 L2、D14 整体或 D18 L3。
+- 证据根 `.local/goal-20261017-resume/e07-combination814/` 与消费者 `.local/goal-20261017-resume/e07-combination814-consumer/` 保留；关键消费者结果 SHA `636277dfc8d1498fb97a9b2107e07c767943f568e272fe9ec020490bc60314ae`。更新前看板快照为 `docs/history/ORCHESTRATION_STATE_before_e07_consumer_2026-10-17.md`。
+
 ## 已验复用与未验
 - 正式入口统一docs/DEVELOPMENT_PROGRESS.md及docs/history/README.md；D01矩阵GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17.md绑定27项/原60报告，后续增量各按路径+SHA引用，不拼作L2/L3。
 - E01–E05/O03，E06资料/身份/任务/SCAN/VOID/导出/结束/核原/实物/关联冲突/多任务网页L1按正式报告复用。1539原HTTP/JDBC/原签/原AVD/347停机文件及460文件消费者补核见GOAL_E06_RETAINED_COMBINATION_AUDIT_2026-10-16.md；仍非E06完整L2。Chrome1540 blocked by policy无新批准不换包装重试。
@@ -58,7 +62,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 清理回执.local/disk-cleanup-20261016-round4/REPORT.md及completion-receipt.json保持；原件/失败库/donor/最终APK保留，QCOW第24调用状态未知、25–35未执行，D盘暂降回升原因未明，不以allocated变化当卷净释放。
 
 ## 下一动作
-D13 HTTP/Session、lease及worker/file/export L1及受影响组合 L2均已留正式报告；先完成 E06 多任务网页输入与证据绑定复核，再推进 D14–D18、E06–E09、O/U 及最终候选 L3。旧写入/多任务格式先确认实际兼容要求和原输入，禁止为凑验收重跑已有链；D16先找合法退出依据。总目标继续 active。
+D13 HTTP/Session、lease及worker/file/export L1及受影响组合 L2、E07/D14 独立检查点组合均已留正式报告；继续 E07 外置副本、E08/UI、D14–D18、E06–E09、O/U 及最终候选 L3。旧写入/多任务格式先确认实际兼容要求和原输入，禁止为凑验收重跑已有链；D16先找合法退出依据。总目标继续 active。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

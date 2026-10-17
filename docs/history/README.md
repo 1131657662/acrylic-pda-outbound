@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E07/D14 独立检查点恢复组合](GOAL_E07_D14_INDEPENDENT_CHECKPOINT_COMBINATION_2026-10-17.md)：run 814 的真实隔离 HTTP/MySQL、非空迁移、原件/签名、恢复前后 179 表/622 行与文件守恒、独立 Python 只读消费者及停机身份通过；run 813 预创建 attempt 失败原件保留。仅受影响组合开发验收，不计 E07 L2、D14 整体或 D18 L3。
+
 - [D13 恢复受影响组合 L2](GOAL_D13_RECOVERY_COMBINATION_L2_2026-10-17.md)：run 805/806/812 的原提交与未提交占用、真实 HTTP/MySQL、非空迁移、事务/回滚/拒绝路径、renderer/export 和 Chrome 组合通过；明确未覆盖 Android、完整外部 Python、原模拟器和 D18 L3。
 
 - [E06 多任务关联网页 L1 接续复核](GOAL_E06_MULTITASK_ASSOCIATION_WEB_L1_REVIEW_2026-10-17.md)：复核历史输入绑定、八项日志、13/16 项消费者、Chrome、180 表事实与 1538 的 347 文件保全；记录当前输入漂移和只读复核脚本失败指纹。仅历史 L1 开发备份，不计 E06 L2、D18 L3 或总目标。

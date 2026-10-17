@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- 2026-10-17：新增 [E07/D14 独立检查点恢复组合](history/GOAL_E07_D14_INDEPENDENT_CHECKPOINT_COMBINATION_2026-10-17.md)。run 814 的真实隔离 HTTP/MySQL、恢复前后事实、非空迁移、原件/签名、独立 Python 只读消费者和认证停机通过；854 文件 manifest 未漂移，恢复前后 179 表/622 行一致。run 813 的 `Attempt already exists` 原件保留。范围仅受影响组合开发验收，不计 E07 L2、D14 整体、D18 L3 或总目标。
+
 - [D13 恢复受影响组合 L2](history/GOAL_D13_RECOVERY_COMBINATION_L2_2026-10-17.md)：run 805/806/812 的真实 HTTP/MySQL、非空迁移、原/未提交占用、事务与拒绝路径、renderer/export 及 Chrome 通过；Android、完整外部 Python、原模拟器和 D18 L3 仍未覆盖。
 
 - [E06 多任务关联网页 L1 接续复核](history/GOAL_E06_MULTITASK_ASSOCIATION_WEB_L1_REVIEW_2026-10-17.md)：历史输入与八项日志、消费者、Chrome、180 表和 1538 保全证据复核完整；当前工作区输入漂移已单列。仅 L1 开发备份，非 E06 L2/D18 L3。
