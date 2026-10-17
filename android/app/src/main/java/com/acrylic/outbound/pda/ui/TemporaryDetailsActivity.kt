@@ -116,7 +116,7 @@ class TemporaryDetailsActivity : ComponentActivity() {
     private fun render(result: TemporaryDetailsPage) {
         page = result; anchor = result.rows.firstOrNull()?.sequence?.minus(1) ?: 0L
         val order = result.order
-        readOnly = order.state == "HANDOVER_BLOCKED"
+        readOnly = order.state in setOf("HANDOVER_BLOCKED", "CONTINUATION_BLOCKED")
         binding.summary.text = "临时单 · ${order.temporaryNo}\n车号 ${order.vehicleNo} · 柜号 ${order.containerNo.ifBlank { "未填" }}\n" +
             "原因 ${order.reason}\n有效原记录 ${result.total.count} 包 · ${WorkRenderer.kg(result.total.grams)} kg\n" +
             if (readOnly) "旧冻结原件仅供只读核对，不授予新作业或实物放行资格\n接收确认与激活已取消，未获后台最终确认不得放行"

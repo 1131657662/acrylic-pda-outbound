@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [E08/D17 `CONTINUATION_BLOCKED` 只读明细 L1](history/GOAL_E08_D17_CONTINUATION_BLOCKED_READONLY_L1_2026-10-17.md)：修复前驱明细页错误显示取消/调整入口；主机定向单测、lint、Debug 构建和独立 AVD instrumentation 通过，前后数据库字节相同。两次运行器/Launcher 环境失败原件保留；仅合成输入上的 Android UI L1 开发备份，不计 D17 整体、E06 L2、D18 L3 或总目标。
+
 - [E08 recovered-confirmation 范围审计](history/GOAL_E08_RECOVERED_CONFIRMATION_SCOPE_AUDIT_2026-10-17.md)：接管后逐路径核对 Android worker/dialog/fixture/bridge 与 R07/R09；确认真实确认 POST、确认队列及主管激活等待属于已取消旧接收者链，只读恢复资料展示和普通阻断导航保留候选复用。仅范围审计，不计 D06/D07/D13/D14、UI L1、E08 L2 或 D18 L3。
 
 - [E08/D17 HANDOVER_BLOCKED 只读明细收口](history/GOAL_E08_D17_HANDOVER_BLOCKED_READONLY_2026-10-17.md)：阻断入口明确为只读原件核对，隐藏取消/调整写入口，保留导出、分页、定位和返回；明细单测、Debug 构建/lint 通过。未安装或跑独立 instrumentation，UI L1、D17 整体、E06 L2、D18 L3及总目标仍未完成。

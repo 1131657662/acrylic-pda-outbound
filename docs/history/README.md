@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E08/D17 `CONTINUATION_BLOCKED` 只读明细 L1](GOAL_E08_D17_CONTINUATION_BLOCKED_READONLY_L1_2026-10-17.md)：修复前驱明细页错误显示取消/调整入口；主机定向单测、lint、Debug 构建和独立 AVD instrumentation 通过，前后数据库字节相同。两次运行器/Launcher 环境失败原件保留；仅合成输入上的 Android UI L1 开发备份，不计 D17 整体、E06 L2、D18 L3 或总目标。
+
 - [E08 / D17 UI构建、清理与最终交接](GOAL_E08_D17_UI_CLOSEOUT_HANDOFF_2026-10-17.md)：默认关闭/隔离构建和lint通过，业务UI未验、范围待核；旧D06命名已更正，Force停机及一次D盘清理有记录。仅文档/构建开发备份，交接后停止，非UI L1或D项整体/L2/L3。
 
 - [E07/D14 独立检查点恢复组合](GOAL_E07_D14_INDEPENDENT_CHECKPOINT_COMBINATION_2026-10-17.md)：run 814 的真实隔离 HTTP/MySQL、非空迁移、原件/签名、恢复前后 179 表/622 行与文件守恒、独立 Python 只读消费者及停机身份通过；run 813 预创建 attempt 失败原件保留。仅受影响组合开发验收，不计 E07 L2、D14 整体或 D18 L3。
