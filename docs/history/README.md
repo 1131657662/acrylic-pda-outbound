@@ -1,5 +1,7 @@
 # 历史归档
 
+- [D13 导出重试效果门兼容 L1](GOAL_D13_EXPORT_RETRY_2026-10-17.md)：run1567真实HTTP/MySQL与独立文件/dump消费通过，82普通+1IT；未知错误围栏及夹具预期失败保留，仅切片L1，非整体/L2/L3。
+
 - [D13 正常P5退役有界L1](GOAL_D13_NORMAL_RETIREMENT_2026-10-17.md)：run1564真实P5/Session/生产调度/导出排空、独立JVM/Python及修改后完整普通回归通过；历史产品失败与消费者修正保留，仅切片L1，非D13整体/L2/L3。
 
 - [D13 renderer未确认排空围栏](GOAL_D13_RENDERER_HANDOFF_2026-10-17.md)：run1559定向20项/IT2项及独立消费通过；真实子JVM halt70/后继孤儿拒绝，回执丢失为MODEL。仅该有界L1，正常P5退役另见接续报告，整体组合仍未完成。

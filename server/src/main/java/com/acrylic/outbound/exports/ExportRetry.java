@@ -25,7 +25,7 @@ public class ExportRetry {
     @Transactional
     public View create(RetryRequest request,String requestId) {
         state.lockWritable(request.epoch());
-        jdbc.queryForList("SELECT id FROM app_user WHERE id=? FOR UPDATE",Ids.bytes(request.scope().actor()));
+        jdbc.queryForList("SELECT id FROM app_user WHERE id=? FOR UPDATE",byte[].class,Ids.bytes(request.scope().actor()));
         access.require("order:read",request.scope().warehouse());
         var original=queries.owned(request.scope().actor(),request.scope().warehouse(),request.original());
         var p=queries.payload(original);String key="r08:"+request.scope().actor()+":"+request.key();

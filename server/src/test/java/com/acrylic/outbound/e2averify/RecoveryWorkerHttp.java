@@ -47,6 +47,15 @@ final class RecoveryWorkerHttp {
         return bytes;
     }
 
+    JsonNode retry(String path, String key, int expected) throws Exception {
+        var csrf = get("/auth/csrf", 200).path("data");
+        var bytes = send(builder(path).header(csrf.path("headerName").asText(), csrf.path("token").asText())
+            .header("Content-Type", "application/json").header("Idempotency-Key", key)
+            .header("X-Server-Recovery-Epoch", "1")
+            .POST(HttpRequest.BodyPublishers.ofString("{}")), expected);
+        return SubmissionJson.parse(new String(bytes, StandardCharsets.UTF_8));
+    }
+
     private HttpRequest.Builder builder(String path) {
         return HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + E2aTestPorts.http() + "/api/v1" + path))
             .timeout(Duration.ofSeconds(30));
