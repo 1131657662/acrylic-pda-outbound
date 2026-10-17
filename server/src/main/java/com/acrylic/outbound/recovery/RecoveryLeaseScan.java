@@ -118,7 +118,7 @@ final class RecoveryLeaseScan {
             && !value.has("processFileIdentity") && !value.has("processSha256");
     }
 
-    private static com.fasterxml.jackson.databind.node.ObjectNode readIndex(RecoveryLeaseRoots roots) throws IOException {
+    static com.fasterxml.jackson.databind.node.ObjectNode readIndex(RecoveryLeaseRoots roots) throws IOException {
         var value = RecoveryControlHistory.read(roots.root().resolve("leases").resolve("index.json"));
         fields(value, "formatVersion installationId entries indexTag");
         version(value);

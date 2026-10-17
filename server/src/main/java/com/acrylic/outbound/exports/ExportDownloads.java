@@ -21,7 +21,7 @@ public class ExportDownloads {
     @Transactional
     public Download read(BackgroundJob job,String requestId) {
         var original=queries.payload(job);state.lockWritable(original.epoch());
-        jdbc.queryForList("SELECT id FROM app_user WHERE id=? FOR UPDATE",Ids.bytes(original.scope().actor()));
+        jdbc.queryForList("SELECT id FROM app_user WHERE id=? FOR UPDATE",byte[].class,Ids.bytes(original.scope().actor()));
         var actor=access.require("order:read",original.scope().warehouse());
         var current=queries.owned(actor.id(),original.scope().warehouse(),job.id());
         var p=queries.payload(current);

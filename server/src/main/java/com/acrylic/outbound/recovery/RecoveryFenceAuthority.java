@@ -36,7 +36,7 @@ public final class RecoveryFenceAuthority implements RecoveryEffectGate.Authorit
         });
     }
 
-    /** Offline operation registration only; no request integration or retirement is provided. */
+    /** Publishes one operation owned by this process. */
     public synchronized UUID registerOperation() throws SQLException {
         checkEffect();
         var result = new UUID[1];
@@ -45,6 +45,25 @@ public final class RecoveryFenceAuthority implements RecoveryEffectGate.Authorit
             return RecoveryLeaseScan.publish(roots, process);
         }));
         operations.add(result[0]); return result[0];
+    }
+
+    /** Only this live process may retire its own confirmed operation, through the same P3 authority. */
+    public synchronized boolean retireOperation(UUID operation) throws SQLException {
+        if (!operations.contains(operation)) throw new SQLException("RECOVERY_LEASE_OUTSTANDING");
+        var record = new Path[1];
+        guarded(() -> coordinated(() -> {
+            signal.requireLocal(); signal.probe(roots); RecoveryLeaseScan.check(roots);
+            record[0] = RecoveryLeaseRetirement.decide(roots, process, operation);
+            // Cleanup is still serialized with observers. Its failure follows confirmed retirement.
+            try { RecoveryLeaseRetirement.finish(record[0]); }
+            catch (IOException | RuntimeException error) {
+                try { RecoveryLeaseRetirement.finish(record[0]); }
+                catch (IOException | RuntimeException again) { fenceLocal(); RecoveryFenceAudit.event("CONTROL_RETIREMENT_CLEANUP_UNCONFIRMED", again); }
+            }
+            return null;
+        }));
+        operations.remove(operation);
+        return !localFenced;
     }
 
     @Override public void fenceLocal() {
@@ -98,7 +117,8 @@ public final class RecoveryFenceAuthority implements RecoveryEffectGate.Authorit
 
     private <T> T coordinated(RecoveryControlLock.Read<T> work) throws IOException {
         roots.verify(); // Includes native coordinator identity before every acquisition.
-        return RecoveryControlLock.locked(roots.authorityRoot(), () -> { roots.verify(); return work.run(); });
+        return RecoveryControlLock.lockedWaiting(roots.authorityRoot(), RecoveryOperationRegistry.ADMISSION_WAIT_MILLIS,
+            () -> { roots.verify(); return work.run(); });
     }
     @FunctionalInterface private interface Work { void run() throws IOException; }
     private void guarded(Work work) throws SQLException {

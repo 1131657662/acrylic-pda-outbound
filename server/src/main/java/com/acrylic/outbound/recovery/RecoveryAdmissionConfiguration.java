@@ -65,10 +65,8 @@ public class RecoveryAdmissionConfiguration {
             ObjectProvider<RecoveryFenceAuthority> authority) {
         // The channel is resolved lazily at admission time: the authority is ordered after the
         // initialization window, so resolving it here would close a cycle through that window.
-        return new RecoveryOperationRegistry(settings.location(), settings.checkpointPath(), () -> {
-            var fence = authority.getIfAvailable();
-            return fence == null ? null : fence.registerOperation();
-        });
+        return new RecoveryOperationRegistry(settings.location(), settings.checkpointPath(),
+            new RecoveryAuthorityLeaseChannel(authority));
     }
 
     /**

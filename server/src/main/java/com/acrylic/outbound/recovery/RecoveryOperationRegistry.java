@@ -63,6 +63,19 @@ public final class RecoveryOperationRegistry {
     @FunctionalInterface
     public interface LeaseChannel {
         UUID publish() throws java.sql.SQLException;
+        default boolean retire(UUID operation) throws java.sql.SQLException {
+            throw new java.sql.SQLException("CONTROL_RETIREMENT_CHANNEL_REQUIRED");
+        }
+        default void unknown() { }
+        default void fenceLocal() { }
+    }
+
+    boolean retirePublished(UUID operation) throws java.sql.SQLException { return leases.retire(operation); }
+    void retirementUnknown() { if (leases != null) leases.unknown(); }
+    void retirementFenceLocal() { if (leases != null) leases.fenceLocal(); }
+
+    synchronized boolean hasBindings(RecoveryOperationLease lease) {
+        return bindings.values().stream().anyMatch(held -> held.containsKey(lease.token().operationId()));
     }
 
     /** The authority identity this instance was started on; every later load must still match it. */

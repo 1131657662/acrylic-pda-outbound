@@ -33,7 +33,7 @@ public class ExportProducer {
             throw new BusinessException(400,"EXPORT_RANGE_INVALID","单订单与汇总范围不匹配");
         ExportResultSelection.validate(request);
         state.lockWritable(request.epoch());
-        jdbc.queryForList("SELECT id FROM app_user WHERE id=? FOR UPDATE",Ids.bytes(request.scope().actor()));
+        jdbc.queryForList("SELECT id FROM app_user WHERE id=? FOR UPDATE",byte[].class,Ids.bytes(request.scope().actor()));
         access.require("order:read",request.scope().warehouse());
         String key="r08:"+request.scope().actor()+":"+request.key();
         var existing=jobs.findByDedupeKey(key);

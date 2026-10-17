@@ -12,6 +12,7 @@ final class RecoveryWriterLease implements AutoCloseable {
     private final String identity;
     private final Held held;
     private boolean closed;
+    private boolean referenceDropped;
 
     private RecoveryWriterLease(String identity, Held held) { this.identity = identity; this.held = held; }
 
@@ -60,12 +61,15 @@ final class RecoveryWriterLease implements AutoCloseable {
     @Override public void close() throws IOException {
         synchronized (RecoveryWriterLease.class) {
             if (closed) return;
-            closed = true;
             if (held.poisoned) return;
-            if (--held.references != 0) return;
-            // Leave a poisoned entry if release/close cannot be confirmed; never admit a second descriptor.
-            try { held.lock.release(); } finally { held.channel.close(); }
+            if (!referenceDropped) { held.references--; referenceDropped = true; }
+            if (held.references != 0) { closed = true; return; }
+            // Keep the descriptor registered until release and channel close are both confirmed.
+            if (held.lock.isValid()) held.lock.release();
+            held.channel.close();
+            require(!held.lock.isValid() && !held.channel.isOpen(), "CONTROL_WRITER_RELEASE_UNCONFIRMED");
             HELD.remove(identity);
+            closed = true;
         }
     }
 
@@ -74,14 +78,23 @@ final class RecoveryWriterLease implements AutoCloseable {
      * connection can keep the shared writer lease while each borrowed connection releases its own.
      * Refused once this handle was released or the descriptor was poisoned.
      */
-    synchronized RecoveryWriterLease reference() {
-        require(!closed && held.lock.isValid() && HELD.get(identity) == held, "CONTROL_WRITER_LOCK_REPLACED");
-        require(!held.poisoned, "CONTROL_WRITERS_ACTIVE");
-        held.references++;
-        return new RecoveryWriterLease(identity, held);
+    RecoveryWriterLease reference() {
+        synchronized (RecoveryWriterLease.class) {
+            require(!closed && !referenceDropped && held.lock.isValid() && HELD.get(identity) == held,
+                "CONTROL_WRITER_LOCK_REPLACED");
+            require(!held.poisoned, "CONTROL_WRITERS_ACTIVE");
+            held.references++;
+            return new RecoveryWriterLease(identity, held);
+        }
     }
 
     void poison() { synchronized (RecoveryWriterLease.class) { held.poisoned = true; } }
+
+    boolean confirmed() {
+        synchronized (RecoveryWriterLease.class) {
+            return !closed && !held.poisoned && held.lock.isValid() && HELD.get(identity) == held;
+        }
+    }
 
     private static final class Held {
         final FileChannel channel;

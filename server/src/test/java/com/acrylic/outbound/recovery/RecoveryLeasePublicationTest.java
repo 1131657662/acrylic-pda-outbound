@@ -27,11 +27,9 @@ class RecoveryLeasePublicationTest {
         assertThat(published).as("one record per admitted root").hasSize(1);
         assertThat(root.leaseId()).isEqualTo(published.getFirst());
         assertThat(registry.liveRoots()).isEqualTo(1);
-        // Closing the root does not remove the record: lease records only grow until a later process's
-        // orphan scan retires the ones whose owner is gone.
         root.close();
-        assertThat(published).hasSize(1);
-        assertThat(root.leaseId()).isEqualTo(published.getFirst());
+        assertThat(published).as("normal close retires the published record").isEmpty();
+        assertThat(registry.liveRoots()).isZero();
     }
 
     @Test void aRefusedPublicationFailsTheAdmissionAndLeavesNoRoot() throws Exception {
@@ -137,10 +135,9 @@ class RecoveryLeasePublicationTest {
 
     private static RecoveryOperationRegistry registry(List<UUID> published) throws Exception {
         var fixture = control();
-        return new RecoveryOperationRegistry(fixture.location(), fixture.checkpoint, () -> {
-            UUID id = UUID.randomUUID();
-            published.add(id);
-            return id;
+        return new RecoveryOperationRegistry(fixture.location(), fixture.checkpoint, new RecoveryOperationRegistry.LeaseChannel() {
+            public UUID publish() { UUID id = UUID.randomUUID(); published.add(id); return id; }
+            public boolean retire(UUID id) { assertThat(published.remove(id)).isTrue(); return true; }
         });
     }
 

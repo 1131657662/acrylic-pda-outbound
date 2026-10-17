@@ -98,7 +98,7 @@ public class BackgroundJobLeases {
         // Acquire the row first: MySQL UTC_TIMESTAMP is fixed at statement start, before any lock wait.
         return !jdbc.queryForList("""
             SELECT id FROM background_job WHERE id=? AND status='RUNNING' AND lease_owner=? AND lease_token=? AND recovery_epoch=? FOR UPDATE
-            """, Ids.bytes(job.id()), job.leaseOwner(), Ids.bytes(job.leaseToken()), job.recoveryEpoch()).isEmpty();
+            """, byte[].class, Ids.bytes(job.id()), job.leaseOwner(), Ids.bytes(job.leaseToken()), job.recoveryEpoch()).isEmpty();
     }
 
     private Object[] parameters(Set<String> types, String epoch) {

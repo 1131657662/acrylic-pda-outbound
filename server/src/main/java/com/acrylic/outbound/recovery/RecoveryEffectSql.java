@@ -8,11 +8,8 @@ import java.util.regex.Pattern;
 final class RecoveryEffectSql {
     enum Kind { READ, SOURCE_READ, WRITE, COMMIT, ROLLBACK, BEGIN, AUTO_ON, DDL }
     private static final String ID = "(?:[A-Z_][A-Z_0-9]*|`[A-Z_][A-Z_0-9]*`)(?:\\.(?:[A-Z_][A-Z_0-9]*|`[A-Z_][A-Z_0-9]*`))?";
-    private static final String COLUMN = "(?:" + ID + "|\\*|COUNT\\s*\\(\\s*\\*\\s*\\))";
     private static final String VALUE = "(?:\\?|[0-9]+|NULL|TRUE|FALSE)";
-    private static final String WHERE = "(?: WHERE " + ID + "\\s*(?:=|<>|!=|<=|>=|<|>)\\s*" + VALUE + ")?";
-    private static final Pattern SELECT = Pattern.compile("SELECT (?:" + VALUE + "|" + COLUMN
-        + "(?:\\s*,\\s*" + COLUMN + ")* FROM " + ID + WHERE + ")");
+    private static final Pattern CONSTANT = Pattern.compile("SELECT " + VALUE);
 
     private RecoveryEffectSql() { }
 
@@ -28,26 +25,29 @@ final class RecoveryEffectSql {
 
     private static Kind statement(String text) throws SQLException {
         // A relation can be a view invoking a mutating stored function. Syntax is not read-only proof.
-        if (SELECT.matcher(text).matches()) return text.contains(" FROM ") ? Kind.SOURCE_READ : Kind.READ;
+        if (CONSTANT.matcher(text).matches()) return Kind.READ;
+        if (text.startsWith("SELECT ")) { RecoverySelectSql.require(text); return Kind.SOURCE_READ; }
         if (text.matches("SHOW (?:TABLES|DATABASES)")) return Kind.READ;
         if (text.matches("(?:DESC|DESCRIBE) " + ID)) return Kind.SOURCE_READ;
-        if (text.startsWith("EXPLAIN ") && SELECT.matcher(text.substring(8)).matches()) return Kind.SOURCE_READ;
+        if (text.startsWith("EXPLAIN SELECT ")) { RecoverySelectSql.require(text.substring(8)); return Kind.SOURCE_READ; }
         if (text.matches("(?:INSERT INTO|REPLACE INTO|MERGE INTO|DELETE FROM|UPDATE) " + ID + "(?:[ (].*)?"))
             return Kind.WRITE;
         if (text.matches("(?:CREATE TABLE|ALTER TABLE|DROP TABLE|TRUNCATE TABLE) " + ID + "(?:[ (].*)?"))
             return Kind.DDL;
-        // SELECT extensions/functions, WITH, procedural DDL and dialects need a proven grammar first.
+        // WITH, procedural DDL and unrecognised dialects need a proven grammar first.
         throw RecoveryEffectGate.unclassified();
     }
 
     private static String normalise(String sql) throws SQLException {
-        if (sql == null || sql.isBlank()) throw RecoveryEffectGate.unclassified();
+        if (sql == null || sql.isBlank() || sql.length() > 65536) throw RecoveryEffectGate.unclassified();
         if (sql.contains(";") || sql.contains("/*") || sql.contains("--") || sql.contains("#"))
             throw RecoveryEffectGate.unclassified();
         // Backslash/double-quote interpretation depends on server SQL_MODE: do not guess.
         if (sql.contains("\\") || sql.contains("\"") || sql.indexOf('\0') >= 0)
             throw RecoveryEffectGate.unclassified();
         String masked = maskStrings(sql);
+        // Case folding must not turn a Unicode stored-function name into an allowed ASCII builtin.
+        if (masked.chars().anyMatch(ch -> ch > 127)) throw RecoveryEffectGate.unclassified();
         return masked.trim().replaceAll("\\s+", " ").toUpperCase(Locale.ROOT);
     }
 

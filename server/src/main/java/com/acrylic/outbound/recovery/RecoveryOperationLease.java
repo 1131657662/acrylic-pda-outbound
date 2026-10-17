@@ -13,11 +13,8 @@ import static com.acrylic.outbound.recovery.RecoveryControlFormat.require;
  *
  * <p>The phase machine is deliberately small. A root that is asked for retained work after it
  * started releasing refuses it ({@code CONTROL_SUBOPERATION_FORBIDDEN}) and a released root is no
- * longer resolvable from its token ({@code CONTROL_OPERATION_RELEASED}). The full retirement
- * protocol of the design (release ordering, confirmation, quarantine and halt on an unconfirmed
- * release) is not fully implemented here. An explicitly quarantined renderer root retains its
- * poisoned writer reference even when its dispatch owner closes it; ordinary roots drop their own
- * reference when closed.
+ * longer resolvable from its token ({@code CONTROL_OPERATION_RELEASED}). Retirement confirms child
+ * completion and P5 deletion before releasing the writer. Unconfirmed work keeps its poisoned L2.
  */
 public final class RecoveryOperationLease implements AutoCloseable {
     private final RecoveryOperationRegistry registry;
@@ -30,9 +27,7 @@ public final class RecoveryOperationLease implements AutoCloseable {
     private java.util.UUID leaseId;
 
     /**
-     * The P5 lease record this root published, when the cross-process layer is supplied. The record
-     * is <b>not</b> removed when the root closes: per the fence design lease records only grow until
-     * a later process's orphan scan retires the ones whose owner is gone.
+     * The immutable identity of the P5 record published by this root, including after retirement.
      */
     public synchronized java.util.UUID leaseId() { return leaseId; }
 
@@ -97,10 +92,7 @@ public final class RecoveryOperationLease implements AutoCloseable {
     }
 
     /**
-     * Retained sub-operations still open. The design's retirement protocol (§5.6) requires this to be
-     * zero before a root is retired; that protocol (release ordering, confirmation, quarantine and
-     * halt on an unconfirmed release) belongs to a later slice, so {@link #close()} does not enforce
-     * it yet and the count is an observation, not a gate.
+     * Retained sub-operations still open; retirement requires zero and a non-poisoned writer.
      */
     public synchronized int openSubOperations() {
         int total = 0;
@@ -118,7 +110,10 @@ public final class RecoveryOperationLease implements AutoCloseable {
     }
 
     /** Binds this root to the current dispatch of {@code thread}; nested dispatches add depth. */
-    public void bindDispatch(Thread thread) { registry.bindDispatch(thread, this); }
+    public synchronized void bindDispatch(Thread thread) {
+        require(!retired && phase.acceptsNewSubOperations(), "CONTROL_OPERATION_PHASE");
+        registry.bindDispatch(thread, this);
+    }
 
     /** Ends one dispatch of {@code thread}; the binding goes away when its depth reaches zero. */
     public void unbindDispatch(Thread thread) { registry.unbindDispatch(thread, this); }
@@ -135,23 +130,43 @@ public final class RecoveryOperationLease implements AutoCloseable {
     public void unbindAll() { registry.unbindAll(this); }
 
     /**
-     * Ends the root: its token stops resolving, no further work is accepted and its own writer lease
-     * reference is dropped, unless an unconfirmed renderer quarantined it. A quarantined root stays
-     * fenced, registered and poisoned until process isolation. Bindings are cleared by the dispatch
-     * owner (the request destroy path), not here.
+     * Decision failures keep the root/P5/L2 and invoke the original UNKNOWN authority. After P5 is
+     * confirmed retired, a release failure is local fencing only, with one bounded retry.
      */
     @Override
-    public void close() {
-        synchronized (this) {
-            if (retired || quarantined) return;
-            retired = true;
-            phase = RecoveryOperationPhase.RELEASED;
+    public synchronized void close() {
+        if (retired || quarantined) return;
+        boolean cleanupConfirmed;
+        try {
+            phase = RecoveryOperationPhase.RELEASING;
+            require(openSubOperations() == 0 && writer.confirmed(), "CONTROL_OPERATION_OUTCOME_UNCONFIRMED");
+            // Legacy no-P5 adapters preserve the stale-binding observation; serving P5 roots drain it.
+            require(leaseId == null || !registry.hasBindings(this), "CONTROL_OPERATION_BINDINGS_ACTIVE");
+            cleanupConfirmed = leaseId == null || registry.retirePublished(leaseId);
+        } catch (java.sql.SQLException | RuntimeException | Error error) {
+            quarantineUnconfirmed();
+            registry.retirementUnknown();
+            throw new RecoveryControlException("CONTROL_OPERATION_RETIREMENT_UNCONFIRMED", error);
         }
+        retired = true;
+        phase = cleanupConfirmed ? RecoveryOperationPhase.RELEASED : RecoveryOperationPhase.FENCED;
         registry.retired(this);
+        if (!cleanupConfirmed) { writer.poison(); return; }
+        releaseWriter();
+    }
+
+    private void releaseWriter() {
         try {
             writer.close();
-        } catch (java.io.IOException error) {
-            throw new RecoveryControlException("CONTROL_WRITER_RELEASE_UNCONFIRMED", error);
+        } catch (java.io.IOException | RuntimeException | Error first) {
+            try { writer.close(); }
+            catch (java.io.IOException | RuntimeException | Error again) {
+                first.addSuppressed(again);
+                writer.poison(); phase = RecoveryOperationPhase.FENCED;
+                registry.retirementFenceLocal();
+                RecoveryFenceAudit.event("CONTROL_WRITER_RELEASE_UNCONFIRMED", first);
+                throw new RecoveryControlException("CONTROL_WRITER_RELEASE_UNCONFIRMED", first);
+            }
         }
     }
 }

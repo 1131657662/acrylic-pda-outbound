@@ -36,6 +36,7 @@ class E2aAdmittedWorkerExportIT {
             }
         }
         admitted(profile, raw, input);
+        p5(profile, raw, input);
         assertThat(raw.queryForObject("SELECT COUNT(*) FROM recovery_normal_admission", Integer.class)).isZero();
         Files.writeString(profile.attempt.resolve("test-completed.marker"),
             "Default-off and admitted real HTTP/session -> nonweb production scheduler -> renderer/files -> download; "
@@ -45,7 +46,7 @@ class E2aAdmittedWorkerExportIT {
     private static void admitted(E2aCrossSourceProfile profile, JdbcTemplate raw, RecoveryExportInput input) throws Exception {
         var authority = new RecoveryAdmissionEntryFixture(profile.attempt.resolve("worker-authority"));
         assertThat(raw.queryForObject("SELECT COUNT(*) FROM background_job WHERE job_type='REVIEW_REMINDER_SWEEP'", Integer.class)).isZero();
-        try (var web = start(profile, false, authority); var worker = start(profile, true, authority)) {
+        try (var web = start(profile, false, authority.options()); var worker = start(profile, true, authority.options())) {
             assertThat(web.getBeansOfType(CommandOperation.class)).isEmpty();
             assertThat(worker.getBean(javax.sql.DataSource.class)).isInstanceOf(RecoveryRequestAdmittedDataSource.class);
             for (String format : List.of("XLSX", "PDF")) export(profile, raw, input, "admitted", format);
@@ -55,6 +56,17 @@ class E2aAdmittedWorkerExportIT {
             assertThat(http.get("/auth/csrf", 503).path("code").asText()).startsWith("CONTROL_");
             assertThat(web.getBean(RecoveryOperationRegistry.class).liveRoots()).isZero();
         }
+    }
+
+    private static void p5(E2aCrossSourceProfile profile, JdbcTemplate raw, RecoveryExportInput input) throws Exception {
+        var fixture = new RecoveryRetirementApplicationFixture(profile.attempt);
+        try (var web = start(profile, false, fixture.options()); var worker = start(profile, true, fixture.options())) {
+            assertThat(web.getBeansOfType(CommandOperation.class)).isEmpty();
+            for (String format : List.of("XLSX", "PDF")) export(profile, raw, input, "p5", format);
+            assertThat(raw.queryForObject("SELECT COUNT(*) FROM SPRING_SESSION", Integer.class)).isPositive();
+            fixture.drain(web, worker);
+        }
+        fixture.nextProcessStarts();
     }
 
     private static void export(E2aCrossSourceProfile profile, JdbcTemplate raw, RecoveryExportInput input,
@@ -99,16 +111,16 @@ class E2aAdmittedWorkerExportIT {
     }
 
     private static ConfigurableApplicationContext start(E2aCrossSourceProfile profile, boolean worker,
-            RecoveryAdmissionEntryFixture authority) {
+            String[] admission) {
         var options = new ArrayList<String>(List.of("--server.servlet.session.cookie.secure=false",
             "--outbound.exports.sample-data=true", "--outbound.exports.renderer-home="
                 + E2aWorktree.ROOT.resolve("report-rendering/build/install/acrylic-report-rendering"),
             "--outbound.exports.browsers=" + E2aWorktree.ROOT.resolve("report-rendering/build/browsers")));
-        if (authority != null) options.addAll(List.of(authority.options()));
+        if (admission != null) options.addAll(List.of(admission));
         if (worker) options.addAll(List.of("--spring.main.web-application-type=none", "--spring.profiles.active=worker",
             "--outbound.worker.enabled=true", "--outbound.worker.poll-ms=250",
-            "--outbound.worker.reminder-poll-ms=" + (authority == null ? "3600000" : "1000")));
-        var sources = worker && authority != null ? new Class<?>[]{RecoveryWorkerProbe.Configuration.class} : new Class<?>[0];
+            "--outbound.worker.reminder-poll-ms=" + (admission == null ? "3600000" : "1000")));
+        var sources = worker && admission != null ? new Class<?>[]{RecoveryWorkerProbe.Configuration.class} : new Class<?>[0];
         return E2aCrossSourceHttpIT.start(profile, sources, options.toArray(String[]::new));
     }
 }

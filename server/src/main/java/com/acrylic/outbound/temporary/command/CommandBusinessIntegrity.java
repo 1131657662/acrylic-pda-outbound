@@ -189,11 +189,11 @@ public class CommandBusinessIntegrity {
             && success.path("payloadSha256").equals(context.path("receivedPayloadSha256")) && success.path("status").asText().equals("SUCCEEDED")
             && success.path("actualCount").equals(body.path("expectedCount")) && success.path("actualWeightGrams").equals(body.path("expectedWeightGrams"))
             && success.path("inventoryDeducted").equals(body.path("autoDeductInventory")));
-        var row=jdbc.queryForMap("""
+        var row=jdbc.queryForObject("""
             SELECT s.receipt_text,v.header_snapshot,v.actual_count,v.weight_g,v.inventory_deducted
             FROM submission s JOIN order_result_version v ON v.submission_id=s.id AND v.result_version=1
             WHERE s.id=? AND s.status='SUCCEEDED' AND v.order_id=?
-            """,Ids.bytes(uuid(context,"submissionId")),Ids.bytes(uuid(context,"canonicalOrderId")));
+            """,CommandScalarRows.ROWS,Ids.bytes(uuid(context,"submissionId")),Ids.bytes(uuid(context,"canonicalOrderId")));
         CommandErrors.integrity(parse(row.get("receipt_text").toString()).equals(success)
             && parse(row.get("header_snapshot").toString()).equals(success)
             && row.get("actual_count").toString().equals(success.path("actualCount").asText())

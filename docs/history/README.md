@@ -1,6 +1,8 @@
 # 历史归档
 
-- [D13 renderer未确认排空围栏](GOAL_D13_RENDERER_HANDOFF_2026-10-17.md)：run1559定向20项/IT2项及独立消费通过；真实子JVM halt70/后继孤儿拒绝，回执丢失为MODEL。仅有界L1，完整P5退役/组合仍未完成。
+- [D13 正常P5退役有界L1](GOAL_D13_NORMAL_RETIREMENT_2026-10-17.md)：run1564真实P5/Session/生产调度/导出排空、独立JVM/Python及修改后完整普通回归通过；历史产品失败与消费者修正保留，仅切片L1，非D13整体/L2/L3。
+
+- [D13 renderer未确认排空围栏](GOAL_D13_RENDERER_HANDOFF_2026-10-17.md)：run1559定向20项/IT2项及独立消费通过；真实子JVM halt70/后继孤儿拒绝，回执丢失为MODEL。仅该有界L1，正常P5退役另见接续报告，整体组合仍未完成。
 
 - [D13 生产调度恢复准入](GOAL_D13_WORKER_ADMISSION_2026-10-17.md)：run1557 默认关闭/准入后真实HTTP、生产调度、XLSX/PDF及独立Python消费通过；普通失败末SQL回滚/持根阻推进/旧权威拒绝，仍仅有界L1，未确认排空围栏另列。
 
