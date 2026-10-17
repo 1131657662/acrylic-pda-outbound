@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 本会话已按目标文件完成只读接管并继续D01–D18、第8节、O01–O05/U01–U04和UI工作；长期目标仍未complete。取消的换机承接/多跳/接收确认与激活不恢复。
 
 ## Git、写权、输入
-- 固定树D:/acrylic-pda-outbound，codex/development；HEAD/远端/最后推送均为16f6911e73dba039c4f2d12aca0c6c479ba03c12（仅6文档开发备份）；精确Git/远端回执及全部dirty/untracked见`.local/goal-20261017-resume/handoff-final01/`，最终可复制指令见`docs/history/GOAL_E08_D17_UI_CLOSEOUT_HANDOFF_2026-10-17.md`。继承源码、Android/UI、工具、历史文档及server/physical-disposition-last-request.json保留，禁止git add .。
+- 固定树D:/acrylic-pda-outbound，codex/development；HEAD/远端/最后推送均为e8f49e24ce08eb42ab898d4bb621d2630e4f0cd9（`docs: 刷新续作只读切片看板`）；精确Git/远端回执及全部dirty/untracked见`.local/goal-20261017-resume/handoff-final01/`，最终可复制指令见`docs/history/GOAL_E08_D17_UI_CLOSEOUT_HANDOFF_2026-10-17.md`。继承源码、Android/UI、工具、历史文档及server/physical-disposition-last-request.json保留，禁止git add .。
 - 当前写者为本会话 `01a147c5-0495-7703-ba98-2e7637cbc619`，已核对旧写者释放、无其他项目写者/子代理；接管快照为`.local/goal-20261017-resume/resume-20261017-1014/`，登记见`writer-takeover-current.json`。共享MySQL、TemporaryAdjustment1364与ADB仅观察保留，未启动/停止。
 - 全输入5501项见`resume-20261017-0849/input.json`（SHA42d8f5d3febab41ae9e3a1c4104b6d56d2416d0da6aa292f04f049b3a68dacfe）；本段所指resume目录均在`.local/goal-20261017-resume/`。收口/最终全量dirty哈希、补丁与副本分别在`resume-20261017-closeout/`及`handoff-final01/`，替换前旧结论为`docs/history/ORCHESTRATION_STATE_before_final_handoff_20261017.md`。
 
