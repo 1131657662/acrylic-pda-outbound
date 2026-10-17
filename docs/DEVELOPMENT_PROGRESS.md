@@ -598,3 +598,4 @@
 - [D15 旧程序写入→新 worker L1](history/GOAL_D15_OLD_PRODUCER_NEW_WORKER_L1_2026-10-17.md)：run698 完成 `ORIGINAL_CONFIRMED/XLSX`，run700 完成 `CURRENT_EFFECTIVE/XLSX` 的旧 JAR 创建→新 JAR worker→旧/新下载及独立 Python/全表守恒；run699 的消费者口径失败和原件保留。527 个原 InnoDB datadir 文件已缺失，不能写成原字节恢复，非 D15 整体/L2/L3。
 - [D15 旧程序写入→新 worker `SCAN_XLSX` L1](history/GOAL_D15_OLD_PRODUCER_SCAN_XLSX_L1_2026-10-17.md)：run701 完成 `SCAN_XLSX/ORIGINAL_CONFIRMED` 的旧 JAR 创建→新 JAR worker→旧/新下载、独立六列 ZIP/XML 消费及全表/文件守恒；单订单单任务有界候选，不计 D15 整体/L2/L3，多任务/PDF/升级回退仍未验。
 - [D15 旧程序写入→新 worker 双任务 `SCAN_XLSX` L1](history/GOAL_D15_OLD_PRODUCER_SCAN_XLSX_MULTITASK_L1_2026-10-17.md)：run704 完成两个独立任务排队、单新 worker 执行、旧/新各两次下载及独立消费者/全表守恒；run702/703 夹具失败原件保留，仍不计 D15 整体/L2/L3，多订单/PDF/升级回退未验。
+- [D15 旧程序写入→新 worker PDF L1](history/GOAL_D15_OLD_PRODUCER_PDF_L1_2026-10-17.md)：run713 完成单任务、run714 完成双任务 `PDF/ORIGINAL_CONFIRMED` 的旧 JAR 创建、新 JAR worker、旧/新下载、独立 PDF 消费及 180 表/文件守恒；run705–711 失败原件保留。仅隔离 L1，不计 D15 整体/L2/L3，升级回退和现场仍未验。

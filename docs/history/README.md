@@ -22,6 +22,8 @@
 
 - [D15旧程序写入→新worker 双任务 `SCAN_XLSX` L1](GOAL_D15_OLD_PRODUCER_SCAN_XLSX_MULTITASK_L1_2026-10-17.md)：run704 两任务/单worker/四下载和独立消费者通过；run702/703 夹具失败保留，仍为单订单隔离L1，非D15整体/L2/L3。
 
+- [D15旧程序写入→新worker PDF L1](GOAL_D15_OLD_PRODUCER_PDF_L1_2026-10-17.md)：run713 完成单任务、run714 完成双任务旧 JAR 创建→新 JAR worker→旧/新下载、独立 PDF 消费和数据库/文件守恒；run705–711 失败原件保留。仅隔离 L1，不计 D15 整体/L2/L3，升级回退和现场仍未验。
+
 - [D13 恢复 worker、文件与导出 L1](GOAL_D13_RECOVERY_WORKER_FILE_EXPORT_L1_2026-10-17.md)：新隔离 run 684 真实 HTTP 创建、SQL/文件恢复、独立 worker JVM、renderer/XLSX 下载及 Python/Java 只读消费者通过；681–683 失败原件保留。仅有界 L1 开发备份，不计 D13 L2、D18 L3 或总目标。
 
 - [TEMP产品会话与原ID恢复 L1](GOAL_E06_TEMP_REPOSITORY_RESTORE_L1_2026-10-17.md)：真实会话/仓库丢GET响应→UNKNOWN→重开及SQL恢复后原ID查询、73项Python消费通过；仅合成隔离L1开发备份，运行器依赖和历史失败单列，非整体L2/L3。

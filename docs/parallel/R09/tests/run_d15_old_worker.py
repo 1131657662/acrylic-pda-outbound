@@ -63,7 +63,7 @@ def verify(base, queued_facts, worked, stages, options):
         counts = counts | dict(WEB_LOGIN=index, REPORT_EXPORT_DOWNLOADED=index - 1)
         results[label] = checks.conservation(base, facts, options | dict(label=label, logins=index, events=counts))
         assert facts['background_job'] == worked['background_job']
-        results[label]['xlsx'] = checks.workbook(file, payload, artifact)
+        results[label]['artifact'] = checks.workbook(file, payload, artifact)
         assert view['sha256'] == artifact['sha256']
     results['files'] = checks.final_files(payload, artifact, options['job'])
     lab.sql.save('consumer01.json', results)
@@ -84,7 +84,7 @@ def scenario():
     verify(base, queued_facts, worked, stages, dict(identity=identity, reader=reader, job=job))
     lab.sql.save('source667-after.json', lab.fixture.original_files())
     assert json.loads((lab.LAB / 'source667-before.json').read_bytes()) == lab.fixture.original_files()
-    print('Exact database/file and independent XLSX consumers passed', flush=True)
+    print('Exact database/file and independent ' + lab.FORMAT + ' consumers passed', flush=True)
 
 
 def main():
@@ -97,7 +97,7 @@ def main():
     try:
         scenario()
         lab.unchanged(manifest)
-        lab.sql.save('success.json', dict(scope='D15 pinned producer/worker XLSX compatibility',
+        lab.sql.save('success.json', dict(scope='D15 pinned producer/worker ' + lab.FORMAT + ' compatibility',
             producer=lab.PRODUCER, worker='new' if lab.PRODUCER == 'old' else 'old',
             format=lab.FORMAT, basis=lab.BASIS,
             inputsUnchanged=True, sourcePreserved=True, productionDefaultsChanged=False))

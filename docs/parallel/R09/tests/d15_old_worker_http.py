@@ -10,6 +10,14 @@ import uuid
 from d15_old_worker_lab import BASIS, FORMAT, LAB, HTTP, sql
 
 
+def artifact_extension():
+    return 'pdf' if FORMAT == 'PDF' else 'xlsx'
+
+
+def alternate_format():
+    return 'SCAN_XLSX' if FORMAT == 'XLSX' else 'XLSX'
+
+
 class Client:
     def __init__(self, label):
         self.label, self.index = label, 0
@@ -29,7 +37,7 @@ class Client:
         with response:
             raw, code, returned = response.read(), response.code, dict(response.headers)
         name = f'private/{self.label}/{self.index:02}'
-        (LAB / (name + ('.xlsx' if binary else '.json'))).write_bytes(raw)
+        (LAB / (name + ('.' + artifact_extension() if binary else '.json'))).write_bytes(raw)
         sql.save(name + '-http.json', dict(path=path, method=request.get_method(), status=code,
             expected=status, bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest(), responseHeaders=returned,
             requestBodySha256=hashlib.sha256(body).hexdigest() if body else None))
@@ -72,8 +80,7 @@ def enqueue(identity, reader, label='new-queued', result_name='queued-http-resul
     created = client.create(identity, key)['data']
     assert created['status'] == 'PENDING' and created['attempts'] == 0 and not created['downloadable']
     assert client.create(identity, key)['data'] == created
-    alternate = 'SCAN_XLSX' if FORMAT == 'XLSX' else 'XLSX'
-    assert client.create(identity, key, 409, alternate, BASIS)['code'] == 'IDEMPOTENCY_CONFLICT'
+    assert client.create(identity, key, 409, alternate_format(), BASIS)['code'] == 'IDEMPOTENCY_CONFLICT'
     sql.save(result_name, dict(view=created, key=str(key), requests=client.index))
     return uuid.UUID(created['id']), key
 
@@ -87,9 +94,8 @@ def read_completed(label, identity, reader, job, key=None):
     assert hashlib.sha256(body).hexdigest() == view['sha256'] and len(body) == view['bytes']
     if key:
         assert client.create(identity, key)['data'] == view
-        alternate = 'SCAN_XLSX' if FORMAT == 'XLSX' else 'XLSX'
-        assert client.create(identity, key, 409, alternate, BASIS)['code'] == 'IDEMPOTENCY_CONFLICT'
-    target = LAB / (label + '.xlsx')
+        assert client.create(identity, key, 409, alternate_format(), BASIS)['code'] == 'IDEMPOTENCY_CONFLICT'
+    target = LAB / (label + '.' + artifact_extension())
     target.write_bytes(body)
     sql.save(label + '-result.json', dict(view=view, requests=client.index, sha256=sql.digest(target)))
     return target, view

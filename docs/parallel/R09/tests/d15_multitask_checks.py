@@ -3,8 +3,8 @@ from collections import Counter
 import json
 import uuid
 
-from d15_old_worker_checks import added, authentication, decoded, workbook
-from d15_old_worker_lab import LAB, fixture
+from d15_old_worker_checks import added, authentication, decoded, renderer_sidecars, workbook
+from d15_old_worker_lab import FORMAT, LAB, fixture
 
 
 def events(before, after, reader, identity, jobs, counts):
@@ -74,8 +74,12 @@ def files(before, after, jobs, artifacts):
                 for payload, _ in artifacts.values()}
     for job, (_, artifact) in artifacts.items():
         prefix = f'storage/exports/attempts/{job}/{artifact["token"]}/'
-        expected.update({prefix + 'report.xlsx', prefix + 'renderer.log'})
-        assert current[prefix + 'report.xlsx']['sha256'] == artifact['sha256']
+        extension = 'pdf' if FORMAT == 'PDF' else 'xlsx'
+        expected.update({prefix + 'report.' + extension, prefix + 'renderer.log'})
+        expected.update(renderer_sidecars(prefix))
+        assert current[prefix + 'report.' + extension]['sha256'] == artifact['sha256']
+        for sidecar in renderer_sidecars(prefix):
+            assert current[sidecar]['bytes'] > 0
         assert b'Exception' not in (LAB / (prefix + 'renderer.log')).read_bytes()
     assert new == expected
 

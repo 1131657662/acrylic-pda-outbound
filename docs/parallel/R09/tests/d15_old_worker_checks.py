@@ -109,9 +109,18 @@ def workbook(path, payload, artifact):
 def consumer_source():
     if FORMAT == 'SCAN_XLSX':
         return ROOT / 'docs/parallel/R09/tests/d15_scan_xlsx_consumer.py'
+    if FORMAT == 'PDF':
+        return ROOT / 'docs/parallel/R09/tests/d15_pdf_consumer.py'
     if BASIS == 'CURRENT_EFFECTIVE':
         return ROOT / 'docs/parallel/R09/tests/d15_current_effective_xlsx_consumer.py'
     return ROOT / '.local/goal-20261016/d15-restored-worker01/xlsx_readback01.py'
+
+
+def renderer_sidecars(prefix):
+    if FORMAT != 'PDF':
+        return set()
+    return {prefix + '%SystemDrive%/ProgramData/SogouInput/Components/Picface/Cloud/' + name
+            for name in ('sgim_picface_cloud.bin', 'sgim_picface_cloud_bak.bin')}
 
 
 def final_files(payload, artifact, job):
@@ -119,11 +128,15 @@ def final_files(payload, artifact, job):
     current = fixture.files()
     new = set(current) - set(old)
     prefix = f'storage/exports/attempts/{job}/{artifact["token"]}/'
+    extension = 'pdf' if FORMAT == 'PDF' else 'xlsx'
     expected = {'storage/exports/snapshots/' + payload['snapshotHash'] + '.json',
-                prefix + 'report.xlsx', prefix + 'renderer.log'}
+                prefix + 'report.' + extension, prefix + 'renderer.log'}
+    expected.update(renderer_sidecars(prefix))
     assert new == expected, new
-    assert current[prefix + 'report.xlsx']['sha256'] == artifact['sha256']
+    assert current[prefix + 'report.' + extension]['sha256'] == artifact['sha256']
+    for sidecar in renderer_sidecars(prefix):
+        assert current[sidecar]['bytes'] > 0
     log = (LAB / prefix / 'renderer.log').read_bytes()
     assert b'Exception' not in log and b'ERROR' not in log
-    assert b'report.xlsx / SOURCE_SNAPSHOT' in log
+    assert ('report.' + extension + ' / SOURCE_SNAPSHOT').encode() in log
     return dict(added={name: current[name] for name in sorted(new)}, originalFiles=len(old))

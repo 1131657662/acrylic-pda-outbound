@@ -4,7 +4,7 @@ import json
 import subprocess
 import time
 
-from d15_old_worker_lab import LAB, PORT, HTTP, DATABASE, USER, RENDERER, sql, runtime
+from d15_old_worker_lab import BROWSERS, LAB, PORT, HTTP, DATABASE, USER, RENDERER, sql, runtime
 
 JAVA = 'C:/Program Files/Java/jdk-21.0.11/bin/java.exe'
 
@@ -20,6 +20,7 @@ def start(jar, label, worker=False):
             '--outbound.bootstrap.enabled=false', '--spring.session.jdbc.cleanup-cron=-',
             '--server.servlet.session.cookie.secure=false',
             '--outbound.exports.renderer-home=' + str(RENDERER),
+            '--outbound.exports.browsers=' + str(BROWSERS),
             '--outbound.signing.private-key=' + str(LAB / 'private/server-private.der'),
             '--outbound.signing.public-key=' + str(LAB / 'private/server-public.der')]
     args += (['--spring.profiles.active=worker', '--spring.main.web-application-type=none',

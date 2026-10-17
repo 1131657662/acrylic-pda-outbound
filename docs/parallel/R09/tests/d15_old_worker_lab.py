@@ -17,7 +17,7 @@ FORMAT = os.environ.get('D15_WORKER_FORMAT', 'XLSX')
 BASIS = os.environ.get('D15_WORKER_BASIS', 'ORIGINAL_CONFIRMED')
 assert 600 <= RUN <= 999 and 1024 <= PORT <= 65535 and 1024 <= HTTP <= 65533
 assert PORT not in (HTTP, HTTP + 1, HTTP + 2) and PRODUCER in ('old', 'new')
-assert FORMAT in ('XLSX', 'SCAN_XLSX') and BASIS in ('ORIGINAL_CONFIRMED', 'CURRENT_EFFECTIVE')
+assert FORMAT in ('XLSX', 'SCAN_XLSX', 'PDF') and BASIS in ('ORIGINAL_CONFIRMED', 'CURRENT_EFFECTIVE')
 assert FORMAT != 'SCAN_XLSX' or BASIS == 'ORIGINAL_CONFIRMED'
 LAB = ROOT / f'.local/e2a-cross-20260925-{RUN}'
 DATABASE, USER = f'acrylic_e2a_cross_20260925_{RUN}', f'e2a_cross_20260925_{RUN}'
@@ -34,6 +34,7 @@ JARS = dict(new=(ROOT / 'server/build/libs/acrylic-outbound-server-0.1.0.jar',
     old=(ROOT / '.local/goal-20261013/e06-conflict-audit-1535/server.jar',
     'adbd314f0fd619997dea0f16e0de36a963c3650173e991cbcf259ad1ae7184e1'))
 RENDERER = ROOT / 'report-rendering/build/install/acrylic-report-rendering'
+BROWSERS = ROOT / 'report-rendering/build/browsers'
 
 
 def allocation():
@@ -51,9 +52,10 @@ def allocation():
     for path, expected in JARS.values():
         assert sql.digest(path) == expected, str(path)
     assert RENDERER.is_dir() and len(list((RENDERER / 'lib').glob('*.jar'))) == 29
+    assert BROWSERS.is_dir() and (BROWSERS / 'chromium-1187').is_dir()
     return dict(worktrees=trees, ports=[PORT, HTTP, HTTP + 1, HTTP + 2], producer=PRODUCER,
                 format=FORMAT, basis=BASIS,
-                disks=disks, estimatedGrowthBytes=1 << 30, exclusiveBind=True)
+                disks=disks, browsers=str(BROWSERS), estimatedGrowthBytes=1 << 30, exclusiveBind=True)
 
 
 def inputs():
