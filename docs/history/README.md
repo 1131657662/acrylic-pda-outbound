@@ -1,5 +1,7 @@
 # 历史归档
 
+- [D13 生产调度恢复准入](GOAL_D13_WORKER_ADMISSION_2026-10-17.md)：run1557 默认关闭/准入后真实HTTP、生产调度、XLSX/PDF及独立Python消费通过；普通失败末SQL回滚/持根阻推进/旧权威拒绝，仍仅有界L1，未确认排空围栏另列。
+
 - [D15 非空升级/程序回退/升级前备份恢复组合](GOAL_D15_UPGRADE_ROLLBACK_COMBINATION_2026-10-17.md)：run1554 同一候选七个独立 JAR JVM、56次真实 HTTP、非空升级、原备份恢复、认证增量及独立 Python/dump 消费通过；失败与清理证据保留，仅有界组合开发备份，非D15整体/E07完整L2/D18 L3。
 
 - [E06/D12 TEMP 仓库恢复 L2 候选](GOAL_E06_D12_TEMP_REPOSITORY_L2_ACCEPTANCE_2026-10-17.md)：run 692 的真实隔离 HTTP/MySQL、非空迁移、Android 两阶段产品会话、丢响应后的 `RESULT_UNKNOWN` 与原 ID 恢复、Room/SQL/文件/JWS 守恒及独立 Python 75 项消费通过；run 691 端口夹具失败原件保留。Chrome 对无 Web/UI 入口路径不适用；仅局部候选，不计 E06/D12/D17 完整 L2、D18 L3 或总目标。

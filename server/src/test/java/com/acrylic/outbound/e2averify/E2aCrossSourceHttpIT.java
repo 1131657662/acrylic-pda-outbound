@@ -41,7 +41,7 @@ class E2aCrossSourceHttpIT {
     static ConfigurableApplicationContext start(E2aCrossSourceProfile profile,Class<?>[] sources,String... overrides) {
         var options=new java.util.LinkedHashMap<String,String>();
         java.util.stream.Stream.concat(java.util.stream.Stream.of(
-            "--server.address=127.0.0.1", "--server.port=19434", "--spring.flyway.enabled=false",
+            "--server.address=127.0.0.1", "--server.port=" + E2aTestPorts.http(), "--spring.flyway.enabled=false",
             "--spring.datasource.url=" + profile.url, "--spring.datasource.username=" + profile.user,
             "--spring.datasource.password=" + System.getenv("E2A_CROSS_PASSWORD"),
             "--outbound.storage=" + profile.attempt.resolve("storage"),
@@ -59,6 +59,6 @@ class E2aCrossSourceHttpIT {
     }
 
     private static void requireHttpPortFree() throws Exception {
-        try (var socket = new ServerSocket()) { socket.bind(new InetSocketAddress("127.0.0.1", 19434)); }
+        try (var socket = new ServerSocket()) { socket.bind(new InetSocketAddress("127.0.0.1", E2aTestPorts.http())); }
     }
 }

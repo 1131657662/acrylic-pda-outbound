@@ -42,4 +42,7 @@ public final class RecoveryAdmissionEntryFixture {
 
     /** The independent writer must not be able to advance while the entry holds the lease. */
     void assertIndependentWriterBlocked() throws Exception { control.assertBlocked(); }
+
+    /** Independent control advance after the scheduler has drained; old instances must refuse. */
+    void advanceWorkerAuthority() throws Exception { control.assertAdvanced(); }
 }

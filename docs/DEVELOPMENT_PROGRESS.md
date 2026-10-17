@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [D13 生产调度恢复准入](history/GOAL_D13_WORKER_ADMISSION_2026-10-17.md)：run1557 默认关闭/准入后真实HTTP、生产调度、XLSX/PDF及独立Python消费通过；普通失败末SQL回滚/持根阻推进/旧权威拒绝，仍仅有界L1，未确认排空围栏另列。
+
 - [D15 非空升级/程序回退/升级前备份恢复组合](history/GOAL_D15_UPGRADE_ROLLBACK_COMBINATION_2026-10-17.md)：run1554 同一隔离输入七个 JAR JVM/56次真实 HTTP、非空迁移、空伴随恢复、精确认证增量和 Python 原文/dump 消费通过。1552/1553及consumer01失败保留；仅有界组合开发备份，非D15整体/E07完整L2/D18 L3。
 
 - [E06/D12 TEMP 仓库恢复 L2 候选](history/GOAL_E06_D12_TEMP_REPOSITORY_L2_ACCEPTANCE_2026-10-17.md)：run 692 真实隔离 HTTP/MySQL、非空 Flyway、Android 两阶段产品会话、丢响应 `RESULT_UNKNOWN`→原 ID `SYNCED`、SQL/文件/JWS/Room 守恒及独立 Python 75 项消费通过；run 691 固定端口夹具失败原件保留。Chrome 对该无 Web/UI 入口路径不适用；仅局部候选，不计 E06/D12/D17 完整 L2、D18 L3 或总目标。
