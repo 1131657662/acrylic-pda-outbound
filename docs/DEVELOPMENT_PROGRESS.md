@@ -1,5 +1,6 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- [D13 原件中转收存文件入口 L1](history/GOAL_D13_RELAY_FILE_ENTRY_2026-10-17.md)：1571普通89项+真实IT1项、75 HTTP/6 ZIP签名及原下载/SQL/P5独立消费通过；仅原件收存、不新增提交账务，非整体/L2/L3。
 - [D13 库存文件入口 L1](history/GOAL_D13_IMPORT_FILE_ENTRY_2026-10-17.md)：run1569真实multipart/非空迁移/权限/幂等/并发/末SQL回滚/锁后撤权、原生writer锁及Python原HTTP/文件/dump/P5消费通过；1568产品失败保留。仅服务端切片L1，普通完整回归4756项/零失败错误/19条件跳过，非D13整体/L2/L3。
 - [D13 导出重试效果门兼容 L1](history/GOAL_D13_EXPORT_RETRY_2026-10-17.md)：run1567普通82项/IT1项、default-off/P5真实HTTP、并发/末SQL回滚/锁后撤权、10份导出及独立Python消费通过；1565/1566和消费者环境失败保留，仅服务端切片L1，非D13整体/L2/L3。
 

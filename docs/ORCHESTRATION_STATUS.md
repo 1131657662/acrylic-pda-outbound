@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-17
 branch: codex/development
-head: 8b6aab3d
-dirty_entries: 122
+head: 390274a5
+dirty_entries: 118
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 总目标D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计保持active、未完成。取消的换机承接/多跳/接收者确认激活不恢复。
 
 ## Git、写权与保全
-- 固定树D:/acrylic-pda-outbound；codex/development，HEAD及实核远端8b6aab3d0b08916c703bb7e660ec6fbdf64cd88f。导出重试切片已推送，仅有界服务端L1开发备份，不合main、不发布部署。
+- 固定树D:/acrylic-pda-outbound；codex/development，HEAD及实核远端390274a55282f4ee8b26cd1c141dd48316fd2a10。导出重试切片已推送，仅有界服务端L1开发备份，不合main、不发布部署。
 - 唯一写者聊天01a147c5-0495-7703-ba98-2e7637cbc619；list_threads/OS已复核，无其他活动项目写者或子代理。继承WIP、handoff-final01及run03指定失败原件保护，不还原/重排/覆盖。
 - 以下证据短路径位于.local/goal-20261017-resume/。完整inputd13import-failed01.json：5586项/SHAcf4a209139a7a22147626df48c2c89cb4355bff6ca19976af96cecc791ebc129；同号patch、未跟踪副本、ownership、进程/监听/磁盘/远端已保全。后续修复另绑定。
 - 旧看板全文history/ORCHESTRATION_STATE_before_d13_import_20261017.md；前序retirement/retry快照及继承逐路径审计保留。不得以旧快照替代新增改动。
@@ -40,7 +40,11 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 普通完整server test/session91122已exit0：308套件4756项零失败/错误、19条件跳过；原XML/逐套件SHA/skip在d13-import01/server-test01。无项目Java重型任务；保留tmp未清。消费者04全库计数误含旧种子失败后，05按本轮仓库及原ID通过，原失败保留。
 - 1568/1569清理仅认证停机后datadir/binlog：694文件/444713379逻辑bytes；D56101183488→56554676224，实增453492736；C78866210816/E195634057216。cleanup-before/after、逐文件manifest、原dump/XML/HTTP/日志/签名/身份均保留。
 - 提交前完整inputd13import-precommit03.json共5590项/SHA139dd53c38b3ea25b7c19e956251c465c1adda4287cfd6b482fe72395b9886d5及同号patch/未跟踪副本/ownership/进程/监听/磁盘/远端保全；暂存check发现运行器末尾空行，已仅修该格式并另存快照，不重跑业务。
-- 17明确路径拟提交库存入口服务端L1开发备份；提交/推送实际回执和完整输入快照另存，不把文档断点称作已提交。下一步核submission/relay/source-evidence有效入口的调用/既有证据与P5缺口，再推进E06/E07/E08组合；不恢复取消链、不把切片结束记总目标完成。
+- 17明确路径库存入口服务端L1开发备份已提交推送390274a55282f4ee8b26cd1c141dd48316fd2a10，远端实核一致；d13-import01/git-receipt.json及commit/push原回执保留。105项继承未提交状态保留；提交后新断点另存，不称已提交。本轮正在核relay文件入口；submission/source-evidence及E06/E07/E08组合继续。
+- 原件中转下一切片history/GOAL_D13_RELAY_FILE_ENTRY_2026-10-17.md已登记：仅收存合成签名ZIP、无冻结正文/业务处理。run1570及补强后的1571均exit0：89普通+1真实IT零失败错误跳过，认证停机exit0；关闭态有/无权、未知公钥UNVERIFIED/未冻结处理拒绝/截断ZIP、真实并发/末幂等SQL回滚/锁后撤权/P5根/后继通过。
+- inputd13relay-running01.json共5596项/SHAe9fdb41b73b0977266506e92f0307a154363f6c3d3fd42a08c6e75b1d4776a1c，完整patch/未跟踪副本/ownership/环境/远端保全。1571已收口，无项目重型任务；原件/前序失败保持。
+- 原件中转consumer01独立消费75 HTTP/6 ZIP及成员/ECDSA/原下载/dump/P5通过；无新增submission/dispatch/ledger。产品未改，1140相同路径SHA复用4756普通回归/19skip。795路径source-bindings/impact-map及5590项继承保护零意外改动，拟13路径开发备份；仅收存L1。
+- 1570/1571仅停机datadir/binlog清理694文件/444809851逻辑bytes；D56084119552→56537739264实增453619712；C78865981440/E195634057216。逐文件manifest及cleanup前后/输入/命令/依赖/结果保全，原ZIP/签名/HTTP/dump/XML/日志/身份和继承改动未清。下一步submission分块/source-evidence入口。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

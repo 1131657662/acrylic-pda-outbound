@@ -68,6 +68,21 @@ final class RecoveryWorkerHttp {
         return SubmissionJson.parse(new String(bytes, StandardCharsets.UTF_8));
     }
 
+    JsonNode relay(String warehouse, byte[] file, String key, int expected) throws Exception {
+        var csrf = get("/auth/csrf", 200).path("data");
+        byte[] bytes = send(builder("/original-relays?warehouseId=" + warehouse)
+            .header(csrf.path("headerName").asText(), csrf.path("token").asText())
+            .header("Content-Type", "application/zip").header("Idempotency-Key", key)
+            .header("X-Server-Recovery-Epoch", "1").POST(HttpRequest.BodyPublishers.ofByteArray(file)), expected);
+        return SubmissionJson.parse(new String(bytes, StandardCharsets.UTF_8));
+    }
+
+    byte[] relayOriginal(String warehouse, String id, Path target) throws Exception {
+        byte[] bytes = send(builder("/original-relays/" + id + "/original?warehouseId=" + warehouse).GET(), 200);
+        Files.write(target, bytes, StandardOpenOption.CREATE_NEW);
+        return bytes;
+    }
+
     private HttpRequest.Builder builder(String path) {
         return HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + E2aTestPorts.http() + "/api/v1" + path))
             .timeout(Duration.ofSeconds(30));
