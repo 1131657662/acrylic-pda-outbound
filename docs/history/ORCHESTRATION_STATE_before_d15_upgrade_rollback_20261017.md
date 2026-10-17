@@ -1,0 +1,47 @@
+# 开发看板
+
+<!-- CURRENT_STATE_START -->
+> Generated version block omitted from historical narrative; original bytes retained in input snapshot.
+
+本会话已按目标文件完成只读接管并继续D01–D18、第8节、O01–O05/U01–U04和UI工作；长期目标仍未complete。取消的换机承接/多跳/接收确认与激活不恢复。
+
+## Git、写权、输入
+- 固定树D:/acrylic-pda-outbound，codex/development；HEAD/远端/最后推送均为e3cebea70eb89576fc014c20128ea4940f3d273b（`docs: 对齐开发分支交接 SHA`）；精确Git/远端回执及全部dirty/untracked见`.local/goal-20261017-resume/handoff-final01/`，最终可复制指令见`docs/history/GOAL_E08_D17_UI_CLOSEOUT_HANDOFF_2026-10-17.md`。继承源码、Android/UI、工具、历史文档及server/physical-disposition-last-request.json保留，禁止git add .。
+- 当前写者为本会话 `01a147c5-0495-7703-ba98-2e7637cbc619`，已核对旧写者释放、无其他项目写者/子代理；本轮登记见`.local/goal-20261017-resume/resume-20261017-124637/writer-takeover-current.json`，接管快照仍保留于`resume-20261017-1014/`。共享MySQL、TemporaryAdjustment1364与ADB仅观察保留，未启动/停止。
+- 全输入5501项见`resume-20261017-0849/input.json`（SHA42d8f5d3febab41ae9e3a1c4104b6d56d2416d0da6aa292f04f049b3a68dacfe）；本段所指resume目录均在`.local/goal-20261017-resume/`。收口/最终全量dirty哈希、补丁与副本分别在`resume-20261017-closeout/`及`handoff-final01/`，替换前旧结论为`docs/history/ORCHESTRATION_STATE_before_final_handoff_20261017.md`。
+
+## 本轮最小切片：E08 / D17 UI构建和环境收口
+- 接管后的首个有界审计已完成，报告为`history/GOAL_E08_RECOVERED_CONFIRMATION_SCOPE_AUDIT_2026-10-17.md`：recovered-confirmation 的真实POST、确认队列/worker、确认dialog及Android bridge均属于已取消的旧接收者确认/激活链；只读原资料展示和普通阻断导航保留为候选复用，未运行旧run03。
+- 本轮逐路径审计已补充为`history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-17.md`：覆盖worker/dialog/display、Android fixture/device test、bridge及Handover/Sync/Temporary相关路径，绑定源码SHA、调用事实、处置建议和直接验证；确认链不恢复，只读候选保留。
+- 原报告文件名`GOAL_D06_RECOVERED_CONFIRMATION_UI_BUILD_CLOSEOUT_2026-10-17.md`保留，但已更正误映射：现行D06为坏机撤回。worker/dialog/fixture的recovered-confirmation链是否属于仍有效灾后恢复范围未核清，不自动继续旧接收机确认/激活。
+- 只读守卫已落地：RecoveredHandoverCardReader统一返回`RECOVERED_READ`，遗留`RECOVERED_CONFIRM`由ViewModel拒绝，SyncWorker不再恢复旧确认任务，HandoverActivity不再打开确认dialog；历史worker/dialog/fixture/bridge仍保全但无现行入口。
+- 本轮Debug `assembleDebug`、`assembleDebugAndroidTest`、`lintDebug`均通过；定向`RecoveredHandoverCardReaderTest`因Robolectric native SQLite `SQLITE_CANTOPEN`在fixture创建阶段2/2失败，同环境独立`WorkRecoveryTest`亦有1项相同失败。APK和测试APK及原日志保留；未安装、未跑instrumentation/业务UI，UI L1未通过，不计D项整体、E06 L2、D18 L3或总目标。
+- `HANDOVER_BLOCKED` 只读明细收口已完成：`TemporaryDetailsActivity` 成功读取时隐藏取消/调整入口，摘要明确旧冻结原件、接收确认/激活已取消，导出/分页/定位/返回保留；读取异常默认只读。`TemporaryDetailsReaderTest`、`lintDebug`、`assembleDebug`、`assembleDebugAndroidTest` 通过，证据为`.local/goal-20261017-resume/e08-handblocked-readonly-01/`和`history/GOAL_E08_D17_HANDOVER_BLOCKED_READONLY_2026-10-17.md`。
+- `CONTINUATION_BLOCKED` 只读守卫已补齐：`TemporaryDetailsActivity` 将该状态与`HANDOVER_BLOCKED`统一隐藏取消/调整入口，保留导出、分页、定位、重读和返回。`TemporaryDetailsReaderTest`、`lintDebug`、`assembleDebug`、`assembleDebugAndroidTest`均退出0；独立`emulator-5578`上的真实 Espresso 复验为`OK (1 test)`。修复前后本地数据库字节SHA相同，页面证据与失败运行器原件见`.local/goal-20261017-resume/e08-ui-l1-20261017-01/`及`history/GOAL_E08_D17_CONTINUATION_BLOCKED_READONLY_L1_2026-10-17.md`。
+- 本切片 Android UI L1 已完成但仅为合成前驱输入的开发备份；两次`failed to attach`/Launcher ANR运行器失败均保留，处理后第三次通过。未连接共享MySQL、真实HTTP、Chrome、原模拟器或正式身份；不计D17整体、E06 L2、D18 L3或总目标。不得重新启用recovered-confirmation POST、队列、dialog或activation。
+- run03临时目录、Windows quoting、skip-grants无TCP/pipe等准备失败原件与指纹保留。run02 emulator23964/qemu25908及run03 mysqld22920按归属核实后Force停止；不声称SQL优雅shutdown。5580/5581/19534/19535零监听，停机记录为stop-result.json。
+
+## E07/O05 归档恢复候选
+- run695 新隔离输入完成 TEMP/FORMAL 真实 HTTP 生成、独立 Python source/restore 消费、全库/文件恢复、恢复后真实 HTTP 和 11/11 故障回滚；证据为 `docs/history/GOAL_E07_O05_ARCHIVE_RECOVERY_CANDIDATE_2026-10-17.md` 与 `.local/e2a-cross-20260925-695/`。run693/694 的迁移截点/固定端口失败原件继续保留，未重启旧 run。
+- 该结果仅是有界隔离候选：未执行 Android 客户端、Chrome、外置介质取回、真实 PDA/原身份或现场回执；不计 O05/E07 完整 L2、D14/D15 组合、D17 整体或 D18 L3。MySQL 已认证停机，19703–19706 无监听；共享 MySQL/ADB/TemporaryAdjustment1364 未触碰。
+
+## 清理与环境
+- 用户持续清理授权优先于旧开发测试产物一律保留纪律；原文已追加AGENTS.md并同步Git工作流，交接指令逐字保留。每切片/阶段收口先摘要/输入/命令/锁/结果/哈希与无消费者核验，再清可文字化原大文件、已停隔离测试数据和可重建垃圾；不改D16或生产删除政策。
+- 已清run02的default_boot快照、run03测试datadir及派生seed.sql；删除逻辑长度4496529637 bytes，D可用52180439040→56677748736 bytes，卷观测增加4497309696 bytes。清理脚本、逐文件哈希及前后清单为cleanup-run-20261017.ps1、cleanup-20261017-{pre,post}.json；未清原日志/钥/APK/继承改动。
+- 共享MySQL父4632/服务5440，3306/33060，身份未知不连接不停止；原TemporaryAdjustment1364 emulator12912/qemu12108在5564/5565，ADB8500/5037与8792/5040仅观察保留。SDK/工具/Keystore与所有监听/隔离身份、C/D/E精确可用字节和时间见handoff-final01/environment-release.json；旧停机批次与1538/失败库不复用。
+- run695 停机后采样：C可用77822472192、D可用55137726464、E可用195634057216 bytes；19703–19706及候选进程均已清零。独立`emulator-5578`已停止；共享MySQL、ADB和TemporaryAdjustment1364监听保持不变。Gradle/Kotlin daemon仅观察保留。前后环境快照见`handoff-final01/environment-release.json`、`e07-o05-l2-01/candidate695-environment-after.json`及本轮接管记录。
+- 不接原库现网、不合main、不发布部署/Release、不用正式签名、不绕审批。七类生产决定handler/POST/放行/证据写入/关闭及TEMP生产归档保持关闭，localDeletionAllowed=false；合成输入不代原身份/原PDA/现场回执。
+
+## 可复用证据与剩余
+- E06/D12 TEMP仓库恢复局部L2候选已登记为`history/GOAL_E06_D12_TEMP_REPOSITORY_L2_ACCEPTANCE_2026-10-17.md`：run692真实隔离HTTP/MySQL、非空Flyway、Android两阶段产品会话、丢响应`RESULT_UNKNOWN`→原ID`SYNCED`、Room/SQL/文件/JWS守恒和Python75项独立消费通过；run691固定端口夹具失败原件保留，Chrome按无Web/UI入口记不适用。仅局部候选，不计E06/D12/D17完整L2、D18 L3或总目标。
+- D01矩阵`GOAL_D01_REQUIREMENT_EVIDENCE_MATRIX_2026-10-17.md`覆盖D/O/U；原60报告SHA绑定与本轮34报告`handoff-final01/evidence-bindings.json`分别保留。路径+SHA只绑定引用对象，还须核产品输入漂移；不拼接不同输入为最终通过。
+- E06多任务Web正式L1与10-17复核页齐全，1538输入/八日志/347文件保全可复用；源码漂移单列，1539补核不等于E06完整L2。1522/1523后续严格非空/default-off/全表守恒已有补验，不原样重跑。
+- D11 run680导出完整14项L1、D13 run805/806/812受影响L2、D14 run814独立检查点组合、D15 run677旧worker有界L1及D17实际Activity四阶段均有正式报告，按交接逐D索引复用，不从头重复。
+- D15 run698/700/701/704/713/714 补验旧JAR真实HTTP写入→新JAR定时worker→旧/新下载及独立消费者/全表守恒，覆盖`ORIGINAL_CONFIRMED/XLSX`、`CURRENT_EFFECTIVE/XLSX`、`ORIGINAL_CONFIRMED/SCAN_XLSX`与单/双任务`ORIGINAL_CONFIRMED/PDF`；run702/703及run705–711的夹具/消费者失败原件保留。run713/714证据为`history/GOAL_D15_OLD_PRODUCER_PDF_L1_2026-10-17.md`、`.local/e2a-cross-20260925-713/`、`.local/e2a-cross-20260925-714/`和`d15-pdf-l1/run713-result.json`/`run714-result.json`；输入为保留SQL/存储逻辑重建，527个原InnoDB datadir文件已缺失，不能声称604文件原字节恢复。升级/回退完整组合和项目Linux现场未验。D16正常成功目标仍有有效guard、缺可信合法退出依据，不删guard/伪造状态造资格。D13整体、D14–D15完整组合、E06/E07/E08余项、E09统一候选及D18全链L3未完成。
+- 1043/A1.4、Chrome1540工具策略阻断、原资料/旧BCD/原身份/签名/真机/现场/异地/长时限制继续单列；失败计数不清零，无新材料/明确修复假设不机械重试，不绕工具审批。
+
+## 下一动作与分层验证
+接管、范围审计和`HANDOVER_BLOCKED`/`CONTINUATION_BLOCKED`只读明细 Android UI L1 已完成；未启动旧run03。run692已完成E06/D12 TEMP仓库恢复局部L2候选，run695补充E07/O05有界隔离候选，run698/700/701/704/713/714补充D15旧写入→新worker的格式、双任务和单/双任务PDF口径，仍须继续独立范围和统一最终候选；D17整体、E06/E07完整L2、D18全链L3及第8节闸门仍未完成。下一步按输入SHA选择升级回退完整组合或其他独立缺口，保留run702/703/705–711失败原件和环境快照；不得用本候选或历史L1拼接总目标通过。
+<!-- CURRENT_STATE_END -->
+
+> 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。

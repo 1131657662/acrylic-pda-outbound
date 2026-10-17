@@ -69,10 +69,10 @@ final class E2aCrossSourceProfile {
     private E2aCrossSourceProfile(String restart) throws Exception {
         String run = System.getenv("E2A_CROSS_RUN");
         if (run == null || !run.matches("[1-9][0-9]{0,3}")) throw new IllegalStateException("Invalid run allocation");
-        attempt = ROOT.resolve(".local/e2a-cross-20260925-" + run);
-        database = "acrylic_e2a_cross_20260925_" + run;
-        user = "e2a_cross_20260925_" + run;
-        url = "jdbc:mysql://127.0.0.1:19330/" + database
+        attempt = configuredPath("E2A_CROSS_ATTEMPT", ".local/e2a-cross-20260925-" + run);
+        database = configured("E2A_CROSS_DATABASE", "acrylic_e2a_cross_20260925_" + run);
+        user = configured("E2A_CROSS_USER", "e2a_cross_20260925_" + run);
+        url = "jdbc:mysql://127.0.0.1:" + E2aTestPorts.database() + "/" + database
             + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
         require(ROOT.resolve("server").toRealPath().equals(Path.of("").toRealPath()), "Workspace mismatch");
         require(attempt.toRealPath().startsWith(ROOT.toRealPath()), "Attempt escapes workspace");
@@ -131,9 +131,18 @@ final class E2aCrossSourceProfile {
         require(expected.equalsIgnoreCase(actual), "Datadir mismatch");
         require(database.equals(jdbc.queryForObject("SELECT DATABASE()", String.class)), "Schema mismatch");
         require((user + "@127.0.0.1").equals(jdbc.queryForObject("SELECT CURRENT_USER()", String.class)), "User mismatch");
-        require(jdbc.queryForObject("SELECT @@port", Integer.class) == 19330, "Port mismatch");
+        require(jdbc.queryForObject("SELECT @@port", Integer.class) == E2aTestPorts.database(), "Port mismatch");
         require(jdbc.queryForObject("SELECT @@log_bin", Integer.class) == 1, "Binlog must remain enabled");
         return jdbc;
+    }
+
+    private static String configured(String name, String fallback) {
+        String value = System.getenv(name);
+        return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private static Path configuredPath(String name, String fallback) {
+        return ROOT.resolve(configured(name, fallback)).toAbsolutePath().normalize();
     }
 
     private void requireCompletedPhysicalReview(String run) throws Exception {

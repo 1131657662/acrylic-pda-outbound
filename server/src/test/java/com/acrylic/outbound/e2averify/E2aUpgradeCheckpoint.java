@@ -82,7 +82,7 @@ final class E2aUpgradeCheckpoint implements AutoCloseable {
     private void requireEmptyTarget(JdbcTemplate target) {
         assertThat(target.queryForObject("SELECT DATABASE()", String.class)).isEqualTo(profile.database + "_restore");
         assertThat(target.queryForObject("SELECT CURRENT_USER()", String.class)).isEqualTo(profile.user + "@127.0.0.1");
-        assertThat(target.queryForObject("SELECT @@port", Integer.class)).isEqualTo(19330);
+        assertThat(target.queryForObject("SELECT @@port", Integer.class)).isEqualTo(E2aTestPorts.database());
         assertThat(Path.of(target.queryForObject("SELECT @@datadir", String.class)).toAbsolutePath().normalize())
             .isEqualTo(profile.attempt.resolve("data").toAbsolutePath().normalize());
         assertThat(target.queryForList("SHOW TABLES")).as("restore target must be empty").isEmpty();
@@ -104,7 +104,8 @@ final class E2aUpgradeCheckpoint implements AutoCloseable {
 
     private List<String> command(String executable) {
         return new ArrayList<>(List.of("C:/Program Files/MySQL/MySQL Server 8.0/bin/" + executable + ".exe",
-            "--defaults-file=" + profile.attempt.resolve("private/client.cnf"), "--protocol=TCP", "--host=127.0.0.1", "--port=19330"));
+            "--defaults-file=" + profile.attempt.resolve("private/client.cnf"), "--protocol=TCP", "--host=127.0.0.1",
+            "--port=" + E2aTestPorts.database()));
     }
 
     private void run(List<String> command, Path output, Path input) throws Exception {
