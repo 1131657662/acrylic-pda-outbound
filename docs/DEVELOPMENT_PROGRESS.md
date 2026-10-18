@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- 2026-10-18：新增 [E07/D06-D07 撤回重发消费者组合（run902）](history/GOAL_E07_D06_D07_CONSUMER_COMBINATION_RUN902_2026-10-18.md)。新隔离 attempt 完成非空迁移、真实 HTTP/MySQL、Pixel_6 emulator 四条 Android、Python 只读消费者和 Chrome 两项；合成身份仍不计 D06/D07 L2、E07/D17 整体、E06/E08 L2、D18 L3 或总目标。
+
 - 2026-10-18：新增 [E08/O05 外置保管边界复核](history/GOAL_E08_O05_EXTERNAL_CUSTODY_BOUNDARY_2026-10-18.md)。逐路径绑定 M71 SAF/ADB 回读、同机加密副本、XLSX 电脑消费者及 recovered-confirmation 取消范围；`externalStorageVerified=false`、`businessReceiptVerified=false`、`localDeletionAllowed=false` 保持，外控介质/独立保管方/真实回执缺口未关闭，不计 O05、D16、D17、E06/E07/E08 L2 或 D18 L3。
 
 - 2026-10-18：新增 [E08/O02 电脑核验与 XLSX 转换候选（run08）](history/GOAL_E08_O02_COMPUTER_XLSX_RUN08_2026-10-18.md)。对 Android 生成的合成应急包实际解密、包外信任校验、XLSX 导出、逐值回读和 PNG 预览；5 个工作表无公式且全部匹配。CLI 交互入口的管道输入失败及转换器失败半目录均保全；不覆盖真实 Excel、MTP/OTG、外置介质、真实身份/回执或 O02/O05、D18 L3。

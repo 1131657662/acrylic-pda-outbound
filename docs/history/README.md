@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E07/D06-D07 撤回重发消费者组合（run902）](GOAL_E07_D06_D07_CONSUMER_COMBINATION_RUN902_2026-10-18.md)：全新隔离非空迁移、真实 HTTP/MySQL、Pixel_6 emulator 四条 Android、Python 只读消费者和 Chrome 两项通过；输入身份为合成事实，不计 D06/D07 L2、E07 整体、D17、E06/E08 L2 或 D18 L3。
+
 - [E08/O05 外置保管边界复核](GOAL_E08_O05_EXTERNAL_CUSTODY_BOUNDARY_2026-10-18.md)：逐路径复核 M71 SAF/ADB 回读、同机加密副本、XLSX 消费和取消范围 WIP；外置介质、独立保管方、真实身份与业务回执仍缺，拒绝条件保全，不计 O05 整体或任何 L2/L3。
 
 - [E08/O02 电脑核验与 XLSX 转换候选（run08）](GOAL_E08_O02_COMPUTER_XLSX_RUN08_2026-10-18.md)：合成应急包实际解密、包外信任校验、XLSX 导出、逐值回读和 PNG 预览通过；CLI 管道入口及转换失败半目录保全，不计真实 Excel、外置介质、O02/O05 整体或任何 L2/L3。
