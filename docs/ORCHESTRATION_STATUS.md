@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-18
 branch: codex/development
-head: e2929be2
+head: e3f8167a
 dirty_entries: 169
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 总目标D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计保持active、未完成。取消的换机承接/多跳/接收者确认激活不恢复。
 
 ## Git、写权与保全
-- 固定树D:/acrylic-pda-outbound；codex/development，HEAD/远端均为 `e2929be2`（完整 SHA 由事实块给出）。本批 runner/报告与看板断点已推送为开发备份，不合main、不发布部署。
+- 固定树D:/acrylic-pda-outbound；codex/development，HEAD/远端以生成事实块为准（完整 SHA 由事实块给出）。本批 runner/报告与看板断点已推送为开发备份，不合main、不发布部署。
 - 唯一写者聊天01a147c5-0495-7703-ba98-2e7637cbc619；list_threads/OS已复核，无其他活动项目写者或子代理。继承WIP、handoff-final01及run03指定失败原件保护，不还原/重排/覆盖。
 - 以下证据短路径位于.local/goal-20261017-resume/。完整inputd13import-failed01.json：5586项/SHAcf4a209139a7a22147626df48c2c89cb4355bff6ca19976af96cecc791ebc129；同号patch、未跟踪副本、ownership、进程/监听/磁盘/远端已保全。后续修复另绑定。
 - E08提交分块修复历史：history/GOAL_E08_SUBMISSION_BATCH_REPAIR_2026-10-18.md。repair-input01..06保全修复前状态与逐次输入；继承WIP未清理、未还原、未重排。
@@ -41,6 +41,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - E08/D17/U04明细键盘修复L1新增history/GOAL_E08_D17_UI_DETAILS_FIX_L1_2026-10-18.md：TemporaryDetailsActivity将IME差值放入内容滚动spacer，定位入口改为200%可见的单行按钮；run09（480x800/density240/fontScale2.0）与run10（默认字号）instrument原文均`OK (1 test)`，输入/回收SQLite SHA及integrity/逐表行/schema均相等，PNG/文字证据非空。run03/04/06/07/08失败与run05无效视口原件保留；仅合成Android L1开发备份，不计D17整体、E06 L2、D18 L3或总目标。
 - E08/D17/U04高频首页L1新增history/GOAL_E08_D17_U04_HIGH_FREQUENCY_L1_2026-10-18.md：请求的D盘datadir不存在，启动日志记录`Invalid -datadir`，实际使用默认`Pixel_6.avd`；首页导航因未绑定设备/人员会话按产品逻辑隐藏`navigation`而失败，故本次隔离证据无效。`HighFrequencyOfflineDeviceTest`编译、Debug/AndroidTest构建通过，未修改产品代码；失败原文保留，扫码/暂停恢复后续未运行，不计U04、D17、E06 L2、D18 L3或总目标。
 - E08/D17/U04高频首页启动器三次补验已登记history/GOAL_E08_D17_U04_HIGH_FREQUENCY_RUNNER_FAILURES_2026-10-18.md：run02参数解析报`\userdata`、run03拒绝`-datadir=...`、run04进入QEMU但无`emulator-5614`设备/监听；三次日志和userdata保全，不再无新依据重复。未修改产品或测试前置，U04/D17及后续L2/L3仍未通过。
+- E08/D17 UI 主机回归 run01 已登记history/GOAL_E08_D17_UI_HOST_REGRESSION_RUN01_2026-10-18.md：受影响的订单卡片、TEMP 明细 reader、恢复只读卡片/对话框定向单测退出0；日志 SHA 为 `8AFEEA4EA64DC89596F9D92B387A0A206A2219DC08DE9F26CC70F709598D0B13`。仅作者同会话主机验证，不计D17整体、E06 L2、D18 L3；高频首页隔离登录前置仍按三次同根因规则暂缓。
 - D13正常退役、导出重试、库存文件入口和原件中转入口的报告及绑定已保留；1568原键重放产品失败仍单列，1571真实IT/消费者通过但均为服务端有界L1，不计整体/L2/L3。
 - D13两字符串RowMapper修复已验，SQL/参数/事务/权限不变；source-bindings/impact-map、普通完整回归和失败原件均保全。
 
@@ -52,9 +53,10 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 前序D11/D13/D14/D15及E06/Android/UI局部证据按报告路径+SHA复用；D04旧前缀/Chrome1540策略阻断无新依据不机械重跑。
 - D13整体、D14/D15剩余、E06/E07/E08 L2、统一最终候选及D18 Android/真实HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复全链L3与第8节闸门尚未满足；原资料/旧BCD/原身份/真机/异地/长时/Linux现场单列。
 - run1569/relay consumer01、普通回归、清理前后、input/ownership/commit/push 回执及旧失败原件均保全；认证停机后仅清理已登记的可重建 datadir/binlog，未清原资料、唯一证据或继承 WIP。
-- 17明确路径库存入口已推送390274a55282f4ee8b26cd1c141dd48316fd2a10；本批 `014ac3da` 与看板 `e2929be2` 已提交并推送，commit/push 回执及继承 WIP 保护保留。
+- 17明确路径库存入口已推送390274a55282f4ee8b26cd1c141dd48316fd2a10；本批 `014ac3da` 与看板 `e2929be2`/`ca4290f2` 已提交并推送，commit/push 回执及继承 WIP 保护保留。
 - 原件中转入口报告、1571真实IT、独立consumer01及输入/环境/ownership快照均保全；仅收存合成签名ZIP，不新增submission/dispatch/ledger，仍属服务端L1。run722独立检查点Python消费者补验退出0，输出与输入manifest保全，仍属局部组合证据。run734认证停机恢复过程中的失败、shared-memory授权和最终正常停机均保全，未触碰外部3306/33318。
 - 原件中转13路径已推送93710ec5cff979a567654084c80abe089e9a73b7；D17/U04明细L1已收口，高频首页因缺登录/设备绑定前置暂缓。
+- UI 主机回归报告已提交 `e3f8167a`；本次仅提交报告和进度索引，继承源码与未跟踪 WIP 未暂存。
 - 无项目重型任务；run1597、run727–739 及 1604–1608 的输入、XML、JSON、HTTP日志、datadir、dump、APK 与身份哈希保留，均仅为局部候选；Android/外部Python/原PDA现场身份/原模拟器恢复链仍缺，不恢复取消的确认/激活链。
 - 当前主机复验夹具已按三次同根因规则暂缓；仅在出现新的SQLite/fixture隔离依据后重新入队，继续推进不依赖该夹具的E06/E07组合L2整理。
 <!-- CURRENT_STATE_END -->
