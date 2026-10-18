@@ -1,5 +1,8 @@
 # 历史归档
 
+- [D06/D07 五截点恢复事实 Python 独立消费](GOAL_E07_D06_D07_RECOVERY_PYTHON_CONSUMER_2026-10-19.md)：57 文件固定输入、五份完整事实/私有文件、隔离回执与逐包账务核对及17项变异测试通过；仅 Python L1，不计 L2/L3 或总目标。
+- [本切片前看板](ORCHESTRATION_STATE_before_fault_recovery_python_20261019.md)：保留前序全部局部通过、失败、环境和未验项。
+
 - [E07/D06-D07 故障撤回、重发与恢复隔离切片](GOAL_E07_D06_D07_FAULT_WITHDRAWAL_L2_SLICE_2026-10-19.md)：run1615 五截点真实 HTTP/MySQL/binlog 恢复 `1/0/0/0`；run998/999 撤回、重发、权限、幂等、异文、并发、末条 SQL 回滚、可靠性和 default-off 共 `19/0/0/0`。合成隔离身份且缺 Android/Chrome/Python/原模拟器，不计 D06/D07 完整 L2、E07/D17、E06 L2 或 D18 L3。
 
 - [O01/U04 原记录筛选与大字确认有界 L1](GOAL_O01_U04_FILTER_L1_2026-10-19.md)：原序号/产品筛选、非法条件重建、四字号、200% 原生确认及正式冻结禁用通过；既有 SQLite 失败与全部原件保全。仅开发备份，不计 O01/U04 整体、D17、L2/L3 或总目标。

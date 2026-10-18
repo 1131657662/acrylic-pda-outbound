@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- 2026-10-19：新增 [D06/D07 五截点恢复事实 Python 独立消费](history/GOAL_E07_D06_D07_RECOVERY_PYTHON_CONSUMER_2026-10-19.md)。实际消费 run1615 的 57 个固定输入，五份重建与最终全表/私有文件一致，隔离签名、旧资格拒绝及逐包记账核对通过；17 项变异测试与错误 SHA CLI 拒绝通过。仅 Python L1，未重新实跑 Android/Chrome/HTTP/MySQL，不计 D 项整体、L2/L3 或第8节。
+
 - 2026-10-19：新增 [E07/D06-D07 故障撤回、重发与恢复隔离切片](history/GOAL_E07_D06_D07_FAULT_WITHDRAWAL_L2_SLICE_2026-10-19.md)。run1615 的五截点真实 HTTP/MySQL/binlog 恢复 `1/0/0/0`；run998/999 的撤回、重发、权限、幂等、异文、并发、末条 SQL 回滚、可靠性和 default-off 业务测试合计 `19/0/0/0`，隔离账号认证停机、dump 和监听清零均保全。合成身份、隔离密钥和无 Android/Chrome/Python/原模拟器输入，仍不计 D06/D07 完整 L2、E07/D17、E06 L2、D18 L3 或总目标。
 
 - 2026-10-19：新增 [E08/D17 fail-closed gate L1 run02](history/GOAL_E08_D17_FAIL_CLOSED_GATE_RUN02_2026-10-19.md)。接管后复跑 `TemporaryHandoverActionGateTest` 2/0/0/0、`lintDebug` 退出 0，并确认两个已取消确认 worker 在 Android 主源码无后台 caller；只补强默认关闭证据，不计 D17、E06 L2、D18 L3 或第 8 节。
