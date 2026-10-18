@@ -14,8 +14,8 @@ class TemporaryWorkRenderer(private val binding: ActivityWorkBinding) {
         binding.vehicle.text = state.draft?.vehicleNo?.ifBlank { "临时作业" } ?: "临时作业"
         binding.source.text = "临时单 · 未获最终确认不得放行"
         binding.totals.text = "已保存 ${state.total.count} / 计划 ${state.lines.sumOf { it.plannedCount }} 包\n${WorkRenderer.kg(state.total.grams)} kg"
-        binding.message.text = listOf("临时单未获最终确认，不得放行", state.blocked.ifBlank { state.message },
-            if (state.queued > 0) "接收队列待落盘 ${state.queued}，请暂缓扫码" else "", soundError).filter { it.isNotBlank() }.joinToString("\n")
+        binding.message.text = (listOf("临时单未获最终确认，不得放行", primaryMessage(state)) +
+            processingStatus(state) + soundError).filter { it.isNotBlank() }.joinToString("\n")
         binding.pauseScan.text = if (state.ready) "暂缓扫码" else "恢复本单扫码"
         binding.pauseScan.isEnabled = state.draft?.state == "SCANNING" && state.blocked.isBlank()
         binding.recentSaved.text = state.recent.firstOrNull { it.status == "ACTIVE" }?.let {
@@ -34,6 +34,15 @@ class TemporaryWorkRenderer(private val binding: ActivityWorkBinding) {
         } } ?: "请核对车号后扫码"
         controls(state)
     }
+    private fun primaryMessage(state: TemporaryWorkUi): String = when {
+        state.blocked.isNotEmpty() -> state.blocked
+        state.candidate != null -> "待确认输入 1 · 请完成确认或处理"
+        else -> state.message
+    }
+    private fun processingStatus(state: TemporaryWorkUi): List<String> = listOf(
+        if (state.queued > 0) "接收队列待落盘 ${state.queued}，请暂缓扫码" else "",
+        if (state.blocked.isNotEmpty() && state.candidate != null) "待确认输入 1 · 请完成确认或处理" else ""
+    )
     private fun controls(state: TemporaryWorkUi) {
         binding.recall.visibility = View.VISIBLE
         binding.recall.text = if (state.draft?.state == "EVIDENCE_STOPPED") "查看原件保全 / 补传" else "停止并保全本单原件"

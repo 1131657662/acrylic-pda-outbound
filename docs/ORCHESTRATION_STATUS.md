@@ -6,44 +6,41 @@
 ```yaml
 date: 2026-10-19
 branch: codex/development
-head: 21aaabd2
-dirty_entries: 203
+head: d4624d61
+dirty_entries: 206
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ```
 <!-- FACTS_END -->
 
-总目标 D01–D18、§8、O01–O05/U01–U04 与 UI 重设计保持 active、未完成。局部 L1、开发备份或暂缓均不计完整 L2/L3。R07 取消的换机承接、多跳、接收者确认/激活链不恢复。
+总目标 D01–D18、§8、O01–O05/U01–U04 与 UI 重设计保持 active、未完成。局部 L1、开发备份、合成身份或暂缓不计完整 L2/L3；R07 取消的换机承接、多跳、接收者确认/激活链不恢复。
 
-## 精确输入、写权与保全
-- 固定树 `D:/acrylic-pda-outbound`、`codex/development`；本轮全量改动见 `.local/goal-20261018-resume/o01-filter-run01/dirty-candidate01.json`；提交后精确 HEAD/远端见 `git-postcommit.json`，本轮输入为 `dd624a5f7a21b87a58ff6a08755c5eef450db5f4`。
-- 唯一源码写者仍为本聊天 `01a147c5-0495-7703-ba98-2e7637cbc619`，登记见本轮 `writer-resume.json`；无其他活动源码写者/子代理，无在途构建或设备测试。
-- 202 条继承脏项已逐路径 SHA/zip/patch 保全；复核除看板外均未改变。原 handoff-final01、run03 失败、原身份、未跟踪资料及取消范围源码继续保护，不还原/重排/覆盖，不用 `git add .`。
-- 本轮全量输入/证据/环境根：`.local/goal-20261018-resume/o01-filter-run01/`；`input.json`、`dirty-input.zip`、`tracked-input.patch`、`handoff-bindings.json` 与 `source-bindings-final.json`，最终快照/绑定见 `dirty-candidate01.*`、`tracked-candidate01.patch`、`evidence-index-final01.json`。提交后 Git 回执另见 `git-postcommit.json`。
-- 替换前当前区已归档 `history/ORCHESTRATION_STATE_BEFORE_O01_FILTER_2026-10-19.md`，原字节另保存在本轮 `board-before.md`，前序所有失败及范围限制沿归档保留。
+## 精确输入与写权
+- 固定树 `D:/acrylic-pda-outbound`、`codex/development`；本轮输入 HEAD/远端 `d4624d61bba6b0af57070394762f0a773913633d`。提交后精确 Git 回执见本轮 `git-postcommit.json`，不能以输入 SHA 代替提交后 HEAD。
+- 唯一源码/本轮隔离实例写者仍为本聊天 `01a147c5-0495-7703-ba98-2e7637cbc619`；无子代理/其他活动源码写者。`writer-resume.json`、进程/监听及逐路径保全记录在本轮证据根。
+- 证据根 `.local/goal-20261019-resume/u02-native-retained914-run01/`：`input.json`、`dirty-resume01.json/.zip`、`tracked-resume01.patch`、`inherited-protection-resume01.json`。接续时原 202 项字节全部相同，新增 TEMP 状态设备测试；看板后续为预期文档变化。
+- 最终全改动/patch/zip、源码依赖 SHA 和证据索引见 `dirty-candidate01.*`、`tracked-candidate01.patch`、`source-bindings-final.json`、`evidence-index-final01.json`；提交后快照另存。替换前看板已归档 `history/ORCHESTRATION_STATE_BEFORE_U02_TEMP_NATIVE_2026-10-19.md`，原字节 `board-before.md`。
+- 原 handoff-final01、run03 失败、原身份/签名、唯一证据及全部继承/未跟踪内容继续保护；未还原/重排/覆盖。提交只明确路径，不用 `git add .`。
 
 ## 本轮有界结果
-- [O01/U04 原记录筛选与大字确认 L1](history/GOAL_O01_U04_FILTER_L1_2026-10-19.md)：原序号精确/产品字面筛选，20 条有界窗口，VOID/原序号保留，非法条件重建继续阻断；正式/TEMP 实际产品页及数据库摘要守恒通过。
-- 最终 filter/layout 6 项、Debug/AndroidTest 构建与 lint 通过；第一轮 20 项中 18 通过、2 个既有 `WorkAdjustmentTest` SQLite 开库失败保留，不写全绿、不机械重跑。
-- 独立隔离 run914 真实 HTTP/MySQL 签名准备及原生设备输入；最终 100%/130%/150%/200% 字号各通过。200% 旧确认按钮裁切已改可滚动正文，两按钮完整可见；空原因无写入，有原因仅增一条 VOID、原 27 capture 不变、原序号及本机防重规则一致，重建后禁用。
-- 正式单经真实 HTTP 发布/领取/准备、writer 保存，筛选不改全表，冻结未上传后不可调整且正文守恒。均为隔离合成输入；仅本子项 L1 开发备份，不计 O01/U04 完整、D17、E06 L2 或 D18 L3。
-- 早期 scrollTo 系统栏裁切、swipe 系统 Home、旧 200% 对话框失败、fixture 包装器误码与首次重型任务短暂重叠均留原件；最终事实见专项报告，不声称全程调度合规。
-- 开发备份 21aaabd2 的提交前事实 Check 因文档行尾转换失败，串行 shell 未停止；已保全并补记，后续逐命令检查退出码。修正结果见本轮 `facts-correction-results.json`，不改写产品验证。
+- [U02 TEMP 状态原生 L1](history/GOAL_U02_TEMP_PENDING_STATUS_NATIVE_L1_2026-10-19.md)：继承 TemporaryWorkRenderer 原字节经实际 TEMP 页面验证，待确认 1/已保存 0，点击确认后保存 1、提示消失、重建保持，无 submission；仅该子项开发备份。
+- 保留 run914 原 userdata/Keystore/会话，未 wipe 或重绑；首个旧组合测试因重启后可信时间失效被拒绝，失败原件保留。`consumer02-result.json` 直接消费前后 tar，83 表全部守恒；不把失败改记通过。
+- 原隔离 HTTP/MySQL 恢复后，通过实际“检查后台连接”重校时间，原设备/人员/仓库/localSessionId、公钥、Room 与签名准备资料保持。`revalidate01`、`pending-status01` 各 OK (1 test)，AndroidTest 构建/lint通过；62 actionable tasks 不作为测试用例数。
+- `consumer01-result.json`：capture/scan 各增一条，仅七张预期表变化，其他表守恒、完整性/FK正常；最终设备包与成功包全表一致。工具消费者不等于独立人员审查。正式 WorkRenderer 本轮未验，未混入通过。
+- U04 状态筛选已有实现/四字号历史证据；本轮逐路径核对正式10/11、TEMP13/16相同。漂移路径仍需候选组合，不重复开发，不直接复用为整体通过。
 
-## 前序候选与未验
-- 取消范围逐路径审计见 takeover05/08/10 报告；recovered-confirmation worker/dialog/fixture/bridge 无生产调用，R09 只读 display/reader 保留。旧 run03 与主机 fixture 同根因暂缓不重启。
-- E07/D06-D07 run744/745/902/913 的撤回重发、非空迁移、Android/Chrome/Python 与恢复结果，及 E08 run903/904/911、U02/U03 的局部候选沿归档和 `DEVELOPMENT_PROGRESS.md` 索引；合成事实不补记完整 L2/L3。
-- O02/O05 的 M71 SAF/ADB、电脑 XLSX、安全包跨运行消费与同机副本仅按各报告范围复用；外控介质、独立保管与真实业务回执仍缺，不能因同机文件或 USB 主机回读解除删除边界。
-- D11/D13/D14/D15 只有明确范围的局部验收；D16 缺可信合法退出依据，O01–O05/U01–U04 余项、原资料/旧 BCD、统一最终候选和 D18 全链 L3 均未满足。
+## 前序证据与未验
+- O01/U04 原记录筛选/四字号/200%确认和正式冻结禁用仅有界 L1，见进度索引；首轮既有 SQLite、运行器/调度与事实 Check 失败继续保全。既有 fail-closed run913 组合不重跑冒充新结果。
+- recovered-confirmation worker/dialog/fixture/bridge 的取消范围及 R09 只读保留见 takeover05/08/10；旧 run03 和同根因夹具暂缓条件继续。E06 正式网页 L1 已有，不等于完整 L2。
+- D11/D13/D14/D15 局部验收按路径+SHA复用；D16 缺可信合法退出依据。O/U余项、原资料/旧BCD、统一最终候选、D18全链L3及§8仍未满足；同机副本/USB回读不冒充独立外置保管或生产删除资格。
 
-## 环境、空间与下一步
-- 本轮 HTTP 19781、MySQL 19780/`acrylic_e2a_cross_20260925_914` 和 `Filter914_Pixel6`/5622 已停；`stop-result.json`、数据库身份/唯一 dump、最终设备 tar/Room/签名与 APK 哈希保留。19780/19781/5622/5623 已清零；本轮编译 daemon 经身份核实后停止。
-- 共享/外部 3306/13316/13317/33318/5173、ADB 5037 和 USB M71 仅观察未操作。实际进程/监听见本轮 `processes-final-stopped.json`、`listeners-final-stopped.json`；不连接原库/现网。
-- 本轮清理前已保存输入/依赖/结果/目标哈希与全脏快照；清理测试 datadir、AVD RAM/缓存命令在启动前被策略拒绝（blocked by policy），零删除/释放 0 bytes，未绕过。`cleanup-before.json`、`cleanup-rejected.json` 保留；userdata/Keystore、唯一 dump、APK、源码和失败证据均在。
-- C/D/E 余量实测为 75,385,659,392 / 12,967,706,624 / 195,634,057,216 bytes，见 `disks-final.json`；新增产物均项目 D 盘，本轮无 C 盘副本。
-- 七类生产决定、TEMP 生产归档、原库/现网、正式签名、main、部署和 Release 保持关闭；`localDeletionAllowed=false`，D16 标准不降低。
-- 下一步先审计 U04 原明细状态筛选实现/证据缺口，再选可独立有界工作；沿保留设备续验时禁止使用旧启动器 `-wipe-data`。总目标继续，不以此切片收口结束。
+## 环境、清理与下一步
+- HTTP19781、MySQL19780/`acrylic_e2a_cross_20260925_914` 与 `Filter914_Pixel6`/5622 已停。正常认证 MySQL shutdown/AVD退出，19780/19781/5622/5623零监听；最终设备tar、唯一dump/数据库身份、APK及哈希见 `stop-result.json`。
+- 共享3306/13316/13317/33318/5173、ADB5037及USB只观察；实际进程/监听见 `processes-final-stopped.json`、`listeners-final-stopped.json`。无在途本轮构建/设备测试，不连接原库现网。
+- 清理审计及回执 `cleanup-review.json`、`cleanup-result.json`：文本/哈希保全后删除一份正常 daemon 日志，逻辑68,492 bytes；前序被策略拒绝的 datadir/AVD 目标保持，未换方式删除。C/D/E余量及前后差见 `disks-final-cleaned.json`，不混淆卷变化和文件长度。
+- 七类生产决定、TEMP生产归档、main、部署/Release、原库/现网、正式签名保持关闭；`localDeletionAllowed=false`，D16标准不降低。
+- 下一步补正式 U02 作业台状态的实际候选客户端证据；先审计 run914 冻结正式单及新发布输入，禁止改写/解冻原正文。完成后继续独立缺口；总目标继续。
 
 <!-- CURRENT_STATE_END -->
 
