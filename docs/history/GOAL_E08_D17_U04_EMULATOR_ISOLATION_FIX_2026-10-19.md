@@ -23,7 +23,7 @@
 - 证据根：`.local/goal-20261019-resume/d17-high-frequency-run05/`。
 - 启动输入、进程命令、日志、ADB/端口快照、复制清单和停机核验：`launch-input.json`、`startup-verification.json`、`populated-data-manifest.json`、`populated-startup-verification.json`、`populated-stop-verification.json`、`full-avd-copy-manifest02.json`、`full-avd-launch02.json`、`full-avd-startup-verification02.json`、`full-avd-stop-verification02.json` 及对应 stdout/stderr/stop 日志。
 - `full-avd-stop-verification02.json` 记录无残留 emulator/qemu、无 `5620/5621` 监听，默认源 `userdata-qemu.img.qcow2`、`encryptionkey.img.qcow2`、`cache.img.qcow2`、`sdcard.img.qcow2` 均 `sourceUnchanged=true`。
-- 完整 AVD 副本、两次临时 userdata 仅为可重建测试数据；已认证停机且无监听，但本轮递归清理命令被 Windows 执行策略拒绝，未换壳绕过，目录和证据暂保留。D 盘收口时应按同一绝对路径重试并记录前后余量；原 AVD、原资料、Keystore、继承源码和失败证据不清理。
+- 完整 AVD 副本、两次临时 userdata 仅为可重建测试数据；先前裸递归清理被 Windows 策略拒绝并保留在 `cleanup-refused.json`，随后使用证据目录内的定向路径守卫脚本完成清理。`cleanup-before02.json`/`cleanup-after02.json` 记录释放逻辑字节 `8,738,583,046`、实际增加可用空间 `8,738,611,200`，剩余路径为空；原 AVD、原资料、Keystore、继承源码和失败证据未清理。
 
 ## 边界与下一步
 
