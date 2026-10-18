@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-19
 branch: codex/development
-head: dd624a5f
-dirty_entries: 216
+head: 21aaabd2
+dirty_entries: 203
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -29,6 +29,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 独立隔离 run914 真实 HTTP/MySQL 签名准备及原生设备输入；最终 100%/130%/150%/200% 字号各通过。200% 旧确认按钮裁切已改可滚动正文，两按钮完整可见；空原因无写入，有原因仅增一条 VOID、原 27 capture 不变、原序号及本机防重规则一致，重建后禁用。
 - 正式单经真实 HTTP 发布/领取/准备、writer 保存，筛选不改全表，冻结未上传后不可调整且正文守恒。均为隔离合成输入；仅本子项 L1 开发备份，不计 O01/U04 完整、D17、E06 L2 或 D18 L3。
 - 早期 scrollTo 系统栏裁切、swipe 系统 Home、旧 200% 对话框失败、fixture 包装器误码与首次重型任务短暂重叠均留原件；最终事实见专项报告，不声称全程调度合规。
+- 开发备份 21aaabd2 的提交前事实 Check 因文档行尾转换失败，串行 shell 未停止；已保全并补记，后续逐命令检查退出码。修正结果见本轮 `facts-correction-results.json`，不改写产品验证。
 
 ## 前序候选与未验
 - 取消范围逐路径审计见 takeover05/08/10 报告；recovered-confirmation worker/dialog/fixture/bridge 无生产调用，R09 只读 display/reader 保留。旧 run03 与主机 fixture 同根因暂缓不重启。
