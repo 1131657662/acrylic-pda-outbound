@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-19
 branch: codex/development
-head: d4624d61
-dirty_entries: 206
+head: 2bfcf239
+dirty_entries: 205
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,30 +17,31 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 总目标 D01–D18、§8、O01–O05/U01–U04 与 UI 重设计保持 active、未完成。局部 L1、开发备份、合成身份或暂缓不计完整 L2/L3；R07 取消的换机承接、多跳、接收者确认/激活链不恢复。
 
 ## 精确输入与写权
-- 固定树 `D:/acrylic-pda-outbound`、`codex/development`；本轮输入 HEAD/远端 `d4624d61bba6b0af57070394762f0a773913633d`。提交后精确 Git 回执见本轮 `git-postcommit.json`，不能以输入 SHA 代替提交后 HEAD。
-- 唯一源码/本轮隔离实例写者仍为本聊天 `01a147c5-0495-7703-ba98-2e7637cbc619`；无子代理/其他活动源码写者。`writer-resume.json`、进程/监听及逐路径保全记录在本轮证据根。
-- 证据根 `.local/goal-20261019-resume/u02-native-retained914-run01/`：`input.json`、`dirty-resume01.json/.zip`、`tracked-resume01.patch`、`inherited-protection-resume01.json`。接续时原 202 项字节全部相同，新增 TEMP 状态设备测试；看板后续为预期文档变化。
-- 最终全改动/patch/zip、源码依赖 SHA 和证据索引见 `dirty-candidate01.*`、`tracked-candidate01.patch`、`source-bindings-final.json`、`evidence-index-final01.json`；提交后快照另存。替换前看板已归档 `history/ORCHESTRATION_STATE_BEFORE_U02_TEMP_NATIVE_2026-10-19.md`，原字节 `board-before.md`。
-- 原 handoff-final01、run03 失败、原身份/签名、唯一证据及全部继承/未跟踪内容继续保护；未还原/重排/覆盖。提交只明确路径，不用 `git add .`。
+- 固定树 `D:/acrylic-pda-outbound`、`codex/development`；本切片输入 HEAD/远端 `2bfcf239b984996db5dc4c72bf44b79ae11f8c45`。提交后精确 Git 回执见最终证据根 `git-postcommit.json`。
+- 唯一源码/本轮隔离实例写者仍为本聊天 `01a147c5-0495-7703-ba98-2e7637cbc619`；无子代理/其他活动源码写者。唯一写权、实际进程/监听与原改动保全在各轮 writer/input/环境记录。
+- 本切片证据前缀 `.local/goal-20261019-resume/u02-formal-native-retained914-`，run01–run05全部保留。输入 run01/dirty-input01.json/.zip 与 tracked-input01.patch；run05/inherited-protection01.json 证明原201项字节保持，新增一项正式设备测试，未覆盖继承源码。
+- 最终证据根 run05/：源码/依赖绑定、全改动/patch/zip、索引见 source-bindings-final.json、dependency-bindings-final.json、dirty-candidate01.*、tracked-candidate01.patch、evidence-index-final01.json；提交后快照另存。旧看板归档 `history/ORCHESTRATION_STATE_BEFORE_U02_FORMAL_NATIVE_2026-10-19.md`，原字节 board-before.md。
+- 原 handoff-final01/run03失败、原身份/签名/回执、唯一证据和全部继承/未跟踪内容保护；不还原/重排/覆盖，提交只明确路径，不用 git add .。
 
 ## 本轮有界结果
-- [U02 TEMP 状态原生 L1](history/GOAL_U02_TEMP_PENDING_STATUS_NATIVE_L1_2026-10-19.md)：继承 TemporaryWorkRenderer 原字节经实际 TEMP 页面验证，待确认 1/已保存 0，点击确认后保存 1、提示消失、重建保持，无 submission；仅该子项开发备份。
-- 保留 run914 原 userdata/Keystore/会话，未 wipe 或重绑；首个旧组合测试因重启后可信时间失效被拒绝，失败原件保留。`consumer02-result.json` 直接消费前后 tar，83 表全部守恒；不把失败改记通过。
-- 原隔离 HTTP/MySQL 恢复后，通过实际“检查后台连接”重校时间，原设备/人员/仓库/localSessionId、公钥、Room 与签名准备资料保持。`revalidate01`、`pending-status01` 各 OK (1 test)，AndroidTest 构建/lint通过；62 actionable tasks 不作为测试用例数。
-- `consumer01-result.json`：capture/scan 各增一条，仅七张预期表变化，其他表守恒、完整性/FK正常；最终设备包与成功包全表一致。工具消费者不等于独立人员审查。正式 WorkRenderer 本轮未验，未混入通过。
-- U04 状态筛选已有实现/四字号历史证据；本轮逐路径核对正式10/11、TEMP13/16相同。漂移路径仍需候选组合，不重复开发，不直接复用为整体通过。
+- [U02 正式状态原生 L1](history/GOAL_U02_FORMAL_PENDING_STATUS_NATIVE_L1_2026-10-19.md)：真实 HTTP 库存/新订单发布、领取、准备，实际 WorkActivity 待确认1/保存0→点击确认→保存1→重建通过。WorkRenderer原字节未改，只纳入该有界开发备份；无submission/冻结/放行。
+- 正常设置页校时保留 run914 原 userdata/Keystore/设备/人员/仓库/localSessionId与公钥；旧INVALID通过产品按钮正常确认，原capture只增failureAckAt，未删输入/解除防重。run05 OK (1 test)，AndroidTest构建/lint通过，产品APK与O01最终字节相同。
+- 独立consumer02消费83表：无旧行删除，九表按预期变化，新capture/scan各一条；原submission与全部TEMP表守恒，最终包与成功包一致。只证明Room＋WAL关系，不称MySQL全表守恒或独立人员复核。
+- run01漏load、run02可用码耗尽、run03不合法新码/部分库存拒绝、run04本机重复guard拒绝均失败保留；run04实际已写订单/INVALID，后续按产品确认原件保留，不走无写快速通道。consumer01误判SAVED，按实际COMMITTED修正consumer02，旧文件保全。
+- 启动/离线ADB/缺APK等运行器失败、run02服务与run03测试构建重叠的调度偏差、C临时不带WAL副本的不完整观察均记入failures-summary.json，不声称全程调度合规或全绿。最终精确身份认证停机成立。
+- [TEMP状态原生L1](history/GOAL_U02_TEMP_PENDING_STATUS_NATIVE_L1_2026-10-19.md)已推送2bfcf239；83表可信时间阻断守恒、原机正常校时、待确认/保存/重建有界通过。两个状态L1不计完整U02/D17。
 
 ## 前序证据与未验
-- O01/U04 原记录筛选/四字号/200%确认和正式冻结禁用仅有界 L1，见进度索引；首轮既有 SQLite、运行器/调度与事实 Check 失败继续保全。既有 fail-closed run913 组合不重跑冒充新结果。
-- recovered-confirmation worker/dialog/fixture/bridge 的取消范围及 R09 只读保留见 takeover05/08/10；旧 run03 和同根因夹具暂缓条件继续。E06 正式网页 L1 已有，不等于完整 L2。
-- D11/D13/D14/D15 局部验收按路径+SHA复用；D16 缺可信合法退出依据。O/U余项、原资料/旧BCD、统一最终候选、D18全链L3及§8仍未满足；同机副本/USB回读不冒充独立外置保管或生产删除资格。
+- O01/U04筛选/四字号/200%确认和正式冻结禁用仅有界L1，见进度索引；既有SQLite/运行器/事实Check失败继续保全。U04状态筛选已有实现/历史证据，漂移路径仍需候选组合，不重复开发。
+- fail-closed run913、E06网页正式L1、E07/E08局部候选沿进度索引；取消范围takeover05/08/10只读审计沿用，旧run03/同根因夹具暂缓条件保持。
+- D11/D13/D14/D15局部按路径+SHA复用；D16缺可信合法退出依据。O/U余项、原资料/旧BCD、统一最终候选、D18全链L3和§8仍未满足；同机/USB回读不冒充独立外置保管或删除资格。
 
 ## 环境、清理与下一步
-- HTTP19781、MySQL19780/`acrylic_e2a_cross_20260925_914` 与 `Filter914_Pixel6`/5622 已停。正常认证 MySQL shutdown/AVD退出，19780/19781/5622/5623零监听；最终设备tar、唯一dump/数据库身份、APK及哈希见 `stop-result.json`。
-- 共享3306/13316/13317/33318/5173、ADB5037及USB只观察；实际进程/监听见 `processes-final-stopped.json`、`listeners-final-stopped.json`。无在途本轮构建/设备测试，不连接原库现网。
-- 清理审计及回执 `cleanup-review.json`、`cleanup-result.json`：文本/哈希保全后删除一份正常 daemon 日志，逻辑68,492 bytes；前序被策略拒绝的 datadir/AVD 目标保持，未换方式删除。C/D/E余量及前后差见 `disks-final-cleaned.json`，不混淆卷变化和文件长度。
-- 七类生产决定、TEMP生产归档、main、部署/Release、原库/现网、正式签名保持关闭；`localDeletionAllowed=false`，D16标准不降低。
-- 下一步补正式 U02 作业台状态的实际候选客户端证据；先审计 run914 冻结正式单及新发布输入，禁止改写/解冻原正文。完成后继续独立缺口；总目标继续。
+- run05/stop-result.json：HTTP19781、认证MySQL19780/`acrylic_e2a_cross_20260925_914`、Filter914_Pixel6/5622已停，目标五PID及19780/19781/5622/5623均清零；最终设备tar、唯一dump、数据库身份、原签名、APK保全。
+- 实际 processes-final-stopped.json/listeners-final-stopped.json；共享3306/13316/13317/33318/5173、ADB5037及USB只观察。无在途本轮构建/设备测试，不连接原库现网。
+- 清理审核/回执 cleanup-review.json/cleanup-result.json：文本/哈希保全后删C诊断派生副本及正常daemon日志，逻辑1,292,574 bytes；C/D/E余量75,379,343,360 / 12,705,689,600 / 195,634,057,216 bytes。前序被策略拒绝的datadir/AVD目标保持，未换方式删除。
+- 七类生产决定、TEMP生产归档、main、部署/Release、原库/现网及正式签名关闭；localDeletionAllowed=false，D16标准不降低。
+- 下一步核对U02结果未知/保全主动作和U04辅助页实际候选缺口，按路径+SHA复用，只补直接受影响产品入口。总目标继续，未达到§8不complete。
 
 <!-- CURRENT_STATE_END -->
 

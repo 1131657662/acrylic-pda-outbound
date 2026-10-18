@@ -14,15 +14,15 @@ class WorkRenderer(private val binding: ActivityWorkBinding) {
         binding.vehicle.text = order?.vehicleNo ?: "正在打开订单"
         binding.source.text = "正式单 · 未获最终确认不得放行"
         binding.totals.text = order?.let { "已保存 ${it.actualCount} / 计划 ${it.plannedTotal} 包\n${kg(it.weightGrams)} kg" } ?: "暂无本地作业"
-        binding.message.text = listOf(state.blocked.ifEmpty { state.message },
-            if (state.queued > 0) "待落盘 ${state.queued} · 请暂缓扫码" else if (state.pending > 1) "待处理 ${state.pending} · 请暂缓扫码" else "",
-            soundError).filter { it.isNotEmpty() }.joinToString("\n")
+        binding.message.text = (listOf(primaryMessage(state)) + processingStatus(state) + soundError)
+            .filter { it.isNotEmpty() }.joinToString("\n")
         val stopped = when (order?.state) {
             "FROZEN" -> "本单已冻结，不能继续扫码或撤销；请进入结单页核对云端回执"
             "RECALL_PENDING", "RECALLED" -> "本单已收到召回并停止扫码，请进入召回页核对恢复证据及停止证明"
             else -> ""
         }
-        if (stopped.isNotEmpty()) binding.message.text = listOf(state.blocked, stopped).filter { it.isNotEmpty() }.joinToString("\n")
+        if (stopped.isNotEmpty()) binding.message.text = (listOf(state.blocked, stopped) + processingStatus(state) + soundError)
+            .filter { it.isNotEmpty() }.joinToString("\n")
         binding.closeOrder.isEnabled = order?.state !in setOf("RECALL_PENDING", "RECALLED")
         binding.pauseScan.text = if (state.ready) "暂缓扫码" else "恢复本单扫码"
         binding.pauseScan.isEnabled = order?.state == "SCANNING" && state.blocked.isBlank()
@@ -56,5 +56,14 @@ class WorkRenderer(private val binding: ActivityWorkBinding) {
         binding.voidLast.isEnabled = state.ready && state.pending == 0 && state.queued == 0 && c == null && state.recent.any { it.status == "ACTIVE" && it.captureId !in state.dispositions }
         binding.adjustPackages.isEnabled = state.ready && state.pending == 0 && state.queued == 0 && c == null
     }
+    private fun primaryMessage(state: WorkUi): String = when {
+        state.blocked.isNotEmpty() -> state.blocked
+        state.pending > 0 -> "待确认输入 ${state.pending} · 请完成确认或处理"
+        else -> state.message
+    }
+    private fun processingStatus(state: WorkUi): List<String> = listOf(
+        if (state.queued > 0) "待落盘 ${state.queued} · 请暂缓扫码" else "",
+        if (state.blocked.isNotEmpty() && state.pending > 0) "待确认输入 ${state.pending} · 请完成确认或处理" else ""
+    )
     companion object { fun kg(grams: Long): String = BigDecimal.valueOf(grams, 3).stripTrailingZeros().toPlainString() }
 }
