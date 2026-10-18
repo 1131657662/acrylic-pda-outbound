@@ -6,7 +6,7 @@
 ```yaml
 date: 2026-10-18
 branch: codex/development
-head: 014ac3da
+head: e2929be2
 dirty_entries: 169
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 总目标D01–D18、第8节全部闸门、O01–O05/U01–U04及UI重设计保持active、未完成。取消的换机承接/多跳/接收者确认激活不恢复。
 
 ## Git、写权与保全
-- 固定树D:/acrylic-pda-outbound；codex/development，HEAD `014ac3da`（完整 SHA 由事实块给出），远端仍为 `93710ec5cff979a567654084c80abe089e9a73b7` 待推送。导出重试切片与本批 runner/报告均为开发备份，不合main、不发布部署。
+- 固定树D:/acrylic-pda-outbound；codex/development，HEAD/远端均为 `e2929be2`（完整 SHA 由事实块给出）。本批 runner/报告与看板断点已推送为开发备份，不合main、不发布部署。
 - 唯一写者聊天01a147c5-0495-7703-ba98-2e7637cbc619；list_threads/OS已复核，无其他活动项目写者或子代理。继承WIP、handoff-final01及run03指定失败原件保护，不还原/重排/覆盖。
 - 以下证据短路径位于.local/goal-20261017-resume/。完整inputd13import-failed01.json：5586项/SHAcf4a209139a7a22147626df48c2c89cb4355bff6ca19976af96cecc791ebc129；同号patch、未跟踪副本、ownership、进程/监听/磁盘/远端已保全。后续修复另绑定。
 - E08提交分块修复历史：history/GOAL_E08_SUBMISSION_BATCH_REPAIR_2026-10-18.md。repair-input01..06保全修复前状态与逐次输入；继承WIP未清理、未还原、未重排。
@@ -52,7 +52,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 前序D11/D13/D14/D15及E06/Android/UI局部证据按报告路径+SHA复用；D04旧前缀/Chrome1540策略阻断无新依据不机械重跑。
 - D13整体、D14/D15剩余、E06/E07/E08 L2、统一最终候选及D18 Android/真实HTTP/MySQL/Chrome/Python/非空迁移/原模拟器/恢复全链L3与第8节闸门尚未满足；原资料/旧BCD/原身份/真机/异地/长时/Linux现场单列。
 - run1569/relay consumer01、普通回归、清理前后、input/ownership/commit/push 回执及旧失败原件均保全；认证停机后仅清理已登记的可重建 datadir/binlog，未清原资料、唯一证据或继承 WIP。
-- 17明确路径库存入口已推送390274a55282f4ee8b26cd1c141dd48316fd2a10；本批 `014ac3da` 已提交待推送，commit/push 回执及继承 WIP 保护保留。
+- 17明确路径库存入口已推送390274a55282f4ee8b26cd1c141dd48316fd2a10；本批 `014ac3da` 与看板 `e2929be2` 已提交并推送，commit/push 回执及继承 WIP 保护保留。
 - 原件中转入口报告、1571真实IT、独立consumer01及输入/环境/ownership快照均保全；仅收存合成签名ZIP，不新增submission/dispatch/ledger，仍属服务端L1。run722独立检查点Python消费者补验退出0，输出与输入manifest保全，仍属局部组合证据。run734认证停机恢复过程中的失败、shared-memory授权和最终正常停机均保全，未触碰外部3306/33318。
 - 原件中转13路径已推送93710ec5cff979a567654084c80abe089e9a73b7；D17/U04明细L1已收口，高频首页因缺登录/设备绑定前置暂缓。
 - 无项目重型任务；run1597、run727–739 及 1604–1608 的输入、XML、JSON、HTTP日志、datadir、dump、APK 与身份哈希保留，均仅为局部候选；Android/外部Python/原PDA现场身份/原模拟器恢复链仍缺，不恢复取消的确认/激活链。
