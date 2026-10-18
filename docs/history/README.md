@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E08/O02 电脑核验与 XLSX 转换候选（run08）](GOAL_E08_O02_COMPUTER_XLSX_RUN08_2026-10-18.md)：合成应急包实际解密、包外信任校验、XLSX 导出、逐值回读和 PNG 预览通过；CLI 管道入口及转换失败半目录保全，不计真实 Excel、外置介质、O02/O05 整体或任何 L2/L3。
+
 - [E08/O02 真机 SAF 与 USB 主机回读候选](GOAL_E08_O02_PHYSICAL_SAF_USB_2026-10-18.md)：连接 M71 实际运行 debug-only DocumentsUI `ACTION_CREATE_DOCUMENT`，生产 `RescueFileTransfer` 回读与 USB ADB 主机 SHA 一致；合成包且非 MTP/OTG/外置介质，不计 O02/O05 整体、任何 L2/L3 或总目标。
 
 - [E08/O02/O05 rescue 跨运行时候选](GOAL_E08_O02_O05_CROSS_RUNTIME_2026-10-18.md)：Android rescue 定向 27 项、Python 电脑核验/副本/中转 57 项及 Android 生成包的独立解密验签、只读输出、加密副本取回通过；输入为合成包，同机副本不计外置介质，不计 O02/O05 整体、E06/E07/E08 L2、D18 L3 或总目标。

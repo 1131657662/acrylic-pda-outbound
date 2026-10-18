@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- 2026-10-18：新增 [E08/O02 电脑核验与 XLSX 转换候选（run08）](history/GOAL_E08_O02_COMPUTER_XLSX_RUN08_2026-10-18.md)。对 Android 生成的合成应急包实际解密、包外信任校验、XLSX 导出、逐值回读和 PNG 预览；5 个工作表无公式且全部匹配。CLI 交互入口的管道输入失败及转换器失败半目录均保全；不覆盖真实 Excel、MTP/OTG、外置介质、真实身份/回执或 O02/O05、D18 L3。
+
 - 2026-10-18：新增 [E08/O02 真机 SAF 与 USB 主机回读候选](history/GOAL_E08_O02_PHYSICAL_SAF_USB_2026-10-18.md)。连接 M71 实际选择 DocumentsUI `Download`，生产 `RescueFileTransfer` 回读和 USB ADB 主机 SHA 均为 `052B3F…156C6`、96,257 bytes；debug-only 合成包，不是 MTP/OTG/外置介质或真实业务回执，不计 O02/O05 整体、E08/D17、E06 L2、D18 L3 或总目标。
 
 - 2026-10-18：新增 [E08/O02/O05 rescue 跨运行时候选](history/GOAL_E08_O02_O05_CROSS_RUNTIME_2026-10-18.md)。Android rescue 格式定向 27 项与 Python 电脑核验/副本/中转测试 57 项均通过；Android 生成的合成包完成独立解密验签、只读资料输出、加密副本创建和副本外摘要取回。`externalStorageVerified=false`、`businessReceiptVerified=false`、`localDeletionAllowed=false`；未覆盖真实 PDA/原身份/外置介质/USB 文件通道，不计 O02/O05 整体、E06/E07/E08 L2、D18 L3 或总目标。
