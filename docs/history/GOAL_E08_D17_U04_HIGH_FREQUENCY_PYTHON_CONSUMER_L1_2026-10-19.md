@@ -5,7 +5,7 @@
 ## 输入与命令
 
 - 工具：`tools/high_frequency_room_consumer.py`，本轮实际消费路径为 `.local/goal-20261019-resume/high-frequency-run06/private/scan-device.tar` 和 `save-scan-device.tar`。
-- 输出：`python-scan-consumer.json`、`python-save-scan-consumer.json`；两个输入 tar 在读取前后 SHA-256 均保持不变。
+- 输出：`python-scan-consumer.json`、`python-save-scan-consumer.json`；两个输入 tar 在读取前后 SHA-256 均保持不变。增量绑定见 `evidence-index-python-consumer.json`，原 `evidence-index-final.json` 保持不变。
 - 直接受影响验证：Python 解包到临时目录后以 SQLite read-only URI 连接，执行 `integrity_check`、`foreign_key_check`、Room schema 版本、九张业务/边界表计数、capture/scan/guard 关系、连续设备序号和失败确认状态断言。
 
 ## 结果
