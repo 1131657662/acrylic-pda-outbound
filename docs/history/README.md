@@ -1,5 +1,18 @@
 # 历史归档
 
+- [E07/D06-D07 故障撤回 fail-closed 隔离消费者组合（run913）](GOAL_E07_D06_D07_FAIL_CLOSED_COMBINATION_RUN913_2026-10-18.md)：新隔离非空迁移、真实 HTTP/MySQL、Pixel_6 四条 Android、独立 Python 与 Chrome 两项均通过；显式隔离开关下的回归候选，合成身份不计 D06/D07 L2、D17、E06 L2 或 D18 L3。
+- [E07/D06-D07 Web 故障撤回 fail-closed 入口收口 run01](GOAL_E07_D06_D07_WEB_FAIL_CLOSED_GATE_RUN01_2026-10-18.md)：默认构建隐藏故障撤回入口，隔离构建显式开启；Node/typecheck/build/运行器解析通过，真实 Chrome/HTTP/MySQL 组合未验，不计 D06/D07 L1/L2 或总目标。
+- [E08/U03 独立采集与数据保全 host run02](GOAL_E08_U03_INDEPENDENT_HOST_RUN02_2026-10-18.md)：凭据 parity、救援快照和跨来源防重 17 项 host 测试 0/0/0；未找到可证明的独立设备会话/原身份输入，不能计 Android UI L1、E06 L2、D17 或 D18 L3。
+- [E08/U03 独立 SKU 产品页面 L1 run01](GOAL_E08_U03_SKU_UI_L1_RUN01_2026-10-18.md)：全新隔离 AVD 上实际消费 DocumentsUI、重复确认、坏行取消、重启原件守恒及 100%/200% 布局；合成资料仅计 U03 页面 L1 开发备份，不计 U03 完整、D17、E06 L2、D18 L3 或总目标。
+
+- [E08/D17 recovered-confirmation WIP takeover10 逐路径审计](GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-18_TAKEOVER10.md)：按现行 D06/D07、D13/D14 与 R07 政策核对取消链和 R09 只读链；不恢复确认/激活，不计任何整体或 L2/L3。
+
+- [E08/D17/U02 作业台状态语义修复 L1](GOAL_E08_D17_U02_STATUS_RENDERER_L1_2026-10-18.md)：正式/TEMP 作业台区分待确认输入与队列待落盘；定向主机测试、lint 和 APK 构建通过，隔离 Android 因缺登录会话未形成设备通过，不计 D17/U02 Android L1 或任何 L2/L3。
+
+- [E08/D17/U04 高频 UI 隔离候选 run904](GOAL_E08_D17_U04_HIGH_FREQUENCY_RUN904_L1_2026-10-18.md)：最新 Debug APK 上独立 `Run904_Pixel6` 实际通过准备页、首页、离线草稿扫码及保存/扫码/手动确认/暂停恢复/重复包拒绝；真实隔离 HTTP/MySQL、Room、停机和清理事实保全。输入为合成隔离资料，仅 U04/D17 有界 L1 候选，不计 D17 整体、E06 L2、D18 L3 或总目标。
+
+- [E08/D17/U04 高频 UI 隔离候选 run911](GOAL_E08_D17_U04_HIGH_FREQUENCY_RUN911_L1_2026-10-18.md)：独立 `U02Session911` 上准备、首页、离线草稿扫码及保存扫码/手动确认/暂停恢复/重复包拒绝均由实际 Android 产品 instrumentation 报告 `OK (1 test)`；真实隔离 HTTP/MySQL、Room、`server_state=NORMAL`、Flyway 99 和认证停机事实保全。`adb` 包装器码为 -1，输入为合成隔离资料，清理命令被 Windows 策略拒绝且未绕过；仅有界 L1 候选，不计 D17 整体、E06 L2、D18 L3 或总目标。
+
 - [E07/D06-D07 撤回重发消费者组合（run902）](GOAL_E07_D06_D07_CONSUMER_COMBINATION_RUN902_2026-10-18.md)：全新隔离非空迁移、真实 HTTP/MySQL、Pixel_6 emulator 四条 Android、Python 只读消费者和 Chrome 两项通过；输入身份为合成事实，不计 D06/D07 L2、E07 整体、D17、E06/E08 L2 或 D18 L3。
 
 - [E08/O05 外置保管边界复核](GOAL_E08_O05_EXTERNAL_CUSTODY_BOUNDARY_2026-10-18.md)：逐路径复核 M71 SAF/ADB 回读、同机加密副本、XLSX 消费和取消范围 WIP；外置介质、独立保管方、真实身份与业务回执仍缺，拒绝条件保全，不计 O05 整体或任何 L2/L3。
