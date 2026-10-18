@@ -6,12 +6,12 @@ import android.view.KeyEvent
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.core.view.*
 import androidx.lifecycle.lifecycleScope
 import com.acrylic.outbound.pda.PdaApplication
 import com.acrylic.outbound.pda.databinding.ActivityScanAdjustmentBinding
+import com.acrylic.outbound.pda.databinding.DialogScanAdjustmentBinding
 import com.acrylic.outbound.pda.device.ScannerReceiver
 import kotlinx.coroutines.*
 
@@ -25,6 +25,8 @@ class ScanAdjustmentActivity : ComponentActivity() {
     private var busy = false
     private var dialogOpen = false
     private var blockReason = ""
+    private var filter = AdjustmentFilter()
+    private var filterError: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +41,9 @@ class ScanAdjustmentActivity : ComponentActivity() {
         insets(); actions()
         scanner = ScannerReceiver(this, { locate(it) }, { binding.status.text = it })
         savedInstanceState?.getLongArray("history")?.let { history.clear(); history.addAll(it.toList()) }
+        filter = runCatching { AdjustmentFilter.parse(savedInstanceState?.getString("sequence").orEmpty(),
+            savedInstanceState?.getString("product").orEmpty()) }.getOrDefault(AdjustmentFilter())
+        filterError = savedInstanceState?.getString("filterError")
         load()
     }
     private fun insets() {
@@ -53,13 +58,31 @@ class ScanAdjustmentActivity : ComponentActivity() {
         binding.locate.setOnClickListener { locate(binding.barcode.text.toString()) }
         binding.previous.setOnClickListener { history.removeAt(history.lastIndex); load() }
         binding.next.setOnClickListener { next?.let { history.add(it); load() } }
+        binding.filterRecords.setOnClickListener { filterRecords() }
+        binding.clearFilter.setOnClickListener {
+            binding.sequence.text.clear(); binding.productFilter.text.clear(); filterRecords()
+        }
+    }
+    private fun filterRecords() {
+        if (busy || dialogOpen) return
+        val parsed = runCatching { AdjustmentFilter.parse(binding.sequence.text.toString(), binding.productFilter.text.toString()) }
+        if (parsed.isFailure) {
+            history.clear(); history.add(0L); next = null
+            filterError = parsed.exceptionOrNull()?.message
+            show(emptyList()); binding.status.text = filterError; controls(); return
+        }
+        filter = parsed.getOrThrow(); filterError = null; history.clear(); history.add(0L)
+        getSystemService(InputMethodManager::class.java).hideSoftInputFromWindow(binding.sequence.windowToken, 0)
+        binding.sequence.clearFocus(); binding.productFilter.clearFocus(); load()
     }
     private fun load() = task {
-        val page = withContext(Dispatchers.IO) { records.page(history.last()) }
+        val page = withContext(Dispatchers.IO) { if (filterError == null) records.page(history.last(), filter) else emptyList() }
         next = if (page.size == 20) page.last().sequence else null
         binding.title.text = withContext(Dispatchers.IO) { records.title() }
         blockReason = withContext(Dispatchers.IO) { records.blockReason() }
-        show(page); binding.status.text = blockReason.ifBlank { "每页最多20条 · 原序号保留 · 点击已保存包核对" }
+        show(page); binding.status.text = blockReason.ifBlank { filterError ?: run {
+            if (page.isEmpty()) "没有匹配的原记录，未新增扫码" else "每页最多20条 · 原序号保留 · 点击已保存包核对"
+        } }
     }
     private fun locate(raw: String) {
         if (dialogOpen) return
@@ -83,10 +106,11 @@ class ScanAdjustmentActivity : ComponentActivity() {
     }
     private fun confirm(row: AdjustmentRow) {
         dialogOpen = true; scanner.unregister()
-        val reason = EditText(this).apply { hint = "实物核对及调整原因"; maxLines = 3 }
+        val content = DialogScanAdjustmentBinding.inflate(layoutInflater)
+        val reason = content.reason
+        content.details.text = "${row.label}\n请核实本包已卸下或未装车。原输入、明细及序号保留。"
         val dialog = AlertDialog.Builder(this).setTitle("核对原包 ${row.sequence}")
-            .setMessage("${row.label}\n请核实本包已卸下或未装车。原输入、明细及序号保留。")
-            .setView(reason).setNegativeButton("返回核对", null).setPositiveButton("确认调整", null).create()
+            .setView(content.root).setNegativeButton("返回核对", null).setPositiveButton("确认调整", null).create()
         dialog.setOnShowListener { dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val value = reason.text.toString().trim()
             if (value.isBlank() || value.length > 500) reason.error = "请填写1～500字实物核对原因"
@@ -115,10 +139,16 @@ class ScanAdjustmentActivity : ComponentActivity() {
     private fun controls() {
         binding.locate.isEnabled = !busy; binding.back.isEnabled = !busy
         binding.previous.isEnabled = !busy && history.size > 1; binding.next.isEnabled = !busy && next != null
+        listOf(binding.sequence, binding.productFilter, binding.filterRecords, binding.clearFilter).forEach { it.isEnabled = !busy }
     }
     override fun onResume() { super.onResume(); if (::scanner.isInitialized && !dialogOpen) scanner.register() }
     override fun onPause() { if (::scanner.isInitialized) scanner.unregister(); super.onPause() }
-    override fun onSaveInstanceState(outState: Bundle) { outState.putLongArray("history", history.toLongArray()); super.onSaveInstanceState(outState) }
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putLongArray("history", history.toLongArray())
+        outState.putString("sequence", filter.sequence?.toString().orEmpty()); outState.putString("product", filter.product)
+        outState.putString("filterError", filterError)
+        super.onSaveInstanceState(outState)
+    }
     @android.annotation.SuppressLint("RestrictedApi")
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (::binding.isInitialized && !dialogOpen && event.keyCode == KeyEvent.KEYCODE_ENTER && binding.barcode.hasFocus()) {

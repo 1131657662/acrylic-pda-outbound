@@ -1,5 +1,8 @@
 # 历史归档
 
+- [O01/U04 原记录筛选与大字确认有界 L1](GOAL_O01_U04_FILTER_L1_2026-10-19.md)：原序号/产品筛选、非法条件重建、四字号、200% 原生确认及正式冻结禁用通过；既有 SQLite 失败与全部原件保全。仅开发备份，不计 O01/U04 整体、D17、L2/L3 或总目标。
+- [O01 筛选收口前看板归档](ORCHESTRATION_STATE_BEFORE_O01_FILTER_2026-10-19.md)：保留前序取消范围审计、局部候选、失败和未验结论。
+
 - [E07/D06-D07 故障撤回 fail-closed 隔离消费者组合（run913）](GOAL_E07_D06_D07_FAIL_CLOSED_COMBINATION_RUN913_2026-10-18.md)：新隔离非空迁移、真实 HTTP/MySQL、Pixel_6 四条 Android、独立 Python 与 Chrome 两项均通过；显式隔离开关下的回归候选，合成身份不计 D06/D07 L2、D17、E06 L2 或 D18 L3。
 - [E07/D06-D07 Web 故障撤回 fail-closed 入口收口 run01](GOAL_E07_D06_D07_WEB_FAIL_CLOSED_GATE_RUN01_2026-10-18.md)：默认构建隐藏故障撤回入口，隔离构建显式开启；Node/typecheck/build/运行器解析通过，真实 Chrome/HTTP/MySQL 组合未验，不计 D06/D07 L1/L2 或总目标。
 - [E08/U03 独立采集与数据保全 host run02](GOAL_E08_U03_INDEPENDENT_HOST_RUN02_2026-10-18.md)：凭据 parity、救援快照和跨来源防重 17 项 host 测试 0/0/0；未找到可证明的独立设备会话/原身份输入，不能计 Android UI L1、E06 L2、D17 或 D18 L3。
