@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-18
 branch: codex/development
-head: e04974b0
-dirty_entries: 169
+head: 3825e51b
+dirty_entries: 174
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -23,6 +23,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 事实刷新已执行 `tools/version_facts.ps1 -Write/-Check`，当前区仍受脚本上限约束。
 
 ## 已验范围与新增候选
+- E08/O02/O05 rescue 跨运行时候选见 `history/GOAL_E08_O02_O05_CROSS_RUNTIME_2026-10-18.md`：Android rescue 定向 27 项、Python 电脑核验/副本/中转 57 项通过；Android 生成合成包完成独立解密验签、只读输出、加密副本创建和副本外摘要取回。`externalStorageVerified=false`、`businessReceiptVerified=false`、`localDeletionAllowed=false`，不计 O02/O05 整体或任何 L2/L3。
 - E07/D06-D07 run745 见 `history/GOAL_E07_D06_D07_WITHDRAWAL_RECOVERY_RUN745_2026-10-18.md`：全新隔离真实 HTTP/MySQL、非空迁移、撤回/重发、新设备从头作业、五截点重建、原 binlog 回放和认证停机均通过；身份与输入为合成隔离事实，未计 D06/D07 L2。
 - E07/D06-D07 run744 见 `history/GOAL_E07_D06_D07_EMULATOR_HTTP_RUN744_2026-10-18.md`：全新隔离真实 HTTP/MySQL、非空迁移、实际 Pixel_6 emulator 四条 instrumentation、独立 Python 只读消费、Chrome 两项和认证停机均通过。
 - run745 结果为集成 1/0/0/0、179 张表/2 个存储文件、五截点 before/after 重建和原 binlog SHA 校验通过；输入、数据库、截点、日志、密钥和停机事实保留在 `.local/e2a-cross-20260925-745/`。
@@ -31,11 +32,11 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 前序 run733、run741/run742、run743 和 1604-1608 仅按各自报告范围复用；D06/D07 仍缺原 PDA/现场身份、完整权限/实物和统一最终候选。
 
 ## 环境、失败与未验
-- run745 结束后目标端口 19745/19746/19747/19748 清零；共享 `3306/33318/5173/8000` 与 USB `22D2910042` 只观察未停止；当前无本项目 Gradle/MySQL 重型任务或目标监听。`TemporaryAdjustment1364` 的 emulator/qemu 仍由外部进程监听 5564/5565，但 ADB 未列出 `emulator-5564`，未停止并保留所有者证据。
-- run745 收口复核磁盘余量 C=77,426,847,744、D=37,958,750,208、E=195,634,057,216 bytes。本批未清理唯一证据、继承改动、原身份或 run745 attempt；可重建 attempt 是否清理待下一阶段按授权单独登记。
+- O02/O05 候选未启动服务、数据库或 emulator；共享 `3306/33318/5173/8000` 与 USB `22D2910042` 只观察未停止，收口进程/监听/磁盘见 `.local/goal-20261018-resume/o02-cross-runtime/environment-after.json`。`TemporaryAdjustment1364` 的 emulator/qemu 仍由外部进程监听 5564/5565，但 ADB 未列出 `emulator-5564`，未停止并保留所有者证据。
+- O02/O05 收口复核磁盘余量 C=77,425,471,488、D=37,991,034,880、E=195,634,057,216 bytes。本批保留跨运行时包、只读输出、副本清单、测试 XML、继承改动和所有既有失败证据；专用临时目录/relay 测试数据已按授权清理，前后字节与路径见 `o02-cross-runtime/cleanup-before.json`、`cleanup-after.json`。
 - recovered-confirmation 主机 fixture 同根因三次失败继续暂缓；旧 run03 不重启。D16 合法退出依据、D13/D14/D15 剩余、E06/E07/E08 L2、O01-O05/U01-U04 完整范围、统一最终候选及 D18 L3 均未满足。
 - 七类生产决定、TEMP 生产归档、`localDeletionAllowed=false`、原库/现网、正式签名、部署、Release 和 main 合并边界保持关闭；现场 PDA、真实 Keystore、第二设备、外置介质、长时/断电和生产审批按 C 档单列。
-- 下一独立切片：补 run745 未覆盖的 Android/Chrome/Python 或 O01/O02/O05 受影响消费者，优先选择新的输入与明确假设；每次只运行一个 Gradle 构建和一个隔离数据库写者，完成后更新报告、进度索引、看板与事实块。
+- 下一独立切片：继续 O02 真机文件通道/电脑转换或 O05 外置介质边界，或补 run745 未覆盖的 Android/Chrome/Python；每次只运行一个 Gradle 构建和一个隔离数据库写者，完成后更新报告、进度索引、看板与事实块。
 
 <!-- CURRENT_STATE_END -->
 

@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- 2026-10-18：新增 [E08/O02/O05 rescue 跨运行时候选](history/GOAL_E08_O02_O05_CROSS_RUNTIME_2026-10-18.md)。Android rescue 格式定向 27 项与 Python 电脑核验/副本/中转测试 57 项均通过；Android 生成的合成包完成独立解密验签、只读资料输出、加密副本创建和副本外摘要取回。`externalStorageVerified=false`、`businessReceiptVerified=false`、`localDeletionAllowed=false`；未覆盖真实 PDA/原身份/外置介质/USB 文件通道，不计 O02/O05 整体、E06/E07/E08 L2、D18 L3 或总目标。
+
 - 2026-10-18：新增 [E07/D06-D07 撤回重发 Android/HTTP/Chrome 组合（run744）](history/GOAL_E07_D06_D07_EMULATOR_HTTP_RUN744_2026-10-18.md) 与 [recovered-confirmation WIP takeover05 逐路径审计](history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-18_TAKEOVER05.md)。run744 的隔离 HTTP/MySQL、实际 emulator 四条 instrumentation、Python 只读消费和 Chrome 两项通过；合成身份/输入不计 D06/D07 L2、E07 整体、E06/E08 L2、D18 L3 或总目标。旧看板当前区已归档至 [run744 前快照](history/ORCHESTRATION_STATE_before_run744_20261018.md)。
 - 2026-10-18：新增 [E07/D06-D07 撤回重发恢复候选（run745）](history/GOAL_E07_D06_D07_WITHDRAWAL_RECOVERY_RUN745_2026-10-18.md)。新隔离 HTTP/MySQL 输入完成撤回、旧资格/异文拒绝、重新发布、新设备从头作业、五截点重建与原 binlog 回放；集成 1/0/0/0、179 表/2 文件事实和认证停机通过。身份为合成隔离事实，未覆盖 Android、Chrome、Python、原模拟器、现场身份或外置介质，不计 D06/D07 L2、E07/D14 整体、O05、D18 L3 或总目标。
 - 2026-10-18：run744 清理回执见 [D 盘清理记录](history/D_DISK_CLEANUP_RUN744_2026-10-18.md)。已认证停机且无消费者的可重建 MySQL datadir 已删除；输入、dump、XML、日志、trace、APK 和继承 WIP 未清理。
