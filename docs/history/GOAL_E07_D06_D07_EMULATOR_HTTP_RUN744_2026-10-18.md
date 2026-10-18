@@ -13,7 +13,7 @@
 - attempt：`.local/e2a-cross-20260925-744/`；完整证据：
   `.local/goal-20261011/fault-restart-consumer-744/`。隔离服务使用 `19663/19664/19665`，
   emulator serial 为 `emulator-5590`；共享 `3306/33318/5173/8000` 与 USB 设备只观察未停止。
-- runner 在结束阶段保存输入、环境、进程/监听、Android 日志、Chrome trace、数据库 dump 和认证停机日志。
+- runner 在结束阶段保存输入、环境、进程/监听、Android 日志、Chrome trace、数据库 dump 和认证停机日志；可重建 datadir 的清理回执见 `history/D_DISK_CLEANUP_RUN744_2026-10-18.md`。
   运行后 `19663/19664/19665/5590` 无监听，目标 MySQL 进程退出；共享项目监听未触碰。
 
 ## 实际结果
@@ -55,7 +55,8 @@
 
 四个 Android 原文日志的 SHA 分别记录在 runner evidence 目录并与本报告输入绑定；每个均含
 `OK (1 test)` 和 `INSTRUMENTATION_CODE: -1`。浏览器 trace、`processes-after.json`、
-`environment-after.json`、emulator 输出、隔离 MySQL datadir 和失败/停机原件均保留。
+`environment-after.json`、emulator 输出、隔离 MySQL 身份/日志和失败/停机原件均保留；可重建
+datadir 的删除与释放空间见清理回执。
 
 ## 范围结论
 

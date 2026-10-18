@@ -1,6 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
 - 2026-10-18：新增 [E07/D06-D07 撤回重发 Android/HTTP/Chrome 组合（run744）](history/GOAL_E07_D06_D07_EMULATOR_HTTP_RUN744_2026-10-18.md) 与 [recovered-confirmation WIP takeover05 逐路径审计](history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-18_TAKEOVER05.md)。run744 的隔离 HTTP/MySQL、实际 emulator 四条 instrumentation、Python 只读消费和 Chrome 两项通过；合成身份/输入不计 D06/D07 L2、E07 整体、E06/E08 L2、D18 L3 或总目标。旧看板当前区已归档至 [run744 前快照](history/ORCHESTRATION_STATE_before_run744_20261018.md)。
+- 2026-10-18：run744 清理回执见 [D 盘清理记录](history/D_DISK_CLEANUP_RUN744_2026-10-18.md)。已认证停机且无消费者的可重建 MySQL datadir 已删除；输入、dump、XML、日志、trace、APK 和继承 WIP 未清理。
 
 - 2026-10-18：新增 [E06/D12 TEMP 仓库恢复组合候选（run743）](history/GOAL_E06_D12_TEMP_REPOSITORY_RUN743_2026-10-18.md)。当前源码在全新隔离实例完成真实 HTTP/MySQL、非空迁移、两阶段 Android 产品 JVM 测试和独立 Python 75 项检查；Chrome 因无 Web/UI 入口不适用。合成身份/开发签名/非原模拟器不替代现场，仍不计 E06 整体、D12/D17、E07、D18 L3 或总目标。
 
