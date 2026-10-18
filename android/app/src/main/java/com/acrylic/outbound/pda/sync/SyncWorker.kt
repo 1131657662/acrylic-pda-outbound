@@ -21,7 +21,6 @@ class SyncWorker(context: Context, parameters: WorkerParameters) : CoroutineWork
                 com.acrylic.outbound.pda.evidence.E2aRecoveryWorker.restorePending(app)
                 com.acrylic.outbound.pda.evidence.LocalDraftRecoveryWorker.restorePending(app)
                 com.acrylic.outbound.pda.temporary.TemporaryContinuationWorker.restorePending(app)
-                com.acrylic.outbound.pda.temporary.TemporaryHandoverConfirmationWorker.restorePending(app)
                 val state = SyncScheduleState(applicationContext)
                 val next = SyncAttempt(state, app.session::saved, app.backgroundSync::run)
                     .execute { job.ensureActive() }

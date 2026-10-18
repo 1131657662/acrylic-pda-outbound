@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-19
 branch: codex/development
-head: cabd2d48
-dirty_entries: 199
+head: b745d58c
+dirty_entries: 203
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 总目标 D01–D18、§8、O01–O05/U01–U04 与 UI 重设计保持 active、未完成。局部 L1、开发备份、合成身份或暂缓不计完整 L2/L3；R07 取消的换机承接、多跳、接收者确认/激活链不恢复。
 
 ## 精确输入与写权
-- 固定树 `D:/acrylic-pda-outbound`、`codex/development`；本切片输入 HEAD/远端 `9dd2bb6ea5fa739e4af609d8cd4946a988ee171e`。提交后精确 Git 回执见 `.local/goal-20261019-resume/u02-qualifications-run01/git-postcommit.json`。
+- 固定树 `D:/acrylic-pda-outbound`、`codex/development`；本切片 fail-closed 修复输入 HEAD/远端 `b745d58c673c25dcee519487173276063352419a`。提交后精确 Git 回执见 `.local/goal-20261019-resume/failclosed-sync-run01/`。
 - 唯一源码/本轮隔离实例写者仍为本聊天 `01a147c5-0495-7703-ba98-2e7637cbc619`；无子代理/其他活动源码写者。唯一写权、实际进程/监听与原改动保全在各轮 writer/input/环境记录。
 - 本切片证据前缀 `.local/goal-20261019-resume/u02-formal-native-retained914-`，run01–run05全部保留。输入 run01/dirty-input01.json/.zip 与 tracked-input01.patch；run05/inherited-protection01.json 证明原201项字节保持，新增一项正式设备测试，未覆盖继承源码。
 - 最终证据根 run05/：源码/依赖绑定、全改动/patch/zip、索引见 source-bindings-final.json、dependency-bindings-final.json、dirty-candidate01.*、tracked-candidate01.patch、evidence-index-final01.json；提交后快照另存。旧看板归档 `history/ORCHESTRATION_STATE_BEFORE_U02_FORMAL_NATIVE_2026-10-19.md`，原字节 board-before.md。
@@ -31,6 +31,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 启动/离线ADB/缺APK等运行器失败、run02服务与run03测试构建重叠的调度偏差、C临时不带WAL副本的不完整观察均记入failures-summary.json，不声称全程调度合规或全绿。最终精确身份认证停机成立。
 - [TEMP状态原生L1](history/GOAL_U02_TEMP_PENDING_STATUS_NATIVE_L1_2026-10-19.md)已推送2bfcf239；83表可信时间阻断守恒、原机正常校时、待确认/保存/重建有界通过。两个状态L1不计完整U02/D17。
 - [U02/U04本单资格说明页原生L1](history/GOAL_U02_U04_TASK_QUALIFICATION_L1_2026-10-19.md)：新增正式/TEMP只读资格入口；重启后原记录可读但扫码须校时，正常产品连接检查后两类作业入口实际显示本机可看/可扫/可结/可传/可导出边界；无此单拒绝、四档字号/安全区/重建通过。build02、四档 Android `OK (1 test)`、83表 Python 消费通过；仅有界L1，不计U02/U04完整、D17、E06 L2、D18 L3或§8。
+- [E08/D17 fail-closed WIP审计与修复](history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-19.md)：逐路径核对 D06/D07、D13/D14、R07 后确认 `SyncWorker` 曾调用已取消的 `TemporaryHandoverConfirmationWorker.restorePending`，已移除该后台 caller；取消链源码、fixture、bridge、失败证据仍保留，显式开发开关仅作为隔离 WIP。`failclosed-sync-run01` 的 gate 单测 2/0/0/0、Debug/AndroidTest 构建、lint、diff-check 和负向 caller 检查通过；不计 D17/E06 L2/D18 L3。
 
 ## 前序证据与未验
 - O01/U04筛选/四字号/200%确认和正式冻结禁用仅有界L1，见进度索引；既有SQLite/运行器/事实Check失败继续保全。U04状态筛选已有实现/历史证据，漂移路径仍需候选组合，不重复开发。
@@ -39,10 +40,10 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 
 ## 环境、清理与下一步
 - run05/stop-result.json 与本切片 `u02-qualifications-run01/stop-result.json`：HTTP19781、认证MySQL19780/`acrylic_e2a_cross_20260925_914`、Filter914_Pixel6/5622已停，目标PID/端口均清零；两轮最终设备tar、唯一dump、数据库身份、原签名、APK保全。
-- 实际 processes-final-stopped.json/listeners-final-stopped.json；共享3306/13316/13317/33318/5173、ADB5037及USB只观察。无在途本轮构建/设备测试，不连接原库现网。
+- 实际 processes-final-stopped.json/listeners-final-stopped.json；共享3306/13316/13317/33318/5173、ADB5037及USB只观察；本切片构建已退出，历史隔离 MySQL/外部 Node/Vite 仍监听但未连接或停止，不连接原库现网。
 - 清理审核/回执 cleanup-review.json/cleanup-result.json：文本/哈希保全后删C诊断派生副本及正常daemon日志，逻辑1,292,574 bytes；C/D/E余量75,379,343,360 / 12,705,689,600 / 195,634,057,216 bytes。前序被策略拒绝的datadir/AVD目标保持，未换方式删除。
 - 七类生产决定、TEMP生产归档、main、部署/Release、原库/现网及正式签名关闭；localDeletionAllowed=false，D16标准不降低。
-- 下一步继续 U02 结果未知/保全主动作的真实组合、O/U 余项和 D16/D18；本切片资格页按路径+SHA保留，完整最终候选仍未形成。总目标继续，未达到§8不complete。
+- 下一步提交并推送本切片的两条明确路径，随后继续 U02 结果未知/保全主动作的真实组合、O/U 余项和 D16/D18；取消链不恢复，完整最终候选仍未形成。总目标继续，未达到§8不complete。
 
 <!-- CURRENT_STATE_END -->
 
