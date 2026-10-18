@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E08/O02 真机 SAF 与 USB 主机回读候选](GOAL_E08_O02_PHYSICAL_SAF_USB_2026-10-18.md)：连接 M71 实际运行 debug-only DocumentsUI `ACTION_CREATE_DOCUMENT`，生产 `RescueFileTransfer` 回读与 USB ADB 主机 SHA 一致；合成包且非 MTP/OTG/外置介质，不计 O02/O05 整体、任何 L2/L3 或总目标。
+
 - [E08/O02/O05 rescue 跨运行时候选](GOAL_E08_O02_O05_CROSS_RUNTIME_2026-10-18.md)：Android rescue 定向 27 项、Python 电脑核验/副本/中转 57 项及 Android 生成包的独立解密验签、只读输出、加密副本取回通过；输入为合成包，同机副本不计外置介质，不计 O02/O05 整体、E06/E07/E08 L2、D18 L3 或总目标。
 
 - [E06/D12 TEMP 仓库恢复组合候选（run743）](GOAL_E06_D12_TEMP_REPOSITORY_RUN743_2026-10-18.md)：全新隔离实例完成非空迁移、真实 HTTP/MySQL、两阶段 Android 产品 JVM 测试和独立 Python 75 项检查；Chrome 因无 Web/UI 入口不适用，合成身份不计 E06 整体或 D18 L3。
