@@ -19,7 +19,10 @@ GUARDED_TABLES = (
 EXPECTED = {
     "scan": {"drafts": 1, "captures": 2, "scans": 1, "guards": 1},
     "save-scan": {"drafts": 2, "captures": 4, "scans": 2, "guards": 2},
+    "preparation": {},
+    "home": {},
 }
+SENSITIVE_FIELDS = {"ackBodyJson", "ackJson", "bodyJson", "receiptJson", "signingKeyJson"}
 
 
 def digest(path: Path) -> str:
@@ -44,12 +47,26 @@ def table_rows(database: sqlite3.Connection, table: str) -> list[sqlite3.Row]:
     return database.execute(f'SELECT * FROM "{table}"').fetchall()
 
 
+def serializable_value(value: object, field: str | None = None) -> object:
+    if isinstance(value, bytes):
+        return {"bytes": len(value), "sha256": hashlib.sha256(value).hexdigest()}
+    if field in SENSITIVE_FIELDS and isinstance(value, str):
+        return {"chars": len(value), "sha256": hashlib.sha256(value.encode("utf-8")).hexdigest()}
+    return value
+
+
+def row_dict(row: sqlite3.Row) -> dict:
+    return {key: serializable_value(row[key], key) for key in row.keys()}
+
+
 def collect_snapshot(database: sqlite3.Connection) -> dict:
     database.row_factory = sqlite3.Row
     tables = {
         name: table_rows(database, name)
         for name in ("temporary_draft", "temporary_capture", "temporary_scan",
-                     "temporary_guard", "temporary_event", "temporary_submission", *GUARDED_TABLES)
+                     "temporary_guard", "temporary_event", "temporary_submission",
+                     "temporary_preparation", "temporary_request", "temporary_part_chunk",
+                     *GUARDED_TABLES)
     }
     return {
         "integrity": [row[0] for row in database.execute("PRAGMA integrity_check")],
@@ -59,10 +76,13 @@ def collect_snapshot(database: sqlite3.Connection) -> dict:
         "states": [row["state"] for row in tables["temporary_capture"]],
         "scanStatuses": [row["status"] for row in tables["temporary_scan"]],
         "draftStates": [row["state"] for row in tables["temporary_draft"]],
-        "captures": [dict(row) for row in tables["temporary_capture"]],
-        "scans": [dict(row) for row in tables["temporary_scan"]],
-        "guards": [dict(row) for row in tables["temporary_guard"]],
-        "events": [dict(row) for row in tables["temporary_event"]],
+        "captures": [row_dict(row) for row in tables["temporary_capture"]],
+        "scans": [row_dict(row) for row in tables["temporary_scan"]],
+        "guards": [row_dict(row) for row in tables["temporary_guard"]],
+        "events": [row_dict(row) for row in tables["temporary_event"]],
+        "preparations": [row_dict(row) for row in tables["temporary_preparation"]],
+        "requests": [row_dict(row) for row in tables["temporary_request"]],
+        "partChunks": [row_dict(row) for row in tables["temporary_part_chunk"]],
     }
 
 
@@ -110,6 +130,35 @@ def assert_relations(snapshot: dict) -> None:
         raise AssertionError("device capture sequence is not contiguous")
 
 
+def assert_preparation_shape(snapshot: dict) -> None:
+    counts = snapshot["counts"]
+    expected = {
+        "temporary_preparation": 1,
+        "temporary_request": 1,
+        "temporary_part_chunk": 5,
+    }
+    for table, value in expected.items():
+        if counts[table] != value:
+            raise AssertionError(f"{table}: expected {value}, got {counts[table]}")
+    for table in ("temporary_draft", "temporary_capture", "temporary_scan",
+                  "temporary_guard", "temporary_event", "temporary_submission"):
+        if counts[table] != 0:
+            raise AssertionError(f"preparation/home snapshot unexpectedly contains {table}")
+    preparation = snapshot["preparations"][0]
+    if preparation["inventoryRows"] != 2 or preparation["availabilityRows"] != 2:
+        raise AssertionError("preparation inventory facts are incomplete")
+    for key in ("authorizationId", "requestKey", "bundleId", "manifestSha256", "ackJson"):
+        if not preparation[key]:
+            raise AssertionError(f"preparation field is empty: {key}")
+    request = snapshot["requests"][0]
+    for key in ("key", "bodyJson", "signingKeyJson", "receiptJson"):
+        if not request[key]:
+            raise AssertionError(f"preparation request field is empty: {key}")
+    chunk_names = {row["part"] for row in snapshot["partChunks"]}
+    if chunk_names != {"inventory", "mapping", "policy", "rules", "availability"}:
+        raise AssertionError("preparation part names are incomplete")
+
+
 def consume(archive_path: Path, kind: str) -> dict:
     if kind not in EXPECTED:
         raise ValueError(f"unknown snapshot kind: {kind}")
@@ -124,8 +173,11 @@ def consume(archive_path: Path, kind: str) -> dict:
         finally:
             database.close()
     assert_common(snapshot)
-    assert_capture_shape(snapshot, EXPECTED[kind])
-    assert_relations(snapshot)
+    if kind in ("scan", "save-scan"):
+        assert_capture_shape(snapshot, EXPECTED[kind])
+        assert_relations(snapshot)
+    else:
+        assert_preparation_shape(snapshot)
     after = digest(archive_path)
     if before != after:
         raise AssertionError("input tar changed during read-only consumption")
