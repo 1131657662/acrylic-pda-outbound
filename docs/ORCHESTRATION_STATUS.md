@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-18
 branch: codex/development
-head: b1481eb6
-dirty_entries: 169
+head: a8fad58a
+dirty_entries: 174
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -35,7 +35,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - E08/D17接续审计见`history/GOAL_E08_D17_UI_RESUME_AUDIT_2026-10-18.md`、`history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-18_TAKEOVER04.md`（含前序审计）：取消的recovered-confirmation/TEMP确认激活链逐路径保留且未运行，只读展示边界可继续。主机复验见`history/GOAL_E08_RECOVERED_CONFIRMATION_HOST_TEST_FAILURE_2026-10-18.md`：三次均在fixture建库阶段同一SQLiteCantOpenDatabaseException，按规则暂缓。默认`RECOVERED_HANDOVER_DEVELOPMENT=false`，无确认POST/队列；在线USB 22D2910042未操作；D17整体、E06 L2、D18 L3及第8节闸门继续未完成。
 - E07/D06-D07入口审计及run733候选已登记`history/GOAL_E07_D06_D07_ENTRY_AUDIT_2026-10-18.md`、`history/GOAL_E07_D06_D07_WITHDRAWAL_RECOVERY_RUN733_2026-10-18.md`：run733真实隔离HTTP/MySQL完成坏机离线撤回、旧资格/异文拒绝、同键幂等、新轮次成功和五检查点；Android、Chrome、外部Python、原模拟器、现场身份和L2仍缺，不恢复已取消换机链。
 - E07/D06-D07 run741/742：run741真实隔离HTTP/MySQL完成撤回→重发→新设备作业及五截点binlog重建，1/0/0/0、认证停机；run742登记`history/GOAL_D13_RECOVERY_WRITER_RUN742_2026-10-18.md`，恢复事务/非空迁移/导出/renderer/内置消费者与Chrome通过，集成1/0/0/0、浏览器1 passed、身份一致且端口清零；均为合成隔离输入，不计D06/D07 L2、D13整体、E06 L2、D18 L3。
-- E07/D06-D07 run1606的Android/Chrome/Python与run1608非空迁移均为合成隔离局部证据；1604/1605/1607失败原件保留，仍不计D06/D07 L2、D17、E06 L2或D18 L3。
+- E07/D06-D07 run1606/1608为合成隔离Android/Chrome/Python/迁移局部证据；1604/1605/1607失败保留，不计D06/D07 L2、D17、E06 L2或D18 L3。
+- E06/D12 run743见`history/GOAL_E06_D12_TEMP_REPOSITORY_RUN743_2026-10-18.md`：隔离HTTP/MySQL、迁移、Android JVM、Python75项通过；Chrome不适用；合成身份/非原模拟器，不计E06/D12整体、D17/E07/D18 L3。
 - E08/D17 run1600主机Android/真实HTTP候选已登记`history/GOAL_E08_D17_ANDROID_HTTP_RUN1600_2026-10-18.md`：非空V34→V36、`E2aAndroidHttpIT`与`E2aRealHttpRecoveryTest`各1/0/0/0，隔离MySQL认证停机；Android为Robolectric主机测试，不计D06/D07、D17整体、E06 L2、D18 L3或总目标。下一步另建新编号实际emulator组合，不复用旧run03。
 - E08/D17只读UI L1新增history/GOAL_E08_D17_UI_READONLY_L1_2026-10-18.md：新隔离Pixel_6/端口5580实际运行`CONTINUATION_BLOCKED`前驱页，筛选/完整条码定位/身份拒绝/返回和只读入口断言通过；三张业务表完整行值一致。SQLite文件哈希变化且部分视觉回收文件为零字节，故仅合成输入L1开发备份，不计D17整体、E06 L2、D18 L3或总目标；USB设备未触碰，独立AVD已停机。
 - E08/D17/U04明细UI L1新增history/GOAL_E08_D17_UI_DETAILS_L1_2026-10-18.md：新隔离Pixel_6/端口5584实际运行`TemporaryDetailsDeviceTest`，分页/筛选/完整条码定位/键盘/身份拒绝/资格说明/受控入口1/1通过；输入与回收SQLite主文件SHA一致，全部表逐行相等，首屏/末页/筛选/键盘/资格PNG非空并抽查。首次run01因未预创建datadir超时的runner失败原件保留；本run02仅为合成Android L1开发备份，不计D17整体、E06 L2、D18 L3或总目标。
@@ -47,8 +48,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - D13两字符串RowMapper修复已验，SQL/参数/事务/权限不变；source-bindings/impact-map、普通完整回归和失败原件均保全。
 
 ## 环境、清理与未验
-- 当前无本项目 HTTP/Gradle/模拟器监听；run742、run741及1604–1608隔离端口已停机。ADB仅观察USB `22D2910042`，共享5173/3306/33318仅观察未停止，Keystore/原AVD未改。
-- 2026-10-18收尾实测磁盘余量 C 77,696,360,448、D 39,006,576,640、E 195,634,057,216 bytes；未清理唯一证据、隔离库或继承改动。
+- 当前无本项目 HTTP/Gradle/模拟器监听；run743、run742、run741及1604–1608隔离端口已停机。ADB仅观察USB `22D2910042`，共享5173/3306/33318仅观察未停止，Keystore/原AVD未改。
+- 2026-10-18收尾实测磁盘余量 C 77,695,725,568、D 38,442,352,640、E 195,634,057,216 bytes；未清理唯一证据、隔离库或继承改动。
 - 前序1560/1562/1563/1565/1566失败与原证据保留，失败计数不因会话重置；已清可重建库详各报告cleanup-before/after，不清原材料/身份/签名回执/最终APK/继承改动。
 - 七类生产决定、TEMP生产归档保持关闭，localDeletionAllowed=false；不接原库现网/正式签名、不绕设备审批或Chrome策略；D16缺可信合法退出依据，标准不降。
 - 前序D11/D13/D14/D15及E06/Android/UI局部证据按报告路径+SHA复用；D04旧前缀/Chrome1540策略阻断无新依据不机械重跑。
@@ -58,7 +59,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 原件中转入口报告、1571真实IT、独立consumer01及输入/环境/ownership快照均保全；仅收存合成签名ZIP，不新增submission/dispatch/ledger，仍属服务端L1。run722独立检查点Python消费者补验退出0，输出与输入manifest保全，仍属局部组合证据。run734认证停机恢复过程中的失败、shared-memory授权和最终正常停机均保全，未触碰外部3306/33318。
 - 原件中转13路径已推送93710ec5cff979a567654084c80abe089e9a73b7；D17/U04明细L1已收口，高频首页因缺登录/设备绑定前置暂缓。
 - E07恢复围栏主机回归 run01 已登记history/GOAL_E07_RECOVERY_FENCE_HOST_REGRESSION_RUN01_2026-10-18.md：lease退役、效果门默认关闭和恢复SQL选择器定向单测退出0，日志 SHA 为 `9D77800497DDE366901E2C9E3D6A3B8603079FD933EE2C1915DB5C6F1444A8AF`；仅主机层，不计E07/D13整体、E06 L2、D18 L3或总目标。
-- 无项目重型任务；run1597、run727–742及1604–1608输入/日志/datadir/dump/APK/身份哈希保留，均为局部候选；Android/外部Python/原PDA身份/原模拟器恢复链仍缺。
+- 无项目重型任务；run1597、run727–743及1604–1608输入/日志/datadir/dump/APK/身份哈希保留，均为局部候选；Android/外部Python/原PDA身份/原模拟器恢复链仍缺。
 - 主机复验夹具按三次同根因暂缓；出现新的SQLite隔离依据后再入队，继续推进不依赖该夹具的E06/E07组合L2。
 <!-- CURRENT_STATE_END -->
 
