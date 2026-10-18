@@ -66,6 +66,10 @@ class WorkActivity : ComponentActivity() {
         binding.details.setOnClickListener {
             startActivity(android.content.Intent(this, WorkDetailsActivity::class.java).putExtra("assignmentId", assignment))
         }
+        binding.taskQualification.setOnClickListener {
+            startActivity(android.content.Intent(this, TaskQualificationActivity::class.java)
+                .putExtra("source", "FORMAL").putExtra("localOrderId", assignment))
+        }
         binding.confirm.setOnClickListener { confirmDisplayed() }
         binding.validate.setOnClickListener { manualInput() }
         binding.discard.setOnClickListener { discard() }
