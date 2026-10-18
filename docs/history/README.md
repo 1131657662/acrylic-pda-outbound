@@ -1,5 +1,6 @@
 # 历史归档
 
+- [D13 恢复事务与导出浏览器组合（run742）](GOAL_D13_RECOVERY_WRITER_RUN742_2026-10-18.md)：全新隔离实例执行真实 HTTP/MySQL、非空迁移、恢复事务 commit/rollback/末 SQL/未知提交围栏、renderer/export、内置消费者和 Chrome 入口，1/0/0/0 与浏览器 1 passed；身份为合成隔离事实，不计 D13 整体、E06/E07/E08 L2 或 D18 L3。
 - [E07/D06-D07 Android、真实 HTTP、Chrome 与 Python 消费候选（run1606）](GOAL_E07_D06_D07_ANDROID_HTTP_WEB_RUN1606_2026-10-18.md)：登记 run1604 runner stderr 失败、run1605 应用绑定残留失败和 run1606 隔离候选；四条 Android 方法、Chrome 两项及 Python 消费在 run1606 通过，但身份为合成隔离输入，不计 D06/D07 L2、D17、E06 L2 或 D18 L3。
 - [E07/D06-D07 非空迁移候选（run1607/run1608）](GOAL_E07_D06_D07_NONEMPTY_MIGRATION_RUN1608_2026-10-18.md)：run1607 非空迁移断言失败，run1608 隔离非空迁移通过；失败和停机原件保留，不计 D06/D07 L2 或 D18 L3。
 

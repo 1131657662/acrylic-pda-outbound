@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- 2026-10-18：新增 [D13 恢复事务与导出浏览器组合（run742）](history/GOAL_D13_RECOVERY_WRITER_RUN742_2026-10-18.md)。当前工作树在全新隔离实例上完成真实 HTTP/MySQL、非空迁移、恢复事务故障路径、导出/renderer、内置只读检查和 Chrome 入口；集成 1/0/0/0、浏览器 1 passed、认证停机且端口清零。合成身份/密钥和测试浏览器不替代 Android、原 PDA、现场回执或最终候选，不计 D13 整体、E06/E07/E08 L2、D18 L3 或总目标。
+
 - 2026-10-18：新增 [E07/D06-D07 Android、真实 HTTP、Chrome 与 Python 消费候选（run1606）](history/GOAL_E07_D06_D07_ANDROID_HTTP_WEB_RUN1606_2026-10-18.md)。run1604 的 runner stderr 失败与 run1605 的应用绑定残留失败原件保留；run1606 四条 Android 方法、Chrome 两项、Python 只读消费者和隔离数据库停机通过。输入和身份为合成隔离事实，不计 D06/D07 L2、D17、E06 L2、D18 L3 或总目标。
 - 2026-10-18：新增 [E07/D06-D07 非空迁移候选（run1607/run1608）](history/GOAL_E07_D06_D07_NONEMPTY_MIGRATION_RUN1608_2026-10-18.md)。run1607 非空迁移断言失败原件保留；run1608 provision、非空迁移、dump 和认证停机通过。仅局部隔离候选，不计 D06/D07 L2、D17、E06 L2、D18 L3 或总目标。
 
