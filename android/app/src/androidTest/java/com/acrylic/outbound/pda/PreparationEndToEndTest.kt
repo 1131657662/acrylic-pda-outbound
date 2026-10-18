@@ -45,6 +45,7 @@ class PreparationEndToEndTest {
         proxy.loseSubmissionResponse.set(true)
         assertThrows(java.io.IOException::class.java) { app.submissions.upload(submission) }
         assertEquals("RESULT_UNKNOWN", app.database.submissions().get(submission)!!.state)
+        assertUnknownSubmissionPage(app, activated.assignmentId)
         assertEquals("REVIEW_REQUIRED", app.submissions.upload(submission).state)
         admin.approve(submission, app.database.submissions().get(submission)!!.sha256)
         assertEquals("SYNCED", app.submissions.upload(submission).state)
@@ -66,6 +67,31 @@ class PreparationEndToEndTest {
             .put("automaticAndManualScan", true).put("backgroundIgnoresBroadcast", true).put("savedCount", 2).put("weightGrams", 601500)
             .put("submissionId", submission).put("lostResponseRecovered", true).put("shortShipmentApproved", true).put("signedReceiptVerified", true)
         File(context.filesDir, "e2e-evidence.json").writeText(evidence.toString())
+    }
+
+    private fun assertUnknownSubmissionPage(app: PdaApplication, assignment: String) {
+        androidx.test.core.app.ActivityScenario.launch<com.acrylic.outbound.pda.ui.SubmissionActivity>(
+            android.content.Intent(app, com.acrylic.outbound.pda.ui.SubmissionActivity::class.java)
+                .putExtra("assignmentId", assignment)
+        ).use { screen ->
+            var rendered = false
+            val deadline = android.os.SystemClock.elapsedRealtime() + 5000
+            while (!rendered && android.os.SystemClock.elapsedRealtime() < deadline) {
+                screen.onActivity { activity ->
+                    val status = activity.findViewById<android.widget.TextView>(R.id.status)
+                    val refresh = activity.findViewById<android.widget.Button>(R.id.refresh)
+                    val upload = activity.findViewById<android.widget.Button>(R.id.upload)
+                    val notice = activity.findViewById<android.widget.TextView>(R.id.notice)
+                    rendered = status.text.toString().contains("上传结果待核对") &&
+                        refresh.visibility == android.view.View.VISIBLE && refresh.isEnabled &&
+                        refresh.text.toString() == "先查询原批次结果" &&
+                        upload.visibility == android.view.View.GONE &&
+                        notice.text.toString().contains("冻结正文和明细保留在本机")
+                }
+                if (!rendered) Thread.sleep(50)
+            }
+            assertTrue("未知结果页面必须提供查询原批次主动作", rendered)
+        }
     }
 
     private fun verifyActivityShowsPreparedOrder() {

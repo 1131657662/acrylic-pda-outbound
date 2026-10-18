@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- 2026-10-19：新增 [E08/D17/U02 结果未知页面真实 HTTP Android 候选 run1611](history/GOAL_E08_D17_U02_RESULT_UNKNOWN_ANDROID_HTTP_RUN1611_2026-10-19.md)。独立 Pixel_6 实际消费新隔离 fixture，真实 HTTP/MySQL 完成设备登记、准备、冻结、丢响应、结果未知页原批次查询、审批恢复和 Room 重开；instrumentation `OK (1 test)`，认证 dump/停机通过。仅有界 U02/D17 Android L1，不计 U02/D17 整体、E06 L2、D18 L3、§8 或总目标。
+
 - 2026-10-19：新增 [U02/U04 本单资格说明页原生 L1](history/GOAL_U02_U04_TASK_QUALIFICATION_L1_2026-10-19.md)。正式/TEMP 作业入口实际显示可看、可扫、可结、可传、可导出边界；重启阻断、正常产品连接校时、无此单拒绝、四档字号/安全区/重建和 83 表 Room＋WAL 消费通过。仅有界 Android L1 开发备份，不计 U02/U04 完整、D17、E06 L2、D18 L3 或总目标。
 
 - 2026-10-19：新增 [U02 正式待确认与保存状态原生 L1](history/GOAL_U02_FORMAL_PENDING_STATUS_NATIVE_L1_2026-10-19.md)。真实 HTTP 发布/领取/准备、实际正式作业页确认前后及重建通过；原 submission/TEMP 表守恒、旧拒绝输入正常确认后保留，四次失败及调度偏差完整保全。仅状态专项 L1，不计 U02/D17 整体、E06 L2、D18 L3 或总目标。
