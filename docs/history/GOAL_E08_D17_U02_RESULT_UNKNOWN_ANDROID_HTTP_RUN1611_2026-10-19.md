@@ -37,4 +37,4 @@
 | `real-http-1611/private-database-identity.tsv` | `67E5C85224F596F82101BC57066F08B3785C0B336CDACEBC477555E9FE0DE7D5` |
 | `real-http-1611/private-dump-summary.json` | `0D3AF1F0285A67A9E03D4ADE07475147B53F799BDDEAA51A5C74D412BA7CCA38` |
 
-证据索引、最终 Git 状态和 C/D/E 余量分别保存在 `real-http-1611/evidence-index-run1611.json`、`git-state-final.txt` 和 `disk-final.json`。下一步继续处理 U02/U04 其他未验入口和统一候选缺口；本轮不重启 1610、不清理失败证据，不标记总目标完成。
+证据索引、最终 Git 状态和 C/D/E 余量分别保存在 `real-http-1611/evidence-index-run1611.json`、`git-state-final.txt` 和 `disk-final.json`。清理脚本在无监听/无目标进程守卫下删除已认证停机的 1611 datadir 347 个文件、222,329,091 字节及三份凭据；完整输入/哈希/命令见 `cleanup-before-run1611.json`，dump 与业务结果证据保留，清理后 D 盘可用空间记录在 `cleanup-after-run1611.json`。`-datadir` 参数未使默认 Pixel_6 AVD 改用证据目录，默认 AVD 文件未清理或回滚。下一步继续处理 U02/U04 其他未验入口和统一候选缺口；本轮不重启 1610、不清理失败证据，不标记总目标完成。

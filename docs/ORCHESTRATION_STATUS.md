@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-19
 branch: codex/development
-head: 517feea3
-dirty_entries: 199
+head: f4153d73
+dirty_entries: 201
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -40,7 +40,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - D11/D13/D14/D15局部按路径+SHA复用；D16缺可信合法退出依据。O/U余项、原资料/旧BCD、统一最终候选、D18全链L3和§8仍未满足；同机/USB回读不冒充独立外置保管或删除资格。
 
 ## 环境、清理与下一步
-- 1611 `processes-before-stop.json`/`processes-after-stop.json`、`private-dump-summary.json`、`private-database-identity.tsv`：HTTP19471、认证MySQL19371/`acrylic_e2a_cross_20260925_1611`、Pixel_6/5571已停，目标PID/端口均清零；最终设备端证据、唯一 dump、数据库身份和 APK 保全。1610 失败 attempt 继续保留。
+- 1611 `processes-before-stop.json`/`processes-after-stop.json`、`private-dump-summary.json`、`private-database-identity.tsv`：HTTP19471、认证MySQL19371/`acrylic_e2a_cross_20260925_1611`、Pixel_6/5571已停，目标PID/端口均清零；最终设备端证据、唯一 dump、数据库身份和 APK 保全。已认证停机的 datadir 347 文件/222,329,091 字节和凭据按授权清理，前后回执见 `cleanup-*-run1611.json`；1610 失败 attempt 继续保留。
 - 实际 processes-final-stopped.json/listeners-final-stopped.json；共享3306/13316/13317/33318/5173、ADB5037及USB只观察；本切片构建已退出，历史隔离 MySQL/外部 Node/Vite 仍监听但未连接或停止，不连接原库现网。
 - 清理审核/回执 cleanup-review.json/cleanup-result.json：文本/哈希保全后删C诊断派生副本及正常daemon日志，逻辑1,292,574 bytes；C/D/E余量75,379,343,360 / 12,705,689,600 / 195,634,057,216 bytes。前序被策略拒绝的datadir/AVD目标保持，未换方式删除。
 - 七类生产决定、TEMP生产归档、main、部署/Release、原库/现网及正式签名关闭；localDeletionAllowed=false，D16标准不降低。
