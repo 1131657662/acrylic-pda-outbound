@@ -13,6 +13,7 @@
 - [E07/D14 Android 与真实 HTTP 运行失败（run731）](GOAL_E07_D14_ANDROID_HTTP_RUN731_FAILURE_2026-10-18.md)：Android 报告原设备审计前缀缺口/不可核验，集成断言失败；原 XML、HTTP 日志、输入和认证停机事实保留，不计 E07/D14/D17 或任何 L2/L3。
 - [E07/D14 Android 与真实 HTTP 运行失败（run732）](GOAL_E07_D14_ANDROID_HTTP_RUN732_FAILURE_2026-10-18.md)：Android 报告原设备审计前缀缺口/不可核验，集成断言失败；原 XML、HTTP 日志、输入和认证停机事实保留，不计 E07/D14/D17 或任何 L2/L3。
 - [E07/D06-D07 撤回重发服务端组合（run733）](GOAL_E07_D06_D07_WITHDRAWAL_RECOVERY_RUN733_2026-10-18.md)：真实隔离 HTTP/MySQL、旧资格拒绝、撤回回执幂等、新轮次成功和五检查点事实通过；未执行 Android/Chrome/外部 Python/原模拟器/现场身份，不计 D06/D07 L2、E07/D14 整体或 D18 L3。
+- [E07/D06-D07 撤回重发恢复候选（run745）](GOAL_E07_D06_D07_WITHDRAWAL_RECOVERY_RUN745_2026-10-18.md)：新隔离 HTTP/MySQL 完成撤回、旧资格/异文拒绝、重新发布、新设备从头作业、五截点重建、原 binlog 回放和认证停机；合成输入，不计 D06/D07 L2、E07/D14 整体、O05 或 D18 L3。
 - [E07/D06-D07 Android 与真实 HTTP 候选（run735）](GOAL_E07_D06_D07_ANDROID_HTTP_RUN735_2026-10-18.md)：新隔离输入上消费者夹具 1/0/0/0，显式模拟器四条 Android 方法通过并保全强停恢复、应用文件、logcat、直接 instrumentation XML、MySQL dump 与认证停机；默认关闭和实体 m71 误枚举失败原件保留，不计 D06/D07 L2、D17、E06 L2 或 D18 L3。
 - [E08/D17 recovered-confirmation WIP 接管增量审计](GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-18_TAKEOVER02.md)：在既有范围审计基础上重新核对指定 worker/dialog/display/device test/fixture/bridge 及 Handover/Sync/Temporary 调用事实；取消链继续保留，只有 R09 只读展示候选可继续。
 - [E08/D17 recovered-confirmation WIP takeover04 逐路径审计](GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-18_TAKEOVER04.md)：以本次接管 HEAD 和实际调用点重新绑定指定 worker/dialog/display/device test/fixture/bridge 及 Handover/Sync/Temporary 路径；明确取消链不恢复、只读原件展示可继续及下一有界候选验证。
