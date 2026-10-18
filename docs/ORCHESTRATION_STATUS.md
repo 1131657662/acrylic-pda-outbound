@@ -57,6 +57,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 原件中转入口报告、1571真实IT、独立consumer01及输入/环境/ownership快照均保全；仅收存合成签名ZIP，不新增submission/dispatch/ledger，仍属服务端L1。run722独立检查点Python消费者补验退出0，输出与输入manifest保全，仍属局部组合证据。run734认证停机恢复过程中的失败、shared-memory授权和最终正常停机均保全，未触碰外部3306/33318。
 - 原件中转13路径已推送93710ec5cff979a567654084c80abe089e9a73b7；D17/U04明细L1已收口，高频首页因缺登录/设备绑定前置暂缓。
 - UI 主机回归报告已提交 `e3f8167a`；本次仅提交报告和进度索引，继承源码与未跟踪 WIP 未暂存。
+- E07恢复围栏主机回归 run01 已登记history/GOAL_E07_RECOVERY_FENCE_HOST_REGRESSION_RUN01_2026-10-18.md：lease退役、效果门默认关闭和恢复SQL选择器定向单测退出0，日志 SHA 为 `9D77800497DDE366901E2C9E3D6A3B8603079FD933EE2C1915DB5C6F1444A8AF`；仅主机层，不计E07/D13整体、E06 L2、D18 L3或总目标。
 - 无项目重型任务；run1597、run727–739 及 1604–1608 的输入、XML、JSON、HTTP日志、datadir、dump、APK 与身份哈希保留，均仅为局部候选；Android/外部Python/原PDA现场身份/原模拟器恢复链仍缺，不恢复取消的确认/激活链。
 - 当前主机复验夹具已按三次同根因规则暂缓；仅在出现新的SQLite/fixture隔离依据后重新入队，继续推进不依赖该夹具的E06/E07组合L2整理。
 <!-- CURRENT_STATE_END -->
