@@ -1,5 +1,7 @@
 # 历史归档
 
+- [E07/D06-D07 故障撤回、重发与恢复隔离切片](GOAL_E07_D06_D07_FAULT_WITHDRAWAL_L2_SLICE_2026-10-19.md)：run1615 五截点真实 HTTP/MySQL/binlog 恢复 `1/0/0/0`；run998/999 撤回、重发、权限、幂等、异文、并发、末条 SQL 回滚、可靠性和 default-off 共 `19/0/0/0`。合成隔离身份且缺 Android/Chrome/Python/原模拟器，不计 D06/D07 完整 L2、E07/D17、E06 L2 或 D18 L3。
+
 - [O01/U04 原记录筛选与大字确认有界 L1](GOAL_O01_U04_FILTER_L1_2026-10-19.md)：原序号/产品筛选、非法条件重建、四字号、200% 原生确认及正式冻结禁用通过；既有 SQLite 失败与全部原件保全。仅开发备份，不计 O01/U04 整体、D17、L2/L3 或总目标。
 - [O01 筛选收口前看板归档](ORCHESTRATION_STATE_BEFORE_O01_FILTER_2026-10-19.md)：保留前序取消范围审计、局部候选、失败和未验结论。
 
