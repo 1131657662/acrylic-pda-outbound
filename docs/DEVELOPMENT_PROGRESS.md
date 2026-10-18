@@ -4,6 +4,8 @@
 
 - 2026-10-19：新增 [E08/D17 recovered-confirmation 当前接管审计 takeover11](history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-19_TAKEOVER11.md)。按当前源码 SHA 复核 D06/D07、D13/D14、R07 边界、`SyncWorker` 负向 caller、Android/服务端 default-off 及测试 bridge；确认取消链仅保留源码/失败资料，R09 只读展示仍可保留，不计 D06/D07/D13/D14、D17、E06 L2、D18 L3 或总目标。
 
+- 2026-10-19：新增 [E08/D17/U04 模拟器隔离启动器修复](history/GOAL_E08_D17_U04_EMULATOR_ISOLATION_FIX_2026-10-19.md)。高频运行器现在复制完整 AVD 到独立 D 盘 `ANDROID_AVD_HOME`，排除锁/快照，核对进程 datadir 绑定并在停机后验证默认源镜像未变；run05 启动/停机探针通过，但尚未安装 APK 或执行业务 Android L1，不计 U04、D17、E06 L2、D18 L3 或总目标。
+
 - 2026-10-19：新增 [U02/U04 本单资格说明页原生 L1](history/GOAL_U02_U04_TASK_QUALIFICATION_L1_2026-10-19.md)。正式/TEMP 作业入口实际显示可看、可扫、可结、可传、可导出边界；重启阻断、正常产品连接校时、无此单拒绝、四档字号/安全区/重建和 83 表 Room＋WAL 消费通过。仅有界 Android L1 开发备份，不计 U02/U04 完整、D17、E06 L2、D18 L3 或总目标。
 
 - 2026-10-19：新增 [U02 正式待确认与保存状态原生 L1](history/GOAL_U02_FORMAL_PENDING_STATUS_NATIVE_L1_2026-10-19.md)。真实 HTTP 发布/领取/准备、实际正式作业页确认前后及重建通过；原 submission/TEMP 表守恒、旧拒绝输入正常确认后保留，四次失败及调度偏差完整保全。仅状态专项 L1，不计 U02/D17 整体、E06 L2、D18 L3 或总目标。
