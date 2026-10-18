@@ -49,8 +49,9 @@ success. `device-summary.json` intentionally records `externalStorageVerified=fa
   `ActivityScenario.close()` hit a post-finish framework NPE. The run06 target bytes and log are
   retained; run07 removed that test-only target before the final run and records the pre-cleanup SHA.
 
-No failed attempt entered a business workflow or changed a database. The only device cleanup was
-the explicitly named previous synthetic file in `/sdcard/Download/`; its SHA and post-cleanup state
+No failed attempt entered a business workflow or changed a database. After the final evidence was
+pulled, the explicitly named synthetic file in `/sdcard/Download/` and the app-private
+`files/physical-saf` test directory were removed; the target SHA, cleanup checks and disk snapshot
 are recorded in run07.
 
 ## Boundaries
