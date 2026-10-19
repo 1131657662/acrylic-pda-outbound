@@ -18,8 +18,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ## 输入、写权与继承保护
 - 固定树 `D:/acrylic-pda-outbound`、分支 `codex/development`；本审计输入 HEAD、origin 跟踪和实际 `git ls-remote` 均为 `622d38bdb018af8f4fdb3540a2e718476a08217d`，main 只读。
 - 本聊天 `01a1520d-c412-7402-b77d-311a043b3d1e` 为重启后唯一活动项目写者，其他开发/清理聊天 idle/notLoaded；不恢复旧 PID/写权。接管全部219项路径/SHA、文本patch、Git/环境/写权在 `.local/goal-20261019-resume/restart-readonly-audit01/takeover.json` 及同根 `tracked-before.patch`，收口见 `closeout.json`。
-- 本次修改范围仅看板、进度/历史索引、新审计报告及看板归档；审计脚本/派生结果留同根 `.local/`。继承业务源码、取消链WIP及全部其他脏文件保持；禁止整体暂存。
-- 替换前看板已归档至 [审计前断点](history/ORCHESTRATION_STATE_BEFORE_U04_RETAINED_DETAILS_TAR_AUDIT_20261019.md)。重启前/清理前原快照、失败输入与D17/E08 handoff仍按原索引保留。
+- 本轮先完成只读tar审计，再修复TEMP与独立引擎的满队列计数；各自限定源码/测试、报告和索引，禁止整体暂存。独立切片输入 `d58c86554c4d7abb14d8922ddbd7f3e873fc98c2`，全部路径/SHA、patch与继承核对在 `.local/u04-independent-queue-run01/takeover.json`、`closeout.json`；开发交付见同根 `git-delivery.json`。取消链WIP及无关脏文件保留。
+- 替换前看板见 [独立队列切片前断点](history/ORCHESTRATION_STATE_BEFORE_U04_INDEPENDENT_QUEUE_OVERFLOW_L1_20261019.md)；更早审计/重启/清理快照、失败输入与D17/E08 handoff按原索引保留。
 
 ## 首个有界任务结论
 - [U04四字号tar只读审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)：逐成员比较八份tar，并用独立Windows tar重算24个Room成员。Room主库/WAL/SHM内容、完整schema与83表257行不变；完整性ok、无外键错误。原 `archiveUnchanged=false` 保留，不称整tar不变。
@@ -32,11 +32,16 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - [U04 TEMP 队列满边界 L1](history/GOAL_U04_TEMP_QUEUE_OVERFLOW_L1_2026-10-19.md)：修复拒收后 `queued` 计数未回退的显示错误；预修复对照失败，修复后隔离主机测试 4/0/0/0，65 条已接收输入持久化。仅合成 U04 L1，不计 U04/D17 整体、真实 HTTP/MySQL、D16/D18 或第8节。
 - 本切片只改 TEMP 引擎与测试夹具/测试，未安装 APK、启动 ADB/模拟器、连接原库/现网、使用正式签名或覆盖已有证据；隔离服务端 fixture、命令、失败和结果哈希保存在 `.local/u04-temp-queue-run01/`。
 
+## 第三个有界任务结论
+- [U04独立作业队列满边界L1](history/GOAL_U04_INDEPENDENT_QUEUE_OVERFLOW_L1_2026-10-19.md)：拒收后立即发布回退计数；预修复4项中1失败（应65实66），修复后4/0/0/0。暂停后65条原输入顺序持久化、无有效扫描、更新租约释放；只计合成主机L1，不计Activity/HTTP、U04/D17整体、D16/D18或§8。
+- 原运行器stderr失败、原JSON中in-memory措辞及勘误均留同根证据；实际为文件型Room/Robolectric native SQLite，无DB服务器。另只读验证audit02的76个输出长度/哈希及JSON有效，未重复tar审计。
+
 ## 重启后实际环境
 - 本次fresh采样而非沿用旧PID：系统MySQL80父4288/子5188，3306/33060；配置指向ProgramData系统datadir，未连接/停止。auto.cnf权限拒绝，UUID未知；不以服务观察冒充原库身份已核验。
-- 未发现Java/Gradle、项目隔离MySQL、ADB server或模拟器/Vite。5040属Windows svchost；5037无监听，本轮未启动ADB，USB PnP Android/ADB接口不计有效设备会话。既有Debug/正式Keystore只读哈希，不使用正式签名。精确进程/监听/磁盘以takeover及closeout为准。
+- 独立切片收尾fresh采样无Java/Gradle、隔离MySQL、ADB/模拟器；5037无监听，5040仍属Windows服务；Debug Keystore哈希未变。精确进程/监听/磁盘见同根 `environment-closeout.json`，C/D/E余量分别73,241,010,176 / 61,199,851,520 / 195,634,053,120字节。未启动设备会话或使用正式签名。
 - 旧SQLite SQLITE_CANTOPEN、run03 build/MySQL/pipe、A1.4、1522/1523、U02调度偏差和Chrome策略阻断等失败保留，不清零、不无新依据重跑。
 - [前轮D盘清理报告](history/D_DISK_CLEANUP_2026-10-19.md)仍有效；本切片只拟清可重建scratch，但自动审批 `blocked by policy`，48文件/18,436,032字节派生副本原样保留，原证据不动。路径/哈希/无消费者检查见 `scratch-cleanup-before.json`；实际释放0字节，C/D/E余量见closeout。
+- 独立队列切片另清本次已停机可重建构建输出3176文件/54,217,608字节；D余量61,199,761,408→61,260,079,104字节，卷净增60,317,696字节。逐项哈希/结果在同根 `cleanup-before/after.json`；报告、测试XML、日志和所有旧产物保留，不重试前轮被拒scratch。
 
 ## 下一独立任务
 - 从有效U/O或D范围选一项具体缺口，以路径→影响层→必跑→复用依据绑定直接产品入口；不重复已验retained-details，不机械重跑暂缓SQLite或旧run03。D项组合须覆盖受影响Android、真实HTTP/MySQL、Chrome、Python及非空迁移；D18仍须最终候选/原模拟器/恢复全链。

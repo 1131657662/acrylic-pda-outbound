@@ -1,5 +1,8 @@
 # 历史归档
 
+- [U04 独立作业队列满边界 L1](GOAL_U04_INDEPENDENT_QUEUE_OVERFLOW_L1_2026-10-19.md)：拒收计数修复，反例失败与修复后4项主机测试通过；仅合成L1。
+- [独立队列切片前看板](ORCHESTRATION_STATE_BEFORE_U04_INDEPENDENT_QUEUE_OVERFLOW_L1_20261019.md)：保留前序tar审计、TEMP队列修复和未验边界。
+
 - [U04 保留明细四字号 tar 只读审计](GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)：逐成员、Room/WAL 与运行元数据分开核对；Room 物理/逻辑守恒，原 tar 不等保持。仅补有界 L1，非总目标通过。
 - [本审计前看板](ORCHESTRATION_STATE_BEFORE_U04_RETAINED_DETAILS_TAR_AUDIT_20261019.md)：保留审计前看板及当时未验结论。
 - [U04 TEMP 队列满边界 L1](GOAL_U04_TEMP_QUEUE_OVERFLOW_L1_2026-10-19.md)：修复拒收后 `queued` 显示回退，预修复对照失败、修复后主机测试 4/0/0/0；仅合成 U04 L1。

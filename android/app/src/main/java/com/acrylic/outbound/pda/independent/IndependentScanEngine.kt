@@ -106,7 +106,8 @@ internal class IndependentScanEngine(private val db: PdaDatabase, private val en
         val taskLease = try { UpdateGate.enterBusiness() } catch (error: Exception) { stop(error.message.orEmpty()); return false }
         queued.incrementAndGet(); mutable.update { it.copy(queued = queued.get()) }
         if (queue.trySend { try { action() } finally { taskLease.close() } }.isSuccess) return true
-        taskLease.close(); queued.decrementAndGet(); stop("入口已满，本条未接收，请停扫核对")
+        taskLease.close(); queued.decrementAndGet(); mutable.update { it.copy(queued = queued.get()) }
+        stop("入口已满，本条未接收，请停扫核对")
         return false
     }
     private fun execute(action: () -> Unit) {

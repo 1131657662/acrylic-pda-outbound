@@ -48,6 +48,8 @@ class IndependentScanEngineTest {
                 assertTrue(entered.await(10, TimeUnit.SECONDS))
                 repeat(64) { assertTrue(engine.receive("003A0000001", "BROADCAST")) }
                 assertFalse(engine.receive("003A0000001", "BROADCAST"))
+                assertEquals(65, engine.state.value.queued)
+                assertTrue(engine.state.value.blocked.contains("入口已满")); assertFalse(engine.state.value.ready)
                 engine.pause(); assertThrows(IllegalStateException::class.java) { UpdateGate.beginInstall() }
                 release.countDown(); await(engine) { it.queued == 0 && it.candidate != null }
                 val captures = f.store.dao.captures(f.command.id)
