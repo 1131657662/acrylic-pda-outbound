@@ -2,40 +2,39 @@
 
 # 纤序·腈纶包离线出库管理系统
 
-当前开发进度：R06-C稳定临时草稿、多产品计划、本机扫码/全机防重及受控新一轮准备已完成源码/主机验证，下一步R06-D上传与独立确认。Android0.13.0-r06-local-work/code18/Room16，后端业务仍0.23/V30；250项Android主机、15项MySQL/MockMvc及构建/lint通过，实际HTTP/设备待验。详见[交付记录](docs/R06_LOCAL_WORK_GUIDE.md)及[当前进度](docs/DEVELOPMENT_PROGRESS.md)。临时上传/确认尚未开放，不能放行；通用审计补传保留在首条TEMP前等待R06-D。源码在`codex/development`，现网仍0.18/V23/code16，以下R05描述保留当轮版本边界。
+这是一个由 Web 后台、服务端和 Android PDA 组成的离线出库工程。产品范围、协作边界和证据分层分别见路线、政策和治理地图；任何版本、分支、当前完成度和运行环境都以看板实际核对结果为准。
 
-R05最新进度：当前超时待审API/Web入口及中文历史提醒已完成本机验证，见[交付记录](docs/R05_REVIEW_INBOX_GUIDE.md)。下载PDA应用固定页及双入口已部署独立测试公网，code16已完成隔离模拟器浏览器下载、用户来源授权与系统安装、配对登录/同步/更新检查，首次安装已开放，见[交付说明](docs/PDA_DOWNLOAD_GUIDE.md)。旧版本覆盖升级、真机和异地仍待补验，M71保持。此前审计连续前缀归档及召回对账见[审计归档记录](docs/R05_AUDIT_ARCHIVE_GUIDE.md)。本机契约0.21.0/V28/Room14；服务器仍为0.18.0/V23；整单事实清理、异地备份恢复及现场验收未完成。
+首次接手请按 [`docs/PROJECT_DOCUMENT_MAP.md`](docs/PROJECT_DOCUMENT_MAP.md) 的顺序阅读，再读取 [`docs/ORCHESTRATION_STATUS.md`](docs/ORCHESTRATION_STATUS.md) 当前区。README 只提供静态导航，不承担当前状态、验收结论或接续指令。
 
-完整系统以 [V2.3 设计](docs/系统设计方案与开发计划-V2.3.md) 为准。**2026-09-16 Demo已按Q17约定范围验收完成：按键映射、B模式现场复验、真实断电恢复全部通过。**实际操作及取下电池重启后均为12包、3610kg、待处理0，明细、输入、审计与按键配置完整保留，见[现场验收记录](docs/M71_ACCEPTANCE_REPORT.md)和[按键记录](docs/M71_KEY_WIZARD_REPORT.md)。继续已获授权的正式开发，不追加Demo测试。
-
-正式工程当前可运行流程：**Web登录 → 仓库权限 → sku.txt上传预检 → 库存发布 → 多产品订单草稿 → 配置出库政策 → 发布为待领取 → 正式PDA设备/人员登录 → 独占领取 → 下载验签 → Room原子激活 → 下载确认 → 本地扫码保存 → 结单冻结/上传 → 短装审批 → 云端出库/按政策扣账 → PDA验签回执**，并支持未领取订单修订重发/作废、库存和映射管理、历史追溯。各产品独立填写计划包数，订单合计不设116包上限。已接固定48小时离线签名及丢失响应恢复；登录/授权过期、设备停用和下载失败不自动放锁。正式订单提交、受控召回/原机停止/零包作废及原人原机受控续作及主管凭据支持的卸货释放/隔离减包已接入；订单/条码前台同步、本设备审计补传、通用持久任务执行内核、待审提醒和旧同步缓存清理已完成本机回归，完整业务事实留存、持续任务处理器、故障订单撤回重发、临时单、更正和文件生成仍在开发计划内，完整系统尚未验收上线。自动换机交接与旧进度承接已由用户取消，新方案为有权后台撤回坏机领取的未完成订单、重新发布、新设备从头作业，政策见[R07规则](docs/BUSINESS_POLICY_R07.md)，实际实现及验收见[正式开发进度](docs/DEVELOPMENT_PROGRESS.md)、[本机运行说明](server/README.md)及[PDA协议](contracts/PDA_API.md)。
-
-正式PDA短码配对版APK：[`outputs/pda/Acrylic-PDA-0.7.0-debug.apk`](outputs/pda/Acrylic-PDA-0.7.0-debug.apk)，构建及首次设备登记见[Android说明](android/README.md)。这是独立正式工程的开发验证包，已通过主机测试、真实后端模拟器配对及0.6.0覆盖升级验证，尚未在M71上验收。本包配置本机18083回环地址，需要USB转发；正式HTTPS地址及异地网络尚未验证。已包含结单/上传与成功回执验签、召回恢复包、停止证明及续作新资格验签；待上传、待复核或验签失败均不可放行。
-
-Web“PDA 设备管理”已支持8位短码登记：PDA自动提交本机公钥，管理员核对并指定仓库及名称，原PDA再次确认后自动绑定，普通操作无需复制公钥或填写UUID。原请求可恢复，高级公钥登记保留作维护入口；启停不释放订单，也不延长离线资格。见[设备管理操作说明](docs/WEB_DEVICE_GUIDE.md)及[配对交付记录](docs/PDA_PAIRING_REGISTRATION_GUIDE.md)。本轮生成0.7.0本地验证APK，未发布或部署生产。
+历史 Demo、设计资料和操作指南继续保留在下方链接中；它们的日期和测试结论是各自资料的历史范围，不替代看板或专项报告。
 
 ## 先看这里
 
 - [本机历史资料归档位置](docs/LOCAL_ARCHIVE_LOCATIONS.md)：旧工作区、快照及历史测试资料从 D 盘迁往 E 盘后的查找入口、校验与恢复说明。
+- [项目文档地图与零记忆接手顺序](docs/PROJECT_DOCUMENT_MAP.md)：当前状态、路线、政策、验收索引、历史证据和继承改动的职责边界。
 
 仓库保存源码及文档；原始业务样本、服务器资产清单、本机凭据、APK和原始测试产物不随Git上传。克隆后的资料准备见[本地资料说明](docs/GIT_WORKFLOW.md#克隆后的本地资料)。本文的 `outputs/` 和 `demo-artifacts/` 链接指本机构建产物，安装包另按测试版本规则发布。
 
 - [仓库、分支与提交约定](docs/GIT_WORKFLOW.md)：开发分支、稳定分支、每次提交说明及测试版本发布规则。
-- [后续开发路线与跨会话衔接](docs/DEVELOPMENT_ROADMAP.md)：已确认的十步顺序、当前接续位置及发送“继续”时的执行规则；实际证据见[开发进度](docs/DEVELOPMENT_PROGRESS.md)。
+- [后续开发路线与跨会话衔接](docs/DEVELOPMENT_ROADMAP.md)：已确认的十步范围、依赖和长期执行规则；当前接续位置只看[开发看板](docs/ORCHESTRATION_STATUS.md)。
 - [十步完成度统计](docs/history/TEN_STEP_COMPLETION_AUDIT_2026-10-11.md)与[无人值守开发计划](docs/AUTONOMOUS_DEVELOPMENT_GOAL_2026-10-07.md)：按修订范围统计，方案自主决策，同根因重复失败保全暂缓，按依赖继续独立工作。
-- E07 恢复与 O05 应急副本：电脑工具只复制已核验的加密原包到新目录，写入后回读并生成独立取回报告；取回须提供副本目录外另保管的 `copy.json` SHA256。记录会明确区分同机演练与真实外置介质，默认不声称外置保管、业务回执或允许本地删除。专项结果见 [E07/O05 验收](docs/history/GOAL_E07_RESTORE_COPY_ACCEPTANCE_2026-10-14.md)。
-- [PDA应用检查更新与安全升级](docs/PDA_APP_UPDATE_DESIGN.md)：更新流程、渠道签名边界和作业保护；App内更新已有[专项交付](docs/PDA_APP_UPDATE_GUIDE.md)，第9节“下载 PDA 应用”固定入口、短地址和二维码已完成[测试Web部署、隔离模拟器浏览器/系统安装验证](docs/PDA_DOWNLOAD_GUIDE.md)，code16首次安装已开放，真机和异地后补。
+- E07/O05 历史说明：电脑工具的加密副本核验、回读和外置介质边界见 [专项报告](docs/history/GOAL_E07_RESTORE_COPY_ACCEPTANCE_2026-10-14.md)，不替代当前状态或最终候选验收。
+- [PDA应用检查更新与安全升级](docs/PDA_APP_UPDATE_DESIGN.md)：历史设计、专项交付和安全边界入口；当前实现与验证以看板和对应历史报告为准。
 - [安装与构建](docs/DEMO_INSTALL.md)：APK、设备连接、保留数据升级。
 - [真机操作与测试](docs/DEMO_TEST_GUIDE.md)：扫码、实体按键、10 分钟压测、断电、内存、导出。
 - [M71 真机验收记录](docs/M71_ACCEPTANCE_REPORT.md)：现场操作、连续负载、问题修复与剩余门槛。
-- [最新自动验收记录](docs/M71_AUTOMATED_ACCEPTANCE_REPORT.md)：B 模式性能调优、进程恢复、历史容量与保留数据核对；实体操作另列。
+- [Demo自动验收记录（历史）](docs/M71_AUTOMATED_ACCEPTANCE_REPORT.md)：B 模式性能调优、进程恢复、历史容量与保留数据核对；实体操作另列。
 - [开发验证历史](docs/DEMO_REPORT.md)：0.1.0 自动验证与模拟器结果。
 - [完整验收计划](docs/DEMO_PLAN.md)：全部门槛，只有真实完成后才能判定通过。
 - [已确认业务规则](docs/OPEN_QUESTIONS.md)：Q01～Q16 的确认结果。
 
+## 历史 Demo 资料（非当前正式状态）
+
+以下下载、运行和目录内容是保留的 Demo/旧工程资料；正式工程当前状态、版本和可交付性不在本节判定。
+
 ## 下载与运行
 
-APK：[`demo-artifacts/M71-Demo-0.1.19-debug.apk`](demo-artifacts/M71-Demo-0.1.19-debug.apk)。这是隔离的测试包，名称“M71 扫码验证”，包名`com.acrylic.m71demo.debug`，与设备上的同名release测试包数据独立。本轮使用debug包。不连接生产库存，不提供出库放行凭据。执行 B：扫码校验通过自动保存，手输仍 F1 后人工确认；Room 3 保留旧记录的人工策略及全部事实，PASS/FAIL 音频不变。0.1.19把状态和计数更新限定为必要字段，保留0.1.17的键盘恢复；64页回写试验已撤回。91项主机回归及构建通过，软件证据见[自动验收记录](docs/M71_AUTOMATED_ACCEPTANCE_REPORT.md)。Demo按约定范围验收完成；历史失败和初始时延目标未达证据保留。
+历史 Demo APK 原产物不在当前工作树；名称、安装步骤和历史结论只见[自动验收记录](docs/M71_AUTOMATED_ACCEPTANCE_REPORT.md)及[安装说明](docs/DEMO_INSTALL.md)，不能按本节路径下载或把旧结果当作正式工程当前交付。
 
 连接已开启 USB 调试并授权的 M71 后，在项目目录执行：
 
