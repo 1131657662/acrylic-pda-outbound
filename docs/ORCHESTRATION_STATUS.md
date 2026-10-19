@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-19
 branch: codex/development
-head: 47f58615
-dirty_entries: 232
+head: 9c3dfc93
+dirty_entries: 239
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,32 +17,42 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 总目标 D01–D18、§8、O01–O05/U01–U04 与 UI 重设计保持 active、未完成；只有第8节全部闸门在实际最终候选上满足才可 complete。局部L1、合成输入及开发备份不计整体L2/L3。
 
 ## 输入、写权与继承保护
-- 固定树 `D:/acrylic-pda-outbound`、分支 `codex/development`；本切片输入HEAD/origin开发分支 `47f58615842a15aa076e2631e94c9fbb33e002ae`，origin/main只读 `c6e9e0c238c657baecbf699ba6fdbada5d979b86`。本切片尚未提交；下一限定路径提交推送，不混入继承WIP。
-- fresh list_threads核本聊天 `01a1520d-c412-7402-b77d-311a043b3d1e` 唯一项目active写者，其他notLoaded；无代理。closeout01-snapshot核231项tracked/untracked完整路径/SHA和patch、218项继承仅看板改变，暂存为空；后续提交状态另留回执。证据根 `.local/u04-independent-native-input-run01/`。
-- 替换前看板见[本轮诊断前断点](history/ORCHESTRATION_STATE_BEFORE_U04_NATIVE_INPUT_DIAGNOSTIC_20261019.md)、[收尾前快照重建](history/ORCHESTRATION_STATE_BEFORE_U04_NATIVE_INPUT_CLOSEOUT_20261019.md)及[本轮开始前断点](history/ORCHESTRATION_STATE_BEFORE_U04_NATIVE_INPUT_20261019.md)；原始字节另存同根board-before.md。旧角色/PID/暂停不恢复。
+- 固定树 `D:/acrylic-pda-outbound`、分支 `codex/development`；HEAD 与 fresh `origin/codex/development` 为 `9c3dfc931535e32a4c3c6c2da82ead8645e6e109`，`origin/main` 只读为 `c6e9e0c238c657baecbf699ba6fdbada5d979b86`。本聊天 `01a1520d-c412-7402-b77d-311a043b3d1e` 是唯一 active 项目写者；暂存区为空。
+- 重启后完整 SHA/patch、Git/环境清单在 `.local/goal-20261019-resume/takeover-current01/`：238 路径清单 SHA `AC4F9F39B7C7DDA943E1B41002928AB9937F72985381161316B7540F7B24E594`，环境/Git SHA `4A38BBBA973A4367AA488B19C8A36E503742BCC60F56D2859EB2EA0458FD052A`，tracked patch SHA `7C5D147BB195F4E9705FD2CC55070B276D063A1656FD62063E50FA4D7F9F16B1`。看板替换前快照 [归档](history/ORCHESTRATION_STATE_BEFORE_U04_LARGE_FONT_CLOSEOUT_20261019.md)，SHA `C0963546B88211FEDFFF93F774AE4B0B9841C50FE01B9D2AA68E5CAB31265789`。
 
-## 已收口索引及首个只读任务
-- [四字号tar审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)：八tar逐成员、24个Room成员独立复核，Room物理/逻辑守恒，变化是新增取证/目录mtime/profileInstalled/WorkManager调度。原archiveUnchanged=false、run02全部APK/tar/日志保留，不重跑。
-- [取消链takeover12审计](history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-19_TAKEOVER12.md)：无SyncWorker restore caller，确认Dialog无产品caller；R09只读展示保留。原身份/可信时效/保管仍未证。
-- 前序队列满、声效、增量渲染、首屏/次级面板、进度/最近保存、Activity手输交接及无障碍切片沿[进度索引](DEVELOPMENT_PROGRESS.md)与前断点复用；各自合成L1、旧SQLite/取证/运行器失败和未验边界不被本轮覆盖。
+## 已收口切片
+- [四字号 tar 审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)：八 tar 逐成员及 24 个 Room 成员复核，Room 物理/逻辑守恒；输入 SHA 与命令/输出哈希留档。原 `archiveUnchanged=false`、APK/tar/日志保留，未重跑。
+- [独立采集大字首屏原生 L1](history/GOAL_U04_INDEPENDENT_LARGE_FONT_L1_2026-10-19.md)：host04 六套件25项、同一 Debug APK 原生5项通过；四档实际 IME、回顶、触屏确认/保存；Room 83表完整性/外键通过且原行保留。合成隔离输入，不计 U04/D17 整体、L2/L3 或总目标。
+- [恢复 SQL effect gate UNION ALL 有界单测](history/GOAL_RECOVERY_SELECT_UNION_SQL_L1_2026-10-19.md)：`RecoverySelectSqlTest` 43/0/0/0；mock JDBC 下受控授权、fence 与拒绝路径通过。不是 MySQL/HTTP 或恢复业务链验收。
+- [RecoverySelectUnionSqlIT 真实 JDBC](history/GOAL_RECOVERY_SELECT_UNION_JDBC_IT_L1_2026-10-19.md)：隔离 MySQL/JDBC 10/0/0/0；含 UNION 结果、authority/fence 重查、64/65 分支及五类拒绝。authority 为 MODEL fixture，不证明可信恢复链。报告 SHA-256 `5e148181c88e103fb193eab32e293e448570a87a2362a3e83895ace64ceb4ea4`；execution/XML/log/source-manifest 哈希及清理拒绝均留档。
+- 大字证据限制：八张 Activity 截图均已查看但不含系统状态栏；最终 `no_backup` 有封存，无续签前 vault tar；只由续签断言支持旧凭据保留。隔离副本 datadir 361文件清单已留存，清理命令被策略拒绝，副本仍保留。
 
-## 原生键盘避让与保留输入确认切片
+## 实际环境与边界
+- 本次测试后无项目 Gradle/Java、模拟器或隔离 HTTP 进程；监听 3306/33060 属系统 MySQL80，配置 datadir `C:/ProgramData/MySQL/MySQL Server 8.0/Data`，本项未连接，UUID 未确认。共享 ADB server 5037 在运行，设备 `22D2910042` 仅枚举未操作；无 emulator 进程。
+- Debug Keystore SHA `0539b3d0b80ab4619a08db639d433ec2f3ac0a8d7b2fbdc32865d5cfc6b0b6cb`；未加载/使用正式 Keystore。采样 C/D/E 可用字节 `73074315264 / 44794478592 / 195634053120`。
+- 本次 JDBC 收尾 fresh 采样 C/D/E 可用字节 `74351943680 / 44464386048 / 195634053120`；19681/19682 当前无监听或消费者进程。隔离 MySQL 认证停机退出0。递归清理隔离库、任务 build/tmp/project-cache 和 dump 被执行策略以 `blocked by policy` 拒绝，未启动、未删除，D余量未释放；摘要与清理前逐文件SHA保存在 `.local/goal-20261019-resume/recovery-select-union-jdbc01/closeout01/`。测试XML副本、Gradle日志、manifest与其余输入均保留。
+- SQL 单测收口前看板原字节 [已归档](history/ORCHESTRATION_STATE_BEFORE_RECOVERY_UNION_TEST_20261019.md)，SHA `4be0f0b0961c3c4be87aa278e90475802dff5c70182eef52c3041e6e75fa63a2`；本次专用缓存15文件/3238884字节清理被执行策略拒绝，未删除、未绕过、释放0，详见证据根 `cleanup-rejected.json`。
+- 最新 D06/D07 Android+真实HTTP/MySQL+Chrome+Python run1614 只绑定旧输入 HEAD `9c6feaffe39633206734accac7c945a4b4bfcc1f`；其局部组合通过不覆盖当前源码漂移或最终候选矩阵。下步只读比较当前受影响路径 SHA 与已验证输入，选择未重复的独立受影响项。
+
+## 前序原生键盘避让与保留输入确认切片（历史证据）
 - [本批报告](history/GOAL_U04_INDEPENDENT_NATIVE_IME_L1_2026-10-19.md)：新隔离库/HTTP、完整AVD副本、Android原生Keystore及真实HTTP登记/登录/开发凭据准备通过，仅账号/SKU/任务合成。不重跑身份准备。产品只改独立Activity edge-to-edge与max(systemBars,IME)底部padding；引擎/确认/Room/schema/网络未改。
 - 同一产品APK SHA `141cb294a4fcdd18dae231b920d66a808914ad8277bda0ad793e3d902f5e08c8`：100%与150%完整原生消费者通过；130%与200%真实手输/IME/待确认通过后，在保留原任务以外部ADB Enter补验合法保存，再分别只读回读最近保存通过。不是四档同轮通过，不计实体键或原身份/原资料SAF。
 - 最终9任务/4capture/4scan/4guard/0VOID；83表完整性ok/无FK错，仅10张独立状态表变化，6原任务及2原capture/scan/guard逐项不变。3448项源码输入零漂移。final-room-audit SHA `57bd957234fc0994f0e3519177a8275c7aab378506d68b1be08e533dd54e5460`，tar原SHA未变。
 - Debug app/test构建及lintDebug退出0；面板/首屏11项主机测试通过，Activity6项SQLiteCantOpen失败保留且未原样重跑。旧GONE误报/build02参数/IME遮挡、未决输入保护、内部Enter缺首事件、200%旧滚动器、审计读表错误及build10前置错误全部保留，不能改写为原轮通过。
 - 200%已无横向溢出、可滚动真实点击；截图显示大字首屏关键动作仍可能低于屏幕，U01/U04整套首屏/真机、Android9、M71实体键/TalkBack/长时、U04/D17/E06完整L2及D18 L3仍未验。最终截图已实际打开，见visual-review02。
 
-## 实际环境、空间与清理
+## 前序环境、空间与清理（历史事实；不代表本次复核）
 - stop-result01 fresh核本根进程后MySQL19398认证shutdown、AVD5596 emu kill退出0；HTTP19498精确Java PID Stop-Process，不称优雅HTTP停机。19398/19498/5596/5597零监听。本任务Gradle daemon已定向停止，environment-closeout01无Java/Gradle/模拟器；系统MySQL80父4288/子5188与3306/33060只观察未连接/停止，UUID未知。
 - M71 `22D2910042`只枚举；debug keystore SHA `0539b3d0b80ab4619a08db639d433ec2f3ac0a8d7b2fbdc32865d5cfc6b0b6cb`。本轮含身份AVD、签名回执、库、全部APK/tar/log/唯一证据保留；源Pixel_6.avd 27文件再次SHA不变。未声称本机材料异地备份。
 - 本轮只清编译/专用缓存32017文件、逻辑669119190字节；D余量52024352768→52742045696，卷观测增717692928字节。逐文件SHA/依赖/命令/输入与无消费者检查见cleanup-compilation-before01，结果after01；扩展名保护和PS5长路径失败均删除前退出，随后同范围PS7成功。旧自动审批拒绝目录未重试。
 - 收尾采样C/D/E余量73083224064 / 52742037504 / 195634053120字节，详见environment-closeout01。131份阶段APK/tar/log SHA未变，3运行日志停机追加的前缀哈希一致，原字节保留；见protected-evidence-recheck01与stop-log-append-audit01。
+- 提交后fresh environment-postcommit01复核无项目Java/Gradle/模拟器，隔离端口仍零监听；M71仅枚举、debug Keystore SHA不变。C/D/E余量73083056128 / 52746952704 / 195634053120字节；未连接系统库。
 
-## 下一独立任务与总闸门
-- 下一项为独立作业大字首屏信息密度：先以本批200%截图/几何建立任务/计数/候选/确认/最近保存的可见标准，做最小布局调整及定向消费者；不重跑原身份准备/旧tar或内部注入缺首事件。既有SQLite根因无新依据不机械重试。
-- 受影响路径仍按路径→影响层→必跑→复用依据补Android、真实HTTP/MySQL、Chrome/Python及非空迁移组合。D16可信合法退出依据、D18统一最终候选/原模拟器/恢复全链、旧BCD/原材料/现场项继续单列，暂缓不算通过。
-- 七类生产决定、TEMP生产归档及localDeletionAllowed=false保持；不恢复换机承接、多跳、接收者确认/激活，不启动旧run03，不接原库/现网，不用正式签名，不部署/Release/合main。总目标active，只有§8全部闸门满足才complete。
+## 总目标与下一步
+- SQL parser 单测切片已按明确6文件范围提交/推送 `9c3dfc93`；本次 `RecoverySelectUnionSqlIT` 已在绑定 HEAD `9c3dfc93` 上以真实隔离 MySQL/JDBC 执行 10/0/0/0，source-manifest 含2,484输入且零漂移。它只证明 MODEL fixture authority 下的 JDBC 行为，不计恢复业务链、D13/D14/D17 或总目标。下一项先只读核对 D06/D07 当前变更路径 SHA 与 run1614 已验证输入，再选未重复的独立受影响项。
+- D06/D07 的撤回重发与旧资格拒绝组合已有多份分层证据，但当前候选源漂移需按路径/SHA核对；现场身份、统一最终候选 L2/L3 与第8节闸门仍未满足。
+- 七类生产决定、TEMP生产归档及 `localDeletionAllowed=false` 保持；不恢复换机承接、多跳、接收者确认/激活链；不启动旧run03，不接原库/现网，不用正式签名，不部署/Release/合main。
+- 总目标继续 active；仅当第8节全部闸门在实际最终候选输入上满足才可 complete。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。

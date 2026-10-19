@@ -1,6 +1,11 @@
 # 历史归档
 
 - [恢复 SQL effect gate UNION ALL 有界单测](GOAL_RECOVERY_SELECT_UNION_SQL_L1_2026-10-19.md)：当前输入定向测试 43/0/0/0；验证受控 SOURCE_READ 授权、fence 与 JDBC 前拒绝。仅本地 mock 单测，不计真实 MySQL/HTTP、D13/D14/D17 或总目标。
+- [RecoverySelectUnionSqlIT 真实 JDBC 有界验收](GOAL_RECOVERY_SELECT_UNION_JDBC_IT_L1_2026-10-19.md)：隔离 MySQL/JDBC 10/0/0/0；真实 driver 下拒绝路径与 UNION 行结果通过，但 authority 为 MODEL fixture，不证明可信恢复授权或业务链。隔离数据与构建产物清理命令被策略拒绝并保留，不计 D13/D14/D17、L2/L3 或总目标。
+- [大字原生 L1 收口前看板快照](ORCHESTRATION_STATE_BEFORE_U04_LARGE_FONT_CLOSEOUT_20261019.md)：保留重启后纠正旧未执行结论之前的看板字节。
+- [U04 独立采集大字首屏原生 L1](GOAL_U04_INDEPENDENT_LARGE_FONT_L1_2026-10-19.md)：同一 Debug APK 四档字号原生 IME/触屏确认均通过；83 张 Room 表原行保留，唯一凭据库仅最终 no_backup 封存。合成隔离输入，仅有界 Android L1；实体键、原身份、真机及 L2/L3 未验。
+- [大字首屏原生审计前看板](ORCHESTRATION_STATE_BEFORE_U04_LARGE_FONT_NATIVE_AUDIT_20261019.md)：保存大字原生审计开始前看板原字节及当时未执行结论。
+
 - [U01/U04 独立采集 Activity 手输输入交接 L1](GOAL_U01_U04_INDEPENDENT_ACTIVITY_INPUT_L1_2026-10-19.md)：成功输入后归还焦点并请求收起键盘、拒收保留编辑内容；实际Activity主机合成17项通过，非原生IME/真机验收。
 - [U01/U04 独立采集首屏与次级面板 L1](GOAL_U01_U04_INDEPENDENT_FIRST_SCREEN_L1_2026-10-19.md)：动态候选、显式面板及常驻禁放行提示；16项合成测试与设备测试编译通过，Activity/IME未验。
 - [独立采集首屏切片前看板](ORCHESTRATION_STATE_BEFORE_INDEPENDENT_FIRST_SCREEN_20261019.md)：保留文本切片交付及首屏切片前断点。
