@@ -2,6 +2,7 @@ package com.acrylic.outbound.audit;
 
 import com.acrylic.outbound.common.*;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import static com.acrylic.outbound.submissions.SubmissionJson.*;
 
@@ -27,12 +28,36 @@ public final class PdaAuditFacts {
         uuid(source,"clientOrderId");uuid(row,"authorizationId");
     }
     public static void verify(JdbcTemplate jdbc,JsonNode row) {
-        String digest=sha(row);
-        for(String table:java.util.List.of("pda_audit_event","submitted_event")) {
-            var hashes=jdbc.queryForList("SELECT record_sha256 FROM "+table+" WHERE id=? UNION ALL SELECT record_sha256 FROM "+table+" WHERE origin_device_id=? AND local_seq=?",
-                String.class,Ids.bytes(uuid(row,"id")),Ids.bytes(uuid(row,"originDeviceId")),number(row,"localSeq"));
-            if(hashes.stream().anyMatch(hash->!hash.equals(digest)))
-                throw new BusinessException(409,"AUDIT_CONTENT_CONFLICT","原审计ID或设备序号对应的内容不同，请保留原记录并核对");
+        verifyAll(jdbc,List.of(row));
+    }
+    public static void verifyAll(JdbcTemplate jdbc,Iterable<JsonNode> input) {
+        var rows=new ArrayList<JsonNode>();input.forEach(rows::add);if(rows.isEmpty())return;
+        var byId=new HashMap<String,String>();var byOrigin=new HashMap<String,String>();
+        for(var row:rows) {
+            String digest=sha(row),id=uuid(row,"id").toString(),origin=uuid(row,"originDeviceId").toString();
+            byId.put(id,digest);byOrigin.put(originKey(origin,number(row,"localSeq")),digest);
+        }
+        var origins=new LinkedHashMap<String,List<JsonNode>>();
+        for(var row:rows) origins.computeIfAbsent(uuid(row,"originDeviceId").toString(),key->new ArrayList<>()).add(row);
+        for(String table:List.of("pda_audit_event","submitted_event")) { verifyIds(jdbc,table,rows,byId);verifyOrigins(jdbc,table,origins,byOrigin); }
+    }
+    private static void verifyIds(JdbcTemplate jdbc,String table,List<JsonNode> rows,Map<String,String> byId) {
+        for(int start=0;start<rows.size();start+=200) {
+            int end=Math.min(start+200,rows.size());var sql="SELECT BIN_TO_UUID(id),record_sha256 FROM "+table+" WHERE id IN ("+marks(end-start)+")";var params=new ArrayList<Object>();
+            for(int i=start;i<end;i++)params.add(Ids.bytes(uuid(rows.get(i),"id")));
+            jdbc.query(sql,(org.springframework.jdbc.core.RowCallbackHandler)rs->match(byId.get(rs.getString(1)),rs.getString(2)),params.toArray());
         }
     }
+    private static void verifyOrigins(JdbcTemplate jdbc,String table,Map<String,List<JsonNode>> origins,Map<String,String> byOrigin) {
+        for(var group:origins.entrySet()) for(int start=0;start<group.getValue().size();start+=200) {
+            var rows=group.getValue();int end=Math.min(start+200,rows.size());var sql="SELECT local_seq,record_sha256 FROM "+table+" WHERE origin_device_id=? AND local_seq IN ("+marks(end-start)+")";var params=new ArrayList<Object>();params.add(Ids.bytes(UUID.fromString(group.getKey())));
+            for(int i=start;i<end;i++)params.add(number(rows.get(i),"localSeq"));
+            jdbc.query(sql,(org.springframework.jdbc.core.RowCallbackHandler)rs->match(byOrigin.get(originKey(group.getKey(),rs.getLong(1))),rs.getString(2)),params.toArray());
+        }
+    }
+    private static String marks(int count) { return String.join(",",Collections.nCopies(count,"?")); }
+    private static void match(String expected,String actual) {
+        if(expected!=null&&!expected.equals(actual))throw new BusinessException(409,"AUDIT_CONTENT_CONFLICT","原审计ID或设备序号对应的内容不同，请保留原记录并核对");
+    }
+    private static String originKey(String origin,long sequence) { return origin+":"+sequence; }
 }

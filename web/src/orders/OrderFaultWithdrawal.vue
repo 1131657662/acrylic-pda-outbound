@@ -5,12 +5,13 @@ import { useSessionStore } from '../session';
 import { faultWithdrawalSchema, faultWithdrawalCommandSchema } from './fault-withdrawal-contracts';
 import { loadWithdrawal, saveWithdrawal, clearWithdrawal, lockWithdrawal } from './fault-withdrawal-pending';
 import type { SavedWithdrawal, WithdrawalOwner } from './fault-withdrawal-pending';
+import { faultWithdrawalEnabled } from './fault-withdrawal-feature';
 const props = defineProps<{ warehouseId: string; orderId: string; rowVersion: string; status: string }>();
 const emit = defineEmits<{ updated: []; busy: [value: boolean] }>();
 const session = useSessionStore(); const saved = ref<SavedWithdrawal | null>(null); const error = ref('');
 const dialog = ref(false); const loading = ref(false); const reason = ref(''); const physical = ref(''); const checked = ref(false);
 const unresolved = computed(() => !!saved.value && !saved.value.receipt);
-const allowed = computed(() => session.identity?.permissions.includes('order:recall') && ['ASSIGNED', 'REVIEW_REQUIRED', 'RECALL_PENDING'].includes(props.status));
+const allowed = computed(() => faultWithdrawalEnabled && session.identity?.permissions.includes('order:recall') && ['ASSIGNED', 'REVIEW_REQUIRED', 'RECALL_PENDING'].includes(props.status));
 const dispose = computed(() => session.identity?.permissions.includes('order:dispose'));
 function owner(): WithdrawalOwner {
   if (!session.identity || session.warehouseId !== props.warehouseId) throw new Error('身份或仓库已变化，请保留原请求并恢复原身份');
@@ -57,11 +58,13 @@ watch(() => [session.identity?.id, props.warehouseId, props.orderId], () => {
   if (!session.identity) return;
   try {
     saved.value = loadWithdrawal(owner());
-    if (unresolved.value && saved.value) {
+    if (unresolved.value && saved.value && faultWithdrawalEnabled) {
       const command = faultWithdrawalCommandSchema.parse(JSON.parse(saved.value.body));
       reason.value = command.reason; checked.value = command.physicalChecked === true;
       physical.value = command.physicalEvidence ?? ''; open();
     }
+    if (unresolved.value && saved.value && !faultWithdrawalEnabled)
+      error.value = '故障撤回功能当前关闭；原请求已保留，未发送新请求。';
   }
   catch { error.value = '原撤回请求暂不可读取，请保留浏览器存储并恢复；未发送新请求。'; }
 }, { immediate: true });
@@ -71,6 +74,7 @@ watch(() => [session.identity?.id, props.warehouseId, props.orderId], () => {
     <h2>故障订单撤回重发</h2>
     <p>原机故障或离线时，有权后台人员可撤回未完成订单。撤回后重新发布，新设备从头作业；原领取和记录保留。</p>
     <el-alert v-if="error && !dialog" :title="error" type="error" :closable="false" />
+    <p v-if="!faultWithdrawalEnabled && !saved?.receipt" class="muted">故障撤回功能当前关闭；原记录与占用保留。</p>
     <p v-if="saved?.receipt">原故障领取已撤回，未冒充原机停止；请在订单主操作中核对草稿并重新发布。</p>
     <el-button v-if="allowed" type="danger" plain :disabled="loading" @click="open">撤回故障订单</el-button>
     <el-dialog :model-value="dialog" title="撤回故障订单" width="520" :show-close="false" :close-on-click-modal="false" :close-on-press-escape="false">

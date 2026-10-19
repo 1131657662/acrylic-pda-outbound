@@ -9,9 +9,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 final class SourceEvidenceHandoverFacts {
     private SourceEvidenceHandoverFacts() { }
     static List<String> read(JdbcTemplate jdbc,UUID submission) {
-        var installed=jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?",
-            Integer.class,"temporary_handover_submission");
-        if(installed==null || installed!=1)return List.of();
+        var installed=jdbc.queryForObject("""
+            SELECT COUNT(*) FROM information_schema.tables
+            WHERE table_schema=DATABASE() AND table_name IN (?,?)
+            """,Integer.class,"temporary_handover_submission","temporary_handover_activation");
+        if(installed==null || installed!=2)return List.of();
         return jdbc.queryForList("""
             SELECT JSON_OBJECT('scopeId',BIN_TO_UUID(c.id),'warehouseId',BIN_TO_UUID(c.warehouse_id),
               'creatorDeviceId',BIN_TO_UUID(a.device_id),'scopeClientOrderId',BIN_TO_UUID(c.client_order_id),

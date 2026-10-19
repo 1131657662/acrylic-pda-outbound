@@ -2,6 +2,7 @@ package com.acrylic.outbound.inventory;
 
 import com.acrylic.outbound.common.Ids;
 import com.acrylic.outbound.devices.DeviceCrypto;
+import com.acrylic.outbound.e2averify.E2aTestPorts;
 import com.acrylic.outbound.exports.ExportModels.Scope;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /** Real Web login and CSRF transport for the existing export HTTP entry. */
 final class CorrectionExportHttpClient {
-    private static final String BASE="http://127.0.0.1:19434/api/v1";
+    private static final String BASE="http://127.0.0.1:" + E2aTestPorts.http() + "/api/v1";
     private final HttpClient client=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5))
             .cookieHandler(new CookieManager(null,CookiePolicy.ACCEPT_ALL)).build();
     private final UUID warehouse;

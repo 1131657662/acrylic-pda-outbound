@@ -1,6 +1,7 @@
 package com.acrylic.outbound.inventory;
 
 import com.acrylic.outbound.exports.ExportModels;
+import com.acrylic.outbound.e2averify.E2aTestPorts;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
@@ -11,7 +12,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.assertj.core.api.Assertions.*;
 
 final class FaultWithdrawalHttp {
-    static final String BASE="http://127.0.0.1:19434/api/v1";
+    static final String BASE="http://127.0.0.1:" + E2aTestPorts.http() + "/api/v1";
     final FaultRestartFixture f;
     final CorrectionExportHttpClient web;
     private final HttpClient pda=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();

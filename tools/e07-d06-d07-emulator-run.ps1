@@ -21,7 +21,8 @@ $python = 'C:\Python314\python.exe'
 $serial = "emulator-$EmulatorPort"
 $emulatorHome = Join-Path $evidence 'emulator-home'
 $emulatorData = Join-Path $emulatorHome "$Avd.avd"
-$avdData = Join-Path (if ($env:ANDROID_AVD_HOME) { $env:ANDROID_AVD_HOME } else { Join-Path $env:USERPROFILE '.android\avd' }) "$Avd.avd"
+$avdRoot = if ($env:ANDROID_AVD_HOME) { $env:ANDROID_AVD_HOME } else { Join-Path $env:USERPROFILE '.android\avd' }
+$avdData = Join-Path $avdRoot "$Avd.avd"
 $database = "acrylic_e2a_cross_20260925_$Run"
 $mysqlBin = 'C:\Program Files\MySQL\MySQL Server 8.0\bin'
 $serverProcess = $null; $webProcess = $null; $emulatorProcess = $null; $exit = 1; $stage = 'preflight'
@@ -51,10 +52,10 @@ function Require-NoAvdProcess([string]$name) {
     })
     if ($active.Count -gt 0) { throw "AVD already active: $name" }
 }
-function Prepare-EmulatorAvd([string]$source, [string]$home, [string]$name) {
+function Prepare-EmulatorAvd([string]$source, [string]$targetHome, [string]$name) {
     if (-not (Test-Path -LiteralPath $source -PathType Container)) { throw "AVD data source missing: $source" }
-    $target = Join-Path $home "$name.avd"
-    New-Item -ItemType Directory -Force -Path $home | Out-Null
+    $target = Join-Path $targetHome "$name.avd"
+    New-Item -ItemType Directory -Force -Path $targetHome | Out-Null
     if (Test-Path -LiteralPath $target) { throw "isolated AVD target already exists: $target" }
     New-Item -ItemType Directory -Force -Path $target | Out-Null
     $excluded = @('multiinstance.lock','hardware-qemu.ini.lock','tmpAdbCmds','snapshots')
@@ -63,7 +64,12 @@ function Prepare-EmulatorAvd([string]$source, [string]$home, [string]$name) {
     }
     $ini = Join-Path (Split-Path -Parent $source) "$name.ini"
     if (-not (Test-Path -LiteralPath $ini -PathType Leaf)) { throw "AVD index missing: $ini" }
-    Copy-Item -LiteralPath $ini -Destination (Join-Path $home "$name.ini") -Force
+    $targetIni = Join-Path $targetHome "$name.ini"
+    Copy-Item -LiteralPath $ini -Destination $targetIni -Force
+    $iniText = [IO.File]::ReadAllText($targetIni)
+    $iniText = [regex]::Replace($iniText, '(?m)^path=.*$', "path=$target")
+    $iniText = [regex]::Replace($iniText, '(?m)^path\.rel=.*$', "path.rel=$target")
+    [IO.File]::WriteAllText($targetIni, $iniText, [Text.Encoding]::UTF8)
     $images = @(Get-ChildItem -LiteralPath $target -File | Where-Object Name -in @('userdata-qemu.img.qcow2','encryptionkey.img.qcow2','cache.img.qcow2','sdcard.img.qcow2'))
     if (-not ($images.Name -contains 'userdata-qemu.img.qcow2')) { throw 'isolated AVD writable userdata image missing' }
     $manifest = [pscustomobject]@{ source = $source; target = $target; fileCount = @(Get-ChildItem -LiteralPath $target -Recurse -Force -File).Count; bytes = (Get-ChildItem -LiteralPath $target -Recurse -Force -File | Measure-Object Length -Sum).Sum; writable = @($images | ForEach-Object { [pscustomobject]@{ name = $_.Name; sourceSha256 = (Get-FileHash -LiteralPath (Join-Path $source $_.Name) -Algorithm SHA256).Hash; targetSha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash } }) }
@@ -88,7 +94,7 @@ function Require-IsolatedEmulator([string]$data) {
     if ($bound.Count -eq 0) { throw "emulator process is not bound to isolated datadir: $data" }
 }
 function Save-Environment([string]$name) {
-    $rows = Get-ChildItem Env: | Where-Object Name -match '^(OUTBOUND_|FAULT_RESTART_|JAVA_HOME$|TEMP$|TMP$|ANDROID|GRADLE)' |
+    $rows = Get-ChildItem Env: | Where-Object Name -match '^(OUTBOUND_|FAULT_RESTART_|VITE_FAULT_WITHDRAWAL_ENABLED$|JAVA_HOME$|TEMP$|TMP$|ANDROID|GRADLE)' |
         Sort-Object Name | ForEach-Object { [pscustomobject]@{ name = $_.Name; value = if ($_.Name -match 'PASSWORD|TOKEN|SECRET|PRIVATE') { '<redacted>' } else { $_.Value } } }
     $rows | ConvertTo-Json -Depth 3 | Set-Content -Encoding utf8 (Join-Path $evidence "$name.json")
 }
@@ -119,7 +125,7 @@ Require-NoAvdProcess $Avd
 foreach ($path in @($adb,$emulator,$java,$node,$python)) { if (-not (Test-Path $path)) { throw "required executable missing: $path" } }
 New-Item -ItemType Directory -Force -Path (Join-Path $evidence 'private'),(Join-Path $evidence 'xml'),(Join-Path $evidence 'apk'),$emulatorHome | Out-Null
 $env:TEMP = Join-Path $Root '.local\tmp'; $env:TMP = $env:TEMP; $env:JAVA_HOME = 'C:\Program Files\Java\jdk-21.0.11'
-$env:FAULT_RESTART_CONSUMER_INPUT = $input; $env:FAULT_RESTART_WEB_RESULT = Join-Path $evidence 'private\web-result.json'
+$env:FAULT_RESTART_CONSUMER_INPUT = $input; $env:FAULT_RESTART_WEB_RESULT = Join-Path $evidence 'private\web-result.json'; $env:VITE_FAULT_WITHDRAWAL_ENABLED = 'true'
 Save-Environment 'environment-before'; Save-Processes 'processes-before'; git rev-parse HEAD | Set-Content -Encoding ascii (Join-Path $evidence 'head.txt')
 try {
     $stage = 'mysql'; Run-Logged 'powershell.exe' @('-NoProfile','-File',(Join-Path $Root 'tools\e2a-provision-and-run-106.ps1'),'-Run',$Run,'-Port',$MysqlPort,'-ProvisionOnly','-Workspace',$Root) (Join-Path $evidence 'provision.log')

@@ -12,20 +12,57 @@ import static com.acrylic.outbound.submissions.SubmissionJson.*;
 public class SubmissionStore {
     private final JdbcTemplate jdbc;private final OrderWriter orders;private final com.acrylic.outbound.temporary.TemporarySubmissionControls temporary;
     public SubmissionStore(JdbcTemplate jdbc,OrderWriter orders,com.acrylic.outbound.temporary.TemporarySubmissionControls temporary) { this.jdbc=jdbc;this.orders=orders;this.temporary=temporary; }
-    private static final String SELECT="""
+    private static final String SELECT_PREFIX="""
         SELECT BIN_TO_UUID(s.id),BIN_TO_UUID(c.source_order_id),BIN_TO_UUID(s.assignment_id),BIN_TO_UUID(s.freeze_device_id),
          s.work_round,s.source_recovery_epoch,BIN_TO_UUID(s.operator_id),BIN_TO_UUID(c.warehouse_id),s.status,s.receipt_text,s.issues_json,BIN_TO_UUID(s.continuation_id),
-         BIN_TO_UUID(COALESCE(ha.target_device_id,a.target_device_id,c.creator_device_id)),BIN_TO_UUID(COALESCE(ha.new_client_order_id,a.new_client_order_id,c.client_order_id)),BIN_TO_UUID(s.temporary_authorization_id),BIN_TO_UUID(c.canonical_order_id)
+        """;
+    private static final String SELECT_SUFFIX="""
+         ,BIN_TO_UUID(s.temporary_authorization_id),BIN_TO_UUID(c.canonical_order_id)
         FROM submission s INNER JOIN submission_scope c ON c.id=s.scope_id
+        """;
+    private static final String CONTINUATION_JOINS="""
         LEFT JOIN temporary_source_continuation_submission r ON r.submission_id=s.id AND r.scope_id=s.scope_id AND r.to_work_round=s.work_round
         LEFT JOIN temporary_source_continuation_activation a ON a.ticket_id=r.ticket_id AND a.scope_id=r.scope_id
           AND a.from_work_round=r.from_work_round AND a.new_authorization_id=s.temporary_authorization_id
+        """;
+    private static final String HANDOVER_JOINS="""
         LEFT JOIN temporary_handover_submission hr ON hr.submission_id=s.id AND hr.scope_id=s.scope_id AND hr.to_work_round=s.work_round
         LEFT JOIN temporary_handover_activation ha ON ha.ticket_id=hr.ticket_id AND ha.new_authorization_id=s.temporary_authorization_id
           AND ha.to_work_round=hr.to_work_round AND ha.target_device_id=s.freeze_device_id
         """;
+    private volatile String selectSql;
+
+    private String selectSql() {
+        var cached=selectSql;
+        if(cached!=null)return cached;
+        synchronized(this) {
+            if(selectSql==null)selectSql=selectForSchema();
+            return selectSql;
+        }
+    }
+
+    private String selectForSchema() {
+        var tables=new HashSet<>(jdbc.query("""
+            SELECT table_name FROM information_schema.tables
+            WHERE table_schema=DATABASE() AND table_name IN (?,?,?,?)
+            """,(rs,n)->rs.getString(1),
+            "temporary_source_continuation_submission","temporary_source_continuation_activation",
+            "temporary_handover_submission","temporary_handover_activation"));
+        boolean continuation=tables.contains("temporary_source_continuation_submission")
+            && tables.contains("temporary_source_continuation_activation");
+        boolean handover=tables.contains("temporary_handover_submission") && tables.contains("temporary_handover_activation");
+        String targetDevice="c.creator_device_id", targetClient="c.client_order_id";
+        if(continuation && handover) { targetDevice="COALESCE(ha.target_device_id,a.target_device_id,c.creator_device_id)"; targetClient="COALESCE(ha.new_client_order_id,a.new_client_order_id,c.client_order_id)"; }
+        else if(continuation) { targetDevice="COALESCE(a.target_device_id,c.creator_device_id)"; targetClient="COALESCE(a.new_client_order_id,c.client_order_id)"; }
+        else if(handover) { targetDevice="COALESCE(ha.target_device_id,c.creator_device_id)"; targetClient="COALESCE(ha.new_client_order_id,c.client_order_id)"; }
+        var sql=new StringBuilder(SELECT_PREFIX).append(" BIN_TO_UUID(").append(targetDevice).append("),BIN_TO_UUID(").append(targetClient).append(")").append(SELECT_SUFFIX);
+        if(continuation)sql.append(CONTINUATION_JOINS);
+        if(handover)sql.append(HANDOVER_JOINS);
+        return sql.toString();
+    }
+
     public Head find(UUID id) {
-        var rows=jdbc.query(SELECT+" WHERE s.id=?",(rs,n)->new Head(new SubmissionControl(UUID.fromString(rs.getString(1)),
+        var rows=jdbc.query(selectSql()+" WHERE s.id=?",(rs,n)->new Head(new SubmissionControl(UUID.fromString(rs.getString(1)),
             nullable(rs.getString(2)),nullable(rs.getString(3)),UUID.fromString(rs.getString(4)),rs.getLong(5),rs.getString(6),nullable(rs.getString(12)),
             rs.getString(13)==null?null:new SubmissionControl.Temporary(nullable(rs.getString(13)),nullable(rs.getString(14)),nullable(rs.getString(15)))),
             UUID.fromString(rs.getString(7)),UUID.fromString(rs.getString(8)),rs.getString(9),rs.getString(10),rs.getString(11),nullable(rs.getString(16))),Ids.bytes(id));
@@ -43,7 +80,7 @@ public class SubmissionStore {
         var order=orders.lock(actor.warehouse(),c.order());
         requireNotWithdrawn(c.assignment());
         if(c.continuation()==null)equal(Long.toString(c.round()),new com.acrylic.outbound.pda.AssignmentStore(jdbc).get(c.assignment()).workRound(),"作业轮次须绑定原签名领取资格");
-        jdbc.queryForList("SELECT id FROM submission WHERE id=? FOR UPDATE",Ids.bytes(c.id()));
+        jdbc.query("SELECT id FROM submission WHERE id=? FOR UPDATE",(rs,n)->rs.getBytes(1),Ids.bytes(c.id()));
         var head=find(c.id());
         if(head!=null) { equal(head.control(),c,"同一提交ID的来源不可改变");equal(head.actor(),actor.user(),"原提交人员不匹配");return head; }
         var current=jdbc.queryForObject("SELECT BIN_TO_UUID(current_submission_id) FROM submission_scope WHERE id=?",String.class,Ids.bytes(scope));
@@ -74,9 +111,9 @@ public class SubmissionStore {
         return required(c.id());
     }
     public Head lockExisting(Head head) {
-        var c=head.control();jdbc.queryForList("SELECT id FROM submission_scope WHERE id=(SELECT scope_id FROM submission WHERE id=?) FOR UPDATE",Ids.bytes(c.id()));
+        var c=head.control();jdbc.query("SELECT id FROM submission_scope WHERE id=(SELECT scope_id FROM submission WHERE id=?) FOR UPDATE",(rs,n)->rs.getBytes(1),Ids.bytes(c.id()));
         head=required(c.id());
-        if(head.order()!=null)orders.lock(head.warehouse(),head.order());jdbc.queryForList("SELECT id FROM submission WHERE id=? FOR UPDATE",Ids.bytes(c.id()));
+        if(head.order()!=null)orders.lock(head.warehouse(),head.order());jdbc.query("SELECT id FROM submission WHERE id=? FOR UPDATE",(rs,n)->rs.getBytes(1),Ids.bytes(c.id()));
         return required(c.id());
     }
     private void requireNotWithdrawn(UUID assignment) {

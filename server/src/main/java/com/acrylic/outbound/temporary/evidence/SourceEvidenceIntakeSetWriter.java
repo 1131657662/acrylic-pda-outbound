@@ -7,6 +7,7 @@ import com.acrylic.outbound.temporary.protocol.E2aPageItem;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class SourceEvidenceIntakeSetWriter {
     private static final String FIND = """
-        SELECT id,stop_object_id,manifest_bytes,set_sha256,capture_high_watermark,order_scan_high_watermark,
+        SELECT id,stop_object_id,manifest_bytes,set_sha256,capture_high_watermark,%s AS order_scan_high_watermark,
           audit_through_seq,item_count
         FROM source_evidence_set
         WHERE scope_id=? AND submission_id=? AND work_round=? FOR UPDATE
@@ -26,8 +27,8 @@ public class SourceEvidenceIntakeSetWriter {
     private static final String INSERT_SET = """
         INSERT INTO source_evidence_set
         (id,warehouse_id,scope_id,submission_id,work_round,stop_object_id,manifest_bytes,set_sha256,
-         capture_high_watermark,order_scan_high_watermark,audit_through_seq,item_count,received_at)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+         capture_high_watermark%s,audit_through_seq,item_count,received_at)
+        VALUES (?,?,?,?,?,?,?,?,?%s,?,?,?)
         """;
     private static final String INSERT_ITEM = """
         INSERT INTO source_evidence_item
@@ -50,12 +51,9 @@ public class SourceEvidenceIntakeSetWriter {
     private final SourceEvidenceIntakeBusinessFacts businessFacts;
     private final SourceEvidenceIntakeReservations reservations;
 
-    public SourceEvidenceIntakeSetWriter(JdbcTemplate jdbc, SourceEvidenceIntakePageClosure closure,
-        SourceEvidenceIntakePageObjects pages, SourceEvidenceIntakePageItems staged,
-        SourceEvidenceIntakeFiles pageFiles, SourceEvidenceIntakeBusinessFacts businessFacts,
-        SourceEvidenceIntakeReservations reservations) {
-        this.jdbc = jdbc; this.closure = closure; this.pages = pages; this.staged = staged;
-        this.pageFiles = pageFiles; this.businessFacts = businessFacts; this.reservations = reservations;
+    public SourceEvidenceIntakeSetWriter(JdbcTemplate jdbc, SourceEvidenceIntakePageClosure closure, SourceEvidenceIntakePageObjects pages,
+        SourceEvidenceIntakePageItems staged, SourceEvidenceIntakeFiles pageFiles, SourceEvidenceIntakeBusinessFacts businessFacts, SourceEvidenceIntakeReservations reservations) {
+        this.jdbc = jdbc; this.closure = closure; this.pages = pages; this.staged = staged; this.pageFiles = pageFiles; this.businessFacts = businessFacts; this.reservations = reservations;
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
@@ -89,7 +87,7 @@ public class SourceEvidenceIntakeSetWriter {
     }
 
     private SetRow find(SourceEvidenceIntakePageObjects.Binding binding) {
-        var rows = jdbc.queryForList(FIND, Ids.bytes(binding.scopeId()), Ids.bytes(binding.submissionId()),
+        var rows = jdbc.queryForList(FIND.formatted(orderScanColumn()), Ids.bytes(binding.scopeId()), Ids.bytes(binding.submissionId()),
             binding.workRound());
         if (rows.isEmpty()) return null;
         if (rows.size() != 1) throw conflict("E2A_SOURCE_SET_DUPLICATE");
@@ -100,8 +98,7 @@ public class SourceEvidenceIntakeSetWriter {
             number(row, "item_count"));
     }
 
-    private void verifyExisting(SetRow existing, SourceEvidenceIntakeStop.Parsed stop, UUID stopObjectId,
-        SourceEvidenceIntakePageClosure.Assessment assessment, long orderScanHighWatermark) {
+    private void verifyExisting(SetRow existing, SourceEvidenceIntakeStop.Parsed stop, UUID stopObjectId, SourceEvidenceIntakePageClosure.Assessment assessment, long orderScanHighWatermark) {
         var proof = SubmissionJson.parse(stop.canonicalStopProofBytes()).path("core");
         if (!existing.stopObjectId().equals(stopObjectId) || !Arrays.equals(existing.manifestBytes(), stop.manifestBytes())
             || !existing.setSha256().equals(stop.setHash()) || existing.captureHighWatermark() != proof.path("captureHighWatermark").longValue()
@@ -111,18 +108,30 @@ public class SourceEvidenceIntakeSetWriter {
             throw conflict("E2A_SOURCE_SET_CONFLICT");
     }
 
-    private void insertSet(UUID setId, SourceEvidenceIntakeStop.Parsed stop,
-        SourceEvidenceIntakePageObjects.Binding binding, UUID stopObjectId, long capture, long orderScanHighWatermark,
-        long audit, long items) {
-        if (jdbc.update(INSERT_SET, Ids.bytes(setId), Ids.bytes(binding.warehouseId()), Ids.bytes(binding.scopeId()),
+    private void insertSet(UUID setId, SourceEvidenceIntakeStop.Parsed stop, SourceEvidenceIntakePageObjects.Binding binding, UUID stopObjectId, long capture, long orderScanHighWatermark, long audit, long items) {
+        boolean hasOrderScanColumn = hasOrderScanColumn();
+        var values = new ArrayList<Object>(List.of(Ids.bytes(setId), Ids.bytes(binding.warehouseId()), Ids.bytes(binding.scopeId()),
             Ids.bytes(binding.submissionId()), binding.workRound(), Ids.bytes(stopObjectId), stop.manifestBytes(),
-            stop.setHash(), capture, orderScanHighWatermark, audit, items, Timestamp.from(Instant.now())) != 1)
+            stop.setHash(), capture));
+        if (hasOrderScanColumn) values.add(orderScanHighWatermark);
+        values.add(audit); values.add(items); values.add(Timestamp.from(Instant.now()));
+        var sql = INSERT_SET.formatted(hasOrderScanColumn ? ",order_scan_high_watermark" : "", hasOrderScanColumn ? ",?" : "");
+        if (jdbc.update(sql, values.toArray()) != 1)
             throw new IllegalStateException("SOURCE_SET_INSERT_COUNT");
     }
 
+    private String orderScanColumn() { return hasOrderScanColumn() ? "order_scan_high_watermark" : "0"; }
+
+    private boolean hasOrderScanColumn() {
+        Integer count = jdbc.queryForObject("""
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema=DATABASE() AND table_name=? AND column_name=?
+            """, Integer.class, "source_evidence_set", "order_scan_high_watermark");
+        return count == null || count == 1;
+    }
+
     private List<Item> readItems(SourceEvidenceIntakePageObjects.Binding binding, byte[] manifestBytes) {
-        var manifest = SubmissionJson.parse(manifestBytes);
-        int pageCount = manifest.path("pageCount").intValue();
+        var manifest = SubmissionJson.parse(manifestBytes); int pageCount = manifest.path("pageCount").intValue();
         var result = new java.util.ArrayList<Item>();
         for (int pageNo = 1; pageNo <= pageCount; pageNo++) result.addAll(readPageItems(binding, pageNo));
         return List.copyOf(result);
@@ -142,8 +151,7 @@ public class SourceEvidenceIntakeSetWriter {
         } catch (IOException failure) { throw conflict("E2A_PAGE_FILE_UNAVAILABLE"); }
     }
 
-    private void insertItem(UUID setId, SourceEvidenceIntakePageObjects.Binding binding, E2aPageItem item,
-        SourceEvidenceIntakePageItems.Indexed index) {
+    private void insertItem(UUID setId, SourceEvidenceIntakePageObjects.Binding binding, E2aPageItem item, SourceEvidenceIntakePageItems.Indexed index) {
         if (!item.originalRecordId().equals(index.recordId()) || !item.originalObjectId().equals(index.originalObjectId())
             || !item.itemKind().equals(index.kind()) || item.byteCount() != index.byteCount())
             throw conflict("E2A_PAGE_STAGE_CONFLICT");
@@ -167,20 +175,17 @@ public class SourceEvidenceIntakeSetWriter {
     }
 
     private long itemCount(UUID setId) {
-        Long count = jdbc.queryForObject("SELECT COUNT(*) FROM source_evidence_item WHERE set_id=?", Long.class,
-            Ids.bytes(setId));
+        Long count = jdbc.queryForObject("SELECT COUNT(*) FROM source_evidence_item WHERE set_id=?", Long.class, Ids.bytes(setId));
         return count == null ? -1 : count;
     }
 
     private static byte[] optional(UUID value) { return value == null ? null : Ids.bytes(value); }
     private static UUID uuid(java.util.Map<String, Object> row, String key) {
-        var buffer = java.nio.ByteBuffer.wrap(bytes(row, key));
-        return new UUID(buffer.getLong(), buffer.getLong());
+        var buffer = java.nio.ByteBuffer.wrap(bytes(row, key)); return new UUID(buffer.getLong(), buffer.getLong());
     }
     private static byte[] bytes(java.util.Map<String, Object> row, String key) { if (!(row.get(key) instanceof byte[] value) || value.length != 16) throw conflict("E2A_SOURCE_SET_CORRUPT"); return value; }
     private static byte[] manifest(java.util.Map<String, Object> row) {
-        if (!(row.get("manifest_bytes") instanceof byte[] value) || value.length < 1 || value.length > 262144)
-            throw conflict("E2A_SOURCE_SET_CORRUPT");
+        if (!(row.get("manifest_bytes") instanceof byte[] value) || value.length < 1 || value.length > 262144) throw conflict("E2A_SOURCE_SET_CORRUPT");
         return value.clone();
     }
     private static String text(java.util.Map<String, Object> row, String key) { if (!(row.get(key) instanceof String value)) throw conflict("E2A_SOURCE_SET_CORRUPT"); return value; }
@@ -189,9 +194,7 @@ public class SourceEvidenceIntakeSetWriter {
 
     public record SetLink(UUID id, long itemCount) { }
     private record Item(E2aPageItem item, SourceEvidenceIntakePageItems.Indexed index) { }
-    private record SetRow(UUID id, UUID stopObjectId, byte[] manifestBytes, String setSha256,
-        long captureHighWatermark, long orderScanHighWatermark, long auditThroughSeq, long itemCount) {
-        private SetRow { manifestBytes = manifestBytes.clone(); }
-        @Override public byte[] manifestBytes() { return manifestBytes.clone(); }
+    private record SetRow(UUID id, UUID stopObjectId, byte[] manifestBytes, String setSha256, long captureHighWatermark, long orderScanHighWatermark, long auditThroughSeq, long itemCount) {
+        private SetRow { manifestBytes = manifestBytes.clone(); } @Override public byte[] manifestBytes() { return manifestBytes.clone(); }
     }
 }

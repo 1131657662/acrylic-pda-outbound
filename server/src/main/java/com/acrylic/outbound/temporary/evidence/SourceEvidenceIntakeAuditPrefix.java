@@ -42,8 +42,7 @@ public class SourceEvidenceIntakeAuditPrefix {
             if (rows.isEmpty()) throw conflict();
             for (var row : rows) {
                 if (!(row.get("local_seq") instanceof Number sequence) || sequence.longValue() != cursor + 1
-                    || sequence.longValue() > throughSeq)
-                    throw conflict();
+                    || sequence.longValue() > throughSeq) throw conflict();
                 validate(row, device, warehouse, recoveryEpoch, cursor + 1);
                 cursor++;
             }
@@ -91,7 +90,9 @@ public class SourceEvidenceIntakeAuditPrefix {
                 || !authorization.equals(SubmissionJson.uuid(payload, "authorizationId"))
                 || !submission.toString().equals(SubmissionJson.text(payload, "detail"))) throw conflict();
             var handover=SourceEvidenceHandoverFacts.read(jdbc,submission);
-            var clients = handover.isEmpty()?jdbc.queryForList("""
+            var clients = !handover.isEmpty() ? handover.stream()
+                .map(value->SubmissionJson.text(SubmissionJson.parse(value),"clientOrderId")).toList()
+                : continuationTablesInstalled() ? jdbc.queryForList("""
                 SELECT BIN_TO_UUID(CASE WHEN s.work_round=1 THEN c.client_order_id ELSE n.new_client_order_id END)
                 FROM submission s JOIN submission_scope c ON c.id=s.scope_id
                 LEFT JOIN temporary_source_continuation_submission r ON r.submission_id=s.id AND r.scope_id=c.id
@@ -101,7 +102,15 @@ public class SourceEvidenceIntakeAuditPrefix {
                   AND n.target_device_id=s.freeze_device_id AND n.target_operator_id=s.operator_id
                 WHERE s.id=?
                 """, String.class, Ids.bytes(submission)):
-                handover.stream().map(value->SubmissionJson.text(SubmissionJson.parse(value),"clientOrderId")).toList();
+                jdbc.queryForList("""
+                SELECT BIN_TO_UUID(c.client_order_id)
+                FROM submission s JOIN submission_scope c ON c.id=s.scope_id
+                JOIN temporary_work_origin t ON t.creator_device_id=c.creator_device_id AND t.client_order_id=c.client_order_id
+                JOIN temporary_authorization a ON a.id=s.temporary_authorization_id
+                  AND a.id=t.authorization_id AND a.device_id=c.creator_device_id AND a.device_id=s.freeze_device_id
+                  AND a.user_id=s.operator_id AND a.warehouse_id=c.warehouse_id AND a.recovery_epoch=s.source_recovery_epoch
+                WHERE s.id=? AND s.work_round=1 AND c.work_round=1 AND s.assignment_id IS NULL AND s.continuation_id IS NULL
+                """, String.class, Ids.bytes(submission));
             if (clients.size() != 1 || !clients.getFirst().equals(
                 SubmissionJson.text(payload.path("source"), "clientOrderId"))) throw conflict();
         } catch (RuntimeException invalid) { throw conflict(); }
@@ -140,6 +149,14 @@ public class SourceEvidenceIntakeAuditPrefix {
                 throw conflict();
             PdaAuditFacts.verify(jdbc, payload);
         } catch (RuntimeException invalid) { throw conflict(); }
+    }
+
+    private boolean continuationTablesInstalled() {
+        Integer count=jdbc.queryForObject("""
+            SELECT COUNT(*) FROM information_schema.tables
+            WHERE table_schema=DATABASE() AND table_name IN (?,?)
+            """,Integer.class,"temporary_source_continuation_submission","temporary_source_continuation_activation");
+        return count!=null && count==2;
     }
 
     private boolean sourceMatches(Map<String, Object> row, JsonNode payload) {

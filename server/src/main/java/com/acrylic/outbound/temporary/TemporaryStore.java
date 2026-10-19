@@ -45,14 +45,17 @@ public class TemporaryStore {
     }
     /** A continuation credential can only enter its explicit next-round protocol. */
     public void requireInitialSubmission(UUID authorization) {
-        Integer consumed = jdbc.queryForObject("SELECT COUNT(*) FROM temporary_source_continuation_activation WHERE new_authorization_id=?",
-            Integer.class, Ids.bytes(authorization));
-        if (consumed == null || consumed != 0)
+        var tables=new HashSet<>(jdbc.query("""
+            SELECT table_name FROM information_schema.tables
+            WHERE table_schema=DATABASE() AND table_name IN (?,?)
+            """,(rs,n)->rs.getString(1),"temporary_source_continuation_activation","temporary_handover_activation"));
+        if(tables.contains("temporary_source_continuation_activation") && consumed("temporary_source_continuation_activation",authorization)!=0)
             throw new BusinessException(409,"TEMP_CONTINUATION_INTAKE_UNAVAILABLE","续作资格不能用于临时首轮；请保留原票据等待专用续作协议");
-        Integer handover = jdbc.queryForObject("SELECT COUNT(*) FROM temporary_handover_activation WHERE new_authorization_id=?",
-            Integer.class, Ids.bytes(authorization));
-        if (handover == null || handover != 0)
+        if(tables.contains("temporary_handover_activation") && consumed("temporary_handover_activation",authorization)!=0)
             throw new BusinessException(409,"TEMP_HANDOVER_INTAKE_UNAVAILABLE","交接资格只能用于专用交接轮次，不能创建临时首轮");
+    }
+    private int consumed(String table,UUID authorization) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM "+table+" WHERE new_authorization_id=?",Integer.class,Ids.bytes(authorization));
     }
     public TemporaryCommands.Acknowledgement ack(Stored row) {
         var rows=jdbc.query("SELECT activated_at,acknowledged_at,signed_ack FROM temporary_preparation_ack WHERE authorization_id=?",
