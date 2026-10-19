@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.LinearLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.test.espresso.Espresso.onView
@@ -19,14 +20,19 @@ class TemporaryDetailsDeviceUi(private val output: File) {
     fun reveal(id: Int) {
         repeat(30) {
             settle()
-            var visible = false; var below = true
+            var visible = false; var below = true; var scrollY = 0
             onView(withId(id)).check { view, error ->
                 if (error != null) throw error
                 val bounds = safe(view); val p = IntArray(2); view.getLocationOnScreen(p)
                 visible = p[1] >= bounds.first && p[1] + view.height <= bounds.second
                 below = p[1] > (bounds.first + bounds.second) / 2
+                var parent = view.parent
+                while (parent != null) {
+                    if (parent is ScrollView) { scrollY = parent.scrollY; break }
+                    parent = parent.parent
+                }
                 output.mkdirs()
-                File(output, "reach-$id.txt").appendText("y=${p[1]}; height=${view.height}; safe=$bounds; visible=$visible\n")
+                File(output, "reach-$id.txt").appendText("y=${p[1]}; height=${view.height}; safe=$bounds; scrollY=$scrollY; visible=$visible\n")
             }
             if (visible) return
             drag(below)
@@ -60,8 +66,8 @@ class TemporaryDetailsDeviceUi(private val output: File) {
             override fun getConstraints() = isDisplayed()
             override fun getDescription() = "Drag inside the safe viewport without fling or long press"
             override fun perform(controller: androidx.test.espresso.UiController, view: View) {
-                val start = point(view, if (below) .7f else .3f)
-                val end = point(view, if (below) .3f else .7f)
+                val start = point(view, if (below) .9f else .1f)
+                val end = point(view, if (below) .1f else .9f)
                 val at = android.os.SystemClock.uptimeMillis()
                 repeat(21) { step ->
                     val action = if (step == 0) android.view.MotionEvent.ACTION_DOWN else android.view.MotionEvent.ACTION_MOVE
@@ -85,8 +91,12 @@ class TemporaryDetailsDeviceUi(private val output: File) {
             if (error != null) throw error
             val bars = checkNotNull(ViewCompat.getRootWindowInsets(view)).getInsets(WindowInsetsCompat.Type.systemBars())
             val ime = checkNotNull(ViewCompat.getRootWindowInsets(view)).getInsets(WindowInsetsCompat.Type.ime())
-            assertTrue(view.paddingTop >= bars.top); assertTrue(view.paddingBottom >= maxOf(bars.bottom, ime.bottom))
-            val text = StringBuilder("bars=$bars; ime=$ime; padding=${view.paddingTop},${view.paddingBottom}\n")
+            val content = checkNotNull(view.findViewById<LinearLayout>(R.id.content))
+            assertTrue(view.paddingTop >= bars.top); assertTrue(view.paddingBottom >= bars.bottom)
+            assertTrue(content.paddingBottom >= maxOf(0, ime.bottom - bars.bottom))
+            val scroll = view as ScrollView
+            val child = scroll.getChildAt(0)
+            val text = StringBuilder("bars=$bars; ime=$ime; root=${scroll.width}x${scroll.height}; scrollY=${scroll.scrollY}; child=${child.width}x${child.height}@${child.top}; rootPadding=${scroll.paddingTop},${scroll.paddingBottom}; contentPadding=${content.paddingLeft},${content.paddingTop},${content.paddingRight},${content.paddingBottom}\n")
             inspectText(view, view.width, text)
             output.mkdirs(); File(output, "$name.txt").writeText(text.toString())
             val bitmap = Bitmap.createBitmap(view.rootView.width, view.rootView.height, Bitmap.Config.ARGB_8888)

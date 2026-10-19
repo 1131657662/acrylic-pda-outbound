@@ -39,9 +39,17 @@ class TemporaryDetailsActivity : ComponentActivity() {
         filter = WorkDetailFilter.entries.firstOrNull { it.name == savedInstanceState?.getString("filter") } ?: WorkDetailFilter.ALL
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding = ActivityTemporaryDetailsBinding.inflate(layoutInflater); setContentView(binding.root)
+        val content = binding.content
+        val contentPadding = intArrayOf(content.paddingLeft, content.paddingTop, content.paddingRight, content.paddingBottom)
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
-            val safe = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            view.setPadding(safe.left, safe.top, safe.right, safe.bottom); insets
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            content.setPadding(
+                contentPadding[0], contentPadding[1], contentPadding[2],
+                contentPadding[3] + maxOf(0, ime.bottom - bars.bottom)
+            )
+            insets
         }
         bindActions(); bindFilters()
     }

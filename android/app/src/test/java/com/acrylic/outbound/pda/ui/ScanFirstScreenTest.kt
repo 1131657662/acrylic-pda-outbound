@@ -43,6 +43,7 @@ class ScanFirstScreenTest {
             assertEquals(View.VISIBLE, it.visibility); assertTrue("${it.id} bottom ${bottom(b, it)} below first screen", bottom(b, it) <= 509)
         }
         assertTrue(b.totals.text.contains("已保存 0")); assertTrue(b.confirm.isEnabled)
+        assertTrue(b.message.text.contains("待确认输入 1"))
         assertEquals(View.GONE, b.secondaryActions.visibility)
     }
     @Test fun idleQueueDoesNotShowTechnicalZeroCounters() {
@@ -54,9 +55,10 @@ class ScanFirstScreenTest {
     @Test fun durableFailureBlocksNewInputWithoutClaimingCurrentPackageSaved() {
         val b = binding()
         WorkRenderer(b).render(WorkUi(order = WorkOrder("assignment", "order", "车", 10, 1),
-            blocked = "存储失败，原输入保留", queued = 2), "声音未就绪")
+            blocked = "存储失败，原输入保留", pending = 1, queued = 2), "声音未就绪")
         assertFalse(b.validate.isEnabled); assertFalse(b.adjustPackages.isEnabled)
         assertTrue(b.message.text.contains("存储失败")); assertTrue(b.message.text.contains("待落盘 2"))
+        assertTrue(b.message.text.contains("待确认输入 1"))
         assertFalse(b.recentSaved.text.contains("最近本机已保存："))
     }
     @Test fun temporarySourceAndSavedCountStayOnFirstScreen() {

@@ -18,9 +18,11 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], qualifiers = "mdpi", application = android.app.Application::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class IndependentFirstScreenTest {
     @Test fun idleScreenKeepsSecondaryInputsCollapsedAtEveryFontScale() {
         scales.forEach { scale ->
@@ -64,7 +66,7 @@ class IndependentFirstScreenTest {
             IndependentWorkDisplay(b).render(ui, scanning = true)
             measure(b)
 
-            listOf(b.workSummary, b.workRecent, b.workCandidate, b.workConfirm, b.workDetailsToggle).forEach {
+            listOf(b.workVehicle, b.workSummary, b.workRecent, b.workCandidate, b.workConfirm, b.workDetailsToggle).forEach {
                 assertUnclipped(it)
                 assertReachable(b, it)
             }
