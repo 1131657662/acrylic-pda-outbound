@@ -48,7 +48,7 @@ final class E2aPointInTimeCommands {
     private List<String> mysql(String executable) {
         return new ArrayList<>(List.of(BIN.resolve(executable + ".exe").toString(),
             "--defaults-file=" + profile.attempt.resolve("private/client.cnf"),
-            "--protocol=TCP", "--host=127.0.0.1", "--port=19330"));
+            "--protocol=TCP", "--host=127.0.0.1", "--port=" + E2aTestPorts.database()));
     }
 
     private void run(List<String> args, Path output, Path input) throws Exception {

@@ -4,6 +4,7 @@ import com.acrylic.outbound.inventory.TemporaryArchiveRecoveryFixture;
 import com.acrylic.outbound.inventory.FormalArchiveRecoveryFixture;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -16,7 +17,11 @@ class E2aTemporaryArchiveRecoveryIT {
         var profile=new E2aCrossSourceProfile();var jdbc=profile.connect();Files.createFile(profile.attempt.resolve("test-started.marker"));
         profile.migrate(jdbc,"34");E2aV34Seed.seed(jdbc,profile.attempt.resolve("storage"));
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM submission",Integer.class)).isPositive();
-        profile.migrate(jdbc,"36");E2aCrossSourceHttpSetup.signing(profile.attempt);
+        profile.migrate(jdbc,"36");
+        profile.migrate(jdbc);
+        var schemaVersion=jdbc.queryForObject("SELECT MAX(CAST(version AS UNSIGNED)) FROM flyway_schema_history WHERE success=1",Integer.class);
+        Files.writeString(profile.attempt.resolve("archive-probe-schema.txt"),Integer.toString(schemaVersion),StandardOpenOption.CREATE_NEW);
+        E2aCrossSourceHttpSetup.signing(profile.attempt);
         List<TemporaryArchiveRecoveryFixture.Original> originals;
         FormalArchiveRecoveryFixture.Original formal;
         try(var context=E2aCrossSourceHttpIT.start(profile,"--server.servlet.session.cookie.secure=false")) {

@@ -1,5 +1,6 @@
 package com.acrylic.outbound.inventory;
 
+import com.acrylic.outbound.e2averify.E2aTestPorts;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import com.fasterxml.jackson.databind.*;
 import java.net.URI;
@@ -39,7 +40,7 @@ public final class FormalArchiveRecoveryFixture {
     }
 
     private JsonNode http(String path,String token,JsonNode body) throws Exception {
-        var request=HttpRequest.newBuilder(URI.create("http://127.0.0.1:19434/api/v1"+path)).timeout(Duration.ofSeconds(20))
+        var request=HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+E2aTestPorts.http()+"/api/v1"+path)).timeout(Duration.ofSeconds(20))
             .header("Authorization","Bearer "+token).header("X-Server-Recovery-Epoch","1");
         if(body==null)request.GET();
         else request.header("Content-Type","application/json").POST(HttpRequest.BodyPublishers.ofString(SubmissionJson.canonical(body)));

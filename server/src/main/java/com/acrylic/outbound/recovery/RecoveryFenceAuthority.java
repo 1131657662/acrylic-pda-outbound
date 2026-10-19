@@ -14,6 +14,7 @@ public final class RecoveryFenceAuthority implements RecoveryEffectGate.Authorit
     private volatile boolean localFenced;
     private boolean sequenceStarted;
     private boolean retired;
+    private boolean retirementRequested;
 
     public RecoveryFenceAuthority(RecoveryLeaseRoots roots) { this.roots = Objects.requireNonNull(roots); }
 
@@ -38,6 +39,7 @@ public final class RecoveryFenceAuthority implements RecoveryEffectGate.Authorit
 
     /** Publishes one operation owned by this process. */
     public synchronized UUID registerOperation() throws SQLException {
+        if (retirementRequested) throw new SQLException("CONTROL_RETIREMENT_IN_PROGRESS");
         checkEffect();
         var result = new UUID[1];
         guarded(() -> result[0] = coordinated(() -> {
@@ -63,6 +65,7 @@ public final class RecoveryFenceAuthority implements RecoveryEffectGate.Authorit
             return null;
         }));
         operations.remove(operation);
+        if (operations.isEmpty() && retirementRequested) finishRetirementAfterOperations();
         return !localFenced;
     }
 
@@ -79,6 +82,18 @@ public final class RecoveryFenceAuthority implements RecoveryEffectGate.Authorit
      */
     public synchronized void retire() throws IOException {
         if (process == null || retired) return;
+        if (!operations.isEmpty()) { retirementRequested = true; return; }
+        finishRetirement();
+    }
+
+    private void finishRetirementAfterOperations() throws SQLException {
+        try { finishRetirement(); }
+        catch (IOException error) {
+            fenceLocal(); RecoveryFenceAudit.event("FENCE_F3_UNCONFIRMED", error);
+        }
+    }
+
+    private void finishRetirement() throws IOException {
         retired = true;
         try {
             process.releaseLock();
@@ -124,6 +139,9 @@ public final class RecoveryFenceAuthority implements RecoveryEffectGate.Authorit
     private void guarded(Work work) throws SQLException {
         try { work.run(); }
         catch (IOException | RuntimeException error) {
+            if (error instanceof RecoveryControlException control
+                    && "CONTROL_COORDINATOR_BUSY".equals(control.code()))
+                throw new SQLException(control.code(), control);
             fenceLocal();
             String code = error instanceof RecoveryControlException control ? control.code() : "CONTROL_AUTHORITY_UNAVAILABLE";
             RecoveryFenceAudit.event(code, error);

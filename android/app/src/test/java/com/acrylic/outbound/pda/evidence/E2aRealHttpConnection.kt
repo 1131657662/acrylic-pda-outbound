@@ -23,7 +23,10 @@ class E2aRealHttpConnection(private val work: TemporaryWorkFixture, private val 
     val receiptBytes = linkedMapOf<String, ByteArray>()
     val originalRequests = linkedMapOf<String, JSONObject>()
 
-    init { check(input.getString("baseUrl") == "http://127.0.0.1:19434/api/v1/") }
+    init {
+        val port = System.getenv("E2A_HTTP_PORT")?.takeIf { it.isNotBlank() } ?: "19434"
+        check(input.getString("baseUrl") == "http://127.0.0.1:$port/api/v1/")
+    }
 
     override fun original(request: TemporaryConnection.Original): ByteArray {
         check(!work.db.inTransaction())

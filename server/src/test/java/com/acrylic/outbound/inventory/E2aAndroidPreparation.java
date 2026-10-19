@@ -1,6 +1,7 @@
 package com.acrylic.outbound.inventory;
 
 import com.acrylic.outbound.submissions.SubmissionJson;
+import com.acrylic.outbound.e2averify.E2aTestPorts;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +35,7 @@ public final class E2aAndroidPreparation {
         } else f.stock();
         var contract = TemporaryContractFixtureIT.exportPreparation(f);
         contract.put("fixturePurpose", "SYNTHETIC_ANDROID_ROOM_REAL_HTTP");
-        contract.put("baseUrl", "http://127.0.0.1:19434/api/v1/");
+        contract.put("baseUrl", "http://127.0.0.1:" + E2aTestPorts.http() + "/api/v1/");
         contract.put("accessToken", f.tokens.path("accessToken").textValue());
         contract.put("devicePrivateKey", Base64.getEncoder().encodeToString(f.device.key().getPrivate().getEncoded()));
         contract.put("devicePublicKey", Base64.getEncoder().encodeToString(f.device.key().getPublic().getEncoded()));

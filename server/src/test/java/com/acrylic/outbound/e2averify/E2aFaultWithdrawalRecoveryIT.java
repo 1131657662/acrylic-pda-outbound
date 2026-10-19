@@ -38,7 +38,9 @@ class E2aFaultWithdrawalRecoveryIT {
 
     private FaultWithdrawalRecoveryScenario sourceFlow(E2aCrossSourceProfile profile, JdbcTemplate source,
             List<E2aPointInTimeCheckpoint> checkpoints) throws Exception {
-        try (var context = E2aCrossSourceHttpIT.start(profile, "--outbound.recall.fault-withdrawal-enabled=true")) {
+        try (var context = E2aCrossSourceHttpIT.start(profile,
+                "--server.servlet.session.cookie.secure=false",
+                "--outbound.recall.fault-withdrawal-enabled=true")) {
             var scenario = new FaultWithdrawalRecoveryScenario((WebApplicationContext) context);
             checkpoints.add(new E2aPointInTimeCheckpoint(profile, source, "before-withdrawal", "_copy"));
             scenario.withdraw(); checkpoints.add(new E2aPointInTimeCheckpoint(profile, source, "after-withdrawal", "_conflict"));
@@ -63,7 +65,8 @@ class E2aFaultWithdrawalRecoveryIT {
           try (checkpoint) {
             var target = checkpoint.rebuild(binlog, pin, file, ((Number) end.get("Position")).longValue(), expected);
             assertThat(E2aPointInTimeCheckpoint.triggers(target)).isEqualTo(triggers);
-            try (var context = E2aCrossSourceHttpIT.start(profile, "--spring.datasource.url=" + checkpoint.url,
+             try (var context = E2aCrossSourceHttpIT.start(profile, "--server.servlet.session.cookie.secure=false",
+                     "--spring.datasource.url=" + checkpoint.url,
                     "--outbound.storage=" + checkpoint.directory.resolve("final-storage"),
                     "--outbound.signing.private-key=" + checkpoint.directory.resolve("config/server-private.der"),
                     "--outbound.signing.public-key=" + checkpoint.directory.resolve("config/server-public.der"),
@@ -75,8 +78,9 @@ class E2aFaultWithdrawalRecoveryIT {
     }
 
     private void saveSigning(E2aCrossSourceProfile profile) throws Exception {
-        Files.writeString(profile.attempt.resolve("private/client.cnf"), "[client]\nuser=" + profile.user
-            + "\npassword=" + System.getenv("E2A_CROSS_PASSWORD") + "\n", StandardOpenOption.CREATE_NEW);
+        // The runner owns the authenticated client profile and creates it before the JVM starts.
+        // Keep that credential file immutable; checkpoint commands deliberately reuse it.
+        assertThat(profile.attempt.resolve("private/client.cnf")).isRegularFile();
         Path directory = profile.attempt.resolve("private-signing"); Files.createDirectory(directory);
         for (String name : List.of("server-private.der", "server-public.der"))
             Files.copy(profile.attempt.resolve("private/" + name), directory.resolve(name));

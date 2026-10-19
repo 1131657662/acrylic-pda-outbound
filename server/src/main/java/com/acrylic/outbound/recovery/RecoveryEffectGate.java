@@ -36,7 +36,12 @@ public final class RecoveryEffectGate {
         if (!enabled()) return;
         if (fenced) throw new SQLException("RECOVERY_LEASE_FENCED");
         try { authority.checkEffect(); }
-        catch (SQLException | RuntimeException error) {
+        catch (SQLException error) {
+            if ("CONTROL_COORDINATOR_BUSY".equals(error.getMessage())) throw error;
+            fence();
+            throw error;
+        }
+        catch (RuntimeException error) {
             fence();
             throw error;
         }

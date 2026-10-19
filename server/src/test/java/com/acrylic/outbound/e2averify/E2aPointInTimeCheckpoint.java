@@ -18,6 +18,7 @@ final class E2aPointInTimeCheckpoint implements AutoCloseable {
     private final E2aPointInTimeCommands commands;
     private final E2aArchiveSnapshotRestore snapshots;
     private final ObjectNode before;
+    private final String databaseCollation;
     private final String file, dumpPin;
     private final long position;
     private HikariDataSource targetPool;
@@ -30,6 +31,10 @@ final class E2aPointInTimeCheckpoint implements AutoCloseable {
         directory = profile.attempt.resolve("checkpoints/" + name); Files.createDirectories(directory);
         snapshots = new E2aArchiveSnapshotRestore(profile, source);
         before = snapshots.snapshot(source, profile.attempt.resolve("storage"));
+        databaseCollation = source.queryForObject(
+            "SELECT DEFAULT_COLLATION_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME=DATABASE()",
+            String.class);
+        assertThat(databaseCollation).matches("[A-Za-z0-9_]+");
         var revision = source.queryForMap("SHOW MASTER STATUS");
         file = revision.get("File").toString(); position = ((Number) revision.get("Position")).longValue();
         commands.dump(profile.database, directory.resolve("database.sql"));
@@ -50,7 +55,7 @@ final class E2aPointInTimeCheckpoint implements AutoCloseable {
         targetPool = pool(profile, url);
         var target = new JdbcTemplate(targetPool);
         requireEmpty(target);
-        target.execute("ALTER DATABASE `" + schema + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs");
+        target.execute("ALTER DATABASE `" + schema + "` CHARACTER SET utf8mb4 COLLATE " + databaseCollation);
         requireEmpty(target);
         commands.restore(schema, directory.resolve("database.sql"), directory.resolve("import.stdout"));
         assertThat(snapshots.snapshot(target, directory.resolve("storage"))).isEqualTo(before);
@@ -70,7 +75,7 @@ final class E2aPointInTimeCheckpoint implements AutoCloseable {
     private void requireEmpty(JdbcTemplate jdbc) {
         assertThat(jdbc.queryForObject("SELECT DATABASE()", String.class)).isEqualTo(schema);
         assertThat(jdbc.queryForObject("SELECT CURRENT_USER()", String.class)).isEqualTo(profile.user + "@127.0.0.1");
-        assertThat(jdbc.queryForObject("SELECT @@port", Integer.class)).isEqualTo(19330);
+        assertThat(jdbc.queryForObject("SELECT @@port", Integer.class)).isEqualTo(E2aTestPorts.database());
         assertThat(Path.of(jdbc.queryForObject("SELECT @@datadir", String.class)).toAbsolutePath().normalize())
             .isEqualTo(profile.attempt.resolve("data").toAbsolutePath().normalize());
         assertThat(jdbc.queryForList("SHOW TABLES")).as("restore target must be empty").isEmpty();

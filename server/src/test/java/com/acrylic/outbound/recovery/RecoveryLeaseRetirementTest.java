@@ -2,9 +2,14 @@ package com.acrylic.outbound.recovery;
 
 import java.nio.file.*;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.beans.factory.ObjectProvider;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 /** Real files/authority; interrupted primitive stages are explicit crash-window models. */
 class RecoveryLeaseRetirementTest {
@@ -24,6 +29,64 @@ class RecoveryLeaseRetirementTest {
         authority.checkEffect();
         assertThat(index(supply).path("entries")).isEmpty();
         assertThatThrownBy(() -> authority.retireOperation(first)).hasMessage("RECOVERY_LEASE_OUTSTANDING");
+        authority.retire();
+    }
+
+    @Test void coordinatorBusyDoesNotFenceAuthorityAndCanBeRetried() throws Exception {
+        var supply = FenceTestSupply.create(parent); var authority = supply.authority(); authority.validateStartup();
+        UUID operation = authority.registerOperation();
+        var entered = new CountDownLatch(1); var release = new CountDownLatch(1);
+        try (var pool = Executors.newSingleThreadExecutor()) {
+            var holder = pool.submit(() -> RecoveryControlLock.locked(supply.roots().authorityRoot(), () -> {
+                entered.countDown();
+                try {
+                    if (!release.await(10, TimeUnit.SECONDS)) throw new java.io.IOException("lock holder timeout");
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt(); throw new java.io.IOException(interrupted);
+                }
+                return null;
+            }));
+            assertThat(entered.await(10, TimeUnit.SECONDS)).isTrue();
+            assertThatThrownBy(() -> authority.retireOperation(operation)).hasMessage("CONTROL_COORDINATOR_BUSY");
+            release.countDown(); holder.get(10, TimeUnit.SECONDS);
+        }
+        assertThat(authority.retireOperation(operation)).isTrue();
+        authority.retire();
+    }
+
+    @Test void leaseChannelRetriesAcrossMultipleCoordinatorBusyWindows() throws Exception {
+        var supply = FenceTestSupply.create(parent); var authority = supply.authority(); authority.validateStartup();
+        UUID operation = authority.registerOperation();
+        var entered = new CountDownLatch(1); var release = new CountDownLatch(1);
+        try (var pool = Executors.newSingleThreadExecutor();
+             var timer = Executors.newSingleThreadScheduledExecutor()) {
+            var holder = pool.submit(() -> RecoveryControlLock.locked(supply.roots().authorityRoot(), () -> {
+                entered.countDown();
+                try {
+                    if (!release.await(15, TimeUnit.SECONDS)) throw new java.io.IOException("lock holder timeout");
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt(); throw new java.io.IOException(interrupted);
+                }
+                return null;
+            }));
+            assertThat(entered.await(10, TimeUnit.SECONDS)).isTrue();
+            timer.schedule(release::countDown, 4, TimeUnit.SECONDS);
+            var provider = mock(ObjectProvider.class);
+            when(provider.getIfAvailable()).thenReturn(authority);
+            var channel = new RecoveryAuthorityLeaseChannel(provider);
+            assertThat(channel.retire(operation)).isTrue();
+            holder.get(10, TimeUnit.SECONDS);
+        }
+        authority.retire();
+    }
+
+    @Test void lifecycleRetirementDefersUntilTheLastOperationIsRetired() throws Exception {
+        var supply = FenceTestSupply.create(parent); var authority = supply.authority(); authority.validateStartup();
+        UUID operation = authority.registerOperation();
+        authority.retire();
+        assertThat(record(supply, operation)).exists();
+        assertThat(authority.retireOperation(operation)).isTrue();
+        assertThat(record(supply, operation)).doesNotExist();
         authority.retire();
     }
 
