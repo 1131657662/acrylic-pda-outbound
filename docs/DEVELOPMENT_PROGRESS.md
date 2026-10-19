@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- 2026-10-19：新增 [U04 保留明细四字号 tar 只读审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)。八份 tar 逐成员及 24 个 Room 成员独立哈希、WAL 逻辑表消费完成；Room 物理/逻辑守恒，差异为新增测试证据、目录 mtime、profileInstalled 和 WorkManager 调度字段。原 `archiveUnchanged=false` 保留，仅补有界 L1，不计 U04/D17 整体、L2/L3 或第8节。
+
 - 2026-10-19：新增 [D06/D07 五截点恢复事实 Python 独立消费](history/GOAL_E07_D06_D07_RECOVERY_PYTHON_CONSUMER_2026-10-19.md)。实际消费 run1615 的 57 个固定输入，五份重建与最终全表/私有文件一致，隔离签名、旧资格拒绝及逐包记账核对通过；17 项变异测试与错误 SHA CLI 拒绝通过。仅 Python L1，未重新实跑 Android/Chrome/HTTP/MySQL，不计 D 项整体、L2/L3 或第8节。
 
 - 2026-10-19：新增 [E07/D06-D07 故障撤回、重发与恢复隔离切片](history/GOAL_E07_D06_D07_FAULT_WITHDRAWAL_L2_SLICE_2026-10-19.md)。run1615 的五截点真实 HTTP/MySQL/binlog 恢复 `1/0/0/0`；run998/999 的撤回、重发、权限、幂等、异文、并发、末条 SQL 回滚、可靠性和 default-off 业务测试合计 `19/0/0/0`，隔离账号认证停机、dump 和监听清零均保全。合成身份、隔离密钥和无 Android/Chrome/Python/原模拟器输入，仍不计 D06/D07 完整 L2、E07/D17、E06 L2、D18 L3 或总目标。

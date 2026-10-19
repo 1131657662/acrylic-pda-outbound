@@ -6,41 +6,37 @@
 ```yaml
 date: 2026-10-19
 branch: codex/development
-head: 59ae0995
-dirty_entries: 216
+head: 622d38bd
+dirty_entries: 222
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ```
 <!-- FACTS_END -->
+总目标 D01–D18、§8、O01–O05/U01–U04 与 UI 重设计保持 active、未完成；只有第8节全部闸门在实际最终候选上满足才可 complete。局部 L1、合成输入或开发备份不计整体 L2/L3。
 
-总目标 D01–D18、§8、O01–O05/U01–U04 与 UI 重设计保持 active、未完成。仅第8节全部闸门在实际候选输入上满足才 complete；局部 L1、开发备份、合成身份或暂缓不计完整 L2/L3。
+## 输入、写权与继承保护
+- 固定树 `D:/acrylic-pda-outbound`、分支 `codex/development`；本审计输入 HEAD、origin 跟踪和实际 `git ls-remote` 均为 `622d38bdb018af8f4fdb3540a2e718476a08217d`，main 只读。
+- 本聊天 `01a1520d-c412-7402-b77d-311a043b3d1e` 为重启后唯一活动项目写者，其他开发/清理聊天 idle/notLoaded；不恢复旧 PID/写权。接管全部219项路径/SHA、文本patch、Git/环境/写权在 `.local/goal-20261019-resume/restart-readonly-audit01/takeover.json` 及同根 `tracked-before.patch`，收口见 `closeout.json`。
+- 本次修改范围仅看板、进度/历史索引、新审计报告及看板归档；审计脚本/派生结果留同根 `.local/`。继承业务源码、取消链WIP及全部其他脏文件保持；禁止整体暂存。
+- 替换前看板已归档至 [审计前断点](history/ORCHESTRATION_STATE_BEFORE_U04_RETAINED_DETAILS_TAR_AUDIT_20261019.md)。重启前/清理前原快照、失败输入与D17/E08 handoff仍按原索引保留。
 
-## 精确输入与写权
-- 固定树 `D:/acrylic-pda-outbound`、`codex/development`；本切片输入 HEAD/远端 `59ae099576d994d186aef6e843fc43cfbb3cf60d`，实际收口 HEAD 以生成事实块和证据 Git 回执为准。
-- 唯一项目写者为本聊天 `01a147c5-0495-7703-ba98-2e7637cbc619`；已核实际聊天状态与进程，无子代理/其他活动源码写者；共享服务保留不接管。
-- 新证据根 `.local/goal-20261019-resume/fault-final-consumer-run01/`；接管完整状态、patch、207个继承文件原字节ZIP/哈希和5735项输入在 `takeover/`，顺序生成的收口全改动/环境/Git/写权快照在 `final/`。
-- 初始全量快照与本助手事实刷新同一时段执行，不称原子快照；继承源码逐路径保护通过。前序看板保存在 [归档](history/ORCHESTRATION_STATE_before_fault_recovery_python_20261019.md)，历史通过/失败/未验均继续有效。
-- 只明确路径暂存；不覆盖/还原/重排继承改动，不用 git add .。原 handoff-final01/run03失败、原身份/回执/签名/Keystore、APK和全部唯一证据继续保全。
+## 首个有界任务结论
+- [U04四字号tar只读审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)：逐成员比较八份tar，并用独立Windows tar重算24个Room成员。Room主库/WAL/SHM内容、完整schema与83表257行不变；完整性ok、无外键错误。原 `archiveUnchanged=false` 保留，不称整tar不变。
+- 差异为每档新增16个instrumentation证据成员、目录mtime、100%/150%的profileInstalled、WorkManager DB/WAL/SHM。WorkManager每档仅Preference.long_value和WorkSpec.schedule_requested_at改变；无业务资料内容变化或成员删除。逐项/输入/命令/输出哈希在同根 `compare01/`、`runtime-details01/` 与 `final-manifest.json`。
+- 本次未重跑旧测试/构建/安装或操作设备；原run02 APK/tar/日志/AVD/唯一证据未覆盖或删除。只补 retained-details 合成资料四字号只读UI有界L1，不计U04/D17整体、E06 L2、D18 L3、§8或总目标。原身份/可信时效/保管仍未证。
+- [takeover12取消链审计](history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-19_TAKEOVER12.md)及原取消WIP清单继续有效：无SyncWorker restore caller，确认Dialog无产品caller；R09只读原件展示保留。不得恢复换机进度承接、多跳、接收者确认/激活或旧run03。
+- 已验gate/config、D11/D13/D14/D15和其他U/O切片只按原输入/报告范围复用；D16仍缺可信合法退出依据，尚无统一最终候选，历史关键未验及旧BCD/原资料不被局部通过覆盖。
 
-## 有界结果与范围
-- [D06/D07 五截点恢复 Python 消费](history/GOAL_E07_D06_D07_RECOVERY_PYTHON_CONSUMER_2026-10-19.md)：run1615 的57个固定文件消费前后哈希一致；五份重建与最终179表199行/私有文件一致，旧领取REVOKED、新领取CLOSED、独立设备/采集/从1扫描、两包各一笔账、两个隔离RS256回执、恢复HTTP拒绝旧凭据与原键重放核对通过。
-- 17项变异测试零跳过/失败/错误；错误SHA命令行退出1且无成功目录。`positive02/consumer-result.json`、`mutation-tests02.log`、`negative01-result.json`保留。仅Python L1，未重新实跑Android/Chrome/HTTP/MySQL，不计D06/D07完整L2、D13/D14整体、D17、E06 L2、D18 L3、O/U整体或§8。
-- [继承取消链逐路径清单](history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-19_TAKEOVER12.md)已重新核对；11条路径哈希/调用事实在新根 `cancelled-wip-review.json`。两个确认worker无后台restore caller、dialog无产品caller；worker/dialog/fixture/bridge仅保留历史WIP，R09只读原件展示保留，不恢复换机进度承接、多跳、接收者确认/激活，不启动旧run03。
-- [前序服务端隔离切片](history/GOAL_E07_D06_D07_FAULT_WITHDRAWAL_L2_SLICE_2026-10-19.md)：run1615五截点真实HTTP/MySQL/binlog 1/0/0/0；998/999业务19/0/0/0、认证停机/dump保全。新Python仅消费其保留输入，不把旧产品运行说成本次重跑。
-- 前序gate/config/sync fail-closed、U02正式/TEMP状态与资格页、结果未知1611、高频925及Room Python均为各报告限定的L1/切片，见[验收索引](DEVELOPMENT_PROGRESS.md)及前看板；不重复已验工作，不外推为整体通过。
+## 重启后实际环境
+- 本次fresh采样而非沿用旧PID：系统MySQL80父4288/子5188，3306/33060；配置指向ProgramData系统datadir，未连接/停止。auto.cnf权限拒绝，UUID未知；不以服务观察冒充原库身份已核验。
+- 未发现Java/Gradle、项目隔离MySQL、ADB server或模拟器/Vite。5040属Windows svchost；5037无监听，本轮未启动ADB，USB PnP Android/ADB接口不计有效设备会话。既有Debug/正式Keystore只读哈希，不使用正式签名。精确进程/监听/磁盘以takeover及closeout为准。
+- 旧SQLite SQLITE_CANTOPEN、run03 build/MySQL/pipe、A1.4、1522/1523、U02调度偏差和Chrome策略阻断等失败保留，不清零、不无新依据重跑。
+- [前轮D盘清理报告](history/D_DISK_CLEANUP_2026-10-19.md)仍有效；本切片只拟清可重建scratch，但自动审批 `blocked by policy`，48文件/18,436,032字节派生副本原样保留，原证据不动。路径/哈希/无消费者检查见 `scratch-cleanup-before.json`；实际释放0字节，C/D/E余量见closeout。
 
-## 环境、失败与清理
-- 新切片只运行本机Python，无新业务服务/数据库/AVD；共享MySQL3306/13316/13317/33318、外部Vite5173、ADB5037、USB M71仅观察，不连接/停止；接管时空闲Gradle daemon收口已不存在。精确进程/命令行/监听/库身份与磁盘在新根 `takeover/`、`final/`。
-- C/D/E余量以 `final/disks.json` 实测字节为准；产物均在D盘 `.local/`。本切片无新增可清的大产物，释放0字节。998/999 datadir先前递归清理被策略拒绝，不换方式重试；拒绝原件和释放0回执继续保留。
-- 旧run03构建/MySQL/pipe、run1613 AVD源写入事故、U02失败/调度偏差、SQLite SQLITE_CANTOPEN批次、1043/A1.4与1522/1523失败均不清零；原件和重新入队条件见前看板/进度索引。无新依据不机械重跑。
-- Chrome1540既有自动审批阻断不换入口绕过；D16缺可信合法退出依据，不删guard/造资格。原资料/旧BCD/原身份、原模拟器、现场/外置介质/Linux/长时等缺口继续单列；合成输入不替代可信事实。
-
-## 下一步与验证纪律
-- 继续按逐路径SHA核对Android/Chrome/HTTP/MySQL和Python/恢复输入，选择剩余O/U或§8最小受影响组合；尚无统一最终候选，D18全链L3未执行。
-- 每次提交先记路径→影响层→必跑→复用路径+SHA；直接产品入口实际L1，D步骤受影响Android/HTTP/MySQL/Chrome/Python/非空迁移组合为L2；D18必须在最终候选执行原模拟器与恢复全链L3，L1/L2不能代替。
-- 适用时验证正向、权限、事务、幂等、并发、末SQL回滚、异文拒绝、锁等待后撤权和default-off有/无权；同根因3次无新证据或诊断60分钟未收敛则保全暂缓并推进独立项，不记通过。
-- 七类生产决定、TEMP生产归档、main、发布/部署/Release、原库/现网和正式签名保持关闭；localDeletionAllowed=false，D16标准不降低。阶段收口持续按用户授权先摘要/哈希再清可重建产物，拿不准的保留。
+## 下一独立任务
+- 从有效U/O或D范围选一项具体缺口，以路径→影响层→必跑→复用依据绑定直接产品入口；不重复已验retained-details，不机械重跑暂缓SQLite或旧run03。D项组合须覆盖受影响Android、真实HTTP/MySQL、Chrome、Python及非空迁移；D18仍须最终候选/原模拟器/恢复全链。
+- 生产决定七类能力、TEMP生产归档及 `localDeletionAllowed=false` 保持；原库/现网、正式签名、部署/Release/main均不触碰。开发备份回执与精确交付SHA写入同根 `git-delivery.json`，不以本切片收口结束总目标。
 
 <!-- CURRENT_STATE_END -->
 
