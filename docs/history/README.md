@@ -1,5 +1,12 @@
 # 历史归档
 
+- [U04 保留明细四字号 tar 只读审计](GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)：逐成员、Room/WAL 与运行元数据分开核对；Room 物理/逻辑守恒，原 tar 不等保持。仅补有界 L1，非总目标通过。
+- [本审计前看板](ORCHESTRATION_STATE_BEFORE_U04_RETAINED_DETAILS_TAR_AUDIT_20261019.md)：保留审计前看板及当时未验结论。
+
+- [2026-10-19 重启后接续指令](CONTINUE_GOAL_AFTER_RESTART_2026-10-19.md)：重启后接管核实、U04 run02只读审计顺序和生产边界。
+- [2026-10-19 重启前最小收口](ORCHESTRATION_STATE_before_restart_final_20261019.md)：保留最终 Git/工作树、写权、进程监听、绝对路径 ADB 枚举与磁盘状态；不代表业务验收或总目标完成。
+- [2026-10-19 重启前看板快照](ORCHESTRATION_STATE_before_failclosed_resume_20261019.md)：保留接管前看板和本轮未完成/失败范围；完整重启前工作树与环境快照见 `.local/goal-20261019-resume/pre-restart-closeout01/`。
+
 - [D06/D07 五截点恢复事实 Python 独立消费](GOAL_E07_D06_D07_RECOVERY_PYTHON_CONSUMER_2026-10-19.md)：57 文件固定输入、五份完整事实/私有文件、隔离回执与逐包账务核对及17项变异测试通过；仅 Python L1，不计 L2/L3 或总目标。
 - [本切片前看板](ORCHESTRATION_STATE_before_fault_recovery_python_20261019.md)：保留前序全部局部通过、失败、环境和未验项。
 
