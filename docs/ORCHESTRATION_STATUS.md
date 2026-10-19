@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-19
 branch: codex/development
-head: 971f66ee
-dirty_entries: 225
+head: 47f58615
+dirty_entries: 232
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,37 +17,32 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 总目标 D01–D18、§8、O01–O05/U01–U04 与 UI 重设计保持 active、未完成；只有第8节全部闸门在实际最终候选上满足才可 complete。局部L1、合成输入及开发备份不计整体L2/L3。
 
 ## 输入、写权与继承保护
-- 固定树 `D:/acrylic-pda-outbound`、分支 `codex/development`；本切片输入HEAD及origin开发分支 `971f66eedaf9bd5050b7bf7f9e790c66121d327c`，origin/main只读 `c6e9e0c238c657baecbf699ba6fdbada5d979b86`；本次开发交付见 `.local/u04-independent-accessibility-run01/git-delivery.json`。
-- fresh list_threads确认本聊天 `01a1520d-c412-7402-b77d-311a043b3d1e` 为唯一活动项目写者，其他项目聊天notLoaded。无在途重型任务。完整tracked/untracked路径/SHA、四文件patch、973项测试输入零漂移和继承保护见同根 `closeout.json`；218项继承中217项原SHA不变，只有看板事实刷新，新增进度索引另列；取消链及其他WIP保留。
-- 替换前结论见[无障碍切片前断点](history/ORCHESTRATION_STATE_BEFORE_U04_INDEPENDENT_ACCESSIBILITY_20261019.md)；原始字节另存同根 `board-before.md`。更早证据及E08/D17 handoff沿原索引，不恢复旧写权或暂停。
+- 固定树 `D:/acrylic-pda-outbound`、分支 `codex/development`；本切片输入HEAD/origin开发分支 `47f58615842a15aa076e2631e94c9fbb33e002ae`，origin/main只读 `c6e9e0c238c657baecbf699ba6fdbada5d979b86`。本切片尚未提交；下一限定路径提交推送，不混入继承WIP。
+- fresh list_threads核本聊天 `01a1520d-c412-7402-b77d-311a043b3d1e` 唯一项目active写者，其他notLoaded；无代理。closeout01-snapshot核231项tracked/untracked完整路径/SHA和patch、218项继承仅看板改变，暂存为空；后续提交状态另留回执。证据根 `.local/u04-independent-native-input-run01/`。
+- 替换前看板见[本轮诊断前断点](history/ORCHESTRATION_STATE_BEFORE_U04_NATIVE_INPUT_DIAGNOSTIC_20261019.md)、[收尾前快照重建](history/ORCHESTRATION_STATE_BEFORE_U04_NATIVE_INPUT_CLOSEOUT_20261019.md)及[本轮开始前断点](history/ORCHESTRATION_STATE_BEFORE_U04_NATIVE_INPUT_20261019.md)；原始字节另存同根board-before.md。旧角色/PID/暂停不恢复。
 
-## 本轮首个只读任务
-- [四字号tar审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)：八份tar逐成员比较、24个Room成员独立Windows tar复核，Room主库/WAL/SHM及schema/83表257行守恒、完整性ok/外键无错。原 `archiveUnchanged=false` 保留。
-- 差异为每档新增16个instrumentation证据成员、目录mtime、部分profileInstalled与WorkManager调度字段；无业务资料内容变化/删除。输入、命令、逐项差异和输出哈希在 `compare01/`、`runtime-details01/`、`final-manifest.json`。原run02 APK/tar/日志/AVD/唯一证据不覆盖、不删、不重跑。
-- [takeover12取消链审计](history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-19_TAKEOVER12.md)仍有效：无SyncWorker restore caller，确认Dialog无产品caller；R09只读原件展示保留。原身份/可信时效/保管仍未证。
+## 已收口索引及首个只读任务
+- [四字号tar审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)：八tar逐成员、24个Room成员独立复核，Room物理/逻辑守恒，变化是新增取证/目录mtime/profileInstalled/WorkManager调度。原archiveUnchanged=false、run02全部APK/tar/日志保留，不重跑。
+- [取消链takeover12审计](history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-19_TAKEOVER12.md)：无SyncWorker restore caller，确认Dialog无产品caller；R09只读展示保留。原身份/可信时效/保管仍未证。
+- 前序队列满、声效、增量渲染、首屏/次级面板、进度/最近保存、Activity手输交接及无障碍切片沿[进度索引](DEVELOPMENT_PROGRESS.md)与前断点复用；各自合成L1、旧SQLite/取证/运行器失败和未验边界不被本轮覆盖。
 
-## 后续有界切片验收索引
-- [TEMP满队列L1](history/GOAL_U04_TEMP_QUEUE_OVERFLOW_L1_2026-10-19.md)与[独立满队列L1](history/GOAL_U04_INDEPENDENT_QUEUE_OVERFLOW_L1_2026-10-19.md)：预修复反例失败，修复后各4项通过；65条已接收输入持久化。仅合成主机L1。
-- [独立声效提示L1](history/GOAL_U04_INDEPENDENT_SOUND_READINESS_L1_2026-10-19.md)：显示2项通过；声音/Room组合SQLite失败保留。开发交付 `a2591fd35f01ec8f1675a6e7a7c76965dcdba732`，ADB只读枚举启动daemon事实已勘误。
-- [文本按变化更新L1](history/GOAL_U04_INDEPENDENT_INCREMENTAL_RENDER_L1_2026-10-19.md)：预修复3项反例失败，修复后与声效回归5项通过；提交 `42562412ca9372728239ef2d1a798ff97728c8d9` 已推送，设备性能未验。
-- [首屏/次级面板L1](history/GOAL_U01_U04_INDEPENDENT_FIRST_SCREEN_L1_2026-10-19.md)：最终16项主机测试及instrumentation编译通过；失败/几何诊断保留。开发提交 `e35e9f2c`，事实记录 `3f450bd76ceca833d440c549623c115b121ed742`；只计合成UI，原生IME/实体键未验。
-- [剩余数/最近保存L1](history/GOAL_U01_U04_INDEPENDENT_PROGRESS_L1_2026-10-19.md)：同一Room快照发布有效/剩余/超计划及任务专属最近保存；七套件27项、引擎3项通过，EXPLAIN未见临时排序，任务切换竞态守卫已测。run02误用默认build及未收XML事实保留；历史分页末行仍仅指该页末条。
-- [Activity手输交接L1](history/GOAL_U01_U04_INDEPENDENT_ACTIVITY_INPUT_L1_2026-10-19.md)：成功手输后收起面板、清焦点并请求隐藏IME，候选须显式确认；预修复1失败，最终17项主机测试通过。原生IME、实体键及真机未验；完整证据在 `.local/u04-independent-activity-run01/`。
+## 原生键盘避让与保留输入确认切片
+- [本批报告](history/GOAL_U04_INDEPENDENT_NATIVE_IME_L1_2026-10-19.md)：新隔离库/HTTP、完整AVD副本、Android原生Keystore及真实HTTP登记/登录/开发凭据准备通过，仅账号/SKU/任务合成。不重跑身份准备。产品只改独立Activity edge-to-edge与max(systemBars,IME)底部padding；引擎/确认/Room/schema/网络未改。
+- 同一产品APK SHA `141cb294a4fcdd18dae231b920d66a808914ad8277bda0ad793e3d902f5e08c8`：100%与150%完整原生消费者通过；130%与200%真实手输/IME/待确认通过后，在保留原任务以外部ADB Enter补验合法保存，再分别只读回读最近保存通过。不是四档同轮通过，不计实体键或原身份/原资料SAF。
+- 最终9任务/4capture/4scan/4guard/0VOID；83表完整性ok/无FK错，仅10张独立状态表变化，6原任务及2原capture/scan/guard逐项不变。3448项源码输入零漂移。final-room-audit SHA `57bd957234fc0994f0e3519177a8275c7aab378506d68b1be08e533dd54e5460`，tar原SHA未变。
+- Debug app/test构建及lintDebug退出0；面板/首屏11项主机测试通过，Activity6项SQLiteCantOpen失败保留且未原样重跑。旧GONE误报/build02参数/IME遮挡、未决输入保护、内部Enter缺首事件、200%旧滚动器、审计读表错误及build10前置错误全部保留，不能改写为原轮通过。
+- 200%已无横向溢出、可滚动真实点击；截图显示大字首屏关键动作仍可能低于屏幕，U01/U04整套首屏/真机、Android9、M71实体键/TalkBack/长时、U04/D17/E06完整L2及D18 L3仍未验。最终截图已实际打开，见visual-review02。
 
-## 第九切片：队列计数无障碍隔离
-- [验收报告](history/GOAL_U04_INDEPENDENT_ACCESSIBILITY_L1_2026-10-19.md)：队列独立可见且非live，操作/保存反馈仍polite。after03显示/增量渲染/首屏共10/0/0/0、退出0；前两轮夹具断言失败及首次Activity的2项SQLite错误保留，Activity未重跑。
-- 本切片仅改显示器、布局和两个显示测试；无引擎/Room/schema/网络/权限变化，未构建或安装APK。输入/运行器/配置/日志/XML及SHA在 `.local/u04-independent-accessibility-run01/`，最终973项输入零漂移。只计作者自审与合成Robolectric UI L1，TalkBack、原生Activity/IME、M71/四字号设备及U04/D17整体未验。
-
-## 实际环境、失败与清理
-- fresh `environment-closeout.json`：系统MySQL80父4288/子5188、3306/33060，配置指向ProgramData系统datadir；auto.cnf权限拒绝、UUID未知，未连接/停止。无Java/Gradle/模拟器进程；ADB2436/5037只读枚举M71，不操作设备数据。debug keystore SHA `0539b3d0b80ab4619a08db639d433ec2f3ac0a8d7b2fbdc32865d5cfc6b0b6cb`，未用正式签名。
-- 本次采样C/D/E余量见同根environment-closeout，分别73,124,573,184 / 60,933,435,392 / 195,634,053,120字节；全部监听和完整WIP见closeout。旧SQLite、恢复run03、A1.4、1522/1523、调度偏差及Chrome策略失败继续保留，不无新依据重跑。
-- 本次六个构建/缓存/temp目录拟清理被自动审批执行前拒绝 `blocked by policy`，未重试，6441文件/120,192,634字节仍在、释放0；精确清单见 `cleanup-rejected.json`。原拒绝时间未记录，记录时间不冒充拒绝时间。旧scratch/声效缓存被拒目录也保留。
-- 前序获准清理的逐项哈希、释放/卷余量与PS5长路径/部分删除及被覆盖前清单缺口，见各验收报告和前断点；不改写旧失败。APK/tar、原资料/身份/签名/唯一证据和继承WIP保留。
+## 实际环境、空间与清理
+- stop-result01 fresh核本根进程后MySQL19398认证shutdown、AVD5596 emu kill退出0；HTTP19498精确Java PID Stop-Process，不称优雅HTTP停机。19398/19498/5596/5597零监听。本任务Gradle daemon已定向停止，environment-closeout01无Java/Gradle/模拟器；系统MySQL80父4288/子5188与3306/33060只观察未连接/停止，UUID未知。
+- M71 `22D2910042`只枚举；debug keystore SHA `0539b3d0b80ab4619a08db639d433ec2f3ac0a8d7b2fbdc32865d5cfc6b0b6cb`。本轮含身份AVD、签名回执、库、全部APK/tar/log/唯一证据保留；源Pixel_6.avd 27文件再次SHA不变。未声称本机材料异地备份。
+- 本轮只清编译/专用缓存32017文件、逻辑669119190字节；D余量52024352768→52742045696，卷观测增717692928字节。逐文件SHA/依赖/命令/输入与无消费者检查见cleanup-compilation-before01，结果after01；扩展名保护和PS5长路径失败均删除前退出，随后同范围PS7成功。旧自动审批拒绝目录未重试。
+- 收尾采样C/D/E余量73083224064 / 52742037504 / 195634053120字节，详见environment-closeout01。131份阶段APK/tar/log SHA未变，3运行日志停机追加的前缀哈希一致，原字节保留；见protected-evidence-recheck01与stop-log-append-audit01。
 
 ## 下一独立任务与总闸门
-- 先精确暂存本切片并推送开发分支，再选择独立页原生消费者组合：先审计既有fixture/运行器的适用范围和新输入，补首屏/手输IME/实体键/四字号设备证据；不得以主机测试冒充设备运行，不重复已验tar或旧用例。
-- 受影响路径仍须按路径→影响层→必跑→复用依据补Android、真实HTTP/MySQL、Chrome/Python及非空迁移组合。D16可信合法退出依据、D18统一最终候选/原模拟器/恢复全链、旧BCD/原材料/现场项继续单列，不被局部通过覆盖。
-- 生产决定七类能力、TEMP生产归档及 `localDeletionAllowed=false` 保持；不恢复换机承接、多跳、接收者确认/激活；不启动旧run03、不接原库/现网、不用正式签名、不部署/Release/合main。总目标保持active。
+- 下一项为独立作业大字首屏信息密度：先以本批200%截图/几何建立任务/计数/候选/确认/最近保存的可见标准，做最小布局调整及定向消费者；不重跑原身份准备/旧tar或内部注入缺首事件。既有SQLite根因无新依据不机械重试。
+- 受影响路径仍按路径→影响层→必跑→复用依据补Android、真实HTTP/MySQL、Chrome/Python及非空迁移组合。D16可信合法退出依据、D18统一最终候选/原模拟器/恢复全链、旧BCD/原材料/现场项继续单列，暂缓不算通过。
+- 七类生产决定、TEMP生产归档及localDeletionAllowed=false保持；不恢复换机承接、多跳、接收者确认/激活，不启动旧run03，不接原库/现网，不用正式签名，不部署/Release/合main。总目标active，只有§8全部闸门满足才complete。
 <!-- CURRENT_STATE_END -->
 
 > 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。

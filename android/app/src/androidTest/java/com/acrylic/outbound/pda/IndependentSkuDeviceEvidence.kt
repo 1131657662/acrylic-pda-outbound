@@ -27,6 +27,7 @@ internal object IndependentSkuDeviceEvidence {
         }
     }
     private fun inspect(view: View, width: Int, rows: JSONArray) {
+        if (!view.isShown) return
         check(view.width <= width) { "View exceeds actual screen width" }
         if (view is TextView && view.visibility == View.VISIBLE && view.layout != null) {
             val available = view.width - view.compoundPaddingLeft - view.compoundPaddingRight

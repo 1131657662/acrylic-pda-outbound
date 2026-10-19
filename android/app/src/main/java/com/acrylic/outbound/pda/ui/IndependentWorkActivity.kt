@@ -25,13 +25,15 @@ class IndependentWorkActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState); id = intent.getStringExtra("taskId").orEmpty()
         if (id.isEmpty()) { finish(); return }
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding = ActivityIndependentWorkBinding.inflate(layoutInflater); setContentView(binding.root)
         display = IndependentWorkDisplay(binding)
         panels = IndependentWorkPanels(binding).also { it.bind() }
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()); imeOpen = insets.isVisible(WindowInsetsCompat.Type.ime())
-            view.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets
+            val bottom = maxOf(bars.bottom, insets.getInsets(WindowInsetsCompat.Type.ime()).bottom)
+            view.setPadding(bars.left, bars.top, bars.right, bottom); insets
         }
         scanner = ScannerReceiver(this, { engine.receive(it, "BROADCAST") }, engine::stop)
         actions(); corrections()
