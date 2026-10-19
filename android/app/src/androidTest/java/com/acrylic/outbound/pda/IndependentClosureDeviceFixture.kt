@@ -21,7 +21,10 @@ internal object IndependentClosureDeviceFixture {
     fun guard() {
         F.guard(); check(InstrumentationRegistry.getArguments().getString("independentClosure") == "true")
     }
-    fun text(id: Int,value: String) = onView(withId(id)).perform(independentSkuScroll(),replaceText(value),closeSoftKeyboard())
+    fun text(id: Int,value: String) {
+        IndependentWorkDevicePanels.reveal(id)
+        onView(withId(id)).perform(independentSkuScroll(),replaceText(value),closeSoftKeyboard())
+    }
     fun intent() = Intent(F.app,IndependentWorkActivity::class.java).putExtra("taskId",id)
     fun grant(): RescueReadGrant {
         val owner = checkNotNull(F.app.database.independentTasks().task(id)).operatorId

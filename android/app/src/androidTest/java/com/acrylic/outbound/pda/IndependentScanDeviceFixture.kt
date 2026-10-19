@@ -23,7 +23,10 @@ internal object IndependentScanDeviceFixture {
         assertNull(F.app.getSystemService(android.net.ConnectivityManager::class.java).activeNetwork)
     }
     fun task(id: String) = repository.read(id)
-    fun text(id: Int, text: String) = onView(withId(id)).perform(independentSkuScroll(), replaceText(text), closeSoftKeyboard())
+    fun text(id: Int, text: String) {
+        IndependentWorkDevicePanels.reveal(id)
+        onView(withId(id)).perform(independentSkuScroll(), replaceText(text), closeSoftKeyboard())
+    }
     fun authorize() {
         text(R.id.workPassword, F.password); F.click(R.id.workAuthorize)
         F.await { onView(withId(R.id.workManual)).check(matches(isEnabled())) }

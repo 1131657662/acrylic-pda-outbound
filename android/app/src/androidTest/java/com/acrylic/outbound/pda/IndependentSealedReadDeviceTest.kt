@@ -26,6 +26,7 @@ class IndependentSealedReadDeviceTest {
         val directory = evidenceDirectory()
 
         ActivityScenario.launch<com.acrylic.outbound.pda.ui.IndependentWorkActivity>(C.intent()).use { scenario ->
+            IndependentWorkDevicePanels.details()
             F.await { onView(withId(R.id.workOriginal)).check(matches(withText(containsString("已结束封存")))) }
             onView(withId(R.id.workFinish)).check(matches(not(isEnabled())))
             onView(withId(R.id.workPause)).check(matches(not(isEnabled())))

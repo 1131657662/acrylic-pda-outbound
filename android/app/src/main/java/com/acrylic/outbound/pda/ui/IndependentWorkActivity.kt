@@ -27,6 +27,7 @@ class IndependentWorkActivity : ComponentActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding = ActivityIndependentWorkBinding.inflate(layoutInflater); setContentView(binding.root)
         display = IndependentWorkDisplay(binding)
+        IndependentWorkPanels(binding).bind()
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()); imeOpen = insets.isVisible(WindowInsetsCompat.Type.ime())
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets

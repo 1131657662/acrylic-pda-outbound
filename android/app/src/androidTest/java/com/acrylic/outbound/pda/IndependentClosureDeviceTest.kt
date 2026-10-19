@@ -86,6 +86,7 @@ class IndependentClosureDeviceTest {
     @Test fun originalEndingSurvivesNewProcessAndKeepsEffectiveGuards() {
         C.guard();val body=File(C.directory,"ending.json").readText();val before=C.snapshot()
         ActivityScenario.launch<IndependentWorkActivity>(C.intent()).use { scenario ->
+            IndependentWorkDevicePanels.details()
             F.await { onView(withId(R.id.workOriginal)).check(matches(withText(containsString("已结束封存")))) }
             onView(withId(R.id.workFinish)).check(matches(not(isEnabled())))
             onView(withId(R.id.workPause)).check(matches(not(isEnabled())))
@@ -114,6 +115,7 @@ class IndependentClosureDeviceTest {
     @Test fun actualClosureControlsRemainReachableWithLargeTextAndKeyboard() {
         C.guard();val before=C.ending().toString()
         ActivityScenario.launch<IndependentWorkActivity>(C.intent()).use { scenario ->
+            IndependentWorkDevicePanels.details()
             F.await { onView(withId(R.id.workOriginal)).check(matches(withText(containsString("已结束封存")))) }
             onView(withId(R.id.workBack)).perform(independentSkuScroll()).check(matches(isDisplayed()))
             onView(withId(R.id.workFinish)).check(matches(not(isEnabled())))
@@ -122,6 +124,7 @@ class IndependentClosureDeviceTest {
         val original=android.content.Intent(F.app,IndependentWorkActivity::class.java)
             .putExtra("taskId",IndependentRescueDeviceFixture.id)
         ActivityScenario.launch<IndependentWorkActivity>(original).use { scenario ->
+            IndependentWorkDevicePanels.details()
             F.await { onView(withId(R.id.workFinishReason)).check(matches(isEnabled())) }
             onView(withId(R.id.workFinishReason)).perform(independentSkuScroll(),androidx.test.espresso.action.ViewActions.click())
             F.await { scenario.onActivity { activity ->

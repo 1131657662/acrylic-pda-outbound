@@ -1,5 +1,8 @@
 # 历史归档
 
+- [U01/U04 独立采集首屏与次级面板 L1](GOAL_U01_U04_INDEPENDENT_FIRST_SCREEN_L1_2026-10-19.md)：动态候选、显式面板及常驻禁放行提示；16项合成测试与设备测试编译通过，Activity/IME未验。
+- [独立采集首屏切片前看板](ORCHESTRATION_STATE_BEFORE_INDEPENDENT_FIRST_SCREEN_20261019.md)：保留文本切片交付及首屏切片前断点。
+
 - [U04 独立采集文本按变化更新 L1](GOAL_U04_INDEPENDENT_INCREMENTAL_RENDER_L1_2026-10-19.md)：队列不改写未变文本区，保存/分页正常更新；预修复反例与修复后5项显示测试，非设备性能验收。
 - [文本更新切片前看板](ORCHESTRATION_STATE_BEFORE_U04_INDEPENDENT_RENDER_20261019.md)：保留声效交付前后边界、环境和未验结论。
 
@@ -13,6 +16,9 @@
 - [U04 TEMP 队列满边界 L1](GOAL_U04_TEMP_QUEUE_OVERFLOW_L1_2026-10-19.md)：修复拒收后 `queued` 显示回退，预修复对照失败、修复后主机测试 4/0/0/0；仅合成 U04 L1。
 - [本切片前看板](ORCHESTRATION_STATE_BEFORE_U04_TEMP_QUEUE_OVERFLOW_L1_20261019.md)：保留队列边界任务开始前的接续约束与未验结论。
 
+- [2026-10-19 重启后接续指令](CONTINUE_GOAL_AFTER_RESTART_2026-10-19.md)：重启后接管核实、U04 run02只读审计顺序和生产边界。
+- [2026-10-19 重启前最小收口](ORCHESTRATION_STATE_before_restart_final_20261019.md)：保留最终 Git/工作树、写权、进程监听、绝对路径 ADB 枚举与磁盘状态；不代表业务验收或总目标完成。
+- [2026-10-19 重启前看板快照](ORCHESTRATION_STATE_before_failclosed_resume_20261019.md)：保留接管前看板和本轮未完成/失败范围；完整重启前工作树与环境快照见 `.local/goal-20261019-resume/pre-restart-closeout01/`。
 
 - [D06/D07 五截点恢复事实 Python 独立消费](GOAL_E07_D06_D07_RECOVERY_PYTHON_CONSUMER_2026-10-19.md)：57 文件固定输入、五份完整事实/私有文件、隔离回执与逐包账务核对及17项变异测试通过；仅 Python L1，不计 L2/L3 或总目标。
 - [本切片前看板](ORCHESTRATION_STATE_before_fault_recovery_python_20261019.md)：保留前序全部局部通过、失败、环境和未验项。
