@@ -1,5 +1,7 @@
 # 历史归档
 
+- [U04 独立采集声效未就绪提示 L1](GOAL_U04_INDEPENDENT_SOUND_READINESS_L1_2026-10-19.md)：独立页显示声效未就绪提示并保留保存状态；新增显示测试通过，既有 SQLite 失败保全，仅合成 L1。
+
 - [U04 独立作业队列满边界 L1](GOAL_U04_INDEPENDENT_QUEUE_OVERFLOW_L1_2026-10-19.md)：拒收计数修复，反例失败与修复后4项主机测试通过；仅合成L1。
 - [独立队列切片前看板](ORCHESTRATION_STATE_BEFORE_U04_INDEPENDENT_QUEUE_OVERFLOW_L1_20261019.md)：保留前序tar审计、TEMP队列修复和未验边界。
 

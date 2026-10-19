@@ -33,7 +33,9 @@ class IndependentWorkActivity : ComponentActivity() {
         }
         scanner = ScannerReceiver(this, { engine.receive(it, "BROADCAST") }, engine::stop)
         actions(); corrections()
-        lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { engine.state.collect { display.render(it, engine.scanning) } } }
+        lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) {
+            engine.state.collect { display.render(it, engine.scanning, (application as PdaApplication).workSound.error) }
+        } }
     }
     private fun actions() {
         binding.workValidate.setOnClickListener { manual() }

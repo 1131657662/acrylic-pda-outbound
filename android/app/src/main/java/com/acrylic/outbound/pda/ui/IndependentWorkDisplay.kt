@@ -5,12 +5,14 @@ import com.acrylic.outbound.pda.independent.*
 import java.math.BigDecimal
 
 internal class IndependentWorkDisplay(private val binding: ActivityIndependentWorkBinding) {
-    fun render(ui: IndependentWorkUi, scanning: Boolean) {
+    fun render(ui: IndependentWorkUi, scanning: Boolean, soundError: String = "") {
         val task = ui.task
         val sealed = task?.state?.state == "SEALED"
         binding.workSummary.text = task?.let { "${it.task.vehicleNo} · 计划 ${it.task.plannedTotal} 包\n有效 ${it.state.actualCount} 包 · ${kg(it.state.weightGrams)} kg" } ?: "正在读取原独立任务"
         binding.workBlocked.text = ui.blocked
-        binding.workMessage.text = ui.message + if (ui.queued > 0) "\n已进入队列 ${ui.queued} 项；须见已保存结果后核对。" else ""
+        binding.workMessage.text = listOf(ui.message,
+            if (ui.queued > 0) "已进入队列 ${ui.queued} 项；须见已保存结果后核对。" else "", soundError)
+            .filter { it.isNotBlank() }.joinToString("\n")
         buttons(ui, scanning, sealed)
         val candidate = ui.candidate
         binding.workCandidate.text = candidate?.let { "${it.capture.barcode} · ${status(it.processing.state)}\n${it.processing.error}\n原输入序 ${it.capture.sequence} · ${if (it.capture.inputSource == "MANUAL") "手输" else "扫码"}" }.orEmpty()

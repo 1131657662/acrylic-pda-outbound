@@ -2,6 +2,8 @@
 
 - 2026-10-19：新增 [U04 独立作业队列满边界 L1](history/GOAL_U04_INDEPENDENT_QUEUE_OVERFLOW_L1_2026-10-19.md)。拒收后计数从错误的66恢复到65，预修复反例失败、修复后4项主机测试通过；全部65条已接收输入保留，未新增有效扫描。仅合成主机L1，不计 Activity/HTTP、U04/D17整体、D16/D18或第8节。
 
+- 2026-10-19：新增 [U04 独立采集声效未就绪提示 L1](history/GOAL_U04_INDEPENDENT_SOUND_READINESS_L1_2026-10-19.md)。独立页消费 `WorkSound.error` 并与已保存文案同时显示；新增显示测试2/0/0/0通过。既有声音持久化组合因 Robolectric `SQLiteCantOpenDatabaseException` 保留失败，不计 U04/D17整体、D16/D18或第8节。
+
 - 2026-10-19：新增 [U04 保留明细四字号 tar 只读审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)。八份 tar 逐成员及 24 个 Room 成员独立哈希、WAL 逻辑表消费完成；Room 物理/逻辑守恒，差异为新增测试证据、目录 mtime、profileInstalled 和 WorkManager 调度字段。原 `archiveUnchanged=false` 保留，仅补有界 L1，不计 U04/D17 整体、L2/L3 或第8节。
 
 - 2026-10-19：新增 [U04 TEMP 队列满边界 L1](history/GOAL_U04_TEMP_QUEUE_OVERFLOW_L1_2026-10-19.md)。在隔离 TEMP 原生队列填满并拒收第 66 次输入，预修复对照按预期暴露计数错误；修复后 4 项主机测试通过，65 条已接收输入全部持久化。仅合成 U04 L1，不计 U04/D17 整体、真实 HTTP/MySQL、D16/D18 或第8节。

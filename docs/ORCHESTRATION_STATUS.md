@@ -36,6 +36,10 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - [U04独立作业队列满边界L1](history/GOAL_U04_INDEPENDENT_QUEUE_OVERFLOW_L1_2026-10-19.md)：拒收后立即发布回退计数；预修复4项中1失败（应65实66），修复后4/0/0/0。暂停后65条原输入顺序持久化、无有效扫描、更新租约释放；只计合成主机L1，不计Activity/HTTP、U04/D17整体、D16/D18或§8。
 - 原运行器stderr失败、原JSON中in-memory措辞及勘误均留同根证据；实际为文件型Room/Robolectric native SQLite，无DB服务器。另只读验证audit02的76个输出长度/哈希及JSON有效，未重复tar审计。
 
+## 第四个有界任务结论
+- [U04独立采集声效未就绪提示L1](history/GOAL_U04_INDEPENDENT_SOUND_READINESS_L1_2026-10-19.md)：独立页此前丢弃 `WorkSound.error`，现与已保存/队列文案同屏显示；新增Robolectric显示测试2/0/0/0通过。组合运行的既有声音持久化测试因 `SQLiteCantOpenDatabaseException` 失败，未隐藏；仅合成UI L1，不计U04/D17整体、D16/D18或§8。
+- 本切片未构建/安装APK、操作设备或服务端；失败、输入和XML均在 `.local/u04-independent-sound-run01/`，继承改动与旧证据保持。
+
 ## 重启后实际环境
 - 本次fresh采样而非沿用旧PID：系统MySQL80父4288/子5188，3306/33060；配置指向ProgramData系统datadir，未连接/停止。auto.cnf权限拒绝，UUID未知；不以服务观察冒充原库身份已核验。
 - 独立切片收尾fresh采样无Java/Gradle、隔离MySQL、ADB/模拟器；5037无监听，5040仍属Windows服务；Debug Keystore哈希未变。精确进程/监听/磁盘见同根 `environment-closeout.json`，C/D/E余量分别73,241,010,176 / 61,199,851,520 / 195,634,053,120字节。未启动设备会话或使用正式签名。
