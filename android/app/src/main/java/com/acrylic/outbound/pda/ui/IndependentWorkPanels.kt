@@ -23,7 +23,7 @@ internal class IndependentWorkPanels(private val binding: ActivityIndependentWor
     private fun toggleDetails() {
         val opening = !binding.workDetailsPanel.isVisible
         binding.workDetailsPanel.isVisible = opening
-        binding.workDetailsToggle.text = if (opening) "收起核对 / 原件" else "展开核对 / 原件"
+        binding.workDetailsToggle.text = if (opening) "收起核对 / 原件" else "核对 / 原件"
         if (!opening) {
             binding.workPassword.text.clear()
             closeInput(binding.workDetailsToggle)

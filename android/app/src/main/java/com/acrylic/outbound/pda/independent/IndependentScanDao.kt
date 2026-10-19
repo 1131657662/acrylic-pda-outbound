@@ -39,6 +39,11 @@ interface IndependentScanDao {
         FROM independent_scan s LEFT JOIN independent_void v ON v.captureId=s.captureId
         WHERE s.taskId=:id AND s.barcode=:barcode ORDER BY s.sequence DESC LIMIT 1""")
     fun locate(id: String, barcode: String): IndependentScanView?
+    @Query("""SELECT s.*,CASE WHEN v.captureId IS NULL THEN 'ACTIVE' ELSE 'VOID' END AS status
+        FROM independent_capture c INNER JOIN independent_scan s ON s.captureId=c.id
+        LEFT JOIN independent_void v ON v.captureId=s.captureId
+        WHERE c.taskId=:id ORDER BY c.sequence DESC LIMIT 1""")
+    fun latestSaved(id: String): IndependentScanView?
     @Query("""SELECT COUNT(*) AS count,COALESCE(SUM(s.weightGrams),0) AS grams FROM independent_scan s
         WHERE s.taskId=:id AND NOT EXISTS (SELECT 1 FROM independent_void v WHERE v.captureId=s.captureId)""")
     fun total(id: String): ScanTotal

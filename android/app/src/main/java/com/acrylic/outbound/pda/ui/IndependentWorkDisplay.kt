@@ -11,7 +11,9 @@ internal class IndependentWorkDisplay(private val binding: ActivityIndependentWo
     fun render(ui: IndependentWorkUi, scanning: Boolean, soundError: String = "") {
         val task = ui.task
         val sealed = task?.state?.state == "SEALED"
-        binding.workSummary.show(task?.let { "${it.task.vehicleNo} · 计划 ${it.task.plannedTotal} 包\n有效 ${it.state.actualCount} 包 · ${kg(it.state.weightGrams)} kg" } ?: "正在读取原独立任务")
+        binding.workSummary.show(task?.let(::summary) ?: "正在读取原独立任务")
+        binding.workRecent.show(ui.latestSaved?.takeIf { it.scan.taskId == task?.task?.id }?.let(::recent).orEmpty())
+        binding.workRecent.isVisible = binding.workRecent.text.isNotBlank()
         binding.workBlocked.show(ui.blocked)
         binding.workBlocked.isVisible = ui.blocked.isNotBlank()
         binding.workMessage.show(listOf(ui.message,
@@ -24,7 +26,7 @@ internal class IndependentWorkDisplay(private val binding: ActivityIndependentWo
         binding.workCandidate.show(candidate?.let { listOf("${it.capture.barcode} · ${status(it.processing.state)}",
             it.processing.error, "原输入序 ${it.capture.sequence} · ${if (it.capture.inputSource == "MANUAL") "手输" else "扫码"}")
             .filter { line -> line.isNotBlank() }.joinToString("\n") }.orEmpty())
-        binding.workLines.show(task?.lines?.joinToString("\n") { "${it.deliveryCode} · ${it.model} · ${it.name}\n固定计划 ${it.plannedCount} 包" }.orEmpty())
+        binding.workLines.show(task?.let { "有效重量 ${kg(it.state.weightGrams)} kg\n" + it.lines.joinToString("\n") { line -> "${line.deliveryCode} · ${line.model} · ${line.name}\n固定计划 ${line.plannedCount} 包" } }.orEmpty())
         binding.workSelected.show(ui.selected?.let { row(it) } ?: "未选择原已扫包。")
         binding.workRows.show(ui.rows.joinToString("\n\n") { row(it) }.ifEmpty { "本页尚无原保存明细。" })
         binding.workOriginal.show(task?.let { "${if (sealed) "已结束封存，仍待主管对账\n" else ""}原任务 ${it.task.id}\n原资料 ${it.task.importId}\n原资料摘要 ${it.task.skuSha256}\n采集原因 ${it.task.reason}" }.orEmpty())
@@ -38,7 +40,7 @@ internal class IndependentWorkDisplay(private val binding: ActivityIndependentWo
         binding.workConfirm.isEnabled = !sealed && ui.candidate?.processing?.state == "WAITING_CONFIRM" && scanning && ui.queued == 0 && ui.blocked.isBlank()
         binding.workAcknowledge.isEnabled = !sealed && ui.candidate?.processing?.state in setOf("INVALID", "BUSINESS_REJECTED") && ui.queued == 0 && ui.blocked.isBlank()
         binding.workDiscard.isEnabled = !sealed && ui.candidate?.capture?.inputSource == "MANUAL" && ui.candidate.processing.state in setOf("RECEIVED", "WAITING_CONFIRM") && ui.queued == 0 && ui.blocked.isBlank()
-        binding.workPause.show(if (scanning) "暂停扫码，保留已接收输入" else "恢复扫码")
+        binding.workPause.show(if (scanning) "暂停扫码" else "恢复扫码")
         binding.workAuthorize.isEnabled = ui.queued == 0 && !sealed
         binding.workPause.isEnabled = !sealed
         binding.workFinish.isEnabled = !sealed && !scanning && ui.queued == 0 && ui.candidate == null && ui.blocked.isBlank()
@@ -47,6 +49,15 @@ internal class IndependentWorkDisplay(private val binding: ActivityIndependentWo
         binding.workOlder.isEnabled = ui.rows.size == 50 && ui.queued == 0
     }
     private fun row(value: IndependentScanView) = "原序 ${value.scan.sequence} · ${if (value.status == "ACTIVE") "有效" else "已撤销"} · ${value.scan.barcode}\n${value.scan.deliveryCode} · ${value.scan.model} · ${value.scan.name}\n原重量 ${value.scan.rawWeight} kg / ${value.scan.weightGrams} 克"
+    private fun summary(value: IndependentTaskView): String {
+        val count = value.state.actualCount; val plan = value.task.plannedTotal
+        val remaining = if (count <= plan) "剩余 ${plan - count} 包" else "超计划 ${count - plan} 包"
+        return "${value.task.vehicleNo} · 计划 $plan 包\n有效 $count 包 · $remaining"
+    }
+    private fun recent(value: IndependentScanView): String {
+        val result = if (value.status == "ACTIVE") "最近已保存" else "最近保存（已撤销）"
+        return "$result #${value.scan.sequence} · ${value.scan.barcode}\n${value.scan.model} · ${value.scan.name} · ${kg(value.scan.weightGrams)} kg"
+    }
     private fun status(value: String) = when (value) {
         "RECEIVED" -> "已接收，待校验"
         "WAITING_CONFIRM" -> "手输待确认保存"

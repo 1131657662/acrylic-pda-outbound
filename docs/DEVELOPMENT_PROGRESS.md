@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- 2026-10-19：新增 [U01/U04 独立采集剩余数与最近保存卡 L1](history/GOAL_U01_U04_INDEPENDENT_PROGRESS_L1_2026-10-19.md)。有效数、超计划、任务专属最近保存、VOID身份保留、Room快照和任务切换竞态均有合成Robolectric定向证据；7套件27项及引擎回归3项通过。未验Activity/IME/真机、真实HTTP/MySQL、D18最终候选和总目标闸门。
+
 - 2026-10-19：新增 [U01/U04 独立采集首屏与次级面板 L1](history/GOAL_U01_U04_INDEPENDENT_FIRST_SCREEN_L1_2026-10-19.md)。核对/手输显式展开，候选动作按状态显示；保留失败与几何诊断，最终16项合成显示/布局测试和instrumentation编译通过。Activity/IME/设备及U01/U04/D17整体未验。
 
 - 2026-10-19：新增 [U04 独立采集文本按变化更新 L1](history/GOAL_U04_INDEPENDENT_INCREMENTAL_RENDER_L1_2026-10-19.md)。队列变化保留未变的原任务、计划和明细，保存/分页正确更新；预修复3项反例失败，修复后连同声效回归5项通过。仅合成显示L1，设备性能、U04/D17整体和第8节未验。

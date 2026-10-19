@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-19
 branch: codex/development
-head: e35e9f2c
-dirty_entries: 217
+head: 3f450bd7
+dirty_entries: 233
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -19,7 +19,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 固定树 `D:/acrylic-pda-outbound`、分支 `codex/development`；本轮输入、实际远端和交付 SHA 见各任务同根报告，main 只读。
 - 本聊天 `01a1520d-c412-7402-b77d-311a043b3d1e` 为唯一活动项目写者；fresh list_threads显示其他开发/清理/UI询问聊天idle/notLoaded。首屏切片输入HEAD及远端 `42562412ca9372728239ef2d1a798ff97728c8d9`；全部218项继承路径/SHA在 `.local/u04-independent-first-screen-run01/takeover.json`，后续takeover02/03和closeout-inputs保存全部231项WIP及216项范围外保护核对；取消链及无关WIP保留。
 - 本轮先完成只读tar审计，再修复TEMP与独立引擎的满队列计数；各自限定源码/测试、报告和索引，禁止整体暂存。独立切片输入 `d58c86554c4d7abb14d8922ddbd7f3e873fc98c2`，全部路径/SHA、patch与继承核对在 `.local/u04-independent-queue-run01/takeover.json`、`closeout.json`；开发交付见同根 `git-delivery.json`。取消链WIP及无关脏文件保留。
-- 替换前看板见 [文本更新切片前断点](history/ORCHESTRATION_STATE_BEFORE_U04_INDEPENDENT_RENDER_20261019.md)；更早审计/重启/清理快照、失败输入与D17/E08 handoff按原索引保留。
+- 替换前看板见 [独立进度切片前断点](history/ORCHESTRATION_STATE_BEFORE_U04_INDEPENDENT_PROGRESS_20261019.md)；原始字节保存在本机 `u04-independent-progress-run01/board-before.md`，更早审计/重启/清理快照和D17/E08 handoff沿原索引。
 
 ## 首个有界任务结论
 - [U04四字号tar只读审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)：逐成员比较八份tar，并用独立Windows tar重算24个Room成员。Room主库/WAL/SHM内容、完整schema与83表257行不变；完整性ok、无外键错误。原 `archiveUnchanged=false` 保留，不称整tar不变。
@@ -51,12 +51,18 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ## 第五与第六个有界任务结论
 - [独立页文本按变化更新L1](history/GOAL_U04_INDEPENDENT_INCREMENTAL_RENDER_L1_2026-10-19.md)开发提交 `42562412ca9372728239ef2d1a798ff97728c8d9` 已推送；原反例/通过和216项继承保护在 `.local/u04-independent-render-run01/`，设备性能未验。
 - [U01/U04独立采集首屏L1](history/GOAL_U01_U04_INDEPENDENT_FIRST_SCREEN_L1_2026-10-19.md)：手输与核对/原件默认折叠、候选动作动态出现；after/after02/after03失败全部保留，挂窗口/实际主题/像素舍入及控件几何诊断后after04共16/0/0/0，核对入口底490≤509；instrumentation仅编译退出0。仅合成UI L1，不计Activity/IME/设备、U01/U04/D17整体或§8。
-- 证据根 `.local/u04-independent-first-screen-run01/`：closeout-inputs.json保存源码/依赖/全部证据SHA；takeover03、closeout与git-delivery记录精确Git、全部WIP、写权和环境。剩余数/最近保存卡尚未实现，历史分页末行不得冒称最近保存。
+- 首屏开发提交 `e35e9f2c` 及事实记录 `3f450bd76ceca833d440c549623c115b121ed742` 已推送；证据在 `.local/u04-independent-first-screen-run01/`。剩余数/最近保存卡后续由第七切片补充，历史分页末行继续只表示该页末条。
 - 本切片专用build/cache/temp核实停机后清3668文件，逻辑82,383,921字节；D余量61,004,599,296→61,093,257,216字节，卷净增88,657,920字节。PS5长路径哈希失败在删除前，PS7完成；logicalBytes=null原回执保留并另做逐项加和勘误。日志/XML/原件/APK/tar与继承WIP均保留。声效缓存先前被自动审批拒绝，未重试。
 - fresh收口无Java/Gradle/模拟器；MySQL80父4288/子5188、3306/33060观察，UUID未知；ADB2436/5037只读枚举USB M71。C/D/E精确余量和监听见closeout；未连接数据库/业务HTTP、操作设备数据或使用正式签名。
 
+## 第七个有界任务结论
+- [U01/U04 独立采集剩余数与最近保存卡 L1](history/GOAL_U01_U04_INDEPENDENT_PROGRESS_L1_2026-10-19.md)：有效数、剩余/超计划、任务专属最近保存和VOID身份保留由同一Room事务快照发布；排队、未确认、失败、翻页、回滚、重开和跨任务均有测试。run01七套件27项全通过，run04引擎回归3项全通过；EXPLAIN使用任务序号、扫描主键和VOID主键，未见临时排序。仅合成Robolectric主机L1，不计Activity/IME/真机、HTTP/MySQL、U01/U04/D17整体、D18或§8。
+- 新增任务切换发布竞态守卫与测试；run02运行器未收集XML的日志/结果保留，未作为通过依据，run03/04正确隔离证据保留。未改schema/迁移、未安装APK、未操作设备或原库/现网；`localDeletionAllowed=false`保持。
+- 输入HEAD/origin为 `3f450bd76ceca833d440c549623c115b121ed742`；全部217项继承路径在run01/takeover，run04/inherited-protection核对217项SHA均未变。完整WIP/环境在run04/closeout；本机结果与开发交付分别保留。
+- run02误用默认 `android/app/build`，不称该目录旧报告未变，默认目录保留。run03/04清理先遇PS5长路径与部分删除；PS7删剩余4255文件/155736979字节，原PS5前清单被复用覆盖的证据缺口已披露。run01/02另清3129文件/151845800字节，D余量60921716736→61079003136。完整PS7逐项哈希和回执在run04；旧被拒目录未重试，APK/tar/原件保留。
+
 ## 下一独立任务
-- 先限定路径自审、提交/推送本首屏切片并核ls-remote；收口后继续独立页明确剩余数或其他有效U/O产品缺口，先记标准/输入，再实现验证。Activity/IME/实体键/四字号设备消费者继续单列，不能用编译冒充运行。
+- 先限定路径自审、提交/推送本独立进度切片并核ls-remote；随后继续独立页或其他有效U/O产品缺口，先记标准/输入，再实现验证。Activity/IME/实体键/四字号设备消费者继续单列，不能用编译冒充运行。
 - 按路径→影响层→必跑→复用依据补受影响Android、真实HTTP/MySQL、Chrome、Python及非空迁移组合；D18仍须最终候选/原模拟器/恢复全链，不重复已验tar、不机械重跑暂缓SQLite或旧run03。
 - 生产决定七类能力、TEMP生产归档及 `localDeletionAllowed=false` 保持；原库/现网、正式签名、部署/Release/main均不触碰。总目标继续active，局部收口不等于完成。
 <!-- CURRENT_STATE_END -->

@@ -49,7 +49,7 @@ class IndependentFirstScreenTest {
         printGeometry(b)
 
         assertTrue(b.workConfirm.isEnabled)
-        listOf(b.workSummary, b.workCandidate, b.workConfirm, b.workPause, b.workBack, b.workDetailsToggle).forEach {
+        listOf(b.workSummary, b.workRecent, b.workCandidate, b.workConfirm, b.workPause, b.workBack, b.workDetailsToggle).forEach {
             assertTrue("${it.id} bottom=${bottom(b, it)} below first screen", bottom(b, it) <= 509)
         }
         assertFalse(b.workAcknowledge.isShown)
@@ -64,7 +64,7 @@ class IndependentFirstScreenTest {
             IndependentWorkDisplay(b).render(ui, scanning = true)
             measure(b)
 
-            listOf(b.workSummary, b.workCandidate, b.workConfirm, b.workDetailsToggle).forEach {
+            listOf(b.workSummary, b.workRecent, b.workCandidate, b.workConfirm, b.workDetailsToggle).forEach {
                 assertUnclipped(it)
                 assertReachable(b, it)
             }

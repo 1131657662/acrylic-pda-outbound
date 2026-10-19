@@ -11,7 +11,7 @@ internal object IndependentScreenFixture {
             commandSha256 = "synthetic-command", createdWall = 1, createdElapsed = 1, createdBoot = 1)
         return IndependentWorkUi(task = IndependentTaskView(task,
             listOf(IndependentTaskLine("task", "003", "型号", "合成品名", 100)),
-            IndependentTaskState("task", actualCount = 1, weightGrams = 1250), emptyList()), ready = true)
+            IndependentTaskState("task", actualCount = 1, weightGrams = 1250), emptyList()), ready = true, latestSaved = saved())
     }
 
     fun candidate(state: String) = IndependentCaptureView(
@@ -20,4 +20,6 @@ internal object IndependentScreenFixture {
             boot = 1, capturedTrustedAt = "synthetic-time"),
         IndependentCaptureState("capture", state = state)
     )
+    fun saved() = IndependentScanView(IndependentScan("saved", "task", 1, "003A0000001", "003",
+        "型号", "合成品名", "1.250", 1250, 1, "synthetic-row", "synthetic-time"), "ACTIVE")
 }

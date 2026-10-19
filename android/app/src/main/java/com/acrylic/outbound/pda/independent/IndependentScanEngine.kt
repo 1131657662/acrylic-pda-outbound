@@ -10,7 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 internal data class IndependentWorkUi(val task: IndependentTaskView? = null, val candidate: IndependentCaptureView? = null,
     val rows: List<IndependentScanView> = emptyList(), val selected: IndependentScanView? = null, val after: Long = 0,
-    val queued: Int = 0, val ready: Boolean = false, val blocked: String = "", val message: String = "独立采集始终待主管对账。")
+    val queued: Int = 0, val ready: Boolean = false, val blocked: String = "", val message: String = "独立采集始终待主管对账。",
+    val latestSaved: IndependentScanView? = null)
 
 /** Application-owned serial queue; a pause stops automatic processing after the original input is durable. */
 internal class IndependentScanEngine(private val db: PdaDatabase, private val environment: IndependentScanEnvironment,
@@ -116,12 +117,21 @@ internal class IndependentScanEngine(private val db: PdaDatabase, private val en
     }
     private fun publish() {
         if (current.isEmpty() || current != requested) { mutable.update { it.copy(ready = false, queued = queued.get()) }; return }
+        db.runInTransaction { publishSnapshot() }
+    }
+    private fun publishSnapshot() {
         val original = IndependentTaskRepository(db, environment.sample, environment.actor).read(current)
+        if (original.task.id != requested) return
         if (original.state.state == "SEALED") { pause(); processor = null; fault = "" }
         val auth = if (original.state.state == "SEALED") "已结束封存；仅可核对、导出原件，仍待主管对账。"
             else runCatching { checkNotNull(processor) { "请核验独立口令以开始或恢复采集" }.store.check(current) }.exceptionOrNull()?.message.orEmpty()
         val candidate = db.independentScans().failure(current) ?: db.independentScans().pending(current)
-        mutable.update { it.copy(task = original, candidate = candidate, queued = queued.get(), rows = db.independentScans().page(current, it.after),
-            blocked = fault.ifEmpty { auth }, ready = active(current) && auth.isEmpty() && candidate == null) }
+        val latestSaved = db.independentScans().latestSaved(current)
+        val rows = db.independentScans().page(current, mutable.value.after)
+        synchronized(this) {
+            if (original.task.id != requested || current != requested) return
+            mutable.update { it.copy(task = original, candidate = candidate, queued = queued.get(), rows = rows, latestSaved = latestSaved,
+                blocked = fault.ifEmpty { auth }, ready = active(current) && auth.isEmpty() && candidate == null) }
+        }
     }
 }
