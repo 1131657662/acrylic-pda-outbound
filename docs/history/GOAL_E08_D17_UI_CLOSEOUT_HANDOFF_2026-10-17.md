@@ -4,7 +4,7 @@
 
 ## 1. 精确位置与阅读顺序
 
-固定工作树`D:/acrylic-pda-outbound`，分支`codex/development`。交接文档提交前HEAD、实际远端`refs/heads/codex/development`及最后推送均为`979777f421bdcaefb9f741b38422dbd0875262fa`；下方最终Git快照将在收尾提交推送后更新。暂存区原为空，本次仅文档开发备份。
+固定工作树`D:/acrylic-pda-outbound`，分支`codex/development`。**HEAD、实际远端`refs/heads/codex/development`、最后推送均为`16f6911e73dba039c4f2d12aca0c6c479ba03c12`**，提交标题`docs(orchestration): 更正 UI 范围并保存清理交接`，仅6个文档开发备份；前一推送为`979777f421bdcaefb9f741b38422dbd0875262fa`。提交后仅更新本交接页与看板的最终Git/事实回执，明确留作本地文档WIP，避免自引用SHA循环提交；AGENTS/Git工作流及其他继承WIP保留，暂存区为空。精确清单、远端回执和全部worktree在`handoff-final01/git-final.json`、`status-final.txt`、`worktrees-final.txt`。
 
 本次业务切片归属为**E08 / D17 UI构建与环境收口**，业务适用性待核、UI L1未通过。旧报告名`docs/history/GOAL_D06_RECOVERED_CONFIRMATION_UI_BUILD_CLOSEOUT_2026-10-17.md`保留以保护历史，但正文已更正：现行D06是坏机后台撤回，D07是重发及新机从头作业。不得按旧名称续跑接收机确认/激活。
 
@@ -49,7 +49,7 @@
 
 ## 3. 在途/未提交WIP、通过与失败
 
-本次文档收尾未改变继承的Android/server/web/tools改动：`handoff-final01/source-protection-review.json`核对收尾前38条受保护改动，哈希全部未变。AGENTS.md与docs/GIT_WORKFLOW.md包含继承改动及本轮持续清理规则，留作明确文档WIP，不整文件混入本次提交。其他继承文档/工具/源码与未跟踪内容均保持；最终全部status路径、原字节哈希、dirty副本及patch统一保存为`handoff-final01/dirty-final.json`、`dirty-final.zip`、`tracked-final.patch`与`input-final.json`。必须合并status路径取全集，不能漏掉仅显示modified的R06_A1_1_CODEX_2026-09-30.md。
+提交后本交接页与看板的精确Git/事实刷新属于文档WIP；没有额外业务验收。本次文档收尾未改变继承的Android/server/web/tools改动：`handoff-final01/source-protection-review.json`核对收尾前38条受保护改动，哈希全部未变。AGENTS.md与docs/GIT_WORKFLOW.md包含继承改动及本轮持续清理规则，留作明确文档WIP，不整文件混入本次提交。其他继承文档/工具/源码与未跟踪内容均保持；最终全部status路径、原字节哈希、dirty副本及patch统一保存为`handoff-final01/dirty-final.json`、`dirty-final.zip`、`tracked-final.patch`与`input-final.json`。必须合并status路径取全集，不能漏掉仅显示modified的R06_A1_1_CODEX_2026-09-30.md。
 
 全输入5501项快照：`.local/goal-20261017-resume/resume-20261017-0849/input.json`，SHA `42d8f5d3febab41ae9e3a1c4104b6d56d2416d0da6aa292f04f049b3a68dacfe`，同目录dirty-files.zip/tracked.patch/写权/进程/监听。后续`resume-20261017-closeout/dirty-hashes.json` SHA `3C12591CB3FBE40C999D9E089C62C1694A13A55511CC04E02B5EDDCB20690FF2`；收尾前`handoff-final01/dirty-before.json` SHA `b2354fd08591e3cb162f4875107d536bb2b52e6d50be38b19f8c86c92e9381d4`及dirty-before.zip保留。最终清单以`handoff-final01/`为准，不用旧脏项数替代实查。
 

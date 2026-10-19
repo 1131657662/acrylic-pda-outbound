@@ -1,6 +1,6 @@
 # E06 L2 Android 验收记录（未完成）
 
-本记录只收录当前接续切片的 Android/Room 证据，不把单一 Android 运行结果扩写为 E06 L2、D18 L3 或总目标通过。输入为主树 `D:/acrylic-pda-outbound`、分支 `codex/development`、HEAD `601c7a40cd1a683310129bd1e1b53ef2cfc0b476`；执行前的断点见 [E06 L2 接续前看板](ORCHESTRATION_STATE_before_e06_l2_resume_2026-10-15.md)。
+本记录只收录当前接续切片的 Android/Room 证据，不把单一 Android 运行结果扩写为 E06 L2、D18 L3 或总目标通过。Android 命令实际记录的代码输入是主树 `D:/acrylic-pda-outbound`、分支 `codex/development`、HEAD `601c7a40cd1a683310129bd1e1b53ef2cfc0b476`，并包含该时点工作树快照 `source-before.json`（990 项，复核时当前哈希全部一致）；执行后仅提交了文档断点，当前主树 HEAD 为 `9f1d473652a422d516d0d327039f43b6f6d98c2a`。因此 `9f1d4736` 是对本报告和看板的记录更新，不是重新运行或改变 Android 被测源码的输入。执行前的断点见 [E06 L2 接续前看板](ORCHESTRATION_STATE_before_e06_l2_resume_2026-10-15.md)。
 
 ## 影响映射与必跑项
 

@@ -43,3 +43,5 @@
 回归完成后52条全量dirty副本/hash/diff/Git/进程/监听/C-D余量在`.local/d01-d18-20261009/closed-regression-complete-11/`，22条继承逐hash一致。该快照C/D余量81852727296/99456688128字节；无重型Gradle、模拟器或页面运行器在途，既有3306/13316/ADB未操作。看板替换前原文在该快照board.md；提交前后及Git回执另按明确范围保存，排除全部22条继承路径、本机产物与私有材料。
 
 下一步补原occupancy/permission语义全集及更高轮原激活、TEMP preparation/ACK/基线证明；读取层现仅固定其字节库存。然后全新跨树隔离输入实际恢复截点前→原ID/正文/序号/回执重建→D07围栏→接收激活/最终提交，补回滚/原键重放/重启。D06/D07整体、FORMAL产品入口覆盖、D08–D18及第8节未完成；政策、原资料/旧BCD/526、历史失败和C01–C08继续单列，不外推本前置通过。
+
+32条明确路径已提交并正常推送cdca9f14445c047af3653b25f8b35c92b0f4f1a8，实际远端一致；command/staged-reviewed.diff/commit.log/push.log在closed-precommit-12。提交后23条dirty全量副本及22条继承保护见closed-postcommit-13；额外RecoveryControlPaths.java仅换行差异未暂存，保留原字节，不重置。随后只补Git断点文档，不改已验代码输入。

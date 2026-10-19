@@ -48,3 +48,5 @@ C保留B全部规范LOCAL字节、累计原ID/原文/采集顺序，三设备局
 同次默认debug APK构建和lint通过，lintReportDebug实际执行、XML/HTML当次保存，独立核0 errors、221条提示；不称零问题。保留APK及重算SHA256 `BE3DE94D8C43D513A5689474B3DC1C585F392BA5BA1BC89469F30A0AEB65603B`，登记在`d06-local-consumers/android-artifacts.json`，仅本机D盘、未发布/正式签名。本批只改STOP回执读取、无新产品页面；既有页面历史证据不冒充当次UI测试或真机。
 
 本范围37条拟定明确路径，提交前完整56条dirty快照、暂存diff、commit/push回执须登记在`d06-local-close-04`。生产默认/签名、七类能力及localDeletionAllowed=false保持，不合main、不发布部署或正式签名。1100–1102不重跑，历史失败与原资料/旧BCD/现场恢复限制继续保留；D06整体与D07–D18、第8节未通过，范围提交不是总目标完成。
+
+37条范围已提交推送`75024cb86a7217dbe51e69f3f94399e7f322d701`，实际远端匹配；提交标题`fix(D06): 打通LOCAL独立冻结原件交接与前置拒绝`。提交前56条完整dirty副本/hash/diff、明确暂存清单及commit/push/远端回执在`d06-local-close-04`；提交后19条继承路径逐hash保持，未合main或生产动作。随后接续D07故障围栏及R09可信事实，不将本范围或历史证据拼为最终整合通过。

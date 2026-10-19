@@ -33,3 +33,5 @@ received-native-compile-01参数以单字符串传递，Gradle拒绝任务，0�
 原未收正文1189/1206不能补造canonical/native或INITIAL_ACCEPTANCE。1131等已收正文来源不直接塞入未收正文入口。本轮已取得新实际开发来源原verification和完整相关行，下一步从1220保全材料核原准备/ACK、注册根与可信权限连续性，再补已收正文全量真实时间截点重建，明确closed到HandoverCommandService自持外层事务/准入交叉点，接主管故障围栏→准备激活→接收最终提交。不能继续以单表恢复或只读helper代业务闭环。
 
 1150/1151/UI-06与1100–1102未重跑；失败库不复用。D06/D07整体、D08–D18/总闸门未完成，D04候选排除/D05取消释放政策缺口及原资料/旧BCD/526继续单列。生产默认、签名与七类生产决定能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名。
+
+16条明确路径已提交推送0657248e114e41e2aa71423ec749b7a6dfd4cd0b，实际开发远端一致；原暂存路径、diff、自审与最终已验hash、commit/push回执见received-native-precommit-01。提交后余28条继承dirty逐hash保护；看板与本页仅补Git断点，不改产品/测试输入，不机械重跑业务验证。最终精确全部dirty/进程/监听/磁盘见received-native-final-01，总目标仍active。

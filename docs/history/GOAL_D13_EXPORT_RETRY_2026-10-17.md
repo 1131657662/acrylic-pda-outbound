@@ -45,3 +45,5 @@ run1566（DB19345/HTTP19451）真实主键冲突按既有ApiErrors契约返回40
 run1565/1566/1567已认证停机，核进程/监听及无消费者，清理前保存三轮逐文件SHA、输入/patch、初始化/运行/认证停机命令与结果及dump/失败摘要；只清可重建合成datadir/binlog。共1041文件/667992570逻辑bytes，D盘56271433728→56952586240 bytes，实增681152512。C78732627968/E195634057216 bytes；`cleanup-before.json`/`cleanup-after.json`存精确路径/文件数/进程及前后磁盘。原XML/HTTP/dump/日志/UNKNOWN签名/身份、所有继承WIP、handoff-final01、run03指定失败及最终APK保持。
 
 本轮无Android/Chrome产品变化；它们及跨入口恢复组合并未执行，不因服务端L1通过免除D13整体/L2/D18L3。七类生产能力、TEMP生产归档、localDeletionAllowed=false、D16可信资格标准、原库/现网/main/发布边界保持。下一步沿逐路径范围审计核D13有效文件入口及E06/E07/E08剩余受影响组合，不恢复取消链；总目标保持active。
+
+14明确路径开发备份已提交推送`8b6aab3d0b08916c703bb7e660ec6fbdf64cd88f`，实际远端一致；提交前完整`inputd13retry-precommit06.json`共5579项/SHA `6f4a48fcabe8a40e81537cbe1977cda9a5097ae3546f8f7c3682d9e43b1d8b4c`。104项继承未提交状态保持；提交后文档断点另存，不把后补回执混作已提交内容。

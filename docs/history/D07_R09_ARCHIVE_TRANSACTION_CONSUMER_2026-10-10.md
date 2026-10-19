@@ -30,3 +30,5 @@
 下一步：在既有命令系统内确定原无canonical恢复来源的明确登记事实，或以有原canonical与native事实的真实成功来源补精确恢复接口；不得伪造INITIAL_ACCEPTANCE/旧verification。随后接主管故障围栏、接收准备/激活与最终提交，独立新库验证。新同事务接口不能直接嵌套外层HandoverCommandService，需复用其受控事务内操作或明确准入交叉点。
 
 D06/D07整体、D08–D18及第8节仍未完成。生产默认/签名/七类生产决定关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名，不绕既有设备/审批阻断。本机私有物料未上传或异地备份。
+
+9条明确路径已提交推送982570f57c06936486303c020aecab43d0ffec2c，实际开发远端一致；原commit/push回执在archive-consumer-precommit-01，postcommit-01保全26条dirty（25继承及前批读取历史补记）、69次/原22保护零漂移。提交后仅断点文档补记，不改变已验业务输入。

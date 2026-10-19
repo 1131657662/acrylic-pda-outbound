@@ -1,0 +1,56 @@
+> 历史断点，不恢复旧写权、执行或接续顺序；版本事实见看板生成块。
+
+# 开发看板
+
+<!-- CURRENT_STATE_START -->
+版本事实见看板生成块。
+
+用户范围：有权后台撤回坏机未完成订单→重发→新设备从头作业；换机进度承接/多跳/接收者激活已取消，旧源码与事实保留。用户显式恢复目标，active且未完成；D01–D18、第8节与O01–O05/U01–U04及UI重设计全部必做。
+
+## Git与写权
+- 固定D:/acrylic-pda-outbound、codex/development；本轮输入HEAD/远端dd22120e22ede5981f80e1aaa8934aedde2b066c，产品实物备份4fead0c7abc1ef77e6ecff70dd5df6e44b98e5d5；工具/实物Git回执见e06-physical-delivery-01；人工关联首切片Git回执见.local/goal-20261014/e06-association-delivery01。main只读c6e9e0c238c657baecbf699ba6fdbada5d979b86，不合main/发布/部署/原库/现网。
+- 旧release只证旧聊天释放；后续01a13800-6f5e-70d1-bff4-3d808873af68实际idle/末轮interrupted，无在途写入；本聊天01a13807-2558-7101-a38d-bc10913de36f唯一写权，旧执行不恢复。最新写权.local/goal-20261013/e06-audit-resume-20261014-association01/ownership.json；继承67路径全匹配，收尾全脏快照见交付目录。
+- 收口前全脏快照.local/goal-20261013/e06-audit-resume-20261014-02；最终残留全部原字节/hash/diff/远端/环境在handoff-e06-physical-wip-01/final。与final-snapshot-20261014-01的原路径相比仅看板/验收索引更新，继承业务/工具原字节保持。本机physical-disposition-last-request.json不提交。
+- 生产默认七类决定与TEMP归档边界保持，localDeletionAllowed=false、D16标准不变；内部合成签名/身份不冒充可信事实或现场验收。
+
+## 环境与磁盘
+- 保留预览1494库19330/PID11308、API19435/PID36640、worker1192、Vite5174/PID37712；保留实物1519库19331/PID13268、API19434/PID40236（e06-physical-runtime-final03/server.jar）。共享3306/ADB5037、AVD5562/5564及Keystore保持。
+- 补验1520–1523失败库均dump/hash认证停机并保留；本轮1524新建19332/19436已完成实物补验后dump/hash/认证停机，保全.local/goal-20261014/preserve-1524-e06-physical-01。零监听/消费者；339个文件长度/hash保持，仅压缩212个适用文件，无删除。无重型任务在途。
+- 收尾C/D可用52130824192/23243595776字节；1525失败、1526服务L1及1527网页L1均dump/hash认证停机保全。1527压缩213文件/340文件长度hash保持，D余量增205086720字节；preserve-1527-e06-association-web01/disks-after.json。新增产物D盘，临时仅子进程；仅压缩结束/停机无消费者的适用文件，预览/仍消费库保持。
+- [进度与清理](history/DEVELOPMENT_PROGRESS_AND_CLEANUP_2026-10-14.md)释放约8.23GiB，原库零删除、压缩原字节保持；证据.local/progress-cleanup-20261014。仅文档/清理，不计业务通过。失败库/binlog/dump、原件/XML/HTTP签名/原资料/唯一产物与最终APK保留。
+
+## 已验切片与继承失败
+- 详细范围/证据/旧环境见[归档断点](history/ORCHESTRATION_STATE_before_physical_audit_2026-10-14.md)与[验收索引](DEVELOPMENT_PROGRESS.md)。E01撤回重发、E02调整、E03救援/原件、E04取消/候选/各来源解隔离/历史贡献、E05净值与O03各已验范围不机械重跑，不拼为D18。
+- [O03验收](history/GOAL_E05_O03_ACCEPTANCE_2026-10-13.md)已收口；E06资料/身份/本地任务/SCAN与VOID/导出/可信核原/完整结束/主管核对已按各历史页提交推送。实物、人工关联、跨机冲突及O04/U03/D14/D18整体未完。
+- U01/U02首屏519dp>509dp连续3次、草稿添加无产品连续3次暂缓；旧D04/A1.4/1043完整前缀5次失败、原资料/旧BCD/526未验、full01/02 native崩溃、1342失败/1343取消、1364/1365恢复失败继续保全，无新依据不重跑/不清零。
+
+## E06实物限定收口与下一步
+- [实物设计](history/GOAL_E06_PHYSICAL_DESIGN_2026-10-14.md)与[限定验收](history/GOAL_E06_PHYSICAL_ACCEPTANCE_2026-10-14.md)：产品22项/JAR输入全匹配；unit-final01实际110项/bootJar复用，unit-final02为UP-TO-DATE/tests=0，两次旧Gradle入口错误不计通过。仅工具和文档修改，D整体L2与最终L3未跑。
+- HTTP06/HTTP03及final02真实附件/权限/锁后撤权/容量/篡改409、新JVM/固定外部钥；browser06输入匹配、Chrome1场景及390宽原键恢复目视通过；Web/契约/四消费者已有输入绑定。runtime-binding及作者自审在e06-physical-audit-20261014-01，不称独立人员审查。
+- 新1524 JDBC同算法非空/default-off通过，原169表仅Flyway变化、新增实物三表COUNT零；启用态原包/核原/完整上下文/实际附件/登记/原键回读及全量业务表守恒通过。追加权限/同键并发/异文/末SQL回滚/实际锁等待后撤权通过；合成主管/实物不称原PDA现场。
+- 1522/1523旧业务守恒及空输出原因仍未判。1524原CLI明确pc_submission_entry SHOW COLUMNS exit0且双输出空，连续总计3保留；不再机械CLI全表重跑。此前85表与JDBC同副本全匹配，新JDBC成功不能倒推旧失败通过。
+- [SQL修复/最小验收](history/GOAL_E06_SQL_REPAIR_2026-10-14.md)：15项工具单测与真实JDBC/错误目标身份消费通过；记录每条原输出/参数/状态与JVM原stdout/stderr/exit。DELETE提示误比及认证停机进程退出竞态属明确运行器失败，原日志保留，定向续验通过。
+- [人工关联服务端首切片L1](history/GOAL_E06_ASSOCIATION_L1_2026-10-14.md)：137项/bootJar、契约、1526非空/default-off、HTTP正向/首次同键并发/异文/末SQL原键恢复、实际锁等待后撤权、固定外部钥Python/新JVM及库存/跨机拒绝通过。仅新增证据台账、生产默认关闭，无正式提交/库存/账务变化。
+- 新失败保留：unit01来源枚举错误/输入中途变化；1525恢复wrapper空表预条件/漏字符集，失败库保全；1526复合trigger夹具SQL1064、登录审计严格白名单遗漏均保存并补逐行证据。API重启覆盖旧console日志的限制明列，不称原日志完整。旧失败计数不清零。
+- [人工关联网页L1](history/GOAL_E06_ASSOCIATION_WEB_L1_2026-10-14.md)：六项定向测试/构建、1527真实Chrome完整分页/缺排除阻断/丢响应/双页同键/空本地读回、严格全量业务守恒通过；服务/契约固定输入未变复用。首轮加载器/点击夹具及审计解码/UTF8失败原日志保留，修后定向通过；非完整E06/UI重设计收口。交付回执.local/goal-20261014/e06-association-web-delivery01。
+- 跨机冲突服务提交/远端b1e53def98138cb225b7b62ef68721ddc40d5beb，18明确路径回执e06-conflict-delivery01；原人工关联网页17a45e5ab480617392f872e1a8430d44c7acd977复用。全脏快照e06-audit-resume-20261014-conflict03，继承原字节/角色边界保护；当前唯一写者仍本聊天。
+- [跨机实物冲突服务L1](history/GOAL_E06_CONFLICT_L1_2026-10-14.md)：162项/bootJar、契约、1528非空/default-off、真实正向/权限/原键并发/异文/新键拒绝/末SQL回滚、实际锁后撤权/原采集者拒绝/三表不可变、固定外部钥/原字节/新JVM、实时NOT_FOUND/UNLOADED/库存阻断及全量业务守恒通过；2426输入/JAR类/迁移字节绑定。仅服务证据单元，网页/关联应用及E06 L2未跑。
+- 1528运行器失败原日志保留：prepare连接拒绝未种子，健康受保护401不算200；enabled并发前函数遮蔽模块，改race沿尾SQL原key续验；extra/lock漏登录审计逐行补证，原审计不变/分别仅一已知WEB_LOGIN，不重跑业务且同根因计数继承。不倒推原断言通过。
+- 1528已dump/hash/认证停机、零监听/消费者并保全压缩，preserve-1528-e06-conflict-l1-01；343文件长度/hash保持，216适用文件压缩，D余量增205545472字节，无删除。预览/1519不动；截点C/D余量50288431104/22559674368字节，无重型任务在途。
+- [关联消费完整冲突决定L1](history/GOAL_E06_CONFLICT_ASSOCIATION_L1_2026-10-14.md)：173项/bootJar、契约、1529非空/双默认开关真实零写、显式原决定正向/权限/首次并发/异文/末SQL回滚/实际锁后撤权/自审拒绝/引用不可变、固定外部钥/新JVM及全表守恒通过。2431输入仅补可选响应契约行，其余源码/编译类/迁移/JAR绑定；仅服务证据单元，网页与L2/L3待跑。
+- 1529已dump/hash/认证停机/零监听消费者保全；preserve-1529-e06-conflict-association-l1-01中344文件长度/hash保持，217适用文件压缩，D增205357056字节，无删除。截点C/D余量50289782784/21830660096字节，预览/1519保留，无重型在途。
+- 1529夹具失败保留：跨原件引用先404、补证权限码误断言、消费者实物回执无newCollectionAuthorized。完整零写/已知登录逐行补证后仅续未跑业务，按各回执契约修后固定钥消费通过；原日志/断言不记通过，旧根因计数保留。
+- 网页冲突关联提交/远端9fcfd33651cbc885111854b48af68ae720a5645d，11明确路径回执e06-conflict-association-web-delivery01；main不动。下一短装/多任务与增量冲突责任链→E06组合，再E07恢复/外置副本、E08留存/UI、E09候选；目标active且不complete，D/O/U整体未完。
+- 唯一写者仍本聊天，旧聊天idle/interrupted；全脏快照e06-audit-resume-20261014-conflict-web02，继承原路径字节匹配。19332/19436无监听，预览/1519保持；新产物与临时仅D盘，未删原件/失败库。
+- [网页显式冲突关联L1](history/GOAL_E06_CONFLICT_ASSOCIATION_WEB_L1_2026-10-14.md)：10项定向真实回执消费/类型构建/契约、1530真实Chrome正向/缺引用阻断/丢响应双页原键/空本地回读/390宽及全表守恒通过。浏览器输入全匹配；仅网页开发备份，冲突登记/短装/多任务与E06 L2/L3继续。
+- 1530已dump/hash/认证停机，preserve-1530-e06-conflict-association-web-l1-01中344文件长度hash保持、217压缩，D余量增204959744字节，零监听/消费者；无删除，预览/1519不动。post-browser01夹具GBK解码失败日志保留，显式UTF8后同一全表快照补key/引用断言通过，未重跑业务，旧根因计数保留。
+- [冲突登记网页L1](history/GOAL_E06_CONFLICT_WEB_L1_2026-10-14.md)：4项实际回执/持久化定向测试、构建契约；1531真实Chrome完整分页/显式各方原件实物/缺引用阻断/丢响应双页同键/明确编号新浏览器回读与390宽目视；全表守恒、原审计逐行不变通过。网页输入全匹配，服务/Android未改，L2/L3未跑。
+- 1531启动提前登录、browser01标签歧义/browser02占位区拦截均夹具失败，原日志截图保留，决定POST未发生；新证据修正后browser03真实正向通过。1531已dump/hash认证停机，344文件长度hash保持、217压缩，D增206626816字节；C/D余量50281541632/21162635264字节，无重型在途，预览/1519保持。
+- [短装批准服务L1](history/GOAL_E06_ASSOCIATION_SHORTFALL_L1_2026-10-14.md)：输入68d4e34526b2de20e43d357afa559bd66c3a8882；188项/bootJar、两种差额正向/默认关/权限/并发/末SQL回滚/锁后撤权、固定钥/新JVM/10项响应消费及全表守恒通过；2434输入/类/迁移/JAR字节绑定。仅开发备份，网页显式批准、多任务/增量责任链及L2/L3继续。
+- 1532/1533均dump/hash/认证停机、零监听消费者及适用压缩，保全preserve-1532/1533-e06-association-shortfall-l1-01；预览/1519保持。1532 disabled漏算空引用迁移，1533 prepare列名/GBK改写/FileExists及消费者变量名夹具失败原输出保留，沿同一原事实定向续验，不重造原件、不置零旧计数。
+- 短装服务提交/远端efe88980163209f05024496f605d5d06a19f4a66，13明确路径；唯一写者/active仍本聊天，输入/Git回执见e06-association-shortfall-delivery01；原继承Android/UI/工具/本机请求保持，无重型构建。新产物D盘/临时仅子进程，1533压缩217文件/344长度hash保持、D增206266368字节；截点C/D余量48028778496/20019904512字节。1534已保全停机；下一多任务/增量冲突→E06组合及全部剩余闸门。
+- [短装批准网页L1](history/GOAL_E06_ASSOCIATION_SHORTFALL_WEB_L1_2026-10-14.md)：6项真实回执/持久化、类型构建；1534 browser02真实Chrome显式两差额/说明、缺批准零POST、双页丢响应原key/空本地回读/390宽目视通过；仅一关联/引用/幂等及3已知登录/1关联审计，其余全表逐值不变。
+- 1534隐藏checkbox运行器超时、post误取冲突前基线原日志截图保留；可见标签点击与正确保留快照补核通过，未重跑业务。dump/hash认证停机/零消费者，217文件压缩、344长度hash保持，D增206733312字节；C/D余量46955192320/19705450496字节，预览/1519不动。网页提交/远端dfd9e9ecb861e95a0d74d6e461993ae6f35f204d，11明确路径，输入/全脏/Git证据e06-association-shortfall-web-delivery01；目标active未完成。
+<!-- CURRENT_STATE_END -->
+
+> 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。

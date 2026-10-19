@@ -38,3 +38,5 @@ RecoveryTemporaryEvidenceRestore.withVerifiedNativeArchive复用closed归档事�
 下一步须先明确canonical关联且未收正文来源是否能由真实产品链产生；若必须使用已收正文来源，按其原submission_payload/REVIEW_RESERVED、native intake/verification/审计/slot设计独立受约束恢复接口，不放宽未收正文接口或篡改原终态。原准备与权限连续性缺口不得补造或借用。保全新开发来源精确原行/独立pin后跨截点恢复，再验证完整native归档正向和主管围栏→准备激活→接收最终提交。不得篡改1189/1206来源来伪造canonical、INITIAL_ACCEPTANCE或verification。本轮是开发接缝阶段备份，完整正向仍未通过。
 
 生产默认、签名与七类生产决定能力关闭，localDeletionAllowed=false；不接原库/现网、不合main、不发布部署/标签/Release、不正式签名。D04/D05政策阻断与D08–D18及第8节总闸门保持未完成，C01–C08现场/生产清单不覆盖开发缺口。
+
+14条明确路径范围提交推送2a498fe608dc577d14a0b751380092c283af5a30，实际开发远端一致；原commit/push及暂存路径/自审diff/最终已验代码hash在native-binding-precommit-01。postcommit-01保全27条继承dirty，69次/原22保护无漂移，无重型Gradle/模拟器/测试监听在途。C/D余量分别78814273536/90281730048字节；最终精确环境见native-binding-final-01。提交后只补看板与本页Git断点，不改变产品/测试输入；这些断点改动单列，不机械重跑业务验证。总目标仍active，继续从已收正文native来源的精确原行/恢复边界推进。

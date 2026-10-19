@@ -45,3 +45,7 @@
 附件、FORMAL故障、无可信归档代传/跨截点R09仍为开发缺口；D06整体及D07–D18/第8节未完成，D04/D05政策阻断、原资料/旧BCD及历史失败保留。原身份/Keystore/实物保管/真机未验；所有密钥/人员是隔离生成，localhost浏览器和native Room不替代现场。
 
 生产默认关闭、签名能力关闭、`localDeletionAllowed=false`；不接原库/现网、不合main、不发布部署、标签/Release或正式签名。源码推送不代表私有产物/证据已异地备份。
+
+## 明确路径保存
+
+页面子项30条范围已提交推送至codex/development，HEAD/实际远端为a4ae9a5aef2167ed74acc6c5f468143577c5cdf3；提交标题：feat(交接): 保存主管故障页面及原请求恢复验证。路径、暂存完整diff、保护hash、消息、提交/推送回执在.local/d01-d18-20261008/d07-ui-close-11。继承19条未混入，源码备份不代表本机私有证据已异地保存；main/发布/部署/正式签名未操作。附件接续前20条dirty完整快照d07-attachment-start-12。
