@@ -6,6 +6,7 @@
         <TextView android:id="@+id/workSummary" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="18sp" android:textStyle="bold" />
         <TextView android:id="@+id/workBlocked" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:textColor="@color/pda_text_primary" />
         <TextView android:id="@+id/workMessage" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+        <TextView android:id="@+id/workQueue" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:accessibilityLiveRegion="none" android:visibility="gone" />
         <TextView android:id="@+id/workRecent" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:visibility="gone" />
         <TextView android:id="@+id/workCandidate" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:visibility="gone" />
         <Button android:id="@+id/workConfirm" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="确认保存手输（Enter）" android:visibility="gone" />

@@ -16,8 +16,9 @@ internal class IndependentWorkDisplay(private val binding: ActivityIndependentWo
         binding.workRecent.isVisible = binding.workRecent.text.isNotBlank()
         binding.workBlocked.show(ui.blocked)
         binding.workBlocked.isVisible = ui.blocked.isNotBlank()
-        binding.workMessage.show(listOf(ui.message,
-            if (ui.queued > 0) "已进入队列 ${ui.queued} 项；须见已保存结果后核对。" else "", soundError)
+        binding.workQueue.show(if (ui.queued > 0) "已进入队列 ${ui.queued} 项；须见已保存结果后核对。" else "")
+        binding.workQueue.isVisible = ui.queued > 0
+        binding.workMessage.show(listOf(ui.message, soundError)
             .filter { it.isNotBlank() }.joinToString("\n"))
         binding.workMessage.isVisible = binding.workMessage.text.isNotBlank()
         buttons(ui, scanning, sealed)

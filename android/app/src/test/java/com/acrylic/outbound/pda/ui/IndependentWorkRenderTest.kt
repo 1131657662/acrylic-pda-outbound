@@ -14,7 +14,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = android.app.Application::class)
 class IndependentWorkRenderTest {
-    @Test fun queueFeedbackLeavesUnchangedTaskAndSavedDetailsUntouched() {
+    @Test fun queueCountDoesNotRewriteOperationFeedbackOrSavedDetails() {
         val binding = binding()
         val display = IndependentWorkDisplay(binding)
         val ui = ui()
@@ -23,8 +23,9 @@ class IndependentWorkRenderTest {
 
         (1..64).forEach { display.render(ui.copy(queued = it), scanning = true) }
 
-        assertEquals(mapOf(binding.workMessage.id to 64), changes)
-        assertTrue(binding.workMessage.text.contains("已进入队列 64 项"))
+        assertEquals(mapOf(binding.workQueue.id to 64), changes)
+        assertTrue(binding.workQueue.text.contains("已进入队列 64 项"))
+        assertFalse(binding.workMessage.text.contains("已进入队列"))
         assertTrue(binding.workRows.text.contains("原序 1"))
     }
 
@@ -39,10 +40,12 @@ class IndependentWorkRenderTest {
         display.render(ui.copy(task = savedTask, rows = listOf(row(2), row(1)),
             message = "已保存到本机；独立采集待主管对账，不得放行。"), scanning = true)
 
-        assertEquals(setOf(binding.workSummary.id, binding.workMessage.id, binding.workRows.id, binding.workLines.id), changes.keys)
+        assertEquals(setOf(binding.workSummary.id, binding.workMessage.id, binding.workQueue.id,
+            binding.workRows.id, binding.workLines.id), changes.keys)
         assertTrue(binding.workSummary.text.contains("有效 2 包 · 剩余 98 包"))
         assertTrue(binding.workLines.text.contains("有效重量 2.5 kg"))
         assertTrue(binding.workRows.text.startsWith("原序 2"))
+        assertEquals(android.view.View.GONE, binding.workQueue.visibility)
         assertFalse(binding.workMessage.text.contains("已进入队列"))
     }
 
@@ -62,7 +65,7 @@ class IndependentWorkRenderTest {
 
     private fun changes(binding: ActivityIndependentWorkBinding): MutableMap<Int, Int> {
         val changes = mutableMapOf<Int, Int>()
-        listOf(binding.workSummary, binding.workBlocked, binding.workMessage, binding.workCandidate, binding.workRecent,
+        listOf(binding.workSummary, binding.workBlocked, binding.workMessage, binding.workQueue, binding.workCandidate, binding.workRecent,
             binding.workLines, binding.workSelected, binding.workRows, binding.workOriginal, binding.workPause)
             .forEach { view -> view.doAfterTextChanged { changes[view.id] = changes.getOrDefault(view.id, 0) + 1 } }
         return changes
