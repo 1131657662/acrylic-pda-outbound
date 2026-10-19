@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-19
 branch: codex/development
-head: 622d38bd
-dirty_entries: 222
+head: a2591fd3
+dirty_entries: 224
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,9 +17,9 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 
 ## 输入、写权与继承保护
 - 固定树 `D:/acrylic-pda-outbound`、分支 `codex/development`；本审计输入 HEAD、origin 跟踪和实际 `git ls-remote` 均为 `622d38bdb018af8f4fdb3540a2e718476a08217d`，main 只读。
-- 本聊天 `01a1520d-c412-7402-b77d-311a043b3d1e` 为重启后唯一活动项目写者，其他开发/清理聊天 idle/notLoaded；不恢复旧 PID/写权。接管全部219项路径/SHA、文本patch、Git/环境/写权在 `.local/goal-20261019-resume/restart-readonly-audit01/takeover.json` 及同根 `tracked-before.patch`，收口见 `closeout.json`。
+- 本聊天 `01a1520d-c412-7402-b77d-311a043b3d1e` 为唯一活动项目写者；fresh list_threads显示其他开发/清理/UI询问聊天idle/notLoaded。新切片输入HEAD及远端 `a2591fd35f01ec8f1675a6e7a7c76965dcdba732`，全部继承路径/SHA与patch见 `.local/u04-independent-render-run01/takeover.json`；取消链及无关WIP保留。
 - 本轮先完成只读tar审计，再修复TEMP与独立引擎的满队列计数；各自限定源码/测试、报告和索引，禁止整体暂存。独立切片输入 `d58c86554c4d7abb14d8922ddbd7f3e873fc98c2`，全部路径/SHA、patch与继承核对在 `.local/u04-independent-queue-run01/takeover.json`、`closeout.json`；开发交付见同根 `git-delivery.json`。取消链WIP及无关脏文件保留。
-- 替换前看板见 [独立队列切片前断点](history/ORCHESTRATION_STATE_BEFORE_U04_INDEPENDENT_QUEUE_OVERFLOW_L1_20261019.md)；更早审计/重启/清理快照、失败输入与D17/E08 handoff按原索引保留。
+- 替换前看板见 [文本更新切片前断点](history/ORCHESTRATION_STATE_BEFORE_U04_INDEPENDENT_RENDER_20261019.md)；更早审计/重启/清理快照、失败输入与D17/E08 handoff按原索引保留。
 
 ## 首个有界任务结论
 - [U04四字号tar只读审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)：逐成员比较八份tar，并用独立Windows tar重算24个Room成员。Room主库/WAL/SHM内容、完整schema与83表257行不变；完整性ok、无外键错误。原 `archiveUnchanged=false` 保留，不称整tar不变。
@@ -38,17 +38,19 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 
 ## 第四个有界任务结论
 - [U04独立采集声效未就绪提示L1](history/GOAL_U04_INDEPENDENT_SOUND_READINESS_L1_2026-10-19.md)：独立页此前丢弃 `WorkSound.error`，现与已保存/队列文案同屏显示；新增Robolectric显示测试2/0/0/0通过。组合运行的既有声音持久化测试因 `SQLiteCantOpenDatabaseException` 失败，未隐藏；仅合成UI L1，不计U04/D17整体、D16/D18或§8。
-- 本切片未构建/安装APK、操作设备或服务端；失败、输入和XML均在 `.local/u04-independent-sound-run01/`，继承改动与旧证据保持。
+- 开发提交 `a2591fd35f01ec8f1675a6e7a7c76965dcdba732` 已推至origin开发分支且ls-remote核验；同根git-delivery回执完整。未构建/安装APK或操作设备数据；失败、输入和XML在 `.local/u04-independent-sound-run01/`。收尾只读ADB检查启动daemon的事实已更正入报告，不冒充无ADB。
 
 ## 重启后实际环境
 - 本次fresh采样而非沿用旧PID：系统MySQL80父4288/子5188，3306/33060；配置指向ProgramData系统datadir，未连接/停止。auto.cnf权限拒绝，UUID未知；不以服务观察冒充原库身份已核验。
-- 独立切片收尾fresh采样无Java/Gradle、隔离MySQL、ADB/模拟器；5037无监听，5040仍属Windows服务；Debug Keystore哈希未变。精确进程/监听/磁盘见同根 `environment-closeout.json`，C/D/E余量分别73,241,010,176 / 61,199,851,520 / 195,634,053,120字节。未启动设备会话或使用正式签名。
+- 声效收尾ADB只读枚举启动daemon2436/5037，USB M71可见，无模拟器；5040属Windows服务8460。新切片前无Java/Gradle、隔离MySQL；系统库身份仍未知。Debug Keystore哈希保持 `0539b3d0b80ab4619a08db639d433ec2f3ac0a8d7b2fbdc32865d5cfc6b0b6cb`。fresh进程/监听/磁盘见新根 `environment-before.json`，没有设备数据操作或正式签名。
 - 旧SQLite SQLITE_CANTOPEN、run03 build/MySQL/pipe、A1.4、1522/1523、U02调度偏差和Chrome策略阻断等失败保留，不清零、不无新依据重跑。
 - [前轮D盘清理报告](history/D_DISK_CLEANUP_2026-10-19.md)仍有效；本切片只拟清可重建scratch，但自动审批 `blocked by policy`，48文件/18,436,032字节派生副本原样保留，原证据不动。路径/哈希/无消费者检查见 `scratch-cleanup-before.json`；实际释放0字节，C/D/E余量见closeout。
 - 独立队列切片另清本次已停机可重建构建输出3176文件/54,217,608字节；D余量61,199,761,408→61,260,079,104字节，卷净增60,317,696字节。逐项哈希/结果在同根 `cleanup-before/after.json`；报告、测试XML、日志和所有旧产物保留，不重试前轮被拒scratch。
+- 声效切片两个项目缓存清理被自动审批执行前拒绝 `blocked by policy`，未给详细原因；未重试、目录保留、释放0字节。见 `sound-closeout-takeover03/cleanup-rejected.json`，C/D/E余量73,196,146,688 / 61,173,415,936 / 195,634,053,120字节。
 
 ## 下一独立任务
-- 从有效U/O或D范围选一项具体缺口，以路径→影响层→必跑→复用依据绑定直接产品入口；不重复已验retained-details，不机械重跑暂缓SQLite或旧run03。D项组合须覆盖受影响Android、真实HTTP/MySQL、Chrome、Python及非空迁移；D18仍须最终候选/原模拟器/恢复全链。
+- [独立页文本按变化更新L1](history/GOAL_U04_INDEPENDENT_INCREMENTAL_RENDER_L1_2026-10-19.md)：预修复3项反例失败，修复后新增3项与声效2项全通过；64次队列变化只更新反馈，保存和分页正确更新。输入/日志/XML/源码SHA在 `.local/u04-independent-render-run01/`；仅合成显示L1，Activity/设备性能和D项整体未验。
+- 收口后从有效U/O或D范围推进具体产品缺口，按路径→影响层→必跑→复用依据补受影响Android、真实HTTP/MySQL、Chrome、Python及非空迁移组合。D18仍须最终候选/原模拟器/恢复全链，不重复已验tar或机械重跑暂缓SQLite/旧run03。
 - 生产决定七类能力、TEMP生产归档及 `localDeletionAllowed=false` 保持；原库/现网、正式签名、部署/Release/main均不触碰。开发备份回执与精确交付SHA写入同根 `git-delivery.json`，不以本切片收口结束总目标。
 
 <!-- CURRENT_STATE_END -->

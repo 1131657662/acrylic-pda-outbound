@@ -24,3 +24,11 @@ gradlew.bat -p android :app:testDebugUnitTest --tests com.acrylic.outbound.pda.u
 ## 边界与未验
 
 这是合成 Robolectric UI L1，只证明独立页显示层。没有构建/安装 APK、启动 ADB/模拟器、运行真实 Activity、连接 HTTP/MySQL、执行 Chrome/Python/迁移或现场声卡验收；旧设备用例、旧 run03、tar 审计和唯一证据均未重跑或覆盖。`localDeletionAllowed=false`、取消的换机承接/多跳/接收确认/激活链、D16/D17/D18 及第 8 节闸门仍未完成。该切片不计 U04/D17 整体或最终候选通过。
+
+## 开发交付与收尾更正
+
+开发提交 `a2591fd35f01ec8f1675a6e7a7c76965dcdba732` 已推至 `origin/codex/development`，随后 `git ls-remote` 核验相同；main未变。回执见同根 `git-delivery.json`。收尾接管的全部223条路径/哈希、patch及环境在 `.local/goal-20261019-resume/sound-closeout-takeover03/`；提交后脏路径减少是本切片提交结果，不代表继承WIP已验收。
+
+以上“没有启动ADB”仅指显示测试过程：收尾只读 `adb devices -l` 检查曾自动启动ADB daemon，实际PID2436监听5037，USB M71可见，无模拟器。没有安装、运行设备测试或操作设备数据。MySQL80只观察系统服务与监听，UUID未知，未连接或停止。
+
+清理两个本切片Gradle项目缓存的命令被自动审批在执行前拒绝，返回 `blocked by policy`，未提供详细原因；目录保留、未重试、实际释放0字节。路径、余量与结果见 `sound-closeout-takeover03/cleanup-rejected.json`。旧APK、tar、日志和唯一证据保持。
