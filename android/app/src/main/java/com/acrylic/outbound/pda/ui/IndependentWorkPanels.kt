@@ -12,6 +12,13 @@ internal class IndependentWorkPanels(private val binding: ActivityIndependentWor
         binding.workDetailsToggle.setOnClickListener { toggleDetails() }
     }
 
+    fun acceptedManual() {
+        binding.workManual.text.clear()
+        binding.workManualPanel.isVisible = false
+        binding.workManualToggle.text = "展开手输条码"
+        closeInput(binding.workManualToggle)
+    }
+
     private fun toggleManual() {
         val opening = !binding.workManualPanel.isVisible
         binding.workManualPanel.isVisible = opening

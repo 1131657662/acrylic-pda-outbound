@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- 2026-10-19：新增 [U01/U04 独立采集 Activity 手输输入交接 L1](history/GOAL_U01_U04_INDEPENDENT_ACTIVITY_INPUT_L1_2026-10-19.md)。成功手输后收起输入面板、清焦点并请求隐藏IME；拒收保留输入且候选仍需显式确认。Activity主机合成测试及面板/首屏回归17项通过；原生IME和真机未验。
+
 - 2026-10-19：新增 [U01/U04 独立采集剩余数与最近保存卡 L1](history/GOAL_U01_U04_INDEPENDENT_PROGRESS_L1_2026-10-19.md)。有效数、超计划、任务专属最近保存、VOID身份保留、Room快照和任务切换竞态均有合成Robolectric定向证据；7套件27项及引擎回归3项通过。未验Activity/IME/真机、真实HTTP/MySQL、D18最终候选和总目标闸门。
 
 - 2026-10-19：新增 [U01/U04 独立采集首屏与次级面板 L1](history/GOAL_U01_U04_INDEPENDENT_FIRST_SCREEN_L1_2026-10-19.md)。核对/手输显式展开，候选动作按状态显示；保留失败与几何诊断，最终16项合成显示/布局测试和instrumentation编译通过。Activity/IME/设备及U01/U04/D17整体未验。

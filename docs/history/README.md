@@ -1,5 +1,6 @@
 # 历史归档
 
+- [U01/U04 独立采集 Activity 手输输入交接 L1](GOAL_U01_U04_INDEPENDENT_ACTIVITY_INPUT_L1_2026-10-19.md)：成功输入后归还焦点并请求收起键盘、拒收保留编辑内容；实际Activity主机合成17项通过，非原生IME/真机验收。
 - [U01/U04 独立采集首屏与次级面板 L1](GOAL_U01_U04_INDEPENDENT_FIRST_SCREEN_L1_2026-10-19.md)：动态候选、显式面板及常驻禁放行提示；16项合成测试与设备测试编译通过，Activity/IME未验。
 - [独立采集首屏切片前看板](ORCHESTRATION_STATE_BEFORE_INDEPENDENT_FIRST_SCREEN_20261019.md)：保留文本切片交付及首屏切片前断点。
 

@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-19
 branch: codex/development
-head: 3f450bd7
-dirty_entries: 233
+head: bec1c16c
+dirty_entries: 227
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -61,8 +61,12 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 输入HEAD/origin为 `3f450bd76ceca833d440c549623c115b121ed742`；全部217项继承路径在run01/takeover，run04/inherited-protection核对217项SHA均未变。完整WIP/环境在run04/closeout；本机结果与开发交付分别保留。
 - run02误用默认 `android/app/build`，不称该目录旧报告未变，默认目录保留。run03/04清理先遇PS5长路径与部分删除；PS7删剩余4255文件/155736979字节，原PS5前清单被复用覆盖的证据缺口已披露。run01/02另清3129文件/151845800字节，D余量60921716736→61079003136。完整PS7逐项哈希和回执在run04；旧被拒目录未重试，APK/tar/原件保留。
 
+## 第八个有界任务结论
+- [U01/U04 Activity手输交接L1](history/GOAL_U01_U04_INDEPENDENT_ACTIVITY_INPUT_L1_2026-10-19.md)：成功手输后清空编辑、收起面板、清焦点并请求隐藏IME；候选仍需显式确认。预修复6项中1失败，修复后Activity/面板/首屏17项0失败/错误/跳过；只计Robolectric合成Activity主机L1，原生IME、实体键、M71、U01/U04/D17整体与D18未验。
+- 接管217项逐路径保护核对0变更；输入、失败XML、通过XML/日志、配置和本轮快照位于 `.local/u04-independent-activity-run01/`。本轮隔离构建缓存清理3228文件/104507921字节，D盘可用空间由60963651584增至61073866752；未构建/覆盖APK或运行旧用例，未操作ADB设备数据或连接系统MySQL。历史声效缓存清理仍因 `blocked by policy` 被拒，目录保留、释放0字节，未重试。
+
 ## 下一独立任务
-- 先限定路径自审、提交/推送本独立进度切片并核ls-remote；随后继续独立页或其他有效U/O产品缺口，先记标准/输入，再实现验证。Activity/IME/实体键/四字号设备消费者继续单列，不能用编译冒充运行。
+- 本轮首个只读tar审计与Activity手输交接切片均已收口；下一项继续从独立页或其他有效U/O产品缺口中按依赖选择，先记标准/输入，再实现验证。原生IME/实体键/四字号设备消费者继续单列，不能用主机测试冒充设备运行。
 - 按路径→影响层→必跑→复用依据补受影响Android、真实HTTP/MySQL、Chrome、Python及非空迁移组合；D18仍须最终候选/原模拟器/恢复全链，不重复已验tar、不机械重跑暂缓SQLite或旧run03。
 - 生产决定七类能力、TEMP生产归档及 `localDeletionAllowed=false` 保持；原库/现网、正式签名、部署/Release/main均不触碰。总目标继续active，局部收口不等于完成。
 <!-- CURRENT_STATE_END -->

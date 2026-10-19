@@ -18,6 +18,7 @@ class IndependentWorkActivity : ComponentActivity() {
     private val engine get() = IndependentWorkRuntime.shared(application as PdaApplication)
     private lateinit var scanner: ScannerReceiver
     private lateinit var display: IndependentWorkDisplay
+    private lateinit var panels: IndependentWorkPanels
     private val keys = WorkKeys()
     private var id = ""
     private var imeOpen = false
@@ -27,7 +28,7 @@ class IndependentWorkActivity : ComponentActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding = ActivityIndependentWorkBinding.inflate(layoutInflater); setContentView(binding.root)
         display = IndependentWorkDisplay(binding)
-        IndependentWorkPanels(binding).bind()
+        panels = IndependentWorkPanels(binding).also { it.bind() }
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()); imeOpen = insets.isVisible(WindowInsetsCompat.Type.ime())
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets
@@ -69,7 +70,7 @@ class IndependentWorkActivity : ComponentActivity() {
         }
     }
     private fun manual() {
-        if (engine.receive(binding.workManual.text.toString(), "MANUAL")) binding.workManual.text.clear()
+        if (engine.receive(binding.workManual.text.toString(), "MANUAL")) panels.acceptedManual()
     }
     private fun confirm() { engine.state.value.candidate?.let { engine.confirm(it.capture.id) } }
     private fun discard() { engine.state.value.candidate?.let { engine.discard(it.capture.id, binding.workReason.text.toString()) } }
