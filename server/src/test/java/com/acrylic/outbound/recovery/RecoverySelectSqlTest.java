@@ -31,6 +31,8 @@ class RecoverySelectSqlTest {
               AND created_at>UTC_TIMESTAMP(3)-INTERVAL 7 DAY AND status IN ('PENDING','RUNNING','RETRY')
             """, "SELECT id FROM app_user WHERE id=? FOR UPDATE", "SELECT UTC_TIMESTAMP(6)",
             "SELECT BIN_TO_UUID(COALESCE(submission_id,pc_submission_id)) FROM dispatch_record WHERE id=?",
+            "SELECT record_sha256 FROM pda_audit_event WHERE id=? UNION ALL SELECT record_sha256 FROM pda_audit_event WHERE origin_device_id=? AND local_seq=?",
+            "SELECT id FROM t WHERE id IN (SELECT id FROM u UNION ALL SELECT id FROM v)",
             "SELECT id FROM t WHERE x BETWEEN 2 AND ? AND (y IS NULL OR y NOT IN (?,?)) ORDER BY id DESC LIMIT ? OFFSET ?",
             "SELECT CASE WHEN x IS NULL THEN 0 ELSE 1 END AS n FROM t",
             "SELECT COUNT(*) FROM t GROUP BY id HAVING COUNT(*)>1");
@@ -58,7 +60,8 @@ class RecoverySelectSqlTest {
         "SELECT COUNT(evil()) FROM t", "SELECT id FROM t WHERE EXISTS (SELECT evil() FROM u)",
         "SELECT id FROM t WHERE id=GET_LOCK('lock',1)", "SELECT SLEEP(1)", "SELECT LOAD_FILE('file')",
         "SELECT id INTO OUTFILE 'file' FROM t", "SELECT id FROM t INTO DUMPFILE 'file'",
-        "SELECT id FROM t UNION SELECT evil() FROM u", "SELECT id FROM t; COMMIT",
+        "SELECT id FROM t UNION SELECT evil() FROM u", "SELECT id FROM t UNION ALL SELECT evil() FROM u",
+        "SELECT id FROM t UNION ALL UPDATE t SET id=1", "SELECT id FROM t UNION ALL", "SELECT id FROM t; COMMIT",
         "SELECT id FROM t /*comment*/", "SELECT id FROM t -- comment", "SELECT id FROM t #comment",
         "SELECT @x:=id FROM t", "SELECT id FROM t PROCEDURE ANALYSE()", "SELECT id FROM t WHERE",
         "SELECT id FROM t WHERE id IN ()", "SELECT id FROM t FOR", "SELECT id FROM t FOR UPDATE SKIP",
@@ -93,6 +96,8 @@ class RecoverySelectSqlTest {
         String nested = "SELECT " + "(".repeat(40) + "id" + ")".repeat(40) + " FROM t";
         assertThatThrownBy(() -> RecoveryEffectSql.classify(nested)).hasMessage("CONTROL_EFFECT_UNCLASSIFIED");
         assertThatThrownBy(() -> RecoveryEffectSql.classify("SELECT " + " ".repeat(65536) + "1"))
+            .hasMessage("CONTROL_EFFECT_UNCLASSIFIED");
+        assertThatThrownBy(() -> RecoveryEffectSql.classify("SELECT 1" + " UNION ALL SELECT 1".repeat(64)))
             .hasMessage("CONTROL_EFFECT_UNCLASSIFIED");
     }
 }

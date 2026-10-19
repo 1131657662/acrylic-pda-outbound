@@ -1,5 +1,7 @@
 > **无状态文档**：本文不含当前版本或进度事实。版本四元组与断点只看[看板](ORCHESTRATION_STATUS.md)的生成事实块（由 `tools/version_facts.ps1` 生成）；下文出现的“当前/最新/现网为”等措辞都是写作时点的历史记录，不作为现行状态。
 
+- 2026-10-19：新增 [恢复 SQL effect gate UNION ALL 有界单测](history/GOAL_RECOVERY_SELECT_UNION_SQL_L1_2026-10-19.md)。在绑定的当前输入上 `RecoverySelectSqlTest` 43/0/0/0；含受控 SOURCE_READ、fence 后拒绝及 JDBC 前无效语法拒绝。仅本地 mock 单测，不代表真实 MySQL/HTTP、D13/D14/D17、L2/L3 或总目标验收。
+
 - 2026-10-19：新增 [U04 独立作业原生键盘避让与保留输入确认 L1](history/GOAL_U04_INDEPENDENT_NATIVE_IME_L1_2026-10-19.md)。修复 IME 遮挡，四档字号具备实际手输/待确认/保存及原件回读证据；130%/200%保留原任务补验，原失败不改写。最终9任务/4原capture/4scan，83表回读及原件守恒通过；面板/首屏11项通过，Activity6项SQLite失败保留。仅有界L1，大字首屏、真机与U04/D17整体及总目标未验。
 
 - 2026-10-19：新增 [U04 独立采集队列计数无障碍隔离 L1](history/GOAL_U04_INDEPENDENT_ACCESSIBILITY_L1_2026-10-19.md)。队列计数独立可见且不进入 polite 操作播报区；显示/增量渲染/首屏10项主机测试通过，原失败保留。TalkBack、Activity/IME、真机及U04/D17整体未验。

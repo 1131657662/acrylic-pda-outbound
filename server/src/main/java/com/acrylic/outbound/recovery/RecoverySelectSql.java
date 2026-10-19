@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 /** Recognises SELECT syntax only; even views and locking reads always remain SOURCE_READ. */
 final class RecoverySelectSql {
+    private static final int MAX_UNION_BRANCHES = 64;
     private final RecoverySqlTokens tokens;
     private final RecoverySqlExpression expression;
 
@@ -20,8 +21,18 @@ final class RecoverySelectSql {
 
     static void query(RecoverySqlTokens tokens) throws SQLException {
         tokens.enter();
-        try { new RecoverySelectSql(tokens).select(); }
+        try { new RecoverySelectSql(tokens).union(); }
         finally { tokens.leave(); }
+    }
+
+    private void union() throws SQLException {
+        select();
+        int branches = 1;
+        while (tokens.take("UNION")) {
+            tokens.need("ALL");
+            if (++branches > MAX_UNION_BRANCHES) throw RecoveryEffectGate.unclassified();
+            select();
+        }
     }
 
     private void select() throws SQLException {
