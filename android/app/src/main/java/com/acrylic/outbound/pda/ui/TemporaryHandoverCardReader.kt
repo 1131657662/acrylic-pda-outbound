@@ -1,6 +1,5 @@
 package com.acrylic.outbound.pda.ui
 
-import com.acrylic.outbound.pda.BuildConfig
 import com.acrylic.outbound.pda.PdaApplication
 import com.acrylic.outbound.pda.temporary.*
 import org.json.JSONObject
@@ -16,14 +15,15 @@ internal class TemporaryHandoverCardReader(private val app: PdaApplication) {
         val (action, label, status) = state(pending, installed)
         HandoverCard(id, installed?.newClientOrderId.orEmpty(), "临时作业交接", "$details\n$status", action, label,
             "$details\n交接编号 $id\n请逐包核对下方主管批准的保留清单。确认只记录接收事实，激活完成前保持停止。\n" +
-                TemporaryHandoverConfirmationDisplay.lines(row))
+                TemporaryHandoverConfirmationDisplay.lines(row), actionAvailable = action != "TEMP_DISABLED")
     }.getOrElse { HandoverCard(id, "", "临时作业交接", "${it.message ?: "临时交接需核对"}；原资料保留",
-        if (BuildConfig.DEBUG && BuildConfig.TEMPORARY_HANDOVER_DEVELOPMENT) "TEMP_INSTALL" else "REFRESH", "核对接收资格与原资料") }
+        if (TemporaryHandoverActionGate.isEnabled()) "TEMP_INSTALL" else "TEMP_DISABLED", "核对接收资格与原资料",
+        actionAvailable = TemporaryHandoverActionGate.isEnabled()) }
 
     private fun state(pending: TemporaryHandoverConfirmation?, installed: TemporaryHandoverActivation?): Triple<String, String, String> {
-        val enabled = BuildConfig.DEBUG && BuildConfig.TEMPORARY_HANDOVER_DEVELOPMENT
+        val enabled = TemporaryHandoverActionGate.isEnabled()
         return when {
-            !enabled -> Triple("REFRESH", "核对接收资格与原资料", "原临时记录已保存，接收确认尚未开放；保持停止")
+            !enabled -> Triple("TEMP_DISABLED", "临时交接操作已关闭", "原临时记录已保存；仅可只读核对，保持停止")
             installed != null -> {
                 val store = app.temporaryStore(); val draft = store.load(installed.newClientOrderId)
                 store.check(draft.clientOrderId, false)

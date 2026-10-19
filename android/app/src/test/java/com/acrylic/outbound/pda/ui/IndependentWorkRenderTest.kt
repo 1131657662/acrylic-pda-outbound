@@ -42,7 +42,8 @@ class IndependentWorkRenderTest {
 
         assertEquals(setOf(binding.workSummary.id, binding.workMessage.id, binding.workQueue.id,
             binding.workRows.id, binding.workLines.id), changes.keys)
-        assertTrue(binding.workSummary.text.contains("有效 2 包 · 剩余 98 包"))
+        assertTrue(binding.workSummary.text.contains("有效2包"))
+        assertTrue(binding.workSummary.text.contains("剩余98包"))
         assertTrue(binding.workLines.text.contains("有效重量 2.5 kg"))
         assertTrue(binding.workRows.text.startsWith("原序 2"))
         assertEquals(android.view.View.GONE, binding.workQueue.visibility)

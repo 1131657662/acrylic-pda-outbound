@@ -103,7 +103,7 @@ class IndependentCredentialDeviceTest {
         val original = File(F.directory, "original-receipt.json").readText()
         assertEquals(original, F.active().getString("receipt"))
         ActivityScenario.launch<IndependentCredentialActivity>(intent()).use {
-            F.secret(); F.click(R.id.verify); F.message("设备已重启")
+            F.secret(); F.click(R.id.verify); F.message("本机独立采集资格已失效")
             F.click(R.id.reload); F.message("已读取原件")
         }
         assertEquals(original, F.active().getString("receipt"))

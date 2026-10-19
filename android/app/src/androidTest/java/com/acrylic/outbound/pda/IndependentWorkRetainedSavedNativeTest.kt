@@ -58,7 +58,7 @@ class IndependentWorkRetainedSavedNativeTest {
 
     private fun capture(scenario: ActivityScenario<IndependentWorkActivity>, directory: File) {
         scenario.onActivity { activity ->
-            val root = activity.findViewById<View>(R.id.workBack).parent.parent as ScrollView
+            val root = activity.findViewById<ScrollView>(R.id.workScroll)
             root.scrollTo(0, 0)
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()

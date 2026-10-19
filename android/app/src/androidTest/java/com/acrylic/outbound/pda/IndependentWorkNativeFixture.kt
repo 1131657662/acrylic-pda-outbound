@@ -80,12 +80,12 @@ internal class IndependentWorkNativeFixture {
     }
 
     fun top(scenario: ActivityScenario<IndependentWorkActivity>) {
-        scenario.onActivity { (it.findViewById<View>(R.id.workBack).parent.parent as android.widget.ScrollView).scrollTo(0, 0) }
+        scenario.onActivity { it.findViewById<android.widget.ScrollView>(R.id.workScroll).scrollTo(0, 0) }
         instrumentation.waitForIdleSync()
     }
     fun capture(scenario: ActivityScenario<IndependentWorkActivity>, phase: String) {
         scenario.onActivity {
-            val root = it.findViewById<View>(R.id.workBack).parent.parent as android.widget.ScrollView
+            val root = it.findViewById<android.widget.ScrollView>(R.id.workScroll)
             val ime = ViewCompat.getRootWindowInsets(root)!!.getInsets(WindowInsetsCompat.Type.ime()).bottom
             File(directory, "$phase-insets.json").writeText(JSONObject().put("imeVisible", imeVisible(it))
                 .put("imeBottom", ime).put("rootHeight", root.height).put("paddingBottom", root.paddingBottom)

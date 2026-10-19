@@ -20,14 +20,14 @@ class IndependentWorkProgressTest {
 
         IndependentWorkDisplay(b).render(ui, scanning = true)
 
-        assertTrue(b.workSummary.text.contains("有效 1 包"))
-        assertTrue(b.workSummary.text.contains("剩余 99 包"))
+        assertTrue(b.workSummary.text.contains("有效1包"))
+        assertTrue(b.workSummary.text.contains("剩余99包"))
     }
 
     @Test fun zeroExactAndAbovePlanNeverClaimOutboundCompletion() {
         val b = binding()
         val original = IndependentScreenFixture.ui()
-        listOf(0L to "剩余 100 包", 100L to "剩余 0 包", 101L to "超计划 1 包").forEach { (count, expected) ->
+        listOf(0L to "剩余100包", 100L to "剩余0包", 101L to "超计划1包").forEach { (count, expected) ->
             val task = original.task!!
             IndependentWorkDisplay(b).render(original.copy(task = task.copy(state = task.state.copy(actualCount = count))), false)
             assertTrue("count=$count text=${b.workSummary.text}", b.workSummary.text.contains(expected))
@@ -43,7 +43,7 @@ class IndependentWorkProgressTest {
         IndependentWorkDisplay(b).render(ui.copy(task = task.copy(task = task.task.copy(plannedTotal = Long.MAX_VALUE),
             state = task.state.copy(actualCount = 1))), false)
 
-        assertTrue(b.workSummary.text.contains("剩余 9223372036854775806 包"))
+        assertTrue(b.workSummary.text.contains("剩余9223372036854775806包"))
     }
 
     @Test fun queuedFailedAndPagedInputsLeaveLastDurableCardUntouched() {
@@ -58,8 +58,9 @@ class IndependentWorkProgressTest {
             candidate = IndependentScreenFixture.candidate("INVALID")), true)
 
         assertEquals(0, rewrites)
-        assertTrue(b.workRecent.text.contains("最近已保存 #1 · 003A0000001"))
-        assertTrue(b.workRecent.text.contains("型号 · 合成品名 · 1.25 kg"))
+        assertEquals("已存 003A0000001", b.workRecent.text.toString())
+        assertTrue(b.workRecentDetails.text.contains("型号 · 合成品名"))
+        assertTrue(b.workRecentDetails.text.contains("1.250 kg / 1250 克"))
     }
 
     @Test fun voidPreservesLatestIdentityAndRestoresRemainingCount() {
@@ -70,9 +71,9 @@ class IndependentWorkProgressTest {
         IndependentWorkDisplay(b).render(ui.copy(latestSaved = ui.latestSaved!!.copy(status = "VOID"),
             task = task.copy(state = task.state.copy(actualCount = 0, weightGrams = 0))), false)
 
-        assertTrue(b.workRecent.text.contains("最近保存（已撤销） #1 · 003A0000001"))
-        assertFalse(b.workRecent.text.contains("最近已保存"))
-        assertTrue(b.workSummary.text.contains("剩余 100 包"))
+        assertTrue(b.workRecent.text.contains("已撤销 003A0000001"))
+        assertFalse(b.workRecent.text.contains("已存"))
+        assertTrue(b.workSummary.text.contains("剩余100包"))
     }
 
     @Test fun emptyOrDifferentTaskCannotShowPreviousTaskCard() {

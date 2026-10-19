@@ -16,7 +16,8 @@ internal class IndependentWorkPanels(private val binding: ActivityIndependentWor
         binding.workManual.text.clear()
         binding.workManualPanel.isVisible = false
         binding.workManualToggle.text = "展开手输条码"
-        closeInput(binding.workManualToggle)
+        closeInput(binding.workSummary)
+        binding.root.post { binding.root.smoothScrollTo(0, 0) }
     }
 
     private fun toggleManual() {
@@ -30,7 +31,7 @@ internal class IndependentWorkPanels(private val binding: ActivityIndependentWor
     private fun toggleDetails() {
         val opening = !binding.workDetailsPanel.isVisible
         binding.workDetailsPanel.isVisible = opening
-        binding.workDetailsToggle.text = if (opening) "收起核对 / 原件" else "核对 / 原件"
+        binding.workDetailsToggle.text = if (opening) "收起核对" else "核对原件"
         if (!opening) {
             binding.workPassword.text.clear()
             closeInput(binding.workDetailsToggle)
