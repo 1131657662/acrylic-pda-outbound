@@ -2,6 +2,9 @@
 
 - [恢复 SQL effect gate UNION ALL 有界单测](GOAL_RECOVERY_SELECT_UNION_SQL_L1_2026-10-19.md)：当前输入定向测试 43/0/0/0；验证受控 SOURCE_READ 授权、fence 与 JDBC 前拒绝。仅本地 mock 单测，不计真实 MySQL/HTTP、D13/D14/D17 或总目标。
 - [RecoverySelectUnionSqlIT 真实 JDBC 有界验收](GOAL_RECOVERY_SELECT_UNION_JDBC_IT_L1_2026-10-19.md)：隔离 MySQL/JDBC 10/0/0/0；真实 driver 下拒绝路径与 UNION 行结果通过，但 authority 为 MODEL fixture，不证明可信恢复授权或业务链。隔离数据与构建产物清理命令被策略拒绝并保留，不计 D13/D14/D17、L2/L3 或总目标。
+- [E07/D06-D07 Web 故障撤回 fail-closed 当前源 L1](GOAL_E07_D06_D07_WEB_FAIL_CLOSED_GATE_CURRENT_L1_2026-10-19.md)：当前工作树门控单测1/0/0、`vue-tsc --noEmit`通过；默认关闭且未覆盖既有 dist，源仍为继承WIP。不计 D06/D07 L2、E07整体或总目标。
+- [E07 Web 当前源门控前看板快照](ORCHESTRATION_STATE_BEFORE_E07_WEB_FAIL_CLOSED_CURRENT_20261019.md)：保存当前源 Web 门控审计前看板字节，SHA-256 `4b7065e0a6a07639925bfab01974f79ac999d1075609f80529018bca5c9fd2d6`。
+- [RecoverySelectUnionSqlIT 推送前看板快照](ORCHESTRATION_STATE_BEFORE_RECOVERY_SELECT_UNION_JDBC_PUSH_20261019.md)：保留记入提交/推送回执前的当前看板字节，SHA-256 `94417fc7799e8d263878f94c0a2edd8a209856b1d073cfc8e06c775c2311595d`。
 - [大字原生 L1 收口前看板快照](ORCHESTRATION_STATE_BEFORE_U04_LARGE_FONT_CLOSEOUT_20261019.md)：保留重启后纠正旧未执行结论之前的看板字节。
 - [U04 独立采集大字首屏原生 L1](GOAL_U04_INDEPENDENT_LARGE_FONT_L1_2026-10-19.md)：同一 Debug APK 四档字号原生 IME/触屏确认均通过；83 张 Room 表原行保留，唯一凭据库仅最终 no_backup 封存。合成隔离输入，仅有界 Android L1；实体键、原身份、真机及 L2/L3 未验。
 - [大字首屏原生审计前看板](ORCHESTRATION_STATE_BEFORE_U04_LARGE_FONT_NATIVE_AUDIT_20261019.md)：保存大字原生审计开始前看板原字节及当时未执行结论。

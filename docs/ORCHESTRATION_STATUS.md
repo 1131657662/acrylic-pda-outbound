@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-19
 branch: codex/development
-head: 9c3dfc93
-dirty_entries: 239
+head: 91b4ef75
+dirty_entries: 240
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -25,6 +25,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - [独立采集大字首屏原生 L1](history/GOAL_U04_INDEPENDENT_LARGE_FONT_L1_2026-10-19.md)：host04 六套件25项、同一 Debug APK 原生5项通过；四档实际 IME、回顶、触屏确认/保存；Room 83表完整性/外键通过且原行保留。合成隔离输入，不计 U04/D17 整体、L2/L3 或总目标。
 - [恢复 SQL effect gate UNION ALL 有界单测](history/GOAL_RECOVERY_SELECT_UNION_SQL_L1_2026-10-19.md)：`RecoverySelectSqlTest` 43/0/0/0；mock JDBC 下受控授权、fence 与拒绝路径通过。不是 MySQL/HTTP 或恢复业务链验收。
 - [RecoverySelectUnionSqlIT 真实 JDBC](history/GOAL_RECOVERY_SELECT_UNION_JDBC_IT_L1_2026-10-19.md)：隔离 MySQL/JDBC 10/0/0/0；含 UNION 结果、authority/fence 重查、64/65 分支及五类拒绝。authority 为 MODEL fixture，不证明可信恢复链。报告 SHA-256 `5e148181c88e103fb193eab32e293e448570a87a2362a3e83895ace64ceb4ea4`；execution/XML/log/source-manifest 哈希及清理拒绝均留档。
+- [E07/D06-D07 Web fail-closed 当前源 L1](history/GOAL_E07_D06_D07_WEB_FAIL_CLOSED_GATE_CURRENT_L1_2026-10-19.md)：当前源门控1/0/0、`vue-tsc --noEmit`退出0；默认未设置开关时不显示入口且不自动POST未决请求。报告 SHA-256 `d03a6f9bcd659b97e686f75555abe971debd861e141903b3b7263a327615869a`；既有dist未覆盖，源为继承WIP。
 - 大字证据限制：八张 Activity 截图均已查看但不含系统状态栏；最终 `no_backup` 有封存，无续签前 vault tar；只由续签断言支持旧凭据保留。隔离副本 datadir 361文件清单已留存，清理命令被策略拒绝，副本仍保留。
 
 ## 实际环境与边界
@@ -49,7 +50,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 提交后fresh environment-postcommit01复核无项目Java/Gradle/模拟器，隔离端口仍零监听；M71仅枚举、debug Keystore SHA不变。C/D/E余量73083056128 / 52746952704 / 195634053120字节；未连接系统库。
 
 ## 总目标与下一步
-- SQL parser 单测切片已按明确6文件范围提交/推送 `9c3dfc93`；本次 `RecoverySelectUnionSqlIT` 已在绑定 HEAD `9c3dfc93` 上以真实隔离 MySQL/JDBC 执行 10/0/0/0，source-manifest 含2,484输入且零漂移。它只证明 MODEL fixture authority 下的 JDBC 行为，不计恢复业务链、D13/D14/D17 或总目标。下一项先只读核对 D06/D07 当前变更路径 SHA 与 run1614 已验证输入，再选未重复的独立受影响项。
+- SQL parser 单测切片已按明确6文件范围提交/推送 `9c3dfc93`；`RecoverySelectUnionSqlIT` 在输入 HEAD `9c3dfc93` 上以真实隔离 MySQL/JDBC 执行10/0/0/0，2,484项 source manifest 零漂移；测试、报告及索引已提交并推送 `91b4ef75`。随后只读绑定当前继承 Web 门控源：开关单测1/0/0、`vue-tsc --noEmit`退出0；旧run1614仅有路径清单、无内容SHA，不复用为当前输入证据。既有dist未覆盖，报告与快照待提交；下一步继续选受影响路径且不自动推进取消的换机/确认/激活链。
 - D06/D07 的撤回重发与旧资格拒绝组合已有多份分层证据，但当前候选源漂移需按路径/SHA核对；现场身份、统一最终候选 L2/L3 与第8节闸门仍未满足。
 - 七类生产决定、TEMP生产归档及 `localDeletionAllowed=false` 保持；不恢复换机承接、多跳、接收者确认/激活链；不启动旧run03，不接原库/现网，不用正式签名，不部署/Release/合main。
 - 总目标继续 active；仅当第8节全部闸门在实际最终候选输入上满足才可 complete。
