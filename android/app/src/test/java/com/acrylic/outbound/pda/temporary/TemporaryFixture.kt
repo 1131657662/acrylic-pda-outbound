@@ -7,6 +7,8 @@ import com.acrylic.outbound.pda.preparation.ContractFixture
 import org.json.JSONObject
 import java.io.File
 import java.time.Instant
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.*
 
 class TemporaryFixture(val root: File, borrowed: PdaDatabase? = null, contract: JSONObject? = null) : TemporaryConnection, AutoCloseable {
@@ -24,6 +26,9 @@ class TemporaryFixture(val root: File, borrowed: PdaDatabase? = null, contract: 
     val payloads = ContractFixture.unpack(root, fixture)
     var auth: JSONObject? = JSONObject(fixture.getJSONObject("session").toString()).put("signingKey", key).put("localSessionId", UUID.randomUUID().toString())
     var time: Instant = Instant.parse(fixture.getJSONObject("activationCommand").getString("activatedAt"))
+    @Volatile var blockNow = false
+    val nowEntered = CountDownLatch(1)
+    val releaseNow = CountDownLatch(1)
     val calls = mutableListOf<TemporaryConnection.Call>()
     val downloads = mutableListOf<String>()
     var beforeCall: (TemporaryConnection.Call) -> Unit = {}
@@ -32,7 +37,13 @@ class TemporaryFixture(val root: File, borrowed: PdaDatabase? = null, contract: 
     val repository get() = TemporaryRepository(db, this, File(root, "downloads"))
     override fun current() = auth
     override fun original(request: TemporaryConnection.Original): ByteArray = error("Unexpected original request: ${request.path}")
-    override fun now() = time
+    override fun now(): Instant {
+        if (blockNow) {
+            nowEntered.countDown()
+            check(releaseNow.await(10, TimeUnit.SECONDS)) { "Timed test clock did not release" }
+        }
+        return time
+    }
     override fun call(request: TemporaryConnection.Call): JSONObject {
         calls.add(request); beforeCall(request)
         return when {

@@ -28,6 +28,10 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - [takeover12取消链审计](history/GOAL_E08_RECOVERED_CONFIRMATION_WIP_AUDIT_2026-10-19_TAKEOVER12.md)及原取消WIP清单继续有效：无SyncWorker restore caller，确认Dialog无产品caller；R09只读原件展示保留。不得恢复换机进度承接、多跳、接收者确认/激活或旧run03。
 - 已验gate/config、D11/D13/D14/D15和其他U/O切片只按原输入/报告范围复用；D16仍缺可信合法退出依据，尚无统一最终候选，历史关键未验及旧BCD/原资料不被局部通过覆盖。
 
+## 第二个有界任务结论
+- [U04 TEMP 队列满边界 L1](history/GOAL_U04_TEMP_QUEUE_OVERFLOW_L1_2026-10-19.md)：修复拒收后 `queued` 计数未回退的显示错误；预修复对照失败，修复后隔离主机测试 4/0/0/0，65 条已接收输入持久化。仅合成 U04 L1，不计 U04/D17 整体、真实 HTTP/MySQL、D16/D18 或第8节。
+- 本切片只改 TEMP 引擎与测试夹具/测试，未安装 APK、启动 ADB/模拟器、连接原库/现网、使用正式签名或覆盖已有证据；隔离服务端 fixture、命令、失败和结果哈希保存在 `.local/u04-temp-queue-run01/`。
+
 ## 重启后实际环境
 - 本次fresh采样而非沿用旧PID：系统MySQL80父4288/子5188，3306/33060；配置指向ProgramData系统datadir，未连接/停止。auto.cnf权限拒绝，UUID未知；不以服务观察冒充原库身份已核验。
 - 未发现Java/Gradle、项目隔离MySQL、ADB server或模拟器/Vite。5040属Windows svchost；5037无监听，本轮未启动ADB，USB PnP Android/ADB接口不计有效设备会话。既有Debug/正式Keystore只读哈希，不使用正式签名。精确进程/监听/磁盘以takeover及closeout为准。

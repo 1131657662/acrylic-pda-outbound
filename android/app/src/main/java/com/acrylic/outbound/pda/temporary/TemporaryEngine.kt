@@ -122,7 +122,9 @@ class TemporaryEngine(private val store: TemporaryWorkStore, private val sound: 
         val taskLease = try { UpdateGate.enterBusiness() } catch (error: Exception) { stop(error.message.orEmpty()); return false }
         count.incrementAndGet(); mutable.update { it.copy(queued = count.get()) }
         if (queue.trySend { try { action() } finally { taskLease.close() } }.isSuccess) return true
-        taskLease.close(); count.decrementAndGet(); stop("入口已满，本次未接收，请停扫核对")
+        taskLease.close(); count.decrementAndGet()
+        mutable.update { it.copy(queued = count.get()) }
+        stop("入口已满，本次未接收，请停扫核对")
         return false
     }
     private fun execute(action: () -> Unit) {

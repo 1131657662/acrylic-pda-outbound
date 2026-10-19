@@ -9,6 +9,7 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.*
+import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class) @Config(sdk = [28], application = android.app.Application::class)
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
@@ -59,6 +60,29 @@ class TemporaryEngineTest {
                 assertEquals(2, f.db.temporaryScans().captures(f.id).size)
                 assertNotNull(f.db.temporaryScans().capture(next.candidate.id)?.failureAckAt)
             } finally { engine.close() }
+        }
+    }
+
+    @Test fun fullInputQueueShowsOnlyAcceptedInputs() = runBlocking<Unit>(Dispatchers.IO) {
+        TemporaryWorkFixture(folder.root).use { f ->
+            f.start(); val engine = TemporaryEngine(f.newStore()) {}
+            try {
+                engine.resume(f.id)
+                withTimeout(10000) { engine.state.first { it.ready && it.queued == 0 } }
+                f.fixture.blockNow = true
+                assertTrue(engine.receive(f.barcodes[0], "BROADCAST"))
+                assertTrue(f.fixture.nowEntered.await(10, TimeUnit.SECONDS))
+                repeat(64) { assertTrue(engine.receive(f.barcodes[0], "BROADCAST")) }
+                assertFalse(engine.receive(f.barcodes[0], "BROADCAST"))
+                assertEquals(65, engine.state.value.queued)
+                assertTrue(engine.state.value.blocked.contains("入口已满"))
+                f.fixture.releaseNow.countDown()
+                withTimeout(10000) { engine.state.first { it.queued == 0 } }
+                assertEquals(65, f.db.temporaryScans().captures(f.id).size)
+            } finally {
+                f.fixture.releaseNow.countDown()
+                engine.close()
+            }
         }
     }
 }

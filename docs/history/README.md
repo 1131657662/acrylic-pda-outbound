@@ -2,6 +2,9 @@
 
 - [U04 保留明细四字号 tar 只读审计](GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)：逐成员、Room/WAL 与运行元数据分开核对；Room 物理/逻辑守恒，原 tar 不等保持。仅补有界 L1，非总目标通过。
 - [本审计前看板](ORCHESTRATION_STATE_BEFORE_U04_RETAINED_DETAILS_TAR_AUDIT_20261019.md)：保留审计前看板及当时未验结论。
+- [U04 TEMP 队列满边界 L1](GOAL_U04_TEMP_QUEUE_OVERFLOW_L1_2026-10-19.md)：修复拒收后 `queued` 显示回退，预修复对照失败、修复后主机测试 4/0/0/0；仅合成 U04 L1。
+- [本切片前看板](ORCHESTRATION_STATE_BEFORE_U04_TEMP_QUEUE_OVERFLOW_L1_20261019.md)：保留队列边界任务开始前的接续约束与未验结论。
+
 
 - [D06/D07 五截点恢复事实 Python 独立消费](GOAL_E07_D06_D07_RECOVERY_PYTHON_CONSUMER_2026-10-19.md)：57 文件固定输入、五份完整事实/私有文件、隔离回执与逐包账务核对及17项变异测试通过；仅 Python L1，不计 L2/L3 或总目标。
 - [本切片前看板](ORCHESTRATION_STATE_before_fault_recovery_python_20261019.md)：保留前序全部局部通过、失败、环境和未验项。
