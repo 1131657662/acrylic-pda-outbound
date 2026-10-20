@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-20
 branch: codex/development
-head: 4d1d89c7
-dirty_entries: 38
+head: 7ecde94f
+dirty_entries: 39
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -42,7 +42,9 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - [Windows策略续查](history/CODEX_WINDOWS_POLICY_FOLLOWUP_2026-10-20.md)：ACL差异非因果证据；配置/规则/ACL未改，未授F/切unelevated/重启/复验；WSL2/M71仅枚举，根因未定位、真实库链阻断、不计D/O/U。三文档开发备份4d1d89c7724debf63ee356b87049d4bc75cff58a已推送；证据.local/codex-windows-policy-followup-20261020/final-manifest.json；本聊天写窗交回主开发。
 - 本机副本溯源的无可用结论沿历史；本次维护备份不是演练后输入，不替代真实非空升级/相应API-worker，保持阻断未验。只连接授权test及本次独立还原库，未碰原库/生产；证据分别见local-data-*与test-business-rehearsal-20261020。
 - 候选包preflight-8cb51ded-20261020-01.tar.gz已生成，SHA8539177d1274864b94772c9941a1ff3dfab9735dda545b4fca988f3232c37ad0；独立Linux解包核manifest/source/647摘要及执行位通过。包仅本机，不计LinuxJava报表/API-worker或部署验收。
-- 本次维护已结束，不再停服；先解决客户端启动审批阻断，以后重开窗口须重核PDA03快照并新备份，不用旧截点覆盖新事实。未获得可信演练导出，固定候选真实库链不放行；代码部署仍须另行授权，其他持续关闭边界不变。
+- [M71真实路径](history/DEPLOY_REAL_CLIENT_PATH_ASSESSMENT_2026-10-20.md)：用户已确认admin/01/02真实身份与M71/PDA03独占；历史test APK真机验签/独立安装/实际打开通过、原debug11文件SHA不变。固定8cb51ded staging实编译exit1/10未解析引用，未修代码，不用历史APK覆盖失败。
+- [19skip逐项分类](history/DEPLOY_FIXED_CANDIDATE_SKIPPED_TESTS_2026-10-20.md)：环境2、条件17，计通过0；LinuxJava21运行未验，不写其余全过。真实登录/采集/完整业务未验，未证明两路均不可行，不标永久C档。
+- window02新快照/备份完成，首次维护503断言失败后中止；101表129500行/220私有文件及PDA03订单完整恢复核同，原服务/timer/Nginx/public200恢复；19:41:59实际再联机且订单核同。无可信演练后输入、不部署。共享文档/HEAD临时写窗归本聊天，另一开发仅D13源码测试/私有证据；回执见.local/deploy-real-client-20261020/window02/。
 
 
 ## 保留的前轮证据与未验

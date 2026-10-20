@@ -4,6 +4,9 @@
 
 ## 最近可复核的专项报告
 
+- [M71真实客户端与window02回退](DEPLOY_REAL_CLIENT_PATH_ASSESSMENT_2026-10-20.md)：真实账号归属确认；历史APK真机安装启动通过、固定候选Android编译失败；新维护检查失败后101表/220文件恢复核同，未真实演练/部署。
+- [固定候选十九项跳过](DEPLOY_FIXED_CANDIDATE_SKIPPED_TESTS_2026-10-20.md)：同SHA原XML逐方法分类为环境2/条件17，全部不计通过；Windows异常具体根因不超证据归因。
+
 - [D13 FORMAL分块文件入口](GOAL_D13_FORMAL_SUBMISSION_CHUNKS_2026-10-20.md)：P5下DATABASE()兼容修复，原IT及14 HTTP/9块/签名账务消费通过；完整普通XML4782项零失败、19跳过，ACL子进程环境修复有独立3项复验；首轮失败保留，非D13整体或最终候选。
 
 - [O04原SAF包当前运行库消费](GOAL_O04_RETAINED_SAF_CURRENT_RUNTIME_CONSUMER_2026-10-20.md)：复用已有原包/历史覆盖，运行库变化后CLI一次exit0、460原事实断言/五表265格核同、16原成员保持；仅合成文件，非原身份/设备或完整O04。
