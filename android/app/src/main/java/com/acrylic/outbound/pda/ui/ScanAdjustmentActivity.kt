@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.ArrayAdapter
 import android.widget.Button
 import androidx.activity.ComponentActivity
 import androidx.core.view.*
@@ -38,11 +39,17 @@ class ScanAdjustmentActivity : ComponentActivity() {
         records = AdjustmentRecords(app, assignment, temporary)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding = ActivityScanAdjustmentBinding.inflate(layoutInflater); setContentView(binding.root)
-        insets(); actions()
+        insets(); configureStatusFilter(); actions()
         scanner = ScannerReceiver(this, { locate(it) }, { binding.status.text = it })
         savedInstanceState?.getLongArray("history")?.let { history.clear(); history.addAll(it.toList()) }
-        filter = runCatching { AdjustmentFilter.parse(savedInstanceState?.getString("sequence").orEmpty(),
-            savedInstanceState?.getString("product").orEmpty()) }.getOrDefault(AdjustmentFilter())
+        filter = runCatching {
+            AdjustmentFilter.parse(
+                savedInstanceState?.getString("sequence").orEmpty(),
+                savedInstanceState?.getString("product").orEmpty(),
+                AdjustmentStatusFilter.fromCode(savedInstanceState?.getString("status"))
+            )
+        }.getOrDefault(AdjustmentFilter())
+        binding.statusFilter.setSelection(AdjustmentStatusFilter.values().indexOf(filter.status))
         filterError = savedInstanceState?.getString("filterError")
         load()
     }
@@ -60,12 +67,24 @@ class ScanAdjustmentActivity : ComponentActivity() {
         binding.next.setOnClickListener { next?.let { history.add(it); load() } }
         binding.filterRecords.setOnClickListener { filterRecords() }
         binding.clearFilter.setOnClickListener {
-            binding.sequence.text.clear(); binding.productFilter.text.clear(); filterRecords()
+            binding.sequence.text.clear(); binding.productFilter.text.clear()
+            binding.statusFilter.setSelection(0); filterRecords()
+        }
+    }
+    private fun configureStatusFilter() {
+        val labels = AdjustmentStatusFilter.values().map { it.label }
+        binding.statusFilter.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, labels).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
     }
     private fun filterRecords() {
         if (busy || dialogOpen) return
-        val parsed = runCatching { AdjustmentFilter.parse(binding.sequence.text.toString(), binding.productFilter.text.toString()) }
+        val parsed = runCatching {
+            AdjustmentFilter.parse(
+                binding.sequence.text.toString(), binding.productFilter.text.toString(),
+                AdjustmentStatusFilter.fromPosition(binding.statusFilter.selectedItemPosition)
+            )
+        }
         if (parsed.isFailure) {
             history.clear(); history.add(0L); next = null
             filterError = parsed.exceptionOrNull()?.message
@@ -81,7 +100,8 @@ class ScanAdjustmentActivity : ComponentActivity() {
         binding.title.text = withContext(Dispatchers.IO) { records.title() }
         blockReason = withContext(Dispatchers.IO) { records.blockReason() }
         show(page); binding.status.text = blockReason.ifBlank { filterError ?: run {
-            if (page.isEmpty()) "没有匹配的原记录，未新增扫码" else "每页最多20条 · 原序号保留 · 点击已保存包核对"
+            if (page.isEmpty()) "没有匹配的原记录（${filter.status.label}），未新增扫码"
+            else "${filter.status.label} · 每页最多20条 · 原序号保留 · 点击已保存包核对"
         } }
     }
     private fun locate(raw: String) {
@@ -139,6 +159,7 @@ class ScanAdjustmentActivity : ComponentActivity() {
     private fun controls() {
         binding.locate.isEnabled = !busy; binding.back.isEnabled = !busy
         binding.previous.isEnabled = !busy && history.size > 1; binding.next.isEnabled = !busy && next != null
+        binding.statusFilter.isEnabled = !busy
         listOf(binding.sequence, binding.productFilter, binding.filterRecords, binding.clearFilter).forEach { it.isEnabled = !busy }
     }
     override fun onResume() { super.onResume(); if (::scanner.isInitialized && !dialogOpen) scanner.register() }
@@ -146,6 +167,7 @@ class ScanAdjustmentActivity : ComponentActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putLongArray("history", history.toLongArray())
         outState.putString("sequence", filter.sequence?.toString().orEmpty()); outState.putString("product", filter.product)
+        outState.putString("status", filter.status.code)
         outState.putString("filterError", filterError)
         super.onSaveInstanceState(outState)
     }

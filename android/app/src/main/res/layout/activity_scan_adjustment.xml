@@ -15,6 +15,9 @@
     <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:labelFor="@id/productFilter" android:text="产品代码、型号或名称（可留空）" android:textSize="16sp" />
     <EditText android:id="@+id/productFilter" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
         android:inputType="text" android:singleLine="true" android:maxLength="128" android:autofillHints="" />
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:labelFor="@id/statusFilter" android:text="记录状态（默认全部）" android:textSize="16sp" />
+    <Spinner android:id="@+id/statusFilter" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:minHeight="48dp" />
     <Button android:id="@+id/filterRecords" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="筛选原记录" />
     <Button android:id="@+id/clearFilter" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="清除筛选" />
     <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
