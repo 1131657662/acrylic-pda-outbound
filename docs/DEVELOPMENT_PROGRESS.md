@@ -4,6 +4,7 @@
 
 ## 当前有效结论
 
+- D13补[导出中心状态筛选只读HTTP](history/GOAL_D13_EXPORT_STATUS_READ_HTTP_2026-10-20.md)：有限分类器加入REPLACE；隔离P5真实HTTP 1项、34个列表请求/33条合成元数据和178表/4文件六组守恒；普通回归4804项，19跳过逐项保留。不是生成或业务成功、D13整体、最终候选或第8节通过。
 - D13补[原来源只读HTTP/P5修复](history/GOAL_D13_SOURCE_EVIDENCE_READ_2026-10-20.md)：修复JSON_OBJECT/DATE_FORMAT有限分类漏项；最终run04 IT1/0/0/0，37业务GET、12组178表/8文件守恒，夹具授权完整恢复、原签名验真/P5后继STARTED。普通回归4798项零失败、19跳过单列。旧失败及run03夹具缺口保留；仅有界L1，非D13整体/最终候选。
 
 - D13补[多块审计尾回滚/原ID重试](history/GOAL_D13_MULTICHUNK_ROLLBACK_RETRY_2026-10-20.md)：新隔离IT1/0/0/0、13真实TCP/9块；500后180表309行守恒，原14文件不变、只留新增完整原正文；原ID重试/重放签名账务核同，P5后继STARTED。[单块并发/回滚/撤权](history/GOAL_D13_FORMAL_CHUNK_FAULTS_2026-10-20.md)及[先前普通回归](history/GOAL_D13_FORMAL_SUBMISSION_CHUNKS_2026-10-20.md)沿各自输入。仅测试/有界L1，不计整体D13/L2/D18或最终候选。

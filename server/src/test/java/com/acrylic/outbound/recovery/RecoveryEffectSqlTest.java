@@ -18,7 +18,8 @@ class RecoveryEffectSqlTest {
 
     @ParameterizedTest @ValueSource(strings = {"SELECT JSON_OBJECT('id',BIN_TO_UUID(id),'round',CAST(work_round AS CHAR)) FROM submission_scope",
         "SELECT DATE_FORMAT(created_at,'%Y-%m-%dT%H:%i:%s.%fZ') FROM submission",
-        "SELECT JSON_OBJECT('registeredAt',DATE_FORMAT(s.created_at,'%Y-%m-%dT%H:%i:%s.%fZ')) FROM submission s WHERE s.id=?"})
+        "SELECT JSON_OBJECT('registeredAt',DATE_FORMAT(s.created_at,'%Y-%m-%dT%H:%i:%s.%fZ')) FROM submission s WHERE s.id=?",
+        "SELECT CAST(REPLACE(REPLACE(payload->>'$.expiresAt','T',' '),'Z','') AS DATETIME(6)) FROM background_job"})
     void originalEvidenceProjectionStillRequiresSourceEffectGate(String sql) throws Exception {
         assertThat(RecoveryEffectSql.classify(sql)).isEqualTo(RecoveryEffectSql.Kind.SOURCE_READ);
     }
@@ -27,7 +28,9 @@ class RecoveryEffectSqlTest {
         "SELECT DATE_FORMAT(dangerous_function(),'%Y') FROM submission",
         "SELECT app.JSON_OBJECT('value',1) FROM submission", "SELECT app.DATE_FORMAT(created_at,'%Y') FROM submission",
         "SELECT JSON_OBJECT('value',1) INTO OUTFILE 'unsafe' FROM submission",
-        "SELECT JSON_OBJECT('value',1); DELETE FROM submission"})
+        "SELECT JSON_OBJECT('value',1); DELETE FROM submission",
+        "SELECT REPLACE(dangerous_function(),'a','b') FROM background_job",
+        "SELECT app.REPLACE(payload,'a','b') FROM background_job"})
     void originalEvidenceFunctionsCannotHideUnclassifiedEffects(String sql) {
         assertThatThrownBy(() -> RecoveryEffectSql.classify(sql)).hasMessage("CONTROL_EFFECT_UNCLASSIFIED");
     }
