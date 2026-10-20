@@ -38,6 +38,18 @@ python -m tools.pda_rescue.receipt_cli D:/受控资料/原包.pdarescue --trust 
 
 成功报告的`businessReceiptVerified=true`仅表示封存FORMAL成功原回执签名、原冻结字节与原人机仓来源、批次、有效序号、分产品数量/整数克一致，范围固定为`HISTORICAL_FORMAL_SUCCESS_RECEIPT`。它不查询后续更正、撤回、净值或现时终态；`currentBusinessStateVerified=false`、`releaseAllowed=false`、`localDeletionAllowed=false`始终保持。TEMP/独立来源、非成功回执不在此命令覆盖范围。原`cli`、加密副本和取回命令仍报告业务回执未核验，不被本次可选结果隐式升级。
 
+### TEMP首轮历史成功原文件的可选核验
+
+另有首轮TEMP原冻结正文和含`code/data`的原HTTP成功响应时，可使用独立命令：
+
+```powershell
+python -m tools.pda_rescue.temporary_receipt_cli D:/受控资料/原冻结正文.json D:/受控资料/原HTTP响应.bin --context D:/受控资料/包外原范围.json --receipt-key D:/受控资料/服务端可信公钥.json
+```
+
+`--context`必须在核验前从包外可信原材料确定，仅含`submissionId`、`payloadSha256`、`creatorDeviceId`、`clientOrderId`、`authorizationId`、`operatorId`、`warehouseId`和`orderId`。标识须为规范UUID，摘要为原正文未改写字节的SHA-256。`orderId`须来自另行核验的原TEMP映射目标，不得从待验回执抄取。仓库来自包外认证范围，原正文没有仓库字段；本命令不能自行认证上下文的提供者或查询映射。公钥格式及包外信任要求同上，不提供密码、token或私钥。
+
+命令只读四项输入并输出报告，结束前复读确认字节未变。核验固定签名、原范围、无缺口输入和终态、保存记录对应、ACTIVE/VOID及含零贡献计划产品的数量/整数克。只接受首轮成功；不接受续作、交接或主管处置输入。结果范围固定为`HISTORICAL_TEMP_FIRST_ROUND_SUCCESS_RECEIPT`，`businessReceiptVerified=true`只证明该历史原回执与包外固定范围一致；`packageIntegrityVerified=false`、`currentBusinessStateVerified=false`、`releaseAllowed=false`、`localDeletionAllowed=false`。该命令不验证应急包或原授权完整内容，不恢复取消链，也不改变其他核验/中转命令的结论。
+
 Excel提供核对汇总、原扫码顺序、产品核对、未决/失败输入及原审计。条码、产品代码、原序号和时间保持文本；重量以整数克核对，超出Excel精确整数范围时保留十进制文本。公式前缀始终作为文本，控制字符显示转义，原NDJSON保留原文。原ACTIVE行及主管处置原件同时保留，已处置贡献不算有效装载；没有冻结正文时不会补造提交批次。
 
 PNG只展示前16行，长文本可截显示；完整值在Excel和原件中。正常、零有效、空记录及已处置样例均使用合成输入验证。真实原设备、原生Excel/打印、USB/MTP/OTG、异地介质仍需对应现场验收。
