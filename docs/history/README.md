@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [D13非空应用原件admitted只读](GOAL_D13_FORMAL_APPLICATION_RETAINED_READ_2026-10-21.md)：历史应用表1行/原签名原件重启逐字一致；14 TCP无业务POST，权限/损坏反例及178表8文件守恒/P5通过，仅合成有界L1。
+
 - [D13历史FORMAL原依据admitted只读](GOAL_D13_FORMAL_HISTORY_ADMITTED_READ_2026-10-21.md)：已终结历史副本，IT1/0/0/0、四业务GET/32893字节原件逐字重启消费、178表8文件守恒/P5后继；无业务POST、取消链不执行，失败保留，仅合成有界L1。
 
 - [D13返库库存投影恢复admitted TCP/P5](GOAL_D13_RETURNED_STOCK_ADMISSION_2026-10-21.md)：typed读取局部修复，IT1/0/0/0、20业务POST/9JWS/10组守恒，原账/周期不变/唯一释放、末SQL/原键重启/P5；原业务新周期回归通过，普通待收口。原失败保持，仅合成L1，非最终候选。

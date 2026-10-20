@@ -60,6 +60,10 @@ class E2aAdmittedFormalHistoryIT {
             byte[] expected = Files.readAllBytes(input.profile.attempt.resolve("historical-original-formal-proof.json"));
             assertThat(original).isEqualTo(expected);
             assertThat(SubmissionJson.parse(original)).isEqualTo(context.at("/context/facts/origin/originalReceipt"));
+            var checks = new FormalHistoryAdmittedChecks(input, state, evidence);
+            checks.application(original);
+            if (label.equals("initial") && SubmissionJson.parse(original).at("/application/receipt/signedApplication").isTextual())
+                checks.deniedReads(maker);
         } finally {
             var after = state.database(SESSION); var afterFiles = state.files();
             save(label + "-database-after", after); save(label + "-files-after", afterFiles);
