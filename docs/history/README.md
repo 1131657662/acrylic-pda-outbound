@@ -4,6 +4,7 @@
 
 ## 最近可复核的专项报告
 
+- [D13主管审批记账admitted HTTP/P5](GOAL_D13_CORRECTION_APPROVAL_ADMISSION_2026-10-21.md)：typed JDBC/COALESCE/CASE修复，门保持；IT1/0/0/0、8业务POST/单次记账/原键及重启重放验签、5组178表6文件守恒、P5后继。普通4804项零失败19skip，outbox追加组合通过；失败原件保持，仅合成有界L1，非D13整体或最终候选。
 - [D13更正附件admitted HTTP/P5修复](GOAL_D13_CORRECTION_ATTACHMENT_ADMISSION_2026-10-20.md)：显式JDBC类型读取/COALESCE，效果门不变；最终IT1/0/0/0、20业务HTTP、8组178表/6文件守恒、原签名重放及P5后继通过。普通4804项零失败、19skip；三轮失败保留，仅CREATE附件L1，非完整D13或最终候选。
 - [D13完成导出的状态列表消费者](GOAL_D13_EXPORT_LIFECYCLE_STATUS_2026-10-20.md)：仅测试断言补充，隔离IT1/0/0/0；五组已完成任务的状态列表/下载/快照哈希核同，66组原HTTP离线审计，原件及继承保持。只记有界L1，非独立部署API-worker、D13整体或最终候选。
 - D13补[导出中心状态筛选只读HTTP](GOAL_D13_EXPORT_STATUS_READ_HTTP_2026-10-20.md)：修复有限分类器漏列`REPLACE`；隔离P5真实HTTP 1项/0失败/0跳过，33条合成任务元数据，34个列表请求、178表/4文件六组守恒，后继STARTED；普通回归4804项、19跳过单列。仅只读元数据筛选，不代表生成/导出业务成功或D13整体通过。

@@ -179,9 +179,9 @@ public class CorrectionStore {
               'warehouseId',BIN_TO_UUID(warehouse_id),'type',type,'status',status,
               'documentSha256',document_sha256,'expectedResultVersion',CAST(expected_result_version AS CHAR),
               'documentVersion',CAST(row_version AS CHAR),
-              'approvedBy',IFNULL(BIN_TO_UUID(approved_by),'null'),'requestedBy',BIN_TO_UUID(requested_by),
-              'withdrawalRequestedBy',IFNULL(BIN_TO_UUID(withdrawal_requested_by),'null'),
-              'withdrawalConfirmedBy',IFNULL(BIN_TO_UUID(withdrawal_confirmed_by),'null'))
+              'approvedBy',COALESCE(BIN_TO_UUID(approved_by),'null'),'requestedBy',BIN_TO_UUID(requested_by),
+              'withdrawalRequestedBy',COALESCE(BIN_TO_UUID(withdrawal_requested_by),'null'),
+              'withdrawalConfirmedBy',COALESCE(BIN_TO_UUID(withdrawal_confirmed_by),'null'))
             FROM correction_document WHERE id=?
             """,String.class,Ids.bytes(documentId));
         if (rows.size()!=1) throw CorrectionCommand.missing();
@@ -200,24 +200,38 @@ public class CorrectionStore {
 
     /** The frozen lines of one document, ascending; their before/target values drive every delta. */
     public List<Map<String,Object>> lines(UUID documentId) {
-        return jdbc.queryForList("""
+        return jdbc.query("""
             SELECT BIN_TO_UUID(id) line_id,BIN_TO_UUID(dispatch_id) dispatch_id,line_no,
               before_count,before_weight_g,target_count,target_weight_g,business_occurred_at,evidence_sha256
             FROM correction_line WHERE document_id=? ORDER BY line_no
-            """,Ids.bytes(documentId));
+            """,(rs,index) -> {
+                var row=new HashMap<String,Object>();
+                for (String column : List.of("line_id","dispatch_id","evidence_sha256")) row.put(column,rs.getString(column));
+                row.put("line_no",rs.getInt("line_no"));
+                for (String column : List.of("before_count","before_weight_g","target_count","target_weight_g"))
+                    row.put(column,rs.getLong(column));
+                row.put("business_occurred_at",rs.getTimestamp("business_occurred_at"));
+                return row;
+            },Ids.bytes(documentId));
     }
 
     /** §3 lock order: the current version row under the order lock, before any dispatch is touched. */
     public Map<String,Object> lockCurrentVersion(UUID orderId) {
-        var rows=jdbc.queryForList("""
+        // PDA writers can leave original_submission_id NULL; preserve v1's submission lineage fallback.
+        var rows=jdbc.query("""
             SELECT CAST(result_version AS CHAR) result_version,CAST(actual_count AS CHAR) actual_count,
               CAST(weight_g AS CHAR) weight_g,inventory_deducted,header_snapshot,
-              -- original_submission_id is only filled by V46's backfill or by this service's own inserts; for versions
-              -- written later by PDA writers it stays NULL. This FK is PDA-only; PC lineage remains on the v1 row.
               COALESCE(BIN_TO_UUID(original_submission_id),BIN_TO_UUID(submission_id),'null')
                 original_submission_id
             FROM order_result_version WHERE order_id=? ORDER BY result_version DESC LIMIT 1 FOR UPDATE
-            """,Ids.bytes(orderId));
+            """,(rs,index) -> {
+                var row=new HashMap<String,Object>();
+                for (String column : List.of("result_version","actual_count","weight_g","header_snapshot","original_submission_id"))
+                    row.put(column,rs.getString(column));
+                boolean deducted=rs.getBoolean("inventory_deducted");
+                row.put("inventory_deducted",rs.wasNull()?null:deducted);
+                return row;
+            },Ids.bytes(orderId));
         if (rows.size()!=1) throw CorrectionCommand.missing();
         return rows.getFirst();
     }
@@ -242,21 +256,26 @@ public class CorrectionStore {
 
     /** All original dispatches of the order in ascending id order - the lock order §3 requires. */
     public List<Map<String,Object>> dispatchesForUpdate(UUID orderId) {
-        return jdbc.queryForList("""
+        return jdbc.query("""
             SELECT BIN_TO_UUID(d.id) dispatch_id,BIN_TO_UUID(d.bale_id) bale_id,d.delivery_code,
               CAST(d.order_scan_seq AS CHAR) scan_seq,CAST(d.weight_g AS CHAR) weight_g,
               BIN_TO_UUID(COALESCE(d.capture_id,d.pc_entry_id)) capture_id
             FROM dispatch_record d WHERE d.order_id=? ORDER BY d.id FOR UPDATE
-            """,Ids.bytes(orderId));
+            """,(rs,index) -> {
+                var row=new HashMap<String,Object>();
+                for (String column : List.of("dispatch_id","bale_id","delivery_code","scan_seq","weight_g","capture_id"))
+                    row.put(column,rs.getString(column));
+                return row;
+            },Ids.bytes(orderId));
     }
 
     /** Locks every affected bale and its current commitment in stable bale-id order before effects begin. */
     public void lockBalesAndCommitments(List<Map<String,Object>> dispatches) {
         dispatches.stream().map(row -> UUID.fromString(row.get("bale_id").toString())).distinct().sorted()
             .forEach(bale -> {
-                if (jdbc.queryForList("SELECT id FROM bale WHERE id=? FOR UPDATE", Ids.bytes(bale)).size() != 1)
+                if (jdbc.queryForList("SELECT id FROM bale WHERE id=? FOR UPDATE", byte[].class, Ids.bytes(bale)).size() != 1)
                     throw CorrectionCommand.missing();
-                jdbc.queryForList("SELECT bale_id FROM bale_commitment WHERE bale_id=? FOR UPDATE", Ids.bytes(bale));
+                jdbc.queryForList("SELECT bale_id FROM bale_commitment WHERE bale_id=? FOR UPDATE", byte[].class, Ids.bytes(bale));
             });
     }
 
@@ -323,11 +342,18 @@ public class CorrectionStore {
 
     /** The version's per-dispatch effective values: what a withdrawal rolls back and what it must conflict-check. */
     public List<Map<String,Object>> effectiveScan(UUID orderId,long version) {
-        return jdbc.queryForList("""
+        return jdbc.query("""
             SELECT BIN_TO_UUID(dispatch_id) dispatch_id,is_effective,CAST(effective_weight_g AS CHAR) effective_weight_g,
-              IFNULL(BIN_TO_UUID(latest_correction_line_id),'null') latest_correction_line_id
+              COALESCE(BIN_TO_UUID(latest_correction_line_id),'null') latest_correction_line_id
             FROM order_effective_scan WHERE order_id=? AND result_version=? ORDER BY dispatch_id
-            """,Ids.bytes(orderId),version);
+            """,(rs,index) -> {
+                var row=new HashMap<String,Object>();
+                for (String column : List.of("dispatch_id","effective_weight_g","latest_correction_line_id"))
+                    row.put(column,rs.getString(column));
+                boolean effective=rs.getBoolean("is_effective");
+                row.put("is_effective",rs.wasNull()?null:effective);
+                return row;
+            },Ids.bytes(orderId),version);
     }
 
     /**
@@ -465,10 +491,12 @@ public class CorrectionStore {
     /** Reads the next shared version while the command holds the order lock; insertOutbox commits its allocation. */
     public long nextOutboxEntityVersion(UUID orderId,long epoch) {
         return jdbc.queryForObject("""
-            SELECT GREATEST(o.row_version,COALESCE((SELECT MAX(x.entity_version) FROM order_sync_outbox x
-              WHERE x.recovery_epoch=? AND x.order_id=o.id),0))+1
+            SELECT (CASE WHEN o.row_version>=COALESCE((SELECT MAX(x.entity_version) FROM order_sync_outbox x
+              WHERE x.recovery_epoch=? AND x.order_id=o.id),0) THEN o.row_version
+              ELSE COALESCE((SELECT MAX(x.entity_version) FROM order_sync_outbox x
+                WHERE x.recovery_epoch=? AND x.order_id=o.id),0) END)+1
             FROM outbound_order o WHERE o.id=?
-            """,Long.class,epoch,Ids.bytes(orderId));
+            """,Long.class,epoch,epoch,Ids.bytes(orderId));
     }
 
     /** The correction result, order version and notification commit or roll back on the command transaction. */

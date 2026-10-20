@@ -4,6 +4,7 @@
 
 ## 当前有效结论
 
+- D13补[主管审批记账admitted HTTP/P5](history/GOAL_D13_CORRECTION_APPROVAL_ADMISSION_2026-10-21.md)：局部typed JDBC/COALESCE/CASE兼容修复，效果门不变；最终IT1/0/0/0，8业务POST、单次记账/原键及重启重放签名核同、5组178表/6文件守恒与P5后继。普通4804项零失败、19跳过，追加outbox组合IT1/0/0/0；原失败保留，仅合成有界L1，非完整D13或最终候选。
 - D13补[更正附件admitted HTTP/P5消费者](history/GOAL_D13_CORRECTION_ATTACHMENT_ADMISSION_2026-10-20.md)：修复局部getObject/IFNULL兼容，保留效果门；最终IT1/0/0/0，20业务HTTP、8组178表/6文件守恒、原签名/重启原键核同与P5后继STARTED。普通4804项零失败、19跳过单列；前三轮失败保留。仅CREATE附件有界L1，非审批/记账、完整D13或最终候选。
 - D13补[完成导出的状态列表消费者](history/GOAL_D13_EXPORT_LIFECYCLE_STATUS_2026-10-20.md)：仅测试增加列表与下载视图核同；隔离IT1/0/0/0，默认关闭/admitted/P5五组任务及66组原HTTP离线核验，35条继承路径保持。Web/worker为同JVM独立上下文；仅有界L1，非D13整体/L2/D18或最终候选。
 - D13补[导出中心状态筛选只读HTTP](history/GOAL_D13_EXPORT_STATUS_READ_HTTP_2026-10-20.md)：有限分类器加入REPLACE；隔离P5真实HTTP 1项、34个列表请求/33条合成元数据和178表/4文件六组守恒；普通回归4804项，19跳过逐项保留。不是生成或业务成功、D13整体、最终候选或第8节通过。

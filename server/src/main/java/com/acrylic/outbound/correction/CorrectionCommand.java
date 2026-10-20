@@ -124,7 +124,7 @@ final class CorrectionCommand {
             if (rows.size()!=1) throw missing();return 1;
         }
         long document(UUID document) {
-            var rows=jdbc.queryForList("SELECT row_version FROM correction_document WHERE id=? FOR UPDATE",Ids.bytes(document));
+            var rows=jdbc.queryForList("SELECT row_version FROM correction_document WHERE id=? FOR UPDATE",Long.class,Ids.bytes(document));
             if (rows.size()!=1) throw missing();return 1;
         }
         /** The reconciliation case is the fourth serialisation point (step 7). */
