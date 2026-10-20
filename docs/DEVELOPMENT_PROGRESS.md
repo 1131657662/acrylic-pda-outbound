@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- D04补[旧结构STOP前缀兼容定向](history/GOAL_D04_LEGACY_STOP_PREFIX_COMPATIBILITY_2026-10-21.md)：旧run732 SQL缺表新依据；已有守卫/首轮来源绑定在新非空隔离MySQL复验13/0/0/0，103表守恒，普通8/0/0/0。首轮1项夹具失败原件保留，无HTTP/Android，不计D04整体或第8节。
+
 - D06/D07补[干净提交Android/HTTP有界组合](history/GOAL_D06_D07_CLEAN_ANDROID_HTTP_COMBINATION_2026-10-21.md)：提交源编译exit0，新空隔离库夹具1/0/0/0、新AVD四条原生通过；唯一成功两包601500克、原冻结正文/四签名/逐笔账务独立核同。没有Chrome/非空迁移/恢复或完整矩阵，不计整体或第8节。
 
 - O02/O03/D17：[干净提交文件消费者组合](history/GOAL_O02_O03_CLEAN_ANDROID_FILE_COMBINATION_2026-10-21.md)：同提交1027源核同，六类主机32/0/0/0；电脑独立消费本次四文件及三CLI场景，缺可信来源拒绝/防覆盖，33继承与上片81证据守恒。仅有界主机/文件组合，无本片设备/HTTP/MySQL或整体最终候选。
