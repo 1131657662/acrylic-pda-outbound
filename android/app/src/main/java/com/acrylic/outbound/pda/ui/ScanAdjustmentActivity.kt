@@ -37,6 +37,7 @@ class ScanAdjustmentActivity : ComponentActivity() {
         if (assignment.isBlank() == temporary.isBlank()) { finish(); return }
         app.work.pause(); app.temporaryWork.pause()
         records = AdjustmentRecords(app, assignment, temporary)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding = ActivityScanAdjustmentBinding.inflate(layoutInflater); setContentView(binding.root)
         insets(); configureStatusFilter(); actions()
@@ -57,7 +58,8 @@ class ScanAdjustmentActivity : ComponentActivity() {
         val horizontal = binding.root.paddingLeft
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(bars.left + horizontal, bars.top, bars.right + horizontal, bars.bottom); insets
+            val bottom = maxOf(bars.bottom, insets.getInsets(WindowInsetsCompat.Type.ime()).bottom)
+            view.setPadding(bars.left + horizontal, bars.top, bars.right + horizontal, bottom); insets
         }
     }
     private fun actions() {
