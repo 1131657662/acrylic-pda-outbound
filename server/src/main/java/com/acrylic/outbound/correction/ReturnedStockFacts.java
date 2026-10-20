@@ -23,9 +23,9 @@ final class ReturnedStockFacts {
               'lineNo',l.line_no,'lineEvidenceSha256',l.evidence_sha256) data
             FROM cycle_reopening r JOIN correction_line l ON l.id=r.correction_line_id
               JOIN correction_document d ON d.id=l.document_id WHERE r.original_dispatch_id=?
-            """, Ids.bytes(dispatch));
+            """, String.class, Ids.bytes(dispatch));
         if (rows.size()!=1) throw CorrectionCommand.ledgerConflict();
-        var proof = (com.fasterxml.jackson.databind.node.ObjectNode) SubmissionJson.parse(rows.getFirst().get("data").toString());
+        var proof = (com.fasterxml.jackson.databind.node.ObjectNode) SubmissionJson.parse(rows.getFirst());
         var receipt = original(proof, "APPROVE").receipt();
         if (!receipt.at("/businessDecision/resultVersion").equals(proof.path("stateVersion"))
             || !receipt.at("/businessDecision/type").equals(proof.path("type"))
@@ -40,8 +40,8 @@ final class ReturnedStockFacts {
     }
 
     private CorrectionReadReceipt.Verified original(JsonNode proof, String kind) {
-        var rows = jdbc.queryForList("SELECT * FROM correction_command_receipt WHERE document_id=UUID_TO_BIN(?)"
-            + " AND command_type=?", proof.path("documentId").asText(), kind);
+        var rows = jdbc.query("SELECT * FROM correction_command_receipt WHERE document_id=UUID_TO_BIN(?)"
+            + " AND command_type=?", CorrectionStore::receiptRow, proof.path("documentId").asText(), kind);
         if (rows.size()!=1) throw CorrectionCommand.corrupt();
         return verifier.verify(rows.getFirst());
     }

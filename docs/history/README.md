@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [D13返库库存投影恢复admitted TCP/P5](GOAL_D13_RETURNED_STOCK_ADMISSION_2026-10-21.md)：typed读取局部修复，IT1/0/0/0、20业务POST/9JWS/10组守恒，原账/周期不变/唯一释放、末SQL/原键重启/P5；原业务新周期回归通过，普通待收口。原失败保持，仅合成L1，非最终候选。
+
 - [D13缺账对账admitted TCP/P5](GOAL_D13_RECONCILIATION_ADMISSION_2026-10-21.md)：typed JDBC/COALESCE局部修复，门不变；IT1/0/0/0、20业务POST/9JWS、10组178表/6文件守恒、原附件/唯一补扣/原键重启/P5后继；普通4804/19skip、原业务新隔离IT通过，三轮失败保留。仅合成有界L1，非完整D13/最终候选。
 
 - [D13两阶段更正撤销admitted HTTP/P5](GOAL_D13_CORRECTION_WITHDRAWAL_ADMISSION_2026-10-21.md)：IT1/0/0/0，17业务POST/178表6文件回滚/逐笔冲正/原签重启重放/P5后继；产品不变，普通回归按SHA复用。run1931未知结果围栏失败保留，仅合成有界L1。
