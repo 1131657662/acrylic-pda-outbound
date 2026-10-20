@@ -4,6 +4,9 @@
 
 ## 最近可复核的专项报告
 
+- [D13孤儿owner生命周期测试修复](GOAL_D13_ORPHAN_OWNER_LIFECYCLE_TEST_REPAIR_2026-10-20.md)：真实子JVM死亡输入替代延迟退休误判，21项定向通过、产品不变；非完整恢复或部署放行。
+- [D04审计前缀流式JDBC测试覆盖修复](GOAL_D04_AUDIT_STREAMING_TEST_REPAIR_2026-10-20.md)：修正失效mock，18项定向通过、产品不变；原失败保留，非MySQL/HTTP或完整回归。
+
 - [隔离部署预检与补充复验](DEPLOY_PREFLIGHT_2026-10-20.md)：固定提交编译打包通过，初轮4764项11失败；补前置后定向57项4失败，Linux激活stub自测8项通过；工具链仍阻断，未部署。
 - [O03当前Android封存电脑返还文件消费者](GOAL_O03_CURRENT_ANDROID_SEALED_RETURN_2026-10-20.md)：原电脑输出实际由产品双层验签消费，原件/继承改动守恒；主机有界组合，非原机持久文件、HTTP或最终候选。
 - [O03处理响应与返还下载一致性修复](GOAL_O03_RESULT_DOWNLOAD_BINDING_2026-10-20.md)：23项定向测试、封存传输字节离线回放通过；冲突保全/原键保持，非新HTTP或O03整体通过。

@@ -55,10 +55,7 @@ class RecoveryLeasePublicationTest {
 
     @Test void anOrphanLeaseRecordIsRetiredByTheScanThatRefusesIt() throws Exception {
         var supply = FenceTestSupply.create(parent);
-        var first = supply.authority();
-        first.validateStartup();
-        UUID operation = first.registerOperation();
-        first.retire();
+        UUID operation = RecoveryOrphanOwnerProcess.leaveOrphan(supply);
         Path record = supply.roots().root().resolve("leases").resolve(operation + ".json");
         assertThat(Files.exists(record)).isTrue();
         assertThat(indexed(supply)).as("the anchored index lists the published record").contains(operation.toString());
@@ -81,10 +78,7 @@ class RecoveryLeasePublicationTest {
      */
     @Test void theTreeIsCleanForTheNextProcessAfterRetirement() throws Exception {
         var supply = FenceTestSupply.create(parent);
-        var first = supply.authority();
-        first.validateStartup();
-        UUID operation = first.registerOperation();
-        first.retire();
+        UUID operation = RecoveryOrphanOwnerProcess.leaveOrphan(supply);
         var second = new RecoveryFenceAuthority(supply.roots());
         assertThatThrownBy(second::validateStartup).hasMessageContaining("RECOVERY_LEASE_OUTSTANDING");
         assertThat(Files.exists(supply.roots().root().resolve("leases").resolve(operation + ".json"))).isFalse();
