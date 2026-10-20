@@ -4,6 +4,12 @@ import com.acrylic.outbound.pda.work.WorkDetailRow
 
 /** Human-readable state never turns receipt of an input into a successful save. */
 object WorkDetailsText {
+    fun summary(page: com.acrylic.outbound.pda.work.WorkDetailsPage): String {
+        val order = page.order
+        val number = page.orderNo?.let { "订单号 $it" } ?: "订单号缺失 · 请保留原资料并核对，不按车号推断"
+        return "正式单 · ${order.vehicleNo}\n$number\n实装 ${order.actualCount} / ${order.plannedTotal} 包 · ${WorkRenderer.kg(order.weightGrams)} kg"
+    }
+
     fun adjustment(reason: String): String = when {
         reason.isBlank() -> "调整已扫码包"
         reason.startsWith("No value for") -> "调整不可用 · 本机作业资格资料不完整，请核对原身份与订单；原记录保留"

@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController @RequestMapping("/api/v1/pda")
 public class PdaOrdersController {
     private final PdaAccess access;private final AssignmentService service;private final AuthorizationRenewalService renewal;private final AssignmentStore store;
-    private final OrderQueries orders;private final ApiResponses responses;
-    public PdaOrdersController(PdaAccess access,AssignmentService service,AuthorizationRenewalService renewal,AssignmentStore store,OrderQueries orders,ApiResponses responses) {
-        this.access=access;this.service=service;this.renewal=renewal;this.store=store;this.orders=orders;this.responses=responses;
+    private final OrderQueries orders;private final ApiResponses responses;private final PdaClaimPreviewQueries previews;
+    public PdaOrdersController(PdaAccess access,AssignmentService service,AuthorizationRenewalService renewal,AssignmentStore store,OrderQueries orders,ApiResponses responses,PdaClaimPreviewQueries previews) {
+        this.access=access;this.service=service;this.renewal=renewal;this.store=store;this.orders=orders;this.responses=responses;this.previews=previews;
     }
     @GetMapping("/orders") @Transactional(readOnly=true)
     public ApiEnvelope<?> available(@RequestParam(defaultValue="") String cursor,@RequestParam(defaultValue="50") int limit,HttpServletRequest request) {
@@ -21,9 +21,10 @@ public class PdaOrdersController {
     }
     @GetMapping("/orders/{id}/claim-preview") @Transactional(readOnly=true)
     public ApiEnvelope<?> preview(@PathVariable UUID id,HttpServletRequest request) {
-        var order=orders.head(access.require("pda:assign").warehouseId(),id);
+        var preview=previews.read(access.require("pda:assign").warehouseId(),id);
+        var order=preview.order();
         if(!order.status().equals("READY")) throw new BusinessException(409,"ORDER_STATE_CONFLICT","订单已不在待领取状态，请刷新核对");
-        return responses.ok(order,request);
+        return responses.ok(preview,request);
     }
     @PostMapping("/orders/{id}/assignments") public ApiEnvelope<?> claim(@PathVariable UUID id,@Valid @RequestBody AssignmentService.Command body,
         @RequestHeader("Idempotency-Key") String key,@RequestHeader("X-Server-Recovery-Epoch") String epoch,HttpServletRequest request) {

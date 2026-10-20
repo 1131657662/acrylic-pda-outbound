@@ -103,19 +103,6 @@ class OrderCardsTest {
         assertTrue(OrderCardBinding.bind(parent.getChildAt(1)).title.text.contains("苏A-测试车"))
     }
 
-    @Test fun claimConfirmationShowsFullOrderNumberAndVehicle() {
-        val controller = Robolectric.buildActivity(Activity::class.java).setup()
-        try {
-            val parent = LinearLayout(controller.get())
-            OrderCards(parent, model).render(PreparationUi(section = "AVAILABLE", available = listOf(remote("FH202609200001"))))
-            OrderCardBinding.bind(parent.getChildAt(0)).action.performClick()
-            val dialog = ShadowAlertDialog.getLatestAlertDialog()
-            assertTrue(dialog.findViewById<TextView>(android.R.id.message).text.startsWith("订单号 FH202609200001\n"))
-            assertEquals("领取 苏A-测试车", org.robolectric.Shadows.shadowOf(dialog).title.toString())
-            dialog.dismiss()
-        } finally { controller.pause().stop().destroy() }
-    }
-
     @Test fun narrowScreenAndLargeFontKeepFullIdentifiersAndClaimButtonVisible() {
         val app = ApplicationProvider.getApplicationContext<TestApp>()
         for (scale in listOf(1f, 2f)) {

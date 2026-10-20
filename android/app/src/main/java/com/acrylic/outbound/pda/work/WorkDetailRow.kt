@@ -13,4 +13,4 @@ enum class WorkDetailFilter(val label: String, internal val predicate: String) {
 }
 
 data class WorkDetailsPage(val order: WorkOrder, val products: List<WorkLine>,
-    val rows: List<WorkDetailRow>, val previous: Boolean, val next: Boolean)
+    val rows: List<WorkDetailRow>, val previous: Boolean, val next: Boolean, val orderNo: String? = null)

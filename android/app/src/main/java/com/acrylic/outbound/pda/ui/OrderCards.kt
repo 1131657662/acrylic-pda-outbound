@@ -1,9 +1,7 @@
 package com.acrylic.outbound.pda.ui
 
-import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.EditText
 import android.widget.LinearLayout
 import com.acrylic.outbound.pda.databinding.OrderCardBinding
 import com.acrylic.outbound.pda.display.DisplayTime
@@ -125,9 +123,6 @@ class OrderCards(private val parent: LinearLayout, private val model: Preparatio
     }
 
     private fun claimDialog(order: JSONObject) {
-        val input = EditText(parent.context).apply { hint = "货堆/区域备注（可留空）"; maxLines = 3 }
-        AlertDialog.Builder(parent.context).setTitle("领取 ${order.getString("vehicleNo")}")
-            .setMessage("订单号 ${order.getString("orderNo")}\n领取后由本机独占；下载失败或到期仍保留占用。").setView(input)
-            .setNegativeButton("返回", null).setPositiveButton("确认领取") { _, _ -> model.claim(order, input.text.toString()) }.show()
+        ClaimPreviewDialog(parent.context, { model.preview(order) }) { preview, area -> model.claim(preview, area) }.show()
     }
 }

@@ -4,6 +4,9 @@
 
 ## 最近可复核的专项报告
 
+- [正式单明细与领取预览修复](GOAL_PDA_FORMAL_ORDER_PREVIEW_UI_2026-10-21.md)：限定主机/隔离契约验证，原失败保留；M71未验。
+- [凭据交互问题接入](GOAL_PDA_CREDENTIAL_UX_INTAKE_2026-10-21.md)：源码审查来源及安全边界，仅排期，非验收。
+
 - [D04首轮STOP结构分支绑定](GOAL_D04_FIRST_ROUND_SCHEMA_BINDING_2026-10-21.md)：首轮错配修复、新非空JUnit1项通过；普通两轮失败与独立15项补验分列，非整体或第8节。
 
 - [D04原Room/真实HTTP恢复组合](GOAL_D04_ORIGINAL_ROOM_HTTP_RECOVERY_2026-10-21.md)：原Android主机1项/原server断言体完成，五处丢响应、原签/原文/13文件/占用离线核同；两轮失败与审计假设修正保留，非设备/完整D04或最终候选。

@@ -111,8 +111,7 @@ class WorkDetailsActivity : ComponentActivity() {
 
     private fun render(result: WorkDetailsPage) {
         page = result; anchor = result.rows.firstOrNull()?.sequence?.minus(1) ?: 0L
-        val order = result.order
-        binding.summary.text = "正式单 · ${order.vehicleNo}\n实装 ${order.actualCount} / ${order.plannedTotal} 包 · ${WorkRenderer.kg(order.weightGrams)} kg"
+        binding.summary.text = WorkDetailsText.summary(result)
         binding.products.text = "本单产品汇总\n" + result.products.joinToString("\n") {
             "${it.deliveryCode} · ${it.model} · ${it.name}\n${it.actualCount}/${it.plannedCount} 包 · ${WorkRenderer.kg(it.weightGrams)} kg"
         }

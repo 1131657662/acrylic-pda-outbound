@@ -12,11 +12,13 @@ class WorkDetailsReader(private val db: PdaDatabase, private val id: String,
         db.runInTransaction(Callable {
             identity()
             val order = checkNotNull(db.work().order(id)) { "本机没有此单原记录" }
+            val prepared = checkNotNull(db.preparations().order(id)) { "本机缺少此单原计划，请保留原记录核对" }
+            val number = FormalOrderNumber.read(prepared, order)
             val rows = query(filter, "sequence ${if (backwards) "<" else ">"} ?", anchor,
                 if (backwards) "DESC" else "ASC", PAGE_SIZE).let { if (backwards) it.reversed() else it }
             val previous = rows.firstOrNull()?.let { query(filter, "sequence < ?", it.sequence, "DESC", 1).isNotEmpty() } ?: false
             val next = rows.lastOrNull()?.let { query(filter, "sequence > ?", it.sequence, "ASC", 1).isNotEmpty() } ?: false
-            WorkDetailsPage(order, db.work().lines(id), rows, previous, next).also { identity() }
+            WorkDetailsPage(order, db.work().lines(id), rows, previous, next, number).also { identity() }
         })
 
     fun locate(raw: String, byBarcode: Boolean): WorkDetailRow? = db.runInTransaction(Callable {

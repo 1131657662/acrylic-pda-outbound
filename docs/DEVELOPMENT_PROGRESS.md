@@ -4,6 +4,9 @@
 
 ## 当前有效结论
 
+- PDA补[正式单明细与领取预览](history/GOAL_PDA_FORMAL_ORDER_PREVIEW_UI_2026-10-21.md)：原计划订单号、真实预览及确认/取消边界；主机19项与追加17项、隔离MySQL/MockMvc7项通过，前三类运行器失败保留，未做M71/部署或整体验收。
+- [凭据交互问题接入](history/GOAL_PDA_CREDENTIAL_UX_INTAKE_2026-10-21.md)：仅接收源码审查、范围和后续安排，尚未实施或验收，不计D/O/U进展。
+
 - D04补[首轮STOP结构分支绑定修复](history/GOAL_D04_FIRST_ROUND_SCHEMA_BINDING_2026-10-21.md)：四结构非空升级直接JUnit1项通过、五类反例回滚守恒；两轮普通失败及分开15项补验保留，非完整D04/最终候选。
 
 - D04补[原Room/真实HTTP恢复组合](history/GOAL_D04_ORIGINAL_ROOM_HTTP_RECOVERY_2026-10-21.md)：新非空隔离库，原Android主机1/0/0/0、原server断言体直接执行完成；五处丢响应/重开、四签名/请求原文、13原件与REVIEW_RESERVED绑定离线核同。前两轮环境/资源失败保留，无设备或完整D04/最终候选。

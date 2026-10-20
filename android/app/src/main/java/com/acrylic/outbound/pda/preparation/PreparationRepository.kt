@@ -44,6 +44,17 @@ class PreparationRepository(private val context: Context, private val db: PdaDat
         return result
     }
 
+    fun preview(order: JSONObject): JSONObject {
+        val id = order.getString("id"); val auth = session.requireSession()
+        val result = session.call("pda/orders/$id/claim-preview")
+        check(result.getString("status") == "READY" && result.getString("id") == id &&
+            result.getString("rowVersion") == order.getString("rowVersion") &&
+            result.getString("orderNo") == order.getString("orderNo") && result.getString("vehicleNo") == order.getString("vehicleNo") &&
+            result.getString("warehouseId") == auth.getString("warehouseId")) { "订单已变化，请刷新后重新核对" }
+        com.acrylic.outbound.pda.network.SessionIdentity.requireSame(auth, session.requireSession())
+        return result
+    }
+
     fun claim(order: JSONObject, area: String): JSONObject {
         val auth = session.requireSession(); val id = order.getString("id")
         val user = auth.getString("userId"); val device = auth.getString("deviceId")

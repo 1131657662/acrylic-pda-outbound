@@ -1,0 +1,44 @@
+Preview:
+  get:
+    tags: [PDA]
+    summary: 只读核对待领取原订单、仓库和产品计划
+    description: 保留原扁平订单头字段，追加warehouseId/warehouseName/lines；不领取、不创建分配。实际领取仍须原权限、READY状态及expectedVersion核验。
+    security: [{pdaBearer: []}]
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+    responses:
+      '200':
+        description: ApiEnvelope.data为待领取原版本预览
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  required: [id, orderNo, status, rowVersion, vehicleNo, plannedTotal, warehouseId, warehouseName, lines]
+                  properties:
+                    id: {type: string, format: uuid}
+                    orderNo: {type: string}
+                    status: {type: string, const: READY}
+                    rowVersion: {type: string}
+                    vehicleNo: {type: string}
+                    plannedTotal: {type: string, pattern: '^[1-9][0-9]*$'}
+                    warehouseId: {type: string, format: uuid}
+                    warehouseName: {type: string}
+                    lines:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: object
+                        required: [deliveryCode, model, name, plannedCount]
+                        properties:
+                          deliveryCode: {type: string}
+                          model: {type: string}
+                          name: {type: string}
+                          plannedCount: {type: integer, minimum: 1}
+      '401': {description: 须已绑定PDA会话}
+      '403': {description: 无pda:assign权限}
+      '404': {description: 不存在或不同仓库}
+      '409': {description: 原订单不在READY，请刷新；不产生领取}

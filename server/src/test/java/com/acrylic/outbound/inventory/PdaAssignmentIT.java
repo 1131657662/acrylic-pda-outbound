@@ -29,6 +29,11 @@ class PdaAssignmentIT {
     }
     @Test void claimPreviewAndAssignmentUseThePublishedOrderIdentity() throws Exception {
         var preview=pda.data(get("/api/v1/pda/orders/"+order+"/claim-preview"),tokens);
+        assertThat(count("order_assignment")).isZero();
+        assertThat(preview.path("warehouseId").asText()).isEqualTo(web.identity().warehouse().toString());
+        assertThat(preview.path("warehouseName").asText()).isNotBlank();
+        assertThat(preview.path("lines").size()).isPositive();
+        assertThat(preview.path("lines").get(0).path("plannedCount").asInt()).isPositive();
         var assignment=pda.data(pda.claim(order,UUID.randomUUID().toString()),tokens);
         assertThat(preview.get("status").asText()).isEqualTo("READY");
         assertThat(assignment.get("orderNo")).isEqualTo(preview.get("orderNo"));

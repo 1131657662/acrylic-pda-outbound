@@ -63,6 +63,9 @@ class PreparationViewModel(application: Application) : AndroidViewModel(applicat
             mutable.update { it.copy(available = emptyList(), assigned = emptyList(), pending = emptyList()) }; loadLocal()
         }
     }
+    suspend fun preview(order: JSONObject): JSONObject = withContext(Dispatchers.IO) {
+        com.acrylic.outbound.pda.update.UpdateGate.business { repository.preview(order) }
+    }
     fun claim(order: JSONObject, area: String) = run("正在领取，结果未知时请重试原请求") {
         val assignment = repository.claim(order, area)
         showConfirmedClaim(order.getString("id"), assignment)
