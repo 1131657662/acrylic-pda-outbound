@@ -1,11 +1,13 @@
 package com.acrylic.outbound.pda.ui
 
+import com.acrylic.outbound.pda.BuildConfig
 import com.acrylic.outbound.pda.PdaApplication
 import com.acrylic.outbound.pda.temporary.*
 import org.json.JSONObject
 
 /** Projects the separate TEMP receiving milestones without treating them as a FORMAL assignment. */
 internal class TemporaryHandoverCardReader(private val app: PdaApplication) {
+    private val actionsEnabled get() = BuildConfig.DEBUG && BuildConfig.TEMPORARY_HANDOVER_DEVELOPMENT
     fun read(id: String): HandoverCard = runCatching {
         val row = TemporaryHandoverRepository(app.database, TemporarySession(app.session)).read(id)
         val pending = app.temporaryHandoverConfirmations.read(id)
@@ -17,11 +19,11 @@ internal class TemporaryHandoverCardReader(private val app: PdaApplication) {
             "$details\n交接编号 $id\n请逐包核对下方主管批准的保留清单。确认只记录接收事实，激活完成前保持停止。\n" +
                 TemporaryHandoverConfirmationDisplay.lines(row), actionAvailable = action != "TEMP_DISABLED")
     }.getOrElse { HandoverCard(id, "", "临时作业交接", "${it.message ?: "临时交接需核对"}；原资料保留",
-        if (TemporaryHandoverActionGate.isEnabled()) "TEMP_INSTALL" else "TEMP_DISABLED", "核对接收资格与原资料",
-        actionAvailable = TemporaryHandoverActionGate.isEnabled()) }
+        if (actionsEnabled) "TEMP_INSTALL" else "TEMP_DISABLED", "核对接收资格与原资料",
+        actionAvailable = actionsEnabled) }
 
     private fun state(pending: TemporaryHandoverConfirmation?, installed: TemporaryHandoverActivation?): Triple<String, String, String> {
-        val enabled = TemporaryHandoverActionGate.isEnabled()
+        val enabled = actionsEnabled
         return when {
             !enabled -> Triple("TEMP_DISABLED", "临时交接操作已关闭", "原临时记录已保存；仅可只读核对，保持停止")
             installed != null -> {

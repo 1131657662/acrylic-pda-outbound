@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [D17独立提交编译依赖修复](GOAL_D17_CLEAN_ANDROID_COMPILE_DEPENDENCIES_2026-10-21.md)：原HEAD编译失败保留；三依赖修复后debug构建通过，七主机项及关闭断言短路径复验、新APK100%原生与83表守恒；非整体或最终候选。
+
 - [U04/D17批准状态筛选原生消费者](GOAL_U04_TEMPORARY_STATUS_NATIVE_CONSUMER_2026-10-21.md)：四字号各1项及两项兼容各1项通过，83表守恒；非空主管保留仅100%正向，原失败/两套APK绑定保留；仅隔离合成L1，非整体或最终候选。
 
 - [D13非空应用原件admitted只读](GOAL_D13_FORMAL_APPLICATION_RETAINED_READ_2026-10-21.md)：历史应用表1行/原签名原件重启逐字一致；14 TCP无业务POST，权限/损坏反例及178表8文件守恒/P5通过，仅合成有界L1。
