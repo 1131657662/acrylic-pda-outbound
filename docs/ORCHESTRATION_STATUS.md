@@ -6,41 +6,55 @@
 ```yaml
 date: 2026-10-20
 branch: codex/development
-head: f02c5a03
-dirty_entries: 251
+head: dec98b2d
+dirty_entries: 33
 worktrees: 33
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ```
 <!-- FACTS_END -->
 
-总目标未完成；业务切片按用户要求暂停，三项治理工作收口后先等待 WIP 分类确认。治理不计 D01–D18、O/U 或 §8；只有第8节全部闸门在实际最终候选输入上满足才可 complete。
+总目标active、未完成。已补[O03当前Android封存返还消费者](history/GOAL_O03_CURRENT_ANDROID_SEALED_RETURN_2026-10-20.md)：当前产品双层验签实跑13/0/0/0、exit0，复用前轮电脑逐字输出、包外原隔离公钥。仅主机有界组合，不计新HTTP/原机文件持久消费/现时净值、D18或§8整体通过。
 
-## 实际输入与写权（2026-10-20 复核）
-- 固定树 D:/acrylic-pda-outbound；分支 codex/development；HEAD 与 fresh git ls-remote origin 开发分支均为 f02c5a03530558770ffbd4f833a7fa26982e5904；origin/main 只读为 c6e9e0c238c657baecbf699ba6fdbada5d979b86。origin 为 git@github.com:1131657662/acrylic-pda-outbound.git；没有暂存、提交或推送。
-- 本聊天是唯一 active 项目写者，其他同树聊天为 idle/notLoaded；单代理 /root。无项目 Java/Gradle/emulator/qemu/HTTP 服务；仅观察系统 MySQL80 3306/33060 和共享 ADB 5037。
-- MySQL80 配置 datadir 为 C:/ProgramData/MySQL/MySQL Server 8.0/Data，未连接，数据库 UUID 未确认。完整路径 adb devices -l 只枚举 M71 22D2910042，未操作设备/启动模拟器；AVD 名单见环境回执。
-- Debug Keystore SHA-256 0539B3D0B80AB4619A08DB639D433EC2F3AC0A8D7B2FBDC32865D5CFC6B0B6CB；未使用正式签名。复核 C/D/E 可用字节 74341548032 / 54601543680 / 195634053120（采样值，非永久事实）。
-- expanded dirty 为 252 路径（71 tracked、181 untracked）；生成块 dirty_entries 按目录折叠计数。逐路径 SHA、patch、远端、环境、写者与旧看板原字节见 [.local 治理复核根](../.local/goal-20261020-resume/governance-closeout02/)；重启继承基线仍为 .local/goal-20261019-resume/takeover-restart01/，不可还原或清理继承改动。
+## 精确断点与写权
+- 固定主树D:/acrylic-pda-outbound、codex/development；HEAD与fresh origin开发分支均c5e6f3848a21aa706168aac8b2e52baaf53cb36a；main仍c6e9e0c238c657baecbf699ba6fdbada5d979b86；origin=git@github.com:1131657662/acrylic-pda-outbound.git。
+- 本聊天为主树本轮Android主机测试及索引写者，无子代理；本轮6明确路径已提交推送“开发备份”，暂存空。另聊天01a15795-f801-7030-bfb2-765a5c2021cb已结束隔离部署预检，未改业务源码或部署；隔离树已移除Git登记，本轮预检进程退出。共享文档只作原字节比对后的最小增补。
+- 展开34脏路径保留：32继承WIP、另会话预检报告/历史索引增补；31非看板继承路径逐SHA保持，看板仅授权刷新。原字节沿o02-temp-receipt01/inherited-bytes.zip；本轮编辑前字节与哈希在.local/goal-20261020-resume/o03-android-sealed-consumer01/edit-inputs.zip、input-manifest.json，原向量/源码见consumer-inputs-final.json，全部改动/输出见final-manifest.json。生成块目录折叠口径不同。
+- 本轮未启动业务HTTP/MySQL/模拟器、未构建APK/操作设备业务；旧APK/tar/身份/Keystore保持。其他会话隔离test/bootJar已结束，详见独立预检记录；开发会话新进程按实际命令核对，不代停。
+- 项目共享MySQL命令行指向.local/mysql/data、13316，auto.cnf UUID d0d18310-b1a9-11f1-a7c8-d8bbc13a2b36；系统3306/33060身份未知不连接；ADB5037仅观察。设备/进程不得凭旧PID推定。
+- C/D/E余量、完整进程/监听见o03-android-sealed-consumer01/environment-closeout.json。本轮未产生隔离库或大构建产物，删除/释放0；历史清理拒绝不换包装重试，旧9.44GiB不重复计增。
 
-## 治理成果与下一动作
-- [复核分类表](../.local/goal-20261020-resume/governance-closeout02/wip-classification.md) 覆盖全部 252 路径，含路径、D/O/U、继承、可提交性、风险与 SHA；原250路径表和两文件附表保留于 wip-classification01/。修正两个 docs/ 下可执行 Python 脚本的低风险/文档误分类，仍待审，未执行。
-- 分类只供审阅，不授权批次提交。下一步由用户确认分类与批次边界，再逐批明确路径保存“开发备份”，不标“验收通过”；确认前不暂存、不提交、不自动恢复业务切片。
-- 两旧索引原字节在 [archive/2026-10-20](archive/2026-10-20/)；新 [进度索引](DEVELOPMENT_PROGRESS.md)、[历史索引](history/README.md) 只保留有效结论和历史入口。映射/原 SHA 在 .local/goal-20261020-resume/index-compaction01/pre-index-manifest.json；复核一致。归档内旧相对链接按原目录解析；GOAL_*.md 未改。
-- 清理回执：.local/goal-20261020-resume/cleanup-governance01/。缓存/build/temp/Node 依赖和两个 AVD 快照两批记录 D 盘可用空间增加 10134970368 字节（约9.44 GiB；卷采样增量）。本次复核未再次删除。停机/用途/消费者不能证明的数据库、用户数据和唯一证据保留，原因见 skipped-candidates.txt。
-- 详细治理判断见 [治理报告](history/PROJECT_GOVERNANCE_AUDIT_2026-10-20.md)；三项最终简报与命令/验证/输出 SHA 见 .local/goal-20261020-resume/governance-closeout02/closeout.md。原分类表以生成时点为准，治理叠加与新归档在复核版显式列出。
-- 零记忆顺序：AGENTS.md → [文档地图](PROJECT_DOCUMENT_MAP.md) → [Git 工作流](GIT_WORKFLOW.md) → 本当前区 → 复核分类表；再按具体事项读政策/报告。每次重新核实环境，不从旧 handoff 恢复服务、角色或设备状态。
+## 本轮实际实现、验证与限制
+- 新RelaySealedVector/RelaySealedReturnTest只读消费前轮Python返还原字节，调用RelayReceiptVerifier及ReceiptVerifier；Gradle登记外部向量路径/目录为测试输入，未提供材料明确skip，本轮0skip。
+- gradle-final02为13/0/0/0、exit0：9新封存组合+4原验签边界；成功SYNCED、错预置根/原身份/正文/汇总/删除边界/重复JSON拒绝，旧终态不回退。原量601500整数克与正文一致；原件每项结束复读守恒。
+- 来源为历史合成成功批次；从原runtime及run.py定位隔离1501包外DER公钥，指纹/原kid与签名一致。初探1504钥InvalidSignature保存在key-resolution.md/key-resolution-input.json；未读取私钥，不计重签。
+- 前轮电脑输出SHA ac3d73ea35f35b0e96ab75dccd85b5c00f85e1ba05176a13e7ae2f9b2c652363保持；原包无receipt.json，不补造。没有本轮HTTP/MySQL/Room/设备/OpenDocument/APK/外置介质业务。
+- 原机文件权限/清单回查/Room持久写入不被主机双层验签替代。作者/自审均本助手，currentBusinessStateVerified/releaseAllowed/localDeletionAllowed=false；生产Kotlin/服务端/契约/迁移/开关未改。
+- 前轮O03下载一致性23项及封存Python回放、O02 TEMP36+FORMAL30和原CLI证据沿各自报告保留；不拼成新HTTP或最终候选。
 
-## 业务断点与仍未验（历史结论，治理不推进）
-- [四字号 tar 只读审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md) 已完成逐成员比较；Room 物理/逻辑守恒，运行元数据有变化。原 archiveUnchanged=false、APK/tar/日志保留，没有重跑旧用例。
-- [独立采集大字原生 L1](history/GOAL_U04_INDEPENDENT_LARGE_FONT_L1_2026-10-19.md)、[恢复效果门 L1](history/GOAL_RECOVERY_LEASE_RETIREMENT_L1_2026-10-19.md)、[Web fail-closed L1](history/GOAL_E07_D06_D07_WEB_FAIL_CLOSED_CURRENT_RUN02_2026-10-19.md) 均只在各自输入/层级内有效，不拼成统一最终候选通过。
-- [O02 电脑消费者 L1](history/GOAL_E08_O02_CURRENT_SOURCE_CONSUMER_RUN04_2026-10-19.md) 不证明业务回执/外置介质/删除能力；[Android rescue 主机报告](history/GOAL_E08_O02_ANDROID_RESCUE_HOST_L1_2026-10-20.md) 的宽过滤器19项失败未修复，剔除失败类后的43项不能替代修复。保留原日志；未找到原宽过滤器完整失败 XML，不声称原 XML 已保全。
-- 上轮只读诊断资料保留于 .local/goal-20261020-resume/diagnose-rescue-failures02/，未改源码、未复验。业务工作恢复后仍须重新审阅输入和新假设，不机械重跑。
-- 原身份/原资料/可信事实/现场回执、真机/实体键/外置介质、受影响真实 HTTP/MySQL/Chrome/Python/非空迁移与统一实际最终候选 L2/L3、第8节闸门仍未满足；详细标准读 [剩余计划](REMAINING_DEVELOPMENT_PLAN.md) 与总目标。
+## 独立部署预检（2026-10-20）
+- 预检聊天已按用户顺序接续整改；先保存三份文档“开发备份”。开发会话继续拥有其业务WIP；本聊天只改预检文档及后续独占隔离树，任何真实test部署仍待明确授权。
+- 固定输入69d98046ec14c95a9d71bf350daa5a6417c8d14b；[报告](history/DEPLOY_PREFLIGHT_2026-10-20.md)及.local/deploy-preflight-20261020保留命令、失败XML、输入/产物哈希与清理记录，非开发HEAD完整验收。
+- 初轮server test为4764/11失败/17跳过；补原样本、固定SHA字体和既有classpath任务后五类定向57/4失败，正常字体编译打包exit0；Ubuntu激活stub自测8/8通过。未重跑全量、未验真实DB/HTTP/备份/远端激活。
+- 余下4断言涉及测试/实现不一致；旧打包器缺校验所需清单/运行时布局且版本约束未对齐，部署仍阻断。无源码、部署脚本、main、提交/推送或现网变更，开发会话保持独立。
+- 隔离树逻辑文件441041457字节已清理；D可用40761937920→41295589376字节，其他活动写入下不把观测增量全计本轮；原样本/失败日志/XML保留，无本轮重型进程残留。
 
-## 持续关闭的边界
-- 不恢复换机进度承接、多跳、接收者确认/激活链，不启动旧 run03；七类生产决定和 TEMP 生产归档保持 fail-closed，localDeletionAllowed=false。
-- 原库/现网、正式签名、main 合并、部署和 Release 均关闭。原资料/身份/Keystore/回执签名原件/唯一原证据/最终 APK/未提交及继承改动/生产边界文件不可清。
+## 保留的前轮证据与未验
+- [D06/D07默认关闭Chrome/HTTP](history/GOAL_D06_D07_DEFAULT_OFF_CHROME_HTTP_2026-10-20.md)aac19af5：四真实消费者通过，页面零撤回POST/直调409；原runner守恒exit1保留，独立只读SQL/trace复核exit0，仅4新增登录审计。13业务表/原审计守恒；非正向/非空升级或统一候选。
+- [TEMP真实IME四字号](history/GOAL_U04_TEMP_NATIVE_IME_2026-10-20.md)69d98046及[IME修复](history/GOAL_U04_ADJUSTMENT_FILTER_NATIVE_IME_2026-10-20.md)a27b47e9、[TEMP新APK消费者](history/GOAL_U04_TEMP_NEW_APK_STATUS_CONSUMER_2026-10-20.md)f9eed366保持原输入/失败/层级；重启围栏保持，非空可信保留/完整UI/真机未验。
+- 已批准全部/有效/已撤销/主管保留筛选项沿既有实现与证据复用，本轮不再凑字号或重做SAF；原身份/原资料/可信保留/现场和最终候选仍缺。
+- O02 Android主机SQLite CANTOPEN继续暂缓：19方法+2guard仅2guard通过、19失败，verification05未修复；原日志/XML在o02-fixture-recovery01，WorkFixture已恢复，没新runner假设不重跑。电脑核验成功不替代此项。
+- [tar审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)、[大字L1](history/GOAL_U04_INDEPENDENT_LARGE_FONT_L1_2026-10-19.md)、[恢复门L1](history/GOAL_RECOVERY_LEASE_RETIREMENT_L1_2026-10-19.md)及run1614/原恢复并发HTTP沿各自输入/层级，不拼统一候选。
+
+## 治理与下一动作
+- B1–B7已开发备份4bac6d0a/2ca7c660/ae9f9df0/55d37d64/de4d1023/45e8562f/7f1774ce；B6实际153路径（1同HEAD、152差异），B7已审未运行。治理/提交/清理不计验收。
+- [分类表](../.local/goal-20261020-resume/governance-closeout02/wip-classification.md)与[治理报告](history/PROJECT_GOVERNANCE_AUDIT_2026-10-20.md)保留；取消链/继承规则/归档/本地工具不混入。physical-disposition-last-request.json不能证合成，不提交。旧索引原件和映射在archive/2026-10-20及index-compaction01，GOAL原件不动。
+- 零记忆顺序：AGENTS → 文档地图 → Git工作流 → 本当前区 → o03-android-sealed-consumer01/closeout.md与final-manifest.json → 新报告。设备任务另读u04-temp-native-ime01原断点，不凭历史PID/服务/AVD推定。
+- 下一有界动作：核独立预检4项断言的实际根因，先选审计前缀JDBC消费者测试缺口；重型构建前核预检资源与写权，不再新造同职责查询，不重复CANTOPEN/字号/SAF，不恢复取消链。原身份/可信保留、正常授权、完整UI/真机/外置介质、必要HTTP/MySQL/非空迁移、D01–D18/O/U最终候选及§8仍未满足。
+
+## 持续关闭
+- 不恢复换机承接、多跳、接收者确认/激活链，不启动旧run03；七类生产决定/TEMP生产归档fail-closed，localDeletionAllowed=false。
+- 原库/现网、正式签名、main、部署与Release关闭；原资料/身份/Keystore/签名回执/唯一证据/最终APK/继承源码及生产边界文件不可清。
 <!-- CURRENT_STATE_END -->
 
-> 长期规则见 AGENTS.md；版本事实只读生成块；历史从 docs/history/README.md 检索。
+> 长期规则见AGENTS.md；版本事实只读生成块；历史从docs/history/README.md检索。
