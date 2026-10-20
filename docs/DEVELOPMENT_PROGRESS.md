@@ -1,8 +1,10 @@
-﻿# 开发进度索引
+# 开发进度索引
 
 本文只保留当前有效结论和证据入口；版本、分支、SHA、运行环境与写权只看 [开发看板](ORCHESTRATION_STATUS.md) 的 `CURRENT_STATE_START/END`。详细历史原文已归档至 [2026-10-20 原进度索引](archive/2026-10-20/DEVELOPMENT_PROGRESS.md)，本文件不再复制逐轮日志。
 
 ## 当前有效结论
+
+- D13补[原来源只读HTTP/P5修复](history/GOAL_D13_SOURCE_EVIDENCE_READ_2026-10-20.md)：修复JSON_OBJECT/DATE_FORMAT有限分类漏项；最终run04 IT1/0/0/0，37业务GET、12组178表/8文件守恒，夹具授权完整恢复、原签名验真/P5后继STARTED。普通回归4798项零失败、19跳过单列。旧失败及run03夹具缺口保留；仅有界L1，非D13整体/最终候选。
 
 - D13补[多块审计尾回滚/原ID重试](history/GOAL_D13_MULTICHUNK_ROLLBACK_RETRY_2026-10-20.md)：新隔离IT1/0/0/0、13真实TCP/9块；500后180表309行守恒，原14文件不变、只留新增完整原正文；原ID重试/重放签名账务核同，P5后继STARTED。[单块并发/回滚/撤权](history/GOAL_D13_FORMAL_CHUNK_FAULTS_2026-10-20.md)及[先前普通回归](history/GOAL_D13_FORMAL_SUBMISSION_CHUNKS_2026-10-20.md)沿各自输入。仅测试/有界L1，不计整体D13/L2/D18或最终候选。
 

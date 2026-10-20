@@ -6,7 +6,7 @@ import java.util.Set;
 /** Finite scalar/predicate grammar; stored functions, qualified calls and unknown tokens are refused. */
 final class RecoverySqlExpression {
     private static final Set<String> FUNCTIONS = Set.of("BIN_TO_UUID", "UUID_TO_BIN", "UTC_TIMESTAMP",
-        "COUNT", "MAX", "MIN", "SUM", "COALESCE", "HEX");
+        "COUNT", "MAX", "MIN", "SUM", "COALESCE", "HEX", "JSON_OBJECT", "DATE_FORMAT");
     private static final Set<String> COMPARISONS = Set.of("=", "<>", "!=", "<=", ">=", "<", ">");
     private static final Set<String> TYPES = Set.of("CHAR", "BINARY", "JSON", "SIGNED", "UNSIGNED", "DECIMAL", "DATETIME");
     private static final Set<String> UNITS = Set.of("DAY", "HOUR", "MINUTE", "SECOND", "MICROSECOND");

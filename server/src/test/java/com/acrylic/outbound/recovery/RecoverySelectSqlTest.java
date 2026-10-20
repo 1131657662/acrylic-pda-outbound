@@ -38,7 +38,10 @@ class RecoverySelectSqlTest {
             "SELECT DATABASE()",
             "SELECT table_name FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name IN (?,?,?,?)",
             "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name=? AND column_name=?",
-            "SELECT COUNT(*) FROM t GROUP BY id HAVING COUNT(*)>1");
+            "SELECT COUNT(*) FROM t GROUP BY id HAVING COUNT(*)>1",
+            "SELECT JSON_OBJECT('id',BIN_TO_UUID(id),'round',CAST(work_round AS CHAR)) FROM submission_scope",
+            "SELECT DATE_FORMAT(created_at,'%Y-%m-%dT%H:%i:%s.%fZ') FROM submission",
+            "SELECT JSON_OBJECT('registeredAt',DATE_FORMAT(s.created_at,'%Y-%m-%dT%H:%i:%s.%fZ')) FROM submission s WHERE s.id=?");
     }
 
     @ParameterizedTest @MethodSource("productReads")
@@ -71,6 +74,8 @@ class RecoverySelectSqlTest {
         "SELECT id FROM t WHERE id IN ()", "SELECT id FROM t FOR", "SELECT id FROM t FOR UPDATE SKIP",
         "SELECT id FROM t JOIN u", "SELECT COUNT(*) FROM t WHERE id=? trailing",
         "SELECT id FROM t WHERE id=app.fn(?)", "SELECT id FROM t WHERE id=? COLLATE utf8mb4_bin",
+        "SELECT JSON_OBJECT('value',dangerous_function()) FROM t", "SELECT DATE_FORMAT(dangerous_function(),'%Y') FROM t",
+        "SELECT app.JSON_OBJECT('value',1) FROM t", "SELECT app.DATE_FORMAT(id,'%Y') FROM t",
         "SELECT B\u0131N_TO_UUID(id) FROM t"
     })
     void unknownSyntaxNeverReachesTheDriver(String sql) throws Exception {

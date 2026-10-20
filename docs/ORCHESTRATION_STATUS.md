@@ -6,28 +6,30 @@
 ```yaml
 date: 2026-10-20
 branch: codex/development
-head: 2d555cee
-dirty_entries: 36
+head: 1de2ccac
+dirty_entries: 43
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ```
 <!-- FACTS_END -->
 
-总目标active、未完成。本轮D13 FORMAL多块审计尾回滚/原件保全/原ID重试真实TCP补证通过；单块并发/撤权沿前轮，不计D13整体/L2/D18或第8节。
+总目标active、未完成。本轮D13原来源只读GET/P5兼容修复及有界TCP补证通过；不计D13整体/L2/D18或第8节。
 
 ## 精确断点与写权
-- 固定树D:/acrylic-pda-outbound、codex/development；输入HEAD及fresh origin=2d555ceea605bd4f41dc15a619c93e00f79929a6，main=c6e9e0c238c657baecbf699ba6fdbada5d979b86；origin=git@github.com:1131657662/acrylic-pda-outbound.git。最终提交/推送回执见本轮final-manifest.json，生成事实可留postcommit WIP。
-- 本聊天01a1520d-c412-7402-b77d-311a043b3d1e为主树/共享文档及HEAD唯一写者，无子代理；另一聊天已归还写窗，其新503只读诊断报告/待归并增量保留不混入本批。不占ADB/M71/test；独立部署预检区原文逐字保持。
-- 证据根.local/goal-20261020-resume/d13-multichunk-rollback01；input-before/WIP原字节、execution-plan/2443输入归档、documents-before旧看板/索引保全。原31继承及另一聊天诊断报告逐SHA保持，仅新测试、本报告及三断点/索引开发备份。
-- 新库19340/HTTP19444认证shutdown exit0，收口无监听/消费者；共享13316仍指.local/mysql/data，系统3306未知不连接。现时进程/监听、Keystore SHA及C/D/E余量见environment-closeout.json；无ADB/M71/test、Android/Chrome/APK或部署操作。
-- 本轮已停机可重建datadir清347文件/232700853逻辑字节，D可用32845168640→33082142720；前轮六库1334473737字节沿原根，不重复计。MySQL身份/原HTTP/签名/正文/9块/P5/旧失败与APK/继承源码全保留；旧run01–03仍不启动。
+- 固定树D:/acrylic-pda-outbound、codex/development；输入HEAD/fresh origin=1de2ccac26cdb00b64b70f2d63143575ec42895d，main=c6e9e0c238c657baecbf699ba6fdbada5d979b86；origin=git@github.com:1131657662/acrylic-pda-outbound.git。提交后Git回执见本根final-manifest.json，事实可留postcommit WIP。
+- 本聊天01a1520d-c412-7402-b77d-311a043b3d1e持主树/共享文档/HEAD写窗，无子代理；另一聊天仅专项test/window03脚本与来源报告，明确不写共享文档/HEAD。其新增报告保留不混本批，不占ADB/M71/test。
+- 本根.local/goal-20261020-resume/d13-source-evidence-read01；input-before/33路径原字节/patch/SHA及documents-before旧结论保持；32非看板继承逐SHA不变，review01另保全44脏路径，另一聊天新增window03/04报告也保护。仅本轮6代码/1报告/3文档开发备份。
+- 新DB19340/HTTP19444均已释放，四轮认证shutdown exit0；共享13316仍指.local/mysql/data，系统3306未知不连接。现时进程/监听/Keystore/C/D/E见environment-closeout.json。ADB只读枚举M71在线，未操作/安装/登录/模拟器。
+- 只清run02/03/04停机可重建datadir1041文件/667282141逻辑字节，cleanup01/02存逐SHA与D余量，末次32379301888→32606048256。run01含unknown失败库保留；原HTTP/签名/正文/块/XML/log/P5/身份/APK/继承全保留，localDeletionAllowed=false。
 
 ## 本轮验证、失败与限制
-- [多块回滚原件与重试](history/GOAL_D13_MULTICHUNK_ROLLBACK_RETRY_2026-10-20.md)：新隔离IT1/0失败/0错误/0跳过、exit0；13实际TCP、9块2140856字节/1102 captures/2有效scan。审计尾42000→500后180表309行逐字守恒；原14文件不变，仅增完整原正文1份。不是文件回滚为零，不据此删除原件或声称成功出库。
-- 删除本轮trigger后同ID重试/重放200原回执相同，1 payload/2 dispatch/2 ledger/601500克；文件保持15份、无receiving临时文件。独立Python核原HTTP/SHA/类型快照/RS256/账务，P5空index、无unknown、独立后继STARTED。合成准备MockMvc、受验TCP，同助手自审；仅有界L1非全D13/最终候选。
-- [单块并发/回滚/撤权](history/GOAL_D13_FORMAL_CHUNK_FAULTS_2026-10-20.md)2d555cee已开发备份推送，11 TCP/两waiters/180表文件守恒沿其输入；06/07的45000未知围栏halt70与原unknown、08误拆data:null及06无效旧XML原件保持，不以新通过改写。
-- 本轮只增测试、产品/权限/契约/迁移/生产配置不变；未重跑完整普通回归。10项类型快照定向及[前轮完整普通回归](history/GOAL_D13_FORMAL_SUBMISSION_CHUNKS_2026-10-20.md)沿各自输入，19条件跳过不计通过，不拼接最终候选。
+- [原来源只读HTTP/P5修复](history/GOAL_D13_SOURCE_EVIDENCE_READ_2026-10-20.md)：真实登录后详情500定位为JSON_OBJECT/DATE_FORMAT漏列；仅两纯函数加入有限分类，仍SOURCE_READ/效果门，未知/限定名/危险嵌套/写出拒绝。权限/契约/迁移/生产配置未改。
+- 最终新run04 IT1/0失败/0错误/0跳过、exit0；41 TCP/37业务GET（200×6、401×6、403×3、404×18、409×4）。已收7348字节正文/部分262144字节块原样消费，7能力false，原RS256回执独立验真；12组178表/8文件守恒，仅排除2 Session运行表，权限扰动完整420行恢复。P5空index/无unknown、独立后继STARTED。
+- 自审发现run03夹具删全部仓授权仅还原目标仓；逐组GET守恒保留，不声称夹具全还原。仅修为参数化移除/恢复目标授权并加外层守恒，新run04实跑；原run03/输入/XML/消费者不覆盖。
+- 首轮cookie夹具遗漏403，过早关闭产生OUTSTANDING/ClosedChannelException/unknown/halt70，不当普通运行器错误；02首GET真实500产品缺口。原库/输入/HTTP/log/XML/binary保留，新03不覆盖旧失败；当前只读补证非恢复业务链。
+- 同输入普通回归4798项：4779通过、0失败/错误、19跳过、exit0/6m36s/310 XML。19skip逐方法保存server-test/result.json，外部向量/原件条件与Windows前置，计通过0；定向94及新增7代理向量保全，不拼最终候选。
+- [前轮多块回滚原件/重试](history/GOAL_D13_MULTICHUNK_ROLLBACK_RETRY_2026-10-20.md)1de2ccac及[单块并发/回滚/撤权](history/GOAL_D13_FORMAL_CHUNK_FAULTS_2026-10-20.md)2d555cee沿各自输入，原失败/unknown保持；本轮不重跑。仅合成准备/服务端有界L1，同助手自审+Python工具消费，非D13整体/客户端/真机/全恢复。
 
 ## 独立部署预检（2026-10-20）
 - 预检三文档已以开发备份64eaf491提交推送；main/现网未动。原输入69d98046的[报告](history/DEPLOY_PREFLIGHT_2026-10-20.md)及全部失败日志/XML保留，不改历史失败为通过。
@@ -56,8 +58,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ## 治理与下一动作
 - B1–B7已开发备份4bac6d0a/2ca7c660/ae9f9df0/55d37d64/de4d1023/45e8562f/7f1774ce；B6实际153路径，B7已审未运行。治理/提交/清理不计验收。
 - [分类表](../.local/goal-20261020-resume/governance-closeout02/wip-classification.md)、[治理报告](history/PROJECT_GOVERNANCE_AUDIT_2026-10-20.md)及archive/2026-10-20旧索引映射保持；physical-disposition不能证合成，不提交。
-- 零记忆顺序：AGENTS→文档地图→Git工作流→本当前区→D13多块回滚报告/本根final-manifest.json→D01矩阵/E08-D17 handoff；历史O04/O02证据沿原根。设备任务先重核环境。
-- 下一有界动作先只读核D13其余有效文件/导出入口的既有覆盖与当前调用，选实际最小缺口；不重跑本轮成功IT、CLI/字号/SAF，不启动取消链/旧run03、不消费维护前test备份。另一聊天503诊断共享增量待单独归并，不自动重试维护。
+- 零记忆顺序：AGENTS→文档地图→Git工作流→本当前区→D13只读HTTP报告/本根final-manifest.json→D01矩阵/E08-D17 handoff；历史O04/O02证据沿原根。设备任务先重核环境。
+- 下一有界动作先核D13其余有效只读/导出入口与共享分类器的实际覆盖，选最小缺口；本轮只读补证已收口，不重跑成功IT/CLI/字号/SAF。另一聊天503/window03/04报告待单独归并，04备份前本地编码失败后按用户界限停止，不代重开维护；取消链/旧run03不启动。
 - D/O/U整体、正常合法资格/可信原材料、完整UI/原设备/外置介质、必要真实HTTP/MySQL/非空迁移组合、实际最终候选与第8节仍未满足。开发提交不改变此结论。
 
 ## 持续关闭
