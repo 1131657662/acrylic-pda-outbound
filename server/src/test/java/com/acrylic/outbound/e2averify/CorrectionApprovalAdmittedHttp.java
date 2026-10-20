@@ -35,6 +35,8 @@ final class CorrectionApprovalAdmittedHttp {
         return send(request, status);
     }
 
+    byte[] get(String path, int status) throws Exception { return send(request(path).GET(), status); }
+
     private JsonNode csrf() throws Exception {
         return SubmissionJson.parse(send(request("/auth/csrf").GET(), 200)).path("data");
     }

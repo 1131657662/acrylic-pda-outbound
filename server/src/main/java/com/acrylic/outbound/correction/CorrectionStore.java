@@ -23,16 +23,20 @@ public class CorrectionStore {
 
     /** Same key + same canonical bytes replays; the kernel compares bytes, never re-executes. */
     public Map<String,Object> receipt(String originalKey) {
-        var rows=jdbc.query("SELECT * FROM correction_command_receipt WHERE original_key=?", (rs,index) -> {
-            var row=new HashMap<String,Object>();
-            for (String column : List.of("id","document_id","order_id","original_key","command_sha256",
-                    "canonical_command_bytes","response_bytes","response_sha256","actor_id","event_id"))
-                row.put(column,rs.getBytes(column));
-            for (String column : List.of("command_type","expected_json","status")) row.put(column,rs.getString(column));
-            row.put("recorded_at",rs.getTimestamp("recorded_at"));
-            return row;
-        }, Ids.bytes(UUID.fromString(originalKey)));
+        var rows=jdbc.query("SELECT * FROM correction_command_receipt WHERE original_key=?", CorrectionStore::receiptRow,
+            Ids.bytes(UUID.fromString(originalKey)));
         return rows.isEmpty()?null:rows.getFirst();
+    }
+
+    /** Typed immutable receipt columns for the kernel and its two reconciliation reference readers. */
+    static Map<String,Object> receiptRow(java.sql.ResultSet rs, int index) throws java.sql.SQLException {
+        var row=new HashMap<String,Object>();
+        for (String column : List.of("id","document_id","order_id","original_key","command_sha256",
+                "canonical_command_bytes","response_bytes","response_sha256","actor_id","event_id"))
+            row.put(column,rs.getBytes(column));
+        for (String column : List.of("command_type","expected_json","status")) row.put(column,rs.getString(column));
+        row.put("recorded_at",rs.getTimestamp("recorded_at"));
+        return row;
     }
 
     public void reserve(UUID requestId,UUID actor,String key,String commandSha256,UUID receiptId,Instant recordedAt) {
@@ -435,8 +439,8 @@ public class CorrectionStore {
         var rows=jdbc.queryForList("""
             SELECT JSON_OBJECT('caseId',BIN_TO_UUID(id),'warehouseId',BIN_TO_UUID(warehouse_id),'kind',kind,
               'status',status,'rowVersion',CAST(row_version AS CHAR),
-              'baleId',IFNULL(BIN_TO_UUID(bale_id),'null'),'dispatchId',IFNULL(BIN_TO_UUID(dispatch_id),'null'),
-              'cycle',IFNULL(CAST(cycle AS CHAR),'null'),'conclusion',IFNULL(conclusion,'null'))
+              'baleId',COALESCE(BIN_TO_UUID(bale_id),'null'),'dispatchId',COALESCE(BIN_TO_UUID(dispatch_id),'null'),
+              'cycle',COALESCE(CAST(cycle AS CHAR),'null'),'conclusion',COALESCE(conclusion,'null'))
             FROM inventory_reconciliation WHERE id=?
             """,String.class,Ids.bytes(caseId));
         if (rows.size()!=1) throw CorrectionCommand.missing();

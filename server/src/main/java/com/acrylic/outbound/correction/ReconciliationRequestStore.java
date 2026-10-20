@@ -17,8 +17,8 @@ class ReconciliationRequestStore {
     JsonNode original(UUID id, boolean submitted) {
         String table = submitted ? "reconciliation_evidence" : "reconciliation_request";
         String column = submitted ? "submitted_receipt_id" : "opened_receipt_id";
-        var rows = jdbc.queryForList("SELECT c.* FROM " + table + " r JOIN correction_command_receipt c ON c.id=r." + column
-            + " WHERE r.case_id=?", Ids.bytes(id));
+        var rows = jdbc.query("SELECT c.* FROM " + table + " r JOIN correction_command_receipt c ON c.id=r." + column
+            + " WHERE r.case_id=?", CorrectionStore::receiptRow, Ids.bytes(id));
         if (rows.size() != 1) throw CorrectionCommand.missing();
         var receipt = verifier.verify(rows.getFirst()).receipt();
         var kinds = submitted ? java.util.Set.of("RECONCILE_SUBMIT", "RECONCILE_RETURN_SUBMIT", "RECONCILE_QUARANTINE_SUBMIT")
@@ -30,8 +30,8 @@ class ReconciliationRequestStore {
     }
 
     JsonNode submittedCommand(UUID id) {
-        var rows = jdbc.queryForList("SELECT c.* FROM reconciliation_evidence r JOIN correction_command_receipt c"
-            + " ON c.id=r.submitted_receipt_id WHERE r.case_id=?", Ids.bytes(id));
+        var rows = jdbc.query("SELECT c.* FROM reconciliation_evidence r JOIN correction_command_receipt c"
+            + " ON c.id=r.submitted_receipt_id WHERE r.case_id=?", CorrectionStore::receiptRow, Ids.bytes(id));
         if (rows.size() != 1) throw CorrectionCommand.missing();
         return verifier.verify(rows.getFirst()).command();
     }

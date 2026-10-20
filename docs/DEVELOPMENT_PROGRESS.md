@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- D13：[缺账对账admitted TCP/P5](history/GOAL_D13_RECONCILIATION_ADMISSION_2026-10-21.md)：五处typed JDBC/COALESCE兼容修复，效果门不变；IT1/0/0/0、20业务POST/9JWS、10组178表/6文件守恒、末审计回滚/原键重启/P5后继，原附件/唯一补扣核同。普通4804/19skip、原业务新隔离IT通过；三轮失败保留。仅合成有界L1，非完整D13/最终候选。
+
 - D13：[两阶段更正撤销admitted HTTP/P5](history/GOAL_D13_CORRECTION_WITHDRAWAL_ADMISSION_2026-10-21.md)：新隔离IT1/0/0/0，17业务POST、原审批人发起/原申请人确认、末outbox失败178表/6文件回滚、逐笔冲正与原签重启重放；8JWS验真、P5后继。产品源码不变复用普通4804/19skip；run1931未知围栏失败原件保留。仅合成有界L1，非完整D13/最终候选。
 - D13补[主管审批记账admitted HTTP/P5](history/GOAL_D13_CORRECTION_APPROVAL_ADMISSION_2026-10-21.md)：局部typed JDBC/COALESCE/CASE兼容修复，效果门不变；最终IT1/0/0/0，8业务POST、单次记账/原键及重启重放签名核同、5组178表/6文件守恒与P5后继。普通4804项零失败、19跳过，追加outbox组合IT1/0/0/0；原失败保留，仅合成有界L1，非完整D13或最终候选。
 - D13补[更正附件admitted HTTP/P5消费者](history/GOAL_D13_CORRECTION_ATTACHMENT_ADMISSION_2026-10-20.md)：修复局部getObject/IFNULL兼容，保留效果门；最终IT1/0/0/0，20业务HTTP、8组178表/6文件守恒、原签名/重启原键核同与P5后继STARTED。普通4804项零失败、19跳过单列；前三轮失败保留。仅CREATE附件有界L1，非审批/记账、完整D13或最终候选。

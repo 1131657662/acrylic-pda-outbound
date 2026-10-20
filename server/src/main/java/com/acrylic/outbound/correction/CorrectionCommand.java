@@ -129,7 +129,7 @@ final class CorrectionCommand {
         }
         /** The reconciliation case is the fourth serialisation point (step 7). */
         long caseRow(UUID caseId) {
-            var rows=jdbc.queryForList("SELECT row_version FROM inventory_reconciliation WHERE id=? FOR UPDATE",Ids.bytes(caseId));
+            var rows=jdbc.queryForList("SELECT row_version FROM inventory_reconciliation WHERE id=? FOR UPDATE",Long.class,Ids.bytes(caseId));
             if (rows.size()!=1) throw missing();return 1;
         }
     }

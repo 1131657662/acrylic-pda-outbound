@@ -19,20 +19,20 @@ final class ReconciliationFacts {
     }
 
     UUID order(UUID dispatch) {
-        var rows = jdbc.queryForList("SELECT BIN_TO_UUID(order_id) id FROM dispatch_record WHERE id=?", Ids.bytes(dispatch));
+        var rows = jdbc.queryForList("SELECT BIN_TO_UUID(order_id) id FROM dispatch_record WHERE id=?", String.class, Ids.bytes(dispatch));
         if (rows.size() != 1) throw CorrectionCommand.missing();
-        return UUID.fromString(rows.getFirst().get("id").toString());
+        return UUID.fromString(rows.getFirst());
     }
 
     void lock(UUID dispatch) {
-        var rows = jdbc.queryForList("SELECT bale_id FROM dispatch_record WHERE id=? FOR UPDATE", Ids.bytes(dispatch));
+        var rows = jdbc.queryForList("SELECT bale_id FROM dispatch_record WHERE id=? FOR UPDATE", byte[].class, Ids.bytes(dispatch));
         if (rows.size() != 1) throw CorrectionCommand.missing();
-        byte[] bale = (byte[]) rows.getFirst().get("bale_id");
-        jdbc.queryForList("SELECT id FROM bale WHERE id=? FOR UPDATE", bale);
-        jdbc.queryForList("SELECT bale_id FROM inventory_position WHERE bale_id=? FOR UPDATE", bale);
-        jdbc.queryForList("SELECT bale_id FROM bale_commitment WHERE bale_id=? FOR UPDATE", bale);
-        jdbc.queryForList("SELECT id FROM inventory_ledger WHERE dispatch_id=? ORDER BY id FOR UPDATE", Ids.bytes(dispatch));
-        jdbc.queryForList("SELECT id FROM correction_ledger WHERE dispatch_id=? ORDER BY id FOR UPDATE", Ids.bytes(dispatch));
+        byte[] bale = rows.getFirst();
+        jdbc.queryForList("SELECT id FROM bale WHERE id=? FOR UPDATE", byte[].class, bale);
+        jdbc.queryForList("SELECT bale_id FROM inventory_position WHERE bale_id=? FOR UPDATE", byte[].class, bale);
+        jdbc.queryForList("SELECT bale_id FROM bale_commitment WHERE bale_id=? FOR UPDATE", byte[].class, bale);
+        jdbc.queryForList("SELECT id FROM inventory_ledger WHERE dispatch_id=? ORDER BY id FOR UPDATE", byte[].class, Ids.bytes(dispatch));
+        jdbc.queryForList("SELECT id FROM correction_ledger WHERE dispatch_id=? ORDER BY id FOR UPDATE", byte[].class, Ids.bytes(dispatch));
     }
 
     ObjectNode read(UUID dispatch) {
@@ -61,7 +61,7 @@ final class ReconciliationFacts {
         jdbc.queryForList("""
             SELECT JSON_OBJECT('orderId',BIN_TO_UUID(order_id),'cycle',CAST(dispatch_cycle AS CHAR),'state',state) data
             FROM bale_commitment WHERE bale_id=? ORDER BY order_id
-            """, Ids.bytes(bale)).forEach(row -> result.add(SubmissionJson.parse(row.get("data").toString())));
+            """, String.class, Ids.bytes(bale)).forEach(row -> result.add(SubmissionJson.parse(row)));
         return result;
     }
 
@@ -71,14 +71,14 @@ final class ReconciliationFacts {
             SELECT JSON_OBJECT('id',BIN_TO_UUID(id),'kind','ORIGINAL','baleId',BIN_TO_UUID(bale_id),
               'quantityDelta',CAST(quantity_delta AS CHAR),'weightDeltaG',CAST(weight_delta_g AS CHAR)) data
             FROM inventory_ledger WHERE dispatch_id=? ORDER BY id
-            """, Ids.bytes(dispatch)).forEach(row -> result.add(SubmissionJson.parse(row.get("data").toString())));
+            """, String.class, Ids.bytes(dispatch)).forEach(row -> result.add(SubmissionJson.parse(row)));
         jdbc.queryForList("""
             SELECT JSON_OBJECT('id',BIN_TO_UUID(id),'kind',entry_kind,'baleId',BIN_TO_UUID(bale_id),
               'quantityDelta',CAST(quantity_delta AS CHAR),'weightDeltaG',CAST(weight_delta_g AS CHAR),
               'lineId',BIN_TO_UUID(correction_line_id),'reversesEntryId',BIN_TO_UUID(reverses_entry_id),
               'reversesInventoryEntryId',BIN_TO_UUID(reverses_inventory_entry_id),'restoresEntryId',BIN_TO_UUID(restores_entry_id)) data
             FROM correction_ledger WHERE dispatch_id=? ORDER BY id
-            """, Ids.bytes(dispatch)).forEach(row -> result.add(SubmissionJson.parse(row.get("data").toString())));
+            """, String.class, Ids.bytes(dispatch)).forEach(row -> result.add(SubmissionJson.parse(row)));
         return result;
     }
 

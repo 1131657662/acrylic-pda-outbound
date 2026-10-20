@@ -39,8 +39,8 @@ final class ReconciliationContext {
         UUID order = facts.order(dispatch);
         if (!warehouse.toString().equals(store.orderFacts(order).path("warehouseId").asText())) throw CorrectionCommand.missing();
         if (lock) {
-            jdbc.queryForList("SELECT id FROM warehouse WHERE id=? FOR UPDATE", Ids.bytes(warehouse));
-            jdbc.queryForList("SELECT id FROM outbound_order WHERE id=? FOR UPDATE", Ids.bytes(order)); facts.lock(dispatch);
+            jdbc.queryForList("SELECT id FROM warehouse WHERE id=? FOR UPDATE", byte[].class, Ids.bytes(warehouse));
+            jdbc.queryForList("SELECT id FROM outbound_order WHERE id=? FOR UPDATE", byte[].class, Ids.bytes(order)); facts.lock(dispatch);
         }
         var current = facts.read(dispatch); var result = SubmissionJson.object();
         result.put("warehouseId", warehouse.toString()).put("orderId", order.toString()).put("dispatchId", dispatch.toString());
