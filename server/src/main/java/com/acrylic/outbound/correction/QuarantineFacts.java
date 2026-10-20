@@ -57,9 +57,9 @@ final class QuarantineFacts {
               'upstreamPresent',p.upstream_present,'bookStatus',p.book_status,'blockedReason',p.blocked_reason,
               'stockVersion',CAST(p.row_version AS CHAR)) data
             FROM bale b JOIN warehouse w ON w.id=b.warehouse_id JOIN inventory_position p ON p.bale_id=b.id WHERE b.id=?
-            """,Ids.bytes(bale));
+            """,String.class,Ids.bytes(bale));
         if(rows.size()!=1) throw CorrectionCommand.corrupt();
-        return SubmissionJson.parse(rows.getFirst().get("data").toString());
+        return SubmissionJson.parse(rows.getFirst());
     }
 
     private JsonNode owners(UUID bale) {
@@ -93,7 +93,7 @@ final class QuarantineFacts {
 
     private JsonNode array(String sql,UUID bale) {
         var result=SubmissionJson.object().putArray("items");
-        jdbc.queryForList(sql,Ids.bytes(bale)).forEach(row->result.add(SubmissionJson.parse(row.get("data").toString())));
+        jdbc.queryForList(sql,String.class,Ids.bytes(bale)).forEach(row->result.add(SubmissionJson.parse(row)));
         return result;
     }
 }

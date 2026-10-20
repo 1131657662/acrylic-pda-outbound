@@ -16,10 +16,16 @@ final class FormalQuarantineRecovery {
         this.jdbc=jdbc; this.files=files; this.signatures=signatures;
     }
     ObjectNode read(JsonNode origin) {
-        var rows=jdbc.queryForList("""
+        var rows=jdbc.query("""
             SELECT p.payload_sha256,p.byte_count,p.issues_json,r.stop_receipt,r.recovery_epoch,r.status
             FROM recovery_package p JOIN order_change_request r ON r.id=p.request_id WHERE p.id=UUID_TO_BIN(?)
-            """,origin.path("recoveryPackageId").asText());
+            """,(rs,n)-> {
+                var row=new java.util.HashMap<String,Object>();
+                for(String column:java.util.List.of("payload_sha256","issues_json","stop_receipt","status"))
+                    row.put(column,rs.getString(column));
+                for(String column:java.util.List.of("byte_count","recovery_epoch")) row.put(column,rs.getLong(column));
+                return row;
+            },origin.path("recoveryPackageId").asText());
         if(rows.size()!=1) throw CorrectionCommand.corrupt(); var row=rows.getFirst();
         byte[] bytes=files.read(row.get("payload_sha256").toString()); var body=SubmissionJson.parse(bytes);
         if(bytes.length!=((Number)row.get("byte_count")).intValue() || !SubmissionJson.parse(row.get("issues_json").toString()).isEmpty()

@@ -24,7 +24,7 @@ final class FormalQuarantineOrigin {
               'closeReason',d.physical_evidence,'recoveryPackageId',BIN_TO_UUID(p.id),'requestId',BIN_TO_UUID(r.id),
               'sourceAssignmentId',BIN_TO_UUID(r.assignment_id),'appliedAssignmentId',BIN_TO_UUID(s.assignment_id),
               'continuationId',BIN_TO_UUID(c.id),'captureId',BIN_TO_UUID(d.origin_scan_id),
-              'recordSha256',LOWER(HEX(d.record_sha256)),'recoveryEpoch',CAST(d.recovery_epoch AS CHAR),
+              'recordSha256',HEX(d.record_sha256),'recoveryEpoch',CAST(d.recovery_epoch AS CHAR),
               'approvalBatchId',BIN_TO_UUID(d.approval_batch_id),'approvedBy',BIN_TO_UUID(d.approved_by),
               'approvedAt',DATE_FORMAT(d.approved_at,'%Y-%m-%dT%H:%i:%s.%fZ')) data
             FROM physical_disposition_evidence d JOIN recovery_package p ON p.id=d.recovery_package_id
@@ -32,10 +32,11 @@ final class FormalQuarantineOrigin {
               JOIN outbound_order o ON o.id=d.order_id JOIN submission s ON s.id=d.applied_submission_id
               JOIN order_continuation c ON c.new_assignment_id=s.assignment_id AND c.recovery_package_id=p.id AND c.order_id=d.order_id
             WHERE
-            """+filter,caseId==null ? new Object[]{Ids.bytes(bale)} : new Object[]{Ids.bytes(caseId),Ids.bytes(bale)});
+            """+filter,String.class,caseId==null ? new Object[]{Ids.bytes(bale)} : new Object[]{Ids.bytes(caseId),Ids.bytes(bale)});
         if(rows.isEmpty()) return null;
         if(rows.size()!=1) throw CorrectionCommand.corrupt();
-        var origin=(ObjectNode)SubmissionJson.parse(rows.getFirst().get("data").toString());
+        var origin=(ObjectNode)SubmissionJson.parse(rows.getFirst());
+        origin.put("recordSha256",origin.path("recordSha256").asText().toLowerCase(java.util.Locale.ROOT));
         if(!bale.toString().equals(origin.path("baleId").asText())) throw CorrectionCommand.corrupt();
         var proof=proofs.read(origin); origin.set("originalReceipt",proof); origin.put("originalReceiptSha256",SubmissionJson.sha(proof));
         if(caseId!=null && !origin.path("originalReceiptSha256").asText().equals(jdbc.queryForObject(

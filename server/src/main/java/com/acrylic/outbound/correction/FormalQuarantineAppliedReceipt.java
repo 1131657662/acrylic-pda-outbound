@@ -12,7 +12,13 @@ final class FormalQuarantineAppliedReceipt {
     private final SubmissionArchiveProofs signatures;
     FormalQuarantineAppliedReceipt(JdbcTemplate jdbc,SubmissionArchiveProofs signatures) { this.jdbc=jdbc;this.signatures=signatures; }
     JsonNode read(JsonNode origin,JsonNode body,String payloadHash) {
-        var rows=jdbc.queryForList("SELECT *,DATE_FORMAT(applied_at,'%Y-%m-%dT%H:%i:%s.%fZ') applied_at_utc FROM formal_disposition_application WHERE submission_id=UUID_TO_BIN(?)",origin.path("submissionId").asText());
+        var rows=jdbc.query("SELECT *,DATE_FORMAT(applied_at,'%Y-%m-%dT%H:%i:%s.%fZ') applied_at_utc FROM formal_disposition_application WHERE submission_id=UUID_TO_BIN(?)",
+            (rs,n)-> {
+                var row=new java.util.HashMap<String,Object>(); row.put("receipt_bytes",rs.getBytes("receipt_bytes"));
+                for(String column:java.util.List.of("receipt_sha256","payload_sha256","dispositions_sha256","applied_at_utc"))
+                    row.put(column,rs.getString(column));
+                return row;
+            },origin.path("submissionId").asText());
         if(rows.isEmpty()) return null;
         if(rows.size()!=1) throw CorrectionCommand.corrupt();var row=rows.getFirst();var bytes=(byte[])row.get("receipt_bytes");
         if(!CorrectionCommand.sha(bytes).equals(row.get("receipt_sha256")) || !payloadHash.equals(row.get("payload_sha256"))) throw CorrectionCommand.corrupt();

@@ -33,13 +33,19 @@ final class FormalQuarantineApplication {
         result.put("approvedBy",row.get("approved_by").toString()); result.put("requestedBy",row.get("requested_by").toString()); return result;
     }
     private java.util.Map<String,Object> row(JsonNode origin) {
-        var rows=jdbc.queryForList("""
+        var rows=jdbc.query("""
             SELECT c.command_text,c.receipt_text,c.activation_text,c.status,c.to_round,c.recovery_package_id,
               s.receipt_text applied_receipt,s.status applied_status,p.payload_sha256,BIN_TO_UUID(s.freeze_device_id) device_id,BIN_TO_UUID(s.operator_id) operator_id,
               BIN_TO_UUID(c.approved_by) approved_by,BIN_TO_UUID(c.requested_by) requested_by
             FROM order_continuation c JOIN submission s ON s.assignment_id=c.new_assignment_id
               JOIN submission_payload p ON p.submission_id=s.id WHERE c.id=UUID_TO_BIN(?) AND s.id=UUID_TO_BIN(?)
-            """,origin.path("continuationId").asText(),origin.path("submissionId").asText());
+            """,(rs,n)-> {
+                var row=new java.util.HashMap<String,Object>();
+                for(String column:java.util.List.of("command_text","receipt_text","activation_text","status","applied_receipt",
+                        "applied_status","payload_sha256","device_id","operator_id","approved_by","requested_by"))
+                    row.put(column,rs.getString(column));
+                return row;
+            },origin.path("continuationId").asText(),origin.path("submissionId").asText());
         if(rows.size()!=1) throw CorrectionCommand.corrupt(); var row=rows.getFirst();
         if(row.get("receipt_text")==null || row.get("activation_text")==null
             || !java.util.Set.of("SUCCEEDED","ABORTED","REVIEW_REQUIRED","REJECTED").contains(row.get("applied_status"))

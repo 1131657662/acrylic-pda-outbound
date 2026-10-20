@@ -12,13 +12,19 @@ final class FormalQuarantineApproval {
     private final JdbcTemplate jdbc;
     FormalQuarantineApproval(JdbcTemplate jdbc) { this.jdbc=jdbc; }
     ObjectNode read(JsonNode origin,JsonNode recovery) {
-        var rows=jdbc.queryForList("""
+        var rows=jdbc.query("""
             SELECT r.command_bytes,r.command_sha256,r.response_bytes,r.response_sha256,r.request_sha256,
               BIN_TO_UUID(i.id) request_id,i.request_sha256 idempotency_sha256
             FROM formal_disposition_receipt r JOIN api_idempotency_request i ON i.resource_id=r.approval_batch_id
               AND i.principal_id=r.principal_id AND i.route_scope='order.disposition.approve'
             WHERE r.approval_batch_id=UUID_TO_BIN(?) AND r.recovery_package_id=UUID_TO_BIN(?) AND r.principal_id=UUID_TO_BIN(?)
-            """,origin.path("approvalBatchId").asText(),origin.path("recoveryPackageId").asText(),origin.path("approvedBy").asText());
+            """,(rs,n)-> {
+                var row=new java.util.HashMap<String,Object>();
+                for(String column:java.util.List.of("command_bytes","response_bytes")) row.put(column,rs.getBytes(column));
+                for(String column:java.util.List.of("command_sha256","response_sha256","request_sha256","request_id","idempotency_sha256"))
+                    row.put(column,rs.getString(column));
+                return row;
+            },origin.path("approvalBatchId").asText(),origin.path("recoveryPackageId").asText(),origin.path("approvedBy").asText());
         if(rows.size()!=1) throw CorrectionCommand.corrupt(); var row=rows.getFirst();
         var command=bytes(row,"command"); var response=bytes(row,"response");
         var request=SubmissionJson.object().put("packageId",origin.path("recoveryPackageId").asText()); request.set("command",command);
@@ -36,12 +42,12 @@ final class FormalQuarantineApproval {
         return parsed;
     }
     private ObjectNode verifyRows(JsonNode origin,JsonNode command) {
-        var rows=jdbc.queryForList("""
+        var rows=jdbc.query("""
             SELECT JSON_OBJECT('approvedEvidenceId',BIN_TO_UUID(id),'captureId',BIN_TO_UUID(origin_scan_id),'baleId',BIN_TO_UUID(bale_id),
               'expectedDispatchCycle',CAST(expected_cycle AS CHAR),'action',action,'physicalEvidence',physical_evidence,
               'recoveryPackageId',BIN_TO_UUID(recovery_package_id)) data, BIN_TO_UUID(approved_by) actor
             FROM physical_disposition_evidence WHERE approval_batch_id=UUID_TO_BIN(?) ORDER BY id
-            """,origin.path("approvalBatchId").asText());
+            """,(rs,n)->java.util.Map.of("data",rs.getString("data"),"actor",rs.getString("actor")),origin.path("approvalBatchId").asText());
         if(rows.size()!=command.path("dispositions").size() || rows.isEmpty()) throw CorrectionCommand.corrupt();
         var result=SubmissionJson.object().put("stockReleased",false); var evidence=result.putArray("evidence");
         for(var row:rows) {

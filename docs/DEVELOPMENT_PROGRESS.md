@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- D13：[历史FORMAL原依据admitted只读](history/GOAL_D13_FORMAL_HISTORY_ADMITTED_READ_2026-10-21.md)：局部typed读取/Java十六进制规范化，效果门不变；原终态恢复副本IT1/0/0/0，四个业务GET/原件32893字节重启前后逐字一致、178表/8文件守恒/P5后继。无业务POST，失败原件保持，signedApplication非空分支未覆盖；仅合成历史L1，非完整D13/最终候选。
+
 - D13：[返库投影恢复admitted TCP/P5](history/GOAL_D13_RETURNED_STOCK_ADMISSION_2026-10-21.md)：单文件typed读取修复、效果门不变；IT1/0/0/0、原账/结果/周期保持，仅恢复stock并唯一release引用；20业务POST/9JWS/10组守恒/末SQL/原键重启/P5后继。原业务新隔离IT含新周期成功/旧周期拒绝；普通310/4804项、4785通过/19skip。run1938失败原件保持，仅合成L1，非完整D13/最终候选。
 
 - D13：[缺账对账admitted TCP/P5](history/GOAL_D13_RECONCILIATION_ADMISSION_2026-10-21.md)：五处typed JDBC/COALESCE兼容修复，效果门不变；IT1/0/0/0、20业务POST/9JWS、10组178表/6文件守恒、末审计回滚/原键重启/P5后继，原附件/唯一补扣核同。普通4804/19skip、原业务新隔离IT通过；三轮失败保留。仅合成有界L1，非完整D13/最终候选。
