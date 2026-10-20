@@ -46,6 +46,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - [test来源核查](history/DEPLOY_TEST_DATA_SOURCE_AUDIT_2026-10-20.md)：只读核test主机、发布manifest、39份备份；初始批次脚本/日志证实合成库存，后续非合成来源未证。API/worker磁盘JAR与manifest一致，timer活跃；未SQL/导出/脱敏/真实库验证，整体不放行。证据.local/test-source-acquisition-20261020；待可信候选确认，非部署授权。
 - [test真实业务演练](history/DEPLOY_TEST_BUSINESS_REHEARSAL_2026-10-20.md)：用户更正后已快照/备份/503隔离同步；模拟器启动被审批拒绝，未演练/导出。test恢复101表/129333行及218文件一致，PDA03订单/领取不变、17:26北京时间实际再联机，原服务/timer/Nginx及公网200恢复。证据.local/test-business-rehearsal-20261020。
 - [本机模拟器权限诊断](history/CODEX_EMULATOR_PERMISSION_DIAGNOSIS_2026-10-20.md)：实际会话原已never/danger-full-access；本地规则无拒绝匹配、工具/ACL前置正常，同启动机制复验仍CreateProcess前blocked by policy。未改配置/ACL、未启动，具体审查规则/例外入口未暴露，保持阻断；不计D/O/U，证据.local/codex-emulator-permissions-20261020。
+- [Windows策略续查](history/CODEX_WINDOWS_POLICY_FOLLOWUP_2026-10-20.md)：ACL有差异、非管理员令牌；实际沙箱已禁用，根因未定位。未授F/切unelevated/重启或复验，未降隔离/换执行路径；配置/规则/ACL守恒，WSL2与M71仅枚举，真实库链仍阻断、不计D/O/U；证据.local/codex-windows-policy-followup-20261020。
 - 本机副本溯源的无可用结论沿历史；本次维护备份不是演练后输入，不替代真实非空升级/相应API-worker，保持阻断未验。只连接授权test及本次独立还原库，未碰原库/生产；证据分别见local-data-*与test-business-rehearsal-20261020。
 - 候选包preflight-8cb51ded-20261020-01.tar.gz已生成，SHA8539177d1274864b94772c9941a1ff3dfab9735dda545b4fca988f3232c37ad0；独立Linux解包核manifest/source/647摘要及执行位通过。包仅本机，不计LinuxJava报表/API-worker或部署验收。
 - 本次维护已结束，不再停服；先解决客户端启动审批阻断，以后重开窗口须重核PDA03快照并新备份，不用旧截点覆盖新事实。未获得可信演练导出，固定候选真实库链不放行；代码部署仍须另行授权，其他持续关闭边界不变。
