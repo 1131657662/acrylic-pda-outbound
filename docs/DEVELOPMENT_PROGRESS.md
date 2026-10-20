@@ -4,7 +4,7 @@
 
 ## 当前有效结论
 
-- D13补[FORMAL分块文件入口](history/GOAL_D13_FORMAL_SUBMISSION_CHUNKS_2026-10-20.md)：修复P5下DATABASE()语法兼容，85项定向和1项原TCP IT通过；14 HTTP/9块/原签名及账务独立核同。完整普通XML4782项零失败/错误、19条件跳过；首轮产品500及ACL环境失败原件保留。仅服务端有界L1，分块并发/末SQL/锁后撤权、其余文件入口与整体D13/L2/D18仍未验。
+- D13补[FORMAL分块并发/回滚/撤权](history/GOAL_D13_FORMAL_CHUNK_FAULTS_2026-10-20.md)：新隔离原IT1/0/0/0、11真实TCP；两并发原回执与单次账务核同，审计尾500后180表/文件守恒且原ID重试成功，锁后撤权401，P5后继STARTED。独立原件验签与快照消费通过；只改测试，原围栏/失败保持。[先前分块入口与完整普通回归](history/GOAL_D13_FORMAL_SUBMISSION_CHUNKS_2026-10-20.md)沿其输入；不计整体D13/L2/D18或最终候选。
 
 - O04补[原SAF包当前运行库消费](history/GOAL_O04_RETAINED_SAF_CURRENT_RUNTIME_CONSUMER_2026-10-20.md)：原包已有历史覆盖，13直接产品输入未变，仅Artifact运行库变化后补一次CLI；460项原事实断言、五表265格值/类型及16原成员核同。仅合成独立来源文件，不计O04/E06整体、原身份/设备、HTTP/MySQL或最终候选。
 

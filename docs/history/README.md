@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [D13 FORMAL分块故障补证](GOAL_D13_FORMAL_CHUNK_FAULTS_2026-10-20.md)：新隔离IT1/0/0/0、11 TCP；并发幂等/审计尾回滚/锁后撤权及原签名、全库快照独立核同，P5后继STARTED；仅有界L1，原失败与未知围栏证据保持。
+
 - [M71真实客户端与window02回退](DEPLOY_REAL_CLIENT_PATH_ASSESSMENT_2026-10-20.md)：真实账号归属确认；历史APK真机安装启动通过、固定候选Android编译失败；新维护检查失败后101表/220文件恢复核同，未真实演练/部署。
 - [固定候选十九项跳过](DEPLOY_FIXED_CANDIDATE_SKIPPED_TESTS_2026-10-20.md)：同SHA原XML逐方法分类为环境2/条件17，全部不计通过；Windows异常具体根因不超证据归因。
 
