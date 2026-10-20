@@ -26,6 +26,18 @@ python -m tools.pda_rescue.cli D:/受控资料/原包.pdarescue --trust D:/受�
 
 没有可信登记材料时可以省略信任参数做完整性核验，但报告明确显示来源未核验；这不能证明是谁、哪台登记设备采集，也不能据此记账。报告中的`businessReceiptVerified=false`表示本工具未验证业务回执，不代表回执失败或出库成功。
 
+### FORMAL历史成功原回执的可选核验
+
+若包内保留FORMAL原冻结正文与成功回执，可另行执行以下离线命令：
+
+```powershell
+python -m tools.pda_rescue.receipt_cli D:/受控资料/原包.pdarescue --trust D:/受控资料/登记信任.json --receipt-key D:/受控资料/服务端可信公钥.json
+```
+
+服务端公钥必须来自包外预先核验的可信材料，JSON仅含`keyId`、`algorithm`（固定`RS256`）、`publicKey`（X.509 DER公钥的Base64）；不接受包内自报公钥建立信任。旧历史钥应从受控只读keyring取得，不能用新钥替换原回执。命令只输出核验报告，不写业务记录；口令由终端另行提示。
+
+成功报告的`businessReceiptVerified=true`仅表示封存FORMAL成功原回执签名、原冻结字节与原人机仓来源、批次、有效序号、分产品数量/整数克一致，范围固定为`HISTORICAL_FORMAL_SUCCESS_RECEIPT`。它不查询后续更正、撤回、净值或现时终态；`currentBusinessStateVerified=false`、`releaseAllowed=false`、`localDeletionAllowed=false`始终保持。TEMP/独立来源、非成功回执不在此命令覆盖范围。原`cli`、加密副本和取回命令仍报告业务回执未核验，不被本次可选结果隐式升级。
+
 Excel提供核对汇总、原扫码顺序、产品核对、未决/失败输入及原审计。条码、产品代码、原序号和时间保持文本；重量以整数克核对，超出Excel精确整数范围时保留十进制文本。公式前缀始终作为文本，控制字符显示转义，原NDJSON保留原文。原ACTIVE行及主管处置原件同时保留，已处置贡献不算有效装载；没有冻结正文时不会补造提交批次。
 
 PNG只展示前16行，长文本可截显示；完整值在Excel和原件中。正常、零有效、空记录及已处置样例均使用合成输入验证。真实原设备、原生Excel/打印、USB/MTP/OTG、异地介质仍需对应现场验收。
