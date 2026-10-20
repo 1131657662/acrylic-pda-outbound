@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- E06补[当前源封存原件条件消费者](history/GOAL_E06_CURRENT_SEALED_CONSUMERS_2026-10-20.md)：显式历史哈希输入四类24/0/0/0，原件33文件/两归档及继承改动守恒；新47组服务端SKU向量尚未Android消费。独立定向不改写完整回归skip，不计E06或最终候选通过。
+
 - [服务端普通完整回归](history/GOAL_SERVER_ORDINARY_FULL_REGRESSION_2026-10-20.md)：实际主树+保护WIP同次执行4775项，4756通过、0失败、19跳过、exit0；外部向量/Windows符号链接skip逐类留证。不含IT，不计D18/最终候选或部署放行。
 
 - D13补[孤儿 owner 生命周期测试修复](history/GOAL_D13_ORPHAN_OWNER_LIFECYCLE_TEST_REPAIR_2026-10-20.md)：原11/3复现，改为真实独立子JVM发布后退出；四类21/0/0/0，原孤儿拒绝/清理/只读及延迟退休断言保留。产品不变，仅主机定向，不计D13整体或完整候选回归。

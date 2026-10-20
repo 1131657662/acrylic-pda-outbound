@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [E06当前源封存原件条件消费者](GOAL_E06_CURRENT_SEALED_CONSUMERS_2026-10-20.md)：原件/采集/闭合/SKU向量24项零失败零跳过，历史字节守恒；非业务HTTP、设备或最终候选。
+
 - [服务端普通测试完整回归](GOAL_SERVER_ORDINARY_FULL_REGRESSION_2026-10-20.md)：310 suite、4775项，4756通过、0失败、19跳过；输入源码/继承改动守恒，非IT或最终部署候选。
 
 - [D13孤儿owner生命周期测试修复](GOAL_D13_ORPHAN_OWNER_LIFECYCLE_TEST_REPAIR_2026-10-20.md)：真实子JVM死亡输入替代延迟退休误判，21项定向通过、产品不变；非完整恢复或部署放行。
