@@ -4,6 +4,7 @@
 
 ## 当前有效结论
 
+- 原记录状态筛选的隔离 TEMP 原生消费者形成[有界报告](history/GOAL_U04_STATUS_FILTER_NATIVE_CONSUMER_2026-10-20.md)：默认及200%字号实际点击四选项、分页/组合条件/重建，83张Room表摘要与身份不变；主管保留仅空结果，正式订单/可信非空保留输入及U04/D17/L2/L3仍未验。
 - 总目标、D01–D18、O01–O05、U01–U04 和第 8 节闸门仍未完成；局部 L1、合成输入和开发备份不替代实际最终候选上的组合验收。当前断点和下一动作以 [看板](ORCHESTRATION_STATUS.md) 为准。
 - 四档字号保留明细的 tar 只读比较已形成独立历史报告：[U04 retained details tar audit](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)。该报告区分 Room DB/WAL、应用资料和运行元数据，并保留输入与输出哈希；不改变业务验收状态。
 - 独立采集大字首屏原生 L1 已形成报告：[U04 independent large font](history/GOAL_U04_INDEPENDENT_LARGE_FONT_L1_2026-10-19.md)。它只覆盖合成隔离输入和有界 Android L1，原身份、现场、实体键、真机及 L2/L3 仍未验。
