@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- U04/D17：[批准状态筛选原生消费者](history/GOAL_U04_TEMPORARY_STATUS_NATIVE_CONSUMER_2026-10-21.md)：全部/有效/已撤销/主管保留，默认全部；四字号各1项与两项兼容各1项实际通过，83表/会话/汇总守恒。非空主管保留仅100%正向，主机8项按SHA历史复用；仅隔离合成L1，不计整体或最终候选。
+
 - D13：[非空应用原件admitted只读](history/GOAL_D13_FORMAL_APPLICATION_RETAINED_READ_2026-10-21.md)：仅测试/历史源allowlist；新隔离IT1/0/0/0、32933字节原件重启核同，撤权403/跨仓404/复制payload损坏409，178表8文件恢复守恒/P5后继。产品未改，普通回归按SHA复用；仅合成有界L1，非完整D13/最终候选。
 
 - D13：[历史FORMAL原依据admitted只读](history/GOAL_D13_FORMAL_HISTORY_ADMITTED_READ_2026-10-21.md)：局部typed读取/Java十六进制规范化，效果门不变；原终态恢复副本IT1/0/0/0，四个业务GET/原件32893字节重启前后逐字一致、178表/8文件守恒/P5后继。无业务POST，失败原件保持，signedApplication非空分支未覆盖；仅合成历史L1，非完整D13/最终候选。

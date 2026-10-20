@@ -43,6 +43,41 @@ class TemporaryDetailsReaderTest {
         assertEquals((47L..50L).toList(),pending.rows.map { it.sequence })
         assertEquals(listOf("WAITING_CONFIRM","INVALID","RECEIVED","CONFIRM_REQUESTED"),pending.rows.map { it.status })
     }
+    @Test fun approvedStatusFilterOnlyChangesVisibleOriginalRows() = scenario { f ->
+        assertEquals(listOf("全部", "有效", "已撤销", "主管保留"),
+            TemporaryDetailsStatusFilter.entries.map { it.label })
+        val capturesBefore = f.db.temporaryScans().captures(f.work.id)
+        val scansBefore = f.db.temporaryScans().allScans(f.work.id)
+        val eventsBefore = f.db.temporaryScans().events(f.work.id)
+        val draftBefore = f.db.temporaryDrafts().get(f.work.id)
+        val linesBefore = f.db.temporaryDrafts().lines(f.work.id)
+        val sessionBefore = checkNotNull(f.work.fixture.auth).toString()
+
+        val all = f.reader.page()
+        val active = f.reader.page(TemporaryDetailsStatusFilter.ACTIVE)
+        val voids = f.reader.page(TemporaryDetailsStatusFilter.VOID)
+
+        assertEquals((1L..20L).toList(), all.rows.map { it.sequence })
+        val remainingAll = f.reader.page(TemporaryDetailsStatusFilter.ALL, 45)
+        assertEquals((46L..50L).toList(), remainingAll.rows.map { it.sequence })
+        assertEquals(listOf("ACTIVE", "WAITING_CONFIRM", "INVALID", "RECEIVED", "CONFIRM_REQUESTED"),
+            remainingAll.rows.map { it.status })
+        assertEquals("ACTIVE", active.rows.single().status)
+        assertEquals(listOf(46L), active.rows.map { it.sequence })
+        assertEquals(all.total, active.total)
+        assertEquals(all.products, active.products)
+        assertEquals((1L..20L).toList(), voids.rows.map { it.sequence })
+        assertEquals(all.total, voids.total)
+        assertEquals(all.products, voids.products)
+        assertTrue(voids.next)
+        assertEquals((21L..40L).toList(), f.reader.page(TemporaryDetailsStatusFilter.VOID, 20).rows.map { it.sequence })
+        assertEquals(capturesBefore, f.db.temporaryScans().captures(f.work.id))
+        assertEquals(scansBefore, f.db.temporaryScans().allScans(f.work.id))
+        assertEquals(eventsBefore, f.db.temporaryScans().events(f.work.id))
+        assertEquals(draftBefore, f.db.temporaryDrafts().get(f.work.id))
+        assertEquals(linesBefore, f.db.temporaryDrafts().lines(f.work.id))
+        assertEquals(sessionBefore, f.work.fixture.auth.toString())
+    }
     @Test fun locatorFindsOriginalSequenceAndLastBarcodeIncludingUnresolved() = scenario { f ->
         assertEquals("VOID", f.reader.locate("5",false)?.status)
         assertEquals(50L,f.reader.locate(f.work.barcodes[0].lowercase(),true)?.sequence)
@@ -75,6 +110,7 @@ class TemporaryDetailsReaderTest {
             val reader=TemporaryDetailsReader(f.work.store,next.clientOrderId)
             val page=reader.page(WorkDetailFilter.SAVED)
             assertEquals(listOf(1L),page.rows.map { it.sequence }); assertEquals("RETAINED",page.rows.single().status)
+            assertEquals(page.rows, reader.page(TemporaryDetailsStatusFilter.RETAINED).rows)
             assertEquals(before,f.db.temporarySubmissions().get(before.id))
             assertEquals("CONTINUATION_BLOCKED",f.db.temporaryDrafts().get(next.clientOrderId)?.state)
             assertTrue(f.db.temporaryScans().captures(next.clientOrderId).isEmpty())

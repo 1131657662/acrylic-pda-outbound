@@ -37,7 +37,7 @@ class TemporaryDetailsPrefixDeviceTest {
         ActivityScenario.launch<TemporaryDetailsActivity>(Intent(app, TemporaryDetailsActivity::class.java)
             .putExtra("clientOrderId", identity.getString("clientOrderId"))).use { scenario ->
             inspect(scenario, ui)
-            ui.click(R.id.filter); onData(equalTo("已保存原记录")).perform(click())
+            ui.click(R.id.filter); onData(equalTo("主管保留")).perform(click())
             inspect(scenario, ui)
             ui.click(R.id.locateMode); onData(equalTo("完整条码")).perform(click())
             ui.reveal(R.id.locateInput); onView(withId(R.id.locateInput)).perform(replaceText(identity.getString("barcode")), androidx.test.espresso.action.ViewActions.closeSoftKeyboard())

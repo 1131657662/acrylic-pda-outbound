@@ -21,7 +21,7 @@ class TemporaryDetailsActivity : ComponentActivity() {
     private lateinit var binding: ActivityTemporaryDetailsBinding
     private val app get() = application as PdaApplication
     private var id = ""
-    private var filter = WorkDetailFilter.ALL
+    private var filter = TemporaryDetailsStatusFilter.ALL
     private var page: TemporaryDetailsPage? = null
     private var anchor = 0L
     private var busy = false
@@ -36,7 +36,8 @@ class TemporaryDetailsActivity : ComponentActivity() {
         id = intent.getStringExtra("clientOrderId").orEmpty()
         if (id.isBlank()) { finish(); return }
         anchor = savedInstanceState?.getLong("anchor") ?: 0L
-        filter = WorkDetailFilter.entries.firstOrNull { it.name == savedInstanceState?.getString("filter") } ?: WorkDetailFilter.ALL
+        filter = TemporaryDetailsStatusFilter.entries.firstOrNull { it.name == savedInstanceState?.getString("filter") }
+            ?: TemporaryDetailsStatusFilter.ALL
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding = ActivityTemporaryDetailsBinding.inflate(layoutInflater); setContentView(binding.root)
         val content = binding.content
@@ -84,13 +85,14 @@ class TemporaryDetailsActivity : ComponentActivity() {
     }
 
     private fun bindFilters() {
-        binding.filter.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, WorkDetailFilter.entries.map { it.label })
+        binding.filter.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item,
+            TemporaryDetailsStatusFilter.entries.map { it.label })
         binding.filter.setSelection(filter.ordinal)
         binding.locateMode.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, listOf("原序号", "完整条码"))
         binding.filter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val selected = WorkDetailFilter.entries[position]
+                val selected = TemporaryDetailsStatusFilter.entries[position]
                 if (selected != filter) { filter = selected; load() }
             }
         }
@@ -106,11 +108,11 @@ class TemporaryDetailsActivity : ComponentActivity() {
             try {
                 val result = withContext(Dispatchers.IO) {
                     val start = if (locate) checkNotNull(reader.locate(raw, byBarcode)) { "没有匹配原记录，请核对原序号或条码" }.sequence - 1 else cursor
-                    reader.page(if (locate) WorkDetailFilter.ALL else filter, start, backwards).also {
+                    reader.page(if (locate) TemporaryDetailsStatusFilter.ALL else filter, start, backwards).also {
                         adjustmentBlock = AdjustmentRecords(app, "", id).blockReason()
                     }
                 }
-                if (locate) { filter = WorkDetailFilter.ALL; binding.filter.setSelection(filter.ordinal) }
+                if (locate) { filter = TemporaryDetailsStatusFilter.ALL; binding.filter.setSelection(filter.ordinal) }
                 render(result)
             } catch (error: Exception) {
                 if (error is CancellationException) throw error

@@ -71,12 +71,15 @@ class TemporaryDetailsDeviceTest {
     private fun filters() {
         select(R.id.filter, "已撤销"); expectRows(1, 20)
         assertRowsContain("已撤销 · 保留原记录")
-        select(R.id.filter, "未处理输入"); expectRows(47, 4)
-        assertRowsContain("尚未保存", false)
-        ui.inspect("pending")
-        select(R.id.filter, "已保存原记录"); expectRows(46, 1)
+        select(R.id.filter, "有效"); expectRows(46, 1)
         assertRowsContain("已保存")
-        select(R.id.filter, "全部原记录"); expectRows(1, 20)
+        select(R.id.filter, "主管保留")
+        ui.await {
+            onView(withId(R.id.retry)).check(matches(isEnabled()))
+            scenario.onActivity { assertEquals(0, it.findViewById<LinearLayout>(R.id.rows).childCount) }
+        }
+        ui.inspect("retained-empty")
+        select(R.id.filter, "全部"); expectRows(1, 20)
     }
 
     private fun locator() {

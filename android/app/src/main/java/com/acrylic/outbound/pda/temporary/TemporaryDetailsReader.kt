@@ -12,11 +12,24 @@ data class TemporaryDetailsPage(val order: TemporaryDraft, val products: List<Te
 /** One original identity, one verified predecessor, one bounded read-only transaction snapshot. */
 class TemporaryDetailsReader(private val store: TemporaryWorkStore, private val id: String) {
     private val prefix = TemporaryDetailsPrefix(store)
-    fun page(filter: WorkDetailFilter, anchor: Long = 0, backwards: Boolean = false): TemporaryDetailsPage = snapshot {
-        val rows = query(it, TemporaryDetailsQuery(filter, if (backwards) "sequence < ?" else "sequence > ?", anchor, backwards))
+    fun page(filter: WorkDetailFilter, anchor: Long = 0, backwards: Boolean = false): TemporaryDetailsPage =
+        page(filter, null, anchor, backwards)
+
+    fun page(filter: TemporaryDetailsStatusFilter = TemporaryDetailsStatusFilter.ALL,
+        anchor: Long = 0, backwards: Boolean = false): TemporaryDetailsPage =
+        page(WorkDetailFilter.ALL, filter, anchor, backwards)
+
+    private fun page(filter: WorkDetailFilter, statusFilter: TemporaryDetailsStatusFilter?,
+        anchor: Long, backwards: Boolean): TemporaryDetailsPage = snapshot {
+        val rows = query(it, TemporaryDetailsQuery(filter, if (backwards) "sequence < ?" else "sequence > ?",
+            anchor, backwards, statusFilter = statusFilter))
             .let { found -> if (backwards) found.reversed() else found }
-        val previous = rows.firstOrNull()?.let { row -> query(it, TemporaryDetailsQuery(filter, "sequence < ?", row.sequence, true, 1)).isNotEmpty() } ?: false
-        val next = rows.lastOrNull()?.let { row -> query(it, TemporaryDetailsQuery(filter, "sequence > ?", row.sequence, limit = 1)).isNotEmpty() } ?: false
+        val previous = rows.firstOrNull()?.let { row ->
+            query(it, TemporaryDetailsQuery(filter, "sequence < ?", row.sequence, true, 1, statusFilter)).isNotEmpty()
+        } ?: false
+        val next = rows.lastOrNull()?.let { row ->
+            query(it, TemporaryDetailsQuery(filter, "sequence > ?", row.sequence, limit = 1, statusFilter = statusFilter)).isNotEmpty()
+        } ?: false
         val totals = TemporaryDetailsTotals(store, id); val products = totals.products(it)
         TemporaryDetailsPage(store.check(id, false), store.db.temporaryDrafts().lines(id), products,
             totals.total(products), rows, previous, next)
@@ -40,7 +53,7 @@ class TemporaryDetailsReader(private val store: TemporaryWorkStore, private val 
         val sql = """SELECT * FROM (SELECT c.id AS captureId,c.orderScanSeq AS sequence,c.barcode,
             COALESCE(s.status,c.state) AS status,s.deliveryCode,s.model,s.name,s.weightGrams,c.error,c.failureAckAt
             FROM temporary_capture c LEFT JOIN temporary_scan s ON s.captureId=c.id WHERE c.clientOrderId=?)
-            WHERE (${q.filter.predicate}) AND ${q.condition} ORDER BY sequence $direction LIMIT ?"""
+            WHERE (${q.statusFilter?.predicate ?: q.filter.predicate}) AND ${q.condition} ORDER BY sequence $direction LIMIT ?"""
         val current = store.db.temporaryScans().detailRows(SimpleSQLiteQuery(sql, arrayOf(id, q.value, q.limit)))
         val combined = (prefix.page(original, q) + current).sortedBy { it.sequence }
         return (if (q.descending) combined.asReversed() else combined).take(q.limit)
