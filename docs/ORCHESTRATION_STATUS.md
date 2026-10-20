@@ -6,25 +6,26 @@
 ```yaml
 date: 2026-10-20
 branch: codex/development
-head: b63dce37
-dirty_entries: 33
+head: 3aa0a78a
+dirty_entries: 35
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ```
 <!-- FACTS_END -->
 
-总目标active、未完成。O02已补本轮Android主机原产物的[电脑CLI](history/GOAL_O02_CURRENT_ANDROID_PC_CLI_CONSUMER_2026-10-20.md)31项检查和[Excel转换](history/GOAL_O02_CURRENT_ANDROID_XLSX_CONSUMER_2026-10-20.md)5组/25表/139396格核对；仅合成文件消费者，不计原身份、业务回执、设备通道、O02/O05整体、D18或第8节通过。
+总目标active、未完成。O04原SAF包已有历史电脑覆盖；本轮仅补运行库变化后的原包消费，460项原事实断言、五表265格值/类型核同。O02原产物CLI/Excel结果沿各报告；均仅合成文件消费者，不计真实身份/设备、O02/O04整体、D18或第8节通过。
 
 ## 精确断点与写权
-- 固定主树D:/acrylic-pda-outbound、codex/development；本次写前HEAD与fresh origin均8fe5177a18ad1095bb569d128f7d35823b8693fb；main仍c6e9e0c238c657baecbf699ba6fdbada5d979b86；origin=git@github.com:1131657662/acrylic-pda-outbound.git。提交后精确回执落本轮final-manifest.json。
-- 本聊天01a1520d-c412-7402-b77d-311a043b3d1e拥有主树O02收口/受影响索引，无子代理。另一聊天01a15795-f801-7030-bfb2-765a5c2021cb已释放共享文档/HEAD；其后仅诊断本机权限/独立模拟器，预检区/索引待本批提交后协调，不计D/O/U。本聊天不使用模拟器/Codex配置，不代整合其候选树或复用test授权。
-- 展开34项写前脏路径、原字节、SHA及patch见.local/goal-20261020-resume/o02-cli-xlsx-closeout01/input-manifest.json与dirty-before-bytes.zip；31非看板继承保护守恒，取消链/归档/规则/本地工具/physical-disposition文件不混提交。此前断点原文及共享文档先归档到同根board-before.md/documents-before.zip。
-- 本聊天本轮仅文件消费者，无业务HTTP/MySQL/模拟器、APK构建或设备业务；转换子进程已退出。进程/监听及C/D/E余量见o02-current-xlsx-consumer01/environment-closeout.json；不凭旧PID/设备快照推定现时。
+- 固定主树D:/acrylic-pda-outbound、codex/development；本轮输入HEAD/fresh origin均3aa0a78ac812564263f1c62ffc1a9e6070fb9d8d；main仍c6e9e0c238c657baecbf699ba6fdbada5d979b86；origin=git@github.com:1131657662/acrylic-pda-outbound.git。O02五文档b63dce37及权限报告3aa0a78a已开发备份推送；本轮精确回执见O04证据根final-manifest.json。
+- 本聊天01a1520d-c412-7402-b77d-311a043b3d1e持O04文档/受影响索引/HEAD写窗，无子代理。另一聊天01a15795-f801-7030-bfb2-765a5c2021cb已交回共享写权，正独立只读续查本机策略；待本批收口后明确交窗，仅其独立报告可先写。本聊天不操作模拟器/Codex配置、不代整合候选或复用test授权。
+- O04证据根.local/goal-20261020-resume/o04-existing-coverage-audit01：input-manifest.json展开32项写前脏路径及56输入；dirty-before-bytes.zip/patch与documents-before.zip/board-before.md保全原字节。31非看板继承SHA保持；取消链/归档/规则/本地工具/physical-disposition不混提交。
+- 本聊天本轮仅文件消费者；无业务HTTP/MySQL/模拟器、APK构建或设备业务，转换子进程已退出。fresh进程/监听及C/D/E余量见本根environment-closeout.json，不凭旧PID或设备快照推定现时。
 - 共享MySQL命令指向.local/mysql/data、13316，仅读auto.cnf UUID d0d18310-b1a9-11f1-a7c8-d8bbc13a2b36；系统3306/33060未知，未SQL连接。ADB仅枚举USB22D2910042/m71；Debug Keystore哈希0539b3d0…保持。未使用test或USB业务。
 - 本轮tmp为0文件，无partial目录；证据原件保持，删除/释放0字节。此前JNA清理审批拒绝不换包装重试，旧9.44GiB不重复计增；原身份/原件/失败/继承/最终APK保持。
 
 ## 本轮验证、失败与限制
+- [O04原SAF包当前运行库消费](history/GOAL_O04_RETAINED_SAF_CURRENT_RUNTIME_CONSUMER_2026-10-20.md)：13直接产品输入未变、Artifact依赖有漂移；原CLI一次exit0，原件消费者460断言/五表265格值类型核同，16成员及verified.json不变。56输入/31继承守恒，来源仅历史合成登记，非真实身份、原机/外置介质、HTTP/MySQL或最终候选。
 - O02 CLI原ZIP7项、成功10次、预期拒绝14次符合预期；首轮Windows getpass管道超时原件保留，第二轮仅替换子进程合成口令交互边界，不称终端验收。包外登记为旁路合成登记，不从包内抄钥自证。
 - Excel5次CLI均exit0；原成员63份及前轮217输出SHA保持，25表全值/类型/顺序和汇总核同，最终XLSX预览逐表查看。大包12639行、11376有效/1263VOID、3418488000克，仅合成样本；控制台乱码原日志保留，UTF-8结构结果单独保存。非原生Excel/打印或外置介质。
 - [E06封存条件消费者](history/GOAL_E06_CURRENT_SEALED_CONSUMERS_2026-10-20.md)24/0/0/0沿原输入；其47组向量已由[Android实际消费者](history/GOAL_E06_ANDROID_SKU_PARITY_CONSUMER_2026-10-20.md)执行1/0/0/0、exit0。向量641d2a44…、1024源/10 fixture/31继承SHA守恒，专有XML/实际执行标记，仅主机解析。
@@ -59,8 +60,8 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ## 治理与下一动作
 - B1–B7已开发备份4bac6d0a/2ca7c660/ae9f9df0/55d37d64/de4d1023/45e8562f/7f1774ce；B6实际153路径（1同HEAD、152差异），B7已审未运行。治理/提交/清理不计验收。
 - [分类表](../.local/goal-20261020-resume/governance-closeout02/wip-classification.md)与[治理报告](history/PROJECT_GOVERNANCE_AUDIT_2026-10-20.md)保留；取消链/继承规则/归档/本地工具不混入。physical-disposition-last-request.json不能证合成，不提交；旧索引原件映射沿archive/2026-10-20与index-compaction01。
-- 零记忆顺序：AGENTS → 文档地图 → Git工作流 → 本当前区 → o02-cli-xlsx-closeout01/final-manifest.json → 两份O02报告及本轮verification.json；设备任务另读原断点，先重核环境。
-- 下一有界动作：从D/O/U既有证据矩阵选择独立缺口；先核O04独立来源实际封存包的电脑转换覆盖，已有相同输入有效证据则复用，不重跑本轮CLI/字号/SAF或既有主机集合。不消费维护前test备份、不因客户端启动审批拒绝换方式绕过。
+- 零记忆顺序：AGENTS → 文档地图 → Git工作流 → 本当前区 → O04证据根final-manifest.json/本轮报告 → D01证据矩阵及E08/D17 handoff；O02原回执沿o02-cli-xlsx-closeout01。设备任务先重核环境。
+- 下一有界动作：O04既有覆盖核对和运行库消费已收口；按D01证据矩阵/剩余计划选择不同独立缺口，不重跑CLI/字号/SAF或既有主机集合。不消费维护前test备份，不因启动审批拒绝换方式绕过；共享写窗明确交接后继续独立工作。
 - 其余独立开发沿D/O/U证据矩阵；不重复无依据失败/字号/SAF，不恢复取消链。原身份/可信保留、正常授权、完整UI/真机/外置介质、必要HTTP/MySQL/非空迁移、最终候选及第8节仍未满足。
 
 ## 持续关闭

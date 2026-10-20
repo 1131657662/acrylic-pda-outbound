@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- O04补[原SAF包当前运行库消费](history/GOAL_O04_RETAINED_SAF_CURRENT_RUNTIME_CONSUMER_2026-10-20.md)：原包已有历史覆盖，13直接产品输入未变，仅Artifact运行库变化后补一次CLI；460项原事实断言、五表265格值/类型及16原成员核同。仅合成独立来源文件，不计O04/E06整体、原身份/设备、HTTP/MySQL或最终候选。
+
 - O02补[Android原产物电脑CLI](history/GOAL_O02_CURRENT_ANDROID_PC_CLI_CONSUMER_2026-10-20.md)31项检查及[Excel转换消费者](history/GOAL_O02_CURRENT_ANDROID_XLSX_CONSUMER_2026-10-20.md)5组/25表/139396格全量核对；63原成员及旧输出守恒，首轮口令超时和控制台乱码原件保留。仅合成文件/交互边界，来源信任和业务回执不升级，不计完整O02/O05、设备或最终候选通过。
 
 - O02补[rescue完整主机回归](history/GOAL_O02_NATIVE_FULL_HOST_REGRESSION_2026-10-20.md)：同输入13类63项+2guard共65/0/0/0，实际执行；NATIVE/源码/fixture/继承及旧证据守恒。只收口该主机集合，非完整O02/设备/HTTP或最终候选。
