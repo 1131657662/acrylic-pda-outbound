@@ -4,6 +4,7 @@
 
 ## 最近可复核的专项报告
 
+- [U04 TEMP新产品APK四字号受影响消费者](GOAL_U04_TEMP_NEW_APK_STATUS_CONSUMER_2026-10-20.md)：复用原记录，四档各1项通过，83表/会话密文守恒，重启围栏保持；不代表TEMP真实IME、可信保留或完整UI通过。
 - [U04 筛选真实IME四字号](GOAL_U04_ADJUSTMENT_FILTER_NATIVE_IME_2026-10-20.md)：补IME留白，实际四档各1项通过，83表/会话密文守恒；14项定向回归通过，两次失败保全，非空保留/完整UI及L2/L3仍未验。
 - [U04 正式订单四字号状态筛选消费者](GOAL_U04_FORMAL_STATUS_FILTER_NATIVE_CONSUMER_2026-10-20.md)：同一已签名合成正式输入四档各1项通过，83表/会话内容守恒；产品未改、未预采密文SHA、主管保留仅空结果，不代表U04/D17整体通过。
 - U04原记录状态筛选：[重启前100%/200%消费者](GOAL_U04_STATUS_FILTER_NATIVE_CONSUMER_2026-10-20.md)、[重启围栏下130%/150%消费者](GOAL_U04_STATUS_FILTER_REBOOT_FONT_CONSUMER_2026-10-20.md)。同22条合成记录，83表/身份守恒；新轮保留130%失败并补围栏断言，不拼成同条件四字号、正式/可信保留输入或U04/D17通过。

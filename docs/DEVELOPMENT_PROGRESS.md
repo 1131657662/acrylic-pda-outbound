@@ -4,6 +4,7 @@
 
 ## 当前有效结论
 
+- TEMP原记录已有[新产品APK四字号受影响消费者](history/GOAL_U04_TEMP_NEW_APK_STATUS_CONSUMER_2026-10-20.md)：复用原22条合成记录，四档各1项通过，83表/会话密文及旧证据守恒；重启围栏全部调整行禁用，非空可信保留、真实IME和完整UI/统一候选仍未验。
 - 原记录筛选页已有[真实IME四字号有界验证](history/GOAL_U04_ADJUSTMENT_FILTER_NATIVE_IME_2026-10-20.md)：仅补系统栏/IME留白；同一保留合成正式输入四档各1项通过，14项定向回归、lint 0错误/508警告；83表与会话密文守恒，两次失败保全，不记完整UI或统一候选通过。
 - 正式订单原记录筛选已有[同一合成输入四字号原生消费者](history/GOAL_U04_FORMAL_STATUS_FILTER_NATIVE_CONSUMER_2026-10-20.md)：100%/130%/150%/200%各1项通过，83表与会话内容守恒，产品未改；未预采密文SHA，非空可信主管保留及完整UI/统一候选仍未验，不记U04/D17整体通过。
 - 原记录状态筛选已有[重启前100%/200%消费者](history/GOAL_U04_STATUS_FILTER_NATIVE_CONSUMER_2026-10-20.md)与[重启围栏下130%/150%消费者](history/GOAL_U04_STATUS_FILTER_REBOOT_FONT_CONSUMER_2026-10-20.md)：实际四选项、分页/组合/重建，83表及身份守恒；后者所有调整行禁用。130%首轮测试预期失败保留；主管保留仅空结果，不拼成同条件四字号或U04/D17/L2/L3通过。
