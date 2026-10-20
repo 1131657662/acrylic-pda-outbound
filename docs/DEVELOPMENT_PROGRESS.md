@@ -4,6 +4,7 @@
 
 ## 当前有效结论
 
+- 正式订单原记录筛选已有[同一合成输入四字号原生消费者](history/GOAL_U04_FORMAL_STATUS_FILTER_NATIVE_CONSUMER_2026-10-20.md)：100%/130%/150%/200%各1项通过，83表与会话内容守恒，产品未改；未预采密文SHA，非空可信主管保留及完整UI/统一候选仍未验，不记U04/D17整体通过。
 - 原记录状态筛选已有[重启前100%/200%消费者](history/GOAL_U04_STATUS_FILTER_NATIVE_CONSUMER_2026-10-20.md)与[重启围栏下130%/150%消费者](history/GOAL_U04_STATUS_FILTER_REBOOT_FONT_CONSUMER_2026-10-20.md)：实际四选项、分页/组合/重建，83表及身份守恒；后者所有调整行禁用。130%首轮测试预期失败保留；主管保留仅空结果，不拼成同条件四字号或U04/D17/L2/L3通过。
 - 总目标、D01–D18、O01–O05、U01–U04 和第 8 节闸门仍未完成；局部 L1、合成输入和开发备份不替代实际最终候选上的组合验收。当前断点和下一动作以 [看板](ORCHESTRATION_STATUS.md) 为准。
 - 四档字号保留明细的 tar 只读比较已形成独立历史报告：[U04 retained details tar audit](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)。该报告区分 Room DB/WAL、应用资料和运行元数据，并保留输入与输出哈希；不改变业务验收状态。
