@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-20
 branch: codex/development
-head: c221a8ec
-dirty_entries: 43
+head: 1853e000
+dirty_entries: 34
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -17,7 +17,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 总目标active、未完成。本轮D13导出中心状态筛选/P5兼容修复及有界TCP补证通过；不计生成/导出成功、D13整体/L2/D18或第8节。
 
 ## 精确断点与写权
-- 固定树D:/acrylic-pda-outbound、codex/development；输入HEAD/实核开发远端=c221a8ec175bcc6e6da785dd10cbe7630c114734，main=c6e9e0c238c657baecbf699ba6fdbada5d979b86；origin=git@github.com:1131657662/acrylic-pda-outbound.git。本轮仅5代码/2报告/3共享文档待开发备份；提交/远端回执随后写本根final-closeout.json，事实可留postcommit WIP。
+- 固定树D:/acrylic-pda-outbound、codex/development；输入HEAD=c221a8ec175bcc6e6da785dd10cbe7630c114734；本轮开发备份1853e000e32bdb3cfcfd1d7b5e23258e346bbf53已推送并核远端一致，main=c6e9e0c238c657baecbf699ba6fdbada5d979b86；origin=git@github.com:1131657662/acrylic-pda-outbound.git。提交/远端回执及本轮全路径SHA见本根precommit-review.json与postcommit-closeout.json；其他继承改动保持。
 - 本聊天01a1520d-c412-7402-b77d-311a043b3d1e持主树/共享文档/HEAD写窗，无子代理；另一聊天仅专项test/window03脚本与来源报告，明确不写共享文档/HEAD。其新增报告保留不混本批，不占ADB/M71/test。
 - 本根.local/goal-20261020-resume/d13-export-status-read01；input-before/35输入原字节/patch/SHA，resume-review01另保全40脏路径；3共享文档原字节/SHA及旧看板归档保持。另一聊天报告、全部非本批继承路径不暂存；run03源码2447成员逐SHA无漂移。
 - 新DB19340/HTTP19444均释放，run02/03认证shutdown exit0；共享13316仍指.local/mysql/data，系统3306未知不连接。环境/监听/Keystore/C/D/E见resume-review01/environment.json及environment-closeout.json。ADB只读枚举M71在线，未操作/安装/登录/模拟器。
