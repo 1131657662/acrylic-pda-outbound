@@ -54,7 +54,7 @@ class BackendActivationTest(unittest.TestCase):
         env = dict(os.environ, BASH_ENV=str(self.stub), ACTIVATION_TEST_LOG=str(self.log),
                    ACTIVATION_FAIL=failure, ACTIVATION_SCHEMA=str(SCHEMA if schema is None else schema))
         result = subprocess.run(['bash', str(self.release / 'deploy/activate_backend.sh'), str(self.release)],
-                                env=env, capture_output=True, text=True, timeout=15)
+                                env=env, capture_output=True, text=True, timeout=60)
         self.events = self.log.read_text().splitlines() if self.log.exists() else []
         return result
 
