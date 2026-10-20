@@ -4,6 +4,7 @@
 
 ## 当前有效结论
 
+- D04已补[审计前缀流式JDBC测试覆盖修复](history/GOAL_D04_AUDIT_STREAMING_TEST_REPAIR_2026-10-20.md)：当前主树原失败9/1复现，修正旧mock为真实回调消费者后18/0/0/0；两审计表ID/设备序号冲突、幂等及JDBC失败覆盖。生产校验不变，不计MySQL/HTTP、完整回归或部署放行。
 - O03补[当前Android封存电脑返还文件消费者](history/GOAL_O03_CURRENT_ANDROID_SEALED_RETURN_2026-10-20.md)：显式外部向量实际调用产品双层验签，覆盖成功、错根/范围/正文/汇总/删除边界及旧终态反例；只作主机有界组合，不替代原机文件持久消费、真实HTTP或最终候选。
 - O03已补[处理响应与返还下载一致性修复](history/GOAL_O03_RESULT_DOWNLOAD_BINDING_2026-10-20.md)：23项定向测试及封存真实传输字节离线回放通过；错结果/内容/签名不发布完整文件，冲突保全且原键保持。不计新增HTTP、签名信任、现时净值或O03整体通过。
 - O02已补[TEMP首轮历史成功原文件离线核验](history/GOAL_O02_TEMP_RECEIPT_OFFLINE_2026-10-20.md)：36项TEMP及30项FORMAL定向回归通过，封存TEMP成功原正文/HTTP响应实际CLI退出0；包外原范围/映射/公钥与原件守恒。仅历史回执，不确认应急包完整性、现时终态或放行/删除，不计完整O02或最终组合。

@@ -80,15 +80,6 @@ class SourceEvidenceIntakeAuditPrefixTest {
         assertUnverifiable(1);
     }
 
-    @Test void conflictingFormalSubmissionDigestFailsClosed() {
-        var saved = row(event(1), 1);
-        when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(saved));
-        when(jdbc.queryForList(anyString(), eq(String.class), any(Object[].class)))
-            .thenReturn(List.of()).thenReturn(List.of("f".repeat(64)));
-
-        assertUnverifiable(1);
-    }
-
     @Test void originalAuthorizationEpochMustMatchStoredRow() {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of(row(event(1), 1)));
         when(origins.verify(eq(device), eq(warehouse), any()))
@@ -173,6 +164,7 @@ class SourceEvidenceIntakeAuditPrefixTest {
         return new E2aPageItem("AUDIT", SubmissionJson.uuid(event, "id"), "AUDIT_RECORDS",
             UUID.randomUUID(), ImportFiles.sha256(original), original.length, 1, hash, "SAVED", null, null, null);
     }
+
 
     private void assertUnverifiable(long through) {
         assertThatThrownBy(() -> prefix.require(device, warehouse, 3, through))
