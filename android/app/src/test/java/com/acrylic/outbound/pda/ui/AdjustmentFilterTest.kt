@@ -15,6 +15,11 @@ class AdjustmentFilterTest {
     }
     private fun read(after: Long) = rows.filter { it.sequence > after }.take(20)
 
+    @Test fun statusFilterLabelsMatchApprovedOptions() {
+        assertEquals(listOf("全部", "有效", "已撤销", "主管保留"),
+            AdjustmentStatusFilter.values().map { it.label })
+    }
+
     @Test fun productSearchCrossesOriginalPagesAndRetainsOriginalSequence() {
         val filter = AdjustmentFilter.parse("", " m型号 ")
         val first = filter.page(0, ::read)

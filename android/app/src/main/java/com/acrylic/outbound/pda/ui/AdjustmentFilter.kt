@@ -1,7 +1,7 @@
 package com.acrylic.outbound.pda.ui
 
 enum class AdjustmentStatusFilter(val code: String, val label: String) {
-    ALL("ALL", "全部状态"),
+    ALL("ALL", "全部"),
     ACTIVE("ACTIVE", "有效"),
     VOID("VOID", "已撤销"),
     RETAINED("RETAINED", "主管保留");
