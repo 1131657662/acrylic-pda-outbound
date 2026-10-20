@@ -4,6 +4,9 @@
 
 ## 最近可复核的专项报告
 
+- [O02 Android原产物电脑CLI消费者](GOAL_O02_CURRENT_ANDROID_PC_CLI_CONSUMER_2026-10-20.md)：7原ZIP/10成功/14预期拒绝；首轮超时保留，合成包外登记不作真实信任。
+- [O02 Android原产物Excel转换消费者](GOAL_O02_CURRENT_ANDROID_XLSX_CONSUMER_2026-10-20.md)：5次CLI/25表/139396格与63原成员核同，含12639行规模/危险文本/处置/空包；非真实身份、原生Excel或完整O02/O05验收。
+
 - [O02 rescue完整主机回归](GOAL_O02_NATIVE_FULL_HOST_REGRESSION_2026-10-20.md)：短TEMP/正确资源下同次65项零失败零跳过；旧失败保持，非跨版本拼接，非设备或完整O02验收。
 
 - [O02原生SQLite主机短路径复验](GOAL_O02_NATIVE_SQLITE_SHORT_PATH_RECOVERY_2026-10-20.md)：新路径长度依据重新入队，原19失败+2guard实际21项零失败/跳过；旧CANTOPEN与首轮资源失败原件保留，不计完整O02。

@@ -6,31 +6,34 @@
 ```yaml
 date: 2026-10-20
 branch: codex/development
-head: 9d165a2d
-dirty_entries: 34
+head: 8fe5177a
+dirty_entries: 35
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ```
 <!-- FACTS_END -->
 
-总目标active、未完成。已补[O03当前Android封存返还消费者](history/GOAL_O03_CURRENT_ANDROID_SEALED_RETURN_2026-10-20.md)：当前产品双层验签实跑13/0/0/0、exit0，复用前轮电脑逐字输出、包外原隔离公钥。仅主机有界组合，不计新HTTP/原机文件持久消费/现时净值、D18或§8整体通过。
+总目标active、未完成。O02已补本轮Android主机原产物的[电脑CLI](history/GOAL_O02_CURRENT_ANDROID_PC_CLI_CONSUMER_2026-10-20.md)31项检查和[Excel转换](history/GOAL_O02_CURRENT_ANDROID_XLSX_CONSUMER_2026-10-20.md)5组/25表/139396格核对；仅合成文件消费者，不计原身份、业务回执、设备通道、O02/O05整体、D18或第8节通过。
 
 ## 精确断点与写权
-- 固定主树D:/acrylic-pda-outbound、codex/development；HEAD与fresh origin开发分支均c5e6f3848a21aa706168aac8b2e52baaf53cb36a；main仍c6e9e0c238c657baecbf699ba6fdbada5d979b86；origin=git@github.com:1131657662/acrylic-pda-outbound.git。
-- 本聊天为主树本轮Android主机测试及索引写者，无子代理；本轮6明确路径已提交推送“开发备份”，暂存空。另聊天01a15795-f801-7030-bfb2-765a5c2021cb已结束隔离部署预检，未改业务源码或部署；隔离树已移除Git登记，本轮预检进程退出。共享文档只作原字节比对后的最小增补。
-- 展开34脏路径保留：32继承WIP、另会话预检报告/历史索引增补；31非看板继承路径逐SHA保持，看板仅授权刷新。原字节沿o02-temp-receipt01/inherited-bytes.zip；本轮编辑前字节与哈希在.local/goal-20261020-resume/o03-android-sealed-consumer01/edit-inputs.zip、input-manifest.json，原向量/源码见consumer-inputs-final.json，全部改动/输出见final-manifest.json。生成块目录折叠口径不同。
-- 本轮未启动业务HTTP/MySQL/模拟器、未构建APK/操作设备业务；旧APK/tar/身份/Keystore保持。其他会话隔离test/bootJar已结束，详见独立预检记录；开发会话新进程按实际命令核对，不代停。
-- 项目共享MySQL命令行指向.local/mysql/data、13316，auto.cnf UUID d0d18310-b1a9-11f1-a7c8-d8bbc13a2b36；系统3306/33060身份未知不连接；ADB5037仅观察。设备/进程不得凭旧PID推定。
-- C/D/E余量、完整进程/监听见o03-android-sealed-consumer01/environment-closeout.json。本轮未产生隔离库或大构建产物，删除/释放0；历史清理拒绝不换包装重试，旧9.44GiB不重复计增。
+- 固定主树D:/acrylic-pda-outbound、codex/development；本次写前HEAD与fresh origin均8fe5177a18ad1095bb569d128f7d35823b8693fb；main仍c6e9e0c238c657baecbf699ba6fdbada5d979b86；origin=git@github.com:1131657662/acrylic-pda-outbound.git。提交后精确回执落本轮final-manifest.json。
+- 本聊天01a1520d-c412-7402-b77d-311a043b3d1e拥有主树O02收口/受影响索引，无子代理。另一聊天01a15795-f801-7030-bfb2-765a5c2021cb已释放共享文档/HEAD；其后仅诊断本机权限/独立模拟器，预检区/索引待本批提交后协调，不计D/O/U。本聊天不使用模拟器/Codex配置，不代整合其候选树或复用test授权。
+- 展开34项写前脏路径、原字节、SHA及patch见.local/goal-20261020-resume/o02-cli-xlsx-closeout01/input-manifest.json与dirty-before-bytes.zip；31非看板继承保护守恒，取消链/归档/规则/本地工具/physical-disposition文件不混提交。此前断点原文及共享文档先归档到同根board-before.md/documents-before.zip。
+- 本聊天本轮仅文件消费者，无业务HTTP/MySQL/模拟器、APK构建或设备业务；转换子进程已退出。进程/监听及C/D/E余量见o02-current-xlsx-consumer01/environment-closeout.json；不凭旧PID/设备快照推定现时。
+- 共享MySQL命令指向.local/mysql/data、13316，仅读auto.cnf UUID d0d18310-b1a9-11f1-a7c8-d8bbc13a2b36；系统3306/33060未知，未SQL连接。ADB仅枚举USB22D2910042/m71；Debug Keystore哈希0539b3d0…保持。未使用test或USB业务。
+- 本轮tmp为0文件，无partial目录；证据原件保持，删除/释放0字节。此前JNA清理审批拒绝不换包装重试，旧9.44GiB不重复计增；原身份/原件/失败/继承/最终APK保持。
 
-## 本轮实际实现、验证与限制
-- 新RelaySealedVector/RelaySealedReturnTest只读消费前轮Python返还原字节，调用RelayReceiptVerifier及ReceiptVerifier；Gradle登记外部向量路径/目录为测试输入，未提供材料明确skip，本轮0skip。
-- gradle-final02为13/0/0/0、exit0：9新封存组合+4原验签边界；成功SYNCED、错预置根/原身份/正文/汇总/删除边界/重复JSON拒绝，旧终态不回退。原量601500整数克与正文一致；原件每项结束复读守恒。
-- 来源为历史合成成功批次；从原runtime及run.py定位隔离1501包外DER公钥，指纹/原kid与签名一致。初探1504钥InvalidSignature保存在key-resolution.md/key-resolution-input.json；未读取私钥，不计重签。
-- 前轮电脑输出SHA ac3d73ea35f35b0e96ab75dccd85b5c00f85e1ba05176a13e7ae2f9b2c652363保持；原包无receipt.json，不补造。没有本轮HTTP/MySQL/Room/设备/OpenDocument/APK/外置介质业务。
-- 原机文件权限/清单回查/Room持久写入不被主机双层验签替代。作者/自审均本助手，currentBusinessStateVerified/releaseAllowed/localDeletionAllowed=false；生产Kotlin/服务端/契约/迁移/开关未改。
-- 前轮O03下载一致性23项及封存Python回放、O02 TEMP36+FORMAL30和原CLI证据沿各自报告保留；不拼成新HTTP或最终候选。
+## 本轮验证、失败与限制
+- O02 CLI原ZIP7项、成功10次、预期拒绝14次符合预期；首轮Windows getpass管道超时原件保留，第二轮仅替换子进程合成口令交互边界，不称终端验收。包外登记为旁路合成登记，不从包内抄钥自证。
+- Excel5次CLI均exit0；原成员63份及前轮217输出SHA保持，25表全值/类型/顺序和汇总核同，最终XLSX预览逐表查看。大包12639行、11376有效/1263VOID、3418488000克，仅合成样本；控制台乱码原日志保留，UTF-8结构结果单独保存。非原生Excel/打印或外置介质。
+- [E06封存条件消费者](history/GOAL_E06_CURRENT_SEALED_CONSUMERS_2026-10-20.md)24/0/0/0沿原输入；其47组向量已由[Android实际消费者](history/GOAL_E06_ANDROID_SKU_PARITY_CONSUMER_2026-10-20.md)执行1/0/0/0、exit0。向量641d2a44…、1024源/10 fixture/31继承SHA守恒，专有XML/实际执行标记，仅主机解析。
+- 普通服务端全量回归已结束：输入295aadc9+清单32条继承/看板WIP；证据.local/goal-20261020-resume/server-full-regression01，5865输入SHA，310 suite/4775项、4756通过/0失败/19跳过、exit0。原样本/字体与classpath实际前置，完整XML/HTML已封存，普通test按既有规则排除IT。
+- D04原9项/1失败复现；旧queryForList mock未向真实RowCallbackHandler传冲突行。只修测试，实际产品回调覆盖两审计表/ID与设备序号、冲突/同文幂等、后行冲突/JDBC失败；两类18/0/0/0、exit0，生产两文件逐SHA不变。
+- D13原11项/3失败复现；retire()有活动operation只延迟退出，并非owner死亡。改为独立子JVM发布合成租约后退出，OS释放锁，保留三处原孤儿拒绝/清理/只读断言；四类21/0/0/0、exit0，生产三文件逐SHA不变。
+- D13普通test依赖既有recoveryControlClasspath。原延迟退休/效果门8+2项同时通过；原失败XML/log与final02 XML/输入/命令/输出SHA各自封存，不用后续构建报告覆盖。作者/自审均本助手，无新业务DB/HTTP/恢复全链/Android/部署。
+- 此次全回归不改写原预检4764项失败事实；19skip逐类为SKU向量1、原件模板8、闭合包3+6及Windows符号链接1。未配置原件环境变量/符号链接权限而未执行，不计通过；没有*IT、业务DB/HTTP/Android、非空迁移或整包最终候选。
+- [O03当前Android封存返还消费者](history/GOAL_O03_CURRENT_ANDROID_SEALED_RETURN_2026-10-20.md)c5e6f384的13/0/0/0沿原证据，原电脑输出/包外公钥保持；仅主机双层验签，非原机持久文件/现时净值/HTTP。其余O02/O03原成功文件按各报告范围，不拼最终候选。
 
 ## 独立部署预检（2026-10-20）
 - 预检三文档已以开发备份64eaf491提交推送；main/现网未动。原输入69d98046的[报告](history/DEPLOY_PREFLIGHT_2026-10-20.md)及全部失败日志/XML保留，不改历史失败为通过。
@@ -49,14 +52,15 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - [D06/D07默认关闭Chrome/HTTP](history/GOAL_D06_D07_DEFAULT_OFF_CHROME_HTTP_2026-10-20.md)aac19af5：四真实消费者通过，页面零撤回POST/直调409；原runner守恒exit1保留，独立只读SQL/trace复核exit0，仅4新增登录审计。13业务表/原审计守恒；非正向/非空升级或统一候选。
 - [TEMP真实IME四字号](history/GOAL_U04_TEMP_NATIVE_IME_2026-10-20.md)69d98046及[IME修复](history/GOAL_U04_ADJUSTMENT_FILTER_NATIVE_IME_2026-10-20.md)a27b47e9、[TEMP新APK消费者](history/GOAL_U04_TEMP_NEW_APK_STATUS_CONSUMER_2026-10-20.md)f9eed366保持原输入/失败/层级；重启围栏保持，非空可信保留/完整UI/真机未验。
 - 已批准全部/有效/已撤销/主管保留筛选项沿既有实现与证据复用，本轮不再凑字号或重做SAF；原身份/原资料/可信保留/现场和最终候选仍缺。
-- O02 Android主机SQLite CANTOPEN继续暂缓：19方法+2guard仅2guard通过、19失败，verification05未修复；原日志/XML在o02-fixture-recovery01，WorkFixture已恢复，没新runner假设不重跑。电脑核验成功不替代此项。
+- [O02短路径复验](history/GOAL_O02_NATIVE_SQLITE_SHORT_PATH_RECOVERY_2026-10-20.md)：292字符DB路径新依据，原NATIVE/断言不变；先单方法1/0/0/0，后原19失败+2guard同次21/0/0/0、exit0。首轮资源加载1失败及旧CANTOPEN保留；另有[完整rescue主机回归](history/GOAL_O02_NATIVE_FULL_HOST_REGRESSION_2026-10-20.md)14 suite共65/0/0/0、exit0，1022源/10fixture/31继承SHA不变，原XML与诊断保留。设备/HTTP/最终候选仍未验。
 - [tar审计](history/GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)、[大字L1](history/GOAL_U04_INDEPENDENT_LARGE_FONT_L1_2026-10-19.md)、[恢复门L1](history/GOAL_RECOVERY_LEASE_RETIREMENT_L1_2026-10-19.md)及run1614/原恢复并发HTTP沿各自输入/层级，不拼统一候选。
 
 ## 治理与下一动作
 - B1–B7已开发备份4bac6d0a/2ca7c660/ae9f9df0/55d37d64/de4d1023/45e8562f/7f1774ce；B6实际153路径（1同HEAD、152差异），B7已审未运行。治理/提交/清理不计验收。
-- [分类表](../.local/goal-20261020-resume/governance-closeout02/wip-classification.md)与[治理报告](history/PROJECT_GOVERNANCE_AUDIT_2026-10-20.md)保留；取消链/继承规则/归档/本地工具不混入。physical-disposition-last-request.json不能证合成，不提交。旧索引原件和映射在archive/2026-10-20及index-compaction01，GOAL原件不动。
-- 零记忆顺序：AGENTS → 文档地图 → Git工作流 → 本当前区 → o03-android-sealed-consumer01/closeout.md与final-manifest.json → 新报告。设备任务另读u04-temp-native-ime01原断点，不凭历史PID/服务/AVD推定。
-- 下一有界动作：核独立预检4项断言的实际根因，先选审计前缀JDBC消费者测试缺口；重型构建前核预检资源与写权，不再新造同职责查询，不重复CANTOPEN/字号/SAF，不恢复取消链。原身份/可信保留、正常授权、完整UI/真机/外置介质、必要HTTP/MySQL/非空迁移、D01–D18/O/U最终候选及§8仍未满足。
+- [分类表](../.local/goal-20261020-resume/governance-closeout02/wip-classification.md)与[治理报告](history/PROJECT_GOVERNANCE_AUDIT_2026-10-20.md)保留；取消链/继承规则/归档/本地工具不混入。physical-disposition-last-request.json不能证合成，不提交；旧索引原件映射沿archive/2026-10-20与index-compaction01。
+- 零记忆顺序：AGENTS → 文档地图 → Git工作流 → 本当前区 → o02-cli-xlsx-closeout01/final-manifest.json → 两份O02报告及本轮verification.json；设备任务另读原断点，先重核环境。
+- 下一有界动作：从D/O/U既有证据矩阵选择独立缺口；先核O04独立来源实际封存包的电脑转换覆盖，已有相同输入有效证据则复用，不重跑本轮CLI/字号/SAF或既有主机集合。不消费维护前test备份、不因客户端启动审批拒绝换方式绕过。
+- 其余独立开发沿D/O/U证据矩阵；不重复无依据失败/字号/SAF，不恢复取消链。原身份/可信保留、正常授权、完整UI/真机/外置介质、必要HTTP/MySQL/非空迁移、最终候选及第8节仍未满足。
 
 ## 持续关闭
 - 不恢复换机承接、多跳、接收者确认/激活链，不启动旧run03；七类生产决定/TEMP生产归档fail-closed，localDeletionAllowed=false。
