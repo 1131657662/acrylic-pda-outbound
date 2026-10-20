@@ -6,6 +6,9 @@
 
 - [E06 Android消费实际服务端SKU向量](GOAL_E06_ANDROID_SKU_PARITY_CONSUMER_2026-10-20.md)：47组全字段/顺序/错误一致，1项实际执行零失败零跳过；源码及继承守恒，仅主机解析范围。
 
+- [部署真实数据本机副本溯源](DEPLOY_LOCAL_DATA_PROVENANCE_2026-10-20.md)：逐项列1514/1445/1457、M71及其他候选路径/时间/哈希/出处；无符合非合成MySQL闸门的可用副本，真实库链继续阻断，未连接或导出。
+- [预检四断言语义审查](DEPLOY_ASSERTION_REVIEW_2026-10-20.md)与[工具链统一](DEPLOY_TOOLCHAIN_REMEDIATION_2026-10-20.md)：测试缺陷分类、包源/构建/运行时一致性；固定候选复验结果分别登记，非部署放行。
+
 - [E06当前源封存原件条件消费者](GOAL_E06_CURRENT_SEALED_CONSUMERS_2026-10-20.md)：原件/采集/闭合/SKU向量24项零失败零跳过，历史字节守恒；非业务HTTP、设备或最终候选。
 
 - [服务端普通测试完整回归](GOAL_SERVER_ORDINARY_FULL_REGRESSION_2026-10-20.md)：310 suite、4775项，4756通过、0失败、19跳过；输入源码/继承改动守恒，非IT或最终部署候选。

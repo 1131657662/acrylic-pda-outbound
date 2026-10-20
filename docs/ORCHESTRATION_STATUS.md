@@ -6,9 +6,9 @@
 ```yaml
 date: 2026-10-20
 branch: codex/development
-head: dec98b2d
-dirty_entries: 33
-worktrees: 33
+head: 1af59432
+dirty_entries: 37
+worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ```
@@ -33,11 +33,15 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - 前轮O03下载一致性23项及封存Python回放、O02 TEMP36+FORMAL30和原CLI证据沿各自报告保留；不拼成新HTTP或最终候选。
 
 ## 独立部署预检（2026-10-20）
-- 预检聊天已按用户顺序接续整改；先保存三份文档“开发备份”。开发会话继续拥有其业务WIP；本聊天只改预检文档及后续独占隔离树，任何真实test部署仍待明确授权。
-- 固定输入69d98046ec14c95a9d71bf350daa5a6417c8d14b；[报告](history/DEPLOY_PREFLIGHT_2026-10-20.md)及.local/deploy-preflight-20261020保留命令、失败XML、输入/产物哈希与清理记录，非开发HEAD完整验收。
-- 初轮server test为4764/11失败/17跳过；补原样本、固定SHA字体和既有classpath任务后五类定向57/4失败，正常字体编译打包exit0；Ubuntu激活stub自测8/8通过。未重跑全量、未验真实DB/HTTP/备份/远端激活。
-- 余下4断言涉及测试/实现不一致；旧打包器缺校验所需清单/运行时布局且版本约束未对齐，部署仍阻断。无源码、部署脚本、main、提交/推送或现网变更，开发会话保持独立。
-- 隔离树逻辑文件441041457字节已清理；D可用40761937920→41295589376字节，其他活动写入下不把观测增量全计本轮；原样本/失败日志/XML保留，无本轮重型进程残留。
+- 预检三文档已以开发备份64eaf491提交推送；main/现网未动。原输入69d98046的[报告](history/DEPLOY_PREFLIGHT_2026-10-20.md)及全部失败日志/XML保留，不改历史失败为通过。
+- 本聊天01a15795-f801-7030-bfb2-765a5c2021cb只写独立树.local/worktrees/deploy-remediation-20261020、codex/deploy-preflight-20261020；主开发会话继续拥有其WIP。本次共享看板/索引写前保存原字节并检查漂移。
+- [四断言审查](history/DEPLOY_ASSERTION_REVIEW_2026-10-20.md)：三租约为把延迟退出误当死亡的输入错误，审计为失效JDBC mock；只修测试并保留业务拒绝/清理/只读语义，产品实现未改。a95d6632普通server 4776/0失败/19跳过，原XML保留，不拼最终候选。
+- [部署工具统一](history/DEPLOY_TOOLCHAIN_REMEDIATION_2026-10-20.md)已提交独立树a95d6632；同SHA源清单/构建回执、artifactHashes、source-sha256.json及Linux renderer/browser装配。a95激活自测1超时后改夹具等待，冻结候选8cb51ded3ef2cd6cd45eaca09d8947ce068e89cd；尚未整合主开发；短期分支仅按开发备份推送，不代表放行。
+- [8cb51ded固定复验](history/DEPLOY_FIXED_CANDIDATE_RECHECK_2026-10-20.md)：server4776/0失败/19跳过、renderer138/0/0/0、bootJar/installDist完成；Linux部署18/0/0/0、checkpoint七场景与shell语法exit0。首轮renderer缺浏览器2失败保全，补环境后同SHA实跑通过；19skip不计通过。
+- [本机副本溯源](history/DEPLOY_LOCAL_DATA_PROVENANCE_2026-10-20.md)：1514/1445/1457的dump、导出时间、原哈希与配套目录已核；其原模拟器/合成库存人员开发来源不能满足非合成闸门。M71归档可证原设备但非MySQL；开发/预览库来源不足不擅选。
+- 本机没有符合闸门要求的真实数据副本（限本次项目/已知归档检索，非整机穷尽保证）；真实非空升级/备份还原/相应API-worker保持阻断未验。不连接任何数据库、不导新数据；如有可信候选先交用户确认。证据.local/deploy-remediation-20261020/local-data-*。
+- 候选包preflight-8cb51ded-20261020-01.tar.gz已生成，SHA8539177d1274864b94772c9941a1ff3dfab9735dda545b4fca988f3232c37ad0；独立Linux解包核manifest/source/647摘要及执行位通过。包仅本机，不计LinuxJava报表/API-worker或部署验收。
+- 下一步仅待可信来源证据及用户确认再开真实库链，整体仍不放行。所有失败日志/XML、隔离库保留，无清理；实际test部署仍须明确授权，其他持续关闭边界不变。
 
 ## 保留的前轮证据与未验
 - [D06/D07默认关闭Chrome/HTTP](history/GOAL_D06_D07_DEFAULT_OFF_CHROME_HTTP_2026-10-20.md)aac19af5：四真实消费者通过，页面零撤回POST/直调409；原runner守恒exit1保留，独立只读SQL/trace复核exit0，仅4新增登录审计。13业务表/原审计守恒；非正向/非空升级或统一候选。
