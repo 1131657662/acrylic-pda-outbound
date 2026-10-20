@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- D04补[原Room/真实HTTP恢复组合](history/GOAL_D04_ORIGINAL_ROOM_HTTP_RECOVERY_2026-10-21.md)：新非空隔离库，原Android主机1/0/0/0、原server断言体直接执行完成；五处丢响应/重开、四签名/请求原文、13原件与REVIEW_RESERVED绑定离线核同。前两轮环境/资源失败保留，无设备或完整D04/最终候选。
+
 - D04补[旧结构STOP前缀兼容定向](history/GOAL_D04_LEGACY_STOP_PREFIX_COMPATIBILITY_2026-10-21.md)：旧run732 SQL缺表新依据；已有守卫/首轮来源绑定在新非空隔离MySQL复验13/0/0/0，103表守恒，普通8/0/0/0。首轮1项夹具失败原件保留，无HTTP/Android，不计D04整体或第8节。
 
 - D06/D07补[干净提交Android/HTTP有界组合](history/GOAL_D06_D07_CLEAN_ANDROID_HTTP_COMBINATION_2026-10-21.md)：提交源编译exit0，新空隔离库夹具1/0/0/0、新AVD四条原生通过；唯一成功两包601500克、原冻结正文/四签名/逐笔账务独立核同。没有Chrome/非空迁移/恢复或完整矩阵，不计整体或第8节。

@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [D04原Room/真实HTTP恢复组合](GOAL_D04_ORIGINAL_ROOM_HTTP_RECOVERY_2026-10-21.md)：原Android主机1项/原server断言体完成，五处丢响应、原签/原文/13文件/占用离线核同；两轮失败与审计假设修正保留，非设备/完整D04或最终候选。
+
 - [D04旧结构STOP前缀兼容](GOAL_D04_LEGACY_STOP_PREFIX_COMPATIBILITY_2026-10-21.md)：定位run732缺表SQL；新非空隔离库13项与普通8项通过、103表守恒；首轮夹具失败/停机/清理阻断保留，仅有界L1，无Android或HTTP。
 
 - [D06/D07干净提交Android/HTTP组合](GOAL_D06_D07_CLEAN_ANDROID_HTTP_COMBINATION_2026-10-21.md)：提交源独立编译、全新空库夹具1项及新AVD四原生通过；独立原文/四签名/两笔账务核同，运行器失败与清理阻断保留，仅合成有界组合。
