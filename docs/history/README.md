@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [D04首轮STOP结构分支绑定](GOAL_D04_FIRST_ROUND_SCHEMA_BINDING_2026-10-21.md)：首轮错配修复、新非空JUnit1项通过；普通两轮失败与独立15项补验分列，非整体或第8节。
+
 - [D04原Room/真实HTTP恢复组合](GOAL_D04_ORIGINAL_ROOM_HTTP_RECOVERY_2026-10-21.md)：原Android主机1项/原server断言体完成，五处丢响应、原签/原文/13文件/占用离线核同；两轮失败与审计假设修正保留，非设备/完整D04或最终候选。
 
 - [D04旧结构STOP前缀兼容](GOAL_D04_LEGACY_STOP_PREFIX_COMPATIBILITY_2026-10-21.md)：定位run732缺表SQL；新非空隔离库13项与普通8项通过、103表守恒；首轮夹具失败/停机/清理阻断保留，仅有界L1，无Android或HTTP。

@@ -100,7 +100,15 @@ public class SourceEvidenceIntakeAuditPrefix {
                 LEFT JOIN temporary_source_continuation_activation n ON n.ticket_id=r.ticket_id AND n.scope_id=c.id
                   AND n.from_work_round=r.from_work_round AND n.new_authorization_id=s.temporary_authorization_id
                   AND n.target_device_id=s.freeze_device_id AND n.target_operator_id=s.operator_id
-                WHERE s.id=?
+                WHERE s.id=? AND (s.work_round<>1 OR (
+                  c.work_round=1 AND s.assignment_id IS NULL AND s.continuation_id IS NULL
+                  AND EXISTS (
+                    SELECT 1 FROM temporary_work_origin t
+                    JOIN temporary_authorization a ON a.id=t.authorization_id
+                    WHERE t.creator_device_id=c.creator_device_id AND t.client_order_id=c.client_order_id
+                      AND a.id=s.temporary_authorization_id AND a.device_id=c.creator_device_id
+                      AND a.device_id=s.freeze_device_id AND a.user_id=s.operator_id
+                      AND a.warehouse_id=c.warehouse_id AND a.recovery_epoch=s.source_recovery_epoch)))
                 """, String.class, Ids.bytes(submission)):
                 jdbc.queryForList("""
                 SELECT BIN_TO_UUID(c.client_order_id)

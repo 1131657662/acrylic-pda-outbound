@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- D04补[首轮STOP结构分支绑定修复](history/GOAL_D04_FIRST_ROUND_SCHEMA_BINDING_2026-10-21.md)：四结构非空升级直接JUnit1项通过、五类反例回滚守恒；两轮普通失败及分开15项补验保留，非完整D04/最终候选。
+
 - D04补[原Room/真实HTTP恢复组合](history/GOAL_D04_ORIGINAL_ROOM_HTTP_RECOVERY_2026-10-21.md)：新非空隔离库，原Android主机1/0/0/0、原server断言体直接执行完成；五处丢响应/重开、四签名/请求原文、13原件与REVIEW_RESERVED绑定离线核同。前两轮环境/资源失败保留，无设备或完整D04/最终候选。
 
 - D04补[旧结构STOP前缀兼容定向](history/GOAL_D04_LEGACY_STOP_PREFIX_COMPATIBILITY_2026-10-21.md)：旧run732 SQL缺表新依据；已有守卫/首轮来源绑定在新非空隔离MySQL复验13/0/0/0，103表守恒，普通8/0/0/0。首轮1项夹具失败原件保留，无HTTP/Android，不计D04整体或第8节。
