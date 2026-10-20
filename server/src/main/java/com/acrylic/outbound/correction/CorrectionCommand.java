@@ -120,7 +120,7 @@ final class CorrectionCommand {
         private final JdbcTemplate jdbc;
         Locks(JdbcTemplate jdbc) { this.jdbc=jdbc; }
         long order(UUID order) {
-            var rows=jdbc.queryForList("SELECT id FROM outbound_order WHERE id=? FOR UPDATE",Ids.bytes(order));
+            var rows=jdbc.queryForList("SELECT id FROM outbound_order WHERE id=? FOR UPDATE",byte[].class,Ids.bytes(order));
             if (rows.size()!=1) throw missing();return 1;
         }
         long document(UUID document) {

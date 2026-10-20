@@ -23,8 +23,15 @@ public class CorrectionStore {
 
     /** Same key + same canonical bytes replays; the kernel compares bytes, never re-executes. */
     public Map<String,Object> receipt(String originalKey) {
-        var rows=jdbc.queryForList("SELECT * FROM correction_command_receipt WHERE original_key=?",
-            Ids.bytes(UUID.fromString(originalKey)));
+        var rows=jdbc.query("SELECT * FROM correction_command_receipt WHERE original_key=?", (rs,index) -> {
+            var row=new HashMap<String,Object>();
+            for (String column : List.of("id","document_id","order_id","original_key","command_sha256",
+                    "canonical_command_bytes","response_bytes","response_sha256","actor_id","event_id"))
+                row.put(column,rs.getBytes(column));
+            for (String column : List.of("command_type","expected_json","status")) row.put(column,rs.getString(column));
+            row.put("recorded_at",rs.getTimestamp("recorded_at"));
+            return row;
+        }, Ids.bytes(UUID.fromString(originalKey)));
         return rows.isEmpty()?null:rows.getFirst();
     }
 
@@ -59,11 +66,11 @@ public class CorrectionStore {
     public JsonNode orderFacts(UUID orderId) {
         var rows=jdbc.queryForList("""
             SELECT JSON_OBJECT('orderId',BIN_TO_UUID(o.id),
-              'currentResultVersion',CAST(IFNULL(o.current_result_version,0) AS CHAR),
-              'currentResultEffectiveCount',CAST(IFNULL(r.actual_count,0) AS CHAR),
-              'currentResultEffectiveWeightG',CAST(IFNULL(r.weight_g,0) AS CHAR),
-              'currentResultCreatedAt',IFNULL(DATE_FORMAT(r.created_at,'%Y-%m-%dT%H:%i:%s.%fZ'),'null'),
-              'sourceRecoveryEpoch',CAST(IFNULL(s.source_recovery_epoch,1) AS CHAR),
+              'currentResultVersion',CAST(COALESCE(o.current_result_version,0) AS CHAR),
+              'currentResultEffectiveCount',CAST(COALESCE(r.actual_count,0) AS CHAR),
+              'currentResultEffectiveWeightG',CAST(COALESCE(r.weight_g,0) AS CHAR),
+              'currentResultCreatedAt',COALESCE(DATE_FORMAT(r.created_at,'%Y-%m-%dT%H:%i:%s.%fZ'),'null'),
+              'sourceRecoveryEpoch',CAST(COALESCE(s.source_recovery_epoch,1) AS CHAR),
               'orderStatus',o.status,'warehouseId',BIN_TO_UUID(o.warehouse_id))
             FROM outbound_order o
             LEFT JOIN order_result_version r ON r.order_id=o.id AND r.result_version=o.current_result_version
@@ -82,7 +89,7 @@ public class CorrectionStore {
      * from v1 and silently offer a wrong delta.
      */
     public JsonNode dispatchFacts(UUID orderId,UUID dispatchId) {
-        var rows=jdbc.queryForList("""
+        var rows=jdbc.query("""
             SELECT s.is_effective,CAST(s.effective_weight_g AS CHAR) effective_weight_g,
               BIN_TO_UUID(d.id) dispatch_id,BIN_TO_UUID(d.bale_id) bale_id,d.delivery_code,
               CAST(d.dispatch_cycle AS CHAR) dispatch_cycle,DATE_FORMAT(d.confirmed_at,'%Y-%m-%dT%H:%i:%s.%fZ') confirmed_at
@@ -90,7 +97,14 @@ public class CorrectionStore {
             LEFT JOIN order_effective_scan s ON s.order_id=d.order_id
               AND s.result_version=o.current_result_version AND s.dispatch_id=d.id
             WHERE d.id=? AND d.order_id=?
-            """,Ids.bytes(dispatchId),Ids.bytes(orderId));
+            """,(rs,index) -> {
+                var row=new HashMap<String,Object>();
+                boolean effective=rs.getBoolean("is_effective");
+                row.put("is_effective",rs.wasNull()?null:effective);
+                for (String column : List.of("effective_weight_g","dispatch_id","bale_id","delivery_code","dispatch_cycle","confirmed_at"))
+                    row.put(column,rs.getString(column));
+                return row;
+            },Ids.bytes(dispatchId),Ids.bytes(orderId));
         if (rows.size()!=1) throw CorrectionCommand.missing();
         var row=rows.getFirst();
         boolean fromScan=row.get("is_effective")!=null;
@@ -106,13 +120,13 @@ public class CorrectionStore {
     }
 
     private long ledgerCount(UUID dispatchId) {
-        Long value=jdbc.queryForObject("SELECT IFNULL(-SUM(quantity_delta),1) FROM inventory_ledger WHERE dispatch_id=?",
+        Long value=jdbc.queryForObject("SELECT COALESCE(-SUM(quantity_delta),1) FROM inventory_ledger WHERE dispatch_id=?",
             Long.class,Ids.bytes(dispatchId));
         return value==null?1:value;
     }
 
     private long ledgerWeight(UUID dispatchId) {
-        Long value=jdbc.queryForObject("SELECT IFNULL(-SUM(weight_delta_g),"
+        Long value=jdbc.queryForObject("SELECT COALESCE(-SUM(weight_delta_g),"
             + "(SELECT weight_g FROM dispatch_record WHERE id=?)) FROM inventory_ledger WHERE dispatch_id=?",
             Long.class,Ids.bytes(dispatchId),Ids.bytes(dispatchId));
         return value==null?0:value;
@@ -410,12 +424,11 @@ public class CorrectionStore {
      * (P-R07-06). Falls back to the current version only if v1 is absent.
      */
     public Instant shipmentCreatedAt(UUID orderId) {
-        var rows=jdbc.queryForList("SELECT created_at FROM order_result_version WHERE order_id=?"
-            + " ORDER BY (result_version=1) DESC,result_version ASC LIMIT 1",Ids.bytes(orderId));
+        var rows=jdbc.query("SELECT created_at FROM order_result_version WHERE order_id=?"
+            + " ORDER BY (result_version=1) DESC,result_version ASC LIMIT 1",(rs,index)->rs.getTimestamp(1),Ids.bytes(orderId));
         if (rows.size()!=1) throw CorrectionCommand.missing();
-        Object value=rows.getFirst().get("created_at");
-        if (value instanceof java.sql.Timestamp stamp) return stamp.toInstant();
-        if (value instanceof java.time.LocalDateTime local) return local.toInstant(java.time.ZoneOffset.UTC);
+        var value=rows.getFirst();
+        if (value!=null) return value.toInstant();
         throw new com.acrylic.outbound.common.BusinessException(409,"CORRECTION_CONTEXT_CHANGED","出库确认时间不可读");
     }
 
