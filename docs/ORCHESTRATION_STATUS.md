@@ -6,8 +6,8 @@
 ```yaml
 date: 2026-10-20
 branch: codex/development
-head: 1af59432
-dirty_entries: 37
+head: 9d165a2d
+dirty_entries: 34
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
@@ -40,9 +40,10 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - [8cb51ded固定复验](history/DEPLOY_FIXED_CANDIDATE_RECHECK_2026-10-20.md)：server4776/0失败/19跳过、renderer138/0/0/0、bootJar/installDist完成；Linux部署18/0/0/0、checkpoint七场景与shell语法exit0。首轮renderer缺浏览器2失败保全，补环境后同SHA实跑通过；19skip不计通过。
 - [本机副本溯源](history/DEPLOY_LOCAL_DATA_PROVENANCE_2026-10-20.md)：1514/1445/1457的dump、导出时间、原哈希与配套目录已核；其原模拟器/合成库存人员开发来源不能满足非合成闸门。M71归档可证原设备但非MySQL；开发/预览库来源不足不擅选。
 - [test来源核查](history/DEPLOY_TEST_DATA_SOURCE_AUDIT_2026-10-20.md)：只读核test主机、发布manifest、39份备份；初始批次脚本/日志证实合成库存，后续非合成来源未证。API/worker磁盘JAR与manifest一致，timer活跃；未SQL/导出/脱敏/真实库验证，整体不放行。证据.local/test-source-acquisition-20261020；待可信候选确认，非部署授权。
-- 本机没有符合闸门要求的真实数据副本（限本次项目/已知归档检索，非整机穷尽保证）；真实非空升级/备份还原/相应API-worker保持阻断未验。不连接任何数据库、不导新数据；如有可信候选先交用户确认。证据.local/deploy-remediation-20261020/local-data-*。
+- [test真实业务演练](history/DEPLOY_TEST_BUSINESS_REHEARSAL_2026-10-20.md)：用户更正后已快照/备份/503隔离同步；模拟器启动被审批拒绝，未演练/导出。test恢复101表/129333行及218文件一致，PDA03订单/领取不变、17:26北京时间实际再联机，原服务/timer/Nginx及公网200恢复。证据.local/test-business-rehearsal-20261020。
+- 本机副本溯源的无可用结论沿历史；本次维护备份不是演练后输入，不替代真实非空升级/相应API-worker，保持阻断未验。只连接授权test及本次独立还原库，未碰原库/生产；证据分别见local-data-*与test-business-rehearsal-20261020。
 - 候选包preflight-8cb51ded-20261020-01.tar.gz已生成，SHA8539177d1274864b94772c9941a1ff3dfab9735dda545b4fca988f3232c37ad0；独立Linux解包核manifest/source/647摘要及执行位通过。包仅本机，不计LinuxJava报表/API-worker或部署验收。
-- 下一步仅待可信来源证据及用户确认再开真实库链，整体仍不放行。所有失败日志/XML、隔离库保留，无清理；实际test部署仍须明确授权，其他持续关闭边界不变。
+- 本次维护已结束，不再停服；先解决客户端启动审批阻断，以后重开窗口须重核PDA03快照并新备份，不用旧截点覆盖新事实。未获得可信演练导出，固定候选真实库链不放行；代码部署仍须另行授权，其他持续关闭边界不变。
 
 ## 保留的前轮证据与未验
 - [D06/D07默认关闭Chrome/HTTP](history/GOAL_D06_D07_DEFAULT_OFF_CHROME_HTTP_2026-10-20.md)aac19af5：四真实消费者通过，页面零撤回POST/直调409；原runner守恒exit1保留，独立只读SQL/trace复核exit0，仅4新增登录审计。13业务表/原审计守恒；非正向/非空升级或统一候选。
