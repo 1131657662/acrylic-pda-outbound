@@ -11,6 +11,8 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.platform.app.InstrumentationRegistry
+import com.acrylic.outbound.pda.ui.AdjustmentRecords
 import com.acrylic.outbound.pda.ui.ScanAdjustmentActivity
 import org.hamcrest.Matchers.*
 import org.json.JSONObject
@@ -24,6 +26,8 @@ class AdjustmentStatusConsumerDeviceTest {
     private lateinit var ui: FormalDetailsDeviceUi
     private lateinit var scenario: ActivityScenario<ScanAdjustmentActivity>
     private lateinit var evidence: File
+    private val expectedBlockReason = InstrumentationRegistry.getArguments()
+        .getString("expectedAdjustmentBlockReason").orEmpty()
 
     @Test fun createSyntheticOriginalsOnceThroughProductWriters() {
         evidence = fixture.guard()
@@ -34,6 +38,8 @@ class AdjustmentStatusConsumerDeviceTest {
     @Test fun approvedStatusOptionsPreserveOriginalFactsAcrossPagingAndRecreation() {
         evidence = fixture.guard(); ui = FormalDetailsDeviceUi(evidence)
         val id = File(fixture.root, "order.txt").readText().trim()
+        check(expectedBlockReason in setOf("", "设备已重启，请联网校验授权时间"))
+        assertEquals(expectedBlockReason, AdjustmentRecords(fixture.app, "", id).blockReason())
         val rows = fixture.app.database.temporaryScans().allScans(id)
         assertEquals((1L..22L).toList(), rows.map { it.orderScanSeq })
         assertEquals(20, rows.count { it.status == "VOID" }); assertEquals(2, rows.count { it.status == "ACTIVE" })
@@ -49,6 +55,7 @@ class AdjustmentStatusConsumerDeviceTest {
             assertEquals(identity, fixture.app.session.requireSession().toString())
             File(evidence, "result.json").writeText(JSONObject().put("roomUnchanged", true).put("identityUnchanged", true)
                 .put("actualProductSpinner", true).put("retainedPositiveInputAvailable", false)
+                .put("adjustmentBlockReason", expectedBlockReason).put("allAdjustmentRowsBlocked", expectedBlockReason.isNotBlank())
                 .put("fontScale", fixture.app.resources.configuration.fontScale).put("localDeletionAllowed", false).toString(2))
         } finally { File(evidence, "database-after.json").writeText(fixture.snapshot()) }
     }
@@ -67,7 +74,7 @@ class AdjustmentStatusConsumerDeviceTest {
         onView(withId(R.id.statusFilter)).check(matches(withSpinnerText("已撤销")))
         saveView("void-exact-page")
         select("主管保留"); rows(emptyList(), false)
-        onView(withId(R.id.status)).check(matches(withText(containsString("没有匹配的原记录（主管保留）"))))
+        statusMessage("没有匹配的原记录（主管保留）")
         saveView("retained-empty")
         ui.click(R.id.clearFilter); rows((1L..20L).toList(), true)
         onView(withId(R.id.statusFilter)).check(matches(withSpinnerText("全部")))
@@ -81,13 +88,18 @@ class AdjustmentStatusConsumerDeviceTest {
         onView(withId(R.id.statusFilter)).check(matches(withSpinnerText("有效")))
         replace(R.id.sequence, "0"); ui.click(R.id.filterRecords); rows(emptyList(), false)
         scenario.recreate(); rows(emptyList(), false)
-        onView(withId(R.id.status)).check(matches(withText(containsString("请输入有效原序号"))))
+        statusMessage("请输入有效原序号")
         ui.click(R.id.clearFilter); rows((1L..20L).toList(), true)
     }
 
     private fun select(label: String) {
         ui.click(R.id.statusFilter); onData(equalTo(label)).perform(click())
         ui.click(R.id.filterRecords)
+    }
+
+    private fun statusMessage(normal: String) {
+        val expected = expectedBlockReason.ifBlank { normal }
+        onView(withId(R.id.status)).check(matches(withText(containsString(expected))))
     }
 
     private fun replace(id: Int, value: String) {
@@ -103,7 +115,7 @@ class AdjustmentStatusConsumerDeviceTest {
                 assertEquals(expected, actual)
                 assertEquals(more, activity.findViewById<Button>(R.id.next).isEnabled)
                 if (expected.isEmpty() || expected.first() == 1L) assertFalse(activity.findViewById<Button>(R.id.previous).isEnabled)
-                if (expected.isNotEmpty() && expected.last() <= 20L)
+                if (expectedBlockReason.isNotBlank() || (expected.isNotEmpty() && expected.last() <= 20L))
                     assertTrue((0 until views.childCount).all { !views.getChildAt(it).isEnabled })
             }
         }

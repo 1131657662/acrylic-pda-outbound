@@ -4,7 +4,7 @@
 
 ## 最近可复核的专项报告
 
-- [U04 原记录状态筛选原生消费者](GOAL_U04_STATUS_FILTER_NATIVE_CONSUMER_2026-10-20.md)：新隔离合成TEMP原记录，默认/200%字号四选项与满页分页边界、83表守恒；不代表正式/可信保留输入、U04/D17或最终候选通过。
+- U04原记录状态筛选：[重启前100%/200%消费者](GOAL_U04_STATUS_FILTER_NATIVE_CONSUMER_2026-10-20.md)、[重启围栏下130%/150%消费者](GOAL_U04_STATUS_FILTER_REBOOT_FONT_CONSUMER_2026-10-20.md)。同22条合成记录，83表/身份守恒；新轮保留130%失败并补围栏断言，不拼成同条件四字号、正式/可信保留输入或U04/D17通过。
 - [U04 保留明细四字号 tar 只读审计](GOAL_U04_RETAINED_DETAILS_TAR_AUDIT_2026-10-19.md)：逐成员区分 Room DB/WAL、应用资料和运行元数据；输入 SHA、命令和输出哈希留存。
 - [U04 独立采集大字首屏原生 L1](GOAL_U04_INDEPENDENT_LARGE_FONT_L1_2026-10-19.md)：合成隔离输入的 Android L1；原身份、现场、实体键、真机和 L2/L3 未验。
 - [恢复租约退休与效果门 L1](GOAL_RECOVERY_LEASE_RETIREMENT_L1_2026-10-19.md)：文件树/主机层 fail-closed 证据；不等同于真实恢复业务链。
