@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- D06/D07补[干净提交Android/HTTP有界组合](history/GOAL_D06_D07_CLEAN_ANDROID_HTTP_COMBINATION_2026-10-21.md)：提交源编译exit0，新空隔离库夹具1/0/0/0、新AVD四条原生通过；唯一成功两包601500克、原冻结正文/四签名/逐笔账务独立核同。没有Chrome/非空迁移/恢复或完整矩阵，不计整体或第8节。
+
 - O02/O03/D17：[干净提交文件消费者组合](history/GOAL_O02_O03_CLEAN_ANDROID_FILE_COMBINATION_2026-10-21.md)：同提交1027源核同，六类主机32/0/0/0；电脑独立消费本次四文件及三CLI场景，缺可信来源拒绝/防覆盖，33继承与上片81证据守恒。仅有界主机/文件组合，无本片设备/HTTP/MySQL或整体最终候选。
 
 - D17：[独立提交编译依赖修复](history/GOAL_D17_CLEAN_ANDROID_COMPILE_DEPENDENCIES_2026-10-21.md)：原HEAD独立构建exit1，补两继承布局及移除未提交ActionGate依赖后debug产品/仪器exit0；主机7项通过+原失败关闭断言短路径1项通过，lint0错误/508警告，新APK100%原生1项/83表及密文守恒。仅可构建性/有界验证，非D17/D18或最终候选。

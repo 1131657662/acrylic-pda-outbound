@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [D06/D07干净提交Android/HTTP组合](GOAL_D06_D07_CLEAN_ANDROID_HTTP_COMBINATION_2026-10-21.md)：提交源独立编译、全新空库夹具1项及新AVD四原生通过；独立原文/四签名/两笔账务核同，运行器失败与清理阻断保留，仅合成有界组合。
+
 - [O02/O03干净提交文件消费者组合](GOAL_O02_O03_CLEAN_ANDROID_FILE_COMBINATION_2026-10-21.md)：1027提交源核同，主机32/0/0/0、四新文件电脑消费及三CLI场景；来源信任未冒充、继承/上片证据守恒，仅有界组合。
 
 - [D17独立提交编译依赖修复](GOAL_D17_CLEAN_ANDROID_COMPILE_DEPENDENCIES_2026-10-21.md)：原HEAD编译失败保留；三依赖修复后debug构建通过，七主机项及关闭断言短路径复验、新APK100%原生与83表守恒；非整体或最终候选。
