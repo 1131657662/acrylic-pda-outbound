@@ -34,11 +34,12 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 
 ## 独立部署预检（2026-10-20）
 - 预检三文档已以开发备份64eaf491提交推送；main/现网未动。原输入69d98046的[报告](history/DEPLOY_PREFLIGHT_2026-10-20.md)及全部失败日志/XML保留，不改历史失败为通过。
-- 本聊天01a15795-f801-7030-bfb2-765a5c2021cb只写独立树.local/worktrees/deploy-remediation-20261020、codex/deploy-preflight-20261020；主开发会话继续拥有其WIP。本次共享看板/索引写前保存原字节并检查漂移。
+- 本聊天01a15795-f801-7030-bfb2-765a5c2021cb的候选代码限定独立树.local/worktrees/deploy-remediation-20261020、codex/deploy-preflight-20261020；本轮只写来源报告及预检区/证据索引增量，不代提交主开发WIP。共享文档写前保全并比对，独立Git索引保存本范围。
 - [四断言审查](history/DEPLOY_ASSERTION_REVIEW_2026-10-20.md)：三租约为把延迟退出误当死亡的输入错误，审计为失效JDBC mock；只修测试并保留业务拒绝/清理/只读语义，产品实现未改。a95d6632普通server 4776/0失败/19跳过，原XML保留，不拼最终候选。
 - [部署工具统一](history/DEPLOY_TOOLCHAIN_REMEDIATION_2026-10-20.md)已提交独立树a95d6632；同SHA源清单/构建回执、artifactHashes、source-sha256.json及Linux renderer/browser装配。a95激活自测1超时后改夹具等待，冻结候选8cb51ded3ef2cd6cd45eaca09d8947ce068e89cd；尚未整合主开发；短期分支仅按开发备份推送，不代表放行。
 - [8cb51ded固定复验](history/DEPLOY_FIXED_CANDIDATE_RECHECK_2026-10-20.md)：server4776/0失败/19跳过、renderer138/0/0/0、bootJar/installDist完成；Linux部署18/0/0/0、checkpoint七场景与shell语法exit0。首轮renderer缺浏览器2失败保全，补环境后同SHA实跑通过；19skip不计通过。
 - [本机副本溯源](history/DEPLOY_LOCAL_DATA_PROVENANCE_2026-10-20.md)：1514/1445/1457的dump、导出时间、原哈希与配套目录已核；其原模拟器/合成库存人员开发来源不能满足非合成闸门。M71归档可证原设备但非MySQL；开发/预览库来源不足不擅选。
+- [test来源核查](history/DEPLOY_TEST_DATA_SOURCE_AUDIT_2026-10-20.md)：只读核test主机、发布manifest、39份备份；初始批次脚本/日志证实合成库存，后续非合成来源未证。API/worker磁盘JAR与manifest一致，timer活跃；未SQL/导出/脱敏/真实库验证，整体不放行。证据.local/test-source-acquisition-20261020；待可信候选确认，非部署授权。
 - 本机没有符合闸门要求的真实数据副本（限本次项目/已知归档检索，非整机穷尽保证）；真实非空升级/备份还原/相应API-worker保持阻断未验。不连接任何数据库、不导新数据；如有可信候选先交用户确认。证据.local/deploy-remediation-20261020/local-data-*。
 - 候选包preflight-8cb51ded-20261020-01.tar.gz已生成，SHA8539177d1274864b94772c9941a1ff3dfab9735dda545b4fca988f3232c37ad0；独立Linux解包核manifest/source/647摘要及执行位通过。包仅本机，不计LinuxJava报表/API-worker或部署验收。
 - 下一步仅待可信来源证据及用户确认再开真实库链，整体仍不放行。所有失败日志/XML、隔离库保留，无清理；实际test部署仍须明确授权，其他持续关闭边界不变。
