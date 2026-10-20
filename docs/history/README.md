@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [E06 Android消费实际服务端SKU向量](GOAL_E06_ANDROID_SKU_PARITY_CONSUMER_2026-10-20.md)：47组全字段/顺序/错误一致，1项实际执行零失败零跳过；源码及继承守恒，仅主机解析范围。
+
 - [E06当前源封存原件条件消费者](GOAL_E06_CURRENT_SEALED_CONSUMERS_2026-10-20.md)：原件/采集/闭合/SKU向量24项零失败零跳过，历史字节守恒；非业务HTTP、设备或最终候选。
 
 - [服务端普通测试完整回归](GOAL_SERVER_ORDINARY_FULL_REGRESSION_2026-10-20.md)：310 suite、4775项，4756通过、0失败、19跳过；输入源码/继承改动守恒，非IT或最终部署候选。

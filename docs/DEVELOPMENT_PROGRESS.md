@@ -4,7 +4,9 @@
 
 ## 当前有效结论
 
-- E06补[当前源封存原件条件消费者](history/GOAL_E06_CURRENT_SEALED_CONSUMERS_2026-10-20.md)：显式历史哈希输入四类24/0/0/0，原件33文件/两归档及继承改动守恒；新47组服务端SKU向量尚未Android消费。独立定向不改写完整回归skip，不计E06或最终候选通过。
+- E06补[Android实际服务端SKU向量消费者](history/GOAL_E06_ANDROID_SKU_PARITY_CONSUMER_2026-10-20.md)：1项测试实际消费47组原字节、零失败/错误/跳过；1024源输入/10 fixture/31继承SHA守恒。仅主机解析，不计Room/设备/O04整体或最终候选。
+
+- E06补[当前源封存原件条件消费者](history/GOAL_E06_CURRENT_SEALED_CONSUMERS_2026-10-20.md)：显式历史哈希输入四类24/0/0/0，原件33文件/两归档及继承改动守恒；该轮新47组向量的Android后续消费另见上述专项报告。独立定向不改写完整回归skip，不计E06或最终候选通过。
 
 - [服务端普通完整回归](history/GOAL_SERVER_ORDINARY_FULL_REGRESSION_2026-10-20.md)：实际主树+保护WIP同次执行4775项，4756通过、0失败、19跳过、exit0；外部向量/Windows符号链接skip逐类留证。不含IT，不计D18/最终候选或部署放行。
 
