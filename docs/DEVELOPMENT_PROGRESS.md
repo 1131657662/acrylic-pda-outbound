@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- [服务端普通完整回归](history/GOAL_SERVER_ORDINARY_FULL_REGRESSION_2026-10-20.md)：实际主树+保护WIP同次执行4775项，4756通过、0失败、19跳过、exit0；外部向量/Windows符号链接skip逐类留证。不含IT，不计D18/最终候选或部署放行。
+
 - D13补[孤儿 owner 生命周期测试修复](history/GOAL_D13_ORPHAN_OWNER_LIFECYCLE_TEST_REPAIR_2026-10-20.md)：原11/3复现，改为真实独立子JVM发布后退出；四类21/0/0/0，原孤儿拒绝/清理/只读及延迟退休断言保留。产品不变，仅主机定向，不计D13整体或完整候选回归。
 
 - D04已补[审计前缀流式JDBC测试覆盖修复](history/GOAL_D04_AUDIT_STREAMING_TEST_REPAIR_2026-10-20.md)：当前主树原失败9/1复现，修正旧mock为真实回调消费者后18/0/0/0；两审计表ID/设备序号冲突、幂等及JDBC失败覆盖。生产校验不变，不计MySQL/HTTP、完整回归或部署放行。
