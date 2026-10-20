@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- O02补[rescue完整主机回归](history/GOAL_O02_NATIVE_FULL_HOST_REGRESSION_2026-10-20.md)：同输入13类63项+2guard共65/0/0/0，实际执行；NATIVE/源码/fixture/继承及旧证据守恒。只收口该主机集合，非完整O02/设备/HTTP或最终候选。
+
 - O02补[原生SQLite短路径复验](history/GOAL_O02_NATIVE_SQLITE_SHORT_PATH_RECOVERY_2026-10-20.md)：原19个失败方法与2项夹具检查在同次执行21/0/0/0；NATIVE/断言/源码及继承SHA保持，资源加载失败另存。仅合成主机定向，非完整O02或最终候选。
 
 - E06补[Android实际服务端SKU向量消费者](history/GOAL_E06_ANDROID_SKU_PARITY_CONSUMER_2026-10-20.md)：1项测试实际消费47组原字节、零失败/错误/跳过；1024源输入/10 fixture/31继承SHA守恒。仅主机解析，不计Room/设备/O04整体或最终候选。
@@ -35,7 +37,7 @@
 
 ## 仍未验与边界
 
-- rescue 旧19失败方法的本轮NATIVE短路径定向结果见上述报告；完整相关回归、当前候选与原身份/原资料/外置介质/现场回执仍未验，历史失败原件保留。
+- rescue 旧19失败方法的本轮NATIVE短路径定向结果见上述报告；完整rescue主机集合已另有上述65项同次结果；最终候选、原身份/原资料/外置介质/现场回执仍未验，历史失败原件保留。
 - 不恢复换机承接、多跳、接收者确认/激活链；不接原库/现网，不使用正式签名，不部署、Release 或合并 `main`；生产决定保持 fail-closed，`localDeletionAllowed=false`。
 - 治理整理、索引压缩、证据清理不计 D01–D18、O/U 或第 8 节闸门。
 

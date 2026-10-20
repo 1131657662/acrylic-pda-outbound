@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [O02 rescue完整主机回归](GOAL_O02_NATIVE_FULL_HOST_REGRESSION_2026-10-20.md)：短TEMP/正确资源下同次65项零失败零跳过；旧失败保持，非跨版本拼接，非设备或完整O02验收。
+
 - [O02原生SQLite主机短路径复验](GOAL_O02_NATIVE_SQLITE_SHORT_PATH_RECOVERY_2026-10-20.md)：新路径长度依据重新入队，原19失败+2guard实际21项零失败/跳过；旧CANTOPEN与首轮资源失败原件保留，不计完整O02。
 
 - [E06 Android消费实际服务端SKU向量](GOAL_E06_ANDROID_SKU_PARITY_CONSUMER_2026-10-20.md)：47组全字段/顺序/错误一致，1项实际执行零失败零跳过；源码及继承守恒，仅主机解析范围。
