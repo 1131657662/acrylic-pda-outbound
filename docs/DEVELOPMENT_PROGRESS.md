@@ -4,6 +4,7 @@
 
 ## 当前有效结论
 
+- [正式单UI统一测试构建](history/GOAL_PDA_ORDER_UI_UNIFIED_BUILD_2026-10-21.md)：干净提交APK与独立server JAR已核哈希/配置，server首轮运行器碰撞失败保留；未安装/上传/部署，不计业务验收。
 - PDA补[正式单明细与领取预览](history/GOAL_PDA_FORMAL_ORDER_PREVIEW_UI_2026-10-21.md)：原计划订单号、真实预览及确认/取消边界；主机19项与追加17项、隔离MySQL/MockMvc7项通过，前三类运行器失败保留，未做M71/部署或整体验收。
 - [凭据交互问题接入](history/GOAL_PDA_CREDENTIAL_UX_INTAKE_2026-10-21.md)：仅接收源码审查、范围和后续安排，尚未实施或验收，不计D/O/U进展。
 

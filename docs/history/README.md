@@ -4,6 +4,7 @@
 
 ## 最近可复核的专项报告
 
+- [2026-10-21 正式单UI干净提交统一构建](GOAL_PDA_ORDER_UI_UNIFIED_BUILD_2026-10-21.md)：APK/服务JAR、失败运行器与配置/签名核验，非业务验收。
 - [正式单明细与领取预览修复](GOAL_PDA_FORMAL_ORDER_PREVIEW_UI_2026-10-21.md)：限定主机/隔离契约验证，原失败保留；M71未验。
 - [凭据交互问题接入](GOAL_PDA_CREDENTIAL_UX_INTAKE_2026-10-21.md)：源码审查来源及安全边界，仅排期，非验收。
 
