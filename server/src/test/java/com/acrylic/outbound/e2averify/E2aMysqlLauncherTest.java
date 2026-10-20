@@ -17,6 +17,8 @@ class E2aMysqlLauncherTest {
     @Test
     @EnabledOnOs(OS.WINDOWS)
     void restrictsPrivateDirectoryWithoutInheritedPowerShellModules(@TempDir Path directory) throws Exception {
+        assertThat(E2aMysqlLauncher.powershell("$null").environment().keySet())
+            .noneMatch(name -> name.equalsIgnoreCase("PSModulePath"));
         E2aMysqlLauncher.restrictToCurrentUser(directory);
         E2aMysqlLauncher.restrictToCurrentUser(directory);
 

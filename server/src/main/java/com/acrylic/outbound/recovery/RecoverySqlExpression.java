@@ -70,6 +70,7 @@ final class RecoverySqlExpression {
     }
 
     private void function(String name) throws SQLException {
+        if (name.equals("DATABASE")) { tokens.need(")"); return; }
         if (!FUNCTIONS.contains(name)) throw RecoveryEffectGate.unclassified();
         if (tokens.take(")")) { if (!name.equals("UTC_TIMESTAMP")) throw RecoveryEffectGate.unclassified(); return; }
         if (name.equals("COUNT")) tokens.take("DISTINCT");

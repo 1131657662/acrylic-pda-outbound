@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- D13补[FORMAL分块文件入口](history/GOAL_D13_FORMAL_SUBMISSION_CHUNKS_2026-10-20.md)：修复P5下DATABASE()语法兼容，85项定向和1项原TCP IT通过；14 HTTP/9块/原签名及账务独立核同。完整普通XML4782项零失败/错误、19条件跳过；首轮产品500及ACL环境失败原件保留。仅服务端有界L1，分块并发/末SQL/锁后撤权、其余文件入口与整体D13/L2/D18仍未验。
+
 - O04补[原SAF包当前运行库消费](history/GOAL_O04_RETAINED_SAF_CURRENT_RUNTIME_CONSUMER_2026-10-20.md)：原包已有历史覆盖，13直接产品输入未变，仅Artifact运行库变化后补一次CLI；460项原事实断言、五表265格值/类型及16原成员核同。仅合成独立来源文件，不计O04/E06整体、原身份/设备、HTTP/MySQL或最终候选。
 
 - O02补[Android原产物电脑CLI](history/GOAL_O02_CURRENT_ANDROID_PC_CLI_CONSUMER_2026-10-20.md)31项检查及[Excel转换消费者](history/GOAL_O02_CURRENT_ANDROID_XLSX_CONSUMER_2026-10-20.md)5组/25表/139396格全量核对；63原成员及旧输出守恒，首轮口令超时和控制台乱码原件保留。仅合成文件/交互边界，来源信任和业务回执不升级，不计完整O02/O05、设备或最终候选通过。

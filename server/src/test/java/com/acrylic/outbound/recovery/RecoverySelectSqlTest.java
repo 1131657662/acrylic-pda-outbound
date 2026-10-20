@@ -35,6 +35,9 @@ class RecoverySelectSqlTest {
             "SELECT id FROM t WHERE id IN (SELECT id FROM u UNION ALL SELECT id FROM v)",
             "SELECT id FROM t WHERE x BETWEEN 2 AND ? AND (y IS NULL OR y NOT IN (?,?)) ORDER BY id DESC LIMIT ? OFFSET ?",
             "SELECT CASE WHEN x IS NULL THEN 0 ELSE 1 END AS n FROM t",
+            "SELECT DATABASE()",
+            "SELECT table_name FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name IN (?,?,?,?)",
+            "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name=? AND column_name=?",
             "SELECT COUNT(*) FROM t GROUP BY id HAVING COUNT(*)>1");
     }
 
@@ -57,6 +60,7 @@ class RecoverySelectSqlTest {
 
     @ParameterizedTest @ValueSource(strings = {
         "SELECT evil() FROM t", "SELECT app.COUNT(*) FROM t", "SELECT `COUNT`(*) FROM t",
+        "SELECT DATABASE(?)", "SELECT DATABASE(1)", "SELECT app.DATABASE()", "SELECT `DATABASE`()",
         "SELECT COUNT(evil()) FROM t", "SELECT id FROM t WHERE EXISTS (SELECT evil() FROM u)",
         "SELECT id FROM t WHERE id=GET_LOCK('lock',1)", "SELECT SLEEP(1)", "SELECT LOAD_FILE('file')",
         "SELECT id INTO OUTFILE 'file' FROM t", "SELECT id FROM t INTO DUMPFILE 'file'",

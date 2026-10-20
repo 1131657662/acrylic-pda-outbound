@@ -171,7 +171,7 @@ public final class E2aMysqlLauncher {
 
     static ProcessBuilder powershell(String command) {
         var builder = new ProcessBuilder("powershell", "-NoProfile", "-Command", command);
-        builder.environment().remove("PSModulePath");
+        builder.environment().keySet().removeIf(name -> name.equalsIgnoreCase("PSModulePath"));
         return builder;
     }
 

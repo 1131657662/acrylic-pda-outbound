@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [D13 FORMAL分块文件入口](GOAL_D13_FORMAL_SUBMISSION_CHUNKS_2026-10-20.md)：P5下DATABASE()兼容修复，原IT及14 HTTP/9块/签名账务消费通过；完整普通XML4782项零失败、19跳过，ACL子进程环境修复有独立3项复验；首轮失败保留，非D13整体或最终候选。
+
 - [O04原SAF包当前运行库消费](GOAL_O04_RETAINED_SAF_CURRENT_RUNTIME_CONSUMER_2026-10-20.md)：复用已有原包/历史覆盖，运行库变化后CLI一次exit0、460原事实断言/五表265格核同、16原成员保持；仅合成文件，非原身份/设备或完整O04。
 
 - [O02 Android原产物电脑CLI消费者](GOAL_O02_CURRENT_ANDROID_PC_CLI_CONSUMER_2026-10-20.md)：7原ZIP/10成功/14预期拒绝；首轮超时保留，合成包外登记不作真实信任。
