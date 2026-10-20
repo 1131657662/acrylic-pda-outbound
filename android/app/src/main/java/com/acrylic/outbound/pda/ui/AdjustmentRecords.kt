@@ -21,13 +21,13 @@ class AdjustmentRecords(private val app: PdaApplication, private val assignment:
         if (assignment.isNotBlank()) "正式单 · ${checkNotNull(app.database.work().order(assignment)).vehicleNo}"
         else "临时单 · ${checkNotNull(app.database.temporaryDrafts().get(temporary)).vehicleNo}"
     })
-    fun page(after: Long, filter: AdjustmentFilter = AdjustmentFilter()): List<AdjustmentRow> = app.database.runInTransaction(java.util.concurrent.Callable {
+    fun page(after: Long, filter: AdjustmentFilter = AdjustmentFilter()): AdjustmentPage = app.database.runInTransaction(java.util.concurrent.Callable {
         identity()
         filter.page(after, ::originalPage).also { identity() }
     })
     private fun originalPage(after: Long): List<AdjustmentRow> =
-        if (assignment.isNotBlank()) app.database.scans().page(assignment, after, 20).map(::formalRow)
-        else temp.page(temporary, after).take(20).map { AdjustmentRow(it.captureId, it.orderScanSeq, it.barcode,
+        if (assignment.isNotBlank()) app.database.scans().page(assignment, after, AdjustmentFilter.PAGE_SIZE).map(::formalRow)
+        else temp.page(temporary, after).take(AdjustmentFilter.PAGE_SIZE).map { AdjustmentRow(it.captureId, it.orderScanSeq, it.barcode,
             "${it.deliveryCode} · ${it.model} · ${it.name}", it.weightGrams,
             if (app.database.temporaryScans().scan(it.captureId) == null) "RETAINED" else it.status) }
     fun locate(raw: String): AdjustmentRow? = app.database.runInTransaction(java.util.concurrent.Callable {

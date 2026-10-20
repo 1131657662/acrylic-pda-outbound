@@ -95,12 +95,14 @@ class ScanAdjustmentActivity : ComponentActivity() {
         binding.sequence.clearFocus(); binding.productFilter.clearFocus(); load()
     }
     private fun load() = task {
-        val page = withContext(Dispatchers.IO) { if (filterError == null) records.page(history.last(), filter) else emptyList() }
-        next = if (page.size == 20) page.last().sequence else null
+        val page = withContext(Dispatchers.IO) {
+            if (filterError == null) records.page(history.last(), filter) else AdjustmentPage(emptyList(), false)
+        }
+        next = page.rows.lastOrNull()?.sequence?.takeIf { page.hasMore }
         binding.title.text = withContext(Dispatchers.IO) { records.title() }
         blockReason = withContext(Dispatchers.IO) { records.blockReason() }
-        show(page); binding.status.text = blockReason.ifBlank { filterError ?: run {
-            if (page.isEmpty()) "没有匹配的原记录（${filter.status.label}），未新增扫码"
+        show(page.rows); binding.status.text = blockReason.ifBlank { filterError ?: run {
+            if (page.rows.isEmpty()) "没有匹配的原记录（${filter.status.label}），未新增扫码"
             else "${filter.status.label} · 每页最多20条 · 原序号保留 · 点击已保存包核对"
         } }
     }

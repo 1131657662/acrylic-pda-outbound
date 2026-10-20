@@ -22,28 +22,38 @@ data class AdjustmentFilter(
     val product: String = "",
     val status: AdjustmentStatusFilter = AdjustmentStatusFilter.ALL
 ) {
-    fun page(after: Long, read: (Long) -> List<AdjustmentRow>): List<AdjustmentRow> {
-        val found = ArrayList<AdjustmentRow>(20)
+    fun page(after: Long, read: (Long) -> List<AdjustmentRow>): AdjustmentPage {
+        val found = ArrayList<AdjustmentRow>(PAGE_SIZE)
         var cursor = after
-        while (found.size < 20) {
+        while (true) {
             val rows = read(cursor)
-            if (rows.isEmpty()) break
-            check(rows.first().sequence > cursor && rows.zipWithNext().all { it.first.sequence < it.second.sequence }) {
-                "原记录顺序异常，请保留资料"
-            }
+            if (rows.isEmpty()) return AdjustmentPage(found, false)
+            verifyOrder(rows, cursor)
             for (row in rows) {
-                if (sequence != null && row.sequence > sequence) return found
-                if ((sequence == null || row.sequence == sequence) &&
-                    row.product.contains(product, ignoreCase = true) && status.matches(row.status)
-                ) found.add(row)
-                if (found.size == 20) return found
+                if (pastSequence(row)) return AdjustmentPage(found, false)
+                if (!matches(row)) continue
+                if (found.size == PAGE_SIZE) return AdjustmentPage(found, true)
+                found.add(row)
             }
             cursor = rows.last().sequence
         }
-        return found
+    }
+
+    private fun matches(row: AdjustmentRow): Boolean =
+        (sequence == null || sequence == row.sequence) &&
+            row.product.contains(product, ignoreCase = true) && status.matches(row.status)
+
+    private fun pastSequence(row: AdjustmentRow): Boolean = sequence != null && row.sequence > sequence
+
+    private fun verifyOrder(rows: List<AdjustmentRow>, cursor: Long) {
+        check(rows.first().sequence > cursor && rows.zipWithNext().all { it.first.sequence < it.second.sequence }) {
+            "原记录顺序异常，请保留资料"
+        }
     }
 
     companion object {
+        const val PAGE_SIZE = 20
+
         fun parse(
             sequence: String,
             product: String,
@@ -58,3 +68,5 @@ data class AdjustmentFilter(
         }
     }
 }
+
+data class AdjustmentPage(val rows: List<AdjustmentRow>, val hasMore: Boolean)
