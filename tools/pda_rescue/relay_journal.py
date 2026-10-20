@@ -6,6 +6,7 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from .integrity import parse
+from .receipt_signature import same
 
 
 def durable(path, data):
@@ -70,7 +71,14 @@ class RelayJournal:
             self.state["pendingRefresh"] = True
             self.save()
 
-    def result(self, original):
+    def result(self, original, expected=None):
+        if expected is not None:
+            try:
+                same(parse(original), expected)
+            except ValueError:
+                conflict = self.directory / ('result-conflict-' + hashlib.sha256(original).hexdigest() + '.bin')
+                durable(conflict, original)
+                raise ValueError('Downloaded result differs from process response; original keys and conflict retained') from None
         receipt = parse(original)
         if receipt["archiveSha256"] != self.state["input"]["archiveSha256"] or receipt["relayId"] != self.state["relayId"]:
             raise ValueError("Returned file belongs to a different original")

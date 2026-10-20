@@ -24,7 +24,7 @@ def transfer(wire, journal, process=False):
         raise ValueError("Unverified or unfrozen originals cannot be submitted")
     journal.prepare_process(status["state"])
     result = wire.data("/" + relay_id + "/process", b"{}", journal.state["processKey"])
-    path = journal.result(wire.relay("/results/" + str(UUID(result["resultId"]))))
+    path = journal.result(wire.relay("/results/" + str(UUID(result["resultId"]))), result)
     return {"resultFile": str(path), "status": result["businessReceipt"]["status"],
             "notice": "返还原机使用预置可信钥严格验签；实物放行仍按原流程核对", "localDeletionAllowed": False}
 
