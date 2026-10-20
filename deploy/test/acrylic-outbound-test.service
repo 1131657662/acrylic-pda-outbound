@@ -10,8 +10,8 @@ Group=acrylic-outbound-test
 WorkingDirectory=/var/lib/acrylic-outbound-test
 EnvironmentFile=/etc/acrylic-outbound-test/runtime.env
 Environment=OUTBOUND_EXPORTS_RENDERER_HOME=/opt/acrylic-outbound-test/current/report-rendering/acrylic-report-rendering
-Environment=OUTBOUND_EXPORTS_BROWSERS=/var/lib/acrylic-outbound-test/browsers
-Environment=PLAYWRIGHT_BROWSERS_PATH=/var/lib/acrylic-outbound-test/browsers
+Environment=OUTBOUND_EXPORTS_BROWSERS=/opt/acrylic-outbound-test/current/browsers
+Environment=PLAYWRIGHT_BROWSERS_PATH=/opt/acrylic-outbound-test/current/browsers
 ExecStart=/usr/bin/java -Duser.timezone=UTC -Xms128m -Xmx512m -jar /opt/acrylic-outbound-test/current/server.jar
 Restart=on-failure
 SuccessExitStatus=143

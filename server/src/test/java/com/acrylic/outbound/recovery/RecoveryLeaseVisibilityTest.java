@@ -40,10 +40,7 @@ class RecoveryLeaseVisibilityTest {
 
     @Test void aDeadOwnersRecordIsCountedAsOrphanWithoutBeingRetired() throws Exception {
         var supply = FenceTestSupply.create(parent);
-        var first = supply.authority();
-        first.validateStartup();
-        UUID operation = first.registerOperation();
-        first.retire();
+        UUID operation = RecoveryOrphanFixture.publishFromDeadOwner(supply);
         Path record = supply.roots().root().resolve("leases").resolve(operation + ".json");
         Path leases = supply.roots().root().resolve("leases");
         var before = listing(leases);

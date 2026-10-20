@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# Activate the verified V34 backend without changing the separately deployed Web/downloads.
+# Activate the verified immutable backend without changing the separately deployed Web/downloads.
 set -euo pipefail
 test "$(id -u)" = 0
 release="${1:?Pass the absolute verified and migrated backend release directory}"
 [[ "$release" =~ ^/opt/acrylic-outbound-test/releases/[a-zA-Z0-9._-]+$ ]]
-python3 "$release/deploy/verify_backend_release.py" "$release"
+expected_schema=$(python3 -B "$release/deploy/verify_backend_release.py" "$release" --schema)
 
 base=/opt/acrylic-outbound-test
 exec 9>/run/lock/acrylic-outbound-test-backup.lock
 flock -n 9
 schema=$(mysql --defaults-file=/etc/acrylic-outbound-test/migration.cnf -NB acrylic_outbound_test \
   -e 'SELECT MAX(CAST(version AS UNSIGNED)) FROM flyway_schema_history WHERE success=1;')
-[[ "$schema" == 34 ]]
+[[ "$schema" == "$expected_schema" ]]
 test ! -e "$base/current.next" && test ! -L "$base/current.next"
 
 stop_on_failure() {

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Exercise release rejection and fail-closed activation with command boundary stubs."""
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -9,7 +8,8 @@ import subprocess
 import tempfile
 import unittest
 
-from verify_backend_release import REQUIRED, verify
+from verify_backend_release import verify
+from release_fixture import make_package, SCHEMA
 
 STUBS = r'''
 api_active=1
@@ -48,24 +48,11 @@ class BackendActivationTest(unittest.TestCase):
         (self.base / 'current').symlink_to('/previous-unmodified-release')
 
     def make_package(self):
-        deploy = Path(__file__).parent
-        for relative in REQUIRED:
-            target = self.release / relative
-            target.parent.mkdir(exist_ok=True)
-            source = deploy / Path(relative).name
-            target.write_bytes(source.read_bytes() if source.is_file() else b'fixture')
-        script = self.release / 'deploy/activate_backend.sh'
-        text = script.read_text().replace('/opt/acrylic-outbound-test', str(self.base))
-        text = text.replace('/run/lock/acrylic-outbound-test-backup.lock', str(self.base / 'backup.lock'))
-        script.write_text(text)
-        hashes = {name: hashlib.sha256((self.release / name).read_bytes()).hexdigest() for name in REQUIRED}
-        manifest = dict(release=self.release.name, environment='independent-test', contract='0.30.0',
-                        flyway=34, artifactHashes=hashes, serverSha256=hashes['server.jar'])
-        (self.release / 'manifest.json').write_text(json.dumps(manifest))
+        make_package(self.release, self.base)
 
-    def activate(self, failure='', schema='34'):
+    def activate(self, failure='', schema=None):
         env = dict(os.environ, BASH_ENV=str(self.stub), ACTIVATION_TEST_LOG=str(self.log),
-                   ACTIVATION_FAIL=failure, ACTIVATION_SCHEMA=schema)
+                   ACTIVATION_FAIL=failure, ACTIVATION_SCHEMA=str(SCHEMA if schema is None else schema))
         result = subprocess.run(['bash', str(self.release / 'deploy/activate_backend.sh'), str(self.release)],
                                 env=env, capture_output=True, text=True, timeout=15)
         self.events = self.log.read_text().splitlines() if self.log.exists() else []
@@ -92,7 +79,7 @@ class BackendActivationTest(unittest.TestCase):
         self.assertEqual(os.readlink(self.base / 'current'), '/previous-unmodified-release')
 
     def test_wrong_schema_rejected_before_service_changes(self):
-        self.assertNotEqual(self.activate(schema='33').returncode, 0)
+        self.assertNotEqual(self.activate(schema=str(SCHEMA - 1)).returncode, 0)
         self.assertEqual(self.events, [])
 
     def test_unit_install_failure_leaves_writers_stopped(self):
