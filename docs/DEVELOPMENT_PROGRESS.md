@@ -4,7 +4,7 @@
 
 ## 当前有效结论
 
-- D13补[FORMAL分块并发/回滚/撤权](history/GOAL_D13_FORMAL_CHUNK_FAULTS_2026-10-20.md)：新隔离原IT1/0/0/0、11真实TCP；两并发原回执与单次账务核同，审计尾500后180表/文件守恒且原ID重试成功，锁后撤权401，P5后继STARTED。独立原件验签与快照消费通过；只改测试，原围栏/失败保持。[先前分块入口与完整普通回归](history/GOAL_D13_FORMAL_SUBMISSION_CHUNKS_2026-10-20.md)沿其输入；不计整体D13/L2/D18或最终候选。
+- D13补[多块审计尾回滚/原ID重试](history/GOAL_D13_MULTICHUNK_ROLLBACK_RETRY_2026-10-20.md)：新隔离IT1/0/0/0、13真实TCP/9块；500后180表309行守恒，原14文件不变、只留新增完整原正文；原ID重试/重放签名账务核同，P5后继STARTED。[单块并发/回滚/撤权](history/GOAL_D13_FORMAL_CHUNK_FAULTS_2026-10-20.md)及[先前普通回归](history/GOAL_D13_FORMAL_SUBMISSION_CHUNKS_2026-10-20.md)沿各自输入。仅测试/有界L1，不计整体D13/L2/D18或最终候选。
 
 - O04补[原SAF包当前运行库消费](history/GOAL_O04_RETAINED_SAF_CURRENT_RUNTIME_CONSUMER_2026-10-20.md)：原包已有历史覆盖，13直接产品输入未变，仅Artifact运行库变化后补一次CLI；460项原事实断言、五表265格值/类型及16原成员核同。仅合成独立来源文件，不计O04/E06整体、原身份/设备、HTTP/MySQL或最终候选。
 
