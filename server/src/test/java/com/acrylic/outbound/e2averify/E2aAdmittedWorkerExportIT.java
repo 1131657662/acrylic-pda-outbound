@@ -91,7 +91,22 @@ class E2aAdmittedWorkerExportIT {
         assertThat(bytes).startsWith(format.equals("PDF") ? new byte[]{'%','P','D','F'} : new byte[]{'P','K'});
         assertThat(java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)))
             .isEqualTo(view.path("sha256").asText());
+        assertListedAsSucceeded(http, input, id, view);
         preserve(profile, raw, id, prefix, view);
+    }
+
+    private static void assertListedAsSucceeded(RecoveryWorkerHttp http, RecoveryExportInput input,
+            String id, JsonNode view) throws Exception {
+        var items = http.get(input.exportPath() + "&status=SUCCEEDED", 200).path("data").path("items");
+        boolean found = false;
+        for (JsonNode item : items) {
+            if (!id.equals(item.path("id").asText())) continue;
+            assertThat(item.path("status").asText()).isEqualTo("SUCCEEDED");
+            assertThat(item.path("downloadable").asBoolean()).isTrue();
+            assertThat(item.path("sha256").asText()).isEqualTo(view.path("sha256").asText());
+            found = true;
+        }
+        assertThat(found).as("completed export must be visible in its status-filtered list").isTrue();
     }
 
     private static void preserve(E2aCrossSourceProfile profile, JdbcTemplate raw, String id, String prefix,

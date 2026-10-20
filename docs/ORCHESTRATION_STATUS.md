@@ -6,30 +6,28 @@
 ```yaml
 date: 2026-10-20
 branch: codex/development
-head: 1853e000
-dirty_entries: 34
+head: 2320adf3
+dirty_entries: 39
 worktrees: 34
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 ```
 <!-- FACTS_END -->
 
-总目标active、未完成。本轮D13导出中心状态筛选/P5兼容修复及有界TCP补证通过；不计生成/导出成功、D13整体/L2/D18或第8节。
+总目标active、未完成。本轮仅补D13已完成导出的状态列表测试断言，隔离L1通过；不计D13整体/L2/D18、实际最终候选或第8节。
 
 ## 精确断点与写权
-- 固定树D:/acrylic-pda-outbound、codex/development；输入HEAD=c221a8ec175bcc6e6da785dd10cbe7630c114734；本轮开发备份1853e000e32bdb3cfcfd1d7b5e23258e346bbf53已推送并核远端一致，main=c6e9e0c238c657baecbf699ba6fdbada5d979b86；origin=git@github.com:1131657662/acrylic-pda-outbound.git。提交/远端回执及本轮全路径SHA见本根precommit-review.json与postcommit-closeout.json；其他继承改动保持。
-- 本聊天01a1520d-c412-7402-b77d-311a043b3d1e持主树/共享文档/HEAD写窗，无子代理；另一聊天仅专项test/window03脚本与来源报告，明确不写共享文档/HEAD。其新增报告保留不混本批，不占ADB/M71/test。
-- 本根.local/goal-20261020-resume/d13-export-status-read01；input-before/35输入原字节/patch/SHA，resume-review01另保全40脏路径；3共享文档原字节/SHA及旧看板归档保持。另一聊天报告、全部非本批继承路径不暂存；run03源码2447成员逐SHA无漂移。
-- 新DB19340/HTTP19444均释放，run02/03认证shutdown exit0；共享13316仍指.local/mysql/data，系统3306未知不连接。环境/监听/Keystore/C/D/E见resume-review01/environment.json及environment-closeout.json。ADB只读枚举M71在线，未操作/安装/登录/模拟器。
-- 本轮只清run02/03停机可重建datadir694文件/444770951逻辑字节；cleanup01存逐SHA与D余量31935684608→32387661824。删除后回执求和错误已保留并从预存JSON补记，未重跑删除。前轮source-evidence根run01含unknown失败库继续保留；原HTTP/签名/XML/log/P5/身份/APK/继承保持。
+- 固定树D:/acrylic-pda-outbound、codex/development；输入HEAD/实核origin=2320adf3e9f11b8bfe308b1926c909a58c8dc1df；main=c6e9e0c238c657baecbf699ba6fdbada5d979b86；origin=git@github.com:1131657662/acrylic-pda-outbound.git。本轮提交/实核远端及完整status/SHA以本根postcommit-closeout.json为准；生成块随提交刷新。
+- 本聊天01a1520d-c412-7402-b77d-311a043b3d1e独占主树/共享文档/HEAD写窗，无子代理；实际列表另一预检聊天idle，四份新增部署报告继续保留，不混入本批、不恢复其历史写窗/授权。
+- 本根.local/goal-20261020-resume/d13-export-lifecycle01；编辑前input-manifest/两个ZIP/patch，旧看板与两索引原字节在docs-before；run918 inputs.json绑定5903个实际输入，文档更新前逐SHA无差异；35条非本批继承脏路径保持。只提交测试文件、本报告、两索引及看板五路径。
+- 新DB19348/HTTP19458无监听，run918认证shutdown exit0，身份明确为对应隔离datadir。共享13316指.local/mysql/data；系统3306身份未知未连接；ADB只枚举M71在线，无模拟器/安装/业务操作。Gradle/Kotlin daemon保留且未消费清理目录；完整进程/监听/Keystore/C/D/E见本根environment-closeout.json。
+- 本轮清655个可重建文件/1043113269逻辑字节：仅停机data/binlog/临时、renderer browsers/install；保留校验字体、原HTTP/XML/下载/签名/身份/dump/APK及继承。D余量31051177984→32098521088，卷增加1047343104 bytes；cleanup-plan/command/after保存SHA和exit0。前轮unknown失败库及原证据不动。
 
 ## 本轮验证、失败与限制
+- [完成导出状态列表消费者](history/GOAL_D13_EXPORT_LIFECYCLE_STATUS_2026-10-20.md)：只改既有IT的15行断言；run918 IT1/0/0/0，默认关闭/admitted/P5五组生成/下载后列表ID/状态/可下载/SHA一致。离线核66组原HTTP正文SHA，含20个合成登录/导出POST，整次IT含写入；新增仅GET。Web/worker同JVM独立上下文，renderer子进程；非独立API-worker部署或版面验收。原历史918同名路径去向未查明，不混历史输入；此次运行器拒绝已有目录，全部本次原件保留。
 - [导出状态只读HTTP修复](history/GOAL_D13_EXPORT_STATUS_READ_HTTP_2026-10-20.md)：仅REPLACE加入有限分类，仍SOURCE_READ/效果门；新run03 IT1/0/0/0、38 TCP/34列表GET，33合成任务元数据/22查询组合、6组178表/4文件守恒，权限完整恢复，P5后继STARTED。普通回归4804项/4785通过/19skip逐项保留；不是生成/导出业务成功，原run02 500保持。
 - 前轮[原来源只读HTTP/P5修复](history/GOAL_D13_SOURCE_EVIDENCE_READ_2026-10-20.md)：真实登录后详情500定位为JSON_OBJECT/DATE_FORMAT漏列；仅两纯函数加入有限分类，仍SOURCE_READ/效果门，未知/限定名/危险嵌套/写出拒绝。权限/契约/迁移/生产配置未改。
-- 最终新run04 IT1/0失败/0错误/0跳过、exit0；41 TCP/37业务GET（200×6、401×6、403×3、404×18、409×4）。已收7348字节正文/部分262144字节块原样消费，7能力false，原RS256回执独立验真；12组178表/8文件守恒，仅排除2 Session运行表，权限扰动完整420行恢复。P5空index/无unknown、独立后继STARTED。
-- 自审发现run03夹具删全部仓授权仅还原目标仓；逐组GET守恒保留，不声称夹具全还原。仅修为参数化移除/恢复目标授权并加外层守恒，新run04实跑；原run03/输入/XML/消费者不覆盖。
-- 首轮cookie夹具遗漏403，过早关闭产生OUTSTANDING/ClosedChannelException/unknown/halt70，不当普通运行器错误；02首GET真实500产品缺口。原库/输入/HTTP/log/XML/binary保留，新03不覆盖旧失败；当前只读补证非恢复业务链。
-- 同输入普通回归4798项：4779通过、0失败/错误、19跳过、exit0/6m36s/310 XML。19skip逐方法保存server-test/result.json，外部向量/原件条件与Windows前置，计通过0；定向94及新增7代理向量保全，不拼最终候选。
+- 原来源run04 IT1/0/0/0、37业务GET/12组178表8文件守恒、原签名验真/P5后继STARTED；同输入普通4798项零失败、19skip不计通过。旧run01的unknown/halt70、run02真实500及run03授权恢复缺口均沿原根保留；本轮不复跑或改写旧结论。
 - [前轮多块回滚原件/重试](history/GOAL_D13_MULTICHUNK_ROLLBACK_RETRY_2026-10-20.md)1de2ccac及[单块并发/回滚/撤权](history/GOAL_D13_FORMAL_CHUNK_FAULTS_2026-10-20.md)2d555cee沿各自输入，原失败/unknown保持；本轮不重跑。仅合成准备/服务端有界L1，同助手自审+Python工具消费，非D13整体/客户端/真机/全恢复。
 
 ## 独立部署预检（2026-10-20）
@@ -60,7 +58,7 @@ server: { contract: 0.72.0, paths: 200, flyway: V99, migrations: 99 }
 - B1–B7已开发备份4bac6d0a/2ca7c660/ae9f9df0/55d37d64/de4d1023/45e8562f/7f1774ce；B6实际153路径，B7已审未运行。治理/提交/清理不计验收。
 - [分类表](../.local/goal-20261020-resume/governance-closeout02/wip-classification.md)、[治理报告](history/PROJECT_GOVERNANCE_AUDIT_2026-10-20.md)及archive/2026-10-20旧索引映射保持；physical-disposition不能证合成，不提交。
 - 零记忆顺序：AGENTS→文档地图→Git工作流→本当前区→D13只读HTTP报告/本根final-manifest.json→D01矩阵/E08-D17 handoff；历史O04/O02证据沿原根。设备任务先重核环境。
-- 下一有界动作继续核D13其余有效入口与共享分类器实际覆盖，按最小未覆盖只读缺口推进；不重跑成功HTTP/CLI/字号/SAF。另一聊天503/window03/04报告待单独归并，04备份前本地编码失败后按用户界限停止，不代重开维护；取消链/旧run03不启动。
+- 下一有界动作先按D13证据映射核对仍缺覆盖的有效入口/信任供给，给出路径+SHA影响依据后补最小组合；不再重复完成列表/成功HTTP/CLI/字号/SAF。另一聊天四份部署报告待单独核证归并，不代开维护或套用其授权；取消链/旧run03不启动。
 - D/O/U整体、正常合法资格/可信原材料、完整UI/原设备/外置介质、必要真实HTTP/MySQL/非空迁移组合、实际最终候选与第8节仍未满足。开发提交不改变此结论。
 
 ## 持续关闭

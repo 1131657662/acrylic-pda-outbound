@@ -4,6 +4,7 @@
 
 ## 当前有效结论
 
+- D13补[完成导出的状态列表消费者](history/GOAL_D13_EXPORT_LIFECYCLE_STATUS_2026-10-20.md)：仅测试增加列表与下载视图核同；隔离IT1/0/0/0，默认关闭/admitted/P5五组任务及66组原HTTP离线核验，35条继承路径保持。Web/worker为同JVM独立上下文；仅有界L1，非D13整体/L2/D18或最终候选。
 - D13补[导出中心状态筛选只读HTTP](history/GOAL_D13_EXPORT_STATUS_READ_HTTP_2026-10-20.md)：有限分类器加入REPLACE；隔离P5真实HTTP 1项、34个列表请求/33条合成元数据和178表/4文件六组守恒；普通回归4804项，19跳过逐项保留。不是生成或业务成功、D13整体、最终候选或第8节通过。
 - D13补[原来源只读HTTP/P5修复](history/GOAL_D13_SOURCE_EVIDENCE_READ_2026-10-20.md)：修复JSON_OBJECT/DATE_FORMAT有限分类漏项；最终run04 IT1/0/0/0，37业务GET、12组178表/8文件守恒，夹具授权完整恢复、原签名验真/P5后继STARTED。普通回归4798项零失败、19跳过单列。旧失败及run03夹具缺口保留；仅有界L1，非D13整体/最终候选。
 
