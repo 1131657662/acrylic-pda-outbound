@@ -87,6 +87,9 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
         unitTests.all {
+            val relayVector = System.getenv("PDA_RELAY_SEALED_VECTOR").orEmpty()
+            it.inputs.property("pdaRelaySealedVector", relayVector)
+            if (relayVector.isNotBlank()) it.inputs.dir(file(relayVector))
             it.inputs.property("e2aAndroidHttpPrivate", System.getenv("E2A_ANDROID_HTTP_PRIVATE").orEmpty())
             it.inputs.property("temporarySuccessHttpPrivate", System.getenv("TEMP_SUCCESS_HTTP_PRIVATE").orEmpty())
             it.inputs.property("temporaryContinuationHttpPrivate", System.getenv("TEMP_CONTINUATION_HTTP_PRIVATE").orEmpty())
