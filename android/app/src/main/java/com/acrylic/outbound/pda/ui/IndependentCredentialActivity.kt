@@ -13,6 +13,9 @@ class IndependentCredentialActivity : ComponentActivity() {
     private lateinit var binding: ActivityIndependentCredentialBinding
     private val model: IndependentCredentialViewModel by viewModels()
     private var setupActive = false
+    private val cardPicker = IndependentCardPicker(this, { model }, {
+        if (::binding.isInitialized) render(model.state.value)
+    })
     private val generatedSetup = IndependentSetupFlow(this, { model.reload(it) }, {
         setupActive = it
         if (::binding.isInitialized) render(model.state.value)
@@ -29,6 +32,7 @@ class IndependentCredentialActivity : ComponentActivity() {
         binding.generateSetup.setOnClickListener { if (!model.state.value.busy) generatedSetup.show() }
         binding.provision.setOnClickListener { model.provision(password()) }
         binding.verify.setOnClickListener { model.verify(password()) }
+        binding.verifyCard.setOnClickListener { if (!setupActive && !model.state.value.busy) cardPicker.choose() }
         binding.revoke.setOnClickListener { model.revoke() }
         binding.reload.setOnClickListener { model.reload() }
         binding.back.setOnClickListener { finish() }
@@ -38,6 +42,7 @@ class IndependentCredentialActivity : ComponentActivity() {
     private fun password(): CharArray = binding.password.text.toString().toCharArray().also { binding.password.text.clear() }
     private fun render(state: IndependentCredentialUi) {
         binding.status.text = state.message; binding.original.text = state.original
-        listOf(binding.provision, binding.verify, binding.revoke, binding.reload, binding.password, binding.generateSetup).forEach { it.isEnabled = !state.busy && !setupActive }
+        listOf(binding.provision, binding.verify, binding.verifyCard, binding.revoke, binding.reload, binding.password, binding.generateSetup)
+            .forEach { it.isEnabled = !state.busy && !setupActive && !cardPicker.pending }
     }
 }

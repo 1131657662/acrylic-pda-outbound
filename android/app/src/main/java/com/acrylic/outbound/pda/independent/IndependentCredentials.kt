@@ -48,6 +48,15 @@ class IndependentCredentials private constructor(private val context: Context, p
         val proof = unlock(password).recheck()
         return "独立身份与可信期限已核验，人员 ${proof.identity.operatorId}。独立记录始终待对账。"
     }
+    internal fun verifyCard(card: IndependentCredentialCard, expected: JSONObject): String {
+        environment().requireIntent(expected)
+        val password = card.credential(expected)
+        try {
+            verifyLocally(password)
+            environment().requireIntent(expected)
+            return "独立凭据卡经原校验器核验通过；仅为本次身份核对，创建任务仍须原核验，独立记录始终待对账。"
+        } finally { password.fill('\u0000') }
+    }
     fun revoke() = store.revoke()
     fun status() = store.status()
     companion object {
