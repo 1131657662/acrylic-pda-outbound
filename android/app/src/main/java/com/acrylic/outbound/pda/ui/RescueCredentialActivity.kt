@@ -15,6 +15,7 @@ class RescueCredentialActivity : ComponentActivity() {
     private lateinit var binding: ActivityRescueCredentialBinding
     private var busy = false
     private var statusReadGeneration = 0
+    private val generatedSetup = OwnRescueSetupFlow(this) { message -> statusReadGeneration++; binding.status.text = message }
     private val app get() = application as PdaApplication
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +26,7 @@ class RescueCredentialActivity : ComponentActivity() {
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets
         }
         binding.identity.text = runCatching { app.session.requireSession().getString("username") }.getOrDefault("请先联网登录原人员")
+        binding.generateSetup.setOnClickListener { if (!busy) { statusReadGeneration++; generatedSetup.show() } }
         binding.provision.setOnClickListener {
             val password = binding.password.text.toString().toCharArray(); binding.password.text.clear()
             run("正在在线核验，凭据不上传服务器", "本人只读凭据已预置；请单独保管。") { credentials().provisionOwn(password) }
@@ -33,6 +35,7 @@ class RescueCredentialActivity : ComponentActivity() {
         binding.back.setOnClickListener { finish() }
     }
     private fun credentials() = RescueCredentials.shared(app, app.session)
+    override fun onDestroy() { generatedSetup.close(); super.onDestroy() }
     override fun onResume() {
         super.onResume()
         val generation = ++statusReadGeneration
@@ -53,11 +56,13 @@ class RescueCredentialActivity : ComponentActivity() {
         busy = true
         statusReadGeneration++
         binding.status.text = message; binding.provision.isEnabled = false; binding.revoke.isEnabled = false
+        binding.generateSetup.isEnabled = false
         lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) { runCatching(action) }
             binding.status.text = result.fold({ success },
                 { it.message ?: "救援凭据未保存，请保留原资料" })
             binding.provision.isEnabled = true; binding.revoke.isEnabled = true
+            binding.generateSetup.isEnabled = true
             busy = false
         }
     }

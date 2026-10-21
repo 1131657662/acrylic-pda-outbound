@@ -20,11 +20,12 @@ class RescueCredentials(context: Context, private val session: PdaSession) {
         val public = keys.publicKey(false).also(session.settings::verifyKey)
         return session.settings.device to RescueBundle.sha(Base64.getDecoder().decode(public))
     }
-    fun provisionOwn(password: CharArray) {
-        try { provision(password) } finally { password.fill('\u0000') }
+    fun provisionOwn(password: CharArray, expected: org.json.JSONObject? = null) {
+        try { provision(password, expected) } finally { password.fill('\u0000') }
     }
-    private fun provision(password: CharArray) {
+    private fun provision(password: CharArray, expected: org.json.JSONObject?) {
         val original = session.requireSession()
+        if (expected != null) SessionIdentity.requireSame(expected, original)
         session.call("pda/devices/me", expected = original)
         SessionIdentity.requireSame(original, session.saved())
         val identity = RescueReadIdentity(original.getString("deviceId"), original.getString("userId"), original.getString("warehouseId"))

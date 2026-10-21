@@ -1,0 +1,26 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="16dp">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="系统已生成随机应急解锁口令，无需手工编造。仅在本次设置内存中保留，关闭后清空。"
+            android:textSize="16sp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="1. 保存敏感凭据卡到受控位置，再移至设备以外。卡内含本人/设备范围及解锁口令，不要与应急包或文件解密口令放在一起。"
+            android:textSize="16sp" />
+        <Button android:id="@+id/saveCard" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="52dp" android:text="选择位置并保存凭据卡" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="2. 从保管位置重新选取刚保存的原卡回读。回读只证明文件字节，不能自动证明设备外保管。"
+            android:textSize="16sp" />
+        <Button android:id="@+id/verifyCard" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="52dp" android:text="重新选取凭据卡并回读" android:enabled="false" />
+        <CheckBox android:id="@+id/custodyConfirmed" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="52dp" android:saveEnabled="false" android:text="我已将凭据卡独立保管在设备以外，与应急包分开" />
+        <TextView android:id="@+id/setupStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="尚未保存或预置。取消不会替换已有解锁方式。" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="3. 联网核验原身份后才会预置。再次设置会替换本人的旧解锁方式；旧凭据卡及已解锁范围失效，原作业资料保留。遗失卡后须重新联网设置，不能离线重置，也不能恢复旧应急包密码。"
+            android:textSize="14sp" />
+    </LinearLayout>
+</ScrollView>
