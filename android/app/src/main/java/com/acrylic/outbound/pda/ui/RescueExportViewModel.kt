@@ -65,6 +65,31 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
             } finally { password.fill('\u0000') }
         }
     }
+    internal fun unlockCard(id: String, uri: Uri) {
+        if (state.value.busy || state.value.unlocked) return
+        grant = null; snapshot = null; generated = null
+        mutable.update { it.copy(unlocked = false, canGenerate = false, canCopy = false, privatePackages = emptyList()) }
+        run("正在读取本人凭据卡并核验本机只读范围") {
+            try {
+                val choice = state.value.identities.firstOrNull { it.id == id && id.startsWith("own:") }
+                    ?: error("本机没有所选本人预置凭据")
+                OwnRescueCard.read(checkNotNull(app.contentResolver.openInputStream(uri))).use { card ->
+                    val public = DeviceKeys().publicKey(false).also(app.session.settings::verifyKey)
+                    val digest = RescueBundle.sha(Base64.getDecoder().decode(public))
+                    val password = card.credential(choice.identity, digest)
+                    try { grant = credentials.unlockChoice(choice.id, password) }
+                    finally { password.fill('\u0000') }
+                }
+                page("")
+                val packages = files.available(checkNotNull(grant))
+                mutable.update { it.copy(unlocked = true, privatePackages = packages, summary = "",
+                    message = "本人凭据卡经原校验器核验通过；仅取回原记录，不授扫码、提交或放行权。") }
+            } catch (_: Exception) {
+                grant = null
+                error("凭据卡未通过本机只读核验，请核对原卡、身份、设备及尝试限制；原资料保留。")
+            }
+        }
+    }
     fun recover(index: Int) = run("正在回读原私有包") {
         val candidate = state.value.privatePackages.getOrNull(index) ?: error("没有可恢复的原私有包")
         generated = null; mutable.update { it.copy(canCopy = false) }

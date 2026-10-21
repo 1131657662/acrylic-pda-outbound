@@ -23,6 +23,7 @@ class RescueExportActivity : ComponentActivity() {
     private var orderLabels = emptyList<String>()
     private var packageIds = emptyList<String>()
     private var readingSupervisor = false
+    private val ownCard = OwnRescueCardPicker(this, { model }, { binding.identity.selectedItemPosition })
     private val createDocument = registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
         if (uri == null) model.cancelled() else model.copy(uri)
     }
@@ -53,6 +54,7 @@ class RescueExportActivity : ComponentActivity() {
             val password = binding.credential.text.toString().toCharArray(); binding.credential.text.clear()
             model.unlock(binding.identity.selectedItemPosition, password)
         }
+        binding.ownCardUnlock.setOnClickListener { ownCard.choose() }
         binding.readSnapshot.setOnClickListener { model.readSnapshot() }
         binding.importReceipt.setOnClickListener { openReceipt.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }
         binding.nextPage.setOnClickListener { model.nextPage() }
@@ -115,6 +117,7 @@ class RescueExportActivity : ComponentActivity() {
         binding.lockScope.visibility = if (state.unlocked) View.VISIBLE else View.GONE
         binding.lockScope.isEnabled = !state.busy
         binding.unlock.isEnabled = !state.busy; binding.credentialSetup.isEnabled = !state.busy
+        binding.ownCardUnlock.isEnabled = !state.busy && !ownCard.pending
         binding.supervisorRequest.isEnabled = !state.busy
         binding.supervisorImport.isEnabled = !state.busy
         binding.supervisorFileImport.isEnabled = !state.busy && !readingSupervisor
