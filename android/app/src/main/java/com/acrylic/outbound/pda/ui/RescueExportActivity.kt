@@ -12,6 +12,9 @@ import androidx.activity.viewModels
 import androidx.lifecycle.*
 import com.acrylic.outbound.pda.databinding.ActivityRescueExportBinding
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withContext
 
 class RescueExportActivity : ComponentActivity() {
     private lateinit var binding: ActivityRescueExportBinding
@@ -19,11 +22,15 @@ class RescueExportActivity : ComponentActivity() {
     private var identityLabels = emptyList<String>()
     private var orderLabels = emptyList<String>()
     private var packageIds = emptyList<String>()
+    private var readingSupervisor = false
     private val createDocument = registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
         if (uri == null) model.cancelled() else model.copy(uri)
     }
     private val openReceipt = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) model.importReceipt(uri)
+    }
+    private val openSupervisor = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) readSupervisorMaterial(uri)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +48,7 @@ class RescueExportActivity : ComponentActivity() {
         binding.credentialSetup.setOnClickListener { startActivity(Intent(this, RescueCredentialActivity::class.java)) }
         binding.supervisorRequest.setOnClickListener { startActivity(Intent(this, RescueRequestActivity::class.java)) }
         binding.supervisorImport.setOnClickListener { RescueSupervisorImportDialog.show(this, model::importSupervisor) }
+        binding.supervisorFileImport.setOnClickListener { openSupervisor.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }
         binding.unlock.setOnClickListener {
             val password = binding.credential.text.toString().toCharArray(); binding.credential.text.clear()
             model.unlock(binding.identity.selectedItemPosition, password)
@@ -58,6 +66,29 @@ class RescueExportActivity : ComponentActivity() {
         binding.back.setOnClickListener { finish() }
     }
     override fun onResume() { super.onResume(); model.loadIdentities() }
+    private fun readSupervisorMaterial(uri: android.net.Uri) {
+        if (readingSupervisor || model.state.value.busy) return
+        readingSupervisor = true
+        binding.supervisorFileImport.isEnabled = false
+        lifecycleScope.launch {
+            try {
+                val material = withContext(Dispatchers.IO) {
+                    SupervisorMaterialFile.read(checkNotNull(contentResolver.openInputStream(uri)))
+                }
+                if (model.state.value.busy) {
+                    binding.status.text = "当前操作尚未结束，主管材料未导入；结束后请重新选择。"
+                    return@launch
+                }
+                RescueSupervisorImportDialog.show(this@RescueExportActivity, model::importSupervisor, material)
+            } catch (error: Exception) {
+                if (error is CancellationException) throw error
+                binding.status.text = "主管材料未读取，尚未导入。请选择完整的UTF-8原件（不超过128 KiB），原资料保留。"
+            } finally {
+                readingSupervisor = false
+                binding.supervisorFileImport.isEnabled = !model.state.value.busy
+            }
+        }
+    }
     private fun selection() {
         binding.order.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
@@ -86,6 +117,7 @@ class RescueExportActivity : ComponentActivity() {
         binding.unlock.isEnabled = !state.busy; binding.credentialSetup.isEnabled = !state.busy
         binding.supervisorRequest.isEnabled = !state.busy
         binding.supervisorImport.isEnabled = !state.busy
+        binding.supervisorFileImport.isEnabled = !state.busy && !readingSupervisor
         binding.identity.isEnabled = !state.busy; binding.order.isEnabled = !state.busy
         binding.readSnapshot.isEnabled = !state.busy && state.unlocked && state.orders.isNotEmpty()
         binding.importReceipt.isEnabled = !state.busy && state.unlocked &&
