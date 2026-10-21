@@ -38,6 +38,11 @@ internal class RescueSupervisorStore(private val storage: RescueCredentialStorag
         val verified = active(entry); val credential = entry.getString("credentialId")
         return RescueReadGrant(verified.identity, targets = verified.targets) { validate(id, credential) }.also { it.recheck() }
     }
+    @Synchronized fun unlockCard(id: String, card: SupervisorRescueCard): RescueReadGrant {
+        val entry = checkNotNull(storage.read()).getJSONObject("entries").getJSONObject(id)
+        val password = card.credential(verified(entry))
+        try { return unlock(id, password) } finally { password.fill('\u0000') }
+    }
 
     @Synchronized fun importRevocation(token: String): String {
         val root = checkNotNull(storage.read()) { "请先预置原主管授权" }

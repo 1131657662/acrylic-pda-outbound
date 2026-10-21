@@ -29,6 +29,7 @@ class RescueExportActivity : ComponentActivity() {
         if (::binding.isInitialized) renderActions(model.state.value)
     })
     private val ownCard = OwnRescueCardPicker(this, { model }, { binding.identity.selectedItemPosition })
+    private val supervisorCard = SupervisorRescueCardPicker(this, { model }, { binding.identity.selectedItemPosition })
     private val createDocument = registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
         if (uri == null) model.cancelled() else model.copy(uri)
     }
@@ -60,6 +61,7 @@ class RescueExportActivity : ComponentActivity() {
             model.unlock(binding.identity.selectedItemPosition, password)
         }
         binding.ownCardUnlock.setOnClickListener { ownCard.choose() }
+        binding.supervisorCardUnlock.setOnClickListener { supervisorCard.choose() }
         binding.readSnapshot.setOnClickListener { model.readSnapshot() }
         binding.importReceipt.setOnClickListener { openReceipt.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }
         binding.nextPage.setOnClickListener { model.nextPage() }
@@ -130,6 +132,7 @@ class RescueExportActivity : ComponentActivity() {
         binding.lockScope.isEnabled = !state.busy
         binding.unlock.isEnabled = !state.busy; binding.credentialSetup.isEnabled = !state.busy
         binding.ownCardUnlock.isEnabled = !state.busy && !ownCard.pending
+        binding.supervisorCardUnlock.isEnabled = !state.busy && !supervisorCard.pending
         binding.supervisorRequest.isEnabled = !state.busy
         binding.supervisorImport.isEnabled = !state.busy
         binding.supervisorFileImport.isEnabled = !state.busy && !readingSupervisor
@@ -140,7 +143,7 @@ class RescueExportActivity : ComponentActivity() {
         binding.generate.isEnabled = !state.busy && state.canGenerate; binding.copy.isEnabled = !state.busy && state.canCopy
         binding.nextPage.visibility = if (state.hasMore) View.VISIBLE else View.GONE
         binding.nextPage.isEnabled = !state.busy
-        if (supervisorSetupActive) listOf(binding.unlock, binding.credentialSetup, binding.ownCardUnlock,
+        if (supervisorSetupActive) listOf(binding.unlock, binding.credentialSetup, binding.ownCardUnlock, binding.supervisorCardUnlock,
             binding.supervisorRequest, binding.supervisorImport, binding.supervisorFileImport, binding.identity,
             binding.order, binding.readSnapshot, binding.importReceipt, binding.generate, binding.copy,
             binding.nextPage, binding.lockScope, binding.recoverPackage).forEach { it.isEnabled = false }

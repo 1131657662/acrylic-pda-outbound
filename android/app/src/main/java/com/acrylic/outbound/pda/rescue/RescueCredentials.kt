@@ -47,6 +47,10 @@ class RescueCredentials(context: Context, private val session: PdaSession) {
             else -> error("请选择已预置的只读凭据")
         }
     } finally { password.fill('\u0000') }
+    internal fun unlockSupervisorCard(id: String, card: SupervisorRescueCard): RescueReadGrant {
+        check(id.startsWith("supervisor:")) { "请选择已预置的主管只读授权" }
+        return supervisor.unlockCard(id.removePrefix("supervisor:"), card)
+    }
     fun importSupervisor(text: String, password: CharArray): String = try {
         val material = RescueSupervisorMaterial.read(text)
         // Revocations never need a live login and can only reduce access.

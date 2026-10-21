@@ -90,6 +90,26 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
             }
         }
     }
+    internal fun unlockSupervisorCard(id: String, uri: Uri) {
+        if (state.value.busy || state.value.unlocked) return
+        grant = null; snapshot = null; generated = null
+        mutable.update { it.copy(unlocked = false, canGenerate = false, canCopy = false, privatePackages = emptyList()) }
+        run("正在读取主管凭据卡并核验原签名范围") {
+            try {
+                val choice = state.value.identities.firstOrNull { it.id == id && id.startsWith("supervisor:") }
+                    ?: error("本机没有所选主管预置授权")
+                SupervisorRescueCard.read(checkNotNull(app.contentResolver.openInputStream(uri))).use {
+                    grant = credentials.unlockSupervisorCard(choice.id, it)
+                }
+                page(""); val packages = files.available(checkNotNull(grant))
+                mutable.update { it.copy(unlocked = true, privatePackages = packages, summary = "",
+                    message = "主管凭据卡经原校验器及签名范围核验；仅取回原记录，不授扫码、提交或放行权。") }
+            } catch (_: Exception) {
+                grant = null
+                error("主管凭据卡未通过原授权核验，请核对原卡、人机仓钥、期限、撤销及尝试限制；原资料保留。")
+            }
+        }
+    }
     fun recover(index: Int) = run("正在回读原私有包") {
         val candidate = state.value.privatePackages.getOrNull(index) ?: error("没有可恢复的原私有包")
         generated = null; mutable.update { it.copy(canCopy = false) }
