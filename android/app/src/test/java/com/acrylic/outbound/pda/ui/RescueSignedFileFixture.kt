@@ -40,6 +40,9 @@ internal class RescueSignedFileFixture : AutoCloseable {
     val model get() = ViewModelProvider(activity)[RescueExportViewModel::class.java]
     val credentials get() = RescueCredentials.shared(app, app.session)
     val credentialFile get() = File(app.noBackupFilesDir, "rescue-supervisor-credentials.enc")
+    private var destroyed = false
+    fun recreate() { controller.recreate(); await { !model.state.value.busy } }
+    fun destroy() { if (!destroyed) { controller.pause().stop().destroy(); destroyed = true } }
 
     init {
         Settings.Global.putInt(app.contentResolver, Settings.Global.BOOT_COUNT, 1)
@@ -106,7 +109,7 @@ internal class RescueSignedFileFixture : AutoCloseable {
     }
 
     override fun close() {
-        controller.pause().stop().destroy()
+        destroy()
         server.close(); vault.clear(); app.database.close()
         RescueFileJvmKeyStore.remove(provider)
     }

@@ -53,10 +53,16 @@ class RescueCredentials(context: Context, private val session: PdaSession) {
         if (material.revocation != null) {
             supervisor.importRevocation(material.revocation)
             "主管撤销签名已核验并保存；原资料保留"
-        } else provisionSupervisor(checkNotNull(material.authorization), password)
+        } else provisionSupervisor(checkNotNull(material.authorization), password, null)
     } finally { password.fill('\u0000') }
-    private fun provisionSupervisor(token: String, password: CharArray): String {
+    internal fun importSupervisorSetup(draft: SupervisorRescueSetupDraft): String {
+        val password = draft.credential(session.requireSession(), binding().second)
+        try { return provisionSupervisor(draft.originalToken(), password, draft) }
+        finally { password.fill('\u0000') }
+    }
+    private fun provisionSupervisor(token: String, password: CharArray, expected: SupervisorRescueSetupDraft?): String {
         val original = session.requireSession()
+        expected?.requireCurrent(original, binding().second)
         val verified = RescueDelegation.verify(token, original.getJSONObject("signingKey"), binding())
         val material = session.call("pda/rescue-grants/${verified.grantId}", expected = original)
         SessionIdentity.requireSame(original, session.saved())
@@ -67,9 +73,12 @@ class RescueCredentials(context: Context, private val session: PdaSession) {
         }
         check(material.getString("status") == "AUTHORIZED" && material.isNull("revocation")) { "主管授权已撤销或到期，请保留原资料" }
         val trusted = session.requireSession()
+        expected?.requireCurrent(trusted, binding().second)
         val id = supervisor.provision(RescueSupervisorStore.Provision(token, trusted.getJSONObject("signingKey"), trusted), password)
-        try { SessionIdentity.requireSame(original, session.saved()) }
-        catch (error: Exception) { supervisor.revokeLocal(id); throw error }
+        try {
+            SessionIdentity.requireSame(original, session.saved())
+            expected?.requireCurrent(checkNotNull(session.saved()), binding().second)
+        } catch (error: Exception) { supervisor.revokeLocal(id); throw error }
         return "主管签名只读范围已预置；退出登录后可凭本地口令取回原件"
     }
     companion object {

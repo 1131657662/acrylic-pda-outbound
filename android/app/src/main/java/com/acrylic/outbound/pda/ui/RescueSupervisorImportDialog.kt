@@ -7,12 +7,19 @@ import com.acrylic.outbound.pda.databinding.DialogRescueSupervisorImportBinding
 
 /** Imported material cannot choose a trust root; new authority requires the online rescuer identity. */
 internal object RescueSupervisorImportDialog {
-    fun show(activity: ComponentActivity, imported: (String, CharArray) -> Unit, material: String = "") {
+    fun show(activity: ComponentActivity, imported: (String, CharArray) -> Unit, material: String = "", generated: ((String) -> Unit)? = null) {
         val binding = DialogRescueSupervisorImportBinding.inflate(activity.layoutInflater)
         binding.material.setText(material)
+        binding.generateSupervisorSetup.visibility = if (generated == null) android.view.View.GONE else android.view.View.VISIBLE
         var confirmed = false
         val dialog = AlertDialog.Builder(activity).setTitle("主管只读救援原件").setView(binding.root)
             .setPositiveButton("核验并保存", null).setNegativeButton("取消", null).create()
+        binding.generateSupervisorSetup.setOnClickListener {
+            if (confirmed || generated == null) return@setOnClickListener
+            confirmed = true
+            val original = binding.material.text.toString()
+            dialog.dismiss(); generated(original)
+        }
         dialog.setOnDismissListener { binding.material.text.clear(); binding.password.text.clear() }
         dialog.setOnShowListener {
             dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)

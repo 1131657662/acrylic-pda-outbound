@@ -23,6 +23,11 @@ class RescueExportActivity : ComponentActivity() {
     private var orderLabels = emptyList<String>()
     private var packageIds = emptyList<String>()
     private var readingSupervisor = false
+    private var supervisorSetupActive = false
+    private val generatedSupervisor = SupervisorRescueSetupFlow(this, { model.loadIdentities(it) }, {
+        supervisorSetupActive = it
+        if (::binding.isInitialized) renderActions(model.state.value)
+    })
     private val ownCard = OwnRescueCardPicker(this, { model }, { binding.identity.selectedItemPosition })
     private val createDocument = registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
         if (uri == null) model.cancelled() else model.copy(uri)
@@ -48,7 +53,7 @@ class RescueExportActivity : ComponentActivity() {
     private fun actions() {
         binding.credentialSetup.setOnClickListener { startActivity(Intent(this, RescueCredentialActivity::class.java)) }
         binding.supervisorRequest.setOnClickListener { startActivity(Intent(this, RescueRequestActivity::class.java)) }
-        binding.supervisorImport.setOnClickListener { RescueSupervisorImportDialog.show(this, model::importSupervisor) }
+        binding.supervisorImport.setOnClickListener { showSupervisorImport() }
         binding.supervisorFileImport.setOnClickListener { openSupervisor.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }
         binding.unlock.setOnClickListener {
             val password = binding.credential.text.toString().toCharArray(); binding.credential.text.clear()
@@ -69,7 +74,7 @@ class RescueExportActivity : ComponentActivity() {
     }
     override fun onResume() { super.onResume(); model.loadIdentities() }
     private fun readSupervisorMaterial(uri: android.net.Uri) {
-        if (readingSupervisor || model.state.value.busy) return
+        if (readingSupervisor || supervisorSetupActive || model.state.value.busy) return
         readingSupervisor = true
         binding.supervisorFileImport.isEnabled = false
         lifecycleScope.launch {
@@ -77,18 +82,25 @@ class RescueExportActivity : ComponentActivity() {
                 val material = withContext(Dispatchers.IO) {
                     SupervisorMaterialFile.read(checkNotNull(contentResolver.openInputStream(uri)))
                 }
-                if (model.state.value.busy) {
+                if (supervisorSetupActive || model.state.value.busy) {
                     binding.status.text = "当前操作尚未结束，主管材料未导入；结束后请重新选择。"
                     return@launch
                 }
-                RescueSupervisorImportDialog.show(this@RescueExportActivity, model::importSupervisor, material)
+                showSupervisorImport(material)
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
                 binding.status.text = "主管材料未读取，尚未导入。请选择完整的UTF-8原件（不超过128 KiB），原资料保留。"
             } finally {
                 readingSupervisor = false
-                binding.supervisorFileImport.isEnabled = !model.state.value.busy
+                renderActions(model.state.value)
             }
+        }
+    }
+    override fun onDestroy() { generatedSupervisor.close(); super.onDestroy() }
+    private fun showSupervisorImport(material: String = "") {
+        if (supervisorSetupActive || model.state.value.busy) return
+        RescueSupervisorImportDialog.show(this, model::importSupervisor, material) {
+            model.lock(); generatedSupervisor.show(it)
         }
     }
     private fun selection() {
@@ -128,6 +140,10 @@ class RescueExportActivity : ComponentActivity() {
         binding.generate.isEnabled = !state.busy && state.canGenerate; binding.copy.isEnabled = !state.busy && state.canCopy
         binding.nextPage.visibility = if (state.hasMore) View.VISIBLE else View.GONE
         binding.nextPage.isEnabled = !state.busy
+        if (supervisorSetupActive) listOf(binding.unlock, binding.credentialSetup, binding.ownCardUnlock,
+            binding.supervisorRequest, binding.supervisorImport, binding.supervisorFileImport, binding.identity,
+            binding.order, binding.readSnapshot, binding.importReceipt, binding.generate, binding.copy,
+            binding.nextPage, binding.lockScope, binding.recoverPackage).forEach { it.isEnabled = false }
     }
     private fun renderPackages(state: RescueExportUi) {
         val ids = state.privatePackages.map { it.id }

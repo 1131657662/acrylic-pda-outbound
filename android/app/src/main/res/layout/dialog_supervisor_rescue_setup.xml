@@ -1,0 +1,20 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="16dp">
+        <TextView android:id="@+id/authorityScope" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp"
+            android:text="系统为原主管授权生成专用随机解锁口令，无需手工编造。卡不是新授权，不能替代原签名、在线核对、订单范围或期限。" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp"
+            android:text="1. 保存敏感主管凭据卡并移至设备外，与应急包、本人卡、独立采集卡及文件解密材料分开保管，不发送普通群聊。" />
+        <Button android:id="@+id/saveCard" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="选择位置并保存主管凭据卡" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp"
+            android:text="2. 从保管位置重新选取本次原卡回读。字节核同不证明设备外保管，请单独确认。" />
+        <Button android:id="@+id/verifyCard" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="重新选取主管凭据卡并回读" android:enabled="false" />
+        <CheckBox android:id="@+id/custodyConfirmed" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
+            android:saveEnabled="false" android:text="我已在设备外独立保管此主管凭据卡，与应急包和解密材料分开" />
+        <TextView android:id="@+id/setupStatus" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp"
+            android:text="3. 指定救援人在原设备联网核对原授权后才预置。成功会替换此授权的旧本地口令，旧解锁范围须重新核验；其他授权及原资料保留。遗失须重新联网核对，不能离线重置或恢复旧应急包密码。卡内口令可供原手工解锁入口使用。" />
+    </LinearLayout>
+</ScrollView>

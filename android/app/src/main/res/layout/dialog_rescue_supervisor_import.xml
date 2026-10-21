@@ -3,6 +3,8 @@
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="核对选中的主管签名原件，也可粘贴原件。读取文件尚未获得权限，点击核验后仍须验签及核对人员、设备和范围。新授权须由指定救援人在原设备联网预置；已预置授权的签名撤销可离线导入。原件中的公钥不能自行作为信任根。" android:textSize="16sp" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="主管签名原件" android:labelFor="@id/material" />
         <EditText android:id="@+id/material" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="96dp" android:maxLines="6" android:maxLength="131072" android:inputType="textMultiLine|textNoSuggestions" android:saveEnabled="false" android:importantForAutofill="no" />
+        <Button android:id="@+id/generateSupervisorSetup" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="安全生成主管解锁卡并独立保管" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:text="推荐为原主管授权安全生成专用随机口令；下方为手工备用。撤销原件直接核验导入，无需生成。卡只解锁原签名范围，不替代主管审批或新增权限。" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="为此主管授权设置应急解锁口令；仅导入撤销时留空" android:labelFor="@id/password" />
         <EditText android:id="@+id/password" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:maxLength="128" android:inputType="textPassword" android:singleLine="true" android:saveEnabled="false" android:importantForAutofill="no" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="口令规则：16至128位无空格ASCII字符；不要使用人员姓名、简单序列或与导出文件共用口令。请在设备外独立保管。" android:textSize="14sp" />

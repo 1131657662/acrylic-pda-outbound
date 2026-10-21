@@ -34,7 +34,7 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
             saved["preferredSource"] = source; saved["preferredId"] = id
         }
     }
-    fun loadIdentities() = run(state.value.message) { mutable.update { it.copy(identities = credentials.choices()) } }
+    fun loadIdentities(message: String = state.value.message) = run(message) { mutable.update { it.copy(identities = credentials.choices()) } }
     fun importSupervisor(text: String, password: CharArray) {
         if (state.value.busy) { password.fill('\u0000'); return }
         lock()
