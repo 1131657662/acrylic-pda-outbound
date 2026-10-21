@@ -1,0 +1,22 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="16dp">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp"
+            android:text="系统生成本次文件独有的随机解密口令，无需编造。只保护导出文件，不授任何作业或救援权限。" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp"
+            android:text="1. 先保存敏感解密材料，并移至设备外。材料与加密包、本人或主管凭据卡分开保管；不要发送普通群聊。" />
+        <Button android:id="@+id/savePackageSecret" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="52dp" android:text="选择位置并保存解密材料" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp"
+            android:text="2. 从保管位置重新选择原材料回读。回读仅核对字节，设备无法自动证明已分开保管。" />
+        <Button android:id="@+id/verifyPackageSecret" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="52dp" android:text="重新选择解密材料并回读" android:enabled="false" />
+        <CheckBox android:id="@+id/packageCustody" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minHeight="52dp" android:saveEnabled="false" android:text="我已在设备外独立保管解密材料，与加密包及救援凭据卡分开" />
+        <TextView android:id="@+id/packageSetupStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textSize="16sp" android:accessibilityLiveRegion="polite" android:text="尚未保存解密材料或生成新包。" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp"
+            android:text="3. 核对后才生成本机加密包；下一步仍须选取目标写入回读，电脑副本另行核验。关闭或切换记录会废弃本次草稿，不删除已保存材料、旧包或原记录。遗失材料无法恢复该包口令。" />
+    </LinearLayout>
+</ScrollView>

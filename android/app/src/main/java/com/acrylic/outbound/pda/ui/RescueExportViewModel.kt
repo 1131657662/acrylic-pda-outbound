@@ -1,5 +1,4 @@
 package com.acrylic.outbound.pda.ui
-
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
@@ -8,17 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.acrylic.outbound.pda.PdaApplication
 import com.acrylic.outbound.pda.rescue.*
 import com.acrylic.outbound.pda.security.DeviceKeys
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.*; import kotlinx.coroutines.flow.*
 import java.util.Base64
-
-data class RescueExportUi(val busy: Boolean = false, val message: String = "请核验已预置的本地救援凭据",
-    val identities: List<RescueCredentialChoice> = emptyList(), val orders: List<RescueOrderChoice> = emptyList(),
-    val hasMore: Boolean = false, val selected: Int = 0, val summary: String = "", val unlocked: Boolean = false,
-    val privatePackages: List<RescuePrivatePackage> = emptyList(),
-    val canGenerate: Boolean = false, val canCopy: Boolean = false,
-    val copyState: String = "电脑副本尚未核验；生成本机包不代表已外置备份。")
-
 class RescueExportViewModel(application: Application, private val saved: SavedStateHandle) : AndroidViewModel(application) {
     private val app = application as PdaApplication
     private val credentials get() = RescueCredentials.shared(app, app.session)
@@ -26,13 +16,11 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
     private var grant: RescueReadGrant? = null
     private var snapshot: RescueSnapshot? = null
     private var generated: RescueGeneratedFile? = null
-    private var pageCursor: String? = null
-    private val mutable = MutableStateFlow(RescueExportUi())
+    private var pageCursor: String? = null; private val mutable = MutableStateFlow(RescueExportUi())
     val state: StateFlow<RescueExportUi> = mutable.asStateFlow()
     fun prefer(source: String, id: String) {
-        if (source in setOf("FORMAL", "TEMP", "INDEPENDENT") && id.isNotBlank()) {
-            saved["preferredSource"] = source; saved["preferredId"] = id
-        }
+        if (source !in setOf("FORMAL", "TEMP", "INDEPENDENT") || id.isBlank()) return
+        saved["preferredSource"] = source; saved["preferredId"] = id
     }
     fun loadIdentities(message: String = state.value.message) = run(message) { mutable.update { it.copy(identities = credentials.choices()) } }
     fun importSupervisor(text: String, password: CharArray) {
@@ -148,20 +136,37 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
             "处置 ${facts.getString("disposed")} · 未决 ${facts.getString("pending")} · 失败 ${facts.getString("failed")}\n" +
             if ("submission.json" in checkNotNull(snapshot).originals) "存在原冻结批次，正文按原字节保存" else "未冻结；不会补造提交批次") }
     }
+    internal fun packageDraft(): RescuePackageDraft {
+        check(!state.value.busy && state.value.unlocked && state.value.canGenerate)
+        val original = checkNotNull(snapshot); val access = checkNotNull(grant)
+        return RescuePackageDraft.create(original.order) {
+            check(grant === access && snapshot === original && state.value.unlocked && state.value.canGenerate) { "原只读范围或记录已变化，请重新开始" }
+            access.check(original.order)
+        }
+    }
+    internal fun generatePrepared(draft: RescuePackageDraft): String {
+        check(!state.value.busy); val password = draft.credential()
+        mutable.update { it.copy(busy = true, message = "正在生成加密包；解密材料须分开保管") }
+        try { publishPackage(password, draft::recheck); return "本机包已生成并回读；尚未外置或电脑核验" }
+        catch (error: Exception) { mutable.update { it.copy(message = "生成未完成；保留解密材料及原记录", canCopy = false) }; throw error }
+        finally { password.fill('\u0000'); mutable.update { it.copy(busy = false) } }
+    }
     fun generate(password: CharArray) {
         if (state.value.busy) { password.fill('\u0000'); return }
         run("正在生成加密应急包，原记录保留") {
-            try {
-                val keys = DeviceKeys(); val public = keys.publicKey(false).also(app.session.settings::verifyKey)
-                val signer = RescueSigner(Base64.getDecoder().decode(public), keys::sign)
-                val result = files.generate(checkNotNull(snapshot), checkNotNull(grant) to signer, password)
-                generated = result
-                mutable.update { it.copy(canCopy = true, summary = result.summary, privatePackages = files.available(checkNotNull(grant)),
-                    copyState = "本机包生成并回读通过。目标未写入；电脑副本尚未核验。") }
-            } finally { password.fill('\u0000') }
+            try { publishPackage(password) } finally { password.fill('\u0000') }
         }
     }
-    fun cancelled() { mutable.update { it.copy(message = "目标选择已取消，原私有包保留；未新增已核验外置副本。") } }
+    private fun publishPackage(password: CharArray, validate: () -> Unit = {}) {
+        generated = null; mutable.update { it.copy(canCopy = false) }; validate()
+        val keys = DeviceKeys(); val public = keys.publicKey(false).also(app.session.settings::verifyKey)
+        val signer = RescueSigner(Base64.getDecoder().decode(public), keys::sign)
+        val result = files.generate(checkNotNull(snapshot), checkNotNull(grant) to signer, password)
+        validate(); generated = result
+        mutable.update { it.copy(canCopy = true, summary = result.summary, privatePackages = files.available(checkNotNull(grant)),
+            copyState = "本机包生成并回读通过。目标未写入；电脑副本尚未核验。") }
+    }
+    fun cancelled() = mutable.update { it.copy(message = "目标选择已取消，原私有包保留；未新增已核验外置副本。") }
     fun importReceipt(uri: Uri) = run("正在保全并核验原批次中转回执") {
         val selected = state.value.orders.getOrNull(state.value.selected) ?: error("请选择原冻结订单")
         check(selected.target.source in setOf("FORMAL", "TEMP")) { "独立采集须由主管核对原授权和实物，不能导入业务中转回执" }

@@ -24,6 +24,11 @@ class RescueExportActivity : ComponentActivity() {
     private var packageIds = emptyList<String>()
     private var readingSupervisor = false
     private var supervisorSetupActive = false
+    private var packageSetupActive = false
+    private val packageSetup = RescuePackageSetupFlow(this, { model }) {
+        packageSetupActive = it
+        if (::binding.isInitialized) renderActions(model.state.value)
+    }
     private val generatedSupervisor = SupervisorRescueSetupFlow(this, { model.loadIdentities(it) }, {
         supervisorSetupActive = it
         if (::binding.isInitialized) renderActions(model.state.value)
@@ -71,12 +76,13 @@ class RescueExportActivity : ComponentActivity() {
             val password = binding.packagePassword.text.toString().toCharArray(); binding.packagePassword.text.clear()
             model.generate(password)
         }
+        binding.generateSecurePackage.setOnClickListener { packageSetup.show() }
         binding.copy.setOnClickListener { createDocument.launch("pda-${java.util.UUID.randomUUID()}.pdarescue") }
         binding.back.setOnClickListener { finish() }
     }
     override fun onResume() { super.onResume(); model.loadIdentities() }
     private fun readSupervisorMaterial(uri: android.net.Uri) {
-        if (readingSupervisor || supervisorSetupActive || model.state.value.busy) return
+        if (readingSupervisor || supervisorSetupActive || packageSetupActive || model.state.value.busy) return
         readingSupervisor = true
         binding.supervisorFileImport.isEnabled = false
         lifecycleScope.launch {
@@ -84,7 +90,7 @@ class RescueExportActivity : ComponentActivity() {
                 val material = withContext(Dispatchers.IO) {
                     SupervisorMaterialFile.read(checkNotNull(contentResolver.openInputStream(uri)))
                 }
-                if (supervisorSetupActive || model.state.value.busy) {
+                if (supervisorSetupActive || packageSetupActive || model.state.value.busy) {
                     binding.status.text = "当前操作尚未结束，主管材料未导入；结束后请重新选择。"
                     return@launch
                 }
@@ -98,9 +104,9 @@ class RescueExportActivity : ComponentActivity() {
             }
         }
     }
-    override fun onDestroy() { generatedSupervisor.close(); super.onDestroy() }
+    override fun onDestroy() { packageSetup.close(); generatedSupervisor.close(); super.onDestroy() }
     private fun showSupervisorImport(material: String = "") {
-        if (supervisorSetupActive || model.state.value.busy) return
+        if (supervisorSetupActive || packageSetupActive || model.state.value.busy) return
         RescueSupervisorImportDialog.show(this, model::importSupervisor, material) {
             model.lock(); generatedSupervisor.show(it)
         }
@@ -141,11 +147,12 @@ class RescueExportActivity : ComponentActivity() {
         binding.importReceipt.isEnabled = !state.busy && state.unlocked &&
             state.orders.getOrNull(state.selected)?.target?.source in setOf("FORMAL", "TEMP")
         binding.generate.isEnabled = !state.busy && state.canGenerate; binding.copy.isEnabled = !state.busy && state.canCopy
+        binding.generateSecurePackage.isEnabled = !state.busy && state.canGenerate && !packageSetupActive && !supervisorSetupActive
         binding.nextPage.visibility = if (state.hasMore) View.VISIBLE else View.GONE
         binding.nextPage.isEnabled = !state.busy
-        if (supervisorSetupActive) listOf(binding.unlock, binding.credentialSetup, binding.ownCardUnlock, binding.supervisorCardUnlock,
+        if (supervisorSetupActive || packageSetupActive) listOf(binding.unlock, binding.credentialSetup, binding.ownCardUnlock, binding.supervisorCardUnlock,
             binding.supervisorRequest, binding.supervisorImport, binding.supervisorFileImport, binding.identity,
-            binding.order, binding.readSnapshot, binding.importReceipt, binding.generate, binding.copy,
+            binding.order, binding.readSnapshot, binding.importReceipt, binding.generate, binding.generateSecurePackage, binding.copy,
             binding.nextPage, binding.lockScope, binding.recoverPackage).forEach { it.isEnabled = false }
     }
     private fun renderPackages(state: RescueExportUi) {

@@ -21,7 +21,7 @@
         <Button android:id="@+id/supervisorImport" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="粘贴主管授权或撤销原件" />
         <Button android:id="@+id/lockScope" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="锁定并切换救援身份" android:visibility="gone" />
         <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" android:accessibilityLiveRegion="polite" />
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="原订单" android:labelFor="@id/order" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="第2步：选择原记录并核对快照" android:labelFor="@id/order" />
         <Spinner android:id="@+id/order" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" />
         <Button android:id="@+id/nextPage" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="下一页原订单" />
         <Button android:id="@+id/readSnapshot" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="读取一致原件快照" />
@@ -30,11 +30,13 @@
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="已生成的原私有包（本人范围内最近50份）" android:labelFor="@id/privatePackage" />
         <Spinner android:id="@+id/privatePackage" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" />
         <Button android:id="@+id/recoverPackage" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="回读并恢复选中的原包" />
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="为导出文件设置独立解密口令" android:labelFor="@id/packagePassword" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="第3步：安全生成并独立保管文件解密材料" android:textSize="18sp" android:textStyle="bold" />
+        <Button android:id="@+id/generateSecurePackage" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="安全生成解密材料与加密包（推荐）" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="备用：已有独立文件解密口令" android:labelFor="@id/packagePassword" />
         <EditText android:id="@+id/packagePassword" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:inputType="textPassword" android:singleLine="true" android:saveEnabled="false" android:importantForAutofill="no" />
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="文件口令须16至128位无空格ASCII字符，与应急解锁口令不同。应与文件分开保管；遗失后无法解密此文件，仍可凭有效只读身份重新导出。" android:textSize="14sp" />
-        <Button android:id="@+id/generate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="生成并核验加密应急包" />
-        <Button android:id="@+id/copy" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="选取目标并写入回读" />
+        <Button android:id="@+id/generate" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="使用已有口令生成加密包" />
+        <Button android:id="@+id/copy" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="第4步：选取目标写入回读，再到电脑核验" />
         <TextView android:id="@+id/copyState" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="电脑副本尚未核验；文件生成不代表已外置备份。" android:textSize="16sp" />
         <Button android:id="@+id/back" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回" />
     </LinearLayout>
