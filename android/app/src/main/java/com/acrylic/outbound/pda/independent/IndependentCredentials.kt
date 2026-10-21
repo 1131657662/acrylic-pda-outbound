@@ -7,6 +7,7 @@ import com.acrylic.outbound.pda.network.ApiFailure
 import com.acrylic.outbound.pda.security.*
 import com.acrylic.outbound.pda.sync.RecoveryProtection
 import java.util.Base64
+import org.json.JSONObject
 
 internal class IndependentCaptureGrant(val proof: IndependentCredentialProof, private val check: () -> IndependentCredentialSnapshot) {
     fun recheck(): IndependentCredentialProof = check().proof
@@ -22,9 +23,11 @@ class IndependentCredentials private constructor(private val context: Context, p
         return IndependentCredentialContext(session.requireSession(), session.settings.device to
             JwtVerifier.sha(Base64.getDecoder().decode(public)), TrustedTime.sample(context))
     }
-    fun provision(password: CharArray): String = try {
+    fun provision(password: CharArray, expected: JSONObject? = null): String = try {
         require(password.size in 16..128 && password.all { it.code in 33..126 }) { "独立口令须为16至128位无空格ASCII字符" }
-        val before = environment(); val intent = store.prepare(before)
+        val before = environment()
+        if (expected != null) before.requireIntent(expected)
+        val intent = store.prepare(before)
         val receipt = session.call("pda/independent-credentials", intent.body,
             epoch = intent.identity.getString("serverRecoveryEpoch"), extraHeaders = mapOf("Idempotency-Key" to intent.key), expected = before.session)
         val after = environment(); SessionIdentity.requireSame(before.session, after.session)

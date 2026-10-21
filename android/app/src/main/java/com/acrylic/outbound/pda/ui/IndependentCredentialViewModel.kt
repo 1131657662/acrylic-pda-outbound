@@ -18,7 +18,7 @@ class IndependentCredentialViewModel(application: Application) : AndroidViewMode
     private val mutable = MutableStateFlow(IndependentCredentialUi())
     internal val state = mutable.asStateFlow()
     init { reload() }
-    fun reload() = run("正在读取已保存的身份原件") { "已读取原件；新增采集仍须核验口令和可信期限。" }
+    fun reload(message: String = "已读取原件；新增采集仍须核验口令和可信期限。") = run("正在读取已保存的身份原件") { message }
     fun provision(password: CharArray) = run("正在在线核验并保存签名原件；未确认请求沿用原键", password) { credentials.provision(password) }
     fun verify(password: CharArray) = run("正在本机核验身份和可信期限", password) { credentials.verifyLocally(password) }
     fun revoke() = run("正在撤销本机新增采集资格") { credentials.revoke(); "本机新增采集已撤销；签名原件和旧资料保留。" }

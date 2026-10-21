@@ -12,6 +12,11 @@ import kotlinx.coroutines.launch
 class IndependentCredentialActivity : ComponentActivity() {
     private lateinit var binding: ActivityIndependentCredentialBinding
     private val model: IndependentCredentialViewModel by viewModels()
+    private var setupActive = false
+    private val generatedSetup = IndependentSetupFlow(this, { model.reload(it) }, {
+        setupActive = it
+        if (::binding.isInitialized) render(model.state.value)
+    })
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
@@ -21,6 +26,7 @@ class IndependentCredentialActivity : ComponentActivity() {
             val keyboard = insets.getInsets(WindowInsetsCompat.Type.ime())
             view.setPadding(bars.left, bars.top, bars.right, maxOf(bars.bottom, keyboard.bottom)); insets
         }
+        binding.generateSetup.setOnClickListener { if (!model.state.value.busy) generatedSetup.show() }
         binding.provision.setOnClickListener { model.provision(password()) }
         binding.verify.setOnClickListener { model.verify(password()) }
         binding.revoke.setOnClickListener { model.revoke() }
@@ -28,9 +34,10 @@ class IndependentCredentialActivity : ComponentActivity() {
         binding.back.setOnClickListener { finish() }
         lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { model.state.collect(::render) } }
     }
+    override fun onDestroy() { generatedSetup.close(); super.onDestroy() }
     private fun password(): CharArray = binding.password.text.toString().toCharArray().also { binding.password.text.clear() }
     private fun render(state: IndependentCredentialUi) {
         binding.status.text = state.message; binding.original.text = state.original
-        listOf(binding.provision, binding.verify, binding.revoke, binding.reload, binding.password).forEach { it.isEnabled = !state.busy }
+        listOf(binding.provision, binding.verify, binding.revoke, binding.reload, binding.password, binding.generateSetup).forEach { it.isEnabled = !state.busy && !setupActive }
     }
 }
