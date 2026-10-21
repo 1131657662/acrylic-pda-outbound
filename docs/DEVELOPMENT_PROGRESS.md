@@ -4,7 +4,9 @@
 
 ## 当前有效结论
 
-- [凭据交互文件导入首片](history/GOAL_PDA_CREDENTIAL_FILE_INTAKE_2026-10-21.md)：受控选择/确认、预置状态和用途说明；首轮26项2失败保留，页面复验5项及追加5项成功。生成/独立保管/复用/分步导出、有效签名文件页面正向及M71仍未验。
+- [主管签名文件入口消费者](history/GOAL_PDA_SUPERVISOR_SIGNED_FILE_CONSUMER_2026-10-21.md)：仅新增测试，真实Activity/原验签与加密vault/离线解锁，8项全过；编译及8项初始化失败原件分列。主机合成边界，非非空导出、实际Keystore/设备或整体通过。
+
+- [凭据交互文件导入首片](history/GOAL_PDA_CREDENTIAL_FILE_INTAKE_2026-10-21.md)：受控选择/确认、预置状态和用途说明；首轮26项2失败保留，页面复验5项及追加5项成功。生成/独立保管/复用/分步导出及M71仍未验；有效合成签名文件页面正向另见消费者报告。
 - [正式单UI统一测试构建](history/GOAL_PDA_ORDER_UI_UNIFIED_BUILD_2026-10-21.md)：干净提交APK与独立server JAR已核哈希/配置，server首轮运行器碰撞失败保留；未安装/上传/部署，不计业务验收。
 - PDA补[正式单明细与领取预览](history/GOAL_PDA_FORMAL_ORDER_PREVIEW_UI_2026-10-21.md)：原计划订单号、真实预览及确认/取消边界；主机19项与追加17项、隔离MySQL/MockMvc7项通过，前三类运行器失败保留，未做M71/部署或整体验收。
 - [凭据交互问题接入](history/GOAL_PDA_CREDENTIAL_UX_INTAKE_2026-10-21.md)：仅接收源码审查、范围和后续安排，尚未实施或验收，不计D/O/U进展。

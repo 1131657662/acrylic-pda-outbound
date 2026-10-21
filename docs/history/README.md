@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [2026-10-21 主管签名文件入口消费者](GOAL_PDA_SUPERVISOR_SIGNED_FILE_CONSUMER_2026-10-21.md)：真实页面与原验签/vault的8项主机合成验证；编译/初始化失败保留，非整体或真机。
+
 - [2026-10-21 凭据交互文件导入首片](GOAL_PDA_CREDENTIAL_FILE_INTAKE_2026-10-21.md)：真实页面受控读取/确认与状态，测试失败/复验分列，完整凭据整改未完。
 - [2026-10-21 正式单UI干净提交统一构建](GOAL_PDA_ORDER_UI_UNIFIED_BUILD_2026-10-21.md)：APK/服务JAR、失败运行器与配置/签名核验，非业务验收。
 - [正式单明细与领取预览修复](GOAL_PDA_FORMAL_ORDER_PREVIEW_UI_2026-10-21.md)：限定主机/隔离契约验证，原失败保留；M71未验。
