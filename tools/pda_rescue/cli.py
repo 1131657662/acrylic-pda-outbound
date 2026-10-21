@@ -7,6 +7,7 @@ import tempfile
 
 from .envelope import decrypt
 from .integrity import parse
+from .secret_file import load as load_secret
 from .verify import verify
 
 
@@ -41,6 +42,7 @@ def arguments():
     parser = argparse.ArgumentParser(description="PDA只读应急包离线核验；不执行补传、记账或放行")
     parser.add_argument("package", type=Path)
     parser.add_argument("--trust", type=Path, help="包外预先核验的登记设备/人员/仓库公钥清单")
+    parser.add_argument("--secret-file", type=Path, help="Android生成的独立解密材料文件；绑定包内原订单")
     parser.add_argument("--require-trusted", action="store_true")
     parser.add_argument("--out", type=Path, help="新建已核验原件目录（包含解密后业务资料，请受控保管）")
     parser.add_argument("--xlsx", action="store_true", help="核验后在输出目录生成Excel；需要既有Artifact Tool运行库")
@@ -50,9 +52,12 @@ def arguments():
 def main():
     parser, args = arguments()
     try:
-        password = getpass.getpass("应急包口令（与介质分开保管）：")
         trusted = parse(args.trust.read_bytes()) if args.trust else None
+        material = load_secret(args.secret_file) if args.secret_file else None
+        password = material.password if material else getpass.getpass("应急包口令（与介质分开保管）：")
         result = verify(decrypt(args.package, password), trusted)
+        if material:
+            material.bind(result)
         if args.require_trusted and not result["sourceTrusted"]:
             raise ValueError("缺少包外可信登记公钥；仅完整性核验不能证明来源")
         if args.xlsx and not args.out:
