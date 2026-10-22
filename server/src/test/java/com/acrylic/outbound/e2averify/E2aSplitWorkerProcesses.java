@@ -15,9 +15,15 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
     private final Map<String, Process> children = new LinkedHashMap<>();
 
     E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority) throws Exception {
-        home = Files.createDirectory(profile.attempt.resolve("private/split"));
+        this(profile, authority, "split");
+    }
+
+    E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority, String scope) throws Exception {
+        assertThat(scope).isIn("split", "restored-split", "restored-split-successor");
+        home = Files.createDirectory(profile.attempt.resolve("private/" + scope));
         for (String role : List.of("api", "worker")) {
             var options = options(profile, authority);
+            if (!scope.equals("split")) restoredOptions(options, profile);
             if (role.equals("worker")) {
                 options.remove("--outbound.worker.enabled=false");
                 options.addAll(List.of("--spring.main.web-application-type=none",
@@ -29,6 +35,18 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
             Files.writeString(home.resolve(role + "-options.json"),
                 new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(options), StandardOpenOption.CREATE_NEW);
         }
+    }
+
+    private static void restoredOptions(ArrayList<String> options, E2aCrossSourceProfile profile) {
+        Path restored = profile.attempt.resolve("restored");
+        var replacements = Map.of(
+            "--spring.datasource.url=", profile.url.replace("/" + profile.database + "?", "/" + profile.database + "_restore?"),
+            "--outbound.storage=", restored.resolve("storage").toString(),
+            "--outbound.signing.private-key=", restored.resolve("config/server-private.der").toString(),
+            "--outbound.signing.public-key=", restored.resolve("config/server-public.der").toString());
+        options.replaceAll(option -> replacements.entrySet().stream()
+            .filter(entry -> option.startsWith(entry.getKey())).findFirst()
+            .map(entry -> entry.getKey() + entry.getValue()).orElse(option));
     }
 
     void start(String role) throws Exception {

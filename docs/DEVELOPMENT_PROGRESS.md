@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- [D13/D15完整恢复scheduler及后继组合](history/GOAL_D13_RESTORED_SCHEDULER_COMBINATION_2026-10-22.md)：新隔离IT1/0/0/0，原PENDING双格式由独立API/生产非Web定时worker消费、完整后继幂等；179表/源库/原文件守恒，独立回读通过；仅合成有界，非整体/最终候选。
+
 - [D13独立API与worker/P5组合](history/GOAL_D13_SEPARATE_API_WORKER_P5_COMBINATION_2026-10-22.md)：独立API/非Web worker及P5实际1/0/0/0，双格式下载/原件回读、持根/末SQL回滚、退役后继通过；两轮夹具失败保留，仅有界组合，非D13整体/D18。
 
 - [D16可取回文件与完整恢复副本消费者](history/GOAL_D16_RETRIEVAL_RESTORED_CONSUMER_2026-10-22.md)：新复杂恢复输入4/0/0/0，2次合成提交/3份恢复只读核同，真实锁后与末DELETE文件丢失保护4条有效guard；仅测试变化，非D16整体/最终候选。

@@ -23,7 +23,7 @@ public final class E2aSplitWorkerMain {
         var options = new ArrayList<String>();
         SubmissionJson.parse(Files.readString(home.resolve(args[1] + "-options.json")))
             .forEach(value -> options.add(value.asText()));
-        identity(home);
+        boolean restored = identity(home, options);
         Class<?>[] sources = worker ? new Class<?>[]{OutboundApplication.class, RecoveryWorkerProbe.Configuration.class}
             : new Class<?>[]{OutboundApplication.class};
         try (var context = new SpringApplication(sources).run(options.toArray(String[]::new))) {
@@ -32,7 +32,7 @@ public final class E2aSplitWorkerMain {
             var ready = SubmissionJson.object().put("pid", ProcessHandle.current().pid())
                 .put("role", args[1]).put("web", !worker);
             Files.writeString(home.resolve(args[1] + "-ready.json"), ready.toPrettyString(), StandardOpenOption.CREATE_NEW);
-            if (worker) probe(context, home);
+            if (worker && !restored) probe(context, home);
             await().atMost(Duration.ofSeconds(240)).until(() -> Files.exists(home.resolve(args[1] + "-stop.marker")));
             RecoverySplitWorkerChecks.drain(context);
         }
@@ -44,16 +44,23 @@ public final class E2aSplitWorkerMain {
         RecoverySplitWorkerChecks.probe(context, home);
     }
 
-    private static void identity(Path home) {
+    private static boolean identity(Path home, ArrayList<String> options) {
         String run = System.getenv("E2A_CROSS_RUN");
         assertThat(run).matches("[1-9][0-9]{0,3}");
         Path attempt = E2aWorktree.ROOT.resolve(".local/e2a-cross-20260925-" + run);
-        assertThat(home).isEqualTo(attempt.resolve("private/split"));
-        String database = "acrylic_e2a_cross_20260925_" + run;
+        String scope = home.getFileName().toString();
+        assertThat(scope).isIn("split", "restored-split", "restored-split-successor");
+        assertThat(home).isEqualTo(attempt.resolve("private/" + scope));
+        boolean restored = !scope.equals("split");
+        String database = "acrylic_e2a_cross_20260925_" + run + (restored ? "_restore" : "");
         String user = "e2a_cross_20260925_" + run;
         String url = "jdbc:mysql://127.0.0.1:" + E2aTestPorts.database() + "/" + database
             + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
         E2aRestoredWorkerProcess.identity(new JdbcTemplate(new DriverManagerDataSource(url, user,
             System.getenv("E2A_CROSS_PASSWORD"))), attempt, database, user);
+        assertThat(options).contains("--spring.datasource.url=" + url, "--spring.datasource.username=" + user);
+        Path storage = restored ? attempt.resolve("restored/storage") : attempt.resolve("storage");
+        assertThat(options).contains("--outbound.storage=" + storage);
+        return restored;
     }
 }

@@ -92,9 +92,9 @@ def runtime(args, output, base, env):
     try:
         wait_mysql(process, args.port)
         identity(attempt, args.run, args.port, runtime, 'identity-before')
-        code = command(base + ['integrationTest', '--tests', '*E2aSplitWorkerExportIT'],
+        code = command(base + ['integrationTest', '--tests', '*' + args.test_class],
                        output, 'integration', runtime, timeout=900)
-        xml = output / 'xml/TEST-com.acrylic.outbound.e2averify.E2aSplitWorkerExportIT.xml'
+        xml = output / ('xml/TEST-com.acrylic.outbound.e2averify.' + args.test_class + '.xml')
         result = dict(exitCode=code, completed=(attempt / 'test-completed.marker').exists())
         if xml.exists():
             result.update(ET.parse(xml).getroot().attrib)
@@ -114,6 +114,8 @@ def main():
     parser.add_argument('--build', type=Path, required=True)
     parser.add_argument('--font', type=Path, required=True)
     parser.add_argument('--browsers', type=Path, required=True)
+    parser.add_argument('--test-class', choices=('E2aSplitWorkerExportIT', 'E2aRestoredSchedulerIT'),
+                        default='E2aSplitWorkerExportIT')
     execute(parser.parse_args())
 
 
