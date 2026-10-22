@@ -1,6 +1,7 @@
 package com.acrylic.outbound.pda.ui
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.*
 import com.acrylic.outbound.pda.PdaApplication
 import com.acrylic.outbound.pda.independent.*
@@ -14,6 +15,7 @@ import java.util.UUID
 internal data class IndependentTaskUi(val busy: Boolean = false, val draft: IndependentTaskCommand? = null,
     val locked: Boolean = false, val task: IndependentTaskView? = null, val products: List<IndependentSkuBale> = emptyList(),
     val history: List<IndependentTaskRequestHistory> = emptyList(), val message: String = "原人原机的独立任务始终待对账。")
+internal data class IndependentTaskCardSelection(val commandSha256: String, val identity: JSONObject)
 
 class IndependentTaskViewModel(application: Application, private val saved: SavedStateHandle) : AndroidViewModel(application) {
     private val app = application as PdaApplication
@@ -86,6 +88,22 @@ class IndependentTaskViewModel(application: Application, private val saved: Save
             val grant = credentials.unlock(password); repository.create(command, grant)
             saved["requestId"] = command.id; restore(command.id)
         }
+    }
+    internal fun cardSelection(): IndependentTaskCardSelection? = runCatching {
+        check(!state.value.busy && state.value.task == null)
+        val draft = checkNotNull(state.value.draft); draft.validate()
+        IndependentTaskCardSelection(draft.sha(), credentials.cardSelection())
+    }.getOrNull()
+    internal fun cardMessage(message: String) { if (!state.value.busy) mutable.update { it.copy(message = message) } }
+    internal fun createCard(uri: Uri, expected: IndependentTaskCardSelection) = run("正在读取原独立卡并核验原计划") {
+        val command = checkNotNull(state.value.draft)
+        check(command.sha() == expected.commandSha256) { "原计划已变化，请重新选择原卡" }
+        val grant = try {
+            checkNotNull(app.contentResolver.openInputStream(uri)).use { credentials.unlockCard(it, expected.identity) }
+        } catch (_: Exception) { error("独立卡未通过原身份、签名、期限或尝试限制核验；原件保留") }
+        check(command.sha() == state.value.draft?.sha()) { "原计划已变化，请重新选择原卡" }
+        repository.create(command, grant)
+        saved["requestId"] = command.id; restore(command.id)
     }
     fun history(older: Boolean) = run("正在读取原任务和未完成请求") {
         val before = if (older) state.value.history.lastOrNull()?.sequence ?: Long.MAX_VALUE else Long.MAX_VALUE

@@ -17,6 +17,7 @@
         <Button android:id="@+id/add" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="加入或更新所选产品计划" />
         <Button android:id="@+id/remove" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="移除所选未保存产品计划" />
         <TextView android:id="@+id/lines" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" />
+        <Button android:id="@+id/createWithCard" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="选择原独立凭据卡，核验并保存计划" />
         <EditText android:id="@+id/password" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp"
             android:hint="独立口令" android:inputType="textPassword" android:maxLength="128" android:textSize="16sp" android:importantForAutofill="no" android:saveEnabled="false" />
         <Button android:id="@+id/create" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="核验口令并保存独立计划" />

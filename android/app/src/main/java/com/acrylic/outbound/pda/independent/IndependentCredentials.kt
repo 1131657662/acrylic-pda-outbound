@@ -44,6 +44,20 @@ class IndependentCredentials private constructor(private val context: Context, p
         val proof = store.validate(open, environment())
         IndependentCaptureGrant(proof) { store.snapshot(open, environment()) }
     } finally { password.fill('\u0000') }
+    internal fun cardSelection(): JSONObject {
+        val public = DeviceKeys().publicKey(false).also(session.settings::verifyKey)
+        return IndependentCredentialContext(session.requireSession(), session.settings.device to
+            JwtVerifier.sha(Base64.getDecoder().decode(public)), TrustedTime.sample(context)).intent()
+    }
+    internal fun unlockCard(input: java.io.InputStream, expected: JSONObject): IndependentCaptureGrant {
+        environment().requireIntent(expected)
+        val grant = IndependentCredentialCard.read(input).use { unlock(it.credential(expected)) }
+        environment().requireIntent(expected)
+        return IndependentCaptureGrant(grant.proof) {
+            environment().requireIntent(expected)
+            grant.snapshot().also { environment().requireIntent(expected) }
+        }
+    }
     fun verifyLocally(password: CharArray): String {
         val proof = unlock(password).recheck()
         return "独立身份与可信期限已核验，人员 ${proof.identity.operatorId}。独立记录始终待对账。"

@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- [独立任务页原凭据卡消费者](history/GOAL_PDA_INDEPENDENT_TASK_CARD_CONSUMER_2026-10-22.md)：原卡免转录创建计划，取消/身份/期限/围栏/原请求重试保持；五类28项及最终两类13项分次通过，线程产品错误与测试失败保留，lint/Debug通过但有558警告。仅合成主机任务页，非扫码完整页面链/真机/最终候选。
+
 - [独立卡—非空采集—注销只读导出—电脑消费者](history/GOAL_PDA_INDEPENDENT_CARD_WORK_EXPORT_CONSUMER_2026-10-22.md)：仅新增测试；原卡预置vault支持1包/300500克，清vault后原救援凭据导出，同次主机1/0/0/0与独立PC核验退出0。原四文件/1099输入守恒，仅合成有界API/文件组合；非完整页面、真机或最终候选。
 
 - [领取会话绑定定向修补](history/GOAL_PDA_CLAIM_SESSION_BINDING_2026-10-22.md)：二次预览及重试GET绑定原身份，写意图/POST前核五字段；RED两方法失败保留，修补后三类同次14/0/0/0、原键/丢响应/拒绝及39份schema守恒。仅合成主机NATIVE Room/回环HTTP，非真机/实际服务或完整D/O/U及第8节。

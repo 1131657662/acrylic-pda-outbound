@@ -17,6 +17,9 @@ class IndependentTaskActivity : ComponentActivity() {
     private var renderedId: String? = null
     private var productIds = emptyList<String>()
     private var historyIds = emptyList<String>()
+    private val cardPicker = IndependentTaskCardPicker(this, { model }) {
+        if (::binding.isInitialized) render(model.state.value)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
@@ -37,6 +40,7 @@ class IndependentTaskActivity : ComponentActivity() {
             model.fields(binding.vehicle.text.toString(), binding.reason.text.toString())
             val secret = binding.password.text.toString().toCharArray(); binding.password.text.clear(); model.create(secret)
         }
+        binding.createWithCard.setOnClickListener { cardPicker.choose() }
         binding.newTask.setOnClickListener { model.newDraft() }
         binding.reload.setOnClickListener { model.reload() }
         binding.openIndependentWork.setOnClickListener {
@@ -67,9 +71,14 @@ class IndependentTaskActivity : ComponentActivity() {
         listOf(binding.vehicle, binding.reason, binding.quantity, binding.product, binding.add, binding.remove).forEach { it.isEnabled = editable }
         binding.password.isEnabled = !state.busy && state.task == null
         binding.create.isEnabled = !state.busy && state.task == null && state.draft != null
+        binding.createWithCard.isEnabled = binding.create.isEnabled
         binding.create.text = if (state.locked) "核验口令，按原请求重试创建" else "核验口令并保存独立计划"
         listOf(binding.newTask, binding.reload, binding.historyLatest, binding.back).forEach { it.isEnabled = !state.busy }
         renderSelections(state)
+        if (cardPicker.pending) listOf(binding.vehicle, binding.reason, binding.quantity, binding.product, binding.add,
+            binding.remove, binding.password, binding.create, binding.createWithCard, binding.newTask, binding.reload,
+            binding.openIndependentWork, binding.exportIndependent, binding.historyLatest, binding.historyOlder,
+            binding.history, binding.openHistory, binding.back).forEach { it.isEnabled = false }
     }
     private fun renderSelections(state: IndependentTaskUi) {
         val codes = state.products.map { it.deliveryCode }
