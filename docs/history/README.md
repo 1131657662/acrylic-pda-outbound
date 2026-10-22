@@ -1,5 +1,7 @@
 # 历史归档索引
 
+- [D13独立API与worker/P5组合](GOAL_D13_SEPARATE_API_WORKER_P5_COMBINATION_2026-10-22.md)：独立API/非Web worker及P5实际1/0/0/0，双格式下载/原件回读、持根/末SQL回滚、退役后继通过；两轮夹具失败保留，仅有界组合，非D13整体/D18。
+
 - [D16可取回文件与完整恢复副本消费者](GOAL_D16_RETRIEVAL_RESTORED_CONSUMER_2026-10-22.md)：新复杂恢复输入4/0/0/0，2次合成提交/3份恢复只读核同，真实锁后与末DELETE文件丢失保护4条有效guard；仅测试变化，非D16整体/最终候选。
 - [D16归档原件可取回前置检查](GOAL_D16_ARCHIVE_RETRIEVABILITY_L1_2026-10-22.md)：显式原正文/完整原签回执读取，锁后与末DELETE后复核；14项及包含它的完整127项全过，15次合成提交/8份恢复只读核同；有效guard保持拒绝，仅隔离L1，非D16整体/第8节。
 - [提交源完整普通回归与原件消费者](GOAL_SERVER_COMMITTED_ORDINARY_ORIGINALS_2026-10-22.md)：4810/0/0/1，外部条件24项包含其中，原轮19跳过保持；非IT/最终候选。
