@@ -12,6 +12,8 @@ class RecoveryAdmissionVerifierTest {
     private static final String HASH = "a".repeat(64);
     private static final String PREVIOUS = "b".repeat(64);
     private static final String INTENT = "c".repeat(64);
+    private static final RecoveryAdmissionEvidence.Database DATABASE =
+        new RecoveryAdmissionEvidence.Database(UUID.randomUUID(), "model_schema");
 
     @Test void consistentBothSidesAdmitsWithoutOpeningWrites() {
         var result = verifier(state("NORMAL", 2), binding(INSTALLATION), admission(4, HASH, INTENT),
@@ -114,6 +116,7 @@ class RecoveryAdmissionVerifierTest {
             RecoveryAdmissionEvidence.Binding binding, RecoveryAdmissionEvidence.Admission admission,
             RecoveryAdmissionEvidence.Projection projection) {
         return new RecoveryAdmissionEvidence() {
+            @Override public Closed closed() { return new Closed(DATABASE, DATABASE, binding, admission, projection, state); }
             @Override public Binding binding() { return binding; }
             @Override public Admission admission() { return admission; }
             @Override public Projection projection() { return projection; }
@@ -131,6 +134,8 @@ class RecoveryAdmissionVerifierTest {
             @Override public long revision() { return revision; }
             @Override public String recordSha256() { return hash; }
             @Override public String intentSha256() { return intent; }
+            @Override public String schema() { return DATABASE.schema(); }
+            @Override public long baseline() { return 1; }
         };
     }
 

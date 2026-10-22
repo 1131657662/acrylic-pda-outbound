@@ -8,6 +8,13 @@ import java.util.UUID;
  * repair, register or grant anything.
  */
 public interface RecoveryAdmissionEvidence {
+    /** One database observation; legacy suppliers with no physical identity stay closed. */
+    default Closed closed() throws Exception { return null; }
+
+    record Database(UUID serverUuid, String schema) { }
+    record Closed(Database actual, Database registered, Binding binding, Admission admission,
+        Projection projection, State state) { }
+
     /** Initial evidence must be supplied explicitly; historical implementations deny by default. */
     default Initial initial() throws Exception { return null; }
 

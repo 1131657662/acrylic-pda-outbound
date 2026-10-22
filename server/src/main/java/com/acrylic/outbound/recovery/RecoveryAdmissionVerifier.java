@@ -28,17 +28,25 @@ public final class RecoveryAdmissionVerifier {
     }
 
     /** Reads the durable external intent a second time, so the check compares rather than trusts. */
-    public interface RecoveryIntentView { long revision(); String recordSha256(); String intentSha256(); }
+    public interface RecoveryIntentView {
+        long revision(); String recordSha256(); String intentSha256();
+        default String schema() { return null; }
+        default long baseline() { return 0; }
+    }
 
     public Result verify() {
         List<String> gaps = new ArrayList<>();
         RecoveryControlSnapshot control;
         try {
-            control = authority.get();
+            control = Objects.requireNonNull(authority.get());
         } catch (RuntimeException error) {
             gaps.add("AUTHORITY_UNAVAILABLE");
             return Result.denied(gaps, null);
         }
+        return verifyDatabase(control, gaps);
+    }
+
+    private Result verifyDatabase(RecoveryControlSnapshot control, List<String> gaps) {
         RecoveryIntentView durable;
         try {
             durable = intent.get();
@@ -49,40 +57,65 @@ public final class RecoveryAdmissionVerifier {
         if (durable == null) gaps.add("DURABLE_INTENT_MISSING");
         else {
             if (durable.revision() != Long.parseLong(control.revision())) gaps.add("DURABLE_INTENT_REVISION");
-            if (!durable.recordSha256().equals(control.recordSha256())) gaps.add("DURABLE_INTENT_HASH");
+            if (!Objects.equals(durable.recordSha256(), control.recordSha256())) gaps.add("DURABLE_INTENT_HASH");
         }
-        RecoveryAdmissionEvidence.Binding binding;
-        RecoveryAdmissionEvidence.Admission admission;
-        RecoveryAdmissionEvidence.Projection projection;
-        RecoveryAdmissionEvidence.State state;
+        RecoveryAdmissionEvidence.Closed database;
         try {
-            binding = evidence.binding();
-            admission = evidence.admission();
-            projection = evidence.projection();
-            state = evidence.state();
+            database = evidence.closed();
         } catch (Exception error) {
             gaps.add("DATABASE_EVIDENCE_UNAVAILABLE");
             return Result.denied(gaps, control.installationId().toString());
         }
+        if (database == null) {
+            gaps.add("DATABASE_EVIDENCE_MISSING");
+            return Result.denied(gaps, control.installationId().toString());
+        }
+        identity(database, durable, control, gaps);
+        return compare(database, durable, control, gaps);
+    }
+
+    private static void identity(RecoveryAdmissionEvidence.Closed db, RecoveryIntentView durable,
+            RecoveryControlSnapshot control, List<String> gaps) {
+        var binding = db.binding();
         if (binding == null) gaps.add("DATABASE_BINDING_MISSING");
-        else if (!binding.installation().equals(control.installationId())) gaps.add("DATABASE_INSTALLATION");
+        else if (!Objects.equals(binding.installation(), control.installationId())) gaps.add("DATABASE_INSTALLATION");
+        if (!complete(db.actual()) || !complete(db.registered())) gaps.add("DATABASE_IDENTITY_MISSING");
+        else {
+            if (!db.actual().serverUuid().equals(db.registered().serverUuid())) gaps.add("DATABASE_SERVER_UUID");
+            if (!db.actual().schema().equals(db.registered().schema())) gaps.add("DATABASE_SCHEMA");
+        }
+        if (durable == null) return;
+        if (durable.schema() == null || durable.schema().isBlank()) gaps.add("DURABLE_INTENT_SCHEMA_MISSING");
+        else if (db.registered() == null || !durable.schema().equals(db.registered().schema()))
+            gaps.add("DURABLE_INTENT_SCHEMA");
+        if (durable.baseline() <= 0 || binding == null || binding.baseline() != durable.baseline())
+            gaps.add("DURABLE_INTENT_BASELINE");
+    }
+
+    private static boolean complete(RecoveryAdmissionEvidence.Database db) {
+        return db != null && db.serverUuid() != null && db.schema() != null && !db.schema().isBlank();
+    }
+
+    private static Result compare(RecoveryAdmissionEvidence.Closed db, RecoveryIntentView durable,
+            RecoveryControlSnapshot control, List<String> gaps) {
+        var admission = db.admission(); var projection = db.projection(); var state = db.state();
         if (admission == null) gaps.add("NORMAL_ADMISSION_MISSING");
         if (projection == null) gaps.add("PROJECTION_MISSING");
         else {
             if (!"RELEASE_READY".equals(projection.phase())) gaps.add("PROJECTION_PHASE");
-            if (!projection.hash().equals(control.recordSha256())) gaps.add("PROJECTION_HASH");
+            if (!Objects.equals(projection.hash(), control.recordSha256())) gaps.add("PROJECTION_HASH");
             if (projection.revision() != Long.parseLong(control.revision())) gaps.add("PROJECTION_REVISION");
         }
         if (state == null || !"NORMAL".equals(state.mode())) gaps.add("SERVER_MODE");
         if (admission != null && projection != null) {
             if (admission.authorityRevision() != projection.revision()
-                || !admission.recordSha256().equals(projection.hash())) gaps.add("ADMISSION_FROZEN");
-            if (!admission.recordSha256().equals(control.recordSha256())) gaps.add("ADMISSION_AUTHORITY");
+                || !Objects.equals(admission.recordSha256(), projection.hash())) gaps.add("ADMISSION_FROZEN");
+            if (!Objects.equals(admission.recordSha256(), control.recordSha256())) gaps.add("ADMISSION_AUTHORITY");
         }
-        if (durable != null && admission != null && !admission.intentSha256().equals(durable.intentSha256()))
+        if (durable != null && admission != null && !Objects.equals(admission.intentSha256(), durable.intentSha256()))
             gaps.add("ADMISSION_INTENT");
         if (state != null && projection != null && state.numeric() != projection.numeric()) gaps.add("SERVER_NUMERIC");
-        String installation = binding == null ? null : binding.installation().toString();
+        String installation = db.binding() == null ? null : Objects.toString(db.binding().installation(), null);
         if (!gaps.isEmpty()) return Result.denied(gaps, installation);
         return new Result(true, List.of(), installation, control.revision(), projection.numeric(),
             projection.hash(), false, false);
@@ -100,6 +133,8 @@ public final class RecoveryAdmissionVerifier {
                     @Override public long revision() { return loaded.revision(); }
                     @Override public String recordSha256() { return loaded.recordSha256(); }
                     @Override public String intentSha256() { return loaded.intentSha256(); }
+                    @Override public String schema() { return loaded.schema(); }
+                    @Override public long baseline() { return loaded.baseline(); }
                 };
             } catch (java.io.IOException error) {
                 throw new RecoveryControlException("CONTROL_NORMAL_INTENT_UNREADABLE", error);

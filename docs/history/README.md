@@ -1,3 +1,5 @@
+- [D13闭链只读准入数据库身份](GOAL_D13_CLOSED_ADMISSION_DATABASE_IDENTITY_2026-10-23.md)：14项单测/新隔离IT1/0/0/0，单SELECT匹配与复制schema反例；运行器收尾exit1、离线补核成功分列，仅MODEL有界，非跨实例/全部入口/整体或最终候选。
+
 - [D13 P5真实提交后F1争锁](GOAL_D13_P5_CONTENDED_COMMIT_2026-10-23.md)：专项1/0/0/0；真实OS锁争用/halt70与原件消费者，仅合成有界，非OS拒绝自终止/整体/最终候选。
 
 # 历史归档索引
