@@ -1,4 +1,4 @@
-"""One fresh isolated MySQL and one P5 lost-acknowledgement integration test."""
+"""One fresh isolated MySQL for an allowlisted P5 lost-acknowledgement scenario."""
 import argparse
 import json
 import os
@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 
 from d15_combination_runtime import ROOT, MYSQL, command, digest, launch_mysql, port_free, save, wait_mysql
 
+SCENARIOS = dict(lost='RecoveryFenceLostCommitIT', contended='RecoveryFenceContendedCommitIT')
 
 def inputs():
     names = subprocess.check_output(['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z',
@@ -121,10 +122,12 @@ def runtime(instance, output, base, env, port):
     try:
         wait_mysql(process, port)
         identity(instance, output, env, 'identity-before', port)
-        code = command(base + ['integrationTest', '--tests', '*RecoveryFenceLostCommitIT'],
+        test = env['P5_TEST_CLASS']
+        assert test in SCENARIOS.values()
+        code = command(base + ['integrationTest', '--tests', '*' + test],
                        output, 'integration', env, timeout=600)
         result['exitCode'] = code
-        xml = output / 'xml/TEST-com.acrylic.outbound.recovery.RecoveryFenceLostCommitIT.xml'
+        xml = output / ('xml/TEST-com.acrylic.outbound.recovery.' + test + '.xml')
         if xml.exists():
             result.update(ET.parse(xml).getroot().attrib)
         save(output / 'test-result.json', result)
@@ -142,6 +145,8 @@ def execute(args):
     output, build = args.output.resolve(), args.build.resolve()
     assert output.is_relative_to(ROOT / '.local') and build.is_relative_to(ROOT / '.local')
     instance, env = prepare(output, args.run, args.port, build)
+    env['P5_TEST_CLASS'] = SCENARIOS[args.scenario]
+    save(output / 'scenario.json', dict(scenario=args.scenario, test=env['P5_TEST_CLASS']))
     before = inputs()
     save(output / 'source-before.json', before)
     init = build_config(output)
@@ -162,6 +167,7 @@ def execute(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--scenario', choices=SCENARIOS, default='lost')
     for field in ('run', 'port'):
         parser.add_argument('--' + field, type=int, required=True)
     for field in ('output', 'build'):

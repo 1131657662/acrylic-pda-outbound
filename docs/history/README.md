@@ -1,3 +1,5 @@
+- [D13 P5真实提交后F1争锁](GOAL_D13_P5_CONTENDED_COMMIT_2026-10-23.md)：专项1/0/0/0；真实OS锁争用/halt70与原件消费者，仅合成有界，非OS拒绝自终止/整体/最终候选。
+
 # 历史归档索引
 
 - [D13 P5真实commit后确认丢失](GOAL_D13_P5_LOST_COMMIT_ACKNOWLEDGEMENT_2026-10-23.md)：新隔离IT1/0/0/0，实际SQL2行/halt70/OS锁释放、旧句柄与新进程严格拒绝；原P5/HMAC与binlog独立核验通过。两IT夹具失败及消费者编码失败保全；仅合成有界，非完整恢复/实际错库/整体/最终候选。

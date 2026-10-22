@@ -1,3 +1,5 @@
+- [D13 P5真实commit后F1文件锁争用](history/GOAL_D13_P5_CONTENDED_COMMIT_2026-10-23.md)：新隔离IT1/0/0/0及独立原件消费者通过；真实独占锁至halt70、F1未确认/F2F3确认，旧句柄及后继拒绝、SQL/binlog仅两行。仅合成有界，非OS拒绝自halt/实际错库/整体或最终候选。
+
 # 开发进度索引
 
 - [D13 P5真实commit后确认丢失](history/GOAL_D13_P5_LOST_COMMIT_ACKNOWLEDGEMENT_2026-10-23.md)：新隔离IT1/0/0/0，实际SQL2行/halt70/OS锁释放、旧句柄与新进程严格拒绝；原P5/HMAC与binlog独立核验通过。两IT夹具失败及消费者编码失败保全；仅合成有界，非完整恢复/实际错库/整体/最终候选。

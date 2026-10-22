@@ -15,10 +15,13 @@ final class FenceRealJdbc implements AutoCloseable {
         this(gate, table, false);
     }
     FenceRealJdbc(RecoveryEffectGate gate, String table, boolean loseCommit) throws Exception {
+        this(gate, table, loseCommit ? () -> { } : null);
+    }
+    FenceRealJdbc(RecoveryEffectGate gate, String table, LostCommitDataSource.AfterCommit afterCommit) throws Exception {
         this.table = table;
         var physical = (Connection)calls.wrap(EffectRealEnvironment.open(false));
-        if (loseCommit) physical = new LostCommitDataSource(
-            new org.springframework.jdbc.datasource.SingleConnectionDataSource(physical, false)).getConnection();
+        if (afterCommit != null) physical = new LostCommitDataSource(
+            new org.springframework.jdbc.datasource.SingleConnectionDataSource(physical, false), afterCommit).getConnection();
         var admission = RecoveryWriterLeaseTest.protocol(); // MODEL legacy admission only, never the effect Authority.
         var lease = RecoveryControlLock.locked(admission.root, () -> RecoveryWriterLease.acquire(admission.root));
         var owner = new RecoveryConnectionHandler(physical, lease);
