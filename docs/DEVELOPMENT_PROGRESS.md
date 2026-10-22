@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- [非空原订单页面主管新卡导出及电脑消费](history/GOAL_PDA_SUPERVISOR_PAGES_EXPORT_CONSUMER_2026-10-22.md)：最终run05三类16/0/0/0、电脑三场景0/1/1；原83表、记录、卡和材料守恒，越界拒绝。前四轮失败分别保留；仅合成NATIVE Room/JCA/file URI，非真机/外置通道或D/O/U、第8节整体验收。
+
 - [非空TEMP原页面注销后本人卡导出及电脑消费](history/GOAL_PDA_TEMPORARY_PAGES_EXPORT_CONSUMER_2026-10-22.md)：两轮各自1/0/0/0；run02电脑三场景0/1/1，83表及原记录/卡/材料守恒。仅合成WorkFixture/NATIVE Room/JVM密钥/file URI；非实际扫码全链、真机/外置通道、业务回执或D/O/U、第8节验收。
 
 - [非空FORMAL原页面注销后本人卡导出及电脑消费](history/GOAL_PDA_FORMAL_PAGES_EXPORT_CONSUMER_2026-10-22.md)：最终run04两项同次2/0/0/0、83表摘要守恒；新包电脑三场景0/1/1、原记录/来源/汇总核同。仅合成NATIVE Room/JCA/file URI，非实际扫码全链、真机/外置通道、业务回执或D/O/U、第8节整体验收。

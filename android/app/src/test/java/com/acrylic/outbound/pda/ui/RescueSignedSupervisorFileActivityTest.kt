@@ -21,7 +21,7 @@ class RescueSignedSupervisorFileActivityTest {
             assertFalse(f.credentialFile.exists()); assertEquals(0, f.server.requestCount)
             assertTrue(f.dialog().window!!.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE != 0)
             f.confirm(); f.assertAuthorityGet()
-            assertTrue(f.model.state.value.message.contains("只读范围已预置"))
+            assertTrue(f.model.state.value.message, f.model.state.value.message.contains("只读范围已预置"))
             assertFalse(f.model.state.value.unlocked)
             val cipher = f.credentialFile.readBytes().toString(Charsets.ISO_8859_1)
             assertFalse(cipher.contains(f.token)); assertFalse(cipher.contains(String(f.authority.password)))

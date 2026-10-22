@@ -4,6 +4,8 @@
 
 ## 治理与接续记录
 
+- [2026-10-22 主管原页面导出切片前看板叙述](ORCHESTRATION_STATUS_BEFORE_SUPERVISOR_PAGES_EXPORT_2026-10-22.md)：完整原字节/SHA留于本片closeout，省略生成事实。
+
 - [2026-10-22 TEMP页面导出切片前看板叙述](ORCHESTRATION_STATUS_BEFORE_TEMPORARY_PAGES_EXPORT_2026-10-22.md)：旧断点原字节/SHA在本片closeout，省略生成事实。
 
 - [2026-10-22 FORMAL页面导出切片前看板叙述](ORCHESTRATION_STATUS_BEFORE_FORMAL_PAGES_EXPORT_2026-10-22.md)：旧叙述及完整原字节/SHA入口保留，省略生成版本事实。
@@ -13,6 +15,8 @@
 - [2026-10-22 扫码页切片前看板原文](ORCHESTRATION_STATUS_BEFORE_INDEPENDENT_WORK_CARD_2026-10-22.md)：完整原字节归档；仅作历史断点，不恢复旧状态或写权。
 
 ## 最近可复核的专项报告
+
+- [2026-10-22 非空原订单页面主管新卡导出及电脑消费](GOAL_PDA_SUPERVISOR_PAGES_EXPORT_CONSUMER_2026-10-22.md)：最终同次三类16/0/0/0、新包PC三场景0/1/1；越界/守恒有效，前四轮失败单列，仅合成有界证据。
 
 - [2026-10-22 非空TEMP原页面注销后本人卡导出及电脑消费](GOAL_PDA_TEMPORARY_PAGES_EXPORT_CONSUMER_2026-10-22.md)：两轮独立主机1/0/0/0，run02电脑三场景0/1/1；合成非扫码页输入，不计真实设备/外置通道或整体验收。
 
