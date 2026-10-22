@@ -32,9 +32,13 @@ public final class E2aSplitWorkerMain {
             var ready = SubmissionJson.object().put("pid", ProcessHandle.current().pid())
                 .put("role", args[1]).put("web", !worker);
             Files.writeString(home.resolve(args[1] + "-ready.json"), ready.toPrettyString(), StandardOpenOption.CREATE_NEW);
-            if (worker && !restored) probe(context, home);
-            await().atMost(Duration.ofSeconds(240)).until(() -> Files.exists(home.resolve(args[1] + "-stop.marker")));
-            RecoverySplitWorkerChecks.drain(context);
+            if (home.getFileName().toString().equals("restored-stale"))
+                RecoveryRestoredStaleChecks.serve(context, home, worker);
+            else {
+                if (worker && !restored) probe(context, home);
+                await().atMost(Duration.ofSeconds(240)).until(() -> Files.exists(home.resolve(args[1] + "-stop.marker")));
+                RecoverySplitWorkerChecks.drain(context);
+            }
         }
         Files.writeString(home.resolve(args[1] + "-closed.marker"), "clean context shutdown", StandardOpenOption.CREATE_NEW);
     }
@@ -49,7 +53,7 @@ public final class E2aSplitWorkerMain {
         assertThat(run).matches("[1-9][0-9]{0,3}");
         Path attempt = E2aWorktree.ROOT.resolve(".local/e2a-cross-20260925-" + run);
         String scope = home.getFileName().toString();
-        assertThat(scope).isIn("split", "restored-split", "restored-split-successor");
+        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale");
         assertThat(home).isEqualTo(attempt.resolve("private/" + scope));
         boolean restored = !scope.equals("split");
         String database = "acrylic_e2a_cross_20260925_" + run + (restored ? "_restore" : "");

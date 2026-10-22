@@ -1,5 +1,7 @@
 # 开发进度索引
 
+- [D13恢复后独立API/worker stale拒绝](history/GOAL_D13_RESTORED_STALE_COMBINATION_2026-10-22.md)：第二轮新隔离IT1/0/0/0及独立消费者通过，首轮socket夹具失败保留；六HTTP/显式生产worker拒绝，179表及原件守恒；非P5合成有界，非整体/最终候选。
+
 本文只保留当前有效结论和证据入口；版本、分支、SHA、运行环境与写权只看 [开发看板](ORCHESTRATION_STATUS.md) 的 `CURRENT_STATE_START/END`。详细历史原文已归档至 [2026-10-20 原进度索引](archive/2026-10-20/DEVELOPMENT_PROGRESS.md)，本文件不再复制逐轮日志。
 
 
