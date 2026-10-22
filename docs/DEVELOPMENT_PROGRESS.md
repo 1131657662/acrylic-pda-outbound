@@ -1,5 +1,7 @@
 # 开发进度索引
 
+- [D13恢复后真实worker halt与孤儿P5](history/GOAL_D13_RESTORED_WORKER_CRASH_COMBINATION_2026-10-23.md)：新隔离IT1/0/0/0，实际halt71/OS锁释放、六HTTP按序拒绝、孤儿退役后fresh启动；179表/原件守恒、独立消费者通过。前三轮失败保全；仅合成有界，非实际错库/整体/最终候选。
+
 - [D13恢复后P5恢复根与可信水位损坏拒绝](history/GOAL_D13_RESTORED_AUTHORITY_FAULT_COMBINATION_2026-10-23.md)：两种故障各新隔离IT1/0/0/0、独立原件消费者exit0；六HTTP及显式worker精确拒绝，179表/P5树守恒。仅合成Java权威夹具，非实际错库绑定/整体/最终候选。
 
 - [D13恢复后P5独立API/worker stale拒绝](history/GOAL_D13_RESTORED_P5_STALE_COMBINATION_2026-10-22.md)：新隔离IT1/0/0/0及独立原件消费者通过，实际活租约/HMAC、六HTTP与显式worker拒绝，179表/P5树守恒；合成IT控制供应，非Python生产权威/整体/最终候选。

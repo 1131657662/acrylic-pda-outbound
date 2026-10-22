@@ -43,5 +43,15 @@ final class E2aRestoredStaleHttp {
             assertThat(http.get(path, 503).path("code").asText()).isEqualTo(expected);
     }
 
+    void refuseOrphan() throws Exception {
+        var original = SubmissionJson.parse(Files.readString(profile.attempt.resolve("pending-xlsx.json"))).path("id").asText();
+        var paths = List.of("/auth/csrf", input.exportPath(), view(original), view(pending),
+            "/exports/" + original + "/file?warehouseId=" + input.warehouse(),
+            "/exports/" + pending + "/file?warehouseId=" + input.warehouse());
+        for (int i = 0; i < paths.size(); i++)
+            assertThat(http.get(paths.get(i), 503).path("code").asText())
+                .isEqualTo(i == 0 ? "RECOVERY_LEASE_OUTSTANDING" : "RECOVERY_LEASE_FENCED");
+    }
+
     private String view(String id) { return "/exports/" + id + "?warehouseId=" + input.warehouse(); }
 }

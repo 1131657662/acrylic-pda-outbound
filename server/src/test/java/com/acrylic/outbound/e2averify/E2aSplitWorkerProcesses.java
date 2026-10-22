@@ -19,7 +19,7 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
     }
 
     E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority, String scope) throws Exception {
-        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault");
+        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash");
         home = Files.createDirectory(profile.attempt.resolve("private/" + scope));
         for (String role : List.of("api", "worker")) {
             var options = options(profile, authority);
@@ -75,6 +75,18 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
         assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
         assertThat(process.exitValue()).isZero();
         assertThat(Files.readString(home.resolve("successor.stdout"))).contains("STARTED");
+    }
+
+    void haltWorker() throws Exception {
+        Process worker = children.get("worker");
+        assertThat(worker.isAlive()).isTrue();
+        Files.writeString(home.resolve("halt-worker.marker"), "halt owned disposable worker only", StandardOpenOption.CREATE_NEW);
+        assertThat(worker.waitFor(30, TimeUnit.SECONDS)).isTrue();
+        assertThat(worker.exitValue()).isEqualTo(71);
+        assertThat(home.resolve("worker-closed.marker")).doesNotExist();
+        var result = SubmissionJson.object().put("pid", worker.pid()).put("actualExitCode", worker.exitValue())
+            .put("aliveAfter", worker.isAlive()).put("normalShutdown", false).put("parentPid", ProcessHandle.current().pid());
+        Files.writeString(home.resolve("worker-crash-exit.json"), result.toPrettyString(), StandardOpenOption.CREATE_NEW);
     }
 
     private Process launch(String main, List<String> args, String label) throws Exception {
