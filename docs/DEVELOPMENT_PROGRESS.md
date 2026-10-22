@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- [非空FORMAL原页面注销后本人卡导出及电脑消费](history/GOAL_PDA_FORMAL_PAGES_EXPORT_CONSUMER_2026-10-22.md)：最终run04两项同次2/0/0/0、83表摘要守恒；新包电脑三场景0/1/1、原记录/来源/汇总核同。仅合成NATIVE Room/JCA/file URI，非实际扫码全链、真机/外置通道、业务回执或D/O/U、第8节整体验收。
+
 - [非空独立任务经原页面注销后导出及电脑消费](history/GOAL_PDA_INDEPENDENT_PAGES_EXPORT_CONSUMER_2026-10-22.md)：页面链 attempt04 1/0/0/0；attempt03 为新整链加原四类回归，五类同次25/0/0/0。独立电脑CLI消费本轮非空包通过；合成主机、文件URI及回环 authority，不代表真实设备、外置通道、业务回执或完整 O02/D17/第8节。
 
 - [独立扫码页原凭据卡消费者](history/GOAL_PDA_INDEPENDENT_WORK_CARD_CONSUMER_2026-10-22.md)：最终产品输入六类20项同次通过，另有四档字号几何1项独立通过；debug构建退出0。仅合成主机原扫码页消费者，不代真实SAF/设备/完整页面链或D/O/U、第8节验收。
