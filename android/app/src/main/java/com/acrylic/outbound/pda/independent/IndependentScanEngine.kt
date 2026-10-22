@@ -27,6 +27,7 @@ internal class IndependentScanEngine(private val db: PdaDatabase, private val en
     @Volatile private var foreground = false
     @Volatile private var fault = ""
     @Volatile private var sealing = false
+    @Volatile private var authorizationEpoch = 0L
     private var lease: AutoCloseable? = null
     private var processor: IndependentScanProcessor? = null
     val scanning get() = foreground
@@ -45,7 +46,34 @@ internal class IndependentScanEngine(private val db: PdaDatabase, private val en
             current = id; processor?.store?.check(id); drain()
         }
     }
-    @Synchronized fun pause() { foreground = false; mutable.update { it.copy(ready = false) }; lease?.close(); lease = null }
+    @Synchronized fun pause() { authorizationEpoch++; foreground = false; mutable.update { it.copy(ready = false) }; lease?.close(); lease = null }
+    @Synchronized fun prepareCardSelection(): Boolean {
+        if (sealing || queued.get() != 0) return false
+        pause()
+        return enqueue { processor = null; fault = "" }
+    }
+    fun cardMessage(message: String) { mutable.update { it.copy(message = message) } }
+    fun authorizeCard(original: IndependentTask, open: () -> IndependentCaptureGrant) {
+        val epoch = authorizationEpoch
+        enqueue {
+            checkCardSelection(original, epoch)
+            val grant = open()
+            checkCardSelection(original, epoch)
+            val store = IndependentScanStore(db, grant, environment); store.open(original.id)
+            IndependentScanSaving(store).start(original.id)
+            checkCardSelection(original, epoch)
+            synchronized(this) {
+                check(foreground && requested == original.id && epoch == authorizationEpoch) { "原选卡页面已离开或任务已变化，请重新选卡" }
+                processor = IndependentScanProcessor(store, ::feedback)
+                current = original.id; fault = ""
+            }
+            drain()
+        }
+    }
+    private fun checkCardSelection(original: IndependentTask, epoch: Long) {
+        check(foreground && requested == original.id && epoch == authorizationEpoch) { "原选卡页面已离开或任务已变化，请重新选卡" }
+        check(db.independentTasks().task(original.id) == original) { "原独立任务或授权已变化，请保留原件" }
+    }
     fun authorize(id: String, secret: CharArray) {
         if (!enqueue {
             try {

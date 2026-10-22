@@ -2,7 +2,13 @@
 
 本文只做历史证据的短索引：当前状态、活跃写权和下一动作只看 [看板](../ORCHESTRATION_STATUS.md)，文档职责和零记忆顺序见 [项目文档地图](../PROJECT_DOCUMENT_MAP.md)。逐轮原索引已原样归档为 [2026-10-20 原历史索引](../archive/2026-10-20/HISTORY_README.md)。`GOAL_*.md` 验收报告不移动、不改写。
 
+## 治理与接续记录
+
+- [2026-10-22 扫码页切片前看板原文](ORCHESTRATION_STATUS_BEFORE_INDEPENDENT_WORK_CARD_2026-10-22.md)：完整原字节归档；仅作历史断点，不恢复旧状态或写权。
+
 ## 最近可复核的专项报告
+
+- [2026-10-22 独立扫码页原凭据卡消费者](GOAL_PDA_INDEPENDENT_WORK_CARD_CONSUMER_2026-10-22.md)：最终产品输入六类20项同次通过，另有四档字号几何1项独立通过及Debug构建；合成主机消费者，不代设备/完整页面链或完整验收。
 
 - [2026-10-22 独立任务页原凭据卡消费者](GOAL_PDA_INDEPENDENT_TASK_CARD_CONSUMER_2026-10-22.md)：原卡选取绑定身份/草稿，原期限/围栏/耐久请求保持；28项和最终13项分次通过，失败及Debug/lint证据分列，仅任务页合成主机。
 

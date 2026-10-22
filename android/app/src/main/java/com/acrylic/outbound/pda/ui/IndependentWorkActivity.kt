@@ -19,6 +19,7 @@ class IndependentWorkActivity : ComponentActivity() {
     private lateinit var scanner: ScannerReceiver
     private lateinit var display: IndependentWorkDisplay
     private lateinit var panels: IndependentWorkPanels
+    private lateinit var cardPicker: IndependentWorkCardPicker
     private val keys = WorkKeys()
     private var id = ""
     private var imeOpen = false
@@ -36,12 +37,14 @@ class IndependentWorkActivity : ComponentActivity() {
             view.setPadding(bars.left, bars.top, bars.right, bottom); insets
         }
         scanner = ScannerReceiver(this, { engine.receive(it, "BROADCAST") }, engine::stop)
+        cardPicker = IndependentWorkCardPicker(this, binding, scanner)
         actions(); corrections()
         lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) {
-            engine.state.collect { display.render(it, engine.scanning, (application as PdaApplication).workSound.error) }
+            engine.state.collect { render() }
         } }
     }
     private fun actions() {
+        binding.workAuthorizeCard.setOnClickListener { cardPicker.choose() }
         binding.workValidate.setOnClickListener { manual() }
         binding.workConfirm.setOnClickListener { confirm() }
         binding.workAuthorize.setOnClickListener {
@@ -49,7 +52,7 @@ class IndependentWorkActivity : ComponentActivity() {
             engine.resume(id); engine.authorize(id, secret); scanner.register()
         }
         binding.workPause.setOnClickListener {
-            if (engine.scanning) { scanner.unregister(); engine.pause(); keys.reset(); display.render(engine.state.value, false) }
+            if (engine.scanning) { scanner.unregister(); engine.pause(); keys.reset(); render() }
             else { engine.resume(id); scanner.register() }
         }
         binding.workLatest.setOnClickListener { engine.page(false) }
@@ -80,13 +83,24 @@ class IndependentWorkActivity : ComponentActivity() {
     @android.annotation.SuppressLint("RestrictedApi")
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         val command = keys.command(event)
-        if (command != null && !imeOpen) {
+        if (command != null && !imeOpen && ::cardPicker.isInitialized && !cardPicker.pending) {
             if (keys.firstDown(event)) when (command) { "VALIDATE" -> manual(); "CONFIRM" -> confirm(); "DISCARD" -> discard() }
             return true
         }
         return super.dispatchKeyEvent(event)
     }
-    override fun onResume() { super.onResume(); if (::scanner.isInitialized) { engine.resume(id); scanner.register() } }
+    private fun render() {
+        cardPicker.restoreControls()
+        display.render(engine.state.value, engine.scanning, (application as PdaApplication).workSound.error)
+        cardPicker.render()
+    }
+    override fun onResume() {
+        super.onResume()
+        if (::scanner.isInitialized) {
+            if (!cardPicker.resumed()) engine.resume(id)
+            if (!cardPicker.pending && engine.scanning) scanner.register()
+        }
+    }
     override fun onPause() {
         if (::scanner.isInitialized) { scanner.unregister(); engine.pause(); keys.reset(); binding.workPassword.text.clear() }
         super.onPause()
