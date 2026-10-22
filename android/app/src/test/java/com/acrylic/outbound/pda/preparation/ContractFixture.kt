@@ -9,7 +9,17 @@ object ContractFixture {
     fun read(): JSONObject {
         val file = File(checkNotNull(System.getProperty("pda.contractFixture")))
         check(file.isFile) { "Run server integrationTest first to generate the real signed contract fixture" }
-        return JSONObject(file.readText())
+        val fixture = try {
+            JSONObject(file.readText())
+        } catch (cause: Exception) {
+            throw IllegalStateException("Formal contract fixture is not valid JSON: ${file.absolutePath}", cause)
+        }
+        val required = listOf("assignment", "receipt", "signingKey", "session", "gzip")
+        val missing = required.filterNot { fixture.has(it) && fixture.opt(it) is JSONObject }
+        check(missing.isEmpty()) {
+            "Formal contract fixture is incomplete; missing object fields: ${missing.joinToString(", ")} (${file.absolutePath})"
+        }
+        return fixture
     }
 
     fun unpack(root: File, fixture: JSONObject): Map<String, ByteArray> {

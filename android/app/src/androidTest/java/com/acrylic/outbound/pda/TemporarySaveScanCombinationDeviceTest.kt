@@ -120,7 +120,7 @@ class TemporarySaveScanCombinationDeviceTest {
                 activity.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
             }
             await { assertEquals(1L, app.temporaryStore().total(id).count) }
-            onView(withId(R.id.recentSaved)).check(matches(withText(containsString(code))))
+            await { onView(withId(R.id.recentSaved)).check(matches(withText(containsString(code)))) }
             pauseAndResume(id, code)
             shot("duplicate-acknowledged")
             onView(withId(R.id.back)).perform(scrollTo(), click())
