@@ -18,8 +18,8 @@
 
 - [D13恢复后独立API/worker stale拒绝](GOAL_D13_RESTORED_STALE_COMBINATION_2026-10-22.md)：第二轮新隔离IT1/0/0/0及独立消费者通过，首轮socket夹具失败保留；六HTTP/显式生产worker拒绝，179表及原件守恒；非P5合成有界，非整体/最终候选。
 
-
 - [D13/D15恢复后渲染失败与后继重试](GOAL_D13_RESTORED_RENDERER_RETRY_COMBINATION_2026-10-22.md)：新隔离IT1/0/0/0，双原任务各三次失败后完整后继原快照重试各一次成功；全失败行/源库/原件守恒，独立文件回读；仅有界合成，非整体/最终候选。
+
 - [D13/D15完整恢复scheduler及后继组合](GOAL_D13_RESTORED_SCHEDULER_COMBINATION_2026-10-22.md)：新隔离IT1/0/0/0，原PENDING双格式由独立API/生产非Web定时worker消费、完整后继幂等；179表/源库/原文件守恒，独立回读通过；仅合成有界，非整体/最终候选。
 
 - [D13独立API与worker/P5组合](GOAL_D13_SEPARATE_API_WORKER_P5_COMBINATION_2026-10-22.md)：独立API/非Web worker及P5实际1/0/0/0，双格式下载/原件回读、持根/末SQL回滚、退役后继通过；两轮夹具失败保留，仅有界组合，非D13整体/D18。
@@ -42,7 +42,13 @@
 
 - [2026-10-22 页面导出消费者切片前看板叙述](ORCHESTRATION_STATUS_BEFORE_INDEPENDENT_PAGES_EXPORT_2026-10-22.md)：原字节和SHA另存本片closeout；旧叙述仅作历史断点，省略生成版本事实。
 
+- [2026-10-22 D 盘深度清理](D_DISK_CLEANUP_2026-10-22.md)：本轮续将 5 个已停隔离库的 10,882 个数据文件及 1 个 AVD 镜像无损压缩，按实际分配减少约 2.07 GB；原始字节、WIP 和共享目录边界保留，未删除文件。
+
 - [2026-10-22 扫码页切片前看板原文](ORCHESTRATION_STATUS_BEFORE_INDEPENDENT_WORK_CARD_2026-10-22.md)：完整原字节归档；仅作历史断点，不恢复旧状态或写权。
+
+- [2026-10-21 PDA领取确认前仓库绑定复核](GOAL_PDA_CLAIM_PREVIEW_WAREHOUSE_RECHECK_2026-10-21.md)：定向主机守卫测试1项通过；首次XML被同目录重跑覆盖，原哈希与统计留档，不代表M71或真实HTTP验收。
+
+- [2026-10-21 看板当前区替换前叙述归档](ORCHESTRATION_STATUS_BEFORE_CLAIM_GUARD_2026-10-21.md)：保留被新断点取代的旧叙述，自动生成版本事实省略，环境与写权只作历史参考。
 
 ## 最近可复核的专项报告
 
@@ -84,6 +90,7 @@
 
 - [2026-10-21 凭据交互文件导入首片](GOAL_PDA_CREDENTIAL_FILE_INTAKE_2026-10-21.md)：真实页面受控读取/确认与状态，测试失败/复验分列，完整凭据整改未完。
 - [2026-10-21 正式单UI干净提交统一构建](GOAL_PDA_ORDER_UI_UNIFIED_BUILD_2026-10-21.md)：APK/服务JAR、失败运行器与配置/签名核验，非业务验收。
+- [2026-10-21 M71领取前核对缺少 warehouseId 诊断](GOAL_PDA_CLAIM_PREVIEW_WAREHOUSEID_DIAGNOSIS_2026-10-21.md)：设备包哈希与源码解析路径核对；线上响应体未取得，服务端版本不匹配为高概率但未证实原因。
 - [正式单明细与领取预览修复](GOAL_PDA_FORMAL_ORDER_PREVIEW_UI_2026-10-21.md)：限定主机/隔离契约验证，原失败保留；M71未验。
 - [凭据交互问题接入](GOAL_PDA_CREDENTIAL_UX_INTAKE_2026-10-21.md)：源码审查来源及安全边界，仅排期，非验收。
 
