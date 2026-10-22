@@ -1,5 +1,7 @@
 # 历史归档索引
 
+- [D13恢复后P5独立API/worker stale拒绝](GOAL_D13_RESTORED_P5_STALE_COMBINATION_2026-10-22.md)：新隔离IT1/0/0/0及独立原件消费者通过，实际活租约/HMAC、六HTTP与显式worker拒绝，179表/P5树守恒；合成IT控制供应，非Python生产权威/整体/最终候选。
+
 - [D13恢复后独立API/worker stale拒绝](GOAL_D13_RESTORED_STALE_COMBINATION_2026-10-22.md)：第二轮新隔离IT1/0/0/0及独立消费者通过，首轮socket夹具失败保留；六HTTP/显式生产worker拒绝，179表及原件守恒；非P5合成有界，非整体/最终候选。
 
 

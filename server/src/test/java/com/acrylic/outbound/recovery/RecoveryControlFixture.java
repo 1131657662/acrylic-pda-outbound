@@ -43,6 +43,10 @@ final class RecoveryControlFixture {
         return new RecoveryControlFixture(Files.createTempDirectory(retained, "case-"));
     }
 
+    static RecoveryControlFixture retainedAt(Path base, Path restored) throws IOException {
+        return new RecoveryControlFixture(base, restored.toRealPath());
+    }
+
     static RecoveryControlFixture forRestore(Path restored) throws IOException {
         Path retained = Path.of("../.local/control-java-cases").toAbsolutePath().normalize();
         Files.createDirectories(retained);
