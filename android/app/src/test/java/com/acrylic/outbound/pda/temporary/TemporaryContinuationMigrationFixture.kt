@@ -7,6 +7,7 @@ import java.io.File
 /** Restores only this migration's additions in fixtures that simulate an older database in place. */
 object TemporaryContinuationMigrationFixture {
     fun restorePreContinuation(db: SQLiteDatabase) {
+        com.acrylic.outbound.pda.independent.LegacyIndependentTablesFixture.removeEmptyAdditions(db)
         restorePreWork(db)
         db.rawQuery("SELECT COUNT(*) FROM temporary_continuation", null).use { check(it.moveToFirst() && it.getInt(0) == 0) }
         db.rawQuery("SELECT COUNT(*) FROM temporary_draft WHERE workRound<>1 OR authorizationHistoryJson<>'[]'", null)
