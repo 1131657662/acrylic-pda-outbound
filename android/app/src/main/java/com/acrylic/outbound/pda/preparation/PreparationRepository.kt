@@ -60,13 +60,12 @@ class PreparationRepository(private val context: Context, private val db: PdaDat
         val user = auth.getString("userId"); val device = auth.getString("deviceId")
         val previous = db.preparations().intent(id, user, device)
         if (previous?.status != "REJECTED" && previous != null) return retryClaim(previous)
-        val preview = session.call("pda/orders/$id/claim-preview")
-        check(preview.getString("status") == "READY" && preview.getString("id") == id) { "订单已变化，请刷新核对" }
+        val preview = session.call("pda/orders/$id/claim-preview", expected = auth)
+        ClaimPreviewWarehouseGuard.requireMatches(preview, id, auth.getString("warehouseId"))
         val version = preview.getString("rowVersion")
         check(version == order.getString("rowVersion") && preview.getString("orderNo") == order.getString("orderNo") &&
             preview.getString("vehicleNo") == order.getString("vehicleNo")) { "订单已变化，请刷新后重新核对车号与订单号" }
-        check(session.requireSession().getString("serverRecoveryEpoch") == auth.getString("serverRecoveryEpoch")) {
-            "服务器恢复代次已变化，请重新刷新" }
+        com.acrylic.outbound.pda.network.SessionIdentity.requireSame(auth, session.requireSession())
         if (previous != null) {
             val oldVersion = JSONObject(previous.body).getString("expectedVersion")
             check(version != oldVersion && previous.recoveryEpoch == auth.getString("serverRecoveryEpoch")) {
@@ -85,13 +84,14 @@ class PreparationRepository(private val context: Context, private val db: PdaDat
         check(intent.userId == auth.getString("userId") && intent.deviceId == auth.getString("deviceId")) { "原领取属于其他人员，须由原人员恢复" }
         check(intent.recoveryEpoch == auth.getString("serverRecoveryEpoch")) { "恢复代次已变化，请联系主管" }
         // Refresh authentication before sending the persisted write; a lost response keeps the intent intact.
-        session.call("pda/devices/me")
+        session.call("pda/devices/me", expected = auth)
+        com.acrylic.outbound.pda.network.SessionIdentity.requireSame(auth, session.requireSession())
         com.acrylic.outbound.pda.sync.RecoveryProtection(db).requireNormal()
         db.preparations().markIntent(intent.orderId, intent.userId, intent.deviceId, intent.key, "UNKNOWN", null)
         return try {
-            val envelope = session.network().request("pda/orders/${intent.orderId}/assignments", JSONObject(intent.body),
-                session.headers(epoch = intent.recoveryEpoch) + ("Idempotency-Key" to intent.key))
-            envelope.getJSONObject("data").also { db.preparations().resolveIntent(intent.orderId, intent.userId, intent.deviceId) }
+            session.call("pda/orders/${intent.orderId}/assignments", JSONObject(intent.body), intent.recoveryEpoch,
+                extraHeaders = mapOf("Idempotency-Key" to intent.key), expected = auth)
+                .also { db.preparations().resolveIntent(intent.orderId, intent.userId, intent.deviceId) }
         } catch (failure: ApiFailure) {
             if (failure.code in setOf("ORDER_ASSIGNED", "ORDER_VERSION_CONFLICT", "ORDER_STATE_CONFLICT",
                     "ORDER_RECOVERY_REQUIRED", "ORDER_BASELINE_CHANGED")) {

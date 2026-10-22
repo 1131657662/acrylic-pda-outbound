@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- [领取会话绑定定向修补](history/GOAL_PDA_CLAIM_SESSION_BINDING_2026-10-22.md)：二次预览及重试GET绑定原身份，写意图/POST前核五字段；RED两方法失败保留，修补后三类同次14/0/0/0、原键/丢响应/拒绝及39份schema守恒。仅合成主机NATIVE Room/回环HTTP，非真机/实际服务或完整D/O/U及第8节。
+
 - [独立解密材料电脑消费者](history/GOAL_PDA_PACKAGE_SECRET_PC_CONSUMER_2026-10-21.md)：Android非空Room生产者1项通过；电脑同次26项中24通过/2符号链接跳过，另1项Windows junction拒绝专项通过，原包/材料/登记摘要核同。仅合成文件L1，不拼接为27项全过；原失败保留，非真机/外置保管/完整O02或最终候选。
 
 - [独立文件解密材料与分步导出](history/GOAL_PDA_PACKAGE_SECRET_SETUP_2026-10-21.md)：原范围/快照绑定的随机材料保存、重选回读与保管声明后沿原加密器；前两轮50/21与50/2失败保留，最终同次七类50项全过及lint/Debug。仅合成主机非空Room，电脑材料消费者见前列报告；真机/物理保管/最终候选仍未验。
