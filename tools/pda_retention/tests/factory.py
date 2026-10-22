@@ -1,14 +1,34 @@
 """Generate a clearly labelled, guard-free synthetic Room-shaped database."""
 from contextlib import closing
 import json
+import os
 from pathlib import Path
 import sqlite3
 
 from ..catalog import create, schema
-from ..codec import canonical, digest, parse
-from ..store import ROOT, connect, healthy, write_new
+from ..codec import canonical, digest, parse, require
+from ..store import ROOT, connect, healthy, read, write_new
 
 FIXTURE = ROOT / 'server/build/pda-archive-fixture.json'
+
+
+def fixture_data():
+    explicit = os.environ.get('PDA_RETENTION_FIXTURE')
+    if not explicit:
+        return parse(FIXTURE.read_bytes()), digest(FIXTURE.read_bytes())
+    raw = read(explicit)
+    require(digest(raw) == os.environ.get('PDA_RETENTION_FIXTURE_SHA256'),
+            'Explicit test fixture pin mismatch')
+    return parse(raw), digest(raw)
+
+
+def archive_files(directory, data):
+    files = {}
+    for name, key in [('payload', 'body'), ('receipt', 'receipt')]:
+        path = directory / ('retained-' + name + '.json')
+        write_new(path, data[key])
+        files[name] = str(path)
+    return files
 
 
 def insert(db, table, overrides):
@@ -22,7 +42,7 @@ def insert(db, table, overrides):
 
 def create_source(directory):
     directory.mkdir(parents=True)
-    data = parse(FIXTURE.read_bytes())
+    data, fixture_sha = fixture_data()
     model, schema_sha = schema()
     path = directory / 'synthetic-source.sqlite'
     with closing(sqlite3.connect(path)) as db:
@@ -34,7 +54,8 @@ def create_source(directory):
     spec = dict(scope='SYNTHETIC_GENERATED_ONLY', production=False, source=str(path),
                 sourceSha256=digest(path.read_bytes()), schemaSha256=schema_sha,
                 submissionId=data['body']['submissionId'], keySha256=digest(canonical(data['signingKey'])),
-                now='2027-01-05T00:00:00Z', fixtureSha256=digest(FIXTURE.read_bytes()))
+                now='2027-01-05T00:00:00Z', fixtureSha256=fixture_sha,
+                archiveFiles=archive_files(directory, data))
     write_new(directory / 'synthetic-only.json', spec)
     return directory / 'synthetic-only.json', data
 

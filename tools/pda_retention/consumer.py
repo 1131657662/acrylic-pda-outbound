@@ -6,6 +6,7 @@ import uuid
 from .catalog import OWNED, schema, validate
 from .codec import canonical, digest, parse, require
 from .references import selection
+from .proof import check as check_archive
 from .store import connect, facts, healthy, location, read, restore, write_new
 
 
@@ -50,6 +51,7 @@ def transaction(db, plan, control):
     db.execute('BEGIN IMMEDIATE')
     try:
         permit(run, plan_sha)  # Deliberately read after the actual SQLite lock wait.
+        verify_archive(plan)
         validate(db, plan['spec'].get('triggerProfile', 'SYNTHETIC_SCHEMA_ONLY'))
         current, after = facts(db), expected_after(plan)
         if current == after:
@@ -60,6 +62,7 @@ def transaction(db, plan, control):
         delete(db, plan)
         require(facts(db) == after, 'Unrelated facts changed')
         healthy(db)
+        verify_archive(plan)
         permit(run, plan_sha)
         db.execute('COMMIT')
         return 'COMMITTED_SYNTHETIC_ONLY'
@@ -76,6 +79,12 @@ def delete(db, plan):
             plan['selected']['local_submission'][0])['assignmentId']
         cursor = db.execute('DELETE FROM "' + table + '" WHERE "' + field + '"=?', (value,))
         require(cursor.rowcount == len(plan['selected'][table]), 'Deleted row count mismatch')
+
+
+def verify_archive(plan):
+    local = parse(plan['selected']['local_submission'][0])
+    archive = parse(plan['selected']['local_submission_archive'][0])
+    check_archive(local, archive, plan['spec'])
 
 
 def consume(run_path, expected_sha, enabled=False):

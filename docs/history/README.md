@@ -1,5 +1,6 @@
 # 历史归档索引
 
+- [D16归档原件可取回前置检查](GOAL_D16_ARCHIVE_RETRIEVABILITY_L1_2026-10-22.md)：显式原正文/完整原签回执读取，锁后与末DELETE后复核；14项及包含它的完整127项全过，15次合成提交/8份恢复只读核同；有效guard保持拒绝，仅隔离L1，非D16整体/第8节。
 - [提交源完整普通回归与原件消费者](GOAL_SERVER_COMMITTED_ORDINARY_ORIGINALS_2026-10-22.md)：4810/0/0/1，外部条件24项包含其中，原轮19跳过保持；非IT/最终候选。
 - [27项增量矩阵与非空兼容性](GOAL_D01_MATRIX_AND_ANDROID_COMPATIBILITY_2026-10-22.md)：逐行映射仅盘点，测试夹具修复后32项同次通过；旧失败/继承保持，非总目标完成。
 本文只做历史证据的短索引：当前状态、活跃写权和下一动作只看 [看板](../ORCHESTRATION_STATUS.md)，文档职责和零记忆顺序见 [项目文档地图](../PROJECT_DOCUMENT_MAP.md)。逐轮原索引已原样归档为 [2026-10-20 原历史索引](../archive/2026-10-20/HISTORY_README.md)。`GOAL_*.md` 验收报告不移动、不改写。

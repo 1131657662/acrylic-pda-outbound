@@ -19,6 +19,7 @@
 | `keySha256` | 原归档行公钥对象 canonical JSON 的 SHA，独立固定于输入 |
 | `auditKeySha256` | 有无关审计时必填；审计原公钥对象 canonical JSON 的独立 SHA，不能用目标公钥替代 |
 | `triggerProfile` | `SYNTHETIC_SCHEMA_ONLY` 或 `PRODUCT_NATIVE`，原计划及事务内重新核验；不能将删掉保护逻辑的原生副本改称合成结构 |
+| `archiveFiles` | 必填对象，仅含 `payload` / `receipt` 两个不同的项目 `.local/` 绝对文件路径；实际读取原正文及完整原签回执，核原签归档中的摘要、字节数和本地原文，不接受旧确认替代可取回文件 |
 | `now` | 显式模拟 UTC 时间，最多纳秒；严格超过完成后90天且归档仍有效 |
 
 ```powershell
@@ -33,6 +34,8 @@ python -m tools.pda_retention consume D:/acrylic-pda-outbound/.local/<case>/rete
 
 缺显式开关或许可、许可撤回/异文、正文/签名/原件/备份/候选漂移均拒绝。原归档必须仍为 `localDeletionAllowed:false`；合成许可不改变该字段。事务实际取得 `BEGIN IMMEDIATE` 锁后重新读许可，删除后核全表受控差异、外键与完整性，再读许可后提交。同计划重放返回 `REPLAY_NO_WRITE`。授权检查以提交前最后一次读取为时点，不承诺与外部文件撤权形成跨资源原子事务。
 
+`archiveFiles` 在prepare、实际取得写锁后及最后DELETE后提交前均重新读取和核验，重放也要求当次可读取。缺失或任何原字节漂移均拒绝，事务内发现则回滚；旧spec缺此字段也拒绝，须另建新spec/运行，不改写旧计划或历史结论。这只证明显式隔离文件在最后检查时可取回，不证明云端实时健康、异地副本或未来可用性，也不构成文件与SQLite的跨资源原子承诺。有效目标guard及其他保护仍不能因文件齐全而解除。
+
 `attempt-*.json` 写入 STARTED 后才可能修改候选；成功另写 `*.result.json`。进程失败或结果文件缺失时必须保留全部原件并检查候选事实，不能根据 CLI 非零声称未写入。完整备份可通过 `tools.pda_retention.store.restore` 恢复到另一个全新 `.local` 路径；不得覆盖现有源、候选或证据。
 
 ## 验证与重建
@@ -45,5 +48,7 @@ python -m unittest discover -s tools/pda_retention/tests -t . -v
 每个 case 创建独立合成库，测试结束不删除数据库和日志。工厂依赖本机 `server/build/pda-archive-fixture.json` 的原正文、成功回执、归档签名及公钥；不包含私钥。该文件由 `server/src/test/java/com/acrylic/outbound/inventory/SubmissionArchiveIT.java` 中 `durableCopiesProduceStableSignedConfirmationAndAndroidContract` 生成。缺失时须按项目隔离 IT 流程分配新的数据库运行该方法；不得直接连接共享 MySQL、复用失败库或用 DTO 冒充原设备事实。工厂基于实际 schema 构造数据库，没有声称它来自 Android 产品链。
 
 完整套件还需对子进程设置 `PDA_RETENTION_AUDIT_SOURCE`（已停止、单文件、完整两代原签审计及依赖的SQLite副本）、`PDA_RETENTION_AUDIT_SOURCE_SHA256` 和 `PDA_RETENTION_AUDIT_KEY_SHA256`。来源与独立公钥须按原证据核定；已有输入及复制/WAL恢复步骤见审计L1报告，不连接或修改原捕获库。审计case将其与目标夹具组合，明确属于合成输入，不代表原PDA同库现场事实。缺输入时停止，不补造签名或跳过测试声称通过。
+
+若默认fixture已丢失或变为占位，不覆盖其原件。可显式设置 `PDA_RETENTION_FIXTURE` 为已核来源的新 `.local/` 合成JSON文件，并设置 `PDA_RETENTION_FIXTURE_SHA256`；工厂强制核原字节SHA。来源、原签对象及重新封装与原容器字节不同的事实须另行登记。每个case独占创建两份归档文件，模拟可取回文件，不冒充真实服务器存储或外置备份。
 
 正式范围、输入 SHA、实际 CLI / 并发 / 撤权 / 回滚 / 恢复结果和保留失败见 [首切片L1报告](../../docs/history/GOAL_D16_WHOLE_ORDER_L1_2026-10-16.md)、[无关防重引用L1报告](../../docs/history/GOAL_D16_UNRELATED_GUARD_L1_2026-10-16.md)和[无关审计引用L1报告](../../docs/history/GOAL_D16_UNRELATED_AUDIT_L1_2026-10-16.md)。本工具不是 D16 整体、E08 L2 或 D18 L3 的通过证明。

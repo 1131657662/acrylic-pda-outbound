@@ -5,6 +5,7 @@ import re
 
 from .codec import canonical, digest, parse, require
 from .signatures import verified
+from .retrieval import verify as verify_files
 
 DAY = 86400 * 10**9
 
@@ -48,6 +49,7 @@ def check(local, archive, context):
             archive['receiptSha256'] == expected['receiptSha256'] and
             archive['recoveryEpoch'] == confirmation['recoveryEpoch'], 'Archive row mismatch')
     retained(confirmation, instant(context['now']))
+    verify_files(local, confirmation, context)
     return body, confirmation
 
 
