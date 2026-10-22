@@ -32,7 +32,8 @@ import org.springframework.core.env.Environment;
  * bootstrap are explicit independent permissions rather than business writes.
  *
  * <p>The legacy connection-level adapter is no longer part of this wiring: it is an explicit
- * test/offline capability, and a static check keeps it out of the request path.
+ * test/offline capability, and a static check keeps it out of the request path. Every request
+ * borrow also rechecks the closed admission projection on the physical connection before exposure.
  *
  * <p>The flag is off by default: an instance without an explicit control authority must not
  * silently replace its datasource, and a missing or stale authority fails context startup instead
@@ -88,16 +89,24 @@ public class RecoveryAdmissionConfiguration {
         return new RecoveryInitializationWindow(operations);
     }
 
+    /** Closed admission is mandatory; an absent baseline must never degrade to an unguarded pool. */
+    @Bean
+    RecoveryClosedConnectionAdmission recoveryClosedConnectionAdmission(Settings settings) {
+        if (settings.baseline <= 0) throw new RecoveryControlException("CONTROL_BASELINE_REQUIRED");
+        return new RecoveryClosedConnectionAdmission(settings.location(), settings.checkpointPath(),
+            settings.baseline);
+    }
+
     /** The only primary data source: every borrow must resolve to a live operation root. */
     @Bean @Primary
     RecoveryRequestAdmittedDataSource recoveryAdmittedDataSource(
             @Qualifier(MIGRATION_DATASOURCE) DataSource migration, RecoveryOperationRegistry operations,
-            ObjectProvider<RecoveryEffectGate> gate) {
+            ObjectProvider<RecoveryEffectGate> gate, RecoveryClosedConnectionAdmission admission) {
         // The effect gate is attached per connection. It stays disabled unless the gate switch (and,
         // for cross-process fencing, the explicitly supplied P5 authority) is on, so an installation
         // that never opted in behaves exactly as before.
         return new RecoveryRequestAdmittedDataSource(migration, operations,
-            gate.getIfAvailable(RecoveryEffectGate::disabled));
+            new RecoveryRequestAdmittedDataSource.Checks(gate.getIfAvailable(RecoveryEffectGate::disabled), admission));
     }
 
     /**
@@ -142,6 +151,7 @@ public class RecoveryAdmissionConfiguration {
         private UUID installationId;
         private List<String> restoreRoots = List.of();
         private String checkpoint;
+        private long baseline;
 
         RecoveryControlLocation location() {
             return new RecoveryControlLocation(Path.of(root), installationId,
@@ -158,5 +168,7 @@ public class RecoveryAdmissionConfiguration {
         public void setRestoreRoots(List<String> restoreRoots) { this.restoreRoots = restoreRoots; }
         public String getCheckpoint() { return checkpoint; }
         public void setCheckpoint(String checkpoint) { this.checkpoint = checkpoint; }
+        public long getBaseline() { return baseline; }
+        public void setBaseline(long baseline) { this.baseline = baseline; }
     }
 }

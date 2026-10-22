@@ -33,6 +33,7 @@ class RecoveryAdmissionConfigurationTest {
             assertThat(migration).isInstanceOf(HikariDataSource.class).isNotSameAs(primary);
             assertThat(context.getBeansOfType(DataSource.class)).hasSize(2);
             assertThat(context.getBean(RecoveryOperationRegistry.class)).isNotNull();
+            assertThat(context.getBean(RecoveryClosedConnectionAdmission.class)).isNotNull();
             assertThat(context.getBeanNamesForType(RecoveryAdmittedDataSource.class))
                 .as("the legacy connection-level adapter is not a bean of the application entry")
                 .isEmpty();
@@ -42,6 +43,21 @@ class RecoveryAdmissionConfigurationTest {
             assertThat(definition.getFactoryMethodMetadata().isAnnotated(FlywayDataSource.class.getName()))
                 .as("Flyway resolves its pool by this qualifier").isTrue();
         });
+    }
+
+    @Test void missingBaselineFailsStartupInsteadOfDegradingToTheRawPool() throws Exception {
+        var fixture = RecoveryWriterLeaseTest.protocol();
+        runner.withPropertyValues(
+                "outbound.recovery.admission.enabled=true",
+                "outbound.recovery.root=" + fixture.root,
+                "outbound.recovery.installation-id=" + fixture.installation,
+                "outbound.recovery.restore-roots=" + fixture.restoreRoot,
+                "outbound.recovery.checkpoint=" + fixture.checkpoint,
+                "spring.session.jdbc.cleanup-cron=-")
+            .run(context -> {
+                assertThat(context).hasFailed();
+                assertThat(context.getStartupFailure()).hasStackTraceContaining("CONTROL_BASELINE_REQUIRED");
+            });
     }
 
     @Test void absentFlagLeavesTheEntryWithoutAnAdmittedWriter() {
@@ -109,6 +125,7 @@ class RecoveryAdmissionConfigurationTest {
             "outbound.recovery.installation-id=" + fixture.installation,
             "outbound.recovery.restore-roots=" + fixture.restoreRoot,
             "outbound.recovery.checkpoint=" + fixture.checkpoint,
+            "outbound.recovery.baseline=1",
             "spring.session.jdbc.cleanup-cron=-"
         };
     }

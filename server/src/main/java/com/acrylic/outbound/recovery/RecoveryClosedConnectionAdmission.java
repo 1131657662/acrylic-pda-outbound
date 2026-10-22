@@ -10,7 +10,8 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 /**
  * Closed-chain read-only check on the connection the adapter will actually return. No pool lookup,
  * registration, initialization, writes or effect permission. Initial NORMAL is a separate protocol;
- * this capability has no initialization bypass and is not installed by Spring entry wiring yet.
+ * this capability has no initialization bypass; the Spring request entry installs it for every
+ * business borrow.
  */
 public final class RecoveryClosedConnectionAdmission
         implements RecoveryRequestAdmittedDataSource.ConnectionAdmission {
