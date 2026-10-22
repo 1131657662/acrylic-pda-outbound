@@ -4,9 +4,13 @@
 
 ## 治理与接续记录
 
+- [2026-10-22 页面导出消费者切片前看板叙述](ORCHESTRATION_STATUS_BEFORE_INDEPENDENT_PAGES_EXPORT_2026-10-22.md)：原字节和SHA另存本片closeout；旧叙述仅作历史断点，省略生成版本事实。
+
 - [2026-10-22 扫码页切片前看板原文](ORCHESTRATION_STATUS_BEFORE_INDEPENDENT_WORK_CARD_2026-10-22.md)：完整原字节归档；仅作历史断点，不恢复旧状态或写权。
 
 ## 最近可复核的专项报告
+
+- [2026-10-22 非空独立任务原页面注销后导出及电脑消费](GOAL_PDA_INDEPENDENT_PAGES_EXPORT_CONSUMER_2026-10-22.md)：attempt04整链1/0/0/0，attempt03受影响页面回归25/0/0/0，电脑端消费本次非空文件；synthetic 主机/JCA/file URI，非真实设备/外置通道、业务回执或整体验收。
 
 - [2026-10-22 独立扫码页原凭据卡消费者](GOAL_PDA_INDEPENDENT_WORK_CARD_CONSUMER_2026-10-22.md)：最终产品输入六类20项同次通过，另有四档字号几何1项独立通过及Debug构建；合成主机消费者，不代设备/完整页面链或完整验收。
 

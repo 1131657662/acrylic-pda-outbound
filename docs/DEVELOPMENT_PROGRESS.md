@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- [非空独立任务经原页面注销后导出及电脑消费](history/GOAL_PDA_INDEPENDENT_PAGES_EXPORT_CONSUMER_2026-10-22.md)：页面链 attempt04 1/0/0/0；attempt03 为新整链加原四类回归，五类同次25/0/0/0。独立电脑CLI消费本轮非空包通过；合成主机、文件URI及回环 authority，不代表真实设备、外置通道、业务回执或完整 O02/D17/第8节。
+
 - [独立扫码页原凭据卡消费者](history/GOAL_PDA_INDEPENDENT_WORK_CARD_CONSUMER_2026-10-22.md)：最终产品输入六类20项同次通过，另有四档字号几何1项独立通过；debug构建退出0。仅合成主机原扫码页消费者，不代真实SAF/设备/完整页面链或D/O/U、第8节验收。
 
 - [独立任务页原凭据卡消费者](history/GOAL_PDA_INDEPENDENT_TASK_CARD_CONSUMER_2026-10-22.md)：原卡免转录创建计划，取消/身份/期限/围栏/原请求重试保持；五类28项及最终两类13项分次通过，线程产品错误与测试失败保留，lint/Debug通过但有558警告。仅合成主机任务页，非扫码完整页面链/真机/最终候选。

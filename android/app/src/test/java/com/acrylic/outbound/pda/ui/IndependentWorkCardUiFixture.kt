@@ -14,8 +14,9 @@ import org.robolectric.util.ReflectionHelpers
 import java.io.File
 
 /** Original task-page card creation followed by the original scan Activity and serial engine. */
-internal class IndependentWorkCardUiFixture(credentialSeconds: Long? = null) : AutoCloseable {
-    val task = IndependentTaskCardUiFixture(credentialSeconds)
+internal class IndependentWorkCardUiFixture(credentialSeconds: Long? = null,
+    beforeOffline: (IndependentCardUiFixture) -> Unit = {}) : AutoCloseable {
+    val task = IndependentTaskCardUiFixture(credentialSeconds, beforeOffline)
     val base get() = task.card.base
     val engine get() = IndependentWorkRuntime.shared(base.app)
     private val controller: org.robolectric.android.controller.ActivityController<IndependentWorkActivity>

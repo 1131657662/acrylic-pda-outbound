@@ -19,7 +19,8 @@ import java.io.File
 import java.nio.charset.Charset
 
 /** Real card, vault, task Activity and Room; only authority/JCA/file URI are synthetic. */
-internal class IndependentTaskCardUiFixture(credentialSeconds: Long? = null) : AutoCloseable {
+internal class IndependentTaskCardUiFixture(credentialSeconds: Long? = null,
+    beforeOffline: (IndependentCardUiFixture) -> Unit = {}) : AutoCloseable {
     val card = IndependentCardUiFixture()
     private val controller: org.robolectric.android.controller.ActivityController<IndependentTaskActivity>
     val activity get() = controller.get()
@@ -42,6 +43,7 @@ internal class IndependentTaskCardUiFixture(credentialSeconds: Long? = null) : A
             val staged = repository.stage(sku, "synthetic-task-card.txt")
             repository.activate(staged.imported.id, false, staged.activeImportId)
         }
+        beforeOffline(card)
         card.base.server.shutdown()
         controller = Robolectric.buildActivity(IndependentTaskActivity::class.java).setup()
         await { !model.state.value.busy && model.state.value.draft != null }
