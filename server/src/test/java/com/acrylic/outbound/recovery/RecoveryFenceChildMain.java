@@ -17,6 +17,7 @@ public final class RecoveryFenceChildMain {
             case "matrix" -> matrix(supply, args[3]);
             case "effect" -> effect(supply, args[3]);
             case "unknown" -> unknown(supply, args[3]);
+            case "lost-commit" -> FenceLostCommitScenario.run(supply, directory, args[3]);
             default -> throw new IllegalArgumentException(args[2]);
         }
     }

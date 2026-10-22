@@ -16,7 +16,8 @@ final class FenceChild implements AutoCloseable {
 
     FenceChild(FenceTestSupply supply, String mode, String... extra) throws Exception {
         directory = Files.createTempDirectory(supply.base(), "child-");
-        var paths = new ObjectMapper().readTree(Files.readString(Path.of("build/recovery-control-classpath.json")));
+        var paths = new ObjectMapper().readTree(Files.readString(Path.of(System.getenv()
+            .getOrDefault("P5_LOST_COMMIT_CLASSPATH", "build/recovery-control-classpath.json"))));
         var classpath = new ArrayList<String>(); paths.forEach(p -> classpath.add(p.asText()));
         var command = new ArrayList<>(List.of(Path.of(System.getProperty("java.home"), "bin/java.exe").toString(),
             "-Dfile.encoding=UTF-8", "-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8", "-Duser.language=en", "-Duser.country=US",

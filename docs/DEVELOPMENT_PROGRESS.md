@@ -1,5 +1,7 @@
 # 开发进度索引
 
+- [D13 P5真实commit后确认丢失](history/GOAL_D13_P5_LOST_COMMIT_ACKNOWLEDGEMENT_2026-10-23.md)：新隔离IT1/0/0/0，实际SQL2行/halt70/OS锁释放、旧句柄与新进程严格拒绝；原P5/HMAC与binlog独立核验通过。两IT夹具失败及消费者编码失败保全；仅合成有界，非完整恢复/实际错库/整体/最终候选。
+
 - [D13恢复后真实worker halt与孤儿P5](history/GOAL_D13_RESTORED_WORKER_CRASH_COMBINATION_2026-10-23.md)：新隔离IT1/0/0/0，实际halt71/OS锁释放、六HTTP按序拒绝、孤儿退役后fresh启动；179表/原件守恒、独立消费者通过。前三轮失败保全；仅合成有界，非实际错库/整体/最终候选。
 
 - [D13恢复后P5恢复根与可信水位损坏拒绝](history/GOAL_D13_RESTORED_AUTHORITY_FAULT_COMBINATION_2026-10-23.md)：两种故障各新隔离IT1/0/0/0、独立原件消费者exit0；六HTTP及显式worker精确拒绝，179表/P5树守恒。仅合成Java权威夹具，非实际错库绑定/整体/最终候选。
