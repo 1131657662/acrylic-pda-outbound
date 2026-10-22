@@ -2,6 +2,8 @@
 
 本文只保留当前有效结论和证据入口；版本、分支、SHA、运行环境与写权只看 [开发看板](ORCHESTRATION_STATUS.md) 的 `CURRENT_STATE_START/END`。详细历史原文已归档至 [2026-10-20 原进度索引](archive/2026-10-20/DEVELOPMENT_PROGRESS.md)，本文件不再复制逐轮日志。
 
+
+- [D13/D15恢复后渲染失败与后继重试](history/GOAL_D13_RESTORED_RENDERER_RETRY_COMBINATION_2026-10-22.md)：新隔离IT1/0/0/0，双原任务各三次失败后完整后继原快照重试各一次成功；全失败行/源库/原件守恒，独立文件回读；仅有界合成，非整体/最终候选。
 ## 当前有效结论
 
 - [D13/D15完整恢复scheduler及后继组合](history/GOAL_D13_RESTORED_SCHEDULER_COMBINATION_2026-10-22.md)：新隔离IT1/0/0/0，原PENDING双格式由独立API/生产非Web定时worker消费、完整后继幂等；179表/源库/原文件守恒，独立回读通过；仅合成有界，非整体/最终候选。

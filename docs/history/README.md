@@ -1,5 +1,7 @@
 # 历史归档索引
 
+
+- [D13/D15恢复后渲染失败与后继重试](GOAL_D13_RESTORED_RENDERER_RETRY_COMBINATION_2026-10-22.md)：新隔离IT1/0/0/0，双原任务各三次失败后完整后继原快照重试各一次成功；全失败行/源库/原件守恒，独立文件回读；仅有界合成，非整体/最终候选。
 - [D13/D15完整恢复scheduler及后继组合](GOAL_D13_RESTORED_SCHEDULER_COMBINATION_2026-10-22.md)：新隔离IT1/0/0/0，原PENDING双格式由独立API/生产非Web定时worker消费、完整后继幂等；179表/源库/原文件守恒，独立回读通过；仅合成有界，非整体/最终候选。
 
 - [D13独立API与worker/P5组合](GOAL_D13_SEPARATE_API_WORKER_P5_COMBINATION_2026-10-22.md)：独立API/非Web worker及P5实际1/0/0/0，双格式下载/原件回读、持根/末SQL回滚、退役后继通过；两轮夹具失败保留，仅有界组合，非D13整体/D18。
