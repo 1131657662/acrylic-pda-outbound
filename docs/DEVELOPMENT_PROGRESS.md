@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- [D16可取回文件与完整恢复副本消费者](history/GOAL_D16_RETRIEVAL_RESTORED_CONSUMER_2026-10-22.md)：新复杂恢复输入4/0/0/0，2次合成提交/3份恢复只读核同，真实锁后与末DELETE文件丢失保护4条有效guard；仅测试变化，非D16整体/最终候选。
+
 - [D16归档原件可取回前置检查](history/GOAL_D16_ARCHIVE_RETRIEVABILITY_L1_2026-10-22.md)：显式原正文/完整原签回执读取，锁后与末DELETE后复核；14项及包含它的完整127项全过，15次合成提交/8份恢复只读核同；有效guard保持拒绝，仅隔离L1，非D16整体/第8节。
 
 - [提交源完整普通回归与原件消费者](history/GOAL_SERVER_COMMITTED_ORDINARY_ORIGINALS_2026-10-22.md)：固定提交独立源同次4810/0/0/1，四类条件消费者24项已包含其中；6055源/36外部输入守恒，Windows符号链接未验，非IT或最终候选。
