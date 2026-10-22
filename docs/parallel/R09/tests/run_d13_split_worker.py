@@ -47,6 +47,7 @@ gradle.projectsEvaluated {
 
 
 def execute(args):
+    assert (args.test_class == 'E2aRestoredAuthorityFaultIT') == bool(args.authority_fault)
     output = args.output.resolve()
     assert output.is_relative_to(ROOT / '.local') and not output.exists()
     output.mkdir(parents=True)
@@ -58,6 +59,8 @@ def execute(args):
                E2A_SPLIT_CLASSPATH=str(args.build.resolve() / 's/recovery-control-classpath.json'),
                E2A_SPLIT_RENDERER=str(args.build.resolve() / 'r/install/acrylic-report-rendering'),
                E2A_SPLIT_BROWSERS=str(args.browsers.resolve()))
+    if args.authority_fault:
+        env['E2A_AUTHORITY_FAULT'] = args.authority_fault
     init = build_config(output, args.build.resolve())
     before = inputs(output)
     save(output / 'source-before.json', before)
@@ -87,6 +90,8 @@ def runtime(args, output, base, env):
     attempt, runtime = prepare(args.run, args.port, args.http)
     runtime.update({name: env[name] for name in ('SPLIT_BUILD', 'SPLIT_OUTPUT', 'E2A_SPLIT_CLASSPATH',
                                                'E2A_SPLIT_RENDERER', 'E2A_SPLIT_BROWSERS')})
+    if args.authority_fault:
+        runtime['E2A_AUTHORITY_FAULT'] = args.authority_fault
     save(output / 'allocation.json', dict(run=args.run, port=args.port, http=args.http, attempt=str(attempt)))
     process = launch_mysql(attempt, args.port, runtime)
     try:
@@ -115,8 +120,9 @@ def main():
     parser.add_argument('--font', type=Path, required=True)
     parser.add_argument('--browsers', type=Path, required=True)
     parser.add_argument('--test-class', choices=('E2aSplitWorkerExportIT', 'E2aRestoredSchedulerIT', 'E2aRestoredRetryIT',
-                                               'E2aRestoredStaleIT', 'E2aRestoredP5StaleIT'),
+                                               'E2aRestoredStaleIT', 'E2aRestoredP5StaleIT', 'E2aRestoredAuthorityFaultIT'),
                         default='E2aSplitWorkerExportIT')
+    parser.add_argument('--authority-fault', choices=('restore-roots', 'checkpoint'))
     execute(parser.parse_args())
 
 

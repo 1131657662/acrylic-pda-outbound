@@ -33,12 +33,14 @@ final class E2aRestoredStaleHttp {
         assertThat(target.queryForObject("SELECT COUNT(*) FROM background_job", Integer.class)).isEqualTo(3);
     }
 
-    void refuse() throws Exception {
+    void refuse() throws Exception { refuse("CONTROL_INSTANCE_STALE"); }
+
+    void refuse(String expected) throws Exception {
         var original = SubmissionJson.parse(Files.readString(profile.attempt.resolve("pending-xlsx.json"))).path("id").asText();
         for (String path : List.of("/auth/csrf", input.exportPath(), view(original), view(pending),
                 "/exports/" + original + "/file?warehouseId=" + input.warehouse(),
                 "/exports/" + pending + "/file?warehouseId=" + input.warehouse()))
-            assertThat(http.get(path, 503).path("code").asText()).isEqualTo("CONTROL_INSTANCE_STALE");
+            assertThat(http.get(path, 503).path("code").asText()).isEqualTo(expected);
     }
 
     private String view(String id) { return "/exports/" + id + "?warehouseId=" + input.warehouse(); }

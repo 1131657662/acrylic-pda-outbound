@@ -46,8 +46,8 @@ def control(attempt):
                 producerPid=advance['testProducerPid'], independentPythonProducer=False, config=config)
 
 
-def processes(attempt, authority):
-    home = attempt / 'private/restored-p5-stale'
+def processes(attempt, authority, scope='restored-p5-stale', expected='CONTROL_INSTANCE_STALE'):
+    home = attempt / ('private/' + scope)
     config = authority['config']; anchor = bytes.fromhex(config['anchor'])
     p5 = Path(config['lease']); assert p5.is_relative_to(attempt / 'private')
     assert digest(p5 / 'lease-root.json') == config['markerSha256']
@@ -64,7 +64,7 @@ def processes(attempt, authority):
     assert authority['producerPid'] not in pids
     stale = load(home / 'worker-stale.json')
     assert stale['pid'] == pids[1] and stale['productionPollCalled'] and stale['productionReminderCalled']
-    assert stale['admissionCode'] == 'CONTROL_INSTANCE_STALE' and stale['liveRoots'] == 0
+    assert stale['admissionCode'] == expected and stale['liveRoots'] == 0
     log = (home / 'worker.stdout').read_text('utf-8', errors='replace')
     assert 'Background worker poll failed (RecoveryControlException)' in log
     assert 'Background reminder scheduling failed (RecoveryControlException)' in log

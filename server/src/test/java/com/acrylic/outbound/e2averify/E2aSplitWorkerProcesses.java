@@ -19,7 +19,7 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
     }
 
     E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority, String scope) throws Exception {
-        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale");
+        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault");
         home = Files.createDirectory(profile.attempt.resolve("private/" + scope));
         for (String role : List.of("api", "worker")) {
             var options = options(profile, authority);

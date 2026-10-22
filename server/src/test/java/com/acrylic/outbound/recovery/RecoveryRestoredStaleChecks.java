@@ -13,19 +13,21 @@ import static org.awaitility.Awaitility.await;
 /** Handshakes for a live restored worker; explicit production calls must reject stale authority. */
 public final class RecoveryRestoredStaleChecks {
     public static void serve(ConfigurableApplicationContext context, Path home, boolean worker) throws Exception {
+        String expected = home.getFileName().toString().equals("restored-p5-fault")
+            ? RecoveryRestoredAuthorityFault.expected() : "CONTROL_INSTANCE_STALE";
         if (worker) {
             waitFor(home.resolve("pause-worker.marker"));
             drain(context);
             Files.writeString(home.resolve("worker-paused.marker"), "scheduler drained; JVM remains live",
                 StandardOpenOption.CREATE_NEW);
             waitFor(home.resolve("check-stale.marker"));
-            refuse(context, home);
+            refuse(context, home, expected);
         }
         waitFor(home.resolve((worker ? "worker" : "api") + "-stop.marker"));
         drain(context);
     }
 
-    private static void refuse(ConfigurableApplicationContext context, Path home) throws Exception {
+    private static void refuse(ConfigurableApplicationContext context, Path home, String expected) throws Exception {
         var operations = context.getBean(RecoveryOperationRegistry.class);
         var worker = context.getBean(BackgroundWorkerProcess.class);
         worker.poll(); worker.enqueueReviewReminderSweep();
@@ -33,10 +35,10 @@ public final class RecoveryRestoredStaleChecks {
         var token = new RecoveryOperationToken(UUID.randomUUID(), RecoveryOperationKind.WORKER_JOB,
             operations.startup().installationId(), operations.startup().recordSha256(), null);
         assertThatThrownBy(() -> operations.admit(token)).isInstanceOf(RecoveryControlException.class)
-            .hasMessage("CONTROL_INSTANCE_STALE");
+            .hasMessage(expected);
         var result = SubmissionJson.object().put("pid", ProcessHandle.current().pid())
             .put("productionPollCalled", true).put("productionReminderCalled", true)
-            .put("admissionCode", "CONTROL_INSTANCE_STALE").put("liveRoots", operations.liveRoots());
+            .put("admissionCode", expected).put("liveRoots", operations.liveRoots());
         Files.writeString(home.resolve("worker-stale.json"), result.toPrettyString(), StandardOpenOption.CREATE_NEW);
     }
 
