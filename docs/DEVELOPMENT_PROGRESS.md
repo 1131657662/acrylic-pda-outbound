@@ -4,6 +4,8 @@
 
 ## 当前有效结论
 
+- [独立卡—非空采集—注销只读导出—电脑消费者](history/GOAL_PDA_INDEPENDENT_CARD_WORK_EXPORT_CONSUMER_2026-10-22.md)：仅新增测试；原卡预置vault支持1包/300500克，清vault后原救援凭据导出，同次主机1/0/0/0与独立PC核验退出0。原四文件/1099输入守恒，仅合成有界API/文件组合；非完整页面、真机或最终候选。
+
 - [领取会话绑定定向修补](history/GOAL_PDA_CLAIM_SESSION_BINDING_2026-10-22.md)：二次预览及重试GET绑定原身份，写意图/POST前核五字段；RED两方法失败保留，修补后三类同次14/0/0/0、原键/丢响应/拒绝及39份schema守恒。仅合成主机NATIVE Room/回环HTTP，非真机/实际服务或完整D/O/U及第8节。
 
 - [独立解密材料电脑消费者](history/GOAL_PDA_PACKAGE_SECRET_PC_CONSUMER_2026-10-21.md)：Android非空Room生产者1项通过；电脑同次26项中24通过/2符号链接跳过，另1项Windows junction拒绝专项通过，原包/材料/登记摘要核同。仅合成文件L1，不拼接为27项全过；原失败保留，非真机/外置保管/完整O02或最终候选。

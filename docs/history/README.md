@@ -4,6 +4,8 @@
 
 ## 最近可复核的专项报告
 
+- [2026-10-22 独立卡非空采集导出电脑消费者](GOAL_PDA_INDEPENDENT_CARD_WORK_EXPORT_CONSUMER_2026-10-22.md)：原卡/原grant/原Room/原导出器同输入1包300500克，主机1项及独立PC核验通过；清vault注销模拟、合成来源，不计完整页面/设备或第8节。
+
 - [2026-10-22 领取会话绑定定向修补](GOAL_PDA_CLAIM_SESSION_BINDING_2026-10-22.md)：五字段切换拒绝新建/替换意图与刷新后POST，RED两失败保留，修补后三类同次14/0/0/0及39份schema守恒；合成主机非真机/完整D/O/U。
 
 - [2026-10-21 独立解密材料电脑消费者](GOAL_PDA_PACKAGE_SECRET_PC_CONSUMER_2026-10-21.md)：非空Android生产者1项、电脑26项中24通过/2跳过，另junction专项1项通过；原失败/三文件及源码哈希保全，仅合成有界文件消费者。
