@@ -1,3 +1,7 @@
+- [D13实际跨实例UUID反例](GOAL_D13_CROSS_INSTANCE_DATABASE_IDENTITY_2026-10-23.md)：新双实例同schema IT1/0/0/0，精确UUID拒绝、三次单SELECT/五表及9文件守恒；运行器/离线原件消费者exit0。仅MODEL有界，非完整恢复/全部入口/整体或最终候选。
+
+- [跨实例反例前看板叙述](ORCHESTRATION_STATUS_BEFORE_CROSS_INSTANCE_IDENTITY_2026-10-23.md)：仅历史断点，完整原字节/SHA在本片closeout。
+
 - [D13闭链只读准入数据库身份](GOAL_D13_CLOSED_ADMISSION_DATABASE_IDENTITY_2026-10-23.md)：14项单测/新隔离IT1/0/0/0，单SELECT匹配与复制schema反例；运行器收尾exit1、离线补核成功分列，仅MODEL有界，非跨实例/全部入口/整体或最终候选。
 
 - [D13 P5真实提交后F1争锁](GOAL_D13_P5_CONTENDED_COMMIT_2026-10-23.md)：专项1/0/0/0；真实OS锁争用/halt70与原件消费者，仅合成有界，非OS拒绝自终止/整体/最终候选。
