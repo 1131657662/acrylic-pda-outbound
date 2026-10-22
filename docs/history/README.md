@@ -4,6 +4,8 @@
 
 ## 治理与接续记录
 
+- [2026-10-22 提交源页面文件组合前看板叙述](ORCHESTRATION_STATUS_BEFORE_CLEAN_PAGES_FILE_2026-10-22.md)：旧完整原字节/SHA另保全，本页省略生成事实。
+
 - [2026-10-22 主管原页面导出切片前看板叙述](ORCHESTRATION_STATUS_BEFORE_SUPERVISOR_PAGES_EXPORT_2026-10-22.md)：完整原字节/SHA留于本片closeout，省略生成事实。
 
 - [2026-10-22 TEMP页面导出切片前看板叙述](ORCHESTRATION_STATUS_BEFORE_TEMPORARY_PAGES_EXPORT_2026-10-22.md)：旧断点原字节/SHA在本片closeout，省略生成事实。
@@ -15,6 +17,8 @@
 - [2026-10-22 扫码页切片前看板原文](ORCHESTRATION_STATUS_BEFORE_INDEPENDENT_WORK_CARD_2026-10-22.md)：完整原字节归档；仅作历史断点，不恢复旧状态或写权。
 
 ## 最近可复核的专项报告
+
+- [2026-10-22 提交源四路径页面与电脑文件组合](GOAL_PDA_CLEAN_PAGES_FILE_COMBINATION_2026-10-22.md)：六类同次19/0/0/0，四个新包独立PC分别0/1/1；1162提交文件/11外部输入守恒，非完整D18或最终候选。
 
 - [2026-10-22 非空原订单页面主管新卡导出及电脑消费](GOAL_PDA_SUPERVISOR_PAGES_EXPORT_CONSUMER_2026-10-22.md)：最终同次三类16/0/0/0、新包PC三场景0/1/1；越界/守恒有效，前四轮失败单列，仅合成有界证据。
 
