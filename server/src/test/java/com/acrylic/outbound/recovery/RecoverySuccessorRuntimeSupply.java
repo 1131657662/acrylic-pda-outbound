@@ -50,6 +50,26 @@ public final class RecoverySuccessorRuntimeSupply {
         return p5;
     }
 
+    @FunctionalInterface public interface PendingCheck { void verify() throws Exception; }
+
+    public void registerAfterDeath(JdbcTemplate target, Path attempt, PendingCheck pending) throws Exception {
+        assertThat(fixture.runtimeAdmitted(target)).isFalse();
+        var death = new RecoverySuccessorDeathProbe(fixture, source, attempt);
+        death.interrupt(target); pending.verify(); death.resume();
+        fixture.project(target);
+        for (String phase : List.of("RECOVERING", "VERIFYING", "RELEASE_READY")) {
+            fixture.advance(phase); fixture.project(target);
+        }
+        fixture.writeNormal(target);
+        assertThat(fixture.admit(target).outcome()).isEqualTo("REGISTERED");
+        assertThat(fixture.admit(target).outcome()).isEqualTo("ALREADY_REGISTERED");
+        var admitted = fixture.runtimeResult(target);
+        assertThat(admitted.admitted()).as(admitted.gaps().toString()).isTrue();
+        assertThat(admitted.ordinaryWritesAllowed()).isFalse();
+        assertThat(admitted.localDeletionAllowed()).isFalse();
+        RecoverySuccessorAdmissionChecks.save(attempt.resolve("successor-admitted.json"), admitted);
+    }
+
     public String[] options() {
         var location = fixture.location();
         var result = new ArrayList<>(List.of("--outbound.recovery.admission.enabled=true",

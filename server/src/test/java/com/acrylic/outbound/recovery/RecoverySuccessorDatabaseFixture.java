@@ -130,6 +130,7 @@ public final class RecoverySuccessorDatabaseFixture {
     }
 
     long baseline() { return baseline; }
+    Path base() { return base; }
     Path root() { return location.root(); }
     RecoveryControlLocation location() { return location; }
     Path checkpoint() { return checkpoint; }

@@ -65,6 +65,8 @@ python docs/parallel/R09/ops/cli.py control-apply --control-root D:/isolated-con
 
 后继运行时数据库观察已接完整 lineage：`RecoveryAdmissionVerifier` 按指定轮次读取 NORMAL，`RecoverySuccessorAdmissionSql` 在同一条只读 SELECT 中取得真实 UUID/schema、原 binding/NORMAL、全部投影/映射、后继 binding/NORMAL 和 server_state，并复用登记路径的完整前缀及源 pin 校验；缺原件或矛盾即拒绝，初始原件不覆写。两轮新隔离非空恢复的 verifier/连接入口、单 SELECT/0 DML 及反例见[只读准入报告](../../history/GOAL_D13_SUCCESSOR_READ_ONLY_ADMISSION_2026-10-23.md)。真实API/独立worker/P5/文件已有[同输入后继组合](../../history/GOAL_D13_SUCCESSOR_P5_COMPOSITION_2026-10-23.md)：已有binding/NORMAL的非空实际恢复、原任务失效/新键双格式下载及六HTTP拒绝守恒。其权威和P5提升仍为显式合成测试供应，不是生产工具；该P5组合仍仅同实例；另有[真实双实例已有绑定恢复](../../history/GOAL_D13_BOUND_CROSS_INSTANCE_SUCCESSOR_2026-10-23.md)，保持不同UUID、全部原行与触发器，该片只计数据库后继准入；后续[实际跨实例API/P5同输入组合](../../history/GOAL_D13_CROSS_INSTANCE_API_P5_COMPOSITION_2026-10-23.md)由新双实例、独立API/worker实际目标身份、P5和文件共同核验，仍是合成test-only权威，不作生产供应或整体通过。`ordinaryWritesAllowed=false`、`localDeletionAllowed=false`保持，不因观察或测试组合开放生产入口。
 
+已有binding的[实际跨实例六死亡点与原命令续作](../../history/GOAL_D13_CROSS_INSTANCE_DEATH_RESUMPTION_2026-10-23.md)已分别用新双实例核pending API/worker拒绝、原命令恢复和同输入API/独立worker/P5/文件；仅合成test-only权威有界结果，不作为生产恢复或D13整体通过。旧控制原件和精确错误保持，不能删半文件或重造命令绕过。
+
 ## 崩溃与恢复
 
 历史文件先独占创建、flush/fsync，再写指针暂存、原子替换current。Windows使用WRITE_THROUGH替换，POSIX尝试目录fsync；真实断电/底层存储耐久性需现场验证。
