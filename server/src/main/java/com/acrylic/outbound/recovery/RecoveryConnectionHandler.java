@@ -137,15 +137,19 @@ final class RecoveryConnectionHandler implements InvocationHandler {
         if (name.equals("abort")) poison("CONTROL_CONNECTION_ABORT_UNCONFIRMED", null);
     }
 
-    private Object close() throws SQLException {
+    private Object close() throws Throwable {
         if (closed) return null;
-        SQLException failure = null;
+        Throwable failure = null;
         if (transactionActive && !poisoned) {
             try { delegate.rollback(); transactionActive = false; }
-            catch (SQLException error) { poison("CONTROL_CONNECTION_ROLLBACK_UNCONFIRMED", error); failure = error; }
+            catch (SQLException | RuntimeException | Error error) {
+                poison("CONTROL_CONNECTION_ROLLBACK_UNCONFIRMED", error); failure = error;
+            }
         }
         try { delegate.close(); }
-        catch (SQLException error) { poison("CONTROL_CONNECTION_CLOSE_UNCONFIRMED", error); failure = combine(failure, error); }
+        catch (SQLException | RuntimeException | Error error) {
+            poison("CONTROL_CONNECTION_CLOSE_UNCONFIRMED", error); failure = combine(failure, error);
+        }
         closed = true;
         endConnectionOperation();
         if (poisoned) {
@@ -170,9 +174,10 @@ final class RecoveryConnectionHandler implements InvocationHandler {
         effects.poison();
     }
 
-    private static SQLException combine(SQLException first, SQLException second) {
+    private static Throwable combine(Throwable first, Throwable second) {
         if (first == null) return second;
-        first.addSuppressed(second); return first;
+        if (first != second) first.addSuppressed(second);
+        return first;
     }
 
     private static boolean ambiguous(String name, Throwable error) {

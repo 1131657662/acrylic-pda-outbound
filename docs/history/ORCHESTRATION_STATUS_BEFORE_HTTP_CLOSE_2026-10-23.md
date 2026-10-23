@@ -1,0 +1,40 @@
+# D13 HTTP关闭组合前的历史看板叙述
+
+仅保留当时结论，不恢复历史写权、运行状态或授权。完整原字节、生成事实和SHA见本片.shared快照：.local/d13-http-close-20261023/run01/shared-before/。
+
+总目标active、未完成；localDeletionAllowed=false。用户授权测试部署与M71现场验证：首次候选领取/下载/刷新闭环通过；布局包构建、同签覆盖安装、顶部控制、HTTPS刷新及两张本机订单保留复验通过。下列D13证据为继承断点，非整体或最终候选。
+
+## 输入、写权和保存
+- 固定树D:/acrylic-pda-outbound，codex/development；接续HEAD ec81072be647cc059207144fabd97d631612b2b9，收口HEAD及fresh开发远端8deba316b42cf4232b97f24bc48ab73557218dbe；main仍为c6e9e0c238c657baecbf699ba6fdbada5d979b86。版本/树数见生成块。
+- 证据根.local/goal-20261023-resume/d13-cross-instance-admission01/；baseline保存40继承原字节/SHA/ZIP/diff及fresh环境；closeout01/precommit保全提交前46项dirty原件，最终全集/SHA/ZIP见closeout01/final/dirty-final.json。
+- D13前片7路径开发备份的commit/push exit0为历史记录；本轮开始领先远端，布局收口commit/push exit0且fresh开发远端核同。继承tracked/untracked保持，本轮前清单/diff在.local/test-claim-20261023/run01/layout-top-controls/；更早原字节在run01/dirty-inputs.zip及原D13快照。
+- 本片布局/报告/索引/看板已按5路径提交；提交后仅刷新本看板收口叙述和Git生成元数据，有意留工作树，不再制造自引用提交。另一总目标聊天fresh inProgress，声明只处理D13服务端测试/独立报告及.local，不写共享看板/Android；D盘清理聊天idle，另一C盘清理聊天active。本轮未派工或发消息；本片无后台写者，接续前重核实际写权。
+- 本轮后台测试部署及离线Android构建已结束，产物/临时目录在D盘；未启动本轮模拟器或隔离MySQL。fresh无本轮Java/Gradle/Python重型任务，未停止共享进程；不冒领其他聊天测试结果。
+- closeout01/final保存fresh进程/监听/ADB/Debug Keystore与C/D/E。19837/19838认证停库exit0、进程退出0，fresh均无监听；系统3306/33060内部身份未认证，仅观察、未连接/停止。
+- M71 22D2910042为device，已同签覆盖安装布局测试APK且设备base.apk哈希核同、firstInstallTime保持；75bdbbee仅枚举未操作。Debug Keystore沿用原身份、未用正式签名；磁盘与清理见下行及closeout，不冒领清理聊天结果。
+- 本轮仅清layout-top-controls/build，4795文件/105417704逻辑字节；D余量22984560640→23099539456，观察净增114978816字节；清理后C=65835319296、E=195634053120字节。APK/输入/五报告已核哈希，逐文件清单及失败前置检查保全于cleanup-receipt.json/read-failures.md。共享缓存、旧库及其他聊天产物未清；同期其他聊天活动可能影响磁盘净值。
+- 布局收口完整tracked/untracked路径/SHA及进程/监听/ADB/余量见layout-top-controls/closeout/precommit/；22个继承文件逐字节保持。其他聊天新增D13测试/报告不纳本轮提交；布局副本已恢复，最终APK保留。Git保存后刷新生成块，提交SHA/远端结果见同根closeout/postcommit/。
+
+## 用户授权测试部署与主页布局
+- 测试后台固定输入571c34aa9eb8d08f0fb643f36542259a575c7702，release claim-571c34aa-20261023-01；outbound-test.nbsmzwl.cn的后台/worker/备份定时器fresh均active，Web与在线APK发布入口未改变。
+- 首次候选M71经HTTPS刷新→核对页→确认领取→本机独占授权→资料下载确认→再次刷新待领取移除已现场通过。原XML与安装记录在.local/test-claim-20261023/run01/device-m71/，部署证据在同根deployment-evidence/。
+- 主树仅改activity_main.xml现有控件顺序：刷新及本机/待领控制在列表前、分页在列表后；异常仍在数据页。接口/领取/数据库逻辑未改。固定源码6055文件核同后仅叠加该布局重建，继承WIP不入测试包。
+- 布局自审36控件属性/ID保持且主树/候选布局核同；主机UI测试10/0/0/0。lint首轮SDK盘符未转义报PropertyEscape，次轮复用旧分析失败，第三轮新分析0错误/561警告且构建exit0；只改本机配置，无baseline或降级，三轮原件保全。
+- 交付包outputs/pda/Acrylic-PDA-test-claim-top-controls-20261023.apk，SHA256 a25800eec215ee7b913ac6f0a2843a590982500e59f965ab704de476585d923c。M71上刷新/本机/待领取控件在列表前，分页在底部；布局包真实联网刷新与两张原本机订单保留复验exit0，未在此包重领新订单或跑完整Android回归。
+- 首次UI验证器在切换分区后读到被覆盖的诊断而失败；原件保存在ui-attempt01，应用同步日志证明成功；调整读取时机后通过，应用代码未改。报告history/TEST_CLAIM_M71_LAYOUT_2026-10-23.md；旧叙述与原字节/SHA归档位置不变。
+- 收口补充screencap命令exit1且无图，随后ADB get-state仍device/exit0；不作为截图或像素验收。位置与订单保留依据成功UI XML和验证器结果，工具失败另存read-failures.md。
+
+## 本片证据与限制
+- 前片新增3个测试文件：ClosedAdmissionInstanceModel/ClosedAdmissionIdentityObservation/RecoveryAdmissionCrossInstanceIdentityIT；本片另改RecoveryAdmissionConfiguration、RecoveryClosedConnectionAdmission及其配置测试，契约、迁移、Android/Web及生产设置未改。自主设计在decision.md，作者自审/扫描在closeout01。
+- run1661：新19837/19838实际实例、同schema/账号p5_lost_1661、实际UUID不同；两个库均迁移，复制5张MODEL登记表原值，非完整恢复/业务数据/原身份。build.local/s23m，单Java测试线程，compile/IT/dump/shutdown/binlog均exit0，顶层exit0。
+- IT1/0/0/0、24.988秒：源准入→目标精确DATABASE_SERVER_UUID拒绝→源仍准入；三次各1 SELECT、DML0、binlog保持，正向写入/删除能力也false。8次五表行哈希相同，外部9文件含trusted检查点另封前后manifest保持。
+- consumer01离线exit0：2842源码/109依赖/2运行器SHA保持、原XML/两dump/控制链及intent核同，9文件前后与最终原件核同。两dump五表原行相等；binlog源6/目标7相关DML均为准备，其中目标1 DELETE只替换新建server_state合成单例，非观察期写入。
+- 作者、自审及工具消费者同助手，非独立人员；未动态复现旧版错误准入，未验完整恢复后UUID策略；未运行完整普通回归/真实HTTP/Android/APK/模拟器/真机/部署。本片报告GOAL_D13_CROSS_INSTANCE_DATABASE_IDENTITY_2026-10-23.md。
+- 本片D13最小Spring入口接线：每次业务借用注入RecoveryClosedConnectionAdmission并要求正baseline，缺失/非正baseline启动失败，不回退裸池；定向RecoveryAdmissionConfigurationTest退出0、BUILD SUCCESSFUL。命令、3个输入SHA、失败首轮路径记录及输出SHA见.local/d13-entry-wiring-20261023/，仅为开发验证，不计D13/D15或总目标验收。
+- 前片run1659权限失败、run1660 IT通过但运行器收尾exit1、consumer01失败均保全；本片成功不覆盖。原始失败/唯一证据和新隔离数据未删；此前删除被自动审批拒绝，不换通道/包装重试。
+
+## 下一步与边界
+- 接续先核closeout01/final、实际环境/远端/完整dirty；不重跑run1659/1660/1661或旧库。下一有界项设计闭链身份在实际入口的消费：区分初始NORMAL、INITIALIZATION、同一物理连接、裸pool及关闭路径；已有根/writer/P5保护不得削弱。
+- RecoveryOperationRegistry/RecoveryRequestAdmittedDataSource已有根/writer/P5保护；本片只覆盖Spring主DataSource的闭链准入接线，不能称所有HTTP/Session/worker/文件入口及裸pool/关闭路径已验证。OS拒绝自halt无新方法不重入。
+- D13–D15整体、全部入口/P5其余故障/真实OS拒绝终止、D16有效guard/复杂引用、D18实际最终候选及第8节仍缺。仅本聊天已获用户测试部署授权；生产开关/TEMP归档、正式签名、原库现网、main、生产部署/Release关闭；取消链/旧run03不恢复。
+- 原资料/身份/Keystore/原签回执/唯一证据/最终APK/继承保持；开发备份及本片局部通过不计总目标完成。

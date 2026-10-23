@@ -6,6 +6,9 @@
 
 # 开发进度索引
 
+- [D13 HTTP关闭未知结果与实际P5](history/GOAL_D13_HTTP_CLOSE_P5_COMPOSITION_2026-10-23.md)：有效red 2过4失败、green 6项全过；实际HTTP/MySQL/halt70、后继拒绝，12组dump/binlog/P5 HMAC离线核同。仅测试servlet产品组件组合，非完整Spring/Session/闭链/整体或最终候选。
+- [D13连接终结unchecked修复](history/GOAL_D13_CONNECTION_UNCHECKED_COMPLETION_2026-10-23.md)：MODEL red13项4过9失败、green13项/相关73项全过；原异常身份及未知writer保护，范围与实际P5组合分列，不作完整回归或整体通过。
+
 - [D13 P5真实commit后确认丢失](history/GOAL_D13_P5_LOST_COMMIT_ACKNOWLEDGEMENT_2026-10-23.md)：新隔离IT1/0/0/0，实际SQL2行/halt70/OS锁释放、旧句柄与新进程严格拒绝；原P5/HMAC与binlog独立核验通过。两IT夹具失败及消费者编码失败保全；仅合成有界，非完整恢复/实际错库/整体/最终候选。
 
 - [D13恢复后真实worker halt与孤儿P5](history/GOAL_D13_RESTORED_WORKER_CRASH_COMBINATION_2026-10-23.md)：新隔离IT1/0/0/0，实际halt71/OS锁释放、六HTTP按序拒绝、孤儿退役后fresh启动；179表/原件守恒、独立消费者通过。前三轮失败保全；仅合成有界，非实际错库/整体/最终候选。

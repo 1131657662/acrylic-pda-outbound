@@ -8,6 +8,10 @@
 
 # 历史归档索引
 
+- [D13 HTTP关闭未知结果与实际P5](GOAL_D13_HTTP_CLOSE_P5_COMPOSITION_2026-10-23.md)：新隔离red/green及12组原件消费者；旧实现unchecked继续提交反例、修复后halt70/后继拒绝，仅有界组件组合，失败原件保全。
+- [D13连接终结unchecked修复](GOAL_D13_CONNECTION_UNCHECKED_COMPLETION_2026-10-23.md)：本地writer/root与JDBC MODEL定向证据，实际HTTP/P5范围另列。
+- [HTTP关闭组合前看板叙述](ORCHESTRATION_STATUS_BEFORE_HTTP_CLOSE_2026-10-23.md)：原结论归档，完整原字节/SHA与生成事实另存本片shared-before，不恢复历史环境或写权。
+
 - [测试环境领取与 M71 主页控制区](TEST_CLAIM_M71_LAYOUT_2026-10-23.md)：测试后台部署、首次候选实机领取/下载/刷新证据，以及顶部控制区调整的独立验证记录；不代表整体生产验收。
 - [测试部署与主页布局收口前看板叙述](ORCHESTRATION_STATUS_BEFORE_TEST_CLAIM_LAYOUT_2026-10-23.md)：保留继承断点，生成事实省略；不恢复历史环境、状态或写权。
 
