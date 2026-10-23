@@ -27,9 +27,14 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
         this(profile, authority, new Target("restored-closed-p5", destination));
     }
 
+    static E2aSplitWorkerProcesses boundCrash(E2aCrossSourceProfile profile, String[] authority,
+            E2aArchiveRestoreTarget destination) throws Exception {
+        return new E2aSplitWorkerProcesses(profile, authority, new Target("restored-bound-crash", destination));
+    }
+
     private E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority, Target target) throws Exception {
         String scope = target.scope();
-        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash", "restored-closed-p5");
+        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash", "restored-closed-p5", "restored-bound-crash");
         home = Files.createDirectory(profile.attempt.resolve("private/" + scope));
         if (target.destination() != null) E2aSplitCopyTarget.prepare(home, target.destination());
         for (String role : List.of("api", "worker")) {

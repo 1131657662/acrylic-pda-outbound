@@ -67,6 +67,8 @@ python docs/parallel/R09/ops/cli.py control-apply --control-root D:/isolated-con
 
 已有binding的[实际跨实例六死亡点与原命令续作](../../history/GOAL_D13_CROSS_INSTANCE_DEATH_RESUMPTION_2026-10-23.md)已分别用新双实例核pending API/worker拒绝、原命令恢复和同输入API/独立worker/P5/文件；仅合成test-only权威有界结果，不作为生产恢复或D13整体通过。旧控制原件和精确错误保持，不能删半文件或重造命令绕过。
 
+已有binding的[实际跨实例后继worker死亡与孤儿P5](../../history/GOAL_D13_BOUND_CROSS_INSTANCE_WORKER_CRASH_2026-10-23.md)已用新双实例核真实halt71、OS锁释放、精确六HTTP拒绝和不同fresh产品API/P5启动；仅合成test-only权威有界结果，原process/控制/数据库/文件必须守恒，不作为生产恢复或D13整体通过。
+
 ## 崩溃与恢复
 
 历史文件先独占创建、flush/fsync，再写指针暂存、原子替换current。Windows使用WRITE_THROUGH替换，POSIX尝试目录fsync；真实断电/底层存储耐久性需现场验证。
