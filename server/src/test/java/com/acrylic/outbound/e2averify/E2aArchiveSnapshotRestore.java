@@ -8,13 +8,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Full logical dump into a separate empty schema on the already guarded dedicated test instance. */
+/** Full logical dump into a guarded empty schema, optionally on another dedicated test instance. */
 final class E2aArchiveSnapshotRestore {
     private final E2aCrossSourceProfile profile;private final JdbcTemplate source;
+    private final E2aArchiveRestoreTarget destination;
     final Path restored;final String url;
     E2aArchiveSnapshotRestore(E2aCrossSourceProfile profile,JdbcTemplate source) {
+        this(profile,source,new E2aArchiveRestoreTarget(profile));
+    }
+    E2aArchiveSnapshotRestore(E2aCrossSourceProfile profile,JdbcTemplate source,E2aArchiveRestoreTarget destination) {
         this.profile=profile;this.source=source;restored=profile.attempt.resolve("restored");
-        url=profile.url.replace("/"+profile.database+"?","/"+profile.database+"_restore?");
+        this.destination=destination;url=destination.url;
         assertThat(Files.exists(restored)).isFalse();
         try {
             Files.createDirectory(restored);Files.createDirectory(restored.resolve("config"));
@@ -23,7 +27,7 @@ final class E2aArchiveSnapshotRestore {
     }
 
     JdbcTemplate restore() throws Exception {
-        var target=new JdbcTemplate(new DriverManagerDataSource(url,profile.user,System.getenv("E2A_CROSS_PASSWORD")));
+        var target=new JdbcTemplate(new DriverManagerDataSource(url,destination.user,destination.password));
         identity(target);assertThat(target.queryForList("SHOW TABLES")).isEmpty();
         try(var files=Files.list(restored.resolve("storage"))){assertThat(files.count()).isZero();}
         var before=snapshot(source,profile.attempt.resolve("storage"));
@@ -35,7 +39,7 @@ final class E2aArchiveSnapshotRestore {
         for(String name:List.of("server-private.der","server-public.der"))Files.copy(profile.attempt.resolve("private/"+name),restored.resolve("config/"+name));
         assertThat(snapshot(source,profile.attempt.resolve("storage"))).isEqualTo(before);
         identity(target);assertThat(target.queryForList("SHOW TABLES")).isEmpty();
-        args=command("mysql");args.addAll(List.of("--binary-mode","--default-character-set=utf8mb4",profile.database+"_restore"));
+        args=command("mysql");args.addAll(List.of("--binary-mode","--default-character-set=utf8mb4",destination.database));
         run(args,null,dump,"restore");assertThat(snapshot(target,restored.resolve("storage"))).isEqualTo(before);
         Files.writeString(profile.attempt.resolve("private/archive-snapshot-facts.json"),before.toPrettyString());
         Files.writeString(profile.attempt.resolve("archive-restore-summary.json"),"{\"tables\":"+before.path("tables").size()+",\"files\":"+before.path("files").size()+",\"status\":\"PASS\"}");
@@ -50,10 +54,7 @@ final class E2aArchiveSnapshotRestore {
     }
 
     private void identity(JdbcTemplate jdbc) {
-        assertThat(jdbc.queryForObject("SELECT DATABASE()",String.class)).isEqualTo(profile.database+"_restore");
-        assertThat(jdbc.queryForObject("SELECT CURRENT_USER()",String.class)).isEqualTo(profile.user+"@127.0.0.1");
-        assertThat(jdbc.queryForObject("SELECT @@port",Integer.class)).isEqualTo(E2aTestPorts.database());
-        assertThat(Path.of(jdbc.queryForObject("SELECT @@datadir",String.class)).toAbsolutePath().normalize()).isEqualTo(profile.attempt.resolve("data").toAbsolutePath().normalize());
+        destination.requireIdentity(jdbc);
     }
 
     private void copyStorage(com.fasterxml.jackson.databind.JsonNode manifest) throws Exception {
@@ -67,8 +68,10 @@ final class E2aArchiveSnapshotRestore {
     }
 
     private List<String> command(String executable) {
+        Path attempt=executable.equals("mysqldump")?profile.attempt:destination.attempt;
+        int port=executable.equals("mysqldump")?E2aTestPorts.database():destination.port;
         return new ArrayList<>(List.of("C:/Program Files/MySQL/MySQL Server 8.0/bin/"+executable+".exe",
-            "--defaults-file="+profile.attempt.resolve("private/client.cnf"),"--protocol=TCP","--host=127.0.0.1","--port=" + E2aTestPorts.database()));
+            "--defaults-file="+attempt.resolve("private/client.cnf"),"--protocol=TCP","--host=127.0.0.1","--port=" + port));
     }
     private void run(List<String> command,Path output,Path input,String label) throws Exception {
         var builder=new ProcessBuilder(command);builder.environment().remove("MYSQL_PWD");

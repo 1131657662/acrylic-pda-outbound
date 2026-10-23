@@ -1,3 +1,4 @@
+- [D13已有绑定的真实双实例后继恢复](GOAL_D13_BOUND_CROSS_INSTANCE_SUCCESSOR_2026-10-23.md)：100主机、新双实例IT1/0/0/0及独立原件消费通过；真实不同UUID、181表/4文件/185触发器、原binding/NORMAL与源事实保持，仅合成数据库准入有界，不计跨实例API/P5、D13整体或最终候选。
 - [D13已有绑定恢复/API/worker/P5组合](GOAL_D13_SUCCESSOR_P5_COMPOSITION_2026-10-23.md)：最终100主机、新隔离IT1/0/0/0及Python原件消费通过；181表、实际双进程活租约/文件/六HTTP503守恒，失败/清理保留。仅合成同实例有界，非整体/最终候选。
 - [后继组合收口前看板叙述](ORCHESTRATION_STATUS_BEFORE_SUCCESSOR_P5_COMPOSITION_2026-10-23.md)：原叙述归档，完整原字节/生成事实另存closeout-review，不恢复状态/写权。
 - [D13后继数据库单SELECT只读准入](GOAL_D13_SUCCESSOR_READ_ONLY_ADMISSION_2026-10-23.md)：100项主机/新隔离IT1/0/0/0，两轮真实verifier/连接入口各1 SELECT/0 DML，10反例/轮、原件/源库守恒及Python消费；仅数据库观察，后续实际组合见上项，非整体/最终候选。

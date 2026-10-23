@@ -12,12 +12,20 @@ public final class RecoverySuccessorRuntimeSupply {
     private RecoveryRestoredAdmissionP5 p5;
 
     public RecoverySuccessorRuntimeSupply(JdbcTemplate jdbc, Path attempt) throws Exception {
+        this(jdbc, attempt, List.of(attempt.resolve("data"), attempt.resolve("restored/storage")));
+    }
+
+    public RecoverySuccessorRuntimeSupply(JdbcTemplate jdbc, Path attempt, List<Path> restoreRoots) throws Exception {
+        var ordered = restoreRoots.stream().sorted((left, right) ->
+            RecoveryControlJson.compareText(left.toString(), right.toString())).toList();
         fixture = new RecoverySuccessorDatabaseFixture(jdbc, attempt.resolve("successor-control"),
-            List.of(attempt.resolve("data"), attempt.resolve("restored/storage")));
+            ordered);
         assertThat(fixture.runtimeAdmitted(jdbc)).isTrue();
         source = fixture.pins(jdbc);
         RecoverySuccessorAdmissionChecks.save(attempt.resolve("source-pins.json"), source);
     }
+
+    public RecoveryAdmissionVerifier.Result admission(JdbcTemplate jdbc) { return fixture.runtimeResult(jdbc); }
 
     public void register(JdbcTemplate target, Path attempt) throws Exception {
         assertThat(fixture.runtimeAdmitted(target)).isFalse();
@@ -48,9 +56,9 @@ public final class RecoverySuccessorRuntimeSupply {
             "--outbound.recovery.baseline=" + fixture.baseline(),
             "--outbound.recovery.root=" + location.root(),
             "--outbound.recovery.installation-id=" + location.installation(),
-            "--outbound.recovery.restore-roots[0]=" + location.restoreRoots().get(0),
-            "--outbound.recovery.restore-roots[1]=" + location.restoreRoots().get(1),
             "--outbound.recovery.checkpoint=" + fixture.checkpoint()));
+        for (int i = 0; i < location.restoreRoots().size(); i++)
+            result.add("--outbound.recovery.restore-roots[" + i + "]=" + location.restoreRoots().get(i));
         if (p5 != null) result.addAll(List.of(p5.options()));
         return result.toArray(String[]::new);
     }
