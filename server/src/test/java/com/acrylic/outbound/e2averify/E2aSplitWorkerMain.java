@@ -23,7 +23,7 @@ public final class E2aSplitWorkerMain {
         var options = new ArrayList<String>();
         SubmissionJson.parse(Files.readString(home.resolve(args[1] + "-options.json")))
             .forEach(value -> options.add(value.asText()));
-        boolean restored = identity(home, options);
+        boolean restored = identity(home, options, args[1]);
         Class<?>[] sources = worker ? new Class<?>[]{OutboundApplication.class, RecoveryWorkerProbe.Configuration.class}
             : new Class<?>[]{OutboundApplication.class};
         try (var context = new SpringApplication(sources).run(options.toArray(String[]::new))) {
@@ -56,13 +56,18 @@ public final class E2aSplitWorkerMain {
         RecoverySplitWorkerChecks.probe(context, home);
     }
 
-    private static boolean identity(Path home, ArrayList<String> options) {
+    private static boolean identity(Path home, ArrayList<String> options, String role) throws Exception {
         String run = System.getenv("E2A_CROSS_RUN");
         assertThat(run).matches("[1-9][0-9]{0,3}");
         Path attempt = E2aWorktree.ROOT.resolve(".local/e2a-cross-20260925-" + run);
         String scope = home.getFileName().toString();
         assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash", "restored-closed-p5");
         assertThat(home).isEqualTo(attempt.resolve("private/" + scope));
+        if (Files.isRegularFile(home.resolve("cross-instance-target.json"))) {
+            assertThat(scope).isEqualTo("restored-closed-p5");
+            E2aSplitCopyTarget.require(home, options, role);
+            return true;
+        }
         boolean restored = !scope.equals("split");
         String database = "acrylic_e2a_cross_20260925_" + run + (restored ? "_restore" : "");
         String user = "e2a_cross_20260925_" + run;

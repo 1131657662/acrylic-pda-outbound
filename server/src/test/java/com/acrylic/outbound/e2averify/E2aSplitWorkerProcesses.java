@@ -11,6 +11,7 @@ import static org.awaitility.Awaitility.await;
 
 /** Owns only the two disposable child JVMs and their private input files. */
 final class E2aSplitWorkerProcesses implements AutoCloseable {
+    private record Target(String scope, E2aArchiveRestoreTarget destination) { }
     final Path home;
     private final Map<String, Process> children = new LinkedHashMap<>();
 
@@ -19,11 +20,22 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
     }
 
     E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority, String scope) throws Exception {
+        this(profile, authority, new Target(scope, null));
+    }
+
+    E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority, E2aArchiveRestoreTarget destination) throws Exception {
+        this(profile, authority, new Target("restored-closed-p5", destination));
+    }
+
+    private E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority, Target target) throws Exception {
+        String scope = target.scope();
         assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash", "restored-closed-p5");
         home = Files.createDirectory(profile.attempt.resolve("private/" + scope));
+        if (target.destination() != null) E2aSplitCopyTarget.prepare(home, target.destination());
         for (String role : List.of("api", "worker")) {
             var options = options(profile, authority);
             if (!scope.equals("split")) restoredOptions(options, profile);
+            if (target.destination() != null) E2aSplitCopyTarget.configure(options, target.destination());
             if (role.equals("worker")) {
                 options.remove("--outbound.worker.enabled=false");
                 options.addAll(List.of("--spring.main.web-application-type=none",
