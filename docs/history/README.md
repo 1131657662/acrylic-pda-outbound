@@ -8,6 +8,9 @@
 
 # 历史归档索引
 
+- [D13完整恢复后闭链登记/API/worker/文件](GOAL_D13_FULL_RESTORE_CLOSED_ADMISSION_2026-10-23.md)：真实dump/storage、生产投影/NORMAL登记、独立API/worker/双格式下载；争锁red后77项及新组合通过，失败与清理分列，仅合成无旧binding/非P5有界。
+- [完整恢复闭链组合前看板叙述](ORCHESTRATION_STATUS_BEFORE_FULL_RESTORE_ADMISSION_2026-10-23.md)：旧叙述归档，完整原字节/SHA在本片closeout-resume05；不恢复历史状态或写权。
+
 - [D13实际Spring闭链/初始化/Session](GOAL_D13_SPRING_CLOSED_ADMISSION_SESSION_2026-10-23.md)：实际产品CSRF、Session持久复用、恢复模式JSON503及冷启动拒绝；有效red和三次夹具失败保全，52项及新隔离组合通过，范围与P5分列。
 - [Spring闭链组合前看板叙述](ORCHESTRATION_STATUS_BEFORE_SPRING_ADMISSION_2026-10-23.md)：历史断点，完整原字节/SHA及生成事实保存在本片documents-before，不恢复旧状态/写权。
 

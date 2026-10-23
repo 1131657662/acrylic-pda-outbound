@@ -1,0 +1,38 @@
+# 完整恢复闭链组合前看板叙述
+
+> 仅历史断点，不恢复旧状态、写权或环境。生成事实不复写；完整原字节与SHA保存在 .local/d13-restored-admission-20261023/run01/closeout-resume05/originals/docs/ORCHESTRATION_STATUS.md。
+> 原SHA256：0148EC736F2601CA1B81B105420297E10C37B1891B93872EE459DFDE06501EBF
+
+总目标active、未完成；localDeletionAllowed=false。本片D13实际Spring闭链/INITIALIZATION/JDBC Session组合通过，并修复闭链拒绝误返HTML500；52项定向及新隔离组合1项全过。非D13整体或最终候选，既有测试部署/M71结论按下方独立范围继承。
+
+## 输入、写权和保存
+- 固定树D:/acrylic-pda-outbound，codex/development；本片输入3fa42b8d87cd6e25c253a739bf12a093876d8148，16路径开发备份3902d3f1c04a4ea4e07fd6bce1ec1d5632d45b34，commit/push均exit0且fresh开发远端核同；main仍c6e9e0c238c657baecbf699ba6fdbada5d979b86，未操作。Git回执在closeout/git-*.json；版本/树数只看生成块。
+- 本片证据根.local/d13-spring-admission-20261023/run01/；baseline保存初始23条dirty原字节/SHA/diff与环境，closeout/precommit-review为38条展开路径，22条继承逐字节守恒。提交后22继承加本看板收口元数据共23条，暂存空；全集/SHA/环境见closeout/final/，生成器dirty为目录折叠口径。未为自引用再提交。
+- 其他本项目和C/D清理聊天fresh核idle，本助手唯一写者；无子代理/消息。version_facts Write/Check已执行；三份共享文档原字节/SHA在documents-before/，旧看板叙述归档history/ORCHESTRATION_STATUS_BEFORE_SPRING_ADMISSION_2026-10-23.md，生成事实不复写。
+- 直接javac/JUnit及实际Spring HTTP均结束，未跑Gradle/旧IT。五个新实例19849/19850/19853/19854/19855均认证身份、dump/binlog/general log、shutdown和进程exit0，fresh无监听；系统3306/33060内部身份未认证，只观察未连接/停止。
+- ADB仅枚举22D2910042及75bdbbee为device，未操作设备/模拟器；Debug Keystore SHA保持，未构建或签名APK。原资料/原身份/原签回执/唯一证据/最终APK及继承改动保持。
+- 清五个已停disposable datadir，1109080635逻辑字节；D余量21610569728→22741049344，观察净增1130479616字节；当时C=74921979904、E=195634053120。cleanup/逐文件SHA及accounting-correction.json保存：原字典求和null已追加更正、未重删。原dump/binlog/general log/HTTP/失败日志/冻结输入保持，未重试前片被策略拒绝的class/TEMP删除。
+
+## 继承的测试部署与主页布局
+- 测试后台固定输入571c34aa9eb8d08f0fb643f36542259a575c7702，release claim-571c34aa-20261023-01；outbound-test.nbsmzwl.cn的后台/worker/备份定时器fresh均active，Web与在线APK发布入口未改变。
+- 首次候选M71经HTTPS刷新→核对页→确认领取→本机独占授权→资料下载确认→再次刷新待领取移除已现场通过。原XML与安装记录在.local/test-claim-20261023/run01/device-m71/，部署证据在同根deployment-evidence/。
+- 主树仅改activity_main.xml现有控件顺序：刷新及本机/待领控制在列表前、分页在列表后；异常仍在数据页。接口/领取/数据库逻辑未改。固定源码6055文件核同后仅叠加该布局重建，继承WIP不入测试包。
+- 布局自审36控件属性/ID保持且主树/候选布局核同；主机UI测试10/0/0/0。lint首轮SDK盘符未转义报PropertyEscape，次轮复用旧分析失败，第三轮新分析0错误/561警告且构建exit0；只改本机配置，无baseline或降级，三轮原件保全。
+- 交付包outputs/pda/Acrylic-PDA-test-claim-top-controls-20261023.apk，SHA256 a25800eec215ee7b913ac6f0a2843a590982500e59f965ab704de476585d923c。M71上刷新/本机/待领取控件在列表前，分页在底部；布局包真实联网刷新与两张原本机订单保留复验exit0，未在此包重领新订单或跑完整Android回归。
+- 首次UI验证器在切换分区后读到被覆盖的诊断而失败；原件保存在ui-attempt01，应用同步日志证明成功；调整读取时机后通过，应用代码未改。报告history/TEST_CLAIM_M71_LAYOUT_2026-10-23.md；旧叙述与原字节/SHA归档位置不变。
+- 收口补充screencap命令exit1且无图，随后ADB get-state仍device/exit0；不作为截图或像素验收。位置与订单保留依据成功UI XML和验证器结果，工具失败另存read-failures.md。
+
+## 本片D13证据与限制
+- 原startup正向夹具缺显式baseline，有效red3项2过1失败；修后startup/config9项全过，Session registration夹具同样补baseline。未放宽生产必填要求。
+- spring01表摘要缺时间模块、spring02 Windows表名大小写、spring03 UUID注入被不可变触发器拒绝，原件均保全；仅改夹具，未删/停触发器。后改用本片合成库既有RECOVERY_PENDING状态，不冒称新增UUID Spring反例。
+- spring04有效产品red：正常Session创建/复用及178表守恒通过，恢复待核时闭链借用拒绝却返HTML500。新增专用SQLException子类，filter/MVC只识别其cause链，以writeWithoutState回JSON503；原SQL消息/state、准入、根退役及开关保持。
+- response-red7项3过4失败；response-green九类52项全过，含普通SQL同文/state、suppressed-only与已提交响应不改原失败。spring05新库实际组合1/0/0/0：INITIALIZATION实际primary借用/ready退役，无根拒绝，真实产品CSRF及持久Session复用，恢复模式503/180表无写，恢复后成功，冷启动SERVER_MODE拒绝。
+- 每轮冻结输入，最终2529项/110依赖无漂移；consumer01离线核同51份原输出、15控制原件及180表摘要，8条Session SQL在同一物理连接先经闭链SELECT，两段拒绝区间均0 DML。general log/dump/binlog私有保留及SHA在consumer01/，不提交原文。
+- 专项见history/GOAL_D13_SPRING_CLOSED_ADMISSION_SESSION_2026-10-23.md。作者/自审/离线工具消费者同助手。合成闭链登记不是完整恢复供应，P5/effect保持既有默认；未验与真实P5同输入组合、全部worker/文件入口、业务恢复、完整普通回归或最终候选，未跑Android/APK/真机/部署。
+- 前片连接终结unchecked及真实HTTP/P5关闭故障、跨实例UUID反例按各自历史报告继承，不拼作本片通过；旧原件不重跑。本片仅增加闭链拒绝响应类型和HTTP映射，不削弱writer/root/P5/权限/触发器。
+
+## 下一步与边界
+- 接续先核本片closeout、实际环境/远端/完整dirty；不重跑本片或旧IT/旧库。下一有界项核完整恢复供应对闭链接线及独立worker/Session/文件入口的覆盖，再按缺口补最小组合；已有根/writer/P5保护不得削弱。
+- 本片实际产品HTTP/Session仅合成非P5供应，上一片P5是组件测试servlet；不能拼成所有入口/完整恢复后UUID策略已验。OS拒绝自halt无新方法不重入。
+- D13–D15整体、全部入口/P5其余故障/真实OS拒绝终止、D16有效guard/复杂引用、D18实际最终候选及第8节仍缺。既有测试部署授权只按其原范围继承；生产开关/TEMP归档、正式签名、原库现网、main、生产部署/Release关闭；取消链/旧run03不恢复。
+- 原资料/身份/Keystore/原签回执/唯一证据/最终APK/继承保持；开发备份及本片局部通过不计总目标完成。

@@ -121,7 +121,7 @@ def main():
     parser.add_argument('--browsers', type=Path, required=True)
     parser.add_argument('--test-class', choices=('E2aSplitWorkerExportIT', 'E2aRestoredSchedulerIT', 'E2aRestoredRetryIT',
                                                'E2aRestoredStaleIT', 'E2aRestoredP5StaleIT', 'E2aRestoredAuthorityFaultIT',
-                                               'E2aRestoredWorkerCrashIT'),
+                                               'E2aRestoredWorkerCrashIT', 'E2aRestoredClosedAdmissionIT'),
                         default='E2aSplitWorkerExportIT')
     parser.add_argument('--authority-fault', choices=('restore-roots', 'checkpoint'))
     execute(parser.parse_args())

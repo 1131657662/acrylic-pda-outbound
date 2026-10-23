@@ -16,11 +16,21 @@ public final class RecoveryTransactionFixture {
     private int calls;
 
     public RecoveryTransactionFixture(Path root) throws Exception {
+        this(root, List.of(root.getParent().resolve("data"), root.getParent().resolve("storage")));
+    }
+
+    public RecoveryTransactionFixture(Path root, List<Path> restoreRoots) throws Exception {
+        this(root, restoreRoots, null);
+    }
+
+    public RecoveryTransactionFixture(Path root, List<Path> restoreRoots, Path originalInput) throws Exception {
         this.root = root;
         Files.createDirectories(root.getParent());
-        var setup = command(List.of(PYTHON.toString(), TESTS.resolve("control_transaction_fixture.py").toString(), root.toString(),
-                root.getParent().resolve("data").toString(), root.getParent().resolve("storage").toString()),
-            root.resolveSibling(root.getFileName() + "-setup"));
+        String script = originalInput == null ? "control_transaction_fixture.py" : "control_restored_admission_fixture.py";
+        var args = new ArrayList<>(List.of(PYTHON.toString(), TESTS.resolve(script).toString(), root.toString()));
+        restoreRoots.forEach(path -> args.add(path.toString()));
+        if (originalInput != null) args.addAll(List.of("--source-input", originalInput.toString()));
+        var setup = command(args, root.resolveSibling(root.getFileName() + "-setup"));
         assertThat(setup).isEqualTo(new Result(0, "CREATED"));
         var config = RecoveryControlFormat.readCanonical(Files.readAllBytes(root.resolve("fixture.json")));
         base = Path.of(config.path("base").textValue()); checkpoint = Path.of(config.path("checkpoint").textValue());

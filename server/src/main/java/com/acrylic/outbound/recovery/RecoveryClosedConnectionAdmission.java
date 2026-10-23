@@ -30,7 +30,7 @@ public final class RecoveryClosedConnectionAdmission
         // A fresh wrapper cannot resolve another transaction-bound datasource or borrow a pool peer.
         var source = new SingleConnectionDataSource(Objects.requireNonNull(physical), true);
         var result = RecoveryAdmissionVerifier.of(new RecoveryAdmissionQueries(source),
-            new RecoveryControlReader(location), checkpoint, location, baseline).verify();
+            new RecoveryControlReader(location, 1_000), checkpoint, location, baseline).verify();
         if (!result.admitted()) throw new RecoveryDatabaseAdmissionException(result.gaps());
     }
 }

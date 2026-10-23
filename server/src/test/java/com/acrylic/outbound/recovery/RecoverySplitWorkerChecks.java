@@ -43,6 +43,7 @@ public final class RecoverySplitWorkerChecks {
         for (var scheduler : context.getBeansOfType(ThreadPoolTaskScheduler.class).values()) scheduler.shutdown();
         await().atMost(Duration.ofSeconds(15)).untilAsserted(() ->
             assertThat(context.getBean(RecoveryOperationRegistry.class).liveRoots()).isZero());
-        context.getBean(RecoveryFenceAuthority.class).checkEffect();
+        var authority = context.getBeanProvider(RecoveryFenceAuthority.class).getIfAvailable();
+        if (authority != null) authority.checkEffect();
     }
 }

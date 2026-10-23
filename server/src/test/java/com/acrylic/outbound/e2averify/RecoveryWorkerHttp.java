@@ -32,11 +32,14 @@ final class RecoveryWorkerHttp {
     }
 
     JsonNode create(String path, String format, String key, int expected) throws Exception {
-        var csrf = get("/auth/csrf", 200).path("data");
+        var envelope = get("/auth/csrf", 200);
+        var csrf = envelope.path("data");
+        String epoch = envelope.path("serverRecoveryEpoch").asText();
+        assertThat(epoch).as("advertised recovery epoch before export command").matches("0|[1-9][0-9]{0,17}");
         var body = SubmissionJson.object().put("format", format).put("basis", "ORIGINAL_CONFIRMED");
         var bytes = send(builder(path).header(csrf.path("headerName").asText(), csrf.path("token").asText())
             .header("Content-Type", "application/json").header("Idempotency-Key", key)
-            .header("X-Server-Recovery-Epoch", "1")
+            .header("X-Server-Recovery-Epoch", epoch)
             .POST(HttpRequest.BodyPublishers.ofString(SubmissionJson.canonical(body))), expected);
         return SubmissionJson.parse(new String(bytes, StandardCharsets.UTF_8));
     }
@@ -48,10 +51,13 @@ final class RecoveryWorkerHttp {
     }
 
     JsonNode retry(String path, String key, int expected) throws Exception {
-        var csrf = get("/auth/csrf", 200).path("data");
+        var envelope = get("/auth/csrf", 200);
+        var csrf = envelope.path("data");
+        String epoch = envelope.path("serverRecoveryEpoch").asText();
+        assertThat(epoch).as("advertised recovery epoch before retry").matches("0|[1-9][0-9]{0,17}");
         var bytes = send(builder(path).header(csrf.path("headerName").asText(), csrf.path("token").asText())
             .header("Content-Type", "application/json").header("Idempotency-Key", key)
-            .header("X-Server-Recovery-Epoch", "1")
+            .header("X-Server-Recovery-Epoch", epoch)
             .POST(HttpRequest.BodyPublishers.ofString("{}")), expected);
         return SubmissionJson.parse(new String(bytes, StandardCharsets.UTF_8));
     }
