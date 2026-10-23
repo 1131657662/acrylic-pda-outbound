@@ -62,6 +62,7 @@ def layout(root, records, number):
     if (root / 'closed-sessions').exists():
         closed_sessions(root / 'closed-sessions')
         allowed.add('closed-sessions')
+    allowed.update(('normal-admission.json', 'normal-history'))
     pending = None if number == len(records) else checkpoint(records[-1])
     if pending:
         staged = 'pointer-' + pending['recordSha256'] + '.pending'
@@ -94,6 +95,8 @@ def load(location, trusted_checkpoint=None):
     expected = {**location.identity(), 'initialCommandSha256': identity['initialCommandSha256']}
     require(identity == expected, 'CONTROL_INSTALLATION_MISMATCH')
     records = history(location.root)
+    from control_successor import verify_history
+    verify_history(location.root, records)
     if records:
         require(records[0]['commandSha256'] == identity['initialCommandSha256'], 'CONTROL_BOOTSTRAP_MISMATCH')
         require(records[0]['installationId'] == location.installation_id, 'CONTROL_INSTALLATION_MISMATCH')

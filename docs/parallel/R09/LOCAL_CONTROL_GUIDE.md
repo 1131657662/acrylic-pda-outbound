@@ -20,7 +20,7 @@ Java按文件身份复用描述符，禁止直接开第二个POSIX描述符。�
 
 | 字段 | 格式/含义 |
 | --- | --- |
-| formatVersion | 整数1 |
+| formatVersion | 首轮命令为整数1；后继轮次命令为整数2，附加字段见下节 |
 | installationId / commandId / recoverySessionId / epochId | 小写规范UUID；原commandId及完整正文永久保留 |
 | expectedRevision | 十进制字符串；初始化为`0`，后续使用已读revision |
 | phase | QUIESCING、RECOVERING、VERIFYING、RELEASE_READY |
@@ -41,6 +41,25 @@ python docs/parallel/R09/ops/cli.py control-apply --control-root D:/isolated-con
 示例路径不是现有生产路径，命令不自动运行。初始化前父目录须存在。同键同正文返回原记录和稳定响应；同键异正文、过期revision或未完成的其他命令拒绝。JSON输出的 `checkpoint` 应经独立可信保管后供下次使用；不应以当前指针自身充当可信锚点。
 
 所有输出固定 `ordinaryWritesAllowed=false`、`localDeletionAllowed=false`、`sharedGateIntegrated=false`；不提供进入NORMAL或业务放行的命令。
+
+## 后继轮次控制协议
+
+同一installation保留首轮原件，通过 `control-apply` 从真实上一 `RELEASE_READY` 开启新 `QUIESCING`。新轮次仅接受命令formatVersion=2；记录、identity、writers及停止intent封装沿既有协议，不自动升级或覆写。初始化仍只接受首轮命令。旧消费者遇到新命令须拒绝，不能混用旧消费者推进后继轮次。
+
+版本2在上述命令字段外精确增加：
+
+| 字段 | 含义 |
+| --- | --- |
+| predecessorReleaseSha256 | 实际上一RELEASE_READY记录摘要，必须等于前驱recordSha256 |
+| predecessorNormalIntentSha256 | 原NORMAL外部intent的内容摘要，必须绑定该前驱release及其revision/previous hash/installation |
+| sourceBindingSha256 / sourceNormalSha256 | 非零SHA-256外部pin；本地控制模块不验证实际数据库行，不能据此称恢复可信 |
+| targetServerUuid / targetDatabaseSchema | 规范非零UUID与1–64位字母数字下划线schema；整轮固定，不代表已登记数据库 |
+
+新QUIESCING更换session，保持前驱epoch；RECOVERING才换epoch。session与RECOVERING epoch均不得复用任何历史值。该轮后续三阶段保持命令版本、范围、snapshot/manifest、损失窗口及全部新增字段；不降级、不跳阶段。CAS、原ID原正文重放、同ID异文拒绝、先耐久停止意图再排空写者保持。提交前与Java/Python读者均核完整历史和pending意图，不靠重新计算hash掩盖语义冲突。
+
+初始 `normal-admission.json` 保持原字节。更多外部NORMAL原件只能追加在 `normal-history/<intentSha256>.json`；目录与文件禁止别名/硬链接、文件名精确匹配内容hash，原件必须指向已存在的RELEASE_READY及其原previous hash。原NORMAL尚未产生或缺失时拒绝后继，不从数据库或历史摘要补造原件。这里仅读取和核验，未提供NORMAL原件供应或数据库登记工具。
+
+这是已有绑定再次恢复的控制协议前置。数据库投影、不可变binding、每轮NORMAL登记、运行时准入/P5仍须另行实现与真实恢复验证；现有数据库消费者继续拒绝后继轮次。`ordinaryWritesAllowed=false`、`localDeletionAllowed=false`保持，不因本地协议通过放开任何生产入口。
 
 ## 崩溃与恢复
 

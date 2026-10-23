@@ -22,6 +22,7 @@ final class RecoveryControlIntents {
                 String.format(Locale.ROOT, "%018d.json", target)), "CONTROL_INTENT_GAP");
             last = RecoveryControlHistory.read(paths.get(index));
             intent(last, records.get(target - 2));
+            if (target > records.size()) RecoverySuccessorEvidence.pending(root, records, last.path("command"));
             if (target <= records.size()) require(last.path("command").equals(records.get(target - 1).path("command")),
                 "CONTROL_INTENT_RECORD_CONFLICT");
         }

@@ -11,6 +11,7 @@ from control_java_cases import JavaControlCase, JavaOriginalTests
 from control_java_locks import JavaLockTests
 from control_java_writers import JavaWriterTests
 from control_java_intents import JavaIntentTests
+from control_java_successor import JavaSuccessorTests, JavaSuccessorCrashTests
 
 
 def main():
@@ -23,7 +24,8 @@ def main():
     paths = classpath(args.classpath)
     JavaControlCase.config = (args.java, paths, args.evidence_root)
     suite = unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromTestCase(cls)
-                               for cls in (JavaOriginalTests, JavaLockTests, JavaWriterTests, JavaIntentTests))
+                               for cls in (JavaOriginalTests, JavaLockTests, JavaWriterTests, JavaIntentTests, JavaSuccessorTests))
+    suite.addTest(JavaSuccessorCrashTests('test_process_death_at_each_successor_boundary_resumes_only_original'))
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     summary = {'platform': platform.platform(), 'python': sys.version, 'pid': os.getpid(),
                'java': args.java, 'classpath': paths, 'tests': result.testsRun,

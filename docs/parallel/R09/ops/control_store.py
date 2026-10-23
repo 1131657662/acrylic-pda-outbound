@@ -14,6 +14,7 @@ class ControlStore:
 
     def initialize(self, value):
         value = self._command(value)
+        require(value['formatVersion'] == 1, 'CONTROL_INITIAL_FORMAT')
         require(value['expectedRevision'] == '0' and value['phase'] == 'QUIESCING',
                 'CONTROL_INITIAL_PHASE')
         if not self.location.root.exists():
@@ -45,6 +46,8 @@ class ControlStore:
             from control_writers import validate
             from control_admission import prepare
             validate(self.location.root, identity, required=True)
+            from control_successor import before_append
+            before_append(self.location.root, records, value)
             prepare(self.location.root, records, value, self.fault)
             with exclusive(self.location.root, identity):
                 retry = self._retry(records, number, value)

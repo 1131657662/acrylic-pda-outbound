@@ -17,6 +17,7 @@ final class RecoveryControlHistory {
         purpose.requireKind(identity);
         RecoveryControlRecords.identity(identity, location);
         var records = history(location);
+        RecoverySuccessorEvidence.verify(location.root(), records);
         require(!records.isEmpty(), "CONTROL_NOT_INITIALIZED");
         require(text(identity, "initialCommandSha256").equals(text(records.getFirst(), "commandSha256")), "CONTROL_BOOTSTRAP_MISMATCH");
         RecoveryControlRecords.anchor(read(trusted), records, location.installation());
@@ -59,6 +60,7 @@ final class RecoveryControlHistory {
         // Initial NORMAL admission is a separate durable record; its content is verified by
         // RecoveryNormalIntent, never inferred from its presence here.
         allowed.add(RecoveryNormalIntent.FILE);
+        allowed.add("normal-history");
         if (Files.exists(root.resolve("closed-sessions"), LinkOption.NOFOLLOW_LINKS)) {
             closedSessions(root.resolve("closed-sessions"));
             allowed.add("closed-sessions");

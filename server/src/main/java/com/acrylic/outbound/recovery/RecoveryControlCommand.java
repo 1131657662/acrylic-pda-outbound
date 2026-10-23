@@ -13,9 +13,13 @@ final class RecoveryControlCommand {
     private RecoveryControlCommand() { }
 
     static void validate(JsonNode value) {
+        var format = value.path("formatVersion");
+        require(format.isIntegralNumber() && format.canConvertToInt()
+            && (format.intValue() == 1 || format.intValue() == 2), "CONTROL_FORMAT_UNSUPPORTED");
         fields(value, "formatVersion installationId commandId expectedRevision phase epochId recoverySessionId "
-            + "snapshotId manifestSha256 affectedWarehouseIds possibleLossFrom possibleLossThrough evidenceSha256 actorId requestedAt");
-        version(value);
+            + "snapshotId manifestSha256 affectedWarehouseIds possibleLossFrom possibleLossThrough evidenceSha256 actorId requestedAt"
+            + (format.intValue() == 2 ? " " + RecoverySuccessorControl.FIELDS : ""));
+        if (format.intValue() == 2) RecoverySuccessorControl.validate(value);
         for (String key : List.of("installationId", "commandId", "epochId", "recoverySessionId")) uuid(value, key);
         identifier(value, "snapshotId"); identifier(value, "actorId"); revision(value, "expectedRevision");
         String phase = text(value, "phase");
@@ -43,9 +47,11 @@ final class RecoveryControlCommand {
         require(revision(command, "expectedRevision") == expected, "CONTROL_CAS_CONFLICT");
         String phase = text(command, "phase");
         if (previous == null) {
-            require("QUIESCING".equals(phase), "CONTROL_INITIAL_PHASE"); return;
+            require("QUIESCING".equals(phase), "CONTROL_INITIAL_PHASE");
+            require(command.path("formatVersion").intValue() == 1, "CONTROL_INITIAL_FORMAT"); return;
         }
         var before = previous.path("command");
+        if (RecoverySuccessorControl.transition(previous, command)) return;
         require(phase.equals(NEXT.get(text(before, "phase"))), "CONTROL_TRANSITION");
         for (String key : CONTEXT) require(command.get(key).equals(before.get(key)), "CONTROL_CONTEXT_CHANGED");
         boolean changed = !text(command, "epochId").equals(text(before, "epochId"));

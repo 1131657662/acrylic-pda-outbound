@@ -59,6 +59,9 @@ def inspect(root, records, complete=True):
     require(marker in heads[-2:], 'CONTROL_INTENT_HEAD_CONFLICT')
     require(len(intents) >= max(0, len(records) - 1), 'CONTROL_INTENT_GAP')
     pending = intents[-1] if intents and int(intents[-1]['targetRevision']) > len(records) else None
+    if pending:
+        from control_successor import check_pending
+        check_pending(root, records, pending['command'])
     staged = root / ('admission-' + heads[-1]['intentSha256'] + '.pending')
     if staged.exists():
         require(read(staged) == heads[-1] and marker != heads[-1], 'CONTROL_INTENT_HEAD_CONFLICT')

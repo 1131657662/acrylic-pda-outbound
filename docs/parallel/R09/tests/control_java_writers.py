@@ -99,7 +99,12 @@ class JavaWriterTests(JavaControlCase):
         with self.assertRaisesRegex(OpsError, 'CONTROL_WRITER_LOCK_REPLACED'):
             ControlStore(self.location).apply(next_command(self.result), self.result['checkpoint'])
         self.assertEqual(before, inventory(self.location.root))
-        self.assertEqual((2, 'CONTROL_WRITER_LOCK_REPLACED', ''), self.processes.finish(child, '\n'))
+        code, output, error = self.processes.finish(child, '\n')
+        self.assertEqual((2, 'CONTROL_WRITER_LOCK_REPLACED'), (code, output))
+        lines = error.splitlines()
+        self.assertEqual(2, len(lines), error)
+        self.assertTrue(lines[0].endswith('RecoveryFenceAudit event'), error)
+        self.assertEqual('WARNING: CONTROL_WRITER_LOCK_REPLACED|' + str(path), lines[1])
 
     def test_hardlinked_lock_is_refused_without_opening_another_descriptor(self):
         os.link(self.location.root / 'writers.lock', self.base / 'alias.lock')

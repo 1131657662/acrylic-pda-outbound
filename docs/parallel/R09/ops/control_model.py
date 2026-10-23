@@ -2,6 +2,7 @@
 from control_format import (fields, version, identifier, uuid, revision, checksum,
                             instant, hashed, now, ZERO_HASH, canonical, decode)
 from safety import require
+from control_successor import EXTRA_FIELDS, validate_fields, round_transition
 
 COMMAND_FIELDS = ('formatVersion installationId commandId expectedRevision phase epochId '
                   'recoverySessionId snapshotId manifestSha256 affectedWarehouseIds '
@@ -14,8 +15,11 @@ CONTEXT = ('installationId', 'recoverySessionId', 'snapshotId', 'manifestSha256'
 
 
 def command(value):
-    fields(value, COMMAND_FIELDS)
-    version(value['formatVersion'])
+    require(type(value) is dict and type(value.get('formatVersion')) is int
+            and value['formatVersion'] in (1, 2), 'CONTROL_FORMAT_UNSUPPORTED')
+    fields(value, COMMAND_FIELDS + (' ' + EXTRA_FIELDS if value['formatVersion'] == 2 else ''))
+    if value['formatVersion'] == 2:
+        validate_fields(value)
     for key in ('installationId', 'commandId', 'epochId', 'recoverySessionId'):
         uuid(value[key])
     for key in ('snapshotId', 'actorId'):
@@ -43,8 +47,11 @@ def transition(previous, cmd):
     require(cmd['expectedRevision'] == expected, 'CONTROL_CAS_CONFLICT')
     if previous is None:
         require(cmd['phase'] == 'QUIESCING', 'CONTROL_INITIAL_PHASE')
+        require(cmd['formatVersion'] == 1, 'CONTROL_INITIAL_FORMAT')
         return
     before = previous['command']
+    if round_transition(previous, cmd):
+        return
     require(NEXT_PHASE.get(before['phase']) == cmd['phase'], 'CONTROL_TRANSITION')
     require(all(cmd[key] == before[key] for key in CONTEXT), 'CONTROL_CONTEXT_CHANGED')
     changed = cmd['epochId'] != before['epochId']

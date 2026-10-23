@@ -31,7 +31,9 @@ def inventory(root):
 
 class Processes:
     def __init__(self, java, paths, log):
-        self.java = [java, '-cp', os.pathsep.join(paths), MAIN]
+        self.java = [java, '-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8',
+                     '-Dstderr.encoding=UTF-8', '-Duser.language=en',
+                     '-cp', os.pathsep.join(paths), MAIN]
         self.log = log
         self.children = []
 

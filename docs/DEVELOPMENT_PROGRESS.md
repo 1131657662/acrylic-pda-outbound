@@ -1,3 +1,5 @@
+- [D13后继恢复轮次控制协议](history/GOAL_D13_SUCCESSOR_CONTROL_PROTOCOL_2026-10-23.md)：Python57/Java控制57/既有消费者79分别通过，正式跨进程44全过含六死亡边界；原NORMAL/历史保持，10组恶意重算反例与旧消费者拒绝。仅控制前置，非已有binding数据库恢复、D13整体或最终候选。
+
 - [D13实际跨实例UUID反例](history/GOAL_D13_CROSS_INSTANCE_DATABASE_IDENTITY_2026-10-23.md)：新双实例同schema IT1/0/0/0，精确UUID拒绝、三次单SELECT/五表及9文件守恒；运行器/离线原件消费者exit0。仅MODEL有界，非完整恢复/全部入口/整体或最终候选。
 
 - [D13闭链只读准入数据库身份](history/GOAL_D13_CLOSED_ADMISSION_DATABASE_IDENTITY_2026-10-23.md)：14项单测及新隔离IT1/0/0/0，匹配准入/复制schema拒绝，单SELECT和五表守恒；运行器收尾exit1保留，离线补核通过。仅MODEL有界，非跨实例/全部入口/整体或最终候选。
