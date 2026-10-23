@@ -32,9 +32,14 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
         return new E2aSplitWorkerProcesses(profile, authority, new Target("restored-bound-crash", destination));
     }
 
+    static E2aSplitWorkerProcesses boundRetirement(E2aCrossSourceProfile profile, String[] authority,
+            E2aArchiveRestoreTarget destination) throws Exception {
+        return new E2aSplitWorkerProcesses(profile, authority, new Target("restored-bound-retirement", destination));
+    }
+
     private E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority, Target target) throws Exception {
         String scope = target.scope();
-        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash", "restored-closed-p5", "restored-bound-crash");
+        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash", "restored-closed-p5", "restored-bound-crash", "restored-bound-retirement");
         home = Files.createDirectory(profile.attempt.resolve("private/" + scope));
         if (target.destination() != null) E2aSplitCopyTarget.prepare(home, target.destination());
         for (String role : List.of("api", "worker")) {
@@ -104,6 +109,33 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
         var result = SubmissionJson.object().put("pid", worker.pid()).put("actualExitCode", worker.exitValue())
             .put("aliveAfter", worker.isAlive()).put("normalShutdown", false).put("parentPid", ProcessHandle.current().pid());
         Files.writeString(home.resolve("worker-crash-exit.json"), result.toPrettyString(), StandardOpenOption.CREATE_NEW);
+    }
+
+    void failRetirement() throws Exception {
+        Process worker = children.get("worker");
+        assertThat(worker.isAlive()).isTrue();
+        Files.writeString(home.resolve("fail-retirement.marker"), "close owned root with native deny-delete handle", StandardOpenOption.CREATE_NEW);
+        assertThat(worker.waitFor(30, TimeUnit.SECONDS)).isTrue();
+        assertThat(worker.exitValue()).isEqualTo(70);
+        assertThat(home.resolve("worker-closed.marker")).doesNotExist();
+        var result = SubmissionJson.object().put("pid", worker.pid()).put("actualExitCode", worker.exitValue())
+            .put("aliveAfter", worker.isAlive()).put("normalShutdown", false).put("parentPid", ProcessHandle.current().pid());
+        Files.writeString(home.resolve("worker-retirement-exit.json"), result.toPrettyString(), StandardOpenOption.CREATE_NEW);
+    }
+
+    void refuseApi() throws Exception {
+        assertThat(children).isEmpty();
+        Process api = launch(E2aSplitWorkerMain.class.getName(), List.of(home.toString(), "api"), "api");
+        children.put("api", api);
+        assertThat(api.waitFor(60, TimeUnit.SECONDS)).isTrue();
+        assertThat(api.exitValue()).isEqualTo(1);
+        assertThat(Files.readString(home.resolve("api.stdout")) + Files.readString(home.resolve("api.stderr")))
+            .contains("RECOVERY_LEASE_OUTSTANDING");
+        assertThat(home.resolve("api-ready.json")).doesNotExist();
+        assertThat(home.resolve("api-closed.marker")).doesNotExist();
+        var result = SubmissionJson.object().put("pid", api.pid()).put("actualExitCode", api.exitValue())
+            .put("aliveAfter", api.isAlive()).put("startupRefused", true).put("code", "RECOVERY_LEASE_OUTSTANDING");
+        Files.writeString(home.resolve("api-refused.json"), result.toPrettyString(), StandardOpenOption.CREATE_NEW);
     }
 
     private Process launch(String main, List<String> args, String label) throws Exception {

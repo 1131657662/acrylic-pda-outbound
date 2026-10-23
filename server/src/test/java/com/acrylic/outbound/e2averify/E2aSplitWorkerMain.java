@@ -34,7 +34,9 @@ public final class E2aSplitWorkerMain {
             if (home.getFileName().toString().equals("restored-closed-p5"))
                 RecoveryRegisteredP5Checks.observe(context, home, args[1]);
             Files.writeString(home.resolve(args[1] + "-ready.json"), ready.toPrettyString(), StandardOpenOption.CREATE_NEW);
-            if (home.getFileName().toString().equals("restored-bound-crash"))
+            if (home.getFileName().toString().equals("restored-bound-retirement"))
+                RecoveryBoundRetirementChecks.serve(context, home, worker);
+            else if (home.getFileName().toString().equals("restored-bound-crash"))
                 RecoveryBoundCrashChecks.serve(context, home, worker);
             else if (home.getFileName().toString().equals("restored-p5-crash"))
                 RecoveryRestoredCrashChecks.serve(context, home, worker);
@@ -63,10 +65,10 @@ public final class E2aSplitWorkerMain {
         assertThat(run).matches("[1-9][0-9]{0,3}");
         Path attempt = E2aWorktree.ROOT.resolve(".local/e2a-cross-20260925-" + run);
         String scope = home.getFileName().toString();
-        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash", "restored-closed-p5", "restored-bound-crash");
+        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash", "restored-closed-p5", "restored-bound-crash", "restored-bound-retirement");
         assertThat(home).isEqualTo(attempt.resolve("private/" + scope));
         if (Files.isRegularFile(home.resolve("cross-instance-target.json"))) {
-            assertThat(scope).isIn("restored-closed-p5", "restored-bound-crash");
+            assertThat(scope).isIn("restored-closed-p5", "restored-bound-crash", "restored-bound-retirement");
             E2aSplitCopyTarget.require(home, options, role);
             return true;
         }

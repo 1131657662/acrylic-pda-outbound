@@ -69,6 +69,8 @@ python docs/parallel/R09/ops/cli.py control-apply --control-root D:/isolated-con
 
 已有binding的[实际跨实例后继worker死亡与孤儿P5](../../history/GOAL_D13_BOUND_CROSS_INSTANCE_WORKER_CRASH_2026-10-23.md)已用新双实例核真实halt71、OS锁释放、精确六HTTP拒绝和不同fresh产品API/P5启动；仅合成test-only权威有界结果，原process/控制/数据库/文件必须守恒，不作为生产恢复或D13整体通过。
 
+已有binding的[跨实例后继原生退役失败/UNKNOWN](../../history/GOAL_D13_BOUND_CROSS_INSTANCE_NATIVE_RETIREMENT_2026-10-23.md)已用新双实例核真实Windows拒绝lease改名、产品halt70及UNKNOWN持久阻断；孤儿lease/index可退役但UNKNOWN原件仍使不同fresh产品API拒绝，不能以空index解除围栏。只计合成test-only权威有界组合；commit UNKNOWN跨实例组合、实际OS拒绝自halt及D13整体未验。
+
 ## 崩溃与恢复
 
 历史文件先独占创建、flush/fsync，再写指针暂存、原子替换current。Windows使用WRITE_THROUGH替换，POSIX尝试目录fsync；真实断电/底层存储耐久性需现场验证。

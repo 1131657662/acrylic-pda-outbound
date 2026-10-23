@@ -1,3 +1,4 @@
+- [D13已有绑定跨实例后继原生退役失败与UNKNOWN](history/GOAL_D13_BOUND_CROSS_INSTANCE_NATIVE_RETIREMENT_2026-10-23.md)：103主机、新双实例IT1/0/0/0及原件消费者通过；真实Windows改名拒绝/产品halt70/UNKNOWN保留/六HTTP围栏/fresh产品API持续拒绝，原失败分列，仅合成有界，非整体或最终候选。
 - [D13已有绑定跨实例后继worker真实死亡与孤儿P5](history/GOAL_D13_BOUND_CROSS_INSTANCE_WORKER_CRASH_2026-10-23.md)：103主机、新双实例IT1/0/0/0及原件消费者通过；真实halt71/OS锁/六HTTP围栏/孤儿退役/不同fresh产品API同输入组合，仅合成有界，非整体或最终候选。
 - [D13已有绑定实际跨实例六死亡点与原命令续作](history/GOAL_D13_CROSS_INSTANCE_DEATH_RESUMPTION_2026-10-23.md)：最终103主机、六个新双实例各IT1/0/0/0及六原件消费者全过；精确pending拒绝/原命令续作/真实API-worker-P5-双格式及181表/185触发器守恒，仅合成有界，非整体或最终候选。
 - [D13已有绑定的实际跨实例API/P5同输入组合](history/GOAL_D13_CROSS_INSTANCE_API_P5_COMPOSITION_2026-10-23.md)：最终103主机/新双实例IT1/0/0/0及独立原件消费通过；181表/185触发器、实际目标双进程身份/P5/双格式下载和六HTTP拒绝守恒。仅合成权威/test-only提升有界，非D13整体或最终候选。
