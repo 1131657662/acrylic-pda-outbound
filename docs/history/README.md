@@ -8,6 +8,9 @@
 
 # 历史归档索引
 
+- [测试环境领取与 M71 主页控制区](TEST_CLAIM_M71_LAYOUT_2026-10-23.md)：测试后台部署、首次候选实机领取/下载/刷新证据，以及顶部控制区调整的独立验证记录；不代表整体生产验收。
+- [测试部署与主页布局收口前看板叙述](ORCHESTRATION_STATUS_BEFORE_TEST_CLAIM_LAYOUT_2026-10-23.md)：保留继承断点，生成事实省略；不恢复历史环境、状态或写权。
+
 - [D13 P5真实commit后确认丢失](GOAL_D13_P5_LOST_COMMIT_ACKNOWLEDGEMENT_2026-10-23.md)：新隔离IT1/0/0/0，实际SQL2行/halt70/OS锁释放、旧句柄与新进程严格拒绝；原P5/HMAC与binlog独立核验通过。两IT夹具失败及消费者编码失败保全；仅合成有界，非完整恢复/实际错库/整体/最终候选。
 
 - [D13恢复后真实worker halt与孤儿P5](GOAL_D13_RESTORED_WORKER_CRASH_COMBINATION_2026-10-23.md)：新隔离IT1/0/0/0，实际halt71/OS锁释放、六HTTP按序拒绝、孤儿退役后fresh启动；179表/原件守恒、独立消费者通过。前三轮失败保全；仅合成有界，非实际错库/整体/最终候选。

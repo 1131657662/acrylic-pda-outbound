@@ -1,0 +1,28 @@
+# 测试部署与主页布局收口前看板叙述
+
+仅保存历史断点，不恢复旧状态或写权；生成版本事实省略。完整原字节见 .local/test-claim-20261023/run01/layout-top-controls/board.before.md。
+
+总目标active、未完成；localDeletionAllowed=false。D13实际跨实例UUID反例：新双实例同schema IT1/0/0/0，运行器及离线原件消费者exit0。仅MODEL只读组件有界，非完整恢复/全部入口/整体或最终候选。
+
+## 输入、写权和保存
+- 固定树D:/acrylic-pda-outbound，codex/development；HEAD及fresh开发远端f3d6b2d1ae0d98c269ed7bde2a58fa51d9dbbba4，main c6e9e0c238c657baecbf699ba6fdbada5d979b86。版本/树数见生成块。
+- 证据根.local/goal-20261023-resume/d13-cross-instance-admission01/；baseline保存40继承原字节/SHA/ZIP/diff及fresh环境；closeout01/precommit保全提交前46项dirty原件，最终全集/SHA/ZIP见closeout01/final/dirty-final.json。
+- 本片7路径开发备份已推送，commit/push exit0、fresh远端相等；history仅暂存本片新增入口，40继承留工作树，看板未提交、暂存空。生成dirty数默认折叠，全集以--untracked-files=all为准。
+- 本聊天唯一源码/索引/看板写者；清理聊天fresh active/inProgress且本轮尚无输出，上一轮HTTP502失败；未消息/唤醒/委派，其清理授权不含本片开发文件/共享看板。D13入口定向配置测试已结束，Gradle daemon仅空闲驻留；无本片模拟器/隔离MySQL/压缩在途。
+- closeout01/final保存fresh进程/监听/ADB/Debug Keystore与C/D/E。19837/19838认证停库exit0、进程退出0，fresh均无监听；系统3306/33060内部身份未认证，仅观察、未连接/停止。
+- ADB仅枚举22D2910042 offline、75bdbbee device，未操作；Debug Keystore SHA同、未用正式签名。余量bytes C=63917023232、D=32676368384、E=195634053120；新增产物在D盘，本片删除0、清理释放0，不冒领清理聊天结果。
+
+## 本片证据与限制
+- 前片新增3个测试文件：ClosedAdmissionInstanceModel/ClosedAdmissionIdentityObservation/RecoveryAdmissionCrossInstanceIdentityIT；本片另改RecoveryAdmissionConfiguration、RecoveryClosedConnectionAdmission及其配置测试，契约、迁移、Android/Web及生产设置未改。自主设计在decision.md，作者自审/扫描在closeout01。
+- run1661：新19837/19838实际实例、同schema/账号p5_lost_1661、实际UUID不同；两个库均迁移，复制5张MODEL登记表原值，非完整恢复/业务数据/原身份。build.local/s23m，单Java测试线程，compile/IT/dump/shutdown/binlog均exit0，顶层exit0。
+- IT1/0/0/0、24.988秒：源准入→目标精确DATABASE_SERVER_UUID拒绝→源仍准入；三次各1 SELECT、DML0、binlog保持，正向写入/删除能力也false。8次五表行哈希相同，外部9文件含trusted检查点另封前后manifest保持。
+- consumer01离线exit0：2842源码/109依赖/2运行器SHA保持、原XML/两dump/控制链及intent核同，9文件前后与最终原件核同。两dump五表原行相等；binlog源6/目标7相关DML均为准备，其中目标1 DELETE只替换新建server_state合成单例，非观察期写入。
+- 作者、自审及工具消费者同助手，非独立人员；未动态复现旧版错误准入，未验完整恢复后UUID策略；未运行完整普通回归/真实HTTP/Android/APK/模拟器/真机/部署。本片报告GOAL_D13_CROSS_INSTANCE_DATABASE_IDENTITY_2026-10-23.md。
+- 本片D13最小Spring入口接线：每次业务借用注入RecoveryClosedConnectionAdmission并要求正baseline，缺失/非正baseline启动失败，不回退裸池；定向RecoveryAdmissionConfigurationTest退出0、BUILD SUCCESSFUL。命令、3个输入SHA、失败首轮路径记录及输出SHA见.local/d13-entry-wiring-20261023/，仅为开发验证，不计D13/D15或总目标验收。
+- 前片run1659权限失败、run1660 IT通过但运行器收尾exit1、consumer01失败均保全；本片成功不覆盖。原始失败/唯一证据和新隔离数据未删；此前删除被自动审批拒绝，不换通道/包装重试。
+
+## 下一步与边界
+- 接续先核closeout01/final、实际环境/远端/完整dirty；不重跑run1659/1660/1661或旧库。下一有界项设计闭链身份在实际入口的消费：区分初始NORMAL、INITIALIZATION、同一物理连接、裸pool及关闭路径；已有根/writer/P5保护不得削弱。
+- RecoveryOperationRegistry/RecoveryRequestAdmittedDataSource已有根/writer/P5保护；本片只覆盖Spring主DataSource的闭链准入接线，不能称所有HTTP/Session/worker/文件入口及裸pool/关闭路径已验证。OS拒绝自halt无新方法不重入。
+- D13–D15整体、全部入口/P5其余故障/真实OS拒绝终止、D16有效guard/复杂引用、D18实际最终候选及第8节仍缺。生产开关/TEMP归档、正式签名、原库现网、main、部署/Release关闭；取消链/旧run03不恢复。
+- 原资料/身份/Keystore/原签回执/唯一证据/最终APK/继承保持；开发备份及本片局部通过不计总目标完成。

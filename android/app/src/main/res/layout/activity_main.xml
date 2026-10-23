@@ -25,15 +25,15 @@
             <CheckBox android:id="@+id/showPassword" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="48dp" android:text="显示密码" />
             <Button android:id="@+id/login" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="登录并恢复本机订单" />
         </LinearLayout>
+        <LinearLayout android:id="@+id/actions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <Button android:id="@+id/refresh" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="联网刷新订单与资格" />
+            <Button android:id="@+id/localSection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回本机作业" />
+            <Button android:id="@+id/availableSection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="待领取订单" />
+            <Button android:id="@+id/temporaryOrders" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="全部临时作业 / 新建" />
+        </LinearLayout>
         <LinearLayout android:id="@+id/cards" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
         <LinearLayout android:id="@+id/temporaryCards" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
         <Button android:id="@+id/loadMore" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="加载下一页" />
-        <LinearLayout android:id="@+id/actions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-            <Button android:id="@+id/temporaryOrders" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="全部临时作业 / 新建" />
-            <Button android:id="@+id/localSection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="返回本机作业" />
-            <Button android:id="@+id/availableSection" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="待领取订单" />
-            <Button android:id="@+id/refresh" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="联网刷新订单与资格" />
-        </LinearLayout>
         <LinearLayout android:id="@+id/dataActions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
             <Button android:id="@+id/independentSku" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="独立sku资料预检与启用" />
             <Button android:id="@+id/rescueData" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="52dp" android:text="只读应急导出" />
