@@ -35,4 +35,10 @@ public class RecoveryRefusalAdvice {
             throws IOException {
         responses.writeWithoutState(request, response, 503, error.code(), "服务器当前不可写入，请稍后重试");
     }
+
+    @ExceptionHandler(RecoveryDatabaseAdmissionException.class)
+    public void databaseRefused(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        responses.writeWithoutState(request, response, 503, RecoveryDatabaseAdmissionException.CODE,
+            "服务器当前不可写入，请稍后重试");
+    }
 }

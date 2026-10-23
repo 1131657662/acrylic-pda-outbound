@@ -3,7 +3,6 @@ package com.acrylic.outbound.recovery;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.SQLNonTransientConnectionException;
 import java.util.Objects;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
@@ -32,7 +31,6 @@ public final class RecoveryClosedConnectionAdmission
         var source = new SingleConnectionDataSource(Objects.requireNonNull(physical), true);
         var result = RecoveryAdmissionVerifier.of(new RecoveryAdmissionQueries(source),
             new RecoveryControlReader(location), checkpoint, location, baseline).verify();
-        if (!result.admitted()) throw new SQLNonTransientConnectionException(
-            "RECOVERY_DATABASE_ADMISSION_REFUSED:" + String.join(",", result.gaps()), "08004");
+        if (!result.admitted()) throw new RecoveryDatabaseAdmissionException(result.gaps());
     }
 }

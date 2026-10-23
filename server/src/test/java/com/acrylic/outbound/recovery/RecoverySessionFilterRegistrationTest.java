@@ -57,6 +57,7 @@ class RecoverySessionFilterRegistrationTest {
     private static String[] options(RecoveryControlFixture fixture) {
         return new String[] {
             "outbound.recovery.admission.enabled=true",
+            "outbound.recovery.baseline=1",
             "outbound.recovery.root=" + fixture.root,
             "outbound.recovery.installation-id=" + fixture.installation,
             "outbound.recovery.restore-roots=" + fixture.restoreRoot,

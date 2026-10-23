@@ -8,6 +8,9 @@
 
 # 历史归档索引
 
+- [D13实际Spring闭链/初始化/Session](GOAL_D13_SPRING_CLOSED_ADMISSION_SESSION_2026-10-23.md)：实际产品CSRF、Session持久复用、恢复模式JSON503及冷启动拒绝；有效red和三次夹具失败保全，52项及新隔离组合通过，范围与P5分列。
+- [Spring闭链组合前看板叙述](ORCHESTRATION_STATUS_BEFORE_SPRING_ADMISSION_2026-10-23.md)：历史断点，完整原字节/SHA及生成事实保存在本片documents-before，不恢复旧状态/写权。
+
 - [D13 HTTP关闭未知结果与实际P5](GOAL_D13_HTTP_CLOSE_P5_COMPOSITION_2026-10-23.md)：新隔离red/green及12组原件消费者；旧实现unchecked继续提交反例、修复后halt70/后继拒绝，仅有界组件组合，失败原件保全。
 - [D13连接终结unchecked修复](GOAL_D13_CONNECTION_UNCHECKED_COMPLETION_2026-10-23.md)：本地writer/root与JDBC MODEL定向证据，实际HTTP/P5范围另列。
 - [HTTP关闭组合前看板叙述](ORCHESTRATION_STATUS_BEFORE_HTTP_CLOSE_2026-10-23.md)：原结论归档，完整原字节/SHA与生成事实另存本片shared-before，不恢复历史环境或写权。

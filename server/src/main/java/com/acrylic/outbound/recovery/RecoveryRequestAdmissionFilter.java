@@ -76,6 +76,14 @@ public final class RecoveryRequestAdmissionFilter extends OncePerRequestFilter {
         root.bindDispatch(thread);
         try {
             chain.doFilter(request, response);
+        } catch (ServletException | IOException | RuntimeException failure) {
+            if (!RecoveryDatabaseAdmissionException.causedBy(failure) || response.isCommitted()) throw failure;
+            // Session reads/saves run outside MVC advice but inside this root. Keep the refusal
+            // database-free and discard any uncommitted success body before answering.
+            response.resetBuffer();
+            response.setHeader("Content-Length", null);
+            responses.writeWithoutState(request, response, 503, RecoveryDatabaseAdmissionException.CODE,
+                "服务器当前不可写入，请稍后重试");
         } finally {
             root.unbindDispatch(thread);
             if (root.phase() == RecoveryOperationPhase.SERVING) root.enterFinalizing();

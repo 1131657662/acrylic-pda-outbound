@@ -40,6 +40,16 @@ class RecoveryStartupGateTest {
         });
     }
 
+    @Test void aMissingClosedBaselineRefusesStartupEvenWhenSessionCleanupIsOff() throws Exception {
+        var fixture = RecoveryWriterLeaseTest.protocol();
+        String[] values = java.util.Arrays.stream(options(fixture, "-"))
+            .filter(value -> !value.startsWith("outbound.recovery.baseline=")).toArray(String[]::new);
+        runner.withPropertyValues(values).run(context -> {
+            assertThat(context).hasFailed();
+            assertThat(context.getStartupFailure()).hasStackTraceContaining("CONTROL_BASELINE_REQUIRED");
+        });
+    }
+
     @Test void theInitializationWindowExistsBeforeApplicationBeansAndClosesWhenTheApplicationIsReady() throws Exception {
         var fixture = RecoveryWriterLeaseTest.protocol();
         StartupConsumer.observedRoots = -1;
@@ -77,6 +87,7 @@ class RecoveryStartupGateTest {
             "outbound.recovery.installation-id=" + fixture.installation,
             "outbound.recovery.restore-roots=" + fixture.restoreRoot,
             "outbound.recovery.checkpoint=" + fixture.checkpoint,
+            "outbound.recovery.baseline=1",
             "spring.session.jdbc.cleanup-cron=" + cleanup
         };
     }

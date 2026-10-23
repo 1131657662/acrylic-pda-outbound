@@ -6,6 +6,8 @@
 
 # 开发进度索引
 
+- [D13实际Spring闭链/初始化/Session](history/GOAL_D13_SPRING_CLOSED_ADMISSION_SESSION_2026-10-23.md)：有效HTTP red返回500，修复专用拒绝映射后52项/新隔离组合1项全过；180表、15控制原件及8条同连接SQL离线核同。合成登记、非P5有界，不计完整恢复/全部入口/整体或最终候选。
+
 - [D13 HTTP关闭未知结果与实际P5](history/GOAL_D13_HTTP_CLOSE_P5_COMPOSITION_2026-10-23.md)：有效red 2过4失败、green 6项全过；实际HTTP/MySQL/halt70、后继拒绝，12组dump/binlog/P5 HMAC离线核同。仅测试servlet产品组件组合，非完整Spring/Session/闭链/整体或最终候选。
 - [D13连接终结unchecked修复](history/GOAL_D13_CONNECTION_UNCHECKED_COMPLETION_2026-10-23.md)：MODEL red13项4过9失败、green13项/相关73项全过；原异常身份及未知writer保护，范围与实际P5组合分列，不作完整回归或整体通过。
 
