@@ -6,6 +6,8 @@
 
 # 开发进度索引
 
+- [D13完整恢复/生产闭链/实际P5同输入组合](history/GOAL_D13_RESTORED_CLOSED_P5_COMBINATION_2026-10-23.md)：新隔离IT1/0/0/0及离线原件消费者通过；179表、实际API/独立worker/P5活租约、双格式下载与六HTTP503守恒。仅合成无旧binding、显式test-only身份提升，非D13整体或最终候选。
+
 - [D13完整恢复后闭链登记/API/worker/文件](history/GOAL_D13_FULL_RESTORE_CLOSED_ADMISSION_2026-10-23.md)：协调锁争用有效red后77项全过，新隔离组合1项及原件消费者通过；179表完整恢复、旧任务保持失效/新键重查双格式成功、六入口503守恒。合成无旧binding/非P5有界，非D13整体或最终候选。
 
 - [D13实际Spring闭链/初始化/Session](history/GOAL_D13_SPRING_CLOSED_ADMISSION_SESSION_2026-10-23.md)：有效HTTP red返回500，修复专用拒绝映射后52项/新隔离组合1项全过；180表、15控制原件及8条同连接SQL离线核同。合成登记、非P5有界，不计完整恢复/全部入口/整体或最终候选。

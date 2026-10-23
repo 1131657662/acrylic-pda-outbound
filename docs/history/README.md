@@ -8,6 +8,9 @@
 
 # 历史归档索引
 
+- [D13完整恢复/生产闭链/实际P5同输入组合](GOAL_D13_RESTORED_CLOSED_P5_COMBINATION_2026-10-23.md)：新隔离IT1/0/0/0及离线原件消费者通过；179表、实际API/独立worker/P5活租约、双格式下载与六HTTP503守恒。仅合成无旧binding、显式test-only身份提升，非D13整体或最终候选。
+- [完整恢复闭链与P5组合前看板叙述](ORCHESTRATION_STATUS_BEFORE_RESTORED_CLOSED_P5_2026-10-23.md)：历史断点；完整原字节/SHA另存本片closeout-docs，不恢复状态/写权。
+
 - [D13完整恢复后闭链登记/API/worker/文件](GOAL_D13_FULL_RESTORE_CLOSED_ADMISSION_2026-10-23.md)：真实dump/storage、生产投影/NORMAL登记、独立API/worker/双格式下载；争锁red后77项及新组合通过，失败与清理分列，仅合成无旧binding/非P5有界。
 - [完整恢复闭链组合前看板叙述](ORCHESTRATION_STATUS_BEFORE_FULL_RESTORE_ADMISSION_2026-10-23.md)：旧叙述归档，完整原字节/SHA在本片closeout-resume05；不恢复历史状态或写权。
 

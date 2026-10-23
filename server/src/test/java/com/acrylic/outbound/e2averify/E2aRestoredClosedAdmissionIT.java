@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.*;
 /** Actual full dump, offline projection/registration, product API/Session/nonweb worker/files. */
 @EnabledIfEnvironmentVariable(named = "E2A_CROSS_VERIFY", matches = "true")
 class E2aRestoredClosedAdmissionIT {
-    private record Restored(E2aArchiveSnapshotRestore copier, JdbcTemplate target,
+    record Restored(E2aArchiveSnapshotRestore copier, JdbcTemplate target,
             ObjectNode before, RecoveryRestoredDatabaseAdmission supply) { }
 
     @Test void restoredUnboundSnapshotRegistersThenServesWhileOriginalSchemaRemainsRefused() throws Exception {
@@ -41,7 +41,7 @@ class E2aRestoredClosedAdmissionIT {
             StandardOpenOption.CREATE_NEW);
     }
 
-    private static Restored restore(E2aCrossSourceProfile profile, JdbcTemplate source, Map<String, String> seed) throws Exception {
+    static Restored restore(E2aCrossSourceProfile profile, JdbcTemplate source, Map<String, String> seed) throws Exception {
         var copier = new E2aArchiveSnapshotRestore(profile, source);
         var target = copier.restore();
         var before = copier.snapshot(target, copier.restored.resolve("storage"));
@@ -54,7 +54,7 @@ class E2aRestoredClosedAdmissionIT {
         return new Restored(copier, target, before, supply);
     }
 
-    private static void wrongSchema(E2aCrossSourceProfile profile, JdbcTemplate source, Restored restored) throws Exception {
+    static void wrongSchema(E2aCrossSourceProfile profile, JdbcTemplate source, Restored restored) throws Exception {
         var options = new ArrayList<>(List.of(restored.supply().options())); options.add("--server.port=0");
         Throwable failure = catchThrowable(() -> {
             try (var unexpected = E2aCrossSourceHttpIT.start(profile, options.toArray(String[]::new))) {
@@ -66,10 +66,14 @@ class E2aRestoredClosedAdmissionIT {
         save(profile, "wrong-schema-startup.json", Map.of("exception", failure.toString(), "sourceUnchanged", true));
     }
 
-    private static void exercise(E2aCrossSourceProfile profile, RecoveryExportInput input, Restored restored) throws Exception {
+    static void exercise(E2aCrossSourceProfile profile, RecoveryExportInput input, Restored restored) throws Exception {
+        exercise(profile, input, restored, "restored-split-successor");
+    }
+
+    static void exercise(E2aCrossSourceProfile profile, RecoveryExportInput input, Restored restored, String scope) throws Exception {
         var copier = restored.copier(); var target = restored.target();
         var admitted = copier.snapshot(target, copier.restored.resolve("storage"));
-        try (var children = new E2aSplitWorkerProcesses(profile, restored.supply().options(), "restored-split-successor")) {
+        try (var children = new E2aSplitWorkerProcesses(profile, restored.supply().options(), scope)) {
             children.start("api"); children.start("worker");
             new E2aRestoredGenerationExports(profile, input).consume(target);
             children.stop("worker");
@@ -100,7 +104,7 @@ class E2aRestoredClosedAdmissionIT {
         restored.target().update("UPDATE server_state SET service_mode='NORMAL' WHERE id=1");
     }
 
-    private static RecoveryExportInput prepare(E2aCrossSourceProfile profile, JdbcTemplate source) throws Exception {
+    static RecoveryExportInput prepare(E2aCrossSourceProfile profile, JdbcTemplate source) throws Exception {
         try (var web = E2aCrossSourceHttpIT.start(profile, "--server.servlet.session.cookie.secure=false",
                 "--outbound.exports.sample-data=true", "--outbound.exports.renderer-home=" + System.getenv("E2A_SPLIT_RENDERER"),
                 "--outbound.exports.browsers=" + System.getenv("E2A_SPLIT_BROWSERS"))) {
@@ -110,7 +114,7 @@ class E2aRestoredClosedAdmissionIT {
         }
     }
 
-    private static void save(E2aCrossSourceProfile profile, String name, Object value) throws Exception {
+    static void save(E2aCrossSourceProfile profile, String name, Object value) throws Exception {
         Files.writeString(profile.attempt.resolve("private/" + name),
             new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(value), StandardOpenOption.CREATE_NEW);
     }

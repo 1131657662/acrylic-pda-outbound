@@ -13,6 +13,7 @@ public final class RecoveryRestoredDatabaseAdmission {
     private final Path home;
     private final long baseline;
     private final RecoveryClosedAuthority.Source source;
+    private RecoveryRestoredAdmissionP5 p5;
 
     public RecoveryRestoredDatabaseAdmission(DataSource target, Path attempt, Map<String, String> originalSeed)
             throws Exception {
@@ -63,13 +64,23 @@ public final class RecoveryRestoredDatabaseAdmission {
     }
 
     public String[] options() {
-        return new String[]{"--outbound.recovery.admission.enabled=true",
+        var options = new ArrayList<>(List.of("--outbound.recovery.admission.enabled=true",
             "--outbound.recovery.baseline=" + baseline,
             "--outbound.recovery.root=" + control.location.root(),
             "--outbound.recovery.installation-id=" + control.location.installation(),
             "--outbound.recovery.restore-roots[0]=" + control.location.restoreRoots().get(0),
             "--outbound.recovery.restore-roots[1]=" + control.location.restoreRoots().get(1),
-            "--outbound.recovery.checkpoint=" + control.checkpoint};
+            "--outbound.recovery.checkpoint=" + control.checkpoint));
+        if (p5 != null) options.addAll(List.of(p5.options()));
+        return options.toArray(String[]::new);
+    }
+
+    public RecoveryRestoredAdmissionP5 enableP5(Path attempt) throws Exception {
+        assertThat(p5).isNull();
+        assertThat(verifier().admitted()).isTrue();
+        p5 = new RecoveryRestoredAdmissionP5(control.location, attempt);
+        assertThat(verifier().admitted()).isTrue();
+        return p5;
     }
 
     public Map<String, String> originals() throws Exception {

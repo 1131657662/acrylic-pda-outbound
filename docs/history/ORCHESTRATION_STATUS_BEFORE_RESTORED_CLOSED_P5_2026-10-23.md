@@ -1,0 +1,35 @@
+# 完整恢复闭链与P5组合前看板叙述
+
+> 仅历史断点，不恢复旧状态、写权或环境；生成事实不复写。完整原字节见 .local/d13-restored-closed-p5-20261023/run01/closeout-docs/originals/docs/ORCHESTRATION_STATUS.md。
+> 原SHA256：A45C4B45F0EB9A62E22D1110194E0BD91E98AD31005FBD3D0D1B31903B9C785E
+
+总目标active、未完成；localDeletionAllowed=false。本片D13完整恢复后生产闭链登记及实际API/Session/独立worker/文件组合通过，修复短暂协调锁争用误拒绝；77项定向与新组合1项全过。仅合成无旧binding/非P5有界，不计D13整体或实际最终候选。
+
+## 输入、写权与保存
+- 固定树D:/acrylic-pda-outbound，codex/development；本片输入3902d3f1c04a4ea4e07fd6bce1ec1d5632d45b34，19明确路径已作开发备份并推送55e1877a0ada0c90b42ff02f1dc6da3c58d937c7，fresh开发远端核同；main仍c6e9e0c238c657baecbf699ba6fdbada5d979b86未操作。回执closeout-submit02/，最终看板元数据不为自引用循环提交。
+- 证据根.local/d13-restored-admission-20261023/run01/；baseline保存初始23条dirty原字节/SHA/patch，收口37条全集在closeout-resume04/05。22条无关继承逐字节守恒、不入提交；14源码/测试/脚本复核在closeout-review/，提交前全集与另聊天10条Android选择器路径分列于closeout-submit02/dirty.json；最终时点全集在closeout-final/。
+- 另一项目聊天fresh核active，独立修改Android应急导出订单选择器/测试并运行build_picker.py；与本片19路径不重叠，均未混入提交。本助手仅写D13及本片断点，未委派/发消息；两清理聊天idle，另有两只读搜索。提交前两次检查因新增路径拦截并保全，核清归属后提交；version_facts Write/Check按序执行，版本/树数只看生成块。
+- 原看板与两索引原字节/SHA在closeout-resume05/originals/；旧叙述归档history/ORCHESTRATION_STATUS_BEFORE_FULL_RESTORE_ADMISSION_2026-10-23.md，未复写生成事实。敏感扫描7命中逐项定性为测试CSRF字段/公开合成口令/loopback端口，无真实凭据或生产连接入Git。
+- 本片Java/Python测试结束；新实例1700/1703/1704/1705/1706均认证身份及shutdown exit0，fresh23700–23706/24700–24706无监听。系统3306/33060内部身份未认证，仅观察未连接/停止。另聊天Android构建/设备操作按其自身证据，不能记为本片测试或假定设备状态不变。
+- 本助手ADB仅枚举22D2910042及75bdbbee为device，未操作设备；debug Keystore SHA保持，本片未构建/签名APK。原资料、原身份、原签回执、唯一证据、最终APK和22继承保持；另一聊天选择器改动仍在途，时点SHA不充作其最终输入。
+- 清上述五实例已停datadir，逻辑1240744117字节；D余量21104267264→22382432256，观察净增1278164992字节（约1.19 GiB）；当时C=74881802240、E=195634053120。cleanup/保存命令/输入SHA/绝对路径/认证停机/无消费者/结果；dump/binlog/HTTP/签名控制原件/失败日志/冻结输入保持，未触1701/1702或共享缓存。
+
+## 继承的测试部署与主页布局
+- 固定测试后台输入571c34aa9eb8d08f0fb643f36542259a575c7702，release claim-571c34aa-20261023-01及测试域名按原报告继承；本片未连接、变更或重新认证远端服务，不能从旧active推定现时状态。Web与在线APK发布入口未改。
+- M71首次领取/资料下载/刷新及主页顶部控制区按history/TEST_CLAIM_M71_LAYOUT_2026-10-23.md独立范围继承；证据.local/test-claim-20261023/run01/。未在布局包重领新订单或跑完整Android回归，原lint/UI/screencap失败保持。
+- 最终保留outputs/pda/Acrylic-PDA-test-claim-top-controls-20261023.apk，SHA256 a25800eec215ee7b913ac6f0a2843a590982500e59f965ab704de476585d923c。本片未改APK或把旧设备范围拼入D13组合。
+
+## 本片D13证据与限制
+- 新非空合成源真实dump/storage/合成验签物料恢复同实例新schema，179表完整核同；源截点尚无不可变binding。独立Python控制原件绑定dump，经生产四阶段投影/NORMAL登记并重放，准入通过；仅5协议表变化。
+- 原schema冷启动精确六gap拒绝且源库无写。旧代次任务全部列/payload/epoch保持，实际API呈现INVALIDATED，下载/重试/旧键拒绝；重新查询+新幂等键产生当前代次XLSX/PDF，各一次成功并实际下载/独立解析，原顺序/整数克/members一致。
+- API与非Web生产worker独立进程正常退出，真实产品CSRF/持久Session及primary adapter生效；RECOVERY_PENDING六HTTP入口均JSON503，179表/文件拒绝区间守恒，源最终快照及65控制原件不变。
+- run1704正常闭链借用遇协调锁立即拒绝，有效contention-red四项2过2失败；仅运行时reader有界等待1000ms后重读权威，超时/损坏仍拒绝、离线立即拒绝保持。contention-green含它的77项全执行，0失败/跳过/中止。
+- restore09直接javac冻结2691输入/110依赖无漂移；run1706-restore09新隔离组合1/0/0/0且exit0/completed。77项复用由resume02/regression-reuse.json核1122产品/110依赖相同，后变4测试未入其class；不是同次完整回归。
+- consumer-green离线核2691输入/110依赖/292原输出，四阶段链、65控制原件、双格式和精确六gap。proof SHA256 9e3049af47767a065e43e09819e1d11b85257e3ed635dd64fd96ee9e0c8eeede3。作者/自审/离线消费者同助手，不冒充独立人员。
+- 失败保留：restore01/02运行器兼容、1700漏-parameters、1703违背旧任务失效合同的设计断言、1704真实锁争用、1705非P5收尾强取Bean、restore08受检异常编译。1705虽生成文件仍整轮失败；修复仅可选P5测试收尾，存在时checkEffect异常照传，根归零保持。
+- consumer-red误在外层异常摘要找gap，改读同次唯一Application run failed因果链，旧脚本/新SHA分列，无业务重跑；收口检查器误报事后消费者漂移亦保全并明确绑定实际SHA。详见history/GOAL_D13_FULL_RESTORE_CLOSED_ADMISSION_2026-10-23.md及本机decision/失败记录。
+
+## 下一步与边界
+- 接续先核本片closeout、实际远端/完整dirty/写者/环境，不重跑旧IT/旧库。下一有界缺口是已有不可变binding跨UUID/schema的合法恢复，或真实P5与闭链同输入组合；先确定标准/最小技术决定再用全新隔离输入验证，不削弱原绑定/触发器/root/writer/P5。
+- 本片无旧binding/非P5/合成权威，前片P5组件及UUID MODEL反例不能拼成全部入口或可信业务恢复。D13–D15整体、其余worker/文件入口、OS拒绝自halt、D16整体、D18实际最终候选及第8节仍缺；无新方法不机械重入旧失败。
+- 生产开关/TEMP归档、正式签名、原库现网、main、生产部署/Release关闭；既有测试部署授权只按原范围继承，取消链/多跳/接收者确认激活/旧run03不恢复。开发备份、清理及局部通过不计总目标完成。

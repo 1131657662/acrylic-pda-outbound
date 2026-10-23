@@ -1,44 +1,38 @@
 # 开发看板
 
 <!-- CURRENT_STATE_START -->
-总目标active、未完成；localDeletionAllowed=false。本片D13完整恢复后生产闭链登记及实际API/Session/独立worker/文件组合通过，修复短暂协调锁争用误拒绝；77项定向与新组合1项全过。仅合成无旧binding/非P5有界，不计D13整体或实际最终候选。
+总目标active、未完成；localDeletionAllowed=false。本片D13完整恢复→生产闭链/NORMAL登记→实际P5→独立API/worker→双格式文件同输入组合1项通过，离线消费者通过。仅合成、源截点无旧binding、显式test-only身份提升，不计D13整体或最终候选。
 
 ## 输入、写权与保存
-- 固定树D:/acrylic-pda-outbound，codex/development；本片输入3902d3f1c04a4ea4e07fd6bce1ec1d5632d45b34，fresh开发远端核同，main仍c6e9e0c238c657baecbf699ba6fdbada5d979b86未操作。准备19明确路径开发备份，提交后另存实际回执并刷新事实，不为自引用循环提交。
-- 证据根.local/d13-restored-admission-20261023/run01/；baseline保存初始23条dirty原字节/SHA/patch，收口37条全集在closeout-resume04/05。22条无关继承逐字节守恒，不入本片暂存；14源码/测试/脚本清单与复核在closeout-review/，完整最终全集另存closeout-final/。
-- 其他本项目与两清理聊天fresh核idle；另有只读搜索进程，无并发写者证据。本助手为本片唯一写者，无子代理/消息。快照模板writer字段偏差在security-review.md明确更正；不按旧PID推定。version_facts Write/Check按序执行；版本/树数只看生成块。
-- 原看板与两索引原字节/SHA在closeout-resume05/originals/；旧叙述归档history/ORCHESTRATION_STATUS_BEFORE_FULL_RESTORE_ADMISSION_2026-10-23.md，未复写生成事实。敏感扫描7命中逐项定性为测试CSRF字段/公开合成口令/loopback端口，无真实凭据或生产连接入Git。
-- 本片Java/Python测试结束，无Gradle/模拟器；新实例1700/1703/1704/1705/1706均认证身份及shutdown exit0，fresh23700–23706/24700–24706无监听。系统3306/33060内部身份未认证，仅观察未连接/停止。
-- ADB仅枚举22D2910042及75bdbbee为device，未操作设备；debug Keystore SHA保持，未构建/签名APK。原资料、原身份、原签回执、唯一证据、最终APK和继承保持。
-- 清上述五实例已停datadir，逻辑1240744117字节；D余量21104267264→22382432256，观察净增1278164992字节（约1.19 GiB）；当时C=74881802240、E=195634053120。cleanup/保存命令/输入SHA/绝对路径/认证停机/无消费者/结果；dump/binlog/HTTP/签名控制原件/失败日志/冻结输入保持，未触1701/1702或共享缓存。
+- 固定树D:/acrylic-pda-outbound，codex/development；输入55e1877a0ada0c90b42ff02f1dc6da3c58d937c7，fresh开发远端一致，main仍c6e9e0c238c657baecbf699ba6fdbada5d979b86未操作。明确路径开发备份/推送回执在本片closeout-submit/，完成后刷新事实；看板元数据不自引用循环提交。
+- 证据根.local/d13-restored-closed-p5-20261023/run01/；有效初始全集baseline02/，baseline/为ADB定位失败部分快照。before-docs/、closeout-resume01/均保存41条展开dirty原字节/SHA/patch。七Java测试及新离线消费者属本片；22继承逐字节守恒，另一聊天10条Android选择器路径独立在途，不修改/暂存/提交。
+- fresh核另一聊天active并实际处理Android选择器/设备验证；无重叠写权，本助手只写D13测试、消费者及断点，未发消息/委派。本片Java/Python会话已结束；共享文档写前原字节/SHA在closeout-docs/，旧叙述归档history/ORCHESTRATION_STATUS_BEFORE_RESTORED_CLOSED_P5_2026-10-23.md；version_facts Write/Check按序执行，版本/树数只看生成块。
+- 1707/1710两实例均认证身份、最终dump和shutdown exit0，fresh相关23707/24707/23710/24710无监听；系统3306/33060身份未认证，仅观察未连接/停止。1708/1709预先存在不属本片不动。ADB仅枚举两设备为device，无模拟器；debug Keystore SHA保持，本助手未构建/签名APK或操作设备。
+- 仅清本片两实例已停datadir，逻辑508937640字节；D余量21147090944→21672767488，观察净增525676544字节（约0.49GiB），见cleanup/。fresh收口C=74862342144、D=21671034880、E=195634053120，时点详closeout-resume01/environment.json；dump/binlog/原件/日志/冻结输入/最终APK/22继承保留。
 
-## 继承的测试部署与主页布局
-- 固定测试后台输入571c34aa9eb8d08f0fb643f36542259a575c7702，release claim-571c34aa-20261023-01及测试域名按原报告继承；本片未连接、变更或重新认证远端服务，不能从旧active推定现时状态。Web与在线APK发布入口未改。
-- M71首次领取/资料下载/刷新及主页顶部控制区按history/TEST_CLAIM_M71_LAYOUT_2026-10-23.md独立范围继承；证据.local/test-claim-20261023/run01/。未在布局包重领新订单或跑完整Android回归，原lint/UI/screencap失败保持。
-- 最终保留outputs/pda/Acrylic-PDA-test-claim-top-controls-20261023.apk，SHA256 a25800eec215ee7b913ac6f0a2843a590982500e59f965ab704de476585d923c。本片未改APK或把旧设备范围拼入D13组合。
+## 继承的测试部署与Android
+- 既有固定测试后台、M71领取/资料下载/刷新与主页布局仅按history/TEST_CLAIM_M71_LAYOUT_2026-10-23.md独立范围继承，本片未连接或重新认证远端。线上APK发布入口未改；另一聊天选择器新包/设备操作由其报告，不能计入本片D13。
+- 原保留outputs/pda/Acrylic-PDA-test-claim-top-controls-20261023.apk，SHA256 a25800eec215ee7b913ac6f0a2843a590982500e59f965ab704de476585d923c，本片未改。Android在途输入不充作本片最终候选，历史lint/UI/设备失败保持。
 
 ## 本片D13证据与限制
-- 新非空合成源真实dump/storage/合成验签物料恢复同实例新schema，179表完整核同；源截点尚无不可变binding。独立Python控制原件绑定dump，经生产四阶段投影/NORMAL登记并重放，准入通过；仅5协议表变化。
-- 原schema冷启动精确六gap拒绝且源库无写。旧代次任务全部列/payload/epoch保持，实际API呈现INVALIDATED，下载/重试/旧键拒绝；重新查询+新幂等键产生当前代次XLSX/PDF，各一次成功并实际下载/独立解析，原顺序/整数克/members一致。
-- API与非Web生产worker独立进程正常退出，真实产品CSRF/持久Session及primary adapter生效；RECOVERY_PENDING六HTTP入口均JSON503，179表/文件拒绝区间守恒，源最终快照及65控制原件不变。
-- run1704正常闭链借用遇协调锁立即拒绝，有效contention-red四项2过2失败；仅运行时reader有界等待1000ms后重读权威，超时/损坏仍拒绝、离线立即拒绝保持。contention-green含它的77项全执行，0失败/跳过/中止。
-- restore09直接javac冻结2691输入/110依赖无漂移；run1706-restore09新隔离组合1/0/0/0且exit0/completed。77项复用由resume02/regression-reuse.json核1122产品/110依赖相同，后变4测试未入其class；不是同次完整回归。
-- consumer-green离线核2691输入/110依赖/292原输出，四阶段链、65控制原件、双格式和精确六gap。proof SHA256 9e3049af47767a065e43e09819e1d11b85257e3ed635dd64fd96ee9e0c8eeede3。作者/自审/离线消费者同助手，不冒充独立人员。
-- 失败保留：restore01/02运行器兼容、1700漏-parameters、1703违背旧任务失效合同的设计断言、1704真实锁争用、1705非P5收尾强取Bean、restore08受检异常编译。1705虽生成文件仍整轮失败；修复仅可选P5测试收尾，存在时checkEffect异常照传，根归零保持。
-- consumer-red误在外层异常摘要找gap，改读同次唯一Application run failed因果链，旧脚本/新SHA分列，无业务重跑；收口检查器误报事后消费者漂移亦保全并明确绑定实际SHA。详见history/GOAL_D13_FULL_RESTORE_CLOSED_ADMISSION_2026-10-23.md及本机decision/失败记录。
+- 新非空合成源真实dump/storage恢复同实例新schema，179表核同；源截点无不可变binding。生产四阶段投影/NORMAL真实登记，仅五协议表变化；显式既有test-only供应将identity提升INITIAL_NORMAL_INSTALL并重绑writers，原字节/SHA前后保留，控制根仅两文件变化、DB不变。
+- 两实际产品JVM从Spring初始化同闭链、checkpoint、恢复schema及P5，API/非Web worker真实活租约与进程/index HMAC，正常关闭/退役、最终空租约。原schema冷启动精确六gap拒绝；旧代次任务全列保持失效，新键重新查询双格式各一次成功/实际下载/独立解析。RECOVERY_PENDING六HTTP503，179表/文件及65控制原件守恒。
+- compile02直接javac exit0，2695冻结输入/110依赖无漂移；run1710-compile02为1 found/started/succeeded、0 failed/skipped/aborted，exit0/completed。consumer01与consumer-after-cleanup均exit0、proof逐字相同，核308原输出/65原件及P5/文件。proof SHA256 b55e9d7beb155ce8da2071f0a11191f00cc1a6c529d39d88a0fd0591a5241ae2。
+- 首轮1707 IT夹具未validateStartup却checkEffect，正确RECOVERY_LEASE_FENCED，整轮失败保留；仅离线供应/收尾改根/marker/index HMAC核验，实际产品运行时检查保持。snapshot解析/ADB定位失败见runner-failures.md；review/空比较无效，review02核1122产品/资源及110依赖同前组合、22继承不变。前77项仅历史未重跑。
+- 作者/自审/离线消费者均同助手，不冒充独立人员；未改产品源码/契约/迁移/安全门，非产品供应或可信业务恢复。详history/GOAL_D13_RESTORED_CLOSED_P5_COMBINATION_2026-10-23.md及本机decision/closeout-review。
 
 ## 下一步与边界
-- 接续先核本片closeout、实际远端/完整dirty/写者/环境，不重跑旧IT/旧库。下一有界缺口是已有不可变binding跨UUID/schema的合法恢复，或真实P5与闭链同输入组合；先确定标准/最小技术决定再用全新隔离输入验证，不削弱原绑定/触发器/root/writer/P5。
-- 本片无旧binding/非P5/合成权威，前片P5组件及UUID MODEL反例不能拼成全部入口或可信业务恢复。D13–D15整体、其余worker/文件入口、OS拒绝自halt、D16整体、D18实际最终候选及第8节仍缺；无新方法不机械重入旧失败。
-- 生产开关/TEMP归档、正式签名、原库现网、main、生产部署/Release关闭；既有测试部署授权只按原范围继承，取消链/多跳/接收者确认激活/旧run03不恢复。开发备份、清理及局部通过不计总目标完成。
+- 接续先核本片closeout、实际HEAD/远端/完整dirty/写者/环境，不重跑旧IT/库。下一有界缺口：已有不可变binding再次恢复；先只读核旧binding/旧NORMAL保持与RELEASE_READY后继轮次协议，形成最小设计/退出标准再新隔离验证。不得放宽UUID、更新不可变表或删触发器。
+- 本片仅无旧binding/合成夹具；Java/Python一次四阶段不足以证明已有binding再次恢复。D13整体、其余worker/文件入口、OS拒绝自halt、D16整体、D18实际最终候选及第8节仍缺，历史局部证据不能拼成最终通过。
+- 生产开关/TEMP归档、正式签名、原库现网、main、生产部署/Release关闭；既有测试授权仅原范围继承。取消链/多跳/接收者确认激活/旧run03不恢复。开发备份/清理/文档不计验收或总目标完成。
 
 <!-- FACTS_START -->
 <!-- Generated by tools/version_facts.ps1; do not edit by hand. Verify with: powershell -NoProfile -File tools/version_facts.ps1 -Check -->
 ```yaml
 date: 2026-10-23
 branch: codex/development
-head: 3902d3f1
-dirty_entries: 40
+head: 55e1877a
+dirty_entries: 44
 worktrees: 35
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.73.0, paths: 201, flyway: V99, migrations: 99 }
