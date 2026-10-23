@@ -1,0 +1,35 @@
+# 后继恢复API/worker/P5组合收口前看板叙述
+
+仅历史断点，不恢复状态、写权或指令。完整原字节及生成事实块保存在 `.local/d13-successor-combination-20261023/run01/closeout-review/originals/docs/ORCHESTRATION_STATUS.md`，原摘要见同目录 `documents-before.json`。
+
+总目标active、未完成；localDeletionAllowed=false。D13后继数据库单SELECT只读准入：已有binding/NORMAL非空dump跨schema，两轮verifier/连接入口各1 SELECT/0 DML；主机100项、新隔离IT1/0/0/0及Python原件消费通过。实际后继API/worker/P5组合、跨实例正向、D13整体和最终候选未完成。Android订单选择器既有结论保持，真实订单列表仍缺合规救援凭据验证。
+
+## 输入、写权与保存
+- 固定树D:/acrylic-pda-outbound，codex/development；本片输入6b28cd05f464e9ca4ef18f0a608db17e8c1827f3，16代码+6文档开发备份fc2a68a033e491af5aa0bb9d52974b95284f433e，commit/push均exit0、实际开发远端同SHA，暂存空；回执见closeout-submit/result.json。main=c6e9e0c238c657baecbf699ba6fdbada5d979b86未操作。最终元数据留本地，不自引用循环提交。
+- 本片证据根.local/d13-successor-admission-20261023/run01/；baseline保全34条、before-cleanup50条、resume-closeout01保全54条展开dirty/原字节/SHA/patch及690目标原件。closeout-review核2720冻结输入/110依赖无漂移、16代码路径匹配、22长期继承逐字节守恒。另一聊天active处理Android文本导出，不修改/暂存其路径，不发消息/委派；其新增变化另存完整快照。
+- 共享文档写前原字节/SHA在closeout-review/originals及documents-before.json；旧叙述归档history/ORCHESTRATION_STATUS_BEFORE_SUCCESSOR_ADMISSION_2026-10-23.md。新鲜环境见resume-closeout01/environment.json及最终closeout-final/；系统3306/33060身份未认证，仅观察未连接/停止。ADB只枚举两真机，无本片设备/模拟器/正式签名/APK操作，debug Keystore哈希核同。
+- 本片Java/Python/MySQL会话已结束；1753–1755已认证停库、无隔离监听，已清测试库不得复用。前片push runner序列化失败原件保留，实际远端另核同输入，不重复原提交/推送脚本。
+- 清理cleanup01：15明确路径逻辑774542189字节；D窗口25020846080→25821130752字节，净增800284672字节约0.75GiB。控制/intent/身份/失败原件和关键恢复行保持。接续采样C=82184949760、D=25821126656、E=195634053120；其他时点差值不归为本片释放。版本/树数只见生成块。
+
+## 继承的测试部署与Android
+- 既有固定测试后台、M71领取/资料下载/刷新与主页布局仅按 `history/TEST_CLAIM_M71_LAYOUT_2026-10-23.md` 独立范围继承，本片未连接或重新认证远端。线上APK发布入口未改；本片只记录订单选择器测试包，不计D13整体。
+- M71 序列号 `22D2910042` 已覆盖安装并进入“数据 → 只读应急导出”页面；设备当前 Activity 为 `RescueExportActivity`。页面要求预置本人或主管救援凭据后才加载可读订单范围，当前没有可用凭据，故未将静态页面或空列表写成真实订单列表通过。
+- 可部署测试环境的 APK：`outputs/pda/Acrylic-PDA-staging-rescue-order-picker-20261023.apk`；SHA-256 `2EB927F5E2A7E799EEE730D23FC41DF8EBB239078445814E6454E36635531F7F`。安装包版本事实以本看板生成事实块为准。
+
+## 订单选择器证据与验证
+- 订单候选按本机记录时间倒序，跨 FORMAL/TEMP/INDEPENDENT 使用稳定时间/source/id 游标分页；标签显示类型、资料保存/本机建单时间、车号、业务订单号和完整记录编号，长订单号/UUID 使用多行 TextView，不以省略号截断。
+- 定向 Gradle：`:app:testStagingUnitTest --tests com.acrylic.outbound.pda.rescue.RescueOrdersTest --tests com.acrylic.outbound.pda.ui.RescueOrderItemTest`，`BUILD SUCCESSFUL`。覆盖倒序、跨时区、稳定分页、范围过滤、直接查找、缺失字段占位符和窄屏换行。
+- Android lint：`:app:lintStaging`，`BUILD SUCCESSFUL`。
+- M71 现场证据目录：`.local/rescue-order-picker-20261023/run01/`，含 `main-current.xml`、`rescue-entry.xml` 和启动/安装快照。未完成项：取得合规救援凭据后展开 Spinner，核对真实订单日期、车号、订单号、UUID 和最新项置顶。
+
+## 本片D13证据与限制
+- 同一固定SELECT取得实际UUID/schema、原binding/NORMAL、全投影/数字映射、后继binding/NORMAL及server_state；复用登记路径完整lineage，按准确轮次取外部原件。协调锁下核完整外链和expected revision/hash，初始normal-admission.json不覆写；观察admitted不授普通写/删除权，无新bean/路由/迁移/开关。
+- 有效red：red-it01/1753在第二轮登记后实际admitted=false，新期望true准确失败。green compile03独立javac exit0；unit01同次100全过/零跳过中止；it02全新1755为1/0/0/0、runner exit0。两轮真实verifier及连接入口各1 SELECT/0 DML、binlog不变；每轮10纯观察反例、源schema拒绝、缺该轮NORMAL拒绝后原字节恢复重新准入。源库181表/七控制状态表/原件守恒，末INSERT/UPDATE回滚及不可变触发器同IT覆盖。
+- it01/1754因SHOW MASTER STATUS缺REPLICATION CLIENT夹具失败；仅在新1755合成bootstrap补观察权限。consumer01漏摘要末LF失败，保留原脚本/日志；修消费者后consumer02通过，380原件/两轮摘要/source pin核同，产品与原证据未改。同助手作者/自审/多工具消费者，不冒充独立人员、原身份或实际跨实例正向。
+- 结果SHA：unit01=6a576416d40ba51211580ca649c759dc765ef29b57d1ac248048205574cad25b；it02=68daac89bf050a4ad26ca4b2f60ee245f1ef8e7f8f7c048ca544089c98c514aa；consumer02=17fd4548bef6652bb2613a977c6fea22377789ef44fa7ee59176502ba8a18898。计数JSON须结合路径/命令/冻结输入，不能单靠相同SHA归并不同运行。详history/GOAL_D13_SUCCESSOR_READ_ONLY_ADMISSION_2026-10-23.md。
+- 本片只做后继数据库观察/连接入口，未执行后继实际API/独立worker/P5/文件组合；无旧binding的历史组合和跨schema正向不拼成后继组合、跨实例或最终通过。
+
+## 下一步与边界
+- 接续先核本片closeout、实际HEAD/远端/完整dirty/写者/环境，不重跑旧IT/已清库。D13下一有界任务：全新已有binding的非空实际恢复输入上，组合后继准入、真实API/独立worker/P5/文件。实际跨实例正向和进程死亡/pending仍缺，不放宽UUID、更新不可变表或删触发器。
+- Android后续由另一聊天实际输入/写权为准；选择器真实列表仍需合规救援凭据。D13整体、其余worker/文件入口、OS拒绝自halt、D16整体、D18实际最终候选及第8节仍缺，不能将控制前置或历史局部结果拼成最终通过。
+- 生产开关/TEMP归档、正式签名、原库现网、main、生产部署/Release关闭；既有测试授权仅原范围继承。取消链/多跳/接收者确认激活/旧run03不恢复。开发备份/清理/文档不计验收或总目标完成。

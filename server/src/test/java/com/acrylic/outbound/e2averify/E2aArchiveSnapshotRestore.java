@@ -15,12 +15,17 @@ final class E2aArchiveSnapshotRestore {
     E2aArchiveSnapshotRestore(E2aCrossSourceProfile profile,JdbcTemplate source) {
         this.profile=profile;this.source=source;restored=profile.attempt.resolve("restored");
         url=profile.url.replace("/"+profile.database+"?","/"+profile.database+"_restore?");
+        assertThat(Files.exists(restored)).isFalse();
+        try {
+            Files.createDirectory(restored);Files.createDirectory(restored.resolve("config"));
+            Files.createDirectory(restored.resolve("storage"));
+        } catch(java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
     }
 
     JdbcTemplate restore() throws Exception {
         var target=new JdbcTemplate(new DriverManagerDataSource(url,profile.user,System.getenv("E2A_CROSS_PASSWORD")));
         identity(target);assertThat(target.queryForList("SHOW TABLES")).isEmpty();
-        assertThat(Files.exists(restored)).isFalse();Files.createDirectory(restored);Files.createDirectory(restored.resolve("config"));
+        try(var files=Files.list(restored.resolve("storage"))){assertThat(files.count()).isZero();}
         var before=snapshot(source,profile.attempt.resolve("storage"));
         Path dump=profile.attempt.resolve("private/archive-snapshot.sql");
         var args=command("mysqldump");args.addAll(List.of("--single-transaction","--skip-lock-tables","--no-tablespaces","--set-gtid-purged=OFF",
@@ -52,7 +57,7 @@ final class E2aArchiveSnapshotRestore {
     }
 
     private void copyStorage(com.fasterxml.jackson.databind.JsonNode manifest) throws Exception {
-        Path storage=restored.resolve("storage");Files.createDirectory(storage);
+        Path storage=restored.resolve("storage");
         var names=manifest.fieldNames();
         while(names.hasNext()) {
             String name=names.next();Path target=storage.resolve(name).normalize();

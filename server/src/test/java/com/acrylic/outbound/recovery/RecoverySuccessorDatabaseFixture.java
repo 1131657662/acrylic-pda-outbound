@@ -18,7 +18,11 @@ public final class RecoverySuccessorDatabaseFixture {
     private int commands;
 
     public RecoverySuccessorDatabaseFixture(JdbcTemplate jdbc, Path home) throws Exception {
-        var fixture = new RecoveryTransactionFixture(home);
+        this(jdbc, home, List.of(home.getParent().resolve("data"), home.getParent().resolve("storage")));
+    }
+
+    public RecoverySuccessorDatabaseFixture(JdbcTemplate jdbc, Path home, List<Path> restoreRoots) throws Exception {
+        var fixture = new RecoveryTransactionFixture(home, restoreRoots);
         base = fixture.base; location = fixture.location; checkpoint = fixture.checkpoint;
         baseline = jdbc.queryForObject("SELECT recovery_epoch FROM server_state WHERE id=1", Long.class);
         project(jdbc);
