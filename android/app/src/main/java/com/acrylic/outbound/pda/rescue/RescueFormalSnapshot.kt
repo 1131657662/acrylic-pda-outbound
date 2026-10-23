@@ -34,6 +34,7 @@ internal class RescueFormalSnapshot(private val db: PdaDatabase, private val row
         val plan = JSONObject(prepared.planJson).getJSONObject("order").getJSONObject("plan")
         return JSONObject().put("source", "FORMAL").put("orderId", prepared.orderId).put("localOrderId", prepared.assignmentId)
             .put("deviceId", prepared.deviceId).put("operatorId", prepared.operatorId).put("warehouseId", claims.getString("warehouseId"))
+            .put("operatorName", assignment.optString("operatorName"))
             .put("state", work?.state ?: "PREPARED").put("vehicleNo", work?.vehicleNo ?: plan.getString("vehicleNo"))
             .put("timeTrust", "UNCONFIRMED_EXPORT_TIME")
     }

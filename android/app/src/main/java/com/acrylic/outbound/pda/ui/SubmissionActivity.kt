@@ -1,6 +1,7 @@
 package com.acrylic.outbound.pda.ui
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -31,6 +32,11 @@ class SubmissionActivity : ComponentActivity() {
         binding.freeze.setOnClickListener { confirmFreeze() }
         binding.upload.setOnClickListener { upload() }
         binding.refresh.setOnClickListener { run { local?.let { app.submissions.upload(it.id) } } }
+        binding.rescueExport.setOnClickListener {
+            startActivity(Intent(this, RescueExportActivity::class.java)
+                .putExtra("source", "FORMAL")
+                .putExtra("localOrderId", assignment))
+        }
         binding.technicalDetails.setOnClickListener { binding.notice.visibility = if (binding.notice.visibility == android.view.View.VISIBLE) android.view.View.GONE else android.view.View.VISIBLE }
         run { }
     }
@@ -80,7 +86,7 @@ class SubmissionActivity : ComponentActivity() {
             else "恢复待对账 · 暂停新增扫码和结单\n${binding.status.text}"
         binding.reason.isEnabled = item == null && !reconciling; binding.freeze.isEnabled = item == null && !reconciling
         binding.upload.isEnabled = item != null && item.state !in setOf("SYNCED", "ABORTED", "REJECTED")
-        binding.refresh.isEnabled = item != null; binding.back.isEnabled = true
+        binding.refresh.isEnabled = item != null; binding.rescueExport.isEnabled = !busy; binding.back.isEnabled = true
         SubmissionNextAction.render(binding, item?.state)
         binding.notice.text = item?.let { "批次：${it.id}\n${it.error}\n" + if (it.autoRetry) "已排队：WiFi恢复后重试原批次" else "冻结正文和明细保留在本机" }
             ?: "全部产品足量可直接提交；短装必须填写原因。整单0包不能结单。"
@@ -88,6 +94,6 @@ class SubmissionActivity : ComponentActivity() {
         if (reconciling) binding.notice.append("\n服务器正在恢复对账，原记录已保留；历史回执不代表本次恢复已完成，请联系主管。")
     }
     private fun buttons(enabled: Boolean) {
-        binding.freeze.isEnabled = enabled; binding.upload.isEnabled = enabled; binding.refresh.isEnabled = enabled; binding.back.isEnabled = enabled
+        binding.freeze.isEnabled = enabled; binding.upload.isEnabled = enabled; binding.refresh.isEnabled = enabled; binding.rescueExport.isEnabled = enabled; binding.back.isEnabled = enabled
     }
 }

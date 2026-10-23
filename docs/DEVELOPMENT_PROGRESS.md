@@ -1,3 +1,4 @@
+- [正式订单直接 out.txt 与完成页入口](history/PDA_OUT_TEXT_COMPLETION_ENTRY_2026-10-23.md)：七类 31 项定向测试、lint/构建通过；M71 同签名保数据覆盖安装并核回拉 APK；完成页跳转为合成测试，真实订单列表及原身份导出未验。TEMP/独立 SKU 简单文本出口未接入，教程单列。
 - [D13已有绑定的真实双实例后继恢复](history/GOAL_D13_BOUND_CROSS_INSTANCE_SUCCESSOR_2026-10-23.md)：100主机、新双实例IT1/0/0/0及独立原件消费通过；真实不同UUID、181表/4文件/185触发器、原binding/NORMAL与源事实保持，仅合成数据库准入有界，不计跨实例API/P5、D13整体或最终候选。
 - [D13已有绑定恢复/API/独立worker/P5组合](history/GOAL_D13_SUCCESSOR_P5_COMPOSITION_2026-10-23.md)：最终100项主机、新隔离IT1/0/0/0及Python原件消费通过；181表、后继追加/原行保持、双进程活租约/双格式下载与六HTTP503守恒。合成test-only提升、同实例跨schema有界，不计实际跨实例、D13整体或最终候选。
 - [D13后继数据库单SELECT只读准入](history/GOAL_D13_SUCCESSOR_READ_ONLY_ADMISSION_2026-10-23.md)：100项主机及新隔离IT1/0/0/0通过；已有binding非空恢复的两轮verifier/连接入口各1 SELECT/0 DML，原件及源库守恒，10类反例/轮与Python回读。仅有界数据库观察；后续实际组合见上项，不计D13整体/最终候选。

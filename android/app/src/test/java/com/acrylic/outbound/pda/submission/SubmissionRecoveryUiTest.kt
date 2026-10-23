@@ -8,6 +8,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.acrylic.outbound.pda.PdaApplication
 import com.acrylic.outbound.pda.R
 import com.acrylic.outbound.pda.sync.RecoveryProtection
+import com.acrylic.outbound.pda.ui.RescueExportActivity
 import com.acrylic.outbound.pda.ui.SubmissionActivity
 import com.acrylic.outbound.pda.work.WorkFixture
 import kotlinx.coroutines.*
@@ -43,13 +44,36 @@ class SubmissionRecoveryUiTest {
         assertNotNull(dialog); assertTrue(dialog.isShowing); dialog.dismiss()
     }
 
-    private fun scenario(reconciling: Boolean, verify: (SubmissionActivity) -> Unit) {
+    @Test fun syncedSubmissionCanOpenReadOnlyExportForOriginalOrder() = scenario(false, "SYNCED") { activity ->
+        assertTrue(activity.findViewById<TextView>(R.id.status).text.contains("回执已验签"))
+        val export = activity.findViewById<Button>(R.id.rescueExport)
+        assertTrue(export.isShown); assertTrue(export.isEnabled)
+        export.performClick()
+        val destination = Shadows.shadowOf(activity).nextStartedActivity
+        assertEquals(RescueExportActivity::class.java.name, destination.component?.className)
+        assertEquals("FORMAL", destination.getStringExtra("source"))
+        assertEquals(activity.intent.getStringExtra("assignmentId"), destination.getStringExtra("localOrderId"))
+    }
+
+    @Test fun reconcilingSyncedSubmissionRetainsReadOnlyExportEntry() = scenario(true, "SYNCED") { activity ->
+        assertTrue(activity.findViewById<TextView>(R.id.status).text.contains("恢复待对账"))
+        assertFalse(activity.findViewById<Button>(R.id.freeze).isEnabled)
+        val export = activity.findViewById<Button>(R.id.rescueExport)
+        assertTrue(export.isShown); assertTrue(export.isEnabled)
+        export.performClick()
+        assertEquals("FORMAL", Shadows.shadowOf(activity).nextStartedActivity.getStringExtra("source"))
+    }
+
+    private fun scenario(reconciling: Boolean, submissionState: String? = null, verify: (SubmissionActivity) -> Unit) {
         val app = ApplicationProvider.getApplicationContext<PdaApplication>()
         val fixture = runBlocking(Dispatchers.IO) {
             WorkFixture(folder.root).also {
                 it.scan()
                 RecoveryProtection(it.db).observe(JSONObject().put("serverRecoveryEpoch", if (reconciling) "2" else "1")
                     .put("serviceMode", "NORMAL"))
+                if (submissionState != null) it.db.submissions().insert(LocalSubmission(
+                    id = "ui-only-submission", assignmentId = it.assignment, payload = "{}",
+                    sha256 = "ui-only-not-a-verified-receipt", state = submissionState))
                 it.db.close()
             }
         }
@@ -58,7 +82,7 @@ class SubmissionRecoveryUiTest {
         try {
             awaitRendered(controller.get()); verify(controller.get())
             runBlocking(Dispatchers.IO) {
-                assertNull(app.database.submissions().forOrder(fixture.assignment))
+                assertEquals(submissionState, app.database.submissions().forOrder(fixture.assignment)?.state)
                 assertEquals("SCANNING", app.database.work().order(fixture.assignment)!!.state)
                 assertEquals(1L, app.database.scans().total(fixture.assignment).count)
             }

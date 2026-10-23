@@ -44,7 +44,10 @@ class RescueRequestActivity : ComponentActivity() {
     private fun render(state: RescueRequestUi) {
         val orderLabels = state.orders.map { it.label }
         if (orders != orderLabels) {
-            orders = orderLabels; binding.order.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, orders)
+            orders = orderLabels
+            binding.order.adapter = ArrayAdapter(this, com.acrylic.outbound.pda.R.layout.item_rescue_order, orders).apply {
+                setDropDownViewResource(com.acrylic.outbound.pda.R.layout.item_rescue_order)
+            }
         }
         val requestLabels = state.requests.map { "${it.target.source} · ${it.target.localOrderId} · ${it.key}" }
         if (requests != requestLabels) {

@@ -38,6 +38,9 @@ class RescueExportActivity : ComponentActivity() {
     private val createDocument = registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
         if (uri == null) model.cancelled() else model.copy(uri)
     }
+    private val createTextDocument = registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
+        if (uri == null) model.cancelTextExport() else model.exportText(uri)
+    }
     private val openReceipt = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) model.importReceipt(uri)
     }
@@ -68,6 +71,7 @@ class RescueExportActivity : ComponentActivity() {
         binding.ownCardUnlock.setOnClickListener { ownCard.choose() }
         binding.supervisorCardUnlock.setOnClickListener { supervisorCard.choose() }
         binding.readSnapshot.setOnClickListener { model.readSnapshot() }
+        binding.exportText.setOnClickListener { if (model.beginTextExport()) createTextDocument.launch("out.txt") }
         binding.importReceipt.setOnClickListener { openReceipt.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }
         binding.nextPage.setOnClickListener { model.nextPage() }
         binding.lockScope.setOnClickListener { model.lock() }
@@ -126,10 +130,13 @@ class RescueExportActivity : ComponentActivity() {
         val orders = state.orders.map { it.label }
         if (orders != orderLabels) {
             orderLabels = orders
-            binding.order.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, orders)
+            binding.order.adapter = ArrayAdapter(this, com.acrylic.outbound.pda.R.layout.item_rescue_order, orders).apply {
+                setDropDownViewResource(com.acrylic.outbound.pda.R.layout.item_rescue_order)
+            }
             binding.order.setSelection(state.selected)
         }
-        binding.status.text = state.message; binding.summary.text = state.summary; binding.copyState.text = state.copyState
+        binding.status.text = state.message; binding.summary.text = state.summary
+        binding.textExportState.text = state.textExportState; binding.copyState.text = state.copyState
         renderPackages(state); renderActions(state)
     }
     private fun renderActions(state: RescueExportUi) {
@@ -144,6 +151,7 @@ class RescueExportActivity : ComponentActivity() {
         binding.supervisorFileImport.isEnabled = !state.busy && !readingSupervisor
         binding.identity.isEnabled = !state.busy; binding.order.isEnabled = !state.busy
         binding.readSnapshot.isEnabled = !state.busy && state.unlocked && state.orders.isNotEmpty()
+        binding.exportText.isEnabled = !state.busy && state.canExportText
         binding.importReceipt.isEnabled = !state.busy && state.unlocked &&
             state.orders.getOrNull(state.selected)?.target?.source in setOf("FORMAL", "TEMP")
         binding.generate.isEnabled = !state.busy && state.canGenerate; binding.copy.isEnabled = !state.busy && state.canCopy
@@ -152,7 +160,7 @@ class RescueExportActivity : ComponentActivity() {
         binding.nextPage.isEnabled = !state.busy
         if (supervisorSetupActive || packageSetupActive) listOf(binding.unlock, binding.credentialSetup, binding.ownCardUnlock, binding.supervisorCardUnlock,
             binding.supervisorRequest, binding.supervisorImport, binding.supervisorFileImport, binding.identity,
-            binding.order, binding.readSnapshot, binding.importReceipt, binding.generate, binding.generateSecurePackage, binding.copy,
+            binding.order, binding.readSnapshot, binding.exportText, binding.importReceipt, binding.generate, binding.generateSecurePackage, binding.copy,
             binding.nextPage, binding.lockScope, binding.recoverPackage).forEach { it.isEnabled = false }
     }
     private fun renderPackages(state: RescueExportUi) {

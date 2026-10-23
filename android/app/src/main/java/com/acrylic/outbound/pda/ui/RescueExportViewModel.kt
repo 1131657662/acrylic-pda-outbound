@@ -18,6 +18,7 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
     private var generated: RescueGeneratedFile? = null
     private var pageCursor: String? = null; private val mutable = MutableStateFlow(RescueExportUi())
     val state: StateFlow<RescueExportUi> = mutable.asStateFlow()
+    private val textExport = RescueTextExport(app, mutable)
     fun prefer(source: String, id: String) {
         if (source !in setOf("FORMAL", "TEMP", "INDEPENDENT") || id.isBlank()) return
         saved["preferredSource"] = source; saved["preferredId"] = id
@@ -41,7 +42,7 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
     fun unlock(index: Int, password: CharArray) {
         if (state.value.busy) { password.fill('\u0000'); return }
         grant = null; snapshot = null; generated = null
-        mutable.update { it.copy(unlocked = false, canGenerate = false, canCopy = false, privatePackages = emptyList()) }
+        mutable.update { it.copy(unlocked = false, canGenerate = false, canCopy = false, canExportText = false, textExportState = RescueExportUi().textExportState, privatePackages = emptyList()) }
         run("正在核验本地只读范围") {
             try {
                 val identity = state.value.identities.getOrNull(index) ?: error("本机没有可用预置凭据，请在联网时预置")
@@ -56,7 +57,7 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
     internal fun unlockCard(id: String, uri: Uri) {
         if (state.value.busy || state.value.unlocked) return
         grant = null; snapshot = null; generated = null
-        mutable.update { it.copy(unlocked = false, canGenerate = false, canCopy = false, privatePackages = emptyList()) }
+        mutable.update { it.copy(unlocked = false, canGenerate = false, canCopy = false, canExportText = false, textExportState = RescueExportUi().textExportState, privatePackages = emptyList()) }
         run("正在读取本人凭据卡并核验本机只读范围") {
             try {
                 val choice = state.value.identities.firstOrNull { it.id == id && id.startsWith("own:") }
@@ -81,7 +82,7 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
     internal fun unlockSupervisorCard(id: String, uri: Uri) {
         if (state.value.busy || state.value.unlocked) return
         grant = null; snapshot = null; generated = null
-        mutable.update { it.copy(unlocked = false, canGenerate = false, canCopy = false, privatePackages = emptyList()) }
+        mutable.update { it.copy(unlocked = false, canGenerate = false, canCopy = false, canExportText = false, textExportState = RescueExportUi().textExportState, privatePackages = emptyList()) }
         run("正在读取主管凭据卡并核验原签名范围") {
             try {
                 val choice = state.value.identities.firstOrNull { it.id == id && id.startsWith("supervisor:") }
@@ -109,32 +110,41 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
     fun select(index: Int) {
         if (index == state.value.selected) return
         snapshot = null; generated = null
-        mutable.update { it.copy(selected = index, canGenerate = false, canCopy = false, summary = "") }
+        mutable.update { it.copy(selected = index, canGenerate = false, canCopy = false, canExportText = false, textExportState = RescueExportUi().textExportState, summary = "") }
     }
     fun nextPage() = run("正在读取下一页原订单") {
         page(pageCursor ?: return@run)
     }
     private fun page(after: String) {
-        val rows = RescueOrders(app.database).page(checkNotNull(grant), after)
+        val orders = RescueOrders(app.database)
+        val access = checkNotNull(grant)
+        val rows = orders.page(access, after)
         pageCursor = rows.nextCursor
         val preferred = saved.get<String>("preferredId")
         val source = saved.get<String>("preferredSource")
         val options = rows.rows.toMutableList()
         if (after.isEmpty() && preferred != null && source != null && options.none { it.target.localOrderId == preferred && it.target.source == source })
-            options.add(0, RescueOrderChoice(RescueTarget(source, preferred), "原页面订单 · $preferred"))
+            orders.find(access, RescueTarget(source, preferred))?.let { options.add(it) }
         val selected = if (after.isEmpty()) options.indexOfFirst { it.target.localOrderId == preferred && it.target.source == source }.coerceAtLeast(0) else 0
         snapshot = null; generated = null
-        mutable.update { it.copy(orders = options, hasMore = rows.nextCursor != null, selected = selected, canGenerate = false, canCopy = false) }
+        mutable.update { it.copy(orders = options, hasMore = rows.nextCursor != null, selected = selected, canGenerate = false, canCopy = false, canExportText = false, textExportState = RescueExportUi().textExportState) }
     }
     fun readSnapshot() = run("正在读取一致原件快照") {
         snapshot = null; generated = null
-        mutable.update { it.copy(canGenerate = false, canCopy = false) }
+        mutable.update { it.copy(canGenerate = false, canCopy = false, canExportText = false, textExportState = RescueExportUi().textExportState) }
         val selected = state.value.orders.getOrNull(state.value.selected) ?: error("请选取原订单")
         snapshot = RescueRoomSnapshot(app.database).read(selected.target, checkNotNull(grant))
         val facts = RescueFacts.summary(checkNotNull(snapshot))
-        mutable.update { it.copy(canGenerate = true, summary = selected.label + "\n有效 ${facts.getString("active")} · VOID ${facts.getString("void")} · " +
+        textExport.read(checkNotNull(snapshot))
+        mutable.update { it.copy(canGenerate = true,
+            summary = selected.label + "\n有效 ${facts.getString("active")} · VOID ${facts.getString("void")} · " +
             "处置 ${facts.getString("disposed")} · 未决 ${facts.getString("pending")} · 失败 ${facts.getString("failed")}\n" +
             if ("submission.json" in checkNotNull(snapshot).originals) "存在原冻结批次，正文按原字节保存" else "未冻结；不会补造提交批次") }
+    }
+    fun beginTextExport() = textExport.begin()
+    fun cancelTextExport() = textExport.cancel()
+    fun exportText(uri: Uri) = run("正在写入 out.txt 并回读校验") {
+        textExport.copy(snapshot, uri, grant)
     }
     internal fun packageDraft(): RescuePackageDraft {
         check(!state.value.busy && state.value.unlocked && state.value.canGenerate)
@@ -173,7 +183,7 @@ class RescueExportViewModel(application: Application, private val saved: SavedSt
         val bytes = checkNotNull(app.contentResolver.openInputStream(uri)).use { it.readBytesBounded() }
         val message = com.acrylic.outbound.pda.relay.RelayReceiptImport(app).apply(bytes, selected.target, checkNotNull(grant))
         snapshot = null; generated = null
-        mutable.update { it.copy(message = message, canGenerate = false, canCopy = false) }
+        mutable.update { it.copy(message = message, canGenerate = false, canCopy = false, canExportText = false, textExportState = RescueExportUi().textExportState) }
     }
     private fun java.io.InputStream.readBytesBounded(): ByteArray {
         val output = java.io.ByteArrayOutputStream(); val buffer = ByteArray(8192)
