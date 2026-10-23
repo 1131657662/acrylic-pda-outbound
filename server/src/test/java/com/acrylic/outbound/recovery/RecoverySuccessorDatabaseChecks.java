@@ -22,7 +22,7 @@ public final class RecoverySuccessorDatabaseChecks {
         assertThat(projected.numericEpoch()).isEqualTo(Long.toString(fixture.baseline() + 1));
         assertThat(fixture.project(target)).isEqualTo(projected);
         release(target, fixture, evidence, "round-two");
-        assertThat(fixture.runtimeAdmitted(target)).as("runtime successor integration remains closed").isFalse();
+        RecoverySuccessorAdmissionChecks.verify(source, target, fixture, evidence.resolve("round-two-admission"));
         var nextPins = fixture.pins(target);
         assertThat(nextPins.sourceBindingSha256()).isNotEqualTo(pins.sourceBindingSha256());
         assertThat(nextPins.sourceNormalSha256()).isNotEqualTo(pins.sourceNormalSha256());
@@ -34,7 +34,7 @@ public final class RecoverySuccessorDatabaseChecks {
         assertThat(target.queryForObject("SELECT COUNT(*) FROM recovery_control_projection", Integer.class)).isEqualTo(12);
         assertThat(target.queryForObject("SELECT COUNT(*) FROM recovery_control_epoch", Integer.class)).isEqualTo(4);
         assertThat(target.queryForObject("SELECT recovery_epoch FROM server_state WHERE id=1", Long.class)).isEqualTo(fixture.baseline() + 3);
-        assertThat(fixture.runtimeAdmitted(target)).isFalse();
+        RecoverySuccessorAdmissionChecks.verify(source, target, fixture, evidence.resolve("round-three-admission"));
     }
 
     private static void rejectPins(JdbcTemplate target, RecoverySuccessorDatabaseFixture fixture,

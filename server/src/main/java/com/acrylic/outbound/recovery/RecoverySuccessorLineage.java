@@ -8,26 +8,29 @@ import com.acrylic.outbound.recovery.RecoveryProjectionRows.*;
 
 /** Complete retained database lineage, cross-checked with exact external originals before any append. */
 final class RecoverySuccessorLineage {
-    private final JdbcTemplate jdbc;
+    private final RecoveryLineageFacts facts;
     private final RecoveryDatabaseControl control;
     private final long baseline;
 
     RecoverySuccessorLineage(JdbcTemplate jdbc, RecoveryDatabaseControl control, long baseline) {
-        this.jdbc = jdbc; this.control = control; this.baseline = baseline;
+        this(RecoveryLineageFacts.read(jdbc), control, baseline);
+    }
+
+    RecoverySuccessorLineage(RecoveryLineageFacts facts, RecoveryDatabaseControl control, long baseline) {
+        this.facts = facts; this.control = control; this.baseline = baseline;
     }
 
     View read() {
-        var rows = new RecoveryProjectionRows(jdbc); var original = rows.binding();
+        var original = facts.original();
         require(original != null, "CONTROL_DATABASE_NOT_REGISTERED");
         require(original.installation().equals(uuid(control.head(), "installationId")) && original.baseline() == baseline,
             "CONTROL_DATABASE_INSTALLATION_MISMATCH");
-        var prefix = RecoveryDatabasePrefix.validate(rows, original, control);
-        var facts = new RecoverySuccessorRows(jdbc);
-        var bindings = facts.bindings(original.installation()); var normals = facts.normals(original.installation());
+        var prefix = RecoveryDatabasePrefix.validate(facts, original, control);
+        var bindings = facts.bindings(); var normals = facts.normals();
         require(bindings.size() <= 100000 && normals.size() <= 100000, "CONTROL_DATABASE_CHAIN_CONFLICT");
         var initial = initialNormal(original, prefix);
-        var view = new View(prefix.getFirst(), original, null, null, RecoveryDatabaseHashes.binding(jdbc),
-            RecoveryDatabaseHashes.normal(jdbc), initial);
+        var view = new View(prefix.getFirst(), original, null, null, facts.originalBindingHash(),
+            facts.originalNormalHash(), initial);
         int bindingIndex = 0, normalIndex = 0;
         for (var projection : prefix) {
             if (projection.revision() > 1 && projection.phase().equals("QUIESCING")) {
@@ -52,7 +55,7 @@ final class RecoverySuccessorLineage {
 
     private RecoveryNormalIntent.Intent initialNormal(Binding original, List<Projection> prefix) {
         require(prefix.size() >= 4, "CONTROL_SUCCESSOR_PREDECESSOR_REQUIRED");
-        var terminal = prefix.get(3); var normal = new RecoveryNormalRows(jdbc).existing();
+        var terminal = prefix.get(3); var normal = facts.initialNormal();
         require(normal != null && terminal.phase().equals("RELEASE_READY"), "CONTROL_SUCCESSOR_NORMAL_REQUIRED");
         var intent = control.normal(terminal.revision()); requireNormal(intent, original.schema());
         require(normal.revision() == terminal.revision() && normal.authorityRevision() == terminal.revision()

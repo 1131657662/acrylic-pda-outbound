@@ -1,14 +1,14 @@
 # 开发看板
 
 <!-- CURRENT_STATE_START -->
-总目标active、未完成；localDeletionAllowed=false。D13后继数据库登记前置：已有binding/NORMAL的非空dump实际跨schema恢复，两轮追加及末SQL回滚通过；主机100项、新隔离IT1/0/0/0。运行时后继准入仍拒绝，实际API/worker/P5组合、D13整体和最终候选未完成。Android订单选择器既有结论保持，真实订单列表仍缺合规救援凭据验证。
+总目标active、未完成；localDeletionAllowed=false。D13后继数据库单SELECT只读准入：已有binding/NORMAL非空dump跨schema，两轮verifier/连接入口各1 SELECT/0 DML；主机100项、新隔离IT1/0/0/0及Python原件消费通过。实际后继API/worker/P5组合、跨实例正向、D13整体和最终候选未完成。Android订单选择器既有结论保持，真实订单列表仍缺合规救援凭据验证。
 
 ## 输入、写权与保存
-- 固定树D:/acrylic-pda-outbound，codex/development；D13输入7036f53a8b5263061842323b98087def3ca25e14，接续时HEAD/实际开发远端核同；main=c6e9e0c238c657baecbf699ba6fdbada5d979b86未操作。本片明确路径开发备份的实际提交/推送回执见证据根closeout-submit/，最终元数据留本地，不自引用循环提交。
-- D13证据根.local/d13-successor-database-20261023/run01/；baseline保全34条、before-cleanup48条、resume-closeout02保全52条展开dirty/原字节/SHA/patch及683目标原件。closeout-review核2713冻结输入/110依赖无漂移、14代码路径匹配、22继承逐字节守恒，另1条看板事实变化单列。另一聊天active处理Android文本导出，不修改/暂存其路径，不发消息/委派。
-- 共享文档写前原字节/SHA在before-docs及resume-closeout02，旧叙述归档history/ORCHESTRATION_STATUS_BEFORE_SUCCESSOR_DATABASE_2026-10-23.md。新鲜环境见resume-closeout02/environment.json及最终closeout-final/；系统3306/33060身份未认证，仅观察未连接/停止。ADB只枚举两真机，无设备/模拟器/正式签名/APK操作；既有debug Keystore哈希核同。
-- 本片Java/Python/MySQL会话均已结束；1750–1752已认证停库、无隔离监听，已清测试库不得复用。resume-closeout01只读保全脚本在Windows PowerShell缺GetRelativePath而中断，已有dirty/patch原件保留，改用现有PowerShell Core生成resume-closeout02成功，不重跑业务。
-- 清理cleanup01及correction.json：15明确路径逻辑738810669字节；D窗口25268326400→26028728320字节，净增760401920字节约0.71GiB。原汇总null另存修正，不覆盖原记录；控制/intent/身份/失败原件和关键恢复行保持。接续时C=82209107968、D=26028617728、E=195634053120；其他时点差值不归为本片释放。版本/树数只见生成块。
+- 固定树D:/acrylic-pda-outbound，codex/development；本片输入/已核实际开发远端6b28cd05f464e9ca4ef18f0a608db17e8c1827f3；main=c6e9e0c238c657baecbf699ba6fdbada5d979b86未操作。本片16代码+6文档按明确路径开发备份；实际暂存/commit/push/远端回执以closeout-submit为准，完成后刷新本条，不自引用循环提交。
+- 本片证据根.local/d13-successor-admission-20261023/run01/；baseline保全34条、before-cleanup50条、resume-closeout01保全54条展开dirty/原字节/SHA/patch及690目标原件。closeout-review核2720冻结输入/110依赖无漂移、16代码路径匹配、22长期继承逐字节守恒。另一聊天active处理Android文本导出，不修改/暂存其路径，不发消息/委派；其新增变化另存完整快照。
+- 共享文档写前原字节/SHA在closeout-review/originals及documents-before.json；旧叙述归档history/ORCHESTRATION_STATUS_BEFORE_SUCCESSOR_ADMISSION_2026-10-23.md。新鲜环境见resume-closeout01/environment.json及最终closeout-final/；系统3306/33060身份未认证，仅观察未连接/停止。ADB只枚举两真机，无本片设备/模拟器/正式签名/APK操作，debug Keystore哈希核同。
+- 本片Java/Python/MySQL会话已结束；1753–1755已认证停库、无隔离监听，已清测试库不得复用。前片push runner序列化失败原件保留，实际远端另核同输入，不重复原提交/推送脚本。
+- 清理cleanup01：15明确路径逻辑774542189字节；D窗口25020846080→25821130752字节，净增800284672字节约0.75GiB。控制/intent/身份/失败原件和关键恢复行保持。接续采样C=82184949760、D=25821126656、E=195634053120；其他时点差值不归为本片释放。版本/树数只见生成块。
 
 ## 继承的测试部署与Android
 - 既有固定测试后台、M71领取/资料下载/刷新与主页布局仅按 `history/TEST_CLAIM_M71_LAYOUT_2026-10-23.md` 独立范围继承，本片未连接或重新认证远端。线上APK发布入口未改；本片只记录订单选择器测试包，不计D13整体。
@@ -22,14 +22,14 @@
 - M71 现场证据目录：`.local/rescue-order-picker-20261023/run01/`，含 `main-current.xml`、`rescue-entry.xml` 和启动/安装快照。未完成项：取得合规救援凭据后展开 Spinner，核对真实订单日期、车号、订单号、UUID 和最新项置顶。
 
 ## 本片D13证据与限制
-- 仅新增immutable successor binding/per-round NORMAL及约束；首轮原binding/NORMAL、全部投影/数字映射/触发器保留。closed事务内核完整外部历史和DB前缀、原行全列含微秒摘要、前驱release/intent、真实目标UUID/schema，再原子追加；NORMAL严格选该轮原件，初始normal-admission.json不覆写。
-- compile03独立javac exit0；unit01实际100/100、零失败/跳过/中止；it03全新隔离1752为1/0/0/0、runner exit0。已有binding/NORMAL的非空真实dump跨schema，两轮原行/其他业务/文件/源库守恒，重放幂等、不可变触发器、四类错pin/目标及正确命令在源schema拒绝、binding末INSERT和每轮NORMAL末UPDATE回滚均覆盖。
-- it01/1750缺合成签名夹具、导入前失败；it02/1751导入后测试快照LocalDateTime序列化失败；仅修夹具，it03通过。失败原件/冻结输入保留；作者、自审、Python/Java/MySQL消费者同助手，均合成隔离输入，不冒充原身份或独立人员。
-- 关键SHA：it03结果68daac89bf050a4ad26ca4b2f60ee245f1ef8e7f8f7c048ca544089c98c514aa；unit01结果6a576416d40ba51211580ca649c759dc765ef29b57d1ac248048205574cad25b；目标全量事实93b10dfd273e216908091a4af795a5b1ec89c8951573edd7227d00bd7e9c0957。详history/GOAL_D13_SUCCESSOR_DATABASE_ROUND_2026-10-23.md。
-- 原运行时RecoveryAdmissionVerifier/单SELECT身份查询未改，后继登记后仍拒绝；跨schema正向不是实际跨实例正向，随机错UUID不是第二实例。前片控制跨进程及无旧binding的API/worker/P5组合只作历史，不拼成后继或最终通过。
+- 同一固定SELECT取得实际UUID/schema、原binding/NORMAL、全投影/数字映射、后继binding/NORMAL及server_state；复用登记路径完整lineage，按准确轮次取外部原件。协调锁下核完整外链和expected revision/hash，初始normal-admission.json不覆写；观察admitted不授普通写/删除权，无新bean/路由/迁移/开关。
+- 有效red：red-it01/1753在第二轮登记后实际admitted=false，新期望true准确失败。green compile03独立javac exit0；unit01同次100全过/零跳过中止；it02全新1755为1/0/0/0、runner exit0。两轮真实verifier及连接入口各1 SELECT/0 DML、binlog不变；每轮10纯观察反例、源schema拒绝、缺该轮NORMAL拒绝后原字节恢复重新准入。源库181表/七控制状态表/原件守恒，末INSERT/UPDATE回滚及不可变触发器同IT覆盖。
+- it01/1754因SHOW MASTER STATUS缺REPLICATION CLIENT夹具失败；仅在新1755合成bootstrap补观察权限。consumer01漏摘要末LF失败，保留原脚本/日志；修消费者后consumer02通过，380原件/两轮摘要/source pin核同，产品与原证据未改。同助手作者/自审/多工具消费者，不冒充独立人员、原身份或实际跨实例正向。
+- 结果SHA：unit01=6a576416d40ba51211580ca649c759dc765ef29b57d1ac248048205574cad25b；it02=68daac89bf050a4ad26ca4b2f60ee245f1ef8e7f8f7c048ca544089c98c514aa；consumer02=17fd4548bef6652bb2613a977c6fea22377789ef44fa7ee59176502ba8a18898。计数JSON须结合路径/命令/冻结输入，不能单靠相同SHA归并不同运行。详history/GOAL_D13_SUCCESSOR_READ_ONLY_ADMISSION_2026-10-23.md。
+- 本片只做后继数据库观察/连接入口，未执行后继实际API/独立worker/P5/文件组合；无旧binding的历史组合和跨schema正向不拼成后继组合、跨实例或最终通过。
 
 ## 下一步与边界
-- 接续先核本片closeout、实际HEAD/远端/完整dirty/写者/环境，不重跑旧IT/已清库。D13下一有界任务：完整successor lineage、实际目标身份和指定轮次NORMAL接入同一只读数据库观察，再以全新已有binding非空恢复输入核真实API/独立worker/P5/文件。实际跨实例正向和进程死亡/pending仍缺，不放宽UUID、更新不可变表或删触发器。
+- 接续先核本片closeout、实际HEAD/远端/完整dirty/写者/环境，不重跑旧IT/已清库。D13下一有界任务：全新已有binding的非空实际恢复输入上，组合后继准入、真实API/独立worker/P5/文件。实际跨实例正向和进程死亡/pending仍缺，不放宽UUID、更新不可变表或删触发器。
 - Android后续由另一聊天实际输入/写权为准；选择器真实列表仍需合规救援凭据。D13整体、其余worker/文件入口、OS拒绝自halt、D16整体、D18实际最终候选及第8节仍缺，不能将控制前置或历史局部结果拼成最终通过。
 - 生产开关/TEMP归档、正式签名、原库现网、main、生产部署/Release关闭；既有测试授权仅原范围继承。取消链/多跳/接收者确认激活/旧run03不恢复。开发备份/清理/文档不计验收或总目标完成。
 
@@ -38,8 +38,8 @@
 ```yaml
 date: 2026-10-23
 branch: codex/development
-head: 7036f53a
-dirty_entries: 52
+head: 6b28cd05
+dirty_entries: 58
 worktrees: 35
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
 server: { contract: 0.73.0, paths: 201, flyway: V100, migrations: 100 }

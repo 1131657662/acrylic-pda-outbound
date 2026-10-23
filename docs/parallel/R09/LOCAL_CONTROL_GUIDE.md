@@ -63,7 +63,7 @@ python docs/parallel/R09/ops/cli.py control-apply --control-root D:/isolated-con
 
 这些 primitive 无 bean/路由/自动调用；必须显式提供固定 closed authority、原 baseline 及完整外部原件。登记在真实目标 UUID/schema 上核前驱 release/intent 和源 binding/NORMAL 摘要，严格下一条投影、全历史映射、原子追加及幂等；更多 NORMAL 按指定 revision/hash 从原件目录读取，不覆盖初始原件。实际非空 dump 的新 schema 两轮验证见[专项报告](../../history/GOAL_D13_SUCCESSOR_DATABASE_ROUND_2026-10-23.md)。这不是可上线运维脚本或可信生产材料。
 
-运行时准入/P5尚未接后继 lineage；既有 `RecoveryAdmissionVerifier` 和单语句数据库身份观察保持，后继登记后仍拒绝准入。下一步须在同一观察中完整验证前链与本轮原件，再做真实 API/worker/P5/文件组合。`ordinaryWritesAllowed=false`、`localDeletionAllowed=false`保持，不因登记或本机验证通过放开生产入口。
+后继运行时数据库观察已接完整 lineage：`RecoveryAdmissionVerifier` 按指定轮次读取 NORMAL，`RecoverySuccessorAdmissionSql` 在同一条只读 SELECT 中取得真实 UUID/schema、原 binding/NORMAL、全部投影/映射、后继 binding/NORMAL 和 server_state，并复用登记路径的完整前缀及源 pin 校验；缺原件或矛盾即拒绝，初始原件不覆写。两轮新隔离非空恢复的 verifier/连接入口、单 SELECT/0 DML 及反例见[只读准入报告](../../history/GOAL_D13_SUCCESSOR_READ_ONLY_ADMISSION_2026-10-23.md)。真实 API/独立 worker/P5/文件的后继组合仍待实测；跨 schema 正向不是跨实例正向。`ordinaryWritesAllowed=false`、`localDeletionAllowed=false`保持，不因观察准入放开业务或生产入口。
 
 ## 崩溃与恢复
 

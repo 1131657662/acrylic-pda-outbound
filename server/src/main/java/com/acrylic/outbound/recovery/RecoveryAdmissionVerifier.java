@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.function.Function;
 
 /**
  * Read-only runtime check that the external authority and the database admission agree. It is not a
@@ -16,16 +17,24 @@ public final class RecoveryAdmissionVerifier {
     public static Result verifyInitial(RecoveryAdmissionEvidence evidence, InitialNormalStore store, Path closedAuthority) {
         return InitialNormalVerification.verify(evidence, store, closedAuthority);
     }
-    private final RecoveryAdmissionEvidence evidence;
     private final Supplier<RecoveryControlSnapshot> authority;
-    private final Supplier<RecoveryIntentView> intent;
+    private final Function<RecoveryControlSnapshot, RecoveryIntentView> intent;
+    private final DatabaseObservation observation;
 
     public RecoveryAdmissionVerifier(RecoveryAdmissionEvidence evidence,
             Supplier<RecoveryControlSnapshot> authority, Supplier<RecoveryIntentView> intent) {
-        this.evidence = Objects.requireNonNull(evidence);
+        Objects.requireNonNull(evidence); Objects.requireNonNull(intent);
         this.authority = Objects.requireNonNull(authority);
-        this.intent = Objects.requireNonNull(intent);
+        this.intent = control -> intent.get();
+        this.observation = control -> evidence.closed();
     }
+
+    private RecoveryAdmissionVerifier(Supplier<RecoveryControlSnapshot> authority,
+            Function<RecoveryControlSnapshot, RecoveryIntentView> intent, DatabaseObservation observation) {
+        this.authority = authority; this.intent = intent; this.observation = observation;
+    }
+
+    private interface DatabaseObservation { RecoveryAdmissionEvidence.Closed read(RecoveryControlSnapshot control) throws Exception; }
 
     /** Reads the durable external intent a second time, so the check compares rather than trusts. */
     public interface RecoveryIntentView {
@@ -49,7 +58,7 @@ public final class RecoveryAdmissionVerifier {
     private Result verifyDatabase(RecoveryControlSnapshot control, List<String> gaps) {
         RecoveryIntentView durable;
         try {
-            durable = intent.get();
+            durable = intent.apply(control);
         } catch (RuntimeException error) {
             gaps.add("DURABLE_INTENT_UNAVAILABLE");
             return Result.denied(gaps, control.installationId().toString());
@@ -61,7 +70,7 @@ public final class RecoveryAdmissionVerifier {
         }
         RecoveryAdmissionEvidence.Closed database;
         try {
-            database = evidence.closed();
+            database = observation.read(control);
         } catch (Exception error) {
             gaps.add("DATABASE_EVIDENCE_UNAVAILABLE");
             return Result.denied(gaps, control.installationId().toString());
@@ -125,22 +134,8 @@ public final class RecoveryAdmissionVerifier {
     public static RecoveryAdmissionVerifier of(RecoveryAdmissionEvidence evidence,
             RecoveryControlReader reader, Path checkpoint, RecoveryControlLocation location, long baseline) {
         Supplier<RecoveryControlSnapshot> authority = () -> reader.read(checkpoint);
-        Supplier<RecoveryIntentView> intent = () -> {
-            try {
-                var loaded = RecoveryNormalIntent.load(location, location.root(), baseline).intent();
-                if (loaded == null) return null;
-                return new RecoveryIntentView() {
-                    @Override public long revision() { return loaded.revision(); }
-                    @Override public String recordSha256() { return loaded.recordSha256(); }
-                    @Override public String intentSha256() { return loaded.intentSha256(); }
-                    @Override public String schema() { return loaded.schema(); }
-                    @Override public long baseline() { return loaded.baseline(); }
-                };
-            } catch (java.io.IOException error) {
-                throw new RecoveryControlException("CONTROL_NORMAL_INTENT_UNREADABLE", error);
-            }
-        };
-        return new RecoveryAdmissionVerifier(evidence, authority, intent);
+        return new RecoveryAdmissionVerifier(authority, control -> RecoveryAdmissionIntents.read(control, location, baseline),
+            control -> evidence.closed(new RecoveryAdmissionEvidence.Context(control, location, baseline)));
     }
 
     public record Result(boolean admitted, List<String> gaps, String installationId, String controlRevision,

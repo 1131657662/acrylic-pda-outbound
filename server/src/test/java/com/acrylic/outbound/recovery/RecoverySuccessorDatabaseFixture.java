@@ -117,10 +117,16 @@ public final class RecoverySuccessorDatabaseFixture {
     }
 
     boolean runtimeAdmitted(JdbcTemplate jdbc) {
+        return runtimeResult(jdbc).admitted();
+    }
+
+    RecoveryAdmissionVerifier.Result runtimeResult(JdbcTemplate jdbc) {
         return RecoveryAdmissionVerifier.of(new RecoveryAdmissionQueries(jdbc.getDataSource()),
-            new RecoveryControlReader(location), checkpoint, location, baseline).verify().admitted();
+            new RecoveryControlReader(location), checkpoint, location, baseline).verify();
     }
 
     long baseline() { return baseline; }
     Path root() { return location.root(); }
+    RecoveryControlLocation location() { return location; }
+    Path checkpoint() { return checkpoint; }
 }

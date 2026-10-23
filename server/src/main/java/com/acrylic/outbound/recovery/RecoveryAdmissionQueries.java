@@ -16,6 +16,11 @@ public final class RecoveryAdmissionQueries implements RecoveryAdmissionEvidence
 
     @Override public Closed closed() { return RecoveryClosedAdmissionQueries.read(jdbc); }
 
+    @Override public Closed closed(Context context) {
+        return Long.parseLong(context.control().revision()) > 4
+            ? RecoverySuccessorAdmissionQueries.read(jdbc, context) : closed();
+    }
+
     @Override public Binding binding() {
         var rows = jdbc.query("SELECT BIN_TO_UUID(installation_id),baseline_numeric_epoch FROM recovery_installation_binding WHERE id=1",
             (rs, row) -> new Binding(UUID.fromString(rs.getString(1)), rs.getLong(2)));

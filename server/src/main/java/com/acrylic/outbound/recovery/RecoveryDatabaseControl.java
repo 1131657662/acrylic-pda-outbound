@@ -12,11 +12,25 @@ final class RecoveryDatabaseControl {
     final List<JsonNode> records;
 
     RecoveryDatabaseControl(RecoveryClosedAuthority authority) {
-        location = authority.location();
+        this(authority.location(), authority.control());
+    }
+
+    private RecoveryDatabaseControl(RecoveryControlLocation location, RecoveryControlSnapshot expected) {
+        this.location = location;
         try {
-            var control = authority.control(); records = RecoveryControlHistory.history(location);
+            records = RecoveryControlHistory.history(location);
             RecoverySuccessorEvidence.verify(location.root(), records);
-            require(text(records.getLast(), "recordSha256").equals(control.recordSha256()), "CONTROL_INSTANCE_STALE");
+            require(!records.isEmpty() && text(records.getLast(), "recordSha256").equals(expected.recordSha256())
+                && revision(records.getLast(), "revision") == Long.parseLong(expected.revision()), "CONTROL_INSTANCE_STALE");
+        } catch (IOException error) { throw new RecoveryControlException("CONTROL_AUTHORITY_UNAVAILABLE", error); }
+    }
+
+    static RecoveryDatabaseControl readOnly(RecoveryControlLocation location, RecoveryControlSnapshot expected) {
+        try {
+            return RecoveryControlLock.lockedWaiting(location.root(), 1_000, () -> {
+                require(location.checked().equals(location), "CONTROL_AUTHORITY_CHANGED");
+                return new RecoveryDatabaseControl(location, expected);
+            });
         } catch (IOException error) { throw new RecoveryControlException("CONTROL_AUTHORITY_UNAVAILABLE", error); }
     }
 

@@ -11,6 +11,11 @@ public interface RecoveryAdmissionEvidence {
     /** One database observation; legacy suppliers with no physical identity stay closed. */
     default Closed closed() throws Exception { return null; }
 
+    /** Configured consumers can validate successor evidence from a single database observation. */
+    default Closed closed(Context context) throws Exception { return closed(); }
+
+    record Context(RecoveryControlSnapshot control, RecoveryControlLocation location, long baseline) { }
+
     record Database(UUID serverUuid, String schema) { }
     record Closed(Database actual, Database registered, Binding binding, Admission admission,
         Projection projection, State state) { }

@@ -1,6 +1,8 @@
-- [D13后继数据库追加绑定/NORMAL](GOAL_D13_SUCCESSOR_DATABASE_ROUND_2026-10-23.md)：100项相关主机/新隔离IT1/0/0/0，非空已绑定源真实dump跨schema、两轮追加及回滚；原行保留，后继运行时准入仍拒绝，不计D13整体/最终候选。
+- [D13后继数据库单SELECT只读准入](GOAL_D13_SUCCESSOR_READ_ONLY_ADMISSION_2026-10-23.md)：100项主机/新隔离IT1/0/0/0，两轮真实verifier/连接入口各1 SELECT/0 DML，10反例/轮、原件/源库守恒及Python消费；仅数据库观察，非后继实际API/worker/P5组合或整体/最终候选。
+- [后继只读准入前看板叙述](ORCHESTRATION_STATUS_BEFORE_SUCCESSOR_ADMISSION_2026-10-23.md)：原叙述归档，完整原字节/生成事实另存本片closeout-review，不恢复状态/写权。
+- [D13后继数据库追加绑定/NORMAL](GOAL_D13_SUCCESSOR_DATABASE_ROUND_2026-10-23.md)：100项相关主机/新隔离IT1/0/0/0，非空已绑定源真实dump跨schema、两轮追加及回滚；原行保留；后续只读准入见上项，不计D13整体/最终候选。
 - [后继数据库登记前看板叙述](ORCHESTRATION_STATUS_BEFORE_SUCCESSOR_DATABASE_2026-10-23.md)：历史断点，完整原字节/生成事实另存本片before-docs，不恢复状态/写权。
-- [D13后继恢复轮次控制协议](GOAL_D13_SUCCESSOR_CONTROL_PROTOCOL_2026-10-23.md)：正式跨进程44项含六死亡边界；Python57/Java57/消费者79分别通过，失败原件保留。仅控制前置；数据库登记后续见上述专项，运行时恢复仍未完成。
+- [D13后继恢复轮次控制协议](GOAL_D13_SUCCESSOR_CONTROL_PROTOCOL_2026-10-23.md)：正式跨进程44项含六死亡边界；Python57/Java57/消费者79分别通过，失败原件保留。仅控制前置；后续登记/只读观察见上述专项，实际后继组合仍未完成。
 - [后继控制协议收口前看板叙述](ORCHESTRATION_STATUS_BEFORE_SUCCESSOR_CONTROL_2026-10-23.md)：历史断点；完整原字节/SHA另存本片before-closeout-docs，不恢复旧写权或状态。
 
 - [D13实际跨实例UUID反例](GOAL_D13_CROSS_INSTANCE_DATABASE_IDENTITY_2026-10-23.md)：新双实例同schema IT1/0/0/0，精确UUID拒绝、三次单SELECT/五表及9文件守恒；运行器/离线原件消费者exit0。仅MODEL有界，非完整恢复/全部入口/整体或最终候选。

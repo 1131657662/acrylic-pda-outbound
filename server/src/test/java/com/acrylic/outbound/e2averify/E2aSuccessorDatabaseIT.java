@@ -47,7 +47,7 @@ class E2aSuccessorDatabaseIT {
         save(profile, "control-originals.json", com.acrylic.outbound.submissions.SubmissionJson.object().set("files",
             new com.fasterxml.jackson.databind.ObjectMapper().valueToTree(originalControl)));
         Files.writeString(profile.attempt.resolve("test-completed.marker"),
-            "Synthetic full dump with original binding/NORMAL; two append-only database rounds; runtime successor admission remains closed", StandardOpenOption.CREATE_NEW);
+            "Synthetic full dump with original binding/NORMAL; two append-only rounds and single-SELECT read-only runtime admission; not API/worker/P5 composition", StandardOpenOption.CREATE_NEW);
     }
 
     private static Map<String, String> files(Path root) throws Exception {

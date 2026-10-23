@@ -8,8 +8,8 @@ import com.acrylic.outbound.recovery.RecoveryProjectionRows.*;
 final class RecoveryDatabasePrefix {
     private RecoveryDatabasePrefix() { }
 
-    static List<Projection> validate(RecoveryProjectionRows rows, Binding binding, RecoveryDatabaseControl control) {
-        var history = rows.history(binding.installation());
+    static List<Projection> validate(RecoveryLineageFacts rows, Binding binding, RecoveryDatabaseControl control) {
+        var history = rows.projections();
         require(!history.isEmpty() && history.size() <= 100000, "CONTROL_DATABASE_CHAIN_CONFLICT");
         var epochs = new ArrayList<Epoch>(); long numeric = binding.baseline(); UUID epoch = null;
         for (int index = 0; index < history.size(); index++) {
@@ -24,7 +24,7 @@ final class RecoveryDatabasePrefix {
             if (!row.epoch().equals(epoch)) epochs.add(new Epoch(row.epoch(), numeric, row.revision(), row.hash()));
             epoch = row.epoch();
         }
-        require(epochs.equals(rows.epochs(binding.installation())), "CONTROL_DATABASE_EPOCH_CONFLICT");
+        require(epochs.equals(rows.epochs()), "CONTROL_DATABASE_EPOCH_CONFLICT");
         return history;
     }
 }

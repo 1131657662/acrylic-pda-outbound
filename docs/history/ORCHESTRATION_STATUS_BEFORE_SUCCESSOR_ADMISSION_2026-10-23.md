@@ -1,0 +1,35 @@
+# 后继只读准入收口前看板叙述
+
+仅历史断点，不恢复状态、写权或指令。完整原字节及生成事实块已保存在 `.local/d13-successor-admission-20261023/run01/closeout-review/originals/docs/ORCHESTRATION_STATUS.md`，原摘要见同目录 `documents-before.json`。
+
+总目标active、未完成；localDeletionAllowed=false。D13后继数据库登记前置：已有binding/NORMAL的非空dump实际跨schema恢复，两轮追加及末SQL回滚通过；主机100项、新隔离IT1/0/0/0。运行时后继准入仍拒绝，实际API/worker/P5组合、D13整体和最终候选未完成。Android订单选择器既有结论保持，真实订单列表仍缺合规救援凭据验证。
+
+## 输入、写权与保存
+- 固定树D:/acrylic-pda-outbound，codex/development；D13输入7036f53a8b5263061842323b98087def3ca25e14，本片20明确路径已开发备份6b28cd05f464e9ca4ef18f0a608db17e8c1827f3并核实际开发远端同SHA；main=c6e9e0c238c657baecbf699ba6fdbada5d979b86未操作。commit exit0；push后回执序列化卡住已中断该本地runner，原push退出码未耐久记录，实际远端另核成功，见closeout-submit/remote-observed.json；暂存空。最终元数据留本地，不自引用循环提交。
+- D13证据根.local/d13-successor-database-20261023/run01/；baseline保全34条、before-cleanup48条、resume-closeout02保全52条展开dirty/原字节/SHA/patch及683目标原件。closeout-review核2713冻结输入/110依赖无漂移、14代码路径匹配、22继承逐字节守恒，另1条看板事实变化单列。另一聊天active处理Android文本导出，不修改/暂存其路径，不发消息/委派。
+- 共享文档写前原字节/SHA在before-docs及resume-closeout02，旧叙述归档history/ORCHESTRATION_STATUS_BEFORE_SUCCESSOR_DATABASE_2026-10-23.md。新鲜环境见resume-closeout02/environment.json及最终closeout-final/；系统3306/33060身份未认证，仅观察未连接/停止。ADB只枚举两真机，无设备/模拟器/正式签名/APK操作；既有debug Keystore哈希核同。
+- 本片Java/Python/MySQL会话均已结束；1750–1752已认证停库、无隔离监听，已清测试库不得复用。resume-closeout01只读保全脚本在Windows PowerShell缺GetRelativePath而中断，已有dirty/patch原件保留，改用现有PowerShell Core生成resume-closeout02成功，不重跑业务。
+- 清理cleanup01及correction.json：15明确路径逻辑738810669字节；D窗口25268326400→26028728320字节，净增760401920字节约0.71GiB。原汇总null另存修正，不覆盖原记录；控制/intent/身份/失败原件和关键恢复行保持。接续时C=82209107968、D=26028617728、E=195634053120；其他时点差值不归为本片释放。版本/树数只见生成块。
+
+## 继承的测试部署与Android
+- 既有固定测试后台、M71领取/资料下载/刷新与主页布局仅按 `history/TEST_CLAIM_M71_LAYOUT_2026-10-23.md` 独立范围继承，本片未连接或重新认证远端。线上APK发布入口未改；本片只记录订单选择器测试包，不计D13整体。
+- M71 序列号 `22D2910042` 已覆盖安装并进入“数据 → 只读应急导出”页面；设备当前 Activity 为 `RescueExportActivity`。页面要求预置本人或主管救援凭据后才加载可读订单范围，当前没有可用凭据，故未将静态页面或空列表写成真实订单列表通过。
+- 可部署测试环境的 APK：`outputs/pda/Acrylic-PDA-staging-rescue-order-picker-20261023.apk`；SHA-256 `2EB927F5E2A7E799EEE730D23FC41DF8EBB239078445814E6454E36635531F7F`。安装包版本事实以本看板生成事实块为准。
+
+## 订单选择器证据与验证
+- 订单候选按本机记录时间倒序，跨 FORMAL/TEMP/INDEPENDENT 使用稳定时间/source/id 游标分页；标签显示类型、资料保存/本机建单时间、车号、业务订单号和完整记录编号，长订单号/UUID 使用多行 TextView，不以省略号截断。
+- 定向 Gradle：`:app:testStagingUnitTest --tests com.acrylic.outbound.pda.rescue.RescueOrdersTest --tests com.acrylic.outbound.pda.ui.RescueOrderItemTest`，`BUILD SUCCESSFUL`。覆盖倒序、跨时区、稳定分页、范围过滤、直接查找、缺失字段占位符和窄屏换行。
+- Android lint：`:app:lintStaging`，`BUILD SUCCESSFUL`。
+- M71 现场证据目录：`.local/rescue-order-picker-20261023/run01/`，含 `main-current.xml`、`rescue-entry.xml` 和启动/安装快照。未完成项：取得合规救援凭据后展开 Spinner，核对真实订单日期、车号、订单号、UUID 和最新项置顶。
+
+## 本片D13证据与限制
+- 仅新增immutable successor binding/per-round NORMAL及约束；首轮原binding/NORMAL、全部投影/数字映射/触发器保留。closed事务内核完整外部历史和DB前缀、原行全列含微秒摘要、前驱release/intent、真实目标UUID/schema，再原子追加；NORMAL严格选该轮原件，初始normal-admission.json不覆写。
+- compile03独立javac exit0；unit01实际100/100、零失败/跳过/中止；it03全新隔离1752为1/0/0/0、runner exit0。已有binding/NORMAL的非空真实dump跨schema，两轮原行/其他业务/文件/源库守恒，重放幂等、不可变触发器、四类错pin/目标及正确命令在源schema拒绝、binding末INSERT和每轮NORMAL末UPDATE回滚均覆盖。
+- it01/1750缺合成签名夹具、导入前失败；it02/1751导入后测试快照LocalDateTime序列化失败；仅修夹具，it03通过。失败原件/冻结输入保留；作者、自审、Python/Java/MySQL消费者同助手，均合成隔离输入，不冒充原身份或独立人员。
+- 关键SHA：it03结果68daac89bf050a4ad26ca4b2f60ee245f1ef8e7f8f7c048ca544089c98c514aa；unit01结果6a576416d40ba51211580ca649c759dc765ef29b57d1ac248048205574cad25b；目标全量事实93b10dfd273e216908091a4af795a5b1ec89c8951573edd7227d00bd7e9c0957。详history/GOAL_D13_SUCCESSOR_DATABASE_ROUND_2026-10-23.md。
+- 原运行时RecoveryAdmissionVerifier/单SELECT身份查询未改，后继登记后仍拒绝；跨schema正向不是实际跨实例正向，随机错UUID不是第二实例。前片控制跨进程及无旧binding的API/worker/P5组合只作历史，不拼成后继或最终通过。
+
+## 下一步与边界
+- 接续先核本片closeout、实际HEAD/远端/完整dirty/写者/环境，不重跑旧IT/已清库。D13下一有界任务：完整successor lineage、实际目标身份和指定轮次NORMAL接入同一只读数据库观察，再以全新已有binding非空恢复输入核真实API/独立worker/P5/文件。实际跨实例正向和进程死亡/pending仍缺，不放宽UUID、更新不可变表或删触发器。
+- Android后续由另一聊天实际输入/写权为准；选择器真实列表仍需合规救援凭据。D13整体、其余worker/文件入口、OS拒绝自halt、D16整体、D18实际最终候选及第8节仍缺，不能将控制前置或历史局部结果拼成最终通过。
+- 生产开关/TEMP归档、正式签名、原库现网、main、生产部署/Release关闭；既有测试授权仅原范围继承。取消链/多跳/接收者确认激活/旧run03不恢复。开发备份/清理/文档不计验收或总目标完成。
