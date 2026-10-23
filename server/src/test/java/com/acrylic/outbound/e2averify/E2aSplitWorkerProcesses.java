@@ -37,9 +37,14 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
         return new E2aSplitWorkerProcesses(profile, authority, new Target("restored-bound-retirement", destination));
     }
 
+    static E2aSplitWorkerProcesses boundCommit(E2aCrossSourceProfile profile, String[] authority,
+            E2aArchiveRestoreTarget destination) throws Exception {
+        return new E2aSplitWorkerProcesses(profile, authority, new Target("restored-bound-commit", destination));
+    }
+
     private E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority, Target target) throws Exception {
         String scope = target.scope();
-        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash", "restored-closed-p5", "restored-bound-crash", "restored-bound-retirement");
+        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash", "restored-closed-p5", "restored-bound-crash", "restored-bound-retirement", "restored-bound-commit");
         home = Files.createDirectory(profile.attempt.resolve("private/" + scope));
         if (target.destination() != null) E2aSplitCopyTarget.prepare(home, target.destination());
         for (String role : List.of("api", "worker")) {
@@ -52,6 +57,8 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
                     "--spring.profiles.active=worker", "--outbound.worker.enabled=true",
                     "--outbound.worker.poll-ms=250", "--outbound.worker.reminder-poll-ms=3600000"));
             }
+            if (role.equals("worker") && scope.equals("restored-bound-commit"))
+                options.add("--outbound.test.commit-fault-home=" + home);
             assertThat(options.stream().map(option -> option.substring(0, option.indexOf('='))).distinct().count())
                 .isEqualTo(options.size());
             Files.writeString(home.resolve(role + "-options.json"),
@@ -121,6 +128,18 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
         var result = SubmissionJson.object().put("pid", worker.pid()).put("actualExitCode", worker.exitValue())
             .put("aliveAfter", worker.isAlive()).put("normalShutdown", false).put("parentPid", ProcessHandle.current().pid());
         Files.writeString(home.resolve("worker-retirement-exit.json"), result.toPrettyString(), StandardOpenOption.CREATE_NEW);
+    }
+
+    void loseCommitAck() throws Exception {
+        Process worker = children.get("worker");
+        assertThat(worker.isAlive()).isTrue();
+        Files.writeString(home.resolve("lose-ack.marker"), "lose acknowledgement after observed real commit", StandardOpenOption.CREATE_NEW);
+        assertThat(worker.waitFor(30, TimeUnit.SECONDS)).isTrue();
+        assertThat(worker.exitValue()).isEqualTo(70);
+        assertThat(home.resolve("worker-closed.marker")).doesNotExist();
+        var result = SubmissionJson.object().put("pid", worker.pid()).put("actualExitCode", worker.exitValue())
+            .put("aliveAfter", worker.isAlive()).put("normalShutdown", false).put("parentPid", ProcessHandle.current().pid());
+        Files.writeString(home.resolve("worker-commit-exit.json"), result.toPrettyString(), StandardOpenOption.CREATE_NEW);
     }
 
     void refuseApi() throws Exception {

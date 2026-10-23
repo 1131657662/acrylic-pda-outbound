@@ -69,7 +69,7 @@ python docs/parallel/R09/ops/cli.py control-apply --control-root D:/isolated-con
 
 已有binding的[实际跨实例后继worker死亡与孤儿P5](../../history/GOAL_D13_BOUND_CROSS_INSTANCE_WORKER_CRASH_2026-10-23.md)已用新双实例核真实halt71、OS锁释放、精确六HTTP拒绝和不同fresh产品API/P5启动；仅合成test-only权威有界结果，原process/控制/数据库/文件必须守恒，不作为生产恢复或D13整体通过。
 
-已有binding的[跨实例后继原生退役失败/UNKNOWN](../../history/GOAL_D13_BOUND_CROSS_INSTANCE_NATIVE_RETIREMENT_2026-10-23.md)已用新双实例核真实Windows拒绝lease改名、产品halt70及UNKNOWN持久阻断；孤儿lease/index可退役但UNKNOWN原件仍使不同fresh产品API拒绝，不能以空index解除围栏。只计合成test-only权威有界组合；commit UNKNOWN跨实例组合、实际OS拒绝自halt及D13整体未验。
+已有binding的[跨实例后继原生退役失败/UNKNOWN](../../history/GOAL_D13_BOUND_CROSS_INSTANCE_NATIVE_RETIREMENT_2026-10-23.md)已用新双实例核真实Windows拒绝lease改名、产品halt70及UNKNOWN持久阻断；孤儿lease/index可退役但UNKNOWN原件仍使不同fresh产品API拒绝，不能以空index解除围栏。只计合成test-only权威有界组合；当时commit UNKNOWN跨实例组合未验；后续见下项，实际OS拒绝自halt及D13整体仍未验。
 
 ## 崩溃与恢复
 
@@ -84,3 +84,5 @@ python docs/parallel/R09/ops/cli.py control-apply --control-root D:/isolated-con
 ## 尚未完成
 
 共享API/Session/Worker/Flyway/文件门禁接线、NORMAL初始化/释放两阶段证据、完整UUID传输协议、跨主机仲裁、异地不可覆盖证据和真实断电/网络存储仍待完成。V39只建立关闭阶段的UUID数字映射，不回填原事实，也不开放生产写。Windows和WSL本机ext4的跨进程结果不替代完整R09恢复。
+
+已有binding的[跨实例后继真实产品提交/UNKNOWN](../../history/GOAL_D13_BOUND_CROSS_INSTANCE_COMMIT_UNKNOWN_2026-10-23.md)已用新双实例核实际worker完成事务的提交前后独立连接可见性、驱动成功返回后合成08007、产品halt70与UNKNOWN持续拒绝；原lease/index/process及数据库/文件拒绝守恒。真实提交与合成丢ACK分列，不称网络断开；仅test-only权威有界组合，不作为生产供应或整体通过。
