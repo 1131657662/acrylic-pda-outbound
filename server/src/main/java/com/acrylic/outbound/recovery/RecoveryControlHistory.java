@@ -29,7 +29,7 @@ final class RecoveryControlHistory {
         return snapshot(records.getLast(), location);
     }
 
-    private static List<JsonNode> history(RecoveryControlLocation location) throws IOException {
+    static List<JsonNode> history(RecoveryControlLocation location) throws IOException {
         Path directory = RecoveryControlPaths.checked(location.root().resolve("history"));
         require(Files.isDirectory(directory, LinkOption.NOFOLLOW_LINKS), "CONTROL_HISTORY_MISSING");
         var names = new ArrayList<Path>();

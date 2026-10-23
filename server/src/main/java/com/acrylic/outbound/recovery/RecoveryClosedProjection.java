@@ -12,9 +12,12 @@ public final class RecoveryClosedProjection {
     private final RecoveryLeasedTransaction transaction;
     private final RecoveryProjectionRows rows;
     private final long baseline;
+    private final RecoveryClosedAuthority authority;
+    private final JdbcTemplate jdbc;
 
     public RecoveryClosedProjection(DataSource source, RecoveryClosedAuthority authority, long baseline) {
         require(baseline > 0, "CONTROL_BASELINE_REQUIRED");
+        this.authority = authority; this.jdbc = new JdbcTemplate(source);
         this.transaction = new RecoveryLeasedTransaction(source, authority);
         this.rows = new RecoveryProjectionRows(new JdbcTemplate(source)); this.baseline = baseline;
     }
@@ -23,6 +26,9 @@ public final class RecoveryClosedProjection {
 
     private Result projectLocked() {
         var control = transaction.snapshot(); var state = rows.lockState();
+        var external = new RecoveryDatabaseControl(authority);
+        if (external.head().path("command").path("formatVersion").intValue() == 2)
+            return result(control, RecoverySuccessorProjection.project(jdbc, external, control, state, baseline));
         var binding = rows.binding(); var database = rows.database();
         if (binding == null) return register(control, state, database);
         require(binding.installation().equals(control.installationId()) && binding.baseline() == baseline,

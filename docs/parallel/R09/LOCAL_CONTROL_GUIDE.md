@@ -59,7 +59,11 @@ python docs/parallel/R09/ops/cli.py control-apply --control-root D:/isolated-con
 
 初始 `normal-admission.json` 保持原字节。更多外部NORMAL原件只能追加在 `normal-history/<intentSha256>.json`；目录与文件禁止别名/硬链接、文件名精确匹配内容hash，原件必须指向已存在的RELEASE_READY及其原previous hash。原NORMAL尚未产生或缺失时拒绝后继，不从数据库或历史摘要补造原件。这里仅读取和核验，未提供NORMAL原件供应或数据库登记工具。
 
-这是已有绑定再次恢复的控制协议前置。数据库投影、不可变binding、每轮NORMAL登记、运行时准入/P5仍须另行实现与真实恢复验证；现有数据库消费者继续拒绝后继轮次。`ordinaryWritesAllowed=false`、`localDeletionAllowed=false`保持，不因本地协议通过放开任何生产入口。
+控制模块仍只验证外部原件。后继数据库登记已另有显式 Java primitive：`RecoveryDatabaseSource.inspect` 在原 closed authority 事务中核完整前缀、原 NORMAL 与真实源身份后给出源 pin；`RecoveryClosedProjection` 追加后继目标绑定/投影；`RecoverySuccessorNormalRegistration` 追加该轮 NORMAL。新表为空起步，保留首轮原表、历史投影/映射和触发器。原行摘要含全部逻辑列及原登记微秒时间，具体规范见 `RecoveryDatabaseHashes` / `RecoverySuccessorRows`，不能自行用 SELECT 展示文本或部分列 hash 代替。
+
+这些 primitive 无 bean/路由/自动调用；必须显式提供固定 closed authority、原 baseline 及完整外部原件。登记在真实目标 UUID/schema 上核前驱 release/intent 和源 binding/NORMAL 摘要，严格下一条投影、全历史映射、原子追加及幂等；更多 NORMAL 按指定 revision/hash 从原件目录读取，不覆盖初始原件。实际非空 dump 的新 schema 两轮验证见[专项报告](../../history/GOAL_D13_SUCCESSOR_DATABASE_ROUND_2026-10-23.md)。这不是可上线运维脚本或可信生产材料。
+
+运行时准入/P5尚未接后继 lineage；既有 `RecoveryAdmissionVerifier` 和单语句数据库身份观察保持，后继登记后仍拒绝准入。下一步须在同一观察中完整验证前链与本轮原件，再做真实 API/worker/P5/文件组合。`ordinaryWritesAllowed=false`、`localDeletionAllowed=false`保持，不因登记或本机验证通过放开生产入口。
 
 ## 崩溃与恢复
 
