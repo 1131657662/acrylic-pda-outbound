@@ -1,5 +1,4 @@
 package com.acrylic.outbound.e2averify;
-
 import com.acrylic.outbound.recovery.*;
 import com.acrylic.outbound.submissions.SubmissionJson;
 import java.nio.file.*;
@@ -8,25 +7,20 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.*;
 import static org.awaitility.Awaitility.await;
-
 /** Owns only the two disposable child JVMs and their private input files. */
 final class E2aSplitWorkerProcesses implements AutoCloseable {
     private record Target(String scope, E2aArchiveRestoreTarget destination) { }
     final Path home;
     private final Map<String, Process> children = new LinkedHashMap<>();
-
     E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority) throws Exception {
         this(profile, authority, "split");
     }
-
     E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority, String scope) throws Exception {
         this(profile, authority, new Target(scope, null));
     }
-
     E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority, E2aArchiveRestoreTarget destination) throws Exception {
         this(profile, authority, new Target("restored-closed-p5", destination));
     }
-
     static E2aSplitWorkerProcesses boundCrash(E2aCrossSourceProfile profile, String[] authority,
             E2aArchiveRestoreTarget destination) throws Exception {
         return new E2aSplitWorkerProcesses(profile, authority, new Target("restored-bound-crash", destination));
@@ -42,9 +36,14 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
         return new E2aSplitWorkerProcesses(profile, authority, new Target("restored-bound-commit", destination));
     }
 
+    static E2aSplitWorkerProcesses boundWireCommit(E2aCrossSourceProfile profile, String[] authority,
+            E2aArchiveRestoreTarget destination) throws Exception {
+        return new E2aSplitWorkerProcesses(profile, authority, new Target("restored-bound-wire-commit", destination));
+    }
+
     private E2aSplitWorkerProcesses(E2aCrossSourceProfile profile, String[] authority, Target target) throws Exception {
         String scope = target.scope();
-        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash", "restored-closed-p5", "restored-bound-crash", "restored-bound-retirement", "restored-bound-commit");
+        assertThat(scope).isIn("split", "restored-split", "restored-split-successor", "restored-stale", "restored-p5-stale", "restored-p5-fault", "restored-p5-crash", "restored-closed-p5", "restored-bound-crash", "restored-bound-retirement", "restored-bound-commit", "restored-bound-wire-commit");
         home = Files.createDirectory(profile.attempt.resolve("private/" + scope));
         if (target.destination() != null) E2aSplitCopyTarget.prepare(home, target.destination());
         for (String role : List.of("api", "worker")) {
@@ -59,6 +58,8 @@ final class E2aSplitWorkerProcesses implements AutoCloseable {
             }
             if (role.equals("worker") && scope.equals("restored-bound-commit"))
                 options.add("--outbound.test.commit-fault-home=" + home);
+            if (role.equals("worker") && scope.equals("restored-bound-wire-commit"))
+                E2aWireCommitOptions.configure(options, home, target.destination());
             assertThat(options.stream().map(option -> option.substring(0, option.indexOf('='))).distinct().count())
                 .isEqualTo(options.size());
             Files.writeString(home.resolve(role + "-options.json"),
