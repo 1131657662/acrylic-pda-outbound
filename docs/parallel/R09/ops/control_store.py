@@ -29,7 +29,7 @@ class ControlStore:
 
     def inspect(self, trusted_checkpoint):
         with locked(self.location.root):
-            records, number, _ = load(self.location, trusted_checkpoint)
+            records, number, _ = load(self.location, trusted_checkpoint, allow_initial_normal=True)
             require(records and number == len(records), 'CONTROL_COMMAND_INCOMPLETE')
             if (self.location.root / 'admission.json').exists():
                 from control_intents import inspect

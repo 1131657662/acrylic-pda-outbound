@@ -1,3 +1,5 @@
+- [D13 v2身份只读互操作](GOAL_D13_V2_READ_ONLY_IDENTITY_2026-10-24.md)：最终Python专项13项/相关70项全过，真实CLI消费Java原身份且40件逐SHA守恒；v2写/重放仍拒绝，旧拒绝码回归已修。仅控制历史一致性，非P5活性/可信供应/整体或最终候选。
+- [v2只读兼容前看板叙述](ORCHESTRATION_STATUS_BEFORE_V2_READ_ONLY_2026-10-24.md)：仅历史断点，完整混合看板原字节/SHA在本片closeout-docs，不恢复旧状态或写权。
 - [D13已有绑定跨实例后继真实TCP丢ACK：原OK扣留、driver 08S01、产品halt70/UNKNOWN与fresh拒绝](GOAL_D13_BOUND_CROSS_INSTANCE_WIRE_COMMIT_2026-10-24.md)：代理6项、103主机、新双实例IT1/0/0/0与原件/清后消费者通过，13篡改拒绝；首轮依赖缺失失败分列。仅test-only权威有界，非D13整体或最终候选。
 - [真实线路组合前看板叙述](ORCHESTRATION_STATUS_BEFORE_BOUND_WIRE_COMMIT_2026-10-24.md)：仅历史断点；原混合看板/SHA在本片closeout-docs，不恢复状态/写权。
 - [D13已有绑定跨实例后继真实完成事务与UNKNOWN](GOAL_D13_BOUND_CROSS_INSTANCE_COMMIT_UNKNOWN_2026-10-23.md)：103主机、新双实例IT1/0/0/0及原件消费者通过；真实产品完成事务提交前后独立可见性、合成08007/产品halt70/UNKNOWN/fresh拒绝，7篡改拒绝；仅合成有界，非真实网络丢ACK/整体或最终候选。

@@ -10,6 +10,12 @@
 - 目录和锁文件永久保留，OS排他锁随进程死亡释放。任何未知文件、部分历史或身份不符都关闭；不会自动清除所谓陈旧锁/坏文件。
 - Java/Python互操作使用同一锁文件偏移0长度1记录锁（Windows msvcrt/FileChannel，POSIX lockf/FileChannel）。升级前必须退出旧flock写者；不得混跑。进程内门禁先于描述符打开，拒绝嵌套/另一线程并发，防止POSIX关闭第二描述符释放原锁。坏长度锁文件拒绝；锁文件不可改名替换。
 
+## 初始正常身份只读兼容
+
+`control-read` 可显式读取严格的 `INITIAL_NORMAL_INSTALL` v2 identity；原identity、writers、完整历史与独立可信checkpoint保持。字段必须精确增加 `authorityKind`、`closedAuthority`、`leaseRoot`，外部路径必须规范且与控制目录/恢复集及彼此互不包含；首命令摘要非零并绑定历史。未知kind、额外/缺失字段、身份/恢复集合/描述符不符仍拒绝，不自动降级、修复或重新生成原件。
+
+这只验证本地控制历史一致性，**不验证P5活性或UNKNOWN、不提供可信身份供应，也不放行业务写入**。`control-init` / `control-apply` 包括原键重放仍拒绝v2；只有原关闭控制v1身份可沿既有命令协议推进。所有输出三个放行标志保持false，不读到“PASS”就认定恢复或生产可用。最终专项/相关回归和Java原件CLI消费见[有界报告](../../history/GOAL_D13_V2_READ_ONLY_IDENTITY_2026-10-24.md)；不替代最终候选或完整D13验证。
+
 ## 原请求与输出
 
 新建authority生成永久writers.lock与version2的writers.json，后者绑定原安装identity摘要和锁文件系统身份，同时建立intents目录和admission.json摘要头。有效控制推进先耐久保存原停止意图，再尝试写者独占锁；活跃Java共享租约返回CONTROL_WRITERS_ACTIVE，原控制历史/指针不变，停止意图保留并拒绝新租约。最后写者退出后只接受原命令续作；有效待完成意图允许只读状态，不能取得新写者租约。

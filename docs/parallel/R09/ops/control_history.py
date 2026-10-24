@@ -5,6 +5,7 @@ from control_disk import read
 from control_paths import checked
 from control_format import fields, version, uuid, revision, checksum
 from control_model import verify, checkpoint
+from control_identity import validate as validate_identity
 from safety import require
 
 
@@ -87,13 +88,8 @@ def closed_sessions(directory):
                 and Path(value['authorityRoot']).is_absolute(), 'CONTROL_CLOSED_SESSION_LAYOUT')
 
 
-def load(location, trusted_checkpoint=None):
-    identity = read(location.root / 'identity.json')
-    fields(identity, 'formatVersion installationId restoreRoots initialCommandSha256')
-    version(identity['formatVersion'])
-    checksum(identity['initialCommandSha256'])
-    expected = {**location.identity(), 'initialCommandSha256': identity['initialCommandSha256']}
-    require(identity == expected, 'CONTROL_INSTALLATION_MISMATCH')
+def load(location, trusted_checkpoint=None, *, allow_initial_normal=False):
+    identity = validate_identity(read(location.root / 'identity.json'), location, allow_initial_normal)
     records = history(location.root)
     from control_successor import verify_history
     verify_history(location.root, records)
