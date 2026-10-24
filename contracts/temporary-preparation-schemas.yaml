@@ -26,6 +26,7 @@ Receipt:
     manifest: {type: string, description: 'Manifest原始UTF-8 JSON，校验原字节SHA-256，禁止重序列化代替'}
     manifestSha256: {$ref: './preparation-schemas.yaml#/Sha256'}
     signedManifest: {type: string, description: 'RS256；iss=acrylic-outbound、aud=acrylic-pda-temporary-preparation，绑定authorizationId/bundleId/manifestSha256及iat/exp；不是正式单凭据'}
+    operatorNameProof: {$ref: './operator-name-schemas.yaml#/Proof'}
 Identity:
   type: object
   required: [authorizationId, bundleId, userId, deviceId, warehouseId, authorizationEpoch, userAuthVersion, deviceVersion, serverRecoveryEpoch]

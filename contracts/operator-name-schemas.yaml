@@ -1,0 +1,4 @@
+Proof:
+  type: [string, 'null']
+  maxLength: 16384
+  description: '可选耐久姓名显示证明；旧原件或发行时姓名不可用为null/缺失，不回填。RS256，iss=acrylic-outbound、aud=acrylic-pda-operator-name-v1、purpose=READONLY_OPERATOR_NAME；严格绑定source(TEMP/INDEPENDENT)、authorizationId(原authorization/credential ID)、operatorId/deviceId/warehouseId、originalSha256(原作业token UTF-8 SHA256)、displayName(发行时app_user.display_name)及issuedAt(原发行时刻)。无scope/exp，不授作业/提交/确认/删除权限，不延长原凭据。同键和读取返回存储原字节；只用已预置服务公钥核验。缺证明不得以当前姓名、账号、ID或手填姓名生成简单out.txt，原高级只读证据仍可导出。'

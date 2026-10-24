@@ -16,6 +16,7 @@ internal class RescueTemporarySnapshot(private val db: PdaDatabase, private val 
             .put("vehicleNo", draft.vehicleNo).put("containerNo", draft.containerNo).put("state", draft.state)
             .put("revision", draft.revision.toString()).put("workRound", draft.workRound.toString()).put("timeTrust", "UNCONFIRMED_EXPORT_TIME")
         grant.check(order)
+        RescueTextNames.attach(order, RescueTextNames.temporary(request))
         return records(id, order, request)
     }
     private fun records(id: String, order: JSONObject, request: com.acrylic.outbound.pda.temporary.TemporaryRequest): RescueSnapshot {

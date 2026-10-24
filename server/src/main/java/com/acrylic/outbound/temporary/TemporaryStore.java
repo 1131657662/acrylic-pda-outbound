@@ -20,22 +20,22 @@ public class TemporaryStore {
         jdbc.update("""
             INSERT INTO temporary_authorization(id,bundle_id,warehouse_id,device_id,user_id,authorization_epoch,user_auth_version,
               device_version,recovery_epoch,inventory_snapshot_id,mapping_revision,policy_id,issued_at,expires_at,key_id,
-              signed_token,manifest_text,manifest_sha256,signed_manifest) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+              signed_token,manifest_text,manifest_sha256,signed_manifest,operator_name_proof) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             """,Ids.bytes(b.id()),Ids.bytes(b.bundle()),Ids.bytes(p.warehouseId()),Ids.bytes(p.deviceId()),Ids.bytes(p.userId()),b.sequence(),
             p.userAuthVersion(),p.deviceVersion(),b.recoveryEpoch(),Ids.bytes(UUID.fromString(base.inventorySnapshotId())),base.mappingRevision(),
             Ids.bytes(UUID.fromString(base.policy().id())),java.sql.Timestamp.from(work.issued()),java.sql.Timestamp.from(work.expires()),work.keyId(),
-            r.offlineToken(),r.manifest(),r.manifestSha256(),r.signedManifest());
+            r.offlineToken(),r.manifest(),r.manifestSha256(),r.signedManifest(),r.operatorNameProof());
         for(var part:work.parts()) jdbc.update("INSERT INTO temporary_preparation_part(authorization_id,part_name,compressed) VALUES(?,?,?)",
             Ids.bytes(b.id()),part.descriptor().name(),part.compressed());
     }
     public Stored get(UUID id) {
         var rows=jdbc.query("""
             SELECT BIN_TO_UUID(id),BIN_TO_UUID(bundle_id),BIN_TO_UUID(warehouse_id),BIN_TO_UUID(device_id),BIN_TO_UUID(user_id),
-              authorization_epoch,user_auth_version,device_version,recovery_epoch,issued_at,expires_at,signed_token,manifest_text,manifest_sha256,signed_manifest
+              authorization_epoch,user_auth_version,device_version,recovery_epoch,issued_at,expires_at,signed_token,manifest_text,manifest_sha256,signed_manifest,operator_name_proof
             FROM temporary_authorization WHERE id=?
             """,(rs,n)->new Stored(UUID.fromString(rs.getString(1)),UUID.fromString(rs.getString(3)),UUID.fromString(rs.getString(4)),UUID.fromString(rs.getString(5)),
                 rs.getString(6),rs.getString(7),rs.getString(8),rs.getString(9),rs.getTimestamp(10).toInstant(),rs.getTimestamp(11).toInstant(),
-                new TemporaryCommands.Receipt(rs.getString(1),rs.getString(2),rs.getString(12),rs.getString(13),rs.getString(14),rs.getString(15))),Ids.bytes(id));
+                new TemporaryCommands.Receipt(rs.getString(1),rs.getString(2),rs.getString(12),rs.getString(13),rs.getString(14),rs.getString(15),rs.getString(16))),Ids.bytes(id));
         if(rows.isEmpty()) throw missing();return rows.getFirst();
     }
     public byte[] content(UUID id,String part) {

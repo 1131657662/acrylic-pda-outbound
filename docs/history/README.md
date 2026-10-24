@@ -1,3 +1,5 @@
+- [TEMP/独立 SKU 简单 out.txt](PDA_ALL_SOURCE_OUT_TEXT_2026-10-24.md)：发行时原姓名证明与原事务持久化；3普通+1真实HTTP/MySQL专项、Android32项/相关54项及lint/构建通过。旧姓名缺证拒绝，不回填；新APK未安装、服务端未部署，非整体或最终候选。
+- [来源扩展前看板叙述](ORCHESTRATION_STATUS_BEFORE_ALL_SOURCE_TEXT_2026-10-24.md)：仅历史断点；完整原字节与中间断点在本片baseline/原件快照，不恢复旧状态或写权。
 - [D13 v2身份只读互操作](GOAL_D13_V2_READ_ONLY_IDENTITY_2026-10-24.md)：最终Python专项13项/相关70项全过，真实CLI消费Java原身份且40件逐SHA守恒；v2写/重放仍拒绝，旧拒绝码回归已修。仅控制历史一致性，非P5活性/可信供应/整体或最终候选。
 - [v2只读兼容前看板叙述](ORCHESTRATION_STATUS_BEFORE_V2_READ_ONLY_2026-10-24.md)：仅历史断点，完整混合看板原字节/SHA在本片closeout-docs，不恢复旧状态或写权。
 - [D13已有绑定跨实例后继真实TCP丢ACK：原OK扣留、driver 08S01、产品halt70/UNKNOWN与fresh拒绝](GOAL_D13_BOUND_CROSS_INSTANCE_WIRE_COMMIT_2026-10-24.md)：代理6项、103主机、新双实例IT1/0/0/0与原件/清后消费者通过，13篡改拒绝；首轮依赖缺失失败分列。仅test-only权威有界，非D13整体或最终候选。
@@ -7,7 +9,7 @@
 - [D13已有绑定跨实例后继worker真实死亡与孤儿P5](GOAL_D13_BOUND_CROSS_INSTANCE_WORKER_CRASH_2026-10-23.md)：103主机、新双实例IT1/0/0/0及原件消费者通过；真实halt71/OS锁/六HTTP围栏/孤儿退役/不同fresh产品API同输入组合，仅合成有界，非整体或最终候选。
 - [D13已有绑定实际跨实例六死亡点与原命令续作](GOAL_D13_CROSS_INSTANCE_DEATH_RESUMPTION_2026-10-23.md)：最终103主机、六个新双实例各IT1/0/0/0及六原件消费者全过；精确pending拒绝/原命令续作/真实API-worker-P5-双格式及181表/185触发器守恒，仅合成有界，非整体或最终候选。
 - [D13已有绑定的实际跨实例API/P5同输入组合](GOAL_D13_CROSS_INSTANCE_API_P5_COMPOSITION_2026-10-23.md)：最终103主机/新双实例IT1/0/0/0及独立原件消费通过；181表/185触发器、实际目标双进程身份/P5/双格式下载和六HTTP拒绝守恒。仅合成权威/test-only提升有界，非D13整体或最终候选。
-- [正式订单直接 out.txt 与完成页入口](PDA_OUT_TEXT_COMPLETION_ENTRY_2026-10-23.md)：七类 31 项定向测试、lint/构建通过；M71 同签名保数据覆盖安装并核回拉 APK；完成页跳转为合成测试，真实订单列表及原身份导出未验。TEMP/独立 SKU 简单文本出口未接入，教程单列。
+- [正式订单直接 out.txt 与完成页入口](PDA_OUT_TEXT_COMPLETION_ENTRY_2026-10-23.md)：七类 31 项定向测试、lint/构建通过；M71 同签名保数据覆盖安装并核回拉 APK；完成页跳转为合成测试，真实订单列表及原身份导出未验。该报告仅覆盖FORMAL；来源扩展见本索引2026-10-24报告，原身份/设备仍未验。
 - [D13已有绑定的真实双实例后继恢复](GOAL_D13_BOUND_CROSS_INSTANCE_SUCCESSOR_2026-10-23.md)：100主机、新双实例IT1/0/0/0及独立原件消费通过；真实不同UUID、181表/4文件/185触发器、原binding/NORMAL与源事实保持，仅合成数据库准入有界，不计跨实例API/P5、D13整体或最终候选。
 - [D13已有绑定恢复/API/worker/P5组合](GOAL_D13_SUCCESSOR_P5_COMPOSITION_2026-10-23.md)：最终100主机、新隔离IT1/0/0/0及Python原件消费通过；181表、实际双进程活租约/文件/六HTTP503守恒，失败/清理保留。仅合成同实例有界，非整体/最终候选。
 - [后继组合收口前看板叙述](ORCHESTRATION_STATUS_BEFORE_SUCCESSOR_P5_COMPOSITION_2026-10-23.md)：原叙述归档，完整原字节/生成事实另存closeout-review，不恢复状态/写权。

@@ -16,21 +16,39 @@ object RescueOutText {
         .withZone(ZoneId.of("Asia/Shanghai"))
 
     fun encode(snapshot: RescueSnapshot): ByteArray {
-        require(snapshot.order.getString("source") == "FORMAL") { "旧式 out.txt 仅支持正式订单" }
-        val operator = snapshot.order.optString("operatorName").trim()
-        require(operator.isNotEmpty()) { "原订单缺少可信原操作员姓名，不能生成 out.txt" }
         RescueFacts.summary(snapshot)
+        val names = operators(snapshot)
         val excluded = RescueDispositions.excluded(snapshot)
         val rows = snapshot.scans
             .filter { it.getString("status") == "ACTIVE" && it.getString("captureId") !in excluded }
             .sortedWith(compareBy { it.getString("orderScanSeq").toBigInteger() })
             .map { scan ->
                 listOf(scan.getString("model"), scan.getString("barcode"), scan.getString("rawWeight"),
-                    operator, formatTime(scan.getString("savedAt")))
+                    names.getValue(scan.getString("captureId")), formatTime(scan.getString("savedAt")))
             }
         rows.flatten().forEach(::requireCell)
         val text = if (rows.isEmpty()) "" else rows.joinToString("\r\n") { it.joinToString("\t") } + "\r\n"
         return text.toByteArray(gbk)
+    }
+
+    private fun operators(snapshot: RescueSnapshot): Map<String, String> {
+        val order = snapshot.order
+        if (order.getString("source") == "FORMAL") {
+            val name = order.optString("operatorName").trim()
+            require(name.isNotEmpty()) { "原订单缺少可信原操作员姓名，不能生成 out.txt" }
+            return snapshot.captures.associate { it.getString("id") to name }
+        }
+        val names = order.optJSONObject("textOperatorNames")
+        require(names != null && names.length() > 0) { "原记录缺少可信原操作员姓名证明，不能生成 out.txt" }
+        val credential = if (order.getString("source") == "INDEPENDENT") names.keys().asSequence().single() else null
+        return snapshot.captures.associate { capture ->
+            if (order.getString("source") == "TEMP") require(capture.getString("operatorId") == order.getString("operatorId") &&
+                capture.getString("originDeviceId") == order.getString("deviceId")) { "原采集身份与姓名证明不一致，不能生成 out.txt" }
+            val id = credential ?: capture.getString("authorizationId")
+            val name = names.optJSONObject(id)?.optString("displayName").orEmpty()
+            require(name.isNotBlank()) { "原采集缺少对应的原操作员姓名证明，不能生成 out.txt" }
+            capture.getString("id") to name
+        }
     }
 
     private fun formatTime(value: String): String {

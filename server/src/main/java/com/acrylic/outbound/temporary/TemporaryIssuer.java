@@ -9,8 +9,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TemporaryIssuer {
-    private final OfflineSigner signer;private final JsonText json;
-    public TemporaryIssuer(OfflineSigner signer,JsonText json) { this.signer=signer;this.json=json; }
+    private final OfflineSigner signer;private final JsonText json;private final OfflineOperatorNameProof names;
+    @org.springframework.beans.factory.annotation.Autowired
+    public TemporaryIssuer(OfflineSigner signer,JsonText json,OfflineOperatorNameProof names) {
+        this.signer=signer;this.json=json;this.names=names;
+    }
+    public TemporaryIssuer(OfflineSigner signer,JsonText json) { this(signer,json,null); }
     public Work issue(Binding binding,TemporaryBaseline.View baseline,List<PreparationArchive> parts) {
         Instant issued=Instant.now().truncatedTo(ChronoUnit.SECONDS),expires=issued.plusSeconds(172800);
         if (binding.expiresAtLimit()!=null && binding.expiresAtLimit().isBefore(expires))
@@ -26,7 +30,8 @@ public class TemporaryIssuer {
         var token=signer.sign(claims);
         var signedManifest=signer.sign(new ManifestProof("acrylic-outbound","acrylic-pda-temporary-preparation",binding.id().toString(),
             binding.bundle().toString(),sha,issued.getEpochSecond(),expires.getEpochSecond()));
-        var receipt=new TemporaryCommands.Receipt(binding.id().toString(),binding.bundle().toString(),token.token(),text,sha,signedManifest.token());
+        String nameProof=names==null?null:names.issue("TEMP",binding.id(),binding.principal(),token.token(),issued);
+        var receipt=new TemporaryCommands.Receipt(binding.id().toString(),binding.bundle().toString(),token.token(),text,sha,signedManifest.token(),nameProof);
         return new Work(binding,baseline,issued,expires,token.keyId(),receipt,parts);
     }
     public String signAck(TemporaryStore.Stored row,TemporaryCommands.Ack command,Instant time) {

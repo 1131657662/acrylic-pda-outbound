@@ -76,7 +76,10 @@ internal class IndependentCredentialStore(private val storage: IndependentCreden
         val proof = validate(open, context)
         val entry = root().getJSONObject("entries").getJSONObject(open.requestKey)
         return IndependentCredentialSnapshot(proof, entry.getJSONObject("trustedKey").toString(),
-            entry.getJSONObject("timeAnchor").toString(), entry.getJSONObject("identity").getString("localSessionId"))
+            entry.getJSONObject("timeAnchor").toString(), entry.getJSONObject("identity").getString("localSessionId"),
+            JSONObject(entry.getString("receipt")).let {
+                if (it.has("operatorNameProof") && !it.isNull("operatorNameProof")) it.getString("operatorNameProof") else null
+            })
     }
     @Synchronized fun status(): String {
         val root = root(); val entries = root.getJSONObject("entries"); val entry = entries.optJSONObject(root.optString("active"))

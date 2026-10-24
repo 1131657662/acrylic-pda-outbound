@@ -17,6 +17,7 @@ Receipt:
       description: RS256固定用途acrylic-pda-independent-v1；签名人机仓/登记钥/权限版本/恢复代次/原期限。客户端只以独立预置的服务公钥核验，不信任文件提供的钥。
     issuedAt: {type: string, format: date-time}
     expiresAt: {type: string, format: date-time}
+    operatorNameProof: {$ref: './operator-name-schemas.yaml#/Proof'}
 Envelope:
   allOf:
     - $ref: './schemas.yaml#/Envelope'

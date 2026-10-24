@@ -13,6 +13,11 @@ public final class TemporaryCommands {
     public record Ack(@NotNull UUID bundleId,@NotNull @Pattern(regexp="[0-9a-f]{64}") String manifestSha256,
         @NotNull @Pattern(regexp="[1-9][0-9]{0,17}") String authorizationEpoch,@NotNull Instant activatedAt) { }
     public record Receipt(String authorizationId,String bundleId,String offlineToken,String manifest,
-        String manifestSha256,String signedManifest) { }
+        String manifestSha256,String signedManifest,String operatorNameProof) {
+        public Receipt(String authorizationId,String bundleId,String offlineToken,String manifest,
+            String manifestSha256,String signedManifest) {
+            this(authorizationId,bundleId,offlineToken,manifest,manifestSha256,signedManifest,null);
+        }
+    }
     public record Acknowledgement(String authorizationId,String bundleId,String activatedAt,String acknowledgedAt,String signedAck) { }
 }

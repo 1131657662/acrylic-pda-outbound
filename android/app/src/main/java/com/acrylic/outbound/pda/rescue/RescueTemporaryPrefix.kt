@@ -7,7 +7,7 @@ import org.json.JSONObject
 
 /** Verifies previously consumed R06 links from immutable bytes, without granting a new live session. */
 internal class RescueTemporaryPrefix(private val db: PdaDatabase, private val rows: RescueRows) {
-    data class Prefix(val original: JSONObject, val rootId: String, val evidence: List<JSONObject>)
+    data class Prefix(val original: JSONObject, val rootId: String, val evidence: List<JSONObject>, val names: Map<String, JSONObject>)
     fun read(draft: TemporaryDraft, depth: Int = 0): Prefix? {
         if (draft.workRound == 1L) return null
         check(depth < 32) { "原续作链超过救援读取上限，请保留原库" }
@@ -20,12 +20,15 @@ internal class RescueTemporaryPrefix(private val db: PdaDatabase, private val ro
         val frozen = checkNotNull(db.temporarySubmissions().get(link.sourceSubmissionId))
         check(frozen.sha256 == link.sourcePayloadSha256 && RescueBundle.sha(frozen.payload.toByteArray(Charsets.UTF_8)) == frozen.sha256)
         val previous = read(old, depth + 1)
-        verify(old, draft, frozen, link, previous)
+        val names = verify(old, draft, frozen, link, previous)
+        names.forEach { (id, value) ->
+            check(previous?.names?.get(id)?.let { it.toString() == value.toString() } != false) { "原姓名证明重复冲突" }
+        }
         val evidence = previous?.evidence.orEmpty() + listOf(proof(link), RescueOriginals.publicSource("PREDECESSOR_SUBMISSION", frozen.payload))
-        return Prefix(JSONObject(frozen.payload), previous?.rootId ?: old.clientOrderId, evidence)
+        return Prefix(JSONObject(frozen.payload), previous?.rootId ?: old.clientOrderId, evidence, previous?.names.orEmpty() + names)
     }
     private fun verify(old: TemporaryDraft, draft: TemporaryDraft, frozen: TemporarySubmission,
-        link: TemporaryContinuation, previous: Prefix?) {
+        link: TemporaryContinuation, previous: Prefix?): Map<String, JSONObject> {
         val preparation = checkNotNull(db.temporary().byAuthorization(old.authorizationId))
         val request = checkNotNull(db.temporary().request(preparation.requestKey))
         val key = JSONObject(request.signingKeyJson)
@@ -35,6 +38,7 @@ internal class RescueTemporaryPrefix(private val db: PdaDatabase, private val ro
                 recordedIdentity, key, previous?.original, previous?.rootId ?: old.clientOrderId))
         check(verified.ticketId == link.ticketId && verified.newClientOrderId == draft.clientOrderId &&
             verified.toRound == draft.workRound && verified.authorization.getString("authorizationId") == draft.authorizationId)
+        return RescueTextNames.temporary(request)
     }
     private fun proof(link: TemporaryContinuation): JSONObject =
         JSONObject().put("type", "CONTINUATION_LINK_IDENTIFIERS").put("ticketId", link.ticketId)
@@ -52,6 +56,7 @@ internal class RescueTemporaryPrefix(private val db: PdaDatabase, private val ro
     }
     fun combine(prefix: Prefix?, snapshot: RescueSnapshot): RescueSnapshot {
         if (prefix == null) return snapshot
+        RescueTextNames.attach(snapshot.order, prefix.names)
         fun original(field: String): List<JSONObject> {
             val rows = prefix.original.getJSONArray(field)
             return (0 until rows.length()).map { JSONObject(rows.getJSONObject(it).toString()) }

@@ -32,6 +32,7 @@ internal class RescueIndependentSnapshot(private val db: PdaDatabase, private va
         val events = rows.read("SELECT *,sequence AS orderPosition FROM independent_task_event WHERE taskId=? ORDER BY sequence", id)
         val lines = rows.read("SELECT * FROM independent_task_line WHERE taskId=? ORDER BY deliveryCode", id)
         val originals = RescueIndependentOriginals(db, rows).read(id)
+        RescueTextNames.attach(order, RescueTextNames.independent(db, id))
         val snapshot = RescueSnapshot(order, captures, scans, events, lines, originals)
         RescueIndependentValidation.verify(snapshot)
         val facts = RescueFacts.summary(snapshot); val state = checkNotNull(db.independentTasks().state(id))
