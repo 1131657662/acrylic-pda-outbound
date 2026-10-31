@@ -48,9 +48,9 @@ class TemporaryOrdersActivity : ComponentActivity() {
                 }
                 next = if (rows.size > 20) rows[19].clientOrderId else ""
                 rows.take(20).forEach { row -> binding.orders.addView(Button(this@TemporaryOrdersActivity).apply {
-                    text = "${row.vehicleNo.ifBlank { "未填车号" }} · ${when (row.state) { "DRAFT" -> "草稿"; "CANCELLED" -> "已取消本机草稿 · 原记录保留"; "FROZEN" -> "已冻结 · 核对原提交"; "CONTINUATION_BLOCKED" -> "续作待确认"; "HANDOVER_BLOCKED" -> "交接新轮待核验"; "EVIDENCE_STOPPED" -> "已停止 · 原件保留待核对"; else -> "本机作业" }}\n${row.temporaryNo}"
+                    text = "${row.vehicleNo.ifBlank { "未填车号" }} · ${when (row.state) { "DRAFT" -> "草稿"; "CANCELLED" -> "已取消本机草稿 · 原记录保留"; "FROZEN" -> "已冻结 · 核对原提交"; "CONTINUATION_BLOCKED" -> "续作待确认"; "HANDOVER_BLOCKED" -> "旧冻结原件 · 只读核对"; "EVIDENCE_STOPPED" -> "已停止 · 原件保留待核对"; else -> "本机作业" }}\n${row.temporaryNo}"
                     setOnClickListener { startActivity(Intent(this@TemporaryOrdersActivity,
-                        when (row.state) { "DRAFT" -> TemporaryDraftActivity::class.java; "CANCELLED" -> TemporaryCancellationActivity::class.java; "FROZEN" -> TemporarySubmissionActivity::class.java; "CONTINUATION_BLOCKED" -> TemporaryContinuationActivity::class.java; "HANDOVER_BLOCKED" -> HandoverActivity::class.java; "EVIDENCE_STOPPED" -> LocalDraftEvidenceActivity::class.java; else -> TemporaryWorkActivity::class.java }).putExtra("clientOrderId", row.clientOrderId)) }
+                        when (row.state) { "DRAFT" -> TemporaryDraftActivity::class.java; "CANCELLED" -> TemporaryCancellationActivity::class.java; "FROZEN" -> TemporarySubmissionActivity::class.java; "CONTINUATION_BLOCKED" -> TemporaryContinuationActivity::class.java; "HANDOVER_BLOCKED" -> TemporaryDetailsActivity::class.java; "EVIDENCE_STOPPED" -> LocalDraftEvidenceActivity::class.java; else -> TemporaryWorkActivity::class.java }).putExtra("clientOrderId", row.clientOrderId)) }
                 }) }
                 binding.status.text = if (rows.isEmpty()) "当前账号没有本机临时单" else "本页 ${minOf(rows.size, 20)} 单 · 原记录持续保留"
             } catch (error: Exception) { binding.status.text = error.message ?: "读取失败，请重试"; next = "" }

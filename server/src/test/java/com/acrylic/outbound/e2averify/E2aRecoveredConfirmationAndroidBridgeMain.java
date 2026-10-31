@@ -47,15 +47,22 @@ public final class E2aRecoveredConfirmationAndroidBridgeMain {
         var envelope=SubmissionJson.parse(Files.readAllBytes(attempt.resolve("private/recipient-login-response.json")));
         var session=(com.fasterxml.jackson.databind.node.ObjectNode)envelope.path("data").deepCopy();
         session.put("serverRecoveryEpoch",envelope.path("serverRecoveryEpoch").asText()).put("localSessionId",UUID.randomUUID().toString());
-        var request=HttpRequest.newBuilder(URI.create("http://127.0.0.1:19434/api/v1/pda/signing-key"))
+        var request=HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+httpPort()+"/api/v1/pda/signing-key"))
             .header("Authorization","Bearer "+session.path("accessToken").asText()).timeout(Duration.ofSeconds(30)).GET().build();
         var response=HttpClient.newHttpClient().send(request,HttpResponse.BodyHandlers.ofByteArray());
         assertThat(response.statusCode()).isEqualTo(200); session.set("signingKey",SubmissionJson.parse(response.body()).path("data"));
         var manifest=SubmissionJson.parse(Files.readAllBytes(attempt.resolve("download-manifest.json")));
         String publicKey=jdbc.queryForObject("SELECT public_key FROM device WHERE id=?",String.class,Ids.bytes(UUID.fromString(session.path("deviceId").asText())));
-        var input=SubmissionJson.object().put("baseUrl","http://127.0.0.1:19434/api/v1/").put("caseId",manifest.path("caseId").asText())
+        var input=SubmissionJson.object().put("baseUrl","http://127.0.0.1:"+httpPort()+"/api/v1/").put("caseId",manifest.path("caseId").asText())
             .put("devicePublicKey",publicKey).put("originalDirectory",attempt.toString());
         input.set("session",session); Files.writeString(attempt.resolve("private/android-http-input.json"),input.toString());
+    }
+    private static int httpPort() {
+        String raw=System.getenv("E2A_HTTP_PORT");
+        if(raw==null || raw.isBlank()) return 19434;
+        int port=Integer.parseInt(raw);
+        if(port<1024 || port>65535) throw new IllegalArgumentException("E2A_HTTP_PORT out of range");
+        return port;
     }
     private E2aRecoveredConfirmationAndroidBridgeMain() { }
 }

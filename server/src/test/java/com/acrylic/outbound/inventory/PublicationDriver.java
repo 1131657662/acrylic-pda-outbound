@@ -15,7 +15,8 @@ record PublicationDriver(MockMvc mvc, ObjectMapper json, IdentityFixture identit
         return json.readTree(send(request).andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).get("data");
     }
     ResultActions send(MockHttpServletRequestBuilder request) throws Exception {
-        return mvc.perform(request.param("warehouseId", identity.warehouse().toString()).with(user(identity.user())).with(csrf())
+        return mvc.perform(request.param("warehouseId", identity.warehouse().toString()).header("X-Request-Id", UUID.randomUUID().toString())
+            .with(user(identity.user())).with(csrf())
             .with(req -> { req.removeHeader("X-Server-Recovery-Epoch"); req.addHeader("X-Server-Recovery-Epoch", "1"); return req; }));
     }
     String stage(byte[] bytes) throws Exception {

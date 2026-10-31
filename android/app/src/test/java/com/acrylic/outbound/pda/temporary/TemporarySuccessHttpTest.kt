@@ -26,7 +26,7 @@ class TemporarySuccessHttpTest {
         assumeTrue("Requires protected nonempty MySQL runner", !path.isNullOrBlank())
         val inputFile = File(checkNotNull(path)).canonicalFile
         check(inputFile.path.replace('\\', '/').matches(Regex(
-            ".*/\\.local/e2a-cross-20260925-[1-9][0-9]{0,2}/private/android-success-input\\.json")))
+            ".*/\\.local/e2a-cross-20260925-[1-9][0-9]{0,3}/private/android-success-input\\.json")))
         val input = JSONObject(inputFile.readText())
         check(input.getString("baseUrl") == "http://127.0.0.1:19434/api/v1/")
         TemporarySuccessFixture(folder.root, input.getJSONObject("vector")).use { f ->
