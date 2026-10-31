@@ -1,0 +1,278 @@
+Initialized native services in: C:\Users\qq113\.gradle\native
+Initialized jansi services in: C:\Users\qq113\.gradle\native
+Found daemon DaemonInfo{pid=9832, address=[cd38cc11-0586-4cc1-8892-8d2237f7ec26 port:61416, addresses:[/127.0.0.1]], state=Idle, lastBusy=1790047212919, context=DefaultDaemonContext[uid=31228588-52d1-4231-8c69-88b4dca02093,javaHome=C:\Program Files\Java\jdk-21.0.11,javaVersion=21,javaVendor=Oracle Corporation,daemonRegistryDir=C:\Users\qq113\.gradle\daemon,pid=9832,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx2048m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]} however its context does not match the desired criteria.
+At least one daemon option is different.
+Wanted: DaemonRequestContext{jvmCriteria=C:\Program Files\Java\jdk-21.0.11 (no JDK specified, using current Java home), daemonOpts=[-XX:MaxMetaspaceSize=384m, -XX:+HeapDumpOnOutOfMemoryError, -Xms256m, -Xmx512m, -Dfile.encoding=UTF-8, -Duser.country=CN, -Duser.language=zh, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=31228588-52d1-4231-8c69-88b4dca02093,javaHome=C:\Program Files\Java\jdk-21.0.11,javaVersion=21,javaVendor=Oracle Corporation,daemonRegistryDir=C:\Users\qq113\.gradle\daemon,pid=9832,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx2048m,-Dfile.encoding=UTF-8,-Duser.country=CN,-Duser.language=zh,-Duser.variant]
+
+  Looking for a different daemon...
+The client will now receive all logging from the daemon (pid: 3976). The daemon log file: C:\Users\qq113\.gradle\daemon\8.11.1\daemon-3976.out.log
+Starting 8th build in daemon [uptime: 28 mins 54.799 secs, performance: 98%, GC rate: 0.00/s, heap usage: 2% of 512 MiB, non-heap usage: 20% of 384 MiB]
+Using 12 worker leases.
+Now considering [D:\acrylic-pda-worktrees\r06-e2a-foundation\server, D:\acrylic-pda-worktrees\r06-e2a-foundation\report-rendering] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file 'D:\acrylic-pda-worktrees\r06-e2a-foundation\server\settings.gradle'.
+Now considering [D:\acrylic-pda-worktrees\r06-e2a-foundation\report-rendering, D:\acrylic-pda-worktrees\r06-e2a-foundation\server] as hierarchies to watch
+Projects loaded. Root project using build file 'D:\acrylic-pda-worktrees\r06-e2a-foundation\server\build.gradle'.
+Included projects: [root project 'acrylic-outbound-server']
+
+> Configure project :report-rendering
+Evaluating project ':report-rendering' using build file 'D:\acrylic-pda-worktrees\r06-e2a-foundation\report-rendering\build.gradle'.
+Registering project ':report-rendering' in composite build. Will substitute for module 'com.acrylic.outbound:acrylic-report-rendering'.
+
+> Configure project :
+Evaluating root project 'acrylic-outbound-server' using build file 'D:\acrylic-pda-worktrees\r06-e2a-foundation\server\build.gradle'.
+Transforming spring-boot-gradle-plugin-3.5.16.jar (org.springframework.boot:spring-boot-gradle-plugin:3.5.16) with InstrumentationAnalysisTransform
+Transforming dependency-management-plugin-1.1.7.jar (io.spring.gradle:dependency-management-plugin:1.1.7) with InstrumentationAnalysisTransform
+Transforming spring-boot-buildpack-platform-3.5.16.jar (org.springframework.boot:spring-boot-buildpack-platform:3.5.16) with InstrumentationAnalysisTransform
+Transforming spring-boot-loader-tools-3.5.16.jar (org.springframework.boot:spring-boot-loader-tools:3.5.16) with InstrumentationAnalysisTransform
+Transforming commons-compress-1.27.1.jar (org.apache.commons:commons-compress:1.27.1) with InstrumentationAnalysisTransform
+Transforming spring-core-6.2.19.jar (org.springframework:spring-core:6.2.19) with InstrumentationAnalysisTransform
+Transforming jackson-core-2.21.4.jar (com.fasterxml.jackson.core:jackson-core:2.21.4) with InstrumentationAnalysisTransform
+Transforming jackson-module-parameter-names-2.21.4.jar (com.fasterxml.jackson.module:jackson-module-parameter-names:2.21.4) with InstrumentationAnalysisTransform
+Transforming jackson-databind-2.21.4.jar (com.fasterxml.jackson.core:jackson-databind:2.21.4) with InstrumentationAnalysisTransform
+Transforming jna-platform-5.17.0.jar (net.java.dev.jna:jna-platform:5.17.0) with InstrumentationAnalysisTransform
+Transforming httpclient5-5.5.2.jar (org.apache.httpcomponents.client5:httpclient5:5.5.2) with InstrumentationAnalysisTransform
+Transforming tomlj-1.0.0.jar (org.tomlj:tomlj:1.0.0) with InstrumentationAnalysisTransform
+Transforming commons-codec-1.17.1.jar (commons-codec:commons-codec:1.17.1) with InstrumentationAnalysisTransform
+Transforming commons-io-2.16.1.jar (commons-io:commons-io:2.16.1) with InstrumentationAnalysisTransform
+Transforming commons-lang3-3.16.0.jar (org.apache.commons:commons-lang3:3.16.0) with InstrumentationAnalysisTransform
+Transforming spring-jcl-6.2.19.jar (org.springframework:spring-jcl:6.2.19) with InstrumentationAnalysisTransform
+Transforming jackson-annotations-2.21.jar (com.fasterxml.jackson.core:jackson-annotations:2.21) with InstrumentationAnalysisTransform
+Transforming jna-5.17.0.jar (net.java.dev.jna:jna:5.17.0) with InstrumentationAnalysisTransform
+Transforming httpcore5-h2-5.3.6.jar (org.apache.httpcomponents.core5:httpcore5-h2:5.3.6) with InstrumentationAnalysisTransform
+Transforming httpcore5-5.3.6.jar (org.apache.httpcomponents.core5:httpcore5:5.3.6) with InstrumentationAnalysisTransform
+Transforming slf4j-api-1.7.36.jar (org.slf4j:slf4j-api:1.7.36) with InstrumentationAnalysisTransform
+Transforming antlr4-runtime-4.7.2.jar (org.antlr:antlr4-runtime:4.7.2) with InstrumentationAnalysisTransform
+Transforming jsr305-3.0.2.jar (com.google.code.findbugs:jsr305:3.0.2) with InstrumentationAnalysisTransform
+Transforming spring-boot-gradle-plugin-3.5.16.jar (org.springframework.boot:spring-boot-gradle-plugin:3.5.16) with InstrumentationAnalysisTransform
+Transforming spring-boot-gradle-plugin-3.5.16.jar (org.springframework.boot:spring-boot-gradle-plugin:3.5.16) with MergeInstrumentationAnalysisTransform
+Transforming dependency-management-plugin-1.1.7.jar (io.spring.gradle:dependency-management-plugin:1.1.7) with InstrumentationAnalysisTransform
+Transforming dependency-management-plugin-1.1.7.jar (io.spring.gradle:dependency-management-plugin:1.1.7) with MergeInstrumentationAnalysisTransform
+Transforming spring-boot-buildpack-platform-3.5.16.jar (org.springframework.boot:spring-boot-buildpack-platform:3.5.16) with InstrumentationAnalysisTransform
+Transforming spring-boot-buildpack-platform-3.5.16.jar (org.springframework.boot:spring-boot-buildpack-platform:3.5.16) with MergeInstrumentationAnalysisTransform
+Transforming dependency-management-plugin-1.1.7.jar (io.spring.gradle:dependency-management-plugin:1.1.7) with ExternalDependencyInstrumentingArtifactTransform
+Transforming spring-boot-gradle-plugin-3.5.16.jar (org.springframework.boot:spring-boot-gradle-plugin:3.5.16) with ExternalDependencyInstrumentingArtifactTransform
+Transforming spring-boot-loader-tools-3.5.16.jar (org.springframework.boot:spring-boot-loader-tools:3.5.16) with InstrumentationAnalysisTransform
+Transforming spring-boot-buildpack-platform-3.5.16.jar (org.springframework.boot:spring-boot-buildpack-platform:3.5.16) with ExternalDependencyInstrumentingArtifactTransform
+Transforming spring-boot-loader-tools-3.5.16.jar (org.springframework.boot:spring-boot-loader-tools:3.5.16) with MergeInstrumentationAnalysisTransform
+Transforming commons-compress-1.27.1.jar (org.apache.commons:commons-compress:1.27.1) with InstrumentationAnalysisTransform
+Transforming spring-boot-loader-tools-3.5.16.jar (org.springframework.boot:spring-boot-loader-tools:3.5.16) with ExternalDependencyInstrumentingArtifactTransform
+Transforming commons-compress-1.27.1.jar (org.apache.commons:commons-compress:1.27.1) with MergeInstrumentationAnalysisTransform
+Transforming spring-core-6.2.19.jar (org.springframework:spring-core:6.2.19) with InstrumentationAnalysisTransform
+Transforming spring-core-6.2.19.jar (org.springframework:spring-core:6.2.19) with MergeInstrumentationAnalysisTransform
+Transforming commons-compress-1.27.1.jar (org.apache.commons:commons-compress:1.27.1) with ExternalDependencyInstrumentingArtifactTransform
+Transforming jackson-core-2.21.4.jar (com.fasterxml.jackson.core:jackson-core:2.21.4) with InstrumentationAnalysisTransform
+Transforming spring-core-6.2.19.jar (org.springframework:spring-core:6.2.19) with ExternalDependencyInstrumentingArtifactTransform
+Transforming jackson-core-2.21.4.jar (com.fasterxml.jackson.core:jackson-core:2.21.4) with MergeInstrumentationAnalysisTransform
+Transforming jackson-module-parameter-names-2.21.4.jar (com.fasterxml.jackson.module:jackson-module-parameter-names:2.21.4) with InstrumentationAnalysisTransform
+Transforming jackson-module-parameter-names-2.21.4.jar (com.fasterxml.jackson.module:jackson-module-parameter-names:2.21.4) with MergeInstrumentationAnalysisTransform
+Transforming jackson-core-2.21.4.jar (com.fasterxml.jackson.core:jackson-core:2.21.4) with ExternalDependencyInstrumentingArtifactTransform
+Transforming jackson-databind-2.21.4.jar (com.fasterxml.jackson.core:jackson-databind:2.21.4) with InstrumentationAnalysisTransform
+Transforming jackson-databind-2.21.4.jar (com.fasterxml.jackson.core:jackson-databind:2.21.4) with MergeInstrumentationAnalysisTransform
+Transforming jackson-module-parameter-names-2.21.4.jar (com.fasterxml.jackson.module:jackson-module-parameter-names:2.21.4) with ExternalDependencyInstrumentingArtifactTransform
+Transforming jna-platform-5.17.0.jar (net.java.dev.jna:jna-platform:5.17.0) with InstrumentationAnalysisTransform
+Transforming jackson-databind-2.21.4.jar (com.fasterxml.jackson.core:jackson-databind:2.21.4) with ExternalDependencyInstrumentingArtifactTransform
+Transforming jna-platform-5.17.0.jar (net.java.dev.jna:jna-platform:5.17.0) with MergeInstrumentationAnalysisTransform
+Transforming httpclient5-5.5.2.jar (org.apache.httpcomponents.client5:httpclient5:5.5.2) with InstrumentationAnalysisTransform
+Transforming httpclient5-5.5.2.jar (org.apache.httpcomponents.client5:httpclient5:5.5.2) with MergeInstrumentationAnalysisTransform
+Transforming jna-platform-5.17.0.jar (net.java.dev.jna:jna-platform:5.17.0) with ExternalDependencyInstrumentingArtifactTransform
+Transforming tomlj-1.0.0.jar (org.tomlj:tomlj:1.0.0) with InstrumentationAnalysisTransform
+Transforming tomlj-1.0.0.jar (org.tomlj:tomlj:1.0.0) with MergeInstrumentationAnalysisTransform
+Transforming commons-codec-1.17.1.jar (commons-codec:commons-codec:1.17.1) with InstrumentationAnalysisTransform
+Transforming httpclient5-5.5.2.jar (org.apache.httpcomponents.client5:httpclient5:5.5.2) with ExternalDependencyInstrumentingArtifactTransform
+Transforming commons-codec-1.17.1.jar (commons-codec:commons-codec:1.17.1) with MergeInstrumentationAnalysisTransform
+Transforming tomlj-1.0.0.jar (org.tomlj:tomlj:1.0.0) with ExternalDependencyInstrumentingArtifactTransform
+Transforming commons-io-2.16.1.jar (commons-io:commons-io:2.16.1) with InstrumentationAnalysisTransform
+Transforming commons-codec-1.17.1.jar (commons-codec:commons-codec:1.17.1) with ExternalDependencyInstrumentingArtifactTransform
+Transforming commons-io-2.16.1.jar (commons-io:commons-io:2.16.1) with MergeInstrumentationAnalysisTransform
+Transforming commons-lang3-3.16.0.jar (org.apache.commons:commons-lang3:3.16.0) with InstrumentationAnalysisTransform
+Transforming commons-lang3-3.16.0.jar (org.apache.commons:commons-lang3:3.16.0) with MergeInstrumentationAnalysisTransform
+Transforming spring-jcl-6.2.19.jar (org.springframework:spring-jcl:6.2.19) with InstrumentationAnalysisTransform
+Transforming commons-io-2.16.1.jar (commons-io:commons-io:2.16.1) with ExternalDependencyInstrumentingArtifactTransform
+Transforming spring-jcl-6.2.19.jar (org.springframework:spring-jcl:6.2.19) with MergeInstrumentationAnalysisTransform
+Transforming jackson-annotations-2.21.jar (com.fasterxml.jackson.core:jackson-annotations:2.21) with InstrumentationAnalysisTransform
+Transforming commons-lang3-3.16.0.jar (org.apache.commons:commons-lang3:3.16.0) with ExternalDependencyInstrumentingArtifactTransform
+Transforming jackson-annotations-2.21.jar (com.fasterxml.jackson.core:jackson-annotations:2.21) with MergeInstrumentationAnalysisTransform
+Transforming jna-5.17.0.jar (net.java.dev.jna:jna:5.17.0) with InstrumentationAnalysisTransform
+Transforming spring-jcl-6.2.19.jar (org.springframework:spring-jcl:6.2.19) with ExternalDependencyInstrumentingArtifactTransform
+Transforming jna-5.17.0.jar (net.java.dev.jna:jna:5.17.0) with MergeInstrumentationAnalysisTransform
+Transforming jackson-annotations-2.21.jar (com.fasterxml.jackson.core:jackson-annotations:2.21) with ExternalDependencyInstrumentingArtifactTransform
+Transforming httpcore5-h2-5.3.6.jar (org.apache.httpcomponents.core5:httpcore5-h2:5.3.6) with InstrumentationAnalysisTransform
+Transforming httpcore5-h2-5.3.6.jar (org.apache.httpcomponents.core5:httpcore5-h2:5.3.6) with MergeInstrumentationAnalysisTransform
+Transforming httpcore5-5.3.6.jar (org.apache.httpcomponents.core5:httpcore5:5.3.6) with InstrumentationAnalysisTransform
+Transforming jna-5.17.0.jar (net.java.dev.jna:jna:5.17.0) with ExternalDependencyInstrumentingArtifactTransform
+Transforming httpcore5-5.3.6.jar (org.apache.httpcomponents.core5:httpcore5:5.3.6) with MergeInstrumentationAnalysisTransform
+Transforming slf4j-api-1.7.36.jar (org.slf4j:slf4j-api:1.7.36) with InstrumentationAnalysisTransform
+Transforming httpcore5-h2-5.3.6.jar (org.apache.httpcomponents.core5:httpcore5-h2:5.3.6) with ExternalDependencyInstrumentingArtifactTransform
+Transforming slf4j-api-1.7.36.jar (org.slf4j:slf4j-api:1.7.36) with MergeInstrumentationAnalysisTransform
+Transforming httpcore5-5.3.6.jar (org.apache.httpcomponents.core5:httpcore5:5.3.6) with ExternalDependencyInstrumentingArtifactTransform
+Transforming antlr4-runtime-4.7.2.jar (org.antlr:antlr4-runtime:4.7.2) with InstrumentationAnalysisTransform
+Transforming antlr4-runtime-4.7.2.jar (org.antlr:antlr4-runtime:4.7.2) with MergeInstrumentationAnalysisTransform
+Transforming slf4j-api-1.7.36.jar (org.slf4j:slf4j-api:1.7.36) with ExternalDependencyInstrumentingArtifactTransform
+Transforming jsr305-3.0.2.jar (com.google.code.findbugs:jsr305:3.0.2) with InstrumentationAnalysisTransform
+Transforming jsr305-3.0.2.jar (com.google.code.findbugs:jsr305:3.0.2) with MergeInstrumentationAnalysisTransform
+Transforming antlr4-runtime-4.7.2.jar (org.antlr:antlr4-runtime:4.7.2) with ExternalDependencyInstrumentingArtifactTransform
+Transforming jsr305-3.0.2.jar (com.google.code.findbugs:jsr305:3.0.2) with ExternalDependencyInstrumentingArtifactTransform
+Applying dependency management to configuration 'annotationProcessor' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'apiElements' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'archives' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'bootArchives' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'compileClasspath' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'compileOnly' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'default' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'developmentOnly' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'implementation' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'mainSourceElements' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'runtimeClasspath' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'runtimeElements' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'runtimeOnly' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'testAndDevelopmentOnly' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'testCompileClasspath' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'testCompileOnly' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'testImplementation' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'testResultsElementsForTest' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'acrylic-outbound-server'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'acrylic-outbound-server'
+All projects evaluated.
+Task name matched 'test'
+Selected primary task 'test' from project :
+Resolving global dependency management for project 'acrylic-outbound-server'
+Found project 'project :report-rendering' as substitute for module 'com.acrylic.outbound:acrylic-report-rendering'.
+Excluding [com.google.protobuf:protobuf-java]
+Excluding []
+Found project 'project :report-rendering' as substitute for module 'com.acrylic.outbound:acrylic-report-rendering'.
+Excluding []
+Found project 'project :report-rendering' as substitute for module 'com.acrylic.outbound:acrylic-report-rendering'.
+Excluding []
+Found project 'project :report-rendering' as substitute for module 'com.acrylic.outbound:acrylic-report-rendering'.
+Excluding []
+Found project 'project :report-rendering' as substitute for module 'com.acrylic.outbound:acrylic-report-rendering'.
+Excluding []
+Found project 'project :report-rendering' as substitute for module 'com.acrylic.outbound:acrylic-report-rendering'.
+Loaded state for lock with ID 'annotationProcessor'
+Loaded state for lock with ID 'compileClasspath'
+Loaded state for lock with ID 'compileClasspath'
+Tasks to be executed: [task ':compileJava', task ':processResources', task ':classes', task ':compileTestJava', task ':processTestResources', task ':testClasses', task ':test']
+Tasks that were excluded: []
+destroyer locations for task group 0 (Thread[#1401,Execution worker Thread 2,5,main]) started.
+Resolve mutations for :report-rendering:compileJava (Thread[#1400,Execution worker,5,main]) started.
+Resolve mutations for :processResources (Thread[#1401,Execution worker Thread 2,5,main]) started.
+:processResources (Thread[#1410,Execution worker Thread 11,5,main]) started.
+:report-rendering:compileJava (Thread[#1400,Execution worker,5,main]) started.
+
+> Task :processResources UP-TO-DATE
+Caching disabled for task ':processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':processResources' as it is up-to-date.
+Resolve mutations for :processTestResources (Thread[#1410,Execution worker Thread 11,5,main]) started.
+:processTestResources (Thread[#1410,Execution worker Thread 11,5,main]) started.
+
+> Task :processTestResources UP-TO-DATE
+Caching disabled for task ':processTestResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':processTestResources' as it is up-to-date.
+
+> Task :report-rendering:compileJava UP-TO-DATE
+Caching disabled for task ':report-rendering:compileJava' because:
+  Build cache is disabled
+Skipping task ':report-rendering:compileJava' as it is up-to-date.
+other build task :report-rendering:compileJava (Thread[#1400,Execution worker,5,main]) started.
+Resolve mutations for :report-rendering:prepareFont (Thread[#1407,Execution worker Thread 8,5,main]) started.
+work action resolve main (project :report-rendering) (Thread[#1407,Execution worker Thread 8,5,main]) started.
+Resolve mutations for :compileJava (Thread[#1407,Execution worker Thread 8,5,main]) started.
+:report-rendering:prepareFont (Thread[#1400,Execution worker,5,main]) started.
+:compileJava (Thread[#1407,Execution worker Thread 8,5,main]) started.
+
+> Task :report-rendering:prepareFont UP-TO-DATE
+Custom actions are attached to task ':report-rendering:prepareFont'.
+Caching disabled for task ':report-rendering:prepareFont' because:
+  Build cache is disabled
+  Gradle would require more information to cache this task
+Skipping task ':report-rendering:prepareFont' as it is up-to-date.
+Resolve mutations for :report-rendering:processResources (Thread[#1400,Execution worker,5,main]) started.
+:report-rendering:processResources (Thread[#1400,Execution worker,5,main]) started.
+
+> Task :report-rendering:processResources UP-TO-DATE
+Caching disabled for task ':report-rendering:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':report-rendering:processResources' as it is up-to-date.
+Resolve mutations for :report-rendering:classes (Thread[#1400,Execution worker,5,main]) started.
+:report-rendering:classes (Thread[#1400,Execution worker,5,main]) started.
+
+> Task :report-rendering:classes UP-TO-DATE
+Skipping task ':report-rendering:classes' as it has no actions.
+Resolve mutations for :report-rendering:jar (Thread[#1400,Execution worker,5,main]) started.
+:report-rendering:jar (Thread[#1400,Execution worker,5,main]) started.
+
+> Task :report-rendering:jar UP-TO-DATE
+Caching disabled for task ':report-rendering:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':report-rendering:jar' as it is up-to-date.
+other build task :report-rendering:jar (Thread[#1400,Execution worker,5,main]) started.
+work action resolve acrylic-report-rendering.jar (project :report-rendering) (Thread[#1400,Execution worker,5,main]) started.
+
+> Task :compileJava UP-TO-DATE
+Custom actions are attached to task ':compileJava'.
+Caching disabled for task ':compileJava' because:
+  Build cache is disabled
+Skipping task ':compileJava' as it is up-to-date.
+Resolve mutations for :classes (Thread[#1407,Execution worker Thread 8,5,main]) started.
+:classes (Thread[#1407,Execution worker Thread 8,5,main]) started.
+
+> Task :classes UP-TO-DATE
+Skipping task ':classes' as it has no actions.
+Resolve mutations for :compileTestJava (Thread[#1403,Execution worker Thread 4,5,main]) started.
+:compileTestJava (Thread[#1403,Execution worker Thread 4,5,main]) started.
+
+> Task :compileTestJava
+Custom actions are attached to task ':compileTestJava'.
+Caching disabled for task ':compileTestJava' because:
+  Build cache is disabled
+Task ':compileTestJava' is not up-to-date because:
+  Task has failed previously.
+The input changes require a full rebuild for incremental task ':compileTestJava'.
+Compilation mode: in-process compilation
+Full recompilation is required because no incremental change information is available. This is usually caused by clean builds or changing compiler arguments.
+Compiling with toolchain 'C:\Program Files\Java\jdk-21.0.11'.
+Compiling with JDK Java compiler API.
+注: 某些输入文件使用或覆盖了已过时的 API。
+注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+Class dependency analysis for incremental compilation took 0.06 secs.
+Created classpath snapshot for incremental compilation in 0.02 secs.
+Resolve mutations for :testClasses (Thread[#1403,Execution worker Thread 4,5,main]) started.
+:testClasses (Thread[#1403,Execution worker Thread 4,5,main]) started.
+
+> Task :testClasses
+Skipping task ':testClasses' as it has no actions.
+Resolve mutations for :test (Thread[#1403,Execution worker Thread 4,5,main]) started.
+:test (Thread[#1403,Execution worker Thread 4,5,main]) started.
+Gradle Test Executor 6 started executing tests.
+Gradle Test Executor 6 finished executing tests.
+
+> Task :test
+Caching disabled for task ':test' because:
+  Build cache is disabled
+Task ':test' is not up-to-date because:
+  Value of input property 'filter.commandLineIncludePatterns' has changed for task ':test'
+Starting process 'Gradle Test Executor 6'. Working directory: D:\acrylic-pda-worktrees\r06-e2a-foundation\server Command: C:\Program Files\Java\jdk-21.0.11\bin\java.exe -Dorg.gradle.internal.worker.tmpdir=D:\acrylic-pda-worktrees\r06-e2a-foundation\server\build\tmp\test\work -Duser.timezone=UTC @C:\Users\qq113\.gradle\.tmp\gradle-worker-classpath9210755780658569947txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=CN -Duser.language=zh -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 6'
+Successfully started process 'Gradle Test Executor 6'
+
+GenerateE2aVectorTest > print() STANDARD_OUT
+    {"ecKeyId":"e0e38fc0fdbb7149e49d41dd97299e08c0edc68fedd6e9c3972e4497cfe46b63","ecPublicKeySpkiBase64":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEvAVzj4GHSuLcf5eDvHJhhX0YsFVl50wBwxHcKA/pX07H0D5UqXqn12s/w9oo86pQWZrmkXJZfz6KubHMGFMmTw==","manifestBytesHash":"349d67098fed75a811182f6801f100be2ff969f17aa241e566f7751ad548a6dd","manifestCoreUtf8":"{\"byteCount\":0,\"endPageNo\":1,\"entryCount\":0,\"manifestId\":\"00000000-0000-0000-0000-000000000101\",\"manifestVersion\":1,\"pageCount\":1,\"pages\":[{\"pageHash\":\"fc36c7cb01e57aa6fb9876109ce1447f41e0e2dc3bd82d92c2e7fac22be95934\",\"pageNo\":1}],\"schemaVersion\":1,\"snapshotId\":\"00000000-0000-0000-0000-000000000102\",\"source\":\"TEMP\",\"sourceId\":\"00000000-0000-0000-0000-000000000103\",\"submissionId\":\"00000000-0000-0000-0000-000000000104\",\"workRound\":1}","pageCoreUtf8":"{\"byteCount\":0,\"isFinal\":true,\"itemCount\":0,\"items\":[],\"manifestId\":\"00000000-0000-0000-0000-000000000101\",\"manifestVersion\":1,\"pageCount\":1,\"pageNo\":1,\"prevPageHash\":null,\"snapshotId\":\"00000000-0000-0000-0000-000000000102\"}","pageHash":"fc36c7cb01e57aa6fb9876109ce1447f41e0e2dc3bd82d92c2e7fac22be95934","rsaKeyId":"e2a-vector-rsa","rsaPublicKeySpkiBase64":"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw/adW42deURfL8uhO3EuK3ZobL8YYGuHVEpYmkEYmM90yi2BwbzIu0TVghujcqF7tWsAaHQR+g1b2v2aliZqnS6fREDFTnBx9elBLZ4qOcyCTZ3Cn5tqPua1lJ8hQAzZNmCkGDFFCzdun2gtzD5wYvouhzkILELmOAkszq5HCG+Ru4mrIZbJUJ5YbCX9eJlk5H2+vxxFNJnrWlXn5sruUXNehluKBdAgKdXSJ1Rew9XYT1TsUDepVC5UETuw5zdIF7Z/HCFmI1jDsZBOZBnRq3rYd3h/QiIIT7WTdFwNnD0GPQ94BA7xeiZt63mWpJm7Yi4gcWNUyf95+vU4S5xj/QIDAQAB","setHash":"e836455d5b3169b32661021cb1566ad0800981cfda592f381d7a9a4c62e29735","signedReceiptJwt":"eyJhbGciOiJSUzI1NiIsImtpZCI6ImUyYS12ZWN0b3ItcnNhIiwidHlwIjoiSldUIn0.eyJhdWQiOiJhY3J5bGljLXIwNi1lMmEtaW50YWtlLXYxIiwiaXNzIjoiYWNyeWxpYy1vdXRib3VuZCIsInJlY2VpcHQiOnsiY2FwYWJpbGl0aWVzIjp7ImxvY2FsRGVsZXRpb25BbGxvd2VkIjpmYWxzZSwibWF5UmVzdW1lU2Nhbm5pbmciOmZhbHNlLCJyZWxlYXNlQWxsb3dlZCI6ZmFsc2UsInN0b2NrUmVsZWFzZWQiOmZhbHNlLCJ3cml0ZUNvbmZpcm1hdGlvbkF2YWlsYWJsZSI6ZmFsc2V9LCJvcGVyYXRpb25LaW5kIjoiVkVSSUZZIiwib3JpZ2luYWxLZXkiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAyMDEiLCJyZWNlaXB0VmVyc2lvbiI6MSwicmVjb3JkZWRBdCI6IjIwMjYtMDktMjJUMDA6MDA6MDBaIiwic3RhdHVzIjoiUEFSVElBTCJ9fQ.T8SGcwdm3cB5jzdwnMLfj8ebS1I6ik7tydtp47JBQ1uDjxMT9im0drPiVwIgk7V_c_prwX1a9zQM7ahQlCTIKy2u1ddNlKLmKOBlxEXreAbvYNbsPId9_A4Md2LWoscIsKEJzdK5kM0nVk1FljhFQb4Vi74B0ZIuYnwvUJQ5xZsYcz-iJbB7V9Oujbvadp6efNEh-jiNb6q6Fhf16VAwzq-yMndHBT-XbAJGuEmKTh3BQWbl3lpxTRoMjmJOcBpxEceRtYygZGqPYoQ7TF06ifxBvDljqkaAv8_mgd5QsJn6VSuz17NBk6NXB-3g4hPUhiOhdt3UGipYcg9DHYLEmw","stopAlgorithm":"ECDSA_P256_SHA256_DER","stopCoreUtf8":"{\"auditThroughSeq\":1,\"captureHighWatermark\":0,\"freezeDeviceId\":\"00000000-0000-0000-0000-000000000107\",\"manifestBytesHash\":\"349d67098fed75a811182f6801f100be2ff969f17aa241e566f7751ad548a6dd\",\"manifestId\":\"00000000-0000-0000-0000-000000000101\",\"manifestVersion\":1,\"originalOperatorId\":\"00000000-0000-0000-0000-000000000106\",\"setHash\":\"e836455d5b3169b32661021cb1566ad0800981cfda592f381d7a9a4c62e29735\",\"sourceId\":\"00000000-0000-0000-0000-000000000103\",\"sourceRecoveryEpoch\":0,\"stopEventId\":\"00000000-0000-0000-0000-000000000108\",\"stopTransactionVersion\":1,\"submissionId\":\"00000000-0000-0000-0000-000000000104\",\"warehouseId\":\"00000000-0000-0000-0000-000000000105\",\"workRound\":1}","stopSignatureDerBase64":"MEUCIBGgYWSmvLN0ena72Q94jZgGbRr7kdflAl5+Veu7bkeiAiEAwwMNvMXpEfXgkE5MkkCqiBl/iKvzk92rytt8x8l7SG0=","unsignedReceiptUtf8":"{\"capabilities\":{\"localDeletionAllowed\":false,\"mayResumeScanning\":false,\"releaseAllowed\":false,\"stockReleased\":false,\"writeConfirmationAvailable\":false},\"operationKind\":\"VERIFY\",\"originalKey\":\"00000000-0000-0000-0000-000000000201\",\"receiptVersion\":1,\"recordedAt\":\"2026-09-22T00:00:00Z\",\"status\":\"PARTIAL\"}","vectorVersion":2}
+Finished generating test XML results (0.014 secs) into: D:\acrylic-pda-worktrees\r06-e2a-foundation\server\build\test-results\test
+Generating HTML test report...
+Finished generating test html results (0.004 secs) into: D:\acrylic-pda-worktrees\r06-e2a-foundation\server\build\reports\tests\test
+[Incubating] Problems report is available at: file:///D:/acrylic-pda-worktrees/r06-e2a-foundation/server/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 5s
+9 actionable tasks: 2 executed, 7 up-to-date
+Watched directory hierarchies: [D:\acrylic-pda-worktrees\r06-e2a-foundation\report-rendering, D:\acrylic-pda-worktrees\r06-e2a-foundation\server]
