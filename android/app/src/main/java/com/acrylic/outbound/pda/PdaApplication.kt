@@ -52,6 +52,8 @@ open class PdaApplication : Application(), androidx.work.Configuration.Provider 
     val handovers by lazy { HandoverImportRepository(database, session) }
     val temporaryHandoverConfirmations by lazy { com.acrylic.outbound.pda.temporary.TemporaryHandoverConfirmationRepository(
         database, com.acrylic.outbound.pda.temporary.TemporarySession(session)) }
+    val temporaryRecoveredConfirmations by lazy { com.acrylic.outbound.pda.temporary.TemporaryRecoveredConfirmationRepository(
+        database, com.acrylic.outbound.pda.temporary.TemporarySession(session)) }
     val temporaryHandoverActivations by lazy { com.acrylic.outbound.pda.temporary.TemporaryHandoverActivationRepository(temporaryStore()) }
     val recalls by lazy { RecallRepository(database, session, work::pauseForRecall) }
     val recoveryFreezer by lazy { RecoveryFreeze(WorkStore(database, SessionWorkAccess(this, session)), session::now) }

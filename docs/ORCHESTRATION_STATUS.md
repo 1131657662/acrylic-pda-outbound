@@ -1,48 +1,62 @@
 # 开发看板
 
 <!-- CURRENT_STATE_START -->
-总目标active、未完成；localDeletionAllowed=false。D13已有binding/NORMAL非空恢复→后继登记/准入→真实API/独立worker/P5/文件同输入组合：最终主机100项、新隔离IT1/0/0/0及Python原件消费通过。仅合成test-only提升、同实例跨schema有界；实际跨实例正向、后继死亡/pending、D13整体和最终候选未完成。Android选择器结论独立继承，真实列表仍缺合规救援凭据。
+
+总目标active、未完成；本助手独占TEMP/独立SKU简单out.txt有界切片，有界组合及开发备份已收口，下一步仍按未完标准接续。非O02/U03、D/O/U整体或第8节通过。
+- 根.local/rescue-all-source-text-20261024/run01/；baseline03/before-android-fix02/review01保全dirty原字节/SHA/patch与编辑前原件，22非看板继承逐SHA保持且不暂存，混合看板留WIP。发行时专用姓名证明绑定原token/人机仓/时间，nullable原事务保存；Android读原receipt/request，无Room变更；旧缺证不回填，简单文本拒绝。
+- compile02成功；server02为3普通测试+1真实HTTP/MySQL专项，共4/0失败/0跳过，非4个IT；新1851非空迁移/原键并发GET重启/改名原件/末SQL回滚通过。Android02消费同次原响应，7类32/0/0/0；相关02十类54/0/0/0，含独立闭合/替换/引擎及FORMAL/TEMP高级导出；6083输入逐SHA无漂移。
+- lint/assemble exit0，566 warning/0 error。新outputs/pda/Acrylic-PDA-staging-all-source-out-text-20261024.apk，SHA256=7710794e4dc0f4c3fd7fcebb95eb4ee161acc7bf43ba16fb7d16f87da497653d；新旧同开发证书，旧APK/Keystore原SHA守恒；新APK未安装、服务端未部署。教程PDA_OUT_TXT_GUIDE.md，报告history/PDA_ALL_SOURCE_OUT_TEXT_2026-10-24.md。
+- server01夹具序列化失败、Android01四项Room主线程/一项注销前置失败、旧模块误导入额外复跑--freeze旧输入、相关01两个向量目录缺失均保留，不混作最终候选；历史全量41失败/native crash仍未解决。本片不重跑旧run03。一次性1850/1851已认证停机，清理前再核；系统3306/33060未知不连，33318实核属其他项目不动，ADB仅枚举。
+- 原身份/本人救援凭据下实际订单与独立任务完整点按、USB/外置介质、四字号/实体键/规模长时及最终整合未验。前片结论归档history/ORCHESTRATION_STATUS_BEFORE_ALL_SOURCE_TEXT_2026-10-24.md，中间完整看板在review01/originals；生产/删除边界不变。
+- cleanup01清15处/登记9552文件、635338261逻辑字节；D33139486720→33802526720，观测净增663040000字节另列。长路径初次失败与补录哈希/PS7收口保留；只清本片已结束合成库数据/binlog和可重建构建临时，1850/1851不得复用；原签名/日志/XML/冻结源/最终APK/身份/22继承保留。
+- 本片31路径已精确开发备份1fdeac6e4f5c16029f3e94ccea7a0c75734286c8，commit/push均exit0、实际开发远端核同，暂存空；回执closeout-submit01。全部23条dirty-SHA/原件在final-snapshot（22非看板继承+混合看板），单助手无委派；重型任务已结束，未停共享/其他项目进程，运行/监听/ADB及C/D/E实际余量见environment.json。
+
+
+以下为切片前历史输入及证据继承，旧“未接入”等仅指各报告输入；运行/PID/版本事实以本片核查及生成块为准：
+
+总目标active、未完成；localDeletionAllowed=false。D13补Python严格v2初始正常身份只读：最终专项13项/相关70项全过，真实CLI读取Java原身份且40件逐SHA保持；v2初始化/推进/重放仍拒绝。仅控制历史一致性，不验P5活性/可信生产供应，不计D13整体或第8节；Android缺口继承。
 
 ## 输入、写权与保存
-- 固定树D:/acrylic-pda-outbound，codex/development；本片输入及提交前实际开发远端fc2a68a033e491af5aa0bb9d52974b95284f433e，暂存空。明确7测试/消费者+6文档开发备份待保存，实际提交/推送回执以closeout-submit为准，不预称已提交。main=c6e9e0c238c657baecbf699ba6fdbada5d979b86未操作，最终元数据不循环提交。
-- 本片根.local/d13-successor-combination-20261023/run01/；before-cleanup保全46条完整dirty/原字节/SHA/patch及691目标原件；初始完整接续快照在前片根combination-resume02，42条。closeout-review核2725冻结输入/110依赖、1138产品输入与前片相同、22长期继承逐字节保持。另一聊天active处理Android文本导出，不改/暂存/清理其路径，不发消息/委派。
-- 共享文档原字节/SHA在closeout-review/originals及documents-before.json；旧叙述归档history/ORCHESTRATION_STATUS_BEFORE_SUCCESSOR_P5_COMPOSITION_2026-10-23.md。新鲜完整环境见before-cleanup/environment.json及最终快照；系统3306/33060身份未认证，只观察未连接/停止。ADB只枚举两真机，无本片设备/模拟器/正式签名/APK操作，debug Keystore核同。
-- 本片Java/Python/MySQL任务已结束；1756–1758认证停库、无隔离监听；旧1753–1755不重跑，已清库均不得复用。最终源表/文件、后继原行/控制原件与P5/HMAC守恒；失败输入和运行器原件保留。
-- cleanup01只清14明确测试路径，逻辑740939394字节；D窗口26724638720→27487002624，观察净增762363904字节约0.71GiB。原控制/intent/身份/HTTP/失败/关键SQL行保留；清理后338原输出重消费、4项精确清理缺件，proof与清理前逐字相同。收尾环境另按最终采样，其他时点不归为释放。
+- 固定树D:/acrylic-pda-outbound，codex/development；输入HEAD及实际开发远端7e1f3664d6c31f7aad55cad5bd7c6a6cc06085c2。本片5个Python源码/测试+5文档已精确开发备份8ea4edb10cad431156223e3f453cb56cedc3a61b，commit/push均exit0、实际开发远端核同、暂存空，回执closeout-submit01。共享混合看板不暂存，22条非看板继承保持，不代提交/清理，main未动。
+- 根.local/d13-v2-readonly-20261024/run01/。baseline/before-compat-fix/before-docs保存全部dirty原字节/SHA/patch及实核环境；最终两轮冻结同一179Python输入。review01逐SHA核1141前片产品/资源/renderer/构建输入不变，只有2改/3新增Python路径。
+- 当前助手独占本片，无委派/消息；实核同项目其他聊天idle/notLoaded，其他项目active，未见本片写者。每次接续重新核，不拿旧PID/状态推定。旧D13叙述归档history/ORCHESTRATION_STATUS_BEFORE_V2_READ_ONLY_2026-10-24.md，完整混合看板原字节/SHA在closeout-docs，Android整段原字节保持。
+- 本片无Java构建/数据库/HTTP/Android设备操作或部署。系统3306/33060及新增33318身份未由本片认证，仅观察不连接/停止；ADB只枚举、Debug Keystore/最终APK原SHA保护。收尾实际进程/监听/设备/磁盘见final-snapshot，不停止共享进程。
+- 仅清本片已结束5次合成单测fixtures/tmp，10目录/2857文件，逻辑1121675字节；D34021957632→34024841216，观测净增2883584另列。清理两次删除前停止、最终成功见cleanup01/02/03，统计空值由原plan逐文件求和补证，不覆盖原回执。
+- 原失败/成功日志、命令/输入/依赖/逐SHA、冻结源保留；前片Java控制/P5/UNKNOWN/原身份/签回执/APK/Keystore/WIP/继承及共享缓存不清。前片已清1797–1800库禁止重启复用，新renderer保留复用；清理不变业务删除政策。
 
 ## 继承的测试部署与Android
-- 既有固定测试后台、M71领取/资料下载/刷新与主页布局仅按 `history/TEST_CLAIM_M71_LAYOUT_2026-10-23.md` 独立范围继承，本片未连接或重新认证远端。线上APK发布入口未改；本片只记录订单选择器测试包，不计D13整体。
-- M71 序列号 `22D2910042` 已覆盖安装并进入“数据 → 只读应急导出”页面；设备当前 Activity 为 `RescueExportActivity`。页面要求预置本人或主管救援凭据后才加载可读订单范围，当前没有可用凭据，故未将静态页面或空列表写成真实订单列表通过。
-- 可部署测试环境的 APK：`outputs/pda/Acrylic-PDA-staging-rescue-order-picker-20261023.apk`；SHA-256 `2EB927F5E2A7E799EEE730D23FC41DF8EBB239078445814E6454E36635531F7F`。安装包版本事实以本看板生成事实块为准。
-
-## 订单选择器证据与验证
-- 订单候选按本机记录时间倒序，跨 FORMAL/TEMP/INDEPENDENT 使用稳定时间/source/id 游标分页；标签显示类型、资料保存/本机建单时间、车号、业务订单号和完整记录编号，长订单号/UUID 使用多行 TextView，不以省略号截断。
-- 定向 Gradle：`:app:testStagingUnitTest --tests com.acrylic.outbound.pda.rescue.RescueOrdersTest --tests com.acrylic.outbound.pda.ui.RescueOrderItemTest`，`BUILD SUCCESSFUL`。覆盖倒序、跨时区、稳定分页、范围过滤、直接查找、缺失字段占位符和窄屏换行。
-- Android lint：`:app:lintStaging`，`BUILD SUCCESSFUL`。
-- M71 现场证据目录：`.local/rescue-order-picker-20261023/run01/`，含 `main-current.xml`、`rescue-entry.xml` 和启动/安装快照。未完成项：取得合规救援凭据后展开 Spinner，核对真实订单日期、车号、订单号、UUID 和最新项置顶。
+- 测试后台、M71领取/资料下载/刷新与顶部控制区仅按 `history/TEST_CLAIM_M71_LAYOUT_2026-10-23.md` 继承；本片不部署服务端、不改线上APK发布入口。Android仅本助手负责，另一聊天D13在途执行及继承恢复确认改动保持独立，不暂存/清理其路径。
+- 本片输入HEAD为61106f6d6e460bc8448b356300ac84d39fa952cf；冻结候选沿test-claim核定基线571c34aa9eb8d08f0fb643f36542259a575c7702及顶部布局，叠加本片20文件；清单/完整6074输入在.local/rescue-submission-export-20261023/run01/overlay.json、source-manifest.json。主树其余恢复确认WIP未混入候选。
+- FORMAL直接生成旧式out.txt：五列无表头/TAB/GBK/CRLF，原可信姓名/原重量/北京时间，ACTIVE未排除包按原扫码序号；写后回读，取消/失败/换单/重读不残留成功提示。加密包降为高级可选；TEMP与独立SKU简单文本未接入，不称完整“导入SKU→扫码→直接导出”通过。
+- 已验签完成页新增“只读应急导出（生成 out.txt）”，携FORMAL及原订单；恢复待对账也保留只读入口。候选按本机记录时间倒序、稳定游标，多行显示日期/车号/业务单号/完整UUID；正式“资料保存”不冒充出库确认。
+- attempt05同次七类31/0/0/0，lint及assemble exit0；lint仍566 warning/0 error。完成页跳转及取消/失败状态为合成UI测试。attempt02离线插件失败、attempt04测试import编译失败及旧XML无效、attempt03旧输入25项成功均分列保留；历史全量41项失败/native crash仍未解决，不称全量通过。
+- 测试APK：outputs/pda/Acrylic-PDA-staging-out-text-entry-20261023.apk；SHA256=719fd3516dd5054ed056b972d78be53446d68302dffff542187ade8f31de6ceb。包覆盖参数见attempt05/command.json；源码默认版本见生成事实块，不混称两者。
+- M71 22D2910042同证书adb install -r成功，无卸载/清数据/-d；首次安装时间保持2026-10-20 19:03:32，回拉已装APK SHA与交付同。实际从登录页只读入口进入RescueExportActivity；device/install-final.json及ui-installed-*.xml保全。MI6未操作。
+- 真机缺原操作员登录/可用救援凭据：完成历史原单新按钮、真实候选与实际out.txt写入回读仍未验，不绕身份。教程docs/PDA_OUT_TXT_GUIDE.md含完整点按路径；报告history/PDA_OUT_TEXT_COMPLETION_ENTRY_2026-10-23.md。边界/原事实/删除与生产开关不变。
+- 本片20源码/测试+9文档已精确提交并推送23bf67f45344c3c0a4e048e77cd93cf168af316f，开发远端核同、暂存空；20暂存blob与已验冻结源按LF核同，回执closeout/commit-push.json。看板含D13更新，仅留WIP不整文件暂存。
+- 构建/安装进程结束，未停共享Gradle/Kotlin；cleanup01仅清e23b/e23t及本片cache，移除逻辑163759372字节；D窗口26023755776→26194853888，观察净变171098112字节含并发活动，C余量82957881344。逐文件哈希/输入/命令/结果在closeout/cleanup01；最终APK、冻结输入及原件/WIP保留。
 
 ## 本片D13证据与限制
-- 源首轮binding/NORMAL后完整dump/storage跨schema，后继登记只追加四表4/1/1/1行并提高代次，原binding/NORMAL及181表源事实保持；幂等及真实准入保持ordinaryWritesAllowed/localDeletionAllowed=false。显式合成P5提升只改identity/writers，原字节另存，不是生产供应或可信备份材料。
-- 最终compile03独立javac exit0、adjacent-compile02的22调用点exit0、unit03为100/0/0/0；it03全新1758为1/0/0/0、runner exit0。实际API/独立worker不同PID、活lease/process/index HMAC核同、正常退役为空index；旧任务原列/payload保持且失效，新键XLSX/PDF各一次成功、重放/异格式/下载回读，六HTTP503区间全表/文件守恒。原schema冷启动精确DATABASE_EVIDENCE_UNAVAILABLE，源全量不变。
-- it01/1756因目标storage不存在夹具失败；it02/1757中间输入通过，后扩查checked构造签名令1调用点编译失败；保留原件后恢复unchecked签名，最终输入另编译/新实例复验。首轮快照PowerShell兼容、诊断GBK编码及文档patch失败分列保留，不计业务通过；无旧库重跑。
-- consumer-final独立Python核342原输出、31控制原件、原行全列/微秒source pin、后继摘要/P5及文件；清理后proof同字节。proofSHA=2413db4d47888616ca59fd2bb1b11523ea0496510f572a01de3d3b5bfc76eaf6。主机/IT计数JSON与前片可同字节，须结合本片路径/命令/冻结输入识别。详history/GOAL_D13_SUCCESSOR_P5_COMPOSITION_2026-10-23.md。
-- 本片仅测试/有界组合；1138产品输入未改。同助手作者/自审/多工具消费者，不冒充独立人员、原身份、跨实例、可见布局或D13整体/最终候选。
+- ControlStore.inspect显式允许严格v1/v2身份；load默认写用途不变。v2字段/kind/初始非零摘要/安装及完整恢复集合/规范独立外部路径校验，原writer文件身份、历史、NORMAL前缀、指针及可信checkpoint检查保持；不提供供应器、自动降级/修复或写用途。
+- red01专项13项3失败1错误、旧真实CLI CONTROL_FIELDS均保留；green01专项13全过。related01两项旧拒绝码回归保留，修产品解析器兼容而未改旧测试；最终green02 13/0/0/0、related02 70/0/0/0、均exit0，70包含13，不相加。
+- 最终真实CLI只读消费前片1799 Java原v2身份/原checkpoint，exit0/LOCAL_CONTROL_ONLY；控制/P5/options/checkpoint40件逐SHA保持。ordinaryWritesAllowed/localDeletionAllowed/sharedGateIntegrated固定false，不触发P5判定，不启动原数据库。stdout SHA=db115a9a855a36de02901fce3b1329e65f45ff1ac30a312a8e1555fd579a2592。
+- 详history/GOAL_D13_V2_READ_ONLY_IDENTITY_2026-10-24.md。作者/自审同助手，独立CLI仅工具消费非独立人员；无Java全回归/APK/模拟器/真机或部署，前片真实TCP丢ACK/UNKNOWN组合仅按原输入引用，不拼为最终候选。
 
 ## 下一步与边界
-- 接续先核本片closeout、实际HEAD/远端/完整dirty/写者/环境，不重跑旧IT/已清库。下一有界任务：只读核双实例/完整restore roots和新分配，补实际UUID变化且已有binding的非空恢复正向；后继进程死亡/pending仍缺，不放宽UUID、更新不可变表或删触发器。
-- Android后续由另一聊天实际输入/写权为准；选择器真实列表仍需合规救援凭据。D13整体、其余worker/文件入口、OS拒绝自halt、D16整体、D18实际最终候选及第8节仍缺，不能将控制前置或历史局部结果拼成最终通过。
-- 生产开关/TEMP归档、正式签名、原库现网、main、生产部署/Release关闭；既有测试授权仅原范围继承。取消链/多跳/接收者确认激活/旧run03不恢复。开发备份/清理/文档不计验收或总目标完成。
+- 接续先核实际HEAD/远端/全部dirty-SHA/写权/进程监听/数据库/ADB-Keystore/磁盘及本片回执，运行facts -Write/-Check；不重跑旧IT/旧run03或已清库。OS拒绝自halt没有新安全隔离方法，继续暂缓；选择有新依据的独立入口/故障或完成标准缺口。
+- Android原段继承：原操作员登录/本人救援凭据、完成历史新入口/真实候选/out.txt；TEMP与独立SKU简单出口本片有界组合见顶部、非整体通过。D13其余入口/故障/可信权威、D16整体、D18实际最终候选、第8节及其他D/O/U未完，不拼历史通过或转为现场免验。
+- 生产开关/TEMP归档、正式签名、原库现网、main、部署/Release关闭。取消承接/多跳/接收者确认激活/旧run03不恢复。开发备份/清理/文档不计验收或总目标完成。
 
 <!-- FACTS_START -->
 <!-- Generated by tools/version_facts.ps1; do not edit by hand. Verify with: powershell -NoProfile -File tools/version_facts.ps1 -Check -->
 ```yaml
-date: 2026-10-23
+date: 2026-10-24
 branch: codex/development
-head: fc2a68a0
-dirty_entries: 50
+head: 1fdeac6e
+dirty_entries: 22
 worktrees: 35
 android: { name: 0.16.0-r06-release, code: 21, room: 40 }
-server: { contract: 0.73.0, paths: 201, flyway: V100, migrations: 100 }
+server: { contract: 0.74.0, paths: 201, flyway: V101, migrations: 101 }
 ```
 <!-- FACTS_END -->
 <!-- CURRENT_STATE_END -->

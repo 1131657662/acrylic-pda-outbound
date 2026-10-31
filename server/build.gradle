@@ -52,7 +52,10 @@ tasks.register('recoveryControlClasspath') {
 }
 
 // Ordinary lease tests launch disposable owner JVMs with the actual test runtime dependencies.
-tasks.named('test') { dependsOn tasks.named('recoveryControlClasspath') }
+tasks.named('test') {
+    dependsOn tasks.named('recoveryControlClasspath')
+    dependsOn tasks.named('recoveryRekeyClasspath')
+}
 
 tasks.register('recoveryRekeyClasspath') {
     dependsOn classes

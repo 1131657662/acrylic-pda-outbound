@@ -28,29 +28,38 @@ class HandoverViewModel(application: Application) : AndroidViewModel(application
         else app.handovers.receive(caseId.trim())
         load()
     }
-    fun perform(card: HandoverCard) = run("正在处理交接；完成前保持冻结") {
-        when (card.action) {
-            "RECOVERED_READ" -> recovered().read(card.caseId)
-            "REFRESH" -> app.handovers.receive(card.caseId)
-            "IMPORT" -> app.handovers.downloadAndImport(card.caseId, File(app.cacheDir, "handovers")) { text ->
-                mutable.update { it.copy(message = text) }
-            }
-            "ACK" -> app.handovers.acknowledgeDownload(card.caseId)
-            "CONTINUE" -> app.work.resumedContinuation(app.handovers.continueWork(card.caseId))
-            "TEMP_CONFIRM" -> {
-                app.temporaryHandoverConfirmations.queue(card.caseId, true)
-                com.acrylic.outbound.pda.temporary.TemporaryHandoverConfirmationWorker.schedule(app, card.caseId)
-                app.temporaryHandoverConfirmations.resume(card.caseId)
-            }
-            "TEMP_INSTALL" -> app.temporaryHandoverActivations.restore(card.caseId)
-            "TEMP_START" -> {
-                val store = app.temporaryStore()
-                com.acrylic.outbound.pda.temporary.TemporaryHandoverDownload(store).acknowledge(card.assignment)
-                com.acrylic.outbound.pda.temporary.TemporaryHandoverWork(store).start(card.assignment)
-            }
-            else -> error("交接状态已变化，请重新读取")
+    fun perform(card: HandoverCard) {
+        if (TemporaryHandoverActionGate.isBlocked(card.action)) {
+            mutable.update { it.copy(message = TemporaryHandoverActionGate.CLOSED_MESSAGE) }
+            return
         }
-        load()
+        run("正在处理交接；完成前保持冻结") {
+            when (card.action) {
+                "RECOVERED_READ" -> recovered().read(card.caseId)
+                "RECOVERED_CONFIRM" -> error("恢复交接仅允许只读核对，接收确认与激活已取消")
+                "REFRESH" -> app.handovers.receive(card.caseId)
+                "IMPORT" -> app.handovers.downloadAndImport(card.caseId, File(app.cacheDir, "handovers")) { text ->
+                    mutable.update { it.copy(message = text) }
+                }
+                "ACK" -> app.handovers.acknowledgeDownload(card.caseId)
+                "CONTINUE" -> app.work.resumedContinuation(app.handovers.continueWork(card.caseId))
+                "TEMP_CONFIRM" -> {
+                    app.temporaryHandoverConfirmations.queue(card.caseId, true)
+                    com.acrylic.outbound.pda.temporary.TemporaryHandoverConfirmationWorker.schedule(app, card.caseId)
+                    app.temporaryHandoverConfirmations.resume(card.caseId)
+                }
+                "TEMP_INSTALL" -> app.temporaryHandoverActivations.restore(card.caseId)
+                "TEMP_START" -> startTemporary(card.assignment)
+                else -> error("交接状态已变化，请重新读取")
+            }
+            load()
+        }
+    }
+
+    private fun startTemporary(id: String) {
+        val store = app.temporaryStore()
+        com.acrylic.outbound.pda.temporary.TemporaryHandoverDownload(store).acknowledge(id)
+        com.acrylic.outbound.pda.temporary.TemporaryHandoverWork(store).start(id)
     }
 
     private fun load() {
@@ -63,7 +72,8 @@ class HandoverViewModel(application: Application) : AndroidViewModel(application
             auth.getString("warehouseId"), limit + 1)
         val all = (ids + temporary + restored).distinct().sortedDescending()
         val cards = all.take(limit).map { when (it) {
-            in restored -> RecoveredHandoverCardReader(app).read(it)
+            in restored -> RecoveredHandoverCardReader(app.database,
+                com.acrylic.outbound.pda.temporary.TemporarySession(app.session)).read(it)
             in temporary -> temporaryCard(it)
             else -> card(it)
         } }

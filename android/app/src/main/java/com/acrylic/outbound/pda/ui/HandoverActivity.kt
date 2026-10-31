@@ -55,20 +55,11 @@ class HandoverActivity : ComponentActivity() {
     }
 
     private fun act(card: HandoverCard) {
-        if (card.action in setOf("TEMP_WORK", "TEMP_SUBMISSION")) {
-            val page = if (card.action == "TEMP_SUBMISSION") TemporarySubmissionActivity::class.java else TemporaryWorkActivity::class.java
-            startActivity(Intent(this, page).putExtra("clientOrderId", card.assignment))
+        if (TemporaryHandoverActionGate.isBlocked(card.action)) {
+            model.perform(card)
             return
         }
-        if (card.action in setOf("WORK", "SUBMISSION", "RECALL")) {
-            val page = when (card.action) {
-                "SUBMISSION" -> SubmissionActivity::class.java
-                "RECALL" -> RecallActivity::class.java
-                else -> WorkActivity::class.java
-            }
-            startActivity(Intent(this, page).putExtra("assignmentId", card.assignment))
-            return
-        }
+        if (navigate(card)) return
         if (card.action == "TEMP_START") {
             TemporaryHandoverStartDialog.show(this) { model.perform(card) }
             return
@@ -83,5 +74,23 @@ class HandoverActivity : ComponentActivity() {
         AlertDialog.Builder(this).setTitle("核验接收机续作")
             .setMessage("请先核对实物与主管批准的交接资料。联网核验成功后才允许扫码，原记录和占用继续保留。")
             .setNegativeButton("返回核对", null).setPositiveButton("核验并续作") { _, _ -> model.perform(card) }.show()
+    }
+
+    private fun navigate(card: HandoverCard): Boolean {
+        if (card.action in setOf("TEMP_WORK", "TEMP_SUBMISSION")) {
+            val page = if (card.action == "TEMP_SUBMISSION") TemporarySubmissionActivity::class.java else TemporaryWorkActivity::class.java
+            startActivity(Intent(this, page).putExtra("clientOrderId", card.assignment))
+            return true
+        }
+        if (card.action in setOf("WORK", "SUBMISSION", "RECALL")) {
+            val page = when (card.action) {
+                "SUBMISSION" -> SubmissionActivity::class.java
+                "RECALL" -> RecallActivity::class.java
+                else -> WorkActivity::class.java
+            }
+            startActivity(Intent(this, page).putExtra("assignmentId", card.assignment))
+            return true
+        }
+        return false
     }
 }
