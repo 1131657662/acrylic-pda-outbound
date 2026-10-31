@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import com.acrylic.outbound.pda.databinding.OrderCardBinding
+import com.acrylic.outbound.pda.display.DisplayTime
 import org.json.JSONObject
 
 class OrderCards(private val parent: LinearLayout, private val model: PreparationViewModel) {
@@ -42,7 +43,7 @@ class OrderCards(private val parent: LinearLayout, private val model: Preparatio
         }
         if (state.section == "LOCAL") state.assigned.filter { assignment -> localItems.none { it.order.orderId == assignment.getString("orderId") } }.forEach { assignment ->
             val own = !assignment.isNull("offlineToken")
-            add("本机已领取 · 待准备", "订单 ${assignment.getString("orderId")}\n操作员 ${assignment.getString("operatorName")}\n离线期限 ${assignment.getString("expiresAt")}",
+            add("本机已领取 · 待准备", "订单 ${assignment.getString("orderId")}\n操作员 ${assignment.getString("operatorName")}\n离线期限 ${DisplayTime.formatDateTime(assignment.getString("expiresAt"))}",
                 if (own) "下载并校验资料" else "须原操作员登录", own && !state.busy) { model.prepare(assignment) }
         }
         if (state.section == "AVAILABLE") state.available.forEach { order ->

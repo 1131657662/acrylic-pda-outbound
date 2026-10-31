@@ -1,0 +1,17 @@
+// Focused display tests need Android resources, but no server-signed business fixtures.
+// Use with: gradle -p android -I ../tools/datetime-tests.gradle :app:datetimeDisplayTest
+gradle.projectsEvaluated {
+    def app = gradle.rootProject.project(':app')
+    def standard = app.tasks.named('testDebugUnitTest').get()
+    app.tasks.register('datetimeDisplayTest', Test) {
+        group = 'verification'
+        description = 'Run display-only JVM/API28 tests without business fixture prerequisites.'
+        dependsOn app.tasks.named('compileDebugUnitTestSources')
+        testClassesDirs = standard.testClassesDirs
+        classpath = standard.classpath
+        systemProperties = standard.systemProperties
+        jvmArgs = standard.jvmArgs
+        filter { includeTestsMatching 'com.acrylic.outbound.pda.display.*' }
+        testLogging { events 'failed', 'skipped' }
+    }
+}

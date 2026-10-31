@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { formatDateTime } from '../shared/date-time';
 import DownloadAddress from './DownloadAddress.vue';
 import DownloadStatus from './DownloadStatus.vue';
 import { useDownload } from './useDownload';
@@ -27,7 +28,7 @@ const androidVersions: Record<number, string> = { 28: '9', 29: '10', 30: '11', 3
         <dl class="download-facts">
           <div><dt>版本</dt><dd>{{ release.versionName }}（{{ release.versionCode }}）</dd></div>
           <div><dt>文件大小</dt><dd>{{ (release.sizeBytes / 1024 / 1024).toFixed(1) }} MB</dd></div>
-          <div><dt>发布时间</dt><dd>{{ new Date(release.publishedAt).toLocaleString('zh-CN', { hour12: false }) }}</dd></div>
+          <div><dt>发布时间</dt><dd>{{ formatDateTime(release.publishedAt) }}</dd></div>
           <div><dt>系统要求</dt><dd>Android {{ androidVersions[release.minAndroidApi] || `API ${release.minAndroidApi}` }} 及以上</dd></div>
         </dl>
         <p class="download-notes">{{ release.releaseNotes }}</p>

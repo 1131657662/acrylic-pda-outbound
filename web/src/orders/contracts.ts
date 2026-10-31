@@ -33,10 +33,7 @@ export function statusLabel(status: string): string {
 export const orderStatusLabels: Record<string, string> = { DRAFT: '草稿', READY: '待领取', ASSIGNED: '已领取',
   RECALL_PENDING: '停止作业处理中', REVIEW_REQUIRED: '待主管处理', COMPLETED: '后台已确认出库',
   CANCELLED: '已作废', CONTINUING: '恢复装车处理中', LINKED: '已关联正式订单' };
-export function localTime(value: string): string {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? '暂无记录' : date.toLocaleString('zh-CN', { hour12: false, timeZone: 'Asia/Shanghai' });
-}
+export { formatDateTime as localTime } from '../shared/date-time';
 export function countLabel(value: string | number): string {
   return /^\d+$/.test(String(value)) ? BigInt(value).toLocaleString('zh-CN') : '暂无记录';
 }

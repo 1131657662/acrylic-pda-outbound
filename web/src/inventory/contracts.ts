@@ -25,6 +25,4 @@ export function weightKg(grams: string): string {
 export function statusLabel(status: ImportSummary['status']): string {
   return { READY_FOR_REVIEW: '预检通过 · 未发布', BLOCKED: '存在错误 · 阻断', NEEDS_DEDUP_CONFIRMATION: '待确认去重' }[status];
 }
-export function localTime(value: string): string {
-  return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
-}
+export { formatDateTime as localTime } from '../shared/date-time';

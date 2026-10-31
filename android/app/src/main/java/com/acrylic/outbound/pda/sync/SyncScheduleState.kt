@@ -1,6 +1,7 @@
 package com.acrylic.outbound.pda.sync
 
 import android.content.Context
+import com.acrylic.outbound.pda.display.DisplayTime
 import com.acrylic.outbound.pda.security.JwtVerifier
 import org.json.JSONObject
 
@@ -30,7 +31,7 @@ class SyncScheduleState(context: Context) {
     fun message(): String {
         val message = prefs.getString("message", null) ?: "连接 Wi-Fi 且空闲时自动同步；原记录保留"
         val checkedAt = prefs.getLong("checkedAt", 0)
-        val time = if (checkedAt == 0L) "" else "\n最近核对：" + java.text.DateFormat.getDateTimeInstance().format(java.util.Date(checkedAt))
+        val time = if (checkedAt == 0L) "" else "\n最近核对：" + DisplayTime.formatEpochMillis(checkedAt)
         return "自动同步：$message$time"
     }
 }
